@@ -9,12 +9,14 @@ export const GET: APIRoute = async ({ url }) => {
     const brand = url.searchParams.get("brand") || "";
     const category = url.searchParams.get("category") || "";
     const type = url.searchParams.get("type") || "";
+    const color = url.searchParams.get("color") || "";
+    const stock = url.searchParams.get("stock") || "";
     const printer = url.searchParams.get("printer") || "";
     const page = Math.max(1, Number(url.searchParams.get("page") || 1));
     const perPage = Math.min(96, Math.max(1, Number(url.searchParams.get("per_page") || 12)));
 
     const cache = await getProductsCache();
-    const filtered = sortProducts(filterProducts(cache.products, { search, brand, category, type, printer }));
+    const filtered = sortProducts(filterProducts(cache.products, { search, brand, category, type, color, stock, printer }));
     const start = (page - 1) * perPage;
     const products = filtered.slice(start, start + perPage);
 
@@ -27,7 +29,7 @@ export const GET: APIRoute = async ({ url }) => {
       count: products.length,
       total: filtered.length,
       total_pages: Math.max(1, Math.ceil(filtered.length / perPage)),
-      filters: { search, brand, category, type, printer },
+      filters: { search, brand, category, type, color, stock, printer },
       sorted_by: "compatible-original-renovated",
       products,
     });

@@ -74,14 +74,31 @@ const title = "Produkty | ToneryMaxim.sk";
 
               <div class="filter-divider"></div>
 
-              <h2>Typ produktu</h2>
-              <button type="button" data-filter="type" data-filter-value="" class="is-active">Všetky typy</button>
-              <button type="button" data-filter="type" data-filter-value="compatible">Kompatibilné</button>
-              <button type="button" data-filter="type" data-filter-value="original">Originálne</button>
-              <button type="button" data-filter="type" data-filter-value="renovated">Renovované</button>
+              <h2>Farba</h2>
+              <button type="button" data-filter="color" data-filter-value="" class="is-active">Všetky farby</button>
+              <button type="button" data-filter="color" data-filter-value="cierna"><span class="filter-dot filter-dot-black"></span> Čierna</button>
+              <button type="button" data-filter="color" data-filter-value="cyan"><span class="filter-dot filter-dot-cyan"></span> Cyan</button>
+              <button type="button" data-filter="color" data-filter-value="purpurova"><span class="filter-dot filter-dot-magenta"></span> Purpurová</button>
+              <button type="button" data-filter="color" data-filter-value="yellow"><span class="filter-dot filter-dot-yellow"></span> Yellow</button>
+              <button type="button" data-filter="color" data-filter-value="multipack"><span class="filter-dot filter-dot-multi"></span> Multipack</button>
+
+              <div class="filter-divider"></div>
+
+              <h2>Skladom</h2>
+              <button type="button" data-filter="stock" data-filter-value="" class="is-active">Všetka dostupnosť</button>
+              <button type="button" data-filter="stock" data-filter-value="instock">Skladom</button>
+              <button type="button" data-filter="stock" data-filter-value="10plus">Viac ako 10 ks</button>
             </aside>
 
             <div class="catalog-main">
+              <div class="catalog-quick-filters" aria-label="Rýchle filtre produktov">
+                <button type="button" data-filter="type" data-filter-value="" class="quick-filter quick-filter-all is-active">Všetky</button>
+                <button type="button" data-filter="type" data-filter-value="compatible" class="quick-filter quick-filter-compatible"><span></span> Kompatibilné</button>
+                <button type="button" data-filter="type" data-filter-value="original" class="quick-filter quick-filter-original"><span></span> Originálne</button>
+                <button type="button" data-filter="type" data-filter-value="renovated" class="quick-filter quick-filter-renovated"><span></span> Renovované</button>
+                <button type="button" data-filter="stock" data-filter-value="instock" class="quick-filter quick-filter-stock">✓ Skladom</button>
+              </div>
+
               <div class="catalog-toolbar">
                 <div>
                   <div data-catalog-status>Načítavam produkty...</div>

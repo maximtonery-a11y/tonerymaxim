@@ -11,10 +11,12 @@
   let currentBrand = "";
   let currentCategory = "";
   let currentType = "";
+  let currentColor = "";
+  let currentStock = "";
   let modalInstalled = false;
 
   function catalogCacheKey() {
-    return [CATALOG_CACHE_VERSION, currentPage, currentSearch || "all", currentPrinter || "all", currentBrand || "all", currentCategory || "all", currentType || "all"].join(":");
+    return [CATALOG_CACHE_VERSION, currentPage, currentSearch || "all", currentPrinter || "all", currentBrand || "all", currentCategory || "all", currentType || "all", currentColor || "all", currentStock || "all"].join(":");
   }
 
   function readCatalogCache() {
@@ -89,6 +91,8 @@
         "ostatne-komponenty": "Ostatné komponenty",
       },
       type: { compatible: "Kompatibilné", original: "Originálne", renovated: "Renovované" },
+      color: { cierna: "Čierna", cyan: "Cyan", purpurova: "Purpurová", yellow: "Yellow", multipack: "Multipack" },
+      stock: { instock: "Skladom", "expedujeme-dnes": "Expedujeme dnes", "10plus": "Viac ako 10 ks" },
     };
     return labels[kind]?.[value] || value || "";
   }
@@ -105,6 +109,8 @@
     setOrDelete("brand", currentBrand);
     setOrDelete("category", currentCategory);
     setOrDelete("type", currentType);
+    setOrDelete("color", currentColor);
+    setOrDelete("stock", currentStock);
     url.searchParams.delete("search");
     url.searchParams.delete("q");
     window.history.replaceState({}, "", url.toString());
@@ -115,6 +121,8 @@
       currentBrand ? { kind: "brand", label: `Značka: ${filterLabel("brand", currentBrand)}` } : null,
       currentCategory ? { kind: "category", label: `Kategória: ${filterLabel("category", currentCategory)}` } : null,
       currentType ? { kind: "type", label: `Typ: ${filterLabel("type", currentType)}` } : null,
+      currentColor ? { kind: "color", label: `Farba: ${filterLabel("color", currentColor)}` } : null,
+      currentStock ? { kind: "stock", label: `${filterLabel("stock", currentStock)}` } : null,
       currentPrinter ? { kind: "printer", label: `Hľadanie: ${currentPrinter}` } : null,
       currentSearch ? { kind: "search", label: `Hľadanie: ${currentSearch}` } : null,
     ].filter(Boolean);
@@ -124,6 +132,8 @@
     if (kind === "brand") currentBrand = "";
     if (kind === "category") currentCategory = "";
     if (kind === "type") currentType = "";
+    if (kind === "color") currentColor = "";
+    if (kind === "stock") currentStock = "";
     if (kind === "printer") currentPrinter = "";
     if (kind === "search") {
       currentSearch = "";
@@ -148,7 +158,9 @@
       const active =
         (kind === "brand" && value === currentBrand) ||
         (kind === "category" && value === currentCategory) ||
-        (kind === "type" && value === currentType);
+        (kind === "type" && value === currentType) ||
+        (kind === "color" && value === currentColor) ||
+        (kind === "stock" && value === currentStock);
       button.classList.toggle("is-active", active);
     });
 
@@ -631,6 +643,8 @@
       if (currentBrand) params.set("brand", currentBrand);
       if (currentCategory) params.set("category", currentCategory);
       if (currentType) params.set("type", currentType);
+      if (currentColor) params.set("color", currentColor);
+      if (currentStock) params.set("stock", currentStock);
 
       const response = await fetch(`/api/products?${params.toString()}`, {
         headers: { Accept: "application/json" },
@@ -666,6 +680,8 @@
     currentBrand = (url.searchParams.get("brand") || "").trim();
     currentCategory = (url.searchParams.get("category") || "").trim();
     currentType = (url.searchParams.get("type") || "").trim();
+    currentColor = (url.searchParams.get("color") || "").trim();
+    currentStock = (url.searchParams.get("stock") || "").trim();
 
     if (currentBrand && !["HP", "Canon", "Brother"].includes(currentBrand)) {
       const moreBrands = document.querySelector("[data-more-brands]");
@@ -701,6 +717,8 @@
         if (kind === "brand") currentBrand = value;
         if (kind === "category") currentCategory = value;
         if (kind === "type") currentType = value;
+        if (kind === "color") currentColor = value;
+        if (kind === "stock") currentStock = value;
 
         currentPage = 1;
         loadProducts();

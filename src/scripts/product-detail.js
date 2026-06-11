@@ -146,6 +146,297 @@
     `;
   }
 
+
+
+  function colorKey(value) {
+    const c = String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (c.includes("cier") || c.includes("black") || c === "k") return "black";
+    if (c.includes("cyan") || c.includes("azur") || c.includes("modr")) return "cyan";
+    if (c.includes("purp") || c.includes("magenta") || c.includes("cerv") || c.includes("ruž") || c.includes("ruz")) return "magenta";
+    if (c.includes("yellow") || c.includes("zlt") || c.includes("žlt")) return "yellow";
+    return "";
+  }
+
+  function colorLabelByKey(key) {
+    return {
+      black: "Black",
+      cyan: "Cyan",
+      magenta: "Purpurová",
+      yellow: "Yellow",
+    }[key] || "Farba";
+  }
+
+  function extractProductCodes(product) {
+    const text = `${product?.sku || ""} ${product?.name || ""}`.toUpperCase();
+    const codes = [];
+    const patterns = [
+      /\bW\d{4}[A-Z]?\b/g,
+      /\b(?:CF|CE|CB|Q)\d{3}[A-Z]{0,2}\b/g,
+      /\bCRG[-\s]?\d{3,4}[A-Z]{0,3}\b/g,
+      /\b(?:PGI|CLI|PG|CL)\d{2,4}[A-Z]{0,3}\b/g,
+      /\bT\d{3,5}[A-Z]{0,4}\b/g,
+      /\b[A-Z]{2,5}[-\s]?\d{2,5}[A-Z]{0,4}\b/g,
+    ];
+
+    patterns.forEach((pattern) => {
+      for (const match of text.matchAll(pattern)) {
+        const code = match[0].replace(/\s+/g, "").replace(/CRG(\d)/, "CRG-$1").toUpperCase();
+        if (!codes.includes(code)) codes.push(code);
+      }
+    });
+
+    return codes;
+  }
+
+  function productDisplayCode(product) {
+    return extractProductCodes(product)[0] || String(product?.sku || "").toUpperCase() || String(product?.name || "").split(/\s+/).slice(0, 2).join(" ");
+  }
+
+  function seriesSearchKeyFromCode(code) {
+    const clean = String(code || "").toUpperCase().replace(/\s+/g, "");
+    let match = clean.match(/^W(\d{3})\d[A-Z]?$/);
+    if (match) return `W${match[1]}`;
+
+    match = clean.match(/^(CF|CE|CB)(\d{2})\d[A-Z]{0,2}$/);
+    if (match) return `${match[1]}${match[2]}`;
+
+    match = clean.match(/^(CRG-?\d{3,4})[A-Z]{1,3}$/);
+    if (match) return match[1].replace(/CRG(\d)/, "CRG-$1");
+
+    match = clean.match(/^(PGI|CLI|PG|CL)(\d{2,4})[A-Z]{1,3}$/);
+    if (match) return `${match[1]}${match[2]}`;
+
+    match = clean.match(/^(T\d{3,4})[A-Z]{1,4}$/);
+    if (match) return match[1];
+
+    match = clean.match(/^(TN|LC|DR|BU|WT)(\d{2,5})[A-Z]{0,4}$/);
+    if (match) return `${match[1]}${match[2]}`;
+
+    return "";
+  }
+
+  function seriesSearchKey(product) {
+    const codes = extractProductCodes(product);
+    for (const code of codes) {
+      const key = seriesSearchKeyFromCode(code);
+      if (key) return key;
+    }
+    return "";
+  }
+
+  function sameSeries(product, candidate, key) {
+    const cleanKey = String(key || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (!cleanKey) return false;
+    const candidateCodes = extractProductCodes(candidate).map((code) => code.replace(/[^A-Z0-9]/g, ""));
+    if (candidateCodes.some((code) => code.startsWith(cleanKey))) return true;
+    const text = `${candidate?.sku || ""} ${candidate?.name || ""}`.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    return text.includes(cleanKey);
+  }
+
+  function buildSeriesColorItem(product) {
+    const key = colorKey(product?.color || product?.name || "");
+    if (!key) return null;
+    return {
+      id: String(product?.id || product?.sku || product?.slug || product?.name || ""),
+      code: productDisplayCode(product),
+      label: colorLabelByKey(key),
+      dot: key,
+      url: product?.detail_url || `/produkt/${product?.slug || product?.id || ""}`,
+    };
+  }
+
+  function seriesColorsHtml(items) {
+    if (!items.length) return "";
+    return `
+      <div class="series-colors-strip" aria-label="Ďalšie farby série">
+        <strong>Ďalšie farby:</strong>
+        <div class="series-color-pills">
+          ${items.map((item) => `
+            <a class="series-color-pill series-color-pill--${item.dot}" href="${esc(item.url)}" title="${esc(item.code)} ${esc(item.label)}">
+              <span aria-hidden="true"></span>${esc(item.label)}
+            </a>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  async function hydrateSeriesColors(product) {
+    const holder = document.querySelector("[data-series-colors]");
+    if (!holder) return;
+
+    const key = seriesSearchKey(product);
+    if (!key) return;
+
+    try {
+      const currentId = String(product?.id || product?.sku || product?.slug || "");
+      const currentColor = colorKey(product?.color || product?.name || "");
+      const products = await fetchProductsBySearch(key, 96);
+      const sameType = String(product?.product_type_key || "");
+      const pickedByColor = new Map();
+
+      products
+        .filter((item) => String(item?.id || item?.sku || item?.slug || "") !== currentId)
+        .filter((item) => !sameType || item.product_type_key === sameType)
+        .filter((item) => sameSeries(product, item, key))
+        .forEach((item) => {
+          const itemColor = colorKey(item?.color || item?.name || "");
+          if (!itemColor || itemColor === currentColor || pickedByColor.has(itemColor)) return;
+          const built = buildSeriesColorItem(item);
+          if (built) pickedByColor.set(itemColor, built);
+        });
+
+      const order = ["black", "cyan", "magenta", "yellow"];
+      const items = order.map((itemColor) => pickedByColor.get(itemColor)).filter(Boolean);
+      if (items.length < 1) return;
+      holder.innerHTML = seriesColorsHtml(items);
+    } catch {
+      holder.innerHTML = "";
+    }
+  }
+
+  function isSetColorAvailable(product) {
+    return product && Number(product.price || 0) > 0 && product.stock_status === "instock";
+  }
+
+  function seriesPackName(key) {
+    const clean = String(key || "").toUpperCase();
+    return clean ? `${clean} CMYK sada` : "CMYK sada";
+  }
+
+  function buildSeriesPackHtml(pack) {
+    if (!pack || !pack.items?.length) return "";
+    return `
+      <div class="series-pack-card" data-series-pack-card>
+        <div class="series-pack-head">
+          <span class="series-pack-icon">CMYK</span>
+          <div>
+            <strong>Výhodná sada ${esc(pack.keyLabel)}</strong>
+            <small>4 farby v jednej sade so zľavou 5 % oproti nákupu po kusoch.</small>
+          </div>
+        </div>
+
+        <div class="series-pack-items">
+          ${pack.items.map((item) => `
+            <a class="series-pack-item series-pack-item--${item.colorKey}" href="${esc(item.detail_url || `/produkt/${item.slug || item.id}`)}" title="${esc(item.name)}">
+              <span aria-hidden="true"></span>
+              <strong>${esc(item.code)}</strong>
+              <small>${esc(colorLabelByKey(item.colorKey))}</small>
+            </a>
+          `).join("")}
+        </div>
+
+        <div class="series-pack-price">
+          <span>
+            <small>Samostatne ${money(pack.originalTotal)}</small>
+            <strong>Sada ${money(pack.discountedTotal)}</strong>
+          </span>
+          <em>Ušetríte ${money(pack.saving)}</em>
+          <button type="button" data-add-series-pack>Pridať sadu do košíka</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function makeSeriesPackItem(product, itemColor) {
+    return {
+      ...product,
+      colorKey: itemColor,
+      code: productDisplayCode(product),
+      price: Number(product.price || 0),
+      detail_url: product.detail_url || `/produkt/${product.slug || product.id || ""}`,
+    };
+  }
+
+  function buildSeriesPack(product, candidates, key) {
+    const sameType = String(product?.product_type_key || "");
+    const byColor = new Map();
+    const currentColor = colorKey(product?.color || product?.name || "");
+
+    if (currentColor && isSetColorAvailable(product)) {
+      byColor.set(currentColor, makeSeriesPackItem(product, currentColor));
+    }
+
+    const sorted = [...candidates]
+      .filter((item) => !sameType || item.product_type_key === sameType)
+      .filter((item) => sameSeries(product, item, key))
+      .filter(isSetColorAvailable)
+      .sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+
+    sorted.forEach((item) => {
+      const itemColor = colorKey(item?.color || item?.name || "");
+      if (!itemColor || byColor.has(itemColor)) return;
+      byColor.set(itemColor, makeSeriesPackItem(item, itemColor));
+    });
+
+    const order = ["black", "cyan", "magenta", "yellow"];
+    const items = order.map((itemColor) => byColor.get(itemColor)).filter(Boolean);
+    if (items.length !== 4) return null;
+
+    const originalTotal = items.reduce((sum, item) => sum + Number(item.price || 0), 0);
+    if (originalTotal <= 0) return null;
+
+    const discountedTotal = Math.round(originalTotal * 0.95 * 100) / 100;
+    return {
+      key,
+      keyLabel: seriesPackName(key),
+      items,
+      originalTotal,
+      discountedTotal,
+      saving: Math.round((originalTotal - discountedTotal) * 100) / 100,
+    };
+  }
+
+  function addSeriesPackToCart(pack) {
+    if (!pack?.items?.length) return;
+
+    const unitFactor = 0.95;
+    pack.items.forEach((item) => {
+      addToCart({
+        ...item,
+        id: `${item.id || item.sku || item.code}:series-pack-5`,
+        sku: `${item.sku || item.code || item.id}-SADA`,
+        name: `${item.name} – súčasť ${pack.keyLabel} (-5 %)`,
+        price: Math.round(Number(item.price || 0) * unitFactor * 100) / 100,
+        qty: 1,
+        product_type_key: "series_pack_item",
+        product_type_label: "Súčasť výhodnej sady",
+      }, 1);
+    });
+  }
+
+  async function hydrateSeriesPack(product) {
+    const holder = document.querySelector("[data-series-pack]");
+    if (!holder) return;
+
+    const key = seriesSearchKey(product);
+    if (!key) return;
+
+    try {
+      const products = await fetchProductsBySearch(key, 96);
+      const pack = buildSeriesPack(product, products, key);
+      if (!pack) {
+        holder.innerHTML = "";
+        return;
+      }
+
+      holder.innerHTML = buildSeriesPackHtml(pack);
+      holder.querySelector("[data-add-series-pack]")?.addEventListener("click", (event) => {
+        addSeriesPackToCart(pack);
+        const button = event.currentTarget;
+        const original = button.textContent;
+        button.textContent = "Sada pridaná ✓";
+        button.disabled = true;
+        setTimeout(() => {
+          button.textContent = original;
+          button.disabled = false;
+        }, 1400);
+      });
+    } catch {
+      holder.innerHTML = "";
+    }
+  }
+
   function addToCart(product, qty) {
     const cart = readCart();
     const id = String(product.id || product.sku || product.name);
@@ -651,6 +942,8 @@
           </div>
 
           ${bulkDiscountNoticeHtml(product)}
+          <div data-series-colors></div>
+          <div data-series-pack></div>
         </div>
 
         <aside class="purchase-panel">
@@ -836,6 +1129,8 @@
       }
     });
 
+    hydrateSeriesColors(product);
+    hydrateSeriesPack(product);
     hydrateExtraProducts(product);
 
     root.querySelectorAll("[data-show-compatible]").forEach((button) => {

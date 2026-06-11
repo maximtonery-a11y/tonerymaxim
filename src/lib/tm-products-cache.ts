@@ -316,14 +316,30 @@ function matchesCategory(product: TmProduct, category: string) {
   return text.includes(normalize(category));
 }
 
-export function filterProducts(products: TmProduct[], filters: { search?: string; brand?: string; category?: string; type?: string; printer?: string }) {
+export function filterProducts(products: TmProduct[], filters: { search?: string; brand?: string; category?: string; type?: string; printer?: string; color?: string; stock?: string }) {
   const search = normalize(filters.search || "");
   const compactSearch = compactKey(filters.search || "");
   const brand = normalize(filters.brand || "");
   const printer = normalize(filters.printer || "");
+  const color = normalize(filters.color || "");
+  const stock = normalize(filters.stock || "");
+
   return products.filter((product) => {
     const text = product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`);
     if (filters.type && product.product_type_key !== filters.type) return false;
+    if (stock === "instock" && product.stock_status !== "instock") return false;
+    if (stock === "expedujeme-dnes" && product.stock_status !== "instock") return false;
+    if (stock === "10plus" && Number(product.stock_quantity || 0) < 10) return false;
+    if (color) {
+      const productColor = normalize(product.color || "");
+      const textForColor = product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`);
+      const isBlack = color === "cierna" && (productColor.includes("cier") || productColor.includes("black") || textForColor.includes("black"));
+      const isCyan = color === "cyan" && (productColor.includes("cyan") || productColor.includes("azur") || textForColor.includes("cyan"));
+      const isMagenta = color === "purpurova" && (productColor.includes("purp") || productColor.includes("magenta") || textForColor.includes("magenta"));
+      const isYellow = color === "yellow" && (productColor.includes("yellow") || productColor.includes("zlt") || textForColor.includes("yellow"));
+      const isMultipack = color === "multipack" && (productColor.includes("cmyk") || productColor.includes("multi") || textForColor.includes("multipack") || textForColor.includes("cmyk"));
+      if (!(isBlack || isCyan || isMagenta || isYellow || isMultipack)) return false;
+    }
     if (brand) {
       if (brand === "hp") { if (!/\bhp\b/.test(text) && !text.includes("hewlett packard")) return false; }
       else if (!text.includes(brand)) return false;

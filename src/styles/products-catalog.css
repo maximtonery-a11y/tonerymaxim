@@ -978,3 +978,81 @@ button.catalog-filter-chip:hover {
     padding: 24px;
   }
 }
+
+/* Quick filters above product listing */
+.catalog-quick-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 14px;
+}
+
+.quick-filter {
+  min-height: 38px;
+  border: 1px solid #d9e6f4;
+  border-radius: 999px;
+  background: #fff;
+  color: #071b3a;
+  padding: 0 14px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(7, 27, 58, .04);
+}
+
+.quick-filter:hover {
+  background: #f5f9ff;
+  border-color: #bcd4f3;
+}
+
+.quick-filter span,
+.filter-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+.quick-filter-compatible span { background: #0f9f57; }
+.quick-filter-original span { background: #155eef; }
+.quick-filter-renovated span { background: #ff6b14; }
+
+.quick-filter.is-active {
+  border-color: #071b3a;
+  background: #071b3a;
+  color: #fff;
+}
+
+.quick-filter-compatible.is-active { background: #ecfdf3; color: #087333; border-color: #9ee7bd; }
+.quick-filter-original.is-active { background: #eff6ff; color: #1049b4; border-color: #b7d1ff; }
+.quick-filter-renovated.is-active { background: #fff4ea; color: #c24a00; border-color: #ffcaa8; }
+.quick-filter-stock.is-active { background: #ecfdf3; color: #087333; border-color: #9ee7bd; }
+
+.filter-dot-black { background: #111827; }
+.filter-dot-cyan { background: #06b6d4; }
+.filter-dot-magenta { background: #d6007f; }
+.filter-dot-yellow { background: #facc15; box-shadow: inset 0 0 0 1px rgba(7, 27, 58, .18); }
+.filter-dot-multi { background: linear-gradient(90deg, #06b6d4 0 25%, #d6007f 25% 50%, #facc15 50% 75%, #111827 75% 100%); }
+
+.catalog-filter button.is-active {
+  background: #071b3a;
+  color: #fff;
+}
+
+.catalog-filter button.is-active .filter-dot {
+  box-shadow: 0 0 0 2px rgba(255,255,255,.75);
+}
+
+@media (max-width: 900px) {
+  .catalog-quick-filters {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .quick-filter {
+    white-space: nowrap;
+  }
+}
