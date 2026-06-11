@@ -182,6 +182,25 @@
   margin-bottom: 7px;
 }
 
+.auth-benefits.is-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.auth-benefits.is-grid .auth-benefit-card {
+  padding: 20px;
+  min-height: 116px;
+}
+
+.auth-benefits.is-grid .auth-benefit-card strong {
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.auth-benefits.is-grid .auth-benefit-card p {
+  margin: 0;
+}
+
 .account-shell {
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -1318,4 +1337,10 @@
 .tm-btn:disabled {
   opacity: .65;
   cursor: wait;
+}
+
+@media (max-width: 900px) {
+  .auth-benefits.is-grid {
+    grid-template-columns: 1fr;
+  }
 }

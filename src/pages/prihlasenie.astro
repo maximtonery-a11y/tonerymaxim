@@ -27,7 +27,7 @@ const logout = Astro.url.searchParams.get("logout") === "1";
         <section class="auth-card">
           <img class="auth-logo" src="/images/logo.png" alt="ToneryMaxim" />
           <h1>Prihlásenie</h1>
-          <p>Vitajte späť. Prihláste sa do svojho účtu a objednajte tonery rýchlejšie.</p>
+          <p>Prihláste sa do svojho účtu a vybavte opakovaný nákup, reklamáciu alebo kontrolu objednávok rýchlejšie.</p>
 
           <div class:list={["auth-alert", logout && "is-success"]} data-auth-message hidden={!logout}>{logout ? "Boli ste odhlásený." : ""}</div>
 
@@ -53,10 +53,12 @@ const logout = Astro.url.searchParams.get("logout") === "1";
           <p class="auth-switch">Nemáte účet? <a href="/registracia">Registrovať sa</a></p>
         </section>
 
-        <section class="auth-benefits">
-          <div class="auth-benefit-card"><strong>Rýchle objednanie</strong><p>Uložené tlačiarne a produkty budete mať vždy pripravené.</p></div>
-          <div class="auth-benefit-card"><strong>Objednať znova</strong><p>Opakovanú objednávku vybavíte na pár klikov.</p></div>
-          <div class="auth-benefit-card"><strong>Rýchla reklamácia</strong><p>Reklamáciu vytvoríte priamo z konkrétnej objednávky.</p></div>
+        <section class="auth-benefits is-grid" aria-label="Výhody prihlásenia">
+          <div class="auth-benefit-card"><strong>🖨️ Moje tlačiarne</strong><p>Uložené modely a odporúčané náplne bez hľadania.</p></div>
+          <div class="auth-benefit-card"><strong>📦 História objednávok</strong><p>Objednávky, faktúry a stav nákupu na jednom mieste.</p></div>
+          <div class="auth-benefit-card"><strong>🎁 Vernostné body</strong><p>Prehľad bodov, kupónov a odmien na ďalší nákup.</p></div>
+          <div class="auth-benefit-card"><strong>⚡ Objednať znova</strong><p>Poslednú objednávku vložíte do košíka na 1 klik.</p></div>
+          <div class="auth-benefit-card"><strong>🔄 Rýchla reklamácia</strong><p>Reklamáciu vytvoríte priamo z konkrétnej objednávky.</p></div>
         </section>
       </main>
       <Footer />
