@@ -1,0 +1,148 @@
+---
+import "../../styles/global.css";
+import "../../styles/product-design.css";
+
+const product = {
+  name: "HP 937 Yellow",
+  subtitle: "kompatibilná náplň Premium",
+  image: "/images/products/hp-937-yellow.png",
+  price: "27,68 €",
+  badge: "KOMPATIBILNÝ",
+  stock: "Skladom 19 ks",
+  delivery: "Doručenie zajtra",
+  color: "Žltá",
+  yield: "1 450 strán",
+  warranty: "24 mes. záruka",
+  printers: ["HP OfficeJet Pro 9110e", "HP OfficeJet Pro 9120e", "HP OfficeJet Pro 9130e", "HP OfficeJet Pro 9720e"],
+};
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detail produktu – ToneryMaxim</title>
+    <link href="https://fonts.cdnfonts.com/css/satoshi" rel="stylesheet" />
+  </head>
+  <body>
+<main class="tm-design-page tm-detail-page-v3">
+  <a class="tm-design-back" href="/produkty">← Späť na produkty</a>
+
+  <section class="tm-product-hero tm-product-hero--compatible tm-detail-hero-v3">
+    <div class="tm-product-media">
+      <div class="tm-thumbs" aria-label="Galéria produktu">
+        <button class="is-active"><span>HP</span></button>
+        <button><span>HP</span></button>
+        <button><span>HP</span></button>
+      </div>
+      <div class="tm-main-photo">
+        <img src={product.image} alt={product.name} onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';" />
+        <div class="tm-photo-fallback">HP</div>
+        <button class="tm-photo-zoom" type="button" aria-label="Zväčšiť obrázok">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"/><path d="m16 16 5 5"/><path d="M10.5 7.5v6"/><path d="M7.5 10.5h6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="tm-product-info tm-detail-info-v3">
+      <div class="tm-detail-brand">HP</div>
+      <div class="tm-kicker-row">
+        <span class="tm-type-badge">{product.badge}</span>
+        <span class="tm-rating">★★★★★ <b>4.9</b></span>
+      </div>
+
+      <h1>{product.name}</h1>
+      <p class="tm-subtitle">{product.subtitle}</p>
+
+      <div class="tm-compat-preview">
+        <span>Funguje v tlačiarňach</span>
+        <strong>{product.printers[0]}, {product.printers[1]}</strong>
+        <small>+ 37 ďalších modelov</small>
+      </div>
+
+      <div class="tm-quick-specs tm-quick-specs--single-row">
+        <span class="tm-spec-pill tm-spec-pill--color"><i></i>{product.color}</span>
+        <span class="tm-spec-pill">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+          {product.yield}
+        </span>
+        <span class="tm-spec-pill">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V6z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>
+          {product.warranty}
+        </span>
+      </div>
+    </div>
+
+    <aside class="tm-buy-card tm-buy-card-v3">
+      <div class="tm-price-row">
+        <div>
+          <span class="tm-vat">s DPH</span>
+          <strong>{product.price}</strong>
+        </div>
+        <span class="tm-stock-dot">{product.stock}</span>
+      </div>
+
+      <div class="tm-qty-buy">
+        <div class="tm-qty">
+          <button>-</button>
+          <input value="1" aria-label="Množstvo" />
+          <button>+</button>
+        </div>
+        <button class="tm-add-cart">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7z"/><path d="M5 6 4 3H2"/><path d="M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/><path d="M18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/></svg>
+          Pridať do košíka
+        </button>
+      </div>
+
+      <div class="tm-buy-notes">
+        <span>✓ {product.delivery}</span>
+        <span>✓ 24 mesiacov záruka</span>
+        <span>✓ Pomôžeme s výberom</span>
+      </div>
+    </aside>
+  </section>
+
+  <section class="tm-section-grid tm-section-grid-v3">
+    <article class="tm-soft-card tm-compatible-card tm-compatible-card-v3">
+      <div>
+        <span class="tm-section-label">Kompatibilita</span>
+        <h2>Overte si tlačiareň pred nákupom</h2>
+      </div>
+      <div class="tm-printer-list">
+        {product.printers.map((printer) => <span>{printer}</span>)}
+      </div>
+    </article>
+
+    <article class="tm-soft-card tm-why-card-v3">
+      <span class="tm-section-label">Prečo ToneryMaxim</span>
+      <div class="tm-benefit-list tm-benefit-list-v3">
+        <span><b class="tm-benefit-icon tm-benefit-icon--green"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V6z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></b>17+ rokov skúseností</span>
+        <span><b class="tm-benefit-icon tm-benefit-icon--blue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 21 8l-9 5-9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></b>30 000+ objednávok</span>
+        <span><b class="tm-benefit-icon tm-benefit-icon--orange"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg></b>Rýchle doručenie zo skladu</span>
+        <span><b class="tm-benefit-icon tm-benefit-icon--violet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 14.2 6.3 18 5.6l-.7 3.8L20.5 12l-3.2 2.6.7 3.8-3.8-.7L12 21l-2.2-3.3-3.8.7.7-3.8L3.5 12l3.2-2.6L6 5.6l3.8.7z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg></b>Overená kvalita produktov</span>
+      </div>
+    </article>
+  </section>
+
+  <section class="tm-detail-bottom-bar" aria-label="Výhody nákupu">
+    <div>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 14.2 6.3 18 5.6l-.7 3.8L20.5 12l-3.2 2.6.7 3.8-3.8-.7L12 21l-2.2-3.3-3.8.7.7-3.8L3.5 12l3.2-2.6L6 5.6l3.8.7z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
+      <span>Overená kvalita produktov</span>
+    </div>
+    <div>
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="tm-leaf"><path d="M20 4c-7.5.6-12.8 3.8-15 9.4-1.2 3.2.5 5.9 3.5 6.2 5.6.6 9.9-5.5 11.5-15.6Z"/><path d="M5 19c3.6-5 7.6-8 12-9"/></svg>
+      <span>Šetrné k prírode</span>
+    </div>
+    <div>
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="tm-lock"><path d="M7 11V8a5 5 0 0 1 10 0v3"/><path d="M5 11h14v10H5z"/><path d="M12 15v2"/></svg>
+      <span>Bezpečný nákup</span>
+    </div>
+    <div>
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="tm-heart"><path d="M20.8 5.6c-1.8-1.9-4.7-1.9-6.5 0L12 8l-2.3-2.4c-1.8-1.9-4.7-1.9-6.5 0-1.8 1.9-1.8 5 0 6.9L12 21l8.8-8.5c1.8-1.9 1.8-5 0-6.9Z"/></svg>
+      <span>Zákaznícka podpora</span>
+    </div>
+  </section>
+</main>
+  </body>
+</html>

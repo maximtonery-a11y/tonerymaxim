@@ -1,0 +1,128 @@
+---
+import "../../styles/global.css";
+import "../../styles/printer-finder.css";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
+import "../../styles/footer.css";
+
+const brandParam = String(Astro.params.brand || "");
+const brandMap: Record<string, string> = {
+  hp: "HP",
+  canon: "Canon",
+  brother: "Brother",
+  epson: "Epson",
+  xerox: "Xerox",
+  samsung: "Samsung",
+  lexmark: "Lexmark",
+  kyocera: "Kyocera",
+  oki: "OKI",
+  ricoh: "Ricoh",
+  "konica-minolta": "Konica Minolta",
+  utax: "Utax",
+  panasonic: "Panasonic",
+  toshiba: "Toshiba",
+  dell: "Dell",
+};
+const selectedBrand = brandMap[brandParam.toLowerCase()] || brandParam;
+const title = `Náplne do tlačiarní ${selectedBrand} | ToneryMaxim.sk`;
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+
+      <main class="printer-finder-page" data-printer-finder data-brand={selectedBrand}>
+        <section class="printer-finder-hero">
+          <div class="wrap printer-finder-hero-inner">
+            <div class="printer-finder-copy">
+              <a class="printer-back-link" href="/">← späť na úvod</a>
+              <p class="eyebrow">Vyhľadanie podľa tlačiarne</p>
+              <h1>Farby a náplne do tlačiarne {selectedBrand}</h1>
+              <p class="lead">Značku už máte vybranú. Vyberte model zo zoznamu alebo začnite písať názov tlačiarne.</p>
+            </div>
+            <div class="printer-brand-card" aria-label={`Vybraná značka ${selectedBrand}`}>
+              <span>Značka</span>
+              <strong>{selectedBrand}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="printer-finder-panel-section">
+          <div class="wrap">
+            <div class="printer-finder-panel">
+              <div class="printer-field printer-field-brand">
+                <label>Značka tlačiarne</label>
+                <button type="button" data-open-brand-list>{selectedBrand}</button>
+              </div>
+
+              <div class="printer-field printer-field-model">
+                <label>Model tlačiarne</label>
+                <div class="printer-model-control">
+                  <input type="search" data-printer-input placeholder="Vyberte alebo začnite písať model" autocomplete="off" />
+                  <button type="button" data-clear-printer hidden aria-label="Vymazať model">×</button>
+                </div>
+                <div class="printer-suggestions" data-printer-suggestions hidden></div>
+              </div>
+
+              <button class="printer-submit" type="button" data-printer-submit disabled>Vyhľadať náplň</button>
+            </div>
+
+            <div class="printer-helper-row">
+              <div class="printer-helper" data-printer-status>Načítavam modely tlačiarní...</div>
+              <div class="printer-helper-note">V rozbaľovacom zozname sú všetky modely pre vybranú značku.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="wrap printer-popular-section">
+          <div class="printer-section-head">
+            <div>
+              <p class="eyebrow">Najvyhľadávanejšie modely</p>
+              <h2>Najčastejšie hľadané tlačiarne {selectedBrand}</h2>
+              <p class="section-lead">Rýchly výber pre zákazníkov, ktorí nechcú prechádzať celý zoznam modelov.</p>
+            </div>
+            <p data-printer-count></p>
+          </div>
+
+          <div class="printer-popular-grid" data-printer-popular-grid></div>
+        </section>
+
+        <section class="wrap printer-help-section">
+          <div class="printer-help-card">
+            <div>
+              <p class="eyebrow">Pomoc s výberom</p>
+              <h2>Neviete presný model tlačiarne?</h2>
+              <p>Napíšte nám označenie tonera, fotku štítku alebo model tlačiarne. Pomôžeme vybrať správnu náplň.</p>
+            </div>
+            <div class="printer-help-actions">
+              <a href="mailto:info@tonerymaxim.sk">Napísať e-mail</a>
+              <a href="tel:+421910123456">Zavolať</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <dialog class="printer-brand-modal" data-brand-modal>
+        <div class="printer-brand-modal-card">
+          <button class="printer-brand-modal-close" type="button" data-close-brand-modal aria-label="Zavrieť">×</button>
+          <h2>Vyberte značku tlačiarne</h2>
+          <p>Po kliknutí sa otvorí stránka pre vybranú značku.</p>
+          <div class="printer-brand-grid" data-brand-grid></div>
+        </div>
+      </dialog>
+
+      <Footer />
+      <FloatingAdvisor />
+    </div>
+
+    <script src="/src/scripts/printer-finder.js"></script>
+  </body>
+</html>

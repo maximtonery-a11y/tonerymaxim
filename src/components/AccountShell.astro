@@ -1,0 +1,80 @@
+---
+import Header from "./Header.astro";
+import Footer from "./Footer.astro";
+import FloatingAdvisor from "./FloatingAdvisor.astro";
+import { customerDisplayName, customerInitials, type CustomerSession } from "../lib/auth-session";
+
+const {
+  title = "Môj účet",
+  subtitle = "Prehľad vašich objednávok, tlačiarní a odmien.",
+  active = "prehlad",
+  user = null,
+} = Astro.props as {
+  title?: string;
+  subtitle?: string;
+  active?: string;
+  user?: CustomerSession | null;
+};
+
+const displayName = customerDisplayName(user);
+const initials = customerInitials(user);
+const email = user?.email || "";
+
+const navItems = [
+  { id: "prehlad", href: "/ucet", icon: "⌂", label: "Prehľad" },
+  { id: "objednavky", href: "/ucet/objednavky", icon: "▣", label: "Objednávky" },
+  { id: "tlaciarne", href: "/ucet/tlaciarne", icon: "▤", label: "Moje tlačiarne" },
+  { id: "reklamacie", href: "/ucet/reklamacie", icon: "◇", label: "Reklamácie" },
+  { id: "vernost", href: "/ucet/vernost", icon: "★", label: "Vernostný program" },
+  { id: "odmeny", href: "/ucet/odmeny", icon: "🎁", label: "Moje odmeny" },
+  { id: "adresy", href: "/ucet/adresy", icon: "⌖", label: "Adresy" },
+  { id: "profil", href: "/ucet/profil", icon: "◎", label: "Profil" },
+];
+---
+
+<div class="page account-page">
+  <Header />
+
+  <main class="account-wrap">
+    <div class="account-shell">
+      <aside class="account-sidebar" data-account-sidebar>
+        <div class="account-user-card">
+          <div class="account-avatar">{initials}</div>
+          <div>
+            <strong>{displayName}</strong>
+            <span>{email}</span>
+          </div>
+        </div>
+
+        <nav class="account-nav" aria-label="Menu účtu">
+          {navItems.map((item) => (
+            <a class:list={["account-nav-link", active === item.id && "is-active"]} href={item.href}>
+              <span>{item.icon}</span>
+              {item.label}
+            </a>
+          ))}
+        </nav>
+
+        <a class="account-logout" href="/api/auth/logout">↪ Odhlásiť sa</a>
+      </aside>
+
+      <section class="account-content">
+        <div class="account-topbar">
+          <div>
+            <p class="account-kicker">Zákaznícka zóna</p>
+            <h1>{title}</h1>
+            <p>{subtitle}</p>
+          </div>
+          <button class="account-menu-toggle" type="button" data-account-menu-toggle>Menu účtu</button>
+        </div>
+
+        <slot />
+      </section>
+    </div>
+  </main>
+
+  <Footer />
+  <FloatingAdvisor />
+</div>
+
+<script src="/src/scripts/account-ui.js"></script>

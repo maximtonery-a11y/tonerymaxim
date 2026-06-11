@@ -1,0 +1,77 @@
+---
+import "../../styles/global.css";
+import "../../styles/footer.css";
+import "../../styles/account.css";
+import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import AccountShell from "../../components/AccountShell.astro";
+
+const customer = readCustomerSession(Astro.cookies);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+const customerName = customerDisplayName(customer);
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moje odmeny | ToneryMaxim.sk</title>
+  </head>
+  <body>
+    <AccountShell user={customer} active="odmeny" title="Moje odmeny" subtitle="Stieracie odmeny, kupóny a výhody na ďalší nákup.">
+      <section class="account-grid-2">
+        <article class="account-panel scratch-panel">
+          <div class="scratch-copy">
+            <span class="scratch-gift">🎁</span>
+            <div>
+              <p class="account-kicker">Mesačná odmena</p>
+              <h2>Zotrite si zľavu</h2>
+              <p>Po registrácii získate možnosť zotrieť si svoju odmenu.</p>
+            </div>
+          </div>
+
+          <div class="reward-scratch-card reward-scratch-card-large">
+            <div class="reward-strip">Zotrite tu a odhaľte zľavu</div>
+            <button class="tm-btn" type="button">Zotrieť odmenu</button>
+          </div>
+        </article>
+
+        <article class="account-panel">
+          <div class="account-panel-head">
+            <div>
+              <h2>Aktívne kupóny</h2>
+              <p class="account-muted">Kupóny pripravené pre ďalší nákup.</p>
+            </div>
+          </div>
+
+          <div class="coupon-card-list">
+            <a class="coupon-card is-percent" href="/produkty">
+              <div><strong>7 % ZĽAVA</strong><small>Platný do 15. 7. 2026</small></div>
+              <span>DAKUJEME7</span>
+            </a>
+            <a class="coupon-card is-delivery" href="/produkty">
+              <div><strong>DOPRAVA ZDARMA</strong><small>Platný do 30. 7. 2026</small></div>
+              <span>DOPRAVAZDARMA</span>
+            </a>
+          </div>
+        </article>
+      </section>
+
+      <section class="account-panel account-gap-top">
+        <div class="account-panel-head">
+          <div>
+            <h2>História odmien</h2>
+            <p class="account-muted">Prehľad zliav a bonusov, ktoré ste získali.</p>
+          </div>
+        </div>
+
+        <div class="reward-history-grid">
+          <div class="reward-history-card"><span>7 %</span><strong>Zľava na ďalší nákup</strong><small>Získané po objednávke TM-202600145</small></div>
+          <div class="reward-history-card"><span>5 %</span><strong>Uvítacia zľava</strong><small>Získané po registrácii</small></div>
+          <div class="reward-history-card"><span>🚚</span><strong>Doprava zdarma</strong><small>Mesačná odmena</small></div>
+          <div class="reward-history-card"><span>10 %</span><strong>Špeciálna zľava</strong><small>Sezónna akcia</small></div>
+        </div>
+      </section>
+    </AccountShell>
+  </body>
+</html>

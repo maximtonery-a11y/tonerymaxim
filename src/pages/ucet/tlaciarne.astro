@@ -1,0 +1,182 @@
+---
+import "../../styles/global.css";
+import "../../styles/footer.css";
+import "../../styles/account.css";
+import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import AccountShell from "../../components/AccountShell.astro";
+
+const customer = readCustomerSession(Astro.cookies);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+const customerName = customerDisplayName(customer);
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moje tlačiarne | ToneryMaxim.sk</title>
+  </head>
+  <body>
+    <AccountShell user={customer} active="tlaciarne" title="Moje tlačiarne" subtitle="Uložené tlačiarne, odporúčané náplne a rýchle opakované objednávky.">
+      <div class="saved-printers-layout">
+        <div class="saved-printers-grid" data-saved-printers-grid>
+          <section class="saved-printer-card" data-printer-card>
+            <div class="saved-printer-icon">🖨️</div>
+            <div>
+              <span class="account-mini-label">✓ Najčastejšie používaná</span>
+              <h3>Brother DCP-L2532DW</h3>
+              <p class="saved-printer-meta">Posledný nákup: 12. 5. 2026. Najvhodnejšie produkty pre túto tlačiareň máte pripravené nižšie.</p>
+              <div class="saved-printer-products">
+                <article class="saved-printer-product account-product-row">
+                  <div>
+                    <strong>Brother TN-2421 kompatibilný toner</strong>
+                    <span>Kompatibilná alternatíva</span>
+                  </div>
+                  <strong>10,28 €</strong>
+                  <div class="account-product-actions">
+                    <a class="account-link-pill is-small" href="/produkt/brother-tn-2421-kompatibilny-toner">Zobraziť</a>
+                    <button class="tm-btn is-green is-small" type="button" data-account-add-product="tn2421-compatible">Objednať</button>
+                  </div>
+                </article>
+                <article class="saved-printer-product account-product-row">
+                  <div>
+                    <strong>Brother DR-2401 optický valec</strong>
+                    <span>Renovovaný / originálny podľa dostupnosti</span>
+                  </div>
+                  <strong>36,27 €</strong>
+                  <div class="account-product-actions">
+                    <a class="account-link-pill is-small" href="/produkty?s=dr2401">Zobraziť</a>
+                    <button class="tm-btn is-green is-small" type="button" data-account-add-product="dr2401">Objednať</button>
+                  </div>
+                </article>
+              </div>
+              <div class="saved-printer-actions">
+                <a class="tm-btn is-green is-small" href="/produkty?printer=Brother+DCP-L2532DW">Zobraziť všetky náplne</a>
+                <button class="tm-btn is-dark is-small" type="button" data-account-add-set="brother-dcp-l2532dw" data-redirect-cart="true">Objednať znova</button>
+                <button class="tm-btn is-danger-soft is-small" type="button" data-remove-printer>Odstrániť</button>
+              </div>
+            </div>
+            <div class="saved-printer-last"><small>Predpokladaná výmena</small><strong>júl 2026</strong></div>
+          </section>
+
+          <section class="saved-printer-card" data-printer-card>
+            <div class="saved-printer-icon">🖨️</div>
+            <div>
+              <h3>HP LaserJet M110w</h3>
+              <p class="saved-printer-meta">Posledný nákup: 2. 4. 2026. Tlačiareň je uložená pre rýchle nájdenie náplne.</p>
+              <div class="saved-printer-products">
+                <article class="saved-printer-product account-product-row">
+                  <div>
+                    <strong>HP W1420A kompatibilný toner</strong>
+                    <span>Odporúčaná náplň</span>
+                  </div>
+                  <strong>12,90 €</strong>
+                  <div class="account-product-actions">
+                    <a class="account-link-pill is-small" href="/produkty?s=w1420a">Zobraziť</a>
+                    <button class="tm-btn is-green is-small" type="button" data-account-add-set="hp-m110w">Objednať</button>
+                  </div>
+                </article>
+              </div>
+              <div class="saved-printer-actions">
+                <a class="tm-btn is-green is-small" href="/produkty?printer=HP+LaserJet+M110w">Zobraziť všetky náplne</a>
+                <button class="tm-btn is-dark is-small" type="button" data-account-add-set="hp-m110w" data-redirect-cart="true">Objednať znova</button>
+                <button class="tm-btn is-danger-soft is-small" type="button" data-remove-printer>Odstrániť</button>
+              </div>
+            </div>
+            <div class="saved-printer-last"><small>Predpokladaná výmena</small><strong>august 2026</strong></div>
+          </section>
+
+          <section class="saved-printer-card" data-printer-card>
+            <div class="saved-printer-icon">🖨️</div>
+            <div>
+              <h3>Canon MF655Cdw</h3>
+              <p class="saved-printer-meta">Farebná tlačiareň uložená pre rýchly výber tonerov Canon CRG-067.</p>
+              <div class="saved-printer-products">
+                <article class="saved-printer-product account-product-row">
+                  <div>
+                    <strong>Canon CRG-067 čierny toner</strong>
+                    <span>Čierny toner</span>
+                  </div>
+                  <strong>24,60 €</strong>
+                  <div class="account-product-actions">
+                    <a class="account-link-pill is-small" href="/produkty?s=crg-067">Zobraziť</a>
+                    <button class="tm-btn is-green is-small" type="button" data-account-add-set="canon-mf655cdw">Objednať</button>
+                  </div>
+                </article>
+                <article class="saved-printer-product account-product-row">
+                  <div>
+                    <strong>Canon CRG-067 multipack</strong>
+                    <span>Farebné tonery</span>
+                  </div>
+                  <strong>podľa výberu</strong>
+                  <div class="account-product-actions">
+                    <a class="account-link-pill is-small" href="/produkty?s=crg-067">Zobraziť</a>
+                    <button class="tm-btn is-green is-small" type="button" data-account-add-set="canon-mf655cdw">Objednať</button>
+                  </div>
+                </article>
+              </div>
+              <div class="saved-printer-actions">
+                <a class="tm-btn is-green is-small" href="/produkty?printer=Canon+MF655Cdw">Zobraziť všetky náplne</a>
+                <button class="tm-btn is-dark is-small" type="button" data-account-add-set="canon-mf655cdw" data-redirect-cart="true">Objednať znova</button>
+                <button class="tm-btn is-danger-soft is-small" type="button" data-remove-printer>Odstrániť</button>
+              </div>
+            </div>
+            <div class="saved-printer-last"><small>Predpokladaná výmena</small><strong>september 2026</strong></div>
+          </section>
+
+          <section class="account-quick-panel">
+            <div class="account-panel-head">
+              <div>
+                <h2>Nakupované naposledy</h2>
+                <p class="account-muted">Produkty, ku ktorým sa zákazníci najčastejšie vracajú.</p>
+              </div>
+              <button class="tm-btn is-green is-small" type="button" data-account-add-set="last-order" data-redirect-cart="true">Vložiť všetko do košíka</button>
+            </div>
+            <div class="quick-products-grid">
+              <article class="quick-product-card">
+                <span class="quick-product-icon">▤</span>
+                <div><strong>Brother TN-2421</strong><p>Kompatibilný toner pre Brother.</p><div class="quick-product-price">10,28 €</div><div class="account-product-actions"><a class="account-link-pill is-small" href="/produkt/brother-tn-2421-kompatibilny-toner">Zobraziť</a><button class="tm-btn is-green is-small" type="button" data-account-add-product="tn2421-compatible">Objednať</button></div></div>
+              </article>
+              <article class="quick-product-card">
+                <span class="quick-product-icon">◉</span>
+                <div><strong>Brother DR-2401</strong><p>Optický valec pre uložené modely.</p><div class="quick-product-price">36,27 €</div><div class="account-product-actions"><a class="account-link-pill is-small" href="/produkty?s=dr2401">Zobraziť</a><button class="tm-btn is-green is-small" type="button" data-account-add-product="dr2401">Objednať</button></div></div>
+              </article>
+              <article class="quick-product-card">
+                <span class="quick-product-icon">▣</span>
+                <div><strong>Kancelársky papier</strong><p>A4 papier ako častý doplnok.</p><div class="quick-product-price">6,88 €</div><div class="account-product-actions"><a class="account-link-pill is-small" href="/produkt/kancelarsky-papier-a4-80g-500-harkov">Zobraziť</a><button class="tm-btn is-green is-small" type="button" data-account-add-product="paper-a4">Objednať</button></div></div>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <aside class="account-add-printer-panel">
+          <h2>Pridať tlačiareň</h2>
+          <p class="account-muted">Vyberte značku a napíšte model tlačiarne. Po napojení účtu sa uloží do databázy zákazníka.</p>
+          <form class="account-add-printer-form" data-add-printer-form>
+            <label class="tm-field">
+              <span>Značka tlačiarne</span>
+              <select class="account-select" name="brand" required>
+                <option value="">Vyberte značku</option>
+                <option>HP</option>
+                <option>Canon</option>
+                <option>Brother</option>
+                <option>Epson</option>
+                <option>Xerox</option>
+                <option>Samsung</option>
+                <option>OKI</option>
+                <option>Kyocera</option>
+              </select>
+            </label>
+            <label class="tm-field">
+              <span>Model tlačiarne</span>
+              <input class="account-input" name="model" placeholder="napr. DCP-L2532DW" required />
+            </label>
+            <button class="tm-btn" type="submit">Uložiť tlačiareň</button>
+            <div class="account-form-note">Toto je zatiaľ vizuálna verzia. Po napojení prihlásenia sa tlačiarne budú ukladať priamo zákazníkovi.</div>
+          </form>
+        </aside>
+      </div>
+    </AccountShell>
+  </body>
+</html>

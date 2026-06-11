@@ -1,0 +1,1321 @@
+:root {
+  --tm-navy: #061b3a;
+  --tm-navy-2: #0b2448;
+  --tm-blue: #1d6cf2;
+  --tm-yellow: #f8bd00;
+  --tm-green: #13a354;
+  --tm-orange: #ff6a1a;
+  --tm-red: #dc2626;
+  --tm-text: #061b3a;
+  --tm-muted: #64748b;
+  --tm-line: #dbe7f4;
+  --tm-soft: #f3f8fd;
+  --tm-card: #ffffff;
+  --tm-shadow: 0 18px 45px rgba(6, 27, 58, .08);
+}
+
+.account-page {
+  background: linear-gradient(180deg, #ffffff 0%, #f3f8fd 44%, #ffffff 100%);
+  color: var(--tm-text);
+  min-height: 100vh;
+}
+
+.account-wrap {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 44px 28px 70px;
+}
+
+.auth-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 64px 28px 90px;
+  display: grid;
+  grid-template-columns: minmax(320px, 470px) 1fr;
+  gap: 42px;
+  align-items: center;
+}
+
+.auth-card,
+.account-panel,
+.account-stat,
+.account-action,
+.account-list-card,
+.account-mini-card {
+  background: var(--tm-card);
+  border: 1px solid var(--tm-line);
+  border-radius: 24px;
+  box-shadow: var(--tm-shadow);
+}
+
+.auth-card {
+  padding: 34px;
+}
+
+.auth-logo {
+  width: 210px;
+  height: auto;
+  margin-bottom: 28px;
+}
+
+.auth-card h1,
+.account-content h1 {
+  margin: 0;
+  font-size: clamp(32px, 4vw, 54px);
+  letter-spacing: -.05em;
+  line-height: .98;
+  color: var(--tm-navy);
+}
+
+.auth-card p,
+.account-topbar p,
+.account-muted {
+  color: var(--tm-muted);
+  line-height: 1.55;
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 26px;
+}
+
+.auth-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.tm-field label {
+  display: block;
+  font-weight: 800;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.tm-field input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--tm-line);
+  border-radius: 14px;
+  padding: 15px 16px;
+  font: inherit;
+  color: var(--tm-text);
+  outline: none;
+  background: #fff;
+}
+
+.tm-field input:focus {
+  border-color: var(--tm-blue);
+  box-shadow: 0 0 0 4px rgba(29,108,242,.09);
+}
+
+.auth-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  font-size: 14px;
+}
+
+.auth-row a,
+.auth-switch a,
+.account-link {
+  color: var(--tm-blue);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.tm-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--tm-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.tm-btn {
+  border: 0;
+  border-radius: 14px;
+  min-height: 52px;
+  padding: 0 22px;
+  background: var(--tm-yellow);
+  color: var(--tm-navy);
+  font-weight: 950;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.tm-btn:hover { transform: translateY(-1px); box-shadow: 0 14px 24px rgba(248,189,0,.24); }
+.tm-btn.is-dark { background: var(--tm-navy); color: #fff; }
+.tm-btn.is-outline { background: #fff; color: var(--tm-navy); border: 1px solid var(--tm-line); }
+.tm-btn.is-green { background: var(--tm-green); color: #fff; }
+
+.auth-switch {
+  margin-top: 18px;
+  text-align: center;
+  color: var(--tm-muted);
+  font-size: 14px;
+}
+
+.auth-benefits {
+  display: grid;
+  gap: 16px;
+}
+
+.auth-benefit-card {
+  background: rgba(255,255,255,.72);
+  border: 1px solid var(--tm-line);
+  border-radius: 22px;
+  padding: 22px;
+}
+
+.auth-benefit-card strong {
+  display: block;
+  font-size: 20px;
+  margin-bottom: 7px;
+}
+
+.account-shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.account-sidebar {
+  background: linear-gradient(180deg, #081a33 0%, #071424 100%);
+  color: #fff;
+  border-radius: 28px;
+  padding: 18px;
+  position: sticky;
+  top: 20px;
+  box-shadow: 0 24px 60px rgba(6,27,58,.16);
+}
+
+.account-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.08);
+  margin-bottom: 14px;
+}
+
+.account-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: var(--tm-navy);
+  font-weight: 950;
+}
+
+.account-user-card span {
+  display: block;
+  color: rgba(255,255,255,.66);
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.account-nav {
+  display: grid;
+  gap: 5px;
+  padding: 8px 0 18px;
+}
+
+.account-nav-link,
+.account-logout {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border-radius: 14px;
+  padding: 13px 14px;
+  color: rgba(255,255,255,.86);
+  text-decoration: none;
+  font-weight: 850;
+  font-size: 14px;
+}
+
+.account-nav-link.is-active,
+.account-nav-link:hover {
+  background: rgba(248,189,0,.16);
+  color: var(--tm-yellow);
+}
+
+.account-logout {
+  color: #ffb4b4;
+  border-top: 1px solid rgba(255,255,255,.1);
+  border-radius: 0;
+  margin-top: 8px;
+}
+
+.account-content {
+  min-width: 0;
+}
+
+.account-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+  align-items: flex-start;
+}
+
+.account-kicker {
+  margin: 0 0 8px;
+  color: var(--tm-blue) !important;
+  font-weight: 950;
+}
+
+.account-menu-toggle {
+  display: none;
+}
+
+.account-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.account-stat {
+  padding: 20px;
+  min-height: 126px;
+}
+
+.account-stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--tm-soft);
+  display: grid;
+  place-items: center;
+  margin-bottom: 14px;
+}
+
+.account-stat small {
+  color: var(--tm-muted);
+  font-weight: 850;
+}
+
+.account-stat strong {
+  display: block;
+  font-size: 32px;
+  letter-spacing: -.04em;
+  margin: 3px 0;
+}
+
+.account-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 22px 0;
+}
+
+.account-action {
+  padding: 22px;
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 16px;
+  text-decoration: none;
+  color: var(--tm-text);
+}
+
+.account-action-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--tm-soft);
+  font-size: 22px;
+}
+
+.account-action strong { display: block; margin-bottom: 5px; }
+.account-action p { margin: 0; color: var(--tm-muted); font-size: 14px; line-height: 1.45; }
+.account-action.is-reward { border-color: rgba(248,189,0,.55); background: linear-gradient(180deg, #fffdf4, #fff); }
+
+.account-grid-2 {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 18px;
+}
+
+.account-panel {
+  padding: 24px;
+}
+
+.account-panel h2 {
+  margin: 0 0 16px;
+  font-size: 24px;
+  letter-spacing: -.03em;
+}
+
+.order-preview {
+  display: grid;
+  gap: 12px;
+}
+
+.order-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--tm-line);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 950;
+  background: #eaf8f0;
+  color: var(--tm-green);
+}
+
+.order-item,
+.coupon-row,
+.account-list-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--tm-line);
+}
+
+.order-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-top: 8px;
+}
+
+.order-total strong { font-size: 26px; }
+
+.coupon-row:last-child,
+.order-item:last-child,
+.account-list-row:last-child { border-bottom: 0; }
+
+.coupon-code {
+  font-weight: 950;
+  color: var(--tm-navy);
+}
+
+.coupon-row small,
+.account-list-row small {
+  display: block;
+  color: var(--tm-muted);
+  margin-top: 4px;
+}
+
+.account-section-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.account-list-card {
+  padding: 20px;
+}
+
+.account-list-card h3 { margin: 0 0 8px; font-size: 20px; }
+.account-list-card p { margin: 0 0 16px; color: var(--tm-muted); line-height: 1.45; }
+
+.printer-card {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.printer-thumb {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  background: var(--tm-soft);
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+}
+
+.reward-scratch-card {
+  border: 1px dashed rgba(248,189,0,.9);
+  background: linear-gradient(135deg, #fff7cf, #fff);
+  border-radius: 22px;
+  padding: 22px;
+  display: grid;
+  gap: 14px;
+}
+
+.reward-strip {
+  min-height: 92px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: repeating-linear-gradient(135deg, #d8dde6 0 8px, #eef2f7 8px 16px);
+  color: var(--tm-navy);
+  font-weight: 950;
+}
+
+.auth-scratch-floating {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 40;
+  background: var(--tm-navy);
+  color: #fff;
+  border-radius: 22px;
+  box-shadow: 0 24px 60px rgba(6,27,58,.22);
+  padding: 18px;
+  width: 280px;
+}
+
+.auth-scratch-floating strong { display: block; font-size: 18px; margin-bottom: 5px; }
+.auth-scratch-floating p { margin: 0 0 14px; color: rgba(255,255,255,.72); font-size: 13px; line-height: 1.4; }
+.auth-scratch-floating .tm-btn { width: 100%; min-height: 44px; }
+
+@media (max-width: 1100px) {
+  .account-shell,
+  .auth-wrap,
+  .account-grid-2 { grid-template-columns: 1fr; }
+  .account-sidebar {
+    display: none;
+    position: fixed;
+    inset: 80px 16px auto 16px;
+    z-index: 60;
+    max-width: 360px;
+  }
+  .account-sidebar.is-open { display: block; }
+  .account-menu-toggle {
+    display: inline-flex;
+    border: 1px solid var(--tm-line);
+    background: #fff;
+    border-radius: 14px;
+    padding: 13px 16px;
+    font-weight: 950;
+    color: var(--tm-navy);
+  }
+  .account-stats { grid-template-columns: repeat(2, 1fr); }
+  .account-actions { grid-template-columns: 1fr; }
+  .account-section-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .account-wrap, .auth-wrap { padding: 28px 16px 52px; }
+  .auth-card { padding: 24px; }
+  .auth-grid-2 { grid-template-columns: 1fr; }
+  .account-topbar { flex-direction: column; }
+  .account-stats { grid-template-columns: 1fr; }
+  .order-head, .order-total, .order-item, .coupon-row, .account-list-row { align-items: flex-start; flex-direction: column; }
+  .auth-scratch-floating { left: 16px; right: 16px; bottom: 16px; width: auto; }
+}
+
+
+/* STEP 2: Moje tlačiarne + rýchly nákup */
+.account-printers-summary {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.account-dashboard-printers {
+  padding: 22px;
+}
+
+.account-dashboard-printers-head,
+.account-panel-head,
+.printer-manager-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.account-dashboard-printers h2,
+.printer-manager-head h2,
+.account-panel-head h2 {
+  margin: 0;
+}
+
+.account-dashboard-printer-list {
+  display: grid;
+  gap: 10px;
+}
+
+.account-dashboard-printer-row {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--tm-line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.account-dashboard-printer-icon,
+.saved-printer-icon,
+.quick-product-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--tm-soft);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.account-dashboard-printer-row strong,
+.quick-product-card strong,
+.saved-printer-card h3 {
+  color: var(--tm-navy);
+}
+
+.account-dashboard-printer-row small {
+  display: block;
+  color: var(--tm-muted);
+  margin-top: 3px;
+}
+
+.account-link-pill {
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--tm-line);
+  color: var(--tm-navy);
+  background: #fff;
+  text-decoration: none;
+  font-weight: 950;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.account-link-pill:hover {
+  border-color: rgba(29,108,242,.35);
+  color: var(--tm-blue);
+}
+
+.saved-printers-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 20px;
+  align-items: start;
+}
+
+.saved-printers-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.saved-printer-card {
+  background: #fff;
+  border: 1px solid var(--tm-line);
+  border-radius: 24px;
+  box-shadow: var(--tm-shadow);
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 62px 1fr auto;
+  gap: 16px;
+  align-items: start;
+  position: relative;
+  overflow: hidden;
+}
+
+.saved-printer-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--tm-blue);
+}
+
+.saved-printer-icon {
+  width: 62px;
+  height: 62px;
+  border-radius: 18px;
+  font-size: 28px;
+}
+
+.saved-printer-card h3 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  letter-spacing: -.03em;
+}
+
+.saved-printer-meta {
+  margin: 0 0 14px;
+  color: var(--tm-muted);
+  line-height: 1.45;
+}
+
+.saved-printer-products {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.saved-printer-product {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--tm-line);
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.saved-printer-product span {
+  color: var(--tm-muted);
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+}
+
+.saved-printer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.tm-btn.is-small,
+.account-link-pill.is-small {
+  min-height: 42px;
+  padding-inline: 16px;
+  font-size: 14px;
+}
+
+.tm-btn.is-danger-soft {
+  background: #fff5f5;
+  color: var(--tm-red);
+  border: 1px solid #fecaca;
+}
+
+.saved-printer-last {
+  min-width: 150px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--tm-soft);
+  text-align: right;
+}
+
+.saved-printer-last small {
+  display: block;
+  color: var(--tm-muted);
+  font-weight: 850;
+  margin-bottom: 3px;
+}
+
+.account-add-printer-panel,
+.account-quick-panel {
+  background: #fff;
+  border: 1px solid var(--tm-line);
+  border-radius: 24px;
+  box-shadow: var(--tm-shadow);
+  padding: 22px;
+}
+
+.account-add-printer-panel {
+  position: sticky;
+  top: 106px;
+}
+
+.account-add-printer-panel h2,
+.account-quick-panel h2 {
+  margin: 0 0 8px;
+}
+
+.account-add-printer-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.account-select,
+.account-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--tm-line);
+  border-radius: 14px;
+  padding: 15px 16px;
+  font: inherit;
+  color: var(--tm-text);
+  outline: none;
+  background: #fff;
+}
+
+.account-select:focus,
+.account-input:focus {
+  border-color: var(--tm-blue);
+  box-shadow: 0 0 0 4px rgba(29,108,242,.09);
+}
+
+.account-form-note {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff9db;
+  color: #7a4d00;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.quick-products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.quick-product-card {
+  border: 1px solid var(--tm-line);
+  background: #fff;
+  border-radius: 20px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.quick-product-card p {
+  margin: 4px 0 12px;
+  color: var(--tm-muted);
+  line-height: 1.35;
+  font-size: 14px;
+}
+
+.quick-product-price {
+  font-weight: 950;
+  font-size: 20px;
+  color: var(--tm-navy);
+  margin-bottom: 10px;
+}
+
+.account-empty-soft {
+  border: 1px dashed var(--tm-line);
+  background: #f8fbff;
+  border-radius: 18px;
+  padding: 18px;
+  color: var(--tm-muted);
+  line-height: 1.45;
+}
+
+.account-mini-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: #eaf8f0;
+  color: var(--tm-green);
+  font-size: 12px;
+  font-weight: 950;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1200px) {
+  .account-printers-summary,
+  .saved-printers-layout { grid-template-columns: 1fr; }
+  .account-add-printer-panel { position: static; }
+  .quick-products-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 780px) {
+  .account-dashboard-printer-row,
+  .saved-printer-card,
+  .quick-product-card {
+    grid-template-columns: 1fr;
+  }
+  .saved-printer-last { text-align: left; }
+  .account-dashboard-printers-head,
+  .account-panel-head,
+  .printer-manager-head {
+    flex-direction: column;
+  }
+}
+
+/* STEP 2B: klikateľné produkty a objednať znova */
+.account-action-button {
+  border: 1px solid var(--tm-line);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.account-action-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(29,108,242,.28);
+}
+
+.account-quick-order-list {
+  gap: 10px;
+}
+
+.account-quick-order-row,
+.account-product-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.account-quick-order-row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--tm-line);
+}
+
+.account-quick-order-row a,
+.account-product-row a {
+  color: var(--tm-navy);
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.account-quick-order-row a:hover,
+.account-product-row a:hover {
+  color: var(--tm-blue);
+}
+
+.account-quick-order-row small,
+.account-product-row small {
+  display: block;
+  margin-top: 3px;
+  color: var(--tm-muted);
+  font-size: 13px;
+}
+
+.account-product-actions,
+.account-order-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.account-order-actions {
+  justify-content: stretch;
+  margin-top: 6px;
+}
+
+.account-order-actions .tm-btn {
+  flex: 1;
+}
+
+.tm-btn.is-added {
+  background: #eaf8f0 !important;
+  color: var(--tm-green) !important;
+  box-shadow: none !important;
+}
+
+.quick-product-card .account-product-actions {
+  justify-content: flex-start;
+}
+
+@media (max-width: 980px) {
+  .account-quick-order-row,
+  .account-product-row {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .account-product-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* STEP 3 + 4: vernost, odmeny, reklamacie */
+.account-sidebar {
+  top: 104px;
+  max-height: calc(100vh - 128px);
+  overflow: auto;
+}
+
+.account-gap-top { margin-top: 18px; }
+
+.loyalty-hero {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.loyalty-hero h2 {
+  font-size: clamp(42px, 5vw, 68px);
+  line-height: .9;
+  margin: 0 0 12px;
+  letter-spacing: -.06em;
+}
+
+.loyalty-progress {
+  height: 12px;
+  border-radius: 999px;
+  background: #e8f1fb;
+  overflow: hidden;
+  margin: 18px 0 10px;
+}
+
+.loyalty-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--tm-blue), var(--tm-green));
+}
+
+.loyalty-value-card {
+  border: 1px solid var(--tm-line);
+  border-radius: 22px;
+  padding: 22px;
+  background: linear-gradient(180deg, #f8fbff, #fff);
+  display: grid;
+  gap: 12px;
+}
+
+.loyalty-value-card span { color: var(--tm-muted); font-weight: 850; }
+.loyalty-value-card strong { font-size: 42px; letter-spacing: -.05em; }
+
+.loyalty-rule-card .account-stat-icon { margin-bottom: 14px; }
+
+.reward-milestones,
+.points-history,
+.coupon-card-list {
+  display: grid;
+  gap: 12px;
+}
+
+.reward-milestone,
+.points-row,
+.coupon-card {
+  border: 1px solid var(--tm-line);
+  border-radius: 18px;
+  padding: 15px;
+  background: #fff;
+}
+
+.reward-milestone {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.reward-milestone.is-current {
+  border-color: rgba(19,163,84,.28);
+  background: #f0fbf5;
+}
+
+.reward-milestone strong,
+.reward-milestone span { display: block; }
+.reward-milestone span { color: var(--tm-muted); margin-top: 3px; }
+.reward-milestone small { color: var(--tm-blue); font-weight: 950; }
+
+.points-row {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.points-row > span {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-weight: 950;
+}
+
+.points-row.is-plus > span { background: #eaf8f0; color: var(--tm-green); }
+.points-row.is-minus > span { background: #fff1f0; color: var(--tm-red); }
+.points-row small { display: block; color: var(--tm-muted); margin-top: 4px; }
+
+.scratch-panel {
+  display: grid;
+  gap: 20px;
+}
+
+.scratch-copy {
+  display: grid;
+  grid-template-columns: 66px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.scratch-gift {
+  width: 66px;
+  height: 66px;
+  border-radius: 22px;
+  background: #fff8e1;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+}
+
+.reward-scratch-card-large .reward-strip {
+  min-height: 130px;
+  font-size: 20px;
+}
+
+.coupon-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  text-decoration: none;
+  color: var(--tm-text);
+}
+
+.coupon-card strong { display: block; font-size: 18px; }
+.coupon-card small { display: block; color: var(--tm-muted); margin-top: 4px; }
+.coupon-card > span { font-weight: 950; color: var(--tm-blue); }
+.coupon-card.is-percent { border-color: rgba(29,108,242,.22); }
+.coupon-card.is-delivery { border-color: rgba(19,163,84,.22); }
+
+.reward-history-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.reward-history-card {
+  border: 1px solid var(--tm-line);
+  border-radius: 20px;
+  background: #fff;
+  padding: 18px;
+}
+
+.reward-history-card span {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: var(--tm-soft);
+  display: grid;
+  place-items: center;
+  font-weight: 950;
+  margin-bottom: 14px;
+}
+
+.reward-history-card strong,
+.reward-history-card small { display: block; }
+.reward-history-card small { color: var(--tm-muted); margin-top: 6px; line-height: 1.35; }
+
+.claims-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 18px;
+  align-items: start;
+}
+
+.claims-list { display: grid; gap: 18px; }
+
+.claim-card { display: grid; gap: 18px; }
+
+.claim-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.claim-id {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: var(--tm-soft);
+  color: var(--tm-blue);
+  font-weight: 950;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.claim-head h2 { margin-bottom: 6px; }
+.claim-head p { margin: 0; color: var(--tm-muted); }
+.status-pill.is-warning { background: #fff8e6; color: #9a5b00; }
+
+.claim-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.claim-step {
+  border: 1px solid var(--tm-line);
+  border-radius: 16px;
+  padding: 12px;
+  background: #fff;
+  color: var(--tm-muted);
+}
+
+.claim-step span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #dbe7f4;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.claim-step.is-done,
+.claim-step.is-active {
+  color: var(--tm-text);
+  border-color: rgba(19,163,84,.22);
+  background: #f6fcf8;
+}
+
+.claim-step.is-done span,
+.claim-step.is-active span { background: var(--tm-green); }
+.claim-step.is-active { box-shadow: 0 12px 30px rgba(19,163,84,.08); }
+
+.claim-note {
+  margin: 0;
+  color: var(--tm-muted);
+  line-height: 1.5;
+}
+
+.claim-form-panel {
+  position: sticky;
+  top: 104px;
+}
+
+.claim-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.claim-form label span {
+  display: block;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.account-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--tm-line);
+  border-radius: 14px;
+  padding: 15px 16px;
+  font: inherit;
+  color: var(--tm-text);
+  outline: none;
+  background: #fff;
+  resize: vertical;
+}
+
+.account-textarea:focus {
+  border-color: var(--tm-blue);
+  box-shadow: 0 0 0 4px rgba(29,108,242,.09);
+}
+
+@media (max-width: 1100px) {
+  .account-sidebar {
+    top: 84px;
+    max-height: calc(100vh - 110px);
+  }
+
+  .loyalty-hero,
+  .claims-layout { grid-template-columns: 1fr; }
+
+  .claim-form-panel { position: static; }
+  .reward-history-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .loyalty-rules-grid,
+  .reward-history-grid,
+  .claim-steps { grid-template-columns: 1fr; }
+  .claim-head,
+  .reward-milestone,
+  .coupon-card { flex-direction: column; align-items: flex-start; }
+}
+
+/* FIX: pevné ľavé menu v zákazníckej zóne na desktope */
+@media (min-width: 1101px) {
+  .account-shell {
+    grid-template-columns: 280px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .account-sidebar {
+    position: fixed;
+    top: 118px;
+    left: max(28px, calc((100vw - 1500px) / 2 + 28px));
+    width: 280px;
+    max-height: calc(100vh - 138px);
+    overflow-y: auto;
+    z-index: 50;
+    box-sizing: border-box;
+  }
+
+  .account-content {
+    min-width: 0;
+  }
+}
+
+/* FIX 2: ľavé menu má zostať v stĺpci a držať sa pri scrollovaní, nie prekrývať obsah */
+@media (min-width: 1101px) {
+  .account-shell {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+
+  .account-sidebar {
+    position: sticky !important;
+    top: 112px !important;
+    left: auto !important;
+    width: auto !important;
+    max-height: calc(100vh - 132px) !important;
+    overflow-y: auto;
+    z-index: 5;
+    box-sizing: border-box;
+    align-self: start;
+  }
+
+  .account-content {
+    min-width: 0;
+    margin-left: 0 !important;
+  }
+}
+
+.auth-alert {
+  margin: 18px 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.auth-alert.is-success {
+  border-color: #bbf7d0;
+  background: #ecfdf3;
+  color: #087443;
+}
+
+.tm-btn:disabled {
+  opacity: .65;
+  cursor: wait;
+}

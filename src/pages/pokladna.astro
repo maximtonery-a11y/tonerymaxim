@@ -1,0 +1,208 @@
+---
+import "../styles/global.css";
+import "../styles/cart.css";
+import "../styles/checkout.css";
+import Header from "../components/Header.astro";
+import "../styles/footer.css";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+
+const title = "Pokladňa | ToneryMaxim.sk";
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+
+  <body>
+    <div class="page checkout-page">
+      <Header />
+
+      <main class="wrap checkout-wrap">
+        <nav class="checkout-progress" aria-label="Priebeh objednávky">
+          <a href="/kosik">1. Košík</a>
+          <span class="is-active">2. Doprava a platba</span>
+          <span>3. Dokončenie</span>
+        </nav>
+
+        <div class="checkout-empty" data-checkout-empty hidden>
+          <h1>Košík je prázdny</h1>
+          <p>Pred pokračovaním do pokladne pridajte produkt do košíka.</p>
+          <a href="/test-produkt">Otvoriť testovací produkt</a>
+        </div>
+
+        <div class="checkout-layout" data-checkout-form>
+          <form class="checkout-form" onsubmit="return false;">
+            <section class="checkout-card">
+              <div class="section-head">
+                <span>1</span>
+                <div>
+                  <h2>Kontakt</h2>
+                  <p>Nákup bez registrácie. Účet si môžete vytvoriť až po objednávke.</p>
+                </div>
+              </div>
+
+              <div class="form-grid two">
+                <label>Email *<input id="email" name="email" type="email" autocomplete="email" required placeholder="vas@email.sk" /></label>
+                <label>Telefón *<input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="+421 900 000 000" /></label>
+              </div>
+            </section>
+
+            <section class="checkout-card">
+              <div class="section-head">
+                <span>2</span>
+                <div>
+                  <h2>Doprava a platba</h2>
+                  <p>Najprv vyberte spôsob doručenia a platby. Fakturačné údaje doplníte až potom.</p>
+                </div>
+              </div>
+
+              <div class="delivery-payment-grid">
+                <div>
+                  <h3 class="subsection-title">Doprava</h3>
+                  <div class="option-stack">
+                    <label class="option-tile compact"><input type="radio" name="shipping" value="dpd_courier" checked /><span class="option-icon">🚚</span><span><strong>DPD kuriér na adresu</strong><small>Doručenie 1–2 pracovné dni</small></span><b>3,90 €</b></label>
+                    <label class="option-tile compact"><input type="radio" name="shipping" value="dpd_pickup" /><span class="option-icon">📍</span><span><strong>DPD Pickup</strong><small>Výdajné miesto podľa výberu</small></span><b>2,90 €</b></label>
+                    <label class="option-tile compact"><input type="radio" name="shipping" value="dpd_box" /><span class="option-icon">📦</span><span><strong>DPD Pickup Box</strong><small>Vyzdvihnutie v boxe alebo Pickup mieste</small></span><b>2,90 €</b></label>
+                    <label class="option-tile compact"><input type="radio" name="shipping" value="gls_courier" /><span class="option-icon">🚛</span><span><strong>GLS kuriér na adresu</strong><small>Doručenie 1–2 pracovné dni</small></span><b>3,90 €</b></label>
+                    <label class="option-tile compact"><input type="radio" name="shipping" value="gls_pickup" /><span class="option-icon">🏪</span><span><strong>GLS ParcelShop / Balíkomat</strong><small>Výdajné miesto alebo balíkomat podľa výberu</small></span><b>2,90 €</b></label>
+                  </div>
+
+                  <div class="pickup-box" data-pickup-box hidden>
+                    <div data-pickup-summary>
+                      <strong>Výdajné miesto zatiaľ nie je vybrané</strong>
+                      <p>Vyberte výdajné miesto alebo box cez mapu dopravcu.</p>
+                    </div>
+                    <button type="button" data-open-pickup-widget>Vybrať na mape</button>
+                  </div>
+                  <input id="DPDPickupPointResult" type="hidden" name="dpd_pickup_result" />
+                  <input id="GLSPickupPointResult" type="hidden" name="gls_pickup_result" />
+                </div>
+
+                <div>
+                  <h3 class="subsection-title">Platba</h3>
+                  <div class="option-stack">
+                    <label class="option-tile compact"><input type="radio" name="payment" value="gopay" checked /><span class="option-icon">💳</span><span><strong>Platba kartou online</strong><small>Test GoPay: zatiaľ iba platobná karta</small></span><b>Bez poplatku</b></label>
+                    <label class="option-tile compact"><input type="radio" name="payment" value="cod" /><span class="option-icon">💶</span><span><strong>Dobierka</strong><small>Platba pri prevzatí</small></span><b>+ 1,20 €</b></label>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="checkout-card">
+              <div class="section-head">
+                <span>3</span>
+                <div>
+                  <h2>Fakturačné údaje</h2>
+                  <p>Firemné údaje podľa IČO doplníme automaticky.</p>
+                </div>
+              </div>
+
+              <label class="checkline"><input id="company_enabled" type="checkbox" /> Nakupujem na firmu</label>
+
+              <div class="company-box" data-company-box hidden>
+                <div class="ico-row">
+                  <label>IČO<input name="ico" inputmode="numeric" autocomplete="off" placeholder="12345678" /></label>
+                  <button type="button" data-load-company>Načítať firmu</button>
+                </div>
+
+                <div class="company-status" data-company-status></div>
+
+                <div class="form-grid three">
+                  <label>DIČ<input name="dic" autocomplete="off" /></label>
+                  <label>IČ DPH<input name="icdph" autocomplete="off" /></label>
+                  <label>Názov firmy<input name="company" autocomplete="organization" /></label>
+                </div>
+              </div>
+
+              <div class="form-grid two">
+                <label>PSČ *<input name="zip" inputmode="numeric" autocomplete="postal-code" required placeholder="97405" /></label>
+                <label>Mesto / obec *<input name="city" autocomplete="address-level2" required placeholder="Zadajte mesto alebo obec" /></label>
+              </div>
+
+              <label>Ulica a číslo *<input name="address" autocomplete="street-address" required placeholder="Ulica a číslo domu" /></label>
+
+              <div class="form-grid two">
+                <label>Meno *<input name="first_name" autocomplete="given-name" required /></label>
+                <label>Priezvisko *<input name="last_name" autocomplete="family-name" required /></label>
+              </div>
+
+              <label class="checkline"><input id="different_address" type="checkbox" /> Doručiť na inú adresu</label>
+
+              <div class="delivery-address" data-delivery-address hidden>
+                <div class="form-grid two">
+                  <label>PSČ<input name="delivery_zip" inputmode="numeric" autocomplete="shipping postal-code" placeholder="97405" /></label>
+                  <label>Mesto / obec<input name="delivery_city" autocomplete="shipping address-level2" placeholder="Zadajte mesto alebo obec" /></label>
+                </div>
+
+                <label>Ulica a číslo<input name="delivery_street" autocomplete="shipping street-address" placeholder="Ulica a číslo domu" /></label>
+
+                <div class="form-grid two">
+                  <label>Meno<input name="delivery_first_name" autocomplete="shipping given-name" /></label>
+                  <label>Priezvisko<input name="delivery_last_name" autocomplete="shipping family-name" /></label>
+                </div>
+
+                <div class="form-grid two">
+                  <label>Email<input name="delivery_email" type="email" autocomplete="shipping email" placeholder="email pre doručenie" /></label>
+                  <label>Telefón<input name="delivery_phone" type="tel" inputmode="tel" autocomplete="shipping tel" placeholder="+421 900 000 000" /></label>
+                </div>
+              </div>
+            </section>
+          </form>
+
+          <aside class="checkout-summary">
+            <div class="summary-sticky">
+              <h2>Súhrn objednávky</h2>
+              <div class="checkout-items" data-checkout-items></div>
+              <div class="free-shipping-box" data-free-shipping></div>
+              <div class="summary-line"><span>Tovar</span><strong data-summary-subtotal>0,00 €</strong></div>
+              <div class="summary-line summary-discount" data-summary-discount-line hidden><span>Množstevná zľava</span><strong data-summary-discount>-0,00 €</strong></div>
+              <div class="summary-line"><span data-summary-shipping-label>Doprava</span><strong data-summary-shipping>0,00 €</strong></div>
+              <div class="summary-line"><span data-summary-payment-label>Platba</span><strong data-summary-payment>0,00 €</strong></div>
+              <div class="summary-total"><span>Spolu s DPH</span><strong data-summary-total>0,00 €</strong></div>
+              <label class="checkline terms-line"><input id="terms" type="checkbox" /> Súhlasím s obchodnými podmienkami a spracovaním osobných údajov.</label>
+              <button class="order-button" type="button" data-submit-order>🔒 Objednať s povinnosťou platby</button>
+              <div class="secure-note">Bezpečná platba cez GoPay · Pomoc na telefóne +421 910 123 456</div>
+              <div class="trust-mini"><span>✓ 17 rokov skúseností</span><span>✓ 30 000+ objednávok</span><span>✓ Overené zákazníkmi</span></div>
+              <div class="order-status" data-order-status></div>
+            </div>
+          </aside>
+        </div>
+      </main>
+      <div class="dpd-widget-modal" data-dpd-modal hidden>
+        <div class="dpd-widget-dialog" role="dialog" aria-modal="true" aria-label="Výber DPD výdajného miesta">
+          <div class="dpd-widget-head">
+            <div>
+              <strong>Vyberte DPD výdajné miesto</strong>
+              <span data-dpd-modal-subtitle>Pickup miesto alebo box na Slovensku</span>
+            </div>
+            <button type="button" data-close-dpd-widget aria-label="Zavrieť DPD mapu">×</button>
+          </div>
+          <iframe data-dpd-iframe title="DPD Pickup widget" loading="lazy"></iframe>
+        </div>
+      </div>
+
+      <div class="gls-widget-modal" data-gls-modal hidden>
+        <div class="gls-widget-dialog" role="dialog" aria-modal="true" aria-label="Výber GLS výdajného miesta">
+          <div class="gls-widget-head">
+            <div>
+              <strong>Vyberte GLS výdajné miesto</strong>
+              <span data-gls-modal-subtitle>ParcelShop alebo Balíkomat na Slovensku</span>
+            </div>
+            <button type="button" data-close-gls-widget aria-label="Zavrieť GLS mapu">×</button>
+          </div>
+          <div id="gls-widget-root" class="gls-widget-root"></div>
+        </div>
+      </div>
+
+      <Footer />
+      <FloatingAdvisor />
+    </div>
+
+    <script src="/src/scripts/checkout.js"></script>
+  </body>
+</html>

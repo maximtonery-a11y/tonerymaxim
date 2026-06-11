@@ -1,0 +1,106 @@
+---
+import "../../styles/global.css";
+import "../../styles/footer.css";
+import "../../styles/account.css";
+import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import AccountShell from "../../components/AccountShell.astro";
+
+const customer = readCustomerSession(Astro.cookies);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+const customerName = customerDisplayName(customer);
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vernostný program | ToneryMaxim.sk</title>
+  </head>
+  <body>
+    <AccountShell user={customer} active="vernost" title="Vernostný program" subtitle="Body za objednávky, zľavy a odmeny pri ďalšom nákupe.">
+      <section class="loyalty-hero account-panel">
+        <div>
+          <p class="account-kicker">Aktuálny stav</p>
+          <h2>540 bodov</h2>
+          <p>Vaše body majú aktuálnu hodnotu <strong>5,40 €</strong> pri ďalšom nákupe.</p>
+          <div class="loyalty-progress" aria-label="Postup k ďalšej odmene">
+            <span style="width: 72%"></span>
+          </div>
+          <small>Do odmeny „Doprava zdarma“ vám chýba ešte 210 bodov.</small>
+        </div>
+        <div class="loyalty-value-card">
+          <span>Hodnota zľavy</span>
+          <strong>5,40 €</strong>
+          <a class="tm-btn is-green" href="/produkty">Použiť pri nákupe</a>
+        </div>
+      </section>
+
+      <section class="account-section-grid loyalty-rules-grid">
+        <article class="account-list-card loyalty-rule-card">
+          <span class="account-stat-icon">€</span>
+          <h3>1 € = 1 bod</h3>
+          <p>Za každý nákup získate body podľa hodnoty objednávky.</p>
+        </article>
+        <article class="account-list-card loyalty-rule-card">
+          <span class="account-stat-icon">★</span>
+          <h3>100 bodov = 1 €</h3>
+          <p>Body môžete neskôr premeniť na zľavu pri objednávke.</p>
+        </article>
+        <article class="account-list-card loyalty-rule-card">
+          <span class="account-stat-icon">🎁</span>
+          <h3>Odmeny navyše</h3>
+          <p>Pri vybraných nákupoch získate kupóny alebo dopravu zdarma.</p>
+        </article>
+      </section>
+
+      <div class="account-grid-2 account-gap-top">
+        <section class="account-panel">
+          <div class="account-panel-head">
+            <div>
+              <h2>Najbližšie odmeny</h2>
+              <p class="account-muted">Motivačné míľniky, ku ktorým sa blížite.</p>
+            </div>
+          </div>
+
+          <div class="reward-milestones">
+            <div class="reward-milestone is-current">
+              <div><strong>750 bodov</strong><span>Doprava zdarma</span></div>
+              <small>chýba 210 bodov</small>
+            </div>
+            <div class="reward-milestone">
+              <div><strong>1000 bodov</strong><span>Kupón 10 €</span></div>
+              <small>chýba 460 bodov</small>
+            </div>
+            <div class="reward-milestone">
+              <div><strong>1500 bodov</strong><span>Extra odmena pre verných zákazníkov</span></div>
+              <small>chýba 960 bodov</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="account-panel">
+          <h2>História bodov</h2>
+          <div class="points-history">
+            <div class="points-row is-plus">
+              <span>+50</span>
+              <div><strong>Objednávka TM-202600145</strong><small>14. 5. 2026</small></div>
+            </div>
+            <div class="points-row is-plus">
+              <span>+40</span>
+              <div><strong>Objednávka TM-202600123</strong><small>2. 5. 2026</small></div>
+            </div>
+            <div class="points-row is-minus">
+              <span>-100</span>
+              <div><strong>Uplatnenie zľavy</strong><small>28. 4. 2026</small></div>
+            </div>
+            <div class="points-row is-plus">
+              <span>+32</span>
+              <div><strong>Objednávka TM-202600118</strong><small>16. 4. 2026</small></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </AccountShell>
+  </body>
+</html>

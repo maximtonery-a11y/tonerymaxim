@@ -1,0 +1,114 @@
+---
+import "../styles/global.css";
+import "../styles/products-catalog.css";
+import Header from "../components/Header.astro";
+import "../styles/footer.css";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+
+const title = "Produkty | ToneryMaxim.sk";
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+
+  <body>
+    <div class="page">
+      <Header />
+
+      <main class="catalog-page">
+        <section class="catalog-hero">
+          <div class="wrap catalog-hero-inner">
+            <div>
+              <p class="eyebrow">Tonery a náplne</p>
+              <h1>Nájdite správny produkt pre vašu tlačiareň</h1>
+              <p class="lead">Prehľadný riadkový výpis s jasným rozlíšením originálneho, kompatibilného a renovovaného spotrebného materiálu.</p>
+            </div>
+
+            <form data-catalog-form class="catalog-search" data-smart-search>
+              <input
+                type="search"
+                data-catalog-search
+                data-smart-search-input
+                placeholder="Napr. HP M110w, W1420A, CE285A, TN-2421"
+              />
+              <button type="submit">Hľadať</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="catalog-content">
+          <div class="wrap catalog-layout">
+            <aside class="catalog-filter" data-catalog-filter>
+              <h2>Značky</h2>
+              <button type="button" data-filter="brand" data-filter-value="" class="is-active">Všetky značky</button>
+              <button type="button" data-filter="brand" data-filter-value="HP">HP</button>
+              <button type="button" data-filter="brand" data-filter-value="Canon">Canon</button>
+              <button type="button" data-filter="brand" data-filter-value="Brother">Brother</button>
+              <button type="button" data-toggle-more-brands>+ ostatné značky</button>
+              <div class="catalog-more-brands" data-more-brands hidden>
+                <button type="button" data-filter="brand" data-filter-value="Epson">Epson</button>
+                <button type="button" data-filter="brand" data-filter-value="Xerox">Xerox</button>
+                <button type="button" data-filter="brand" data-filter-value="Samsung">Samsung</button>
+                <button type="button" data-filter="brand" data-filter-value="Lexmark">Lexmark</button>
+                <button type="button" data-filter="brand" data-filter-value="Kyocera">Kyocera</button>
+                <button type="button" data-filter="brand" data-filter-value="OKI">OKI</button>
+                <button type="button" data-filter="brand" data-filter-value="Ricoh">Ricoh</button>
+                <button type="button" data-filter="brand" data-filter-value="Utax">Utax</button>
+                <button type="button" data-filter="brand" data-filter-value="Toshiba">Toshiba</button>
+              </div>
+
+              <div class="filter-divider"></div>
+
+              <h2>Kategórie</h2>
+              <button type="button" data-filter="category" data-filter-value="" class="is-active">Všetky kategórie</button>
+              <button type="button" data-filter="category" data-filter-value="tonery">Tonery</button>
+              <button type="button" data-filter="category" data-filter-value="atramentove-naplne">Atramentové náplne</button>
+              <button type="button" data-filter="category" data-filter-value="opticke-valce">Optické valce</button>
+              <button type="button" data-filter="category" data-filter-value="ostatne-komponenty">Ostatné komponenty</button>
+
+              <div class="filter-divider"></div>
+
+              <h2>Typ produktu</h2>
+              <button type="button" data-filter="type" data-filter-value="" class="is-active">Všetky typy</button>
+              <button type="button" data-filter="type" data-filter-value="compatible">Kompatibilné</button>
+              <button type="button" data-filter="type" data-filter-value="original">Originálne</button>
+              <button type="button" data-filter="type" data-filter-value="renovated">Renovované</button>
+            </aside>
+
+            <div class="catalog-main">
+              <div class="catalog-toolbar">
+                <div>
+                  <div data-catalog-status>Načítavam produkty...</div>
+                  <div class="catalog-active-filters" data-active-filters></div>
+                </div>
+                <div class="type-legend">
+                  <span class="legend-item compatible">Kompatibilný</span>
+                  <span class="legend-item original">Originál</span>
+                  <span class="legend-item renovated">Renovovaný</span>
+                </div>
+              </div>
+
+              <div data-catalog-grid class="catalog-list"></div>
+
+              <div class="catalog-pagination">
+                <button type="button" data-prev-page>Predchádzajúce</button>
+                <span data-page-info>Strana 1</span>
+                <button type="button" data-next-page>Ďalšie</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+      <FloatingAdvisor />
+    </div>
+
+    <script src="/src/scripts/catalog.js"></script>
+  </body>
+</html>

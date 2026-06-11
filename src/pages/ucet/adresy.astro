@@ -1,0 +1,26 @@
+---
+import "../../styles/global.css";
+import "../../styles/footer.css";
+import "../../styles/account.css";
+import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import AccountShell from "../../components/AccountShell.astro";
+
+const customer = readCustomerSession(Astro.cookies);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+const customerName = customerDisplayName(customer);
+---
+
+<!doctype html>
+<html lang="sk">
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Adresy | ToneryMaxim.sk</title></head>
+  <body>
+    <AccountShell user={customer} active="adresy" title="Adresy" subtitle="Fakturačné a dodacie adresy pre rýchlejšiu pokladňu.">
+      
+<div class="account-section-grid">
+  <section class="account-list-card"><h3>Fakturačná adresa</h3><p>Peter Novák<br/>Hlavná 123<br/>831 01 Bratislava<br/>Slovensko</p><a class="account-link" href="#">Upraviť</a></section>
+  <section class="account-list-card"><h3>Dodacia adresa</h3><p>Peter Novák<br/>Hlavná 123<br/>831 01 Bratislava<br/>Slovensko</p><a class="account-link" href="#">Upraviť</a></section>
+  <section class="account-list-card"><h3>Nová adresa</h3><p>Pridajte inú dodaciu adresu alebo firemnú pobočku.</p><a class="tm-btn" href="#">Pridať adresu</a></section>
+</div>
+    </AccountShell>
+  </body>
+</html>

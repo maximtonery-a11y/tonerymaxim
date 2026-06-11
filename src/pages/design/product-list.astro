@@ -1,0 +1,195 @@
+---
+import "../../styles/global.css";
+import "../../styles/product-design.css";
+
+const printerModels = [
+  "HP LaserJet P1102",
+  "HP LaserJet P1102w",
+  "HP LaserJet M1132",
+  "HP LaserJet M1212NF",
+  "HP LaserJet M1217nfw",
+  "HP LaserJet Pro M1130",
+  "HP LaserJet Pro M1210",
+  "Canon i-SENSYS LBP6000",
+  "Canon i-SENSYS LBP6020",
+  "Canon i-SENSYS LBP6030",
+  "Canon i-SENSYS MF3010",
+  "Canon i-SENSYS MF3010VP",
+];
+
+const products = [
+  {
+    type: "ORIGINÁL",
+    tone: "original",
+    icon: "shield",
+    iconImage: "/design-icons/icon-original.png",
+    noteIcon: "medal",
+    note: "Originálna kvalita výrobcu",
+    title: "HP 85A (CE285A) originálny toner",
+    printers: "HP LaserJet P1102, P1102W, M1132, M1212NF",
+    colorName: "Čierna",
+    colorHex: "#000000",
+    pages: "1 600 strán",
+    warranty: "24 mes. záruka",
+    price: "117,85 €",
+    stock: "Skladom 3 ks",
+    imageLabel: "HP",
+  },
+  {
+    type: "KOMPATIBILNÝ",
+    tone: "compatible",
+    icon: "puzzle",
+    iconImage: "/design-icons/icon-compatible.png",
+    noteIcon: "star",
+    note: "Odporúčame, najpredávanejší model",
+    title: "HP CE285A kompatibilný toner Premium",
+    printers: "HP LaserJet P1102, P1102W, M1132, M1212NF",
+    colorName: "Čierna",
+    colorHex: "#000000",
+    pages: "1 600 strán",
+    warranty: "24 mes. záruka",
+    price: "8,13 €",
+    stock: "Skladom 647 ks",
+    imageLabel: "85A",
+  },
+  {
+    type: "RENOVOVANÝ",
+    tone: "renovated",
+    icon: "recycle",
+    iconImage: "/design-icons/icon-renovated.png",
+    noteIcon: "office",
+    note: "Ekologická voľba pre kancelárie",
+    title: "HP CE285A renovovaný toner Premium",
+    printers: "HP LaserJet P1102, P1102W, M1132, M1212NF",
+    colorName: "Čierna",
+    colorHex: "#000000",
+    pages: "1 600 strán",
+    warranty: "24 mes. záruka",
+    price: "29,48 €",
+    stock: "Skladom 48 ks",
+    imageLabel: "ECO",
+  },
+];
+---
+
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Výpis produktov – ToneryMaxim</title>
+  </head>
+  <body>
+    <main class="tm-design-page tm-design-page--list">
+      <a class="tm-design-back" href="#">← Späť na produkty</a>
+
+      <section class="tm-list-head tm-list-head--rows">
+        <div>
+          <h1>HP LaserJet P1102w</h1>
+          <p>Vyberte originálny, kompatibilný alebo renovovaný toner.</p>
+        </div>
+        <div class="tm-list-actions">
+          <button class="tm-all-printers-btn" data-open-printers>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V4h10v4M7 17H5a3 3 0 0 1-3-3v-3a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3h-2M7 14h10v6H7z"/></svg>
+            Všetky modely tlačiarní (12)
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+          <button class="tm-filter-pill">Upraviť filter</button>
+        </div>
+      </section>
+
+      <section class="tm-row-list" aria-label="Výpis produktov">
+        {products.map((item) => (
+          <article class={`tm-product-row tm-product-row--${item.tone}`}>
+            <div class="tm-row-accent" aria-hidden="true"></div>
+
+            <div class="tm-row-type">
+              <div class="tm-row-symbol" aria-hidden="true">
+                <img class="tm-row-symbol-img" src={item.iconImage} alt="" loading="lazy" />
+              </div>
+              <div class="tm-row-type-copy">
+                <span class="tm-type-badge">{item.type}</span>
+                <p>
+                  {item.noteIcon === "medal" && <span class="tm-note-emoji">🏅</span>}
+                  {item.noteIcon === "star" && <span class="tm-note-emoji">⭐</span>}
+                  {item.noteIcon === "office" && <span class="tm-note-emoji">🏢</span>}
+                  {item.note}
+                </p>
+              </div>
+            </div>
+
+            <div class="tm-row-photo" aria-hidden="true">
+              <span>{item.imageLabel}</span>
+            </div>
+
+            <div class="tm-row-main">
+              <h2>{item.title}</h2>
+              <p class="tm-row-printers">{item.printers}</p>
+              <div class="tm-row-info-line">
+                <div class="tm-row-meta">
+                  <span class="tm-meta-color"><i style={`--swatch:${item.colorHex}`}></i>{item.colorName}</span>
+                  <span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+                    {item.pages}
+                  </span>
+                  <span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V6z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>
+                    {item.warranty}
+                  </span>
+                </div>
+
+                <div class="tm-row-compat">
+                  <button type="button" data-open-printers>Všetky modely tlačiarní (12)</button>
+                  <span class="tm-dispatch">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+                    Expedujeme dnes
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="tm-row-buy">
+              <span class="tm-stock-dot">{item.stock}</span>
+              <strong>{item.price}</strong>
+              <small>s DPH</small>
+              <button aria-label={`Pridať do košíka ${item.title}`}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7zM5 6 4 3H2M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+                Do košíka
+              </button>
+            </div>
+          </article>
+        ))}
+      </section>
+    </main>
+
+    <dialog class="tm-printer-modal" data-printer-modal>
+      <div class="tm-printer-modal-card">
+        <button class="tm-modal-close" data-close-printers aria-label="Zavrieť">×</button>
+        <h2>Všetky kompatibilné modely tlačiarní</h2>
+        <p>Táto skupina produktov je vhodná pre tieto modely.</p>
+        <div class="tm-modal-printer-grid">
+          {printerModels.map((model) => <span>{model}</span>)}
+        </div>
+      </div>
+    </dialog>
+
+    <script>
+      const modal = document.querySelector('[data-printer-modal]');
+      const openButtons = document.querySelectorAll('[data-open-printers]');
+      const closeButton = document.querySelector('[data-close-printers]');
+
+      openButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          if (modal instanceof HTMLDialogElement) modal.showModal();
+        });
+      });
+
+      closeButton?.addEventListener('click', () => {
+        if (modal instanceof HTMLDialogElement) modal.close();
+      });
+
+      modal?.addEventListener('click', (event) => {
+        if (event.target === modal && modal instanceof HTMLDialogElement) modal.close();
+      });
+    </script>
+  </body>
+</html>

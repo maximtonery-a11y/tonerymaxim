@@ -1,0 +1,49 @@
+---
+import "../styles/global.css";
+import "../styles/woo-products.css";
+import Header from "../components/Header.astro";
+import "../styles/footer.css";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+
+const title = "Test produktov z Woo | ToneryMaxim.sk";
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+
+  <body>
+    <div class="page">
+      <Header />
+
+      <main class="woo-products-page">
+        <section class="wrap">
+          <div class="woo-products-head">
+            <p>WooCommerce napojenie</p>
+            <h1>Produkty z ColorIQ / Woo</h1>
+            <form data-products-form class="woo-products-search">
+              <input
+                type="search"
+                data-products-search
+                placeholder="Hľadať podľa názvu alebo SKU, napr. W1420A, TN-2421, HP"
+              />
+              <button type="submit">Hľadať</button>
+            </form>
+            <div data-products-status class="woo-products-status">Načítavam produkty...</div>
+          </div>
+
+          <div data-products-grid class="woo-products-grid"></div>
+        </section>
+      </main>
+      <Footer />
+      <FloatingAdvisor />
+    </div>
+
+    <script src="/src/scripts/products.js"></script>
+  </body>
+</html>

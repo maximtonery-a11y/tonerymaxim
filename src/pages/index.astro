@@ -1,0 +1,40 @@
+---
+import "../styles/global.css";
+import "../styles/hero.css";
+import "../styles/benefits.css";
+import "../styles/footer.css";
+
+import Header from "../components/Header.astro";
+import HeroSearch from "../components/HeroSearch.astro";
+import ProductFinder from "../components/ProductFinder.astro";
+import Benefits from "../components/Benefits.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+
+const title = "ToneryMaxim.sk";
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+
+  <body>
+    <div class="page">
+      <Header />
+
+      <main>
+        <HeroSearch />
+        <ProductFinder />
+        <Benefits />
+      </main>
+
+      <Footer />
+      <FloatingAdvisor />
+    </div>
+
+  </body>
+</html>

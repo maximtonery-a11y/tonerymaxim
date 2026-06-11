@@ -1,0 +1,123 @@
+---
+import "../../styles/global.css";
+import "../../styles/product-design.css";
+
+const shieldIcons = [
+  { id: 1, label: "Štít 1", style: "outline", paths: ["M12 3.2 19 6v5.45c0 4.45-2.85 7.55-7 8.8-4.15-1.25-7-4.35-7-8.8V6l7-2.8Z", "M12 6.2v10.7", "M12 6.2 16.4 8v3.35c0 2.55-1.55 4.45-4.4 5.55"] },
+  { id: 2, label: "Štít 2", style: "outline", paths: ["M12 2.8 18.5 5.5v6.1c0 3.8-2.5 6.7-6.5 8-4-1.3-6.5-4.2-6.5-8V5.5L12 2.8Z", "M12 6.2v10.1", "M12 6.2 15.8 7.8v3.2c0 2.2-1.3 4-3.8 5.3"] },
+  { id: 3, label: "Štít 3", style: "outline", paths: ["M12 3.2 18.8 6v5.5c0 4.1-2.7 7.2-6.8 8.3-4.1-1.1-6.8-4.2-6.8-8.3V6L12 3.2Z", "M8.8 11.8h6.4", "M12 8.6v6.4"] },
+  { id: 4, label: "Štít 4", style: "outline", paths: ["M12 3 18.2 5.7v5.7c0 3.9-2.3 6.7-6.2 8.1-3.9-1.4-6.2-4.2-6.2-8.1V5.7L12 3Z", "m8.6 11.8 2.2 2.1 4.7-5"] },
+  { id: 5, label: "Štít 5", style: "outline", paths: ["M12 3 19 6.1v5.2c0 4.7-3.1 7.5-7 8.7-3.9-1.2-7-4-7-8.7V6.1L12 3Z", "M8.7 9.8h6.6v5.5H8.7z", "M10 9.8V8.4a2 2 0 0 1 4 0v1.4"] },
+  { id: 6, label: "Štít 6", style: "outline", paths: ["M12 3 18 5.6v5.9c0 3.9-2.3 6.3-6 7.8-3.7-1.5-6-3.9-6-7.8V5.6L12 3Z", "M12 7.3v7.4", "M8.9 11h6.2"] },
+  { id: 7, label: "Štít 7", style: "outline", paths: ["M12 2.9 19.2 6v5.2c0 4.8-3.2 7.7-7.2 8.9-4-1.2-7.2-4.1-7.2-8.9V6L12 2.9Z", "m8.4 12 2.4 2.3 5-5.4"] },
+  { id: 8, label: "Štít 8", style: "outline", paths: ["M12 3.4 18.6 6v5.7c0 3.9-2.7 6.7-6.6 7.8-3.9-1.1-6.6-3.9-6.6-7.8V6L12 3.4Z", "M9.2 8.8h5.6", "M8.4 12h7.2", "M9.6 15h4.8"] },
+  { id: 9, label: "Štít 9", style: "outline", paths: ["M12 3 18.7 5.8v5.6c0 4.2-2.6 7.1-6.7 8.4-4.1-1.3-6.7-4.2-6.7-8.4V5.8L12 3Z", "M12 8.1l.9 2.1 2.2.2-1.7 1.5.5 2.2-1.9-1.2-1.9 1.2.5-2.2-1.7-1.5 2.2-.2.9-2.1Z"] },
+  { id: 10, label: "Štít 10", style: "outline", paths: ["M12 3.1 18.4 5.8v5.7c0 4-2.5 6.8-6.4 8.1-3.9-1.3-6.4-4.1-6.4-8.1V5.8L12 3.1Z", "M12 6.6c2 1 3.4 2.7 3.4 4.8 0 2.1-1.4 3.8-3.4 4.8-2-1-3.4-2.7-3.4-4.8 0-2.1 1.4-3.8 3.4-4.8Z"] },
+];
+
+const puzzleIcons = [
+  { id: 11, label: "Puzzle 11", style: "solid", paths: ["M10.1 3.2h4.2v3.25c.45-.32 1.02-.5 1.63-.5a2.82 2.82 0 1 1 0 5.64c-.61 0-1.18-.19-1.63-.5v2.18h-2.2c.33.46.52 1.02.52 1.64a2.82 2.82 0 1 1-5.64 0c0-.62.19-1.18.52-1.64H4.25V9.1H7.5a2.82 2.82 0 1 1 0-1.65H4.25V3.2h5.85Z"] },
+  { id: 12, label: "Puzzle 12", style: "solid", paths: ["M10 3h4v4.2c.5-.7 1.3-1.1 2.2-1.1a2.7 2.7 0 1 1 0 5.4c-.9 0-1.7-.4-2.2-1.1V14h-3.6c.7.5 1.1 1.3 1.1 2.2a2.7 2.7 0 1 1-5.4 0c0-.9.4-1.7 1.1-2.2H3V9.8h3.6a2.7 2.7 0 1 1 0-3.6H3V3h7Z"] },
+  { id: 13, label: "Puzzle 13", style: "solid", paths: ["M4 4h5.2a2.6 2.6 0 1 1 5.1 0H20v5.6a2.6 2.6 0 1 0 0 4.8V20h-5.6a2.6 2.6 0 1 0-4.8 0H4v-5.6a2.6 2.6 0 1 1 0-4.8V4Z"] },
+  { id: 14, label: "Puzzle 14", style: "outline", paths: ["M9 3h5v4c.5-.55 1.2-.9 2-.9a2.7 2.7 0 1 1 0 5.4c-.8 0-1.5-.35-2-.9V15h-4c.55.5.9 1.2.9 2a2.7 2.7 0 1 1-5.4 0c0-.8.35-1.5.9-2H3V9.6h3.4a2.7 2.7 0 1 1 0-3.2H3V3h6Z"] },
+  { id: 15, label: "Puzzle 15", style: "solid", paths: ["M9.5 3h5v4.25c.5-.58 1.24-.95 2.06-.95a2.7 2.7 0 1 1 0 5.4c-.82 0-1.56-.37-2.06-.95V15h-4.25c.58.5.95 1.24.95 2.06a2.7 2.7 0 1 1-5.4 0c0-.82.37-1.56.95-2.06H3V9.5h3.75A2.7 2.7 0 1 1 9.5 6.75V3Z"] },
+  { id: 16, label: "Puzzle 16", style: "solid", paths: ["M8.8 3.2h5.5v4c.45-.48 1.1-.78 1.82-.78a2.48 2.48 0 1 1 0 4.96c-.72 0-1.37-.3-1.82-.78v3.7h-3.7c.48.45.78 1.1.78 1.82a2.48 2.48 0 1 1-4.96 0c0-.72.3-1.37.78-1.82h-4V8.8h4c-.48-.45-.78-1.1-.78-1.82a2.48 2.48 0 1 1 4.96 0c0 .72-.3 1.37-.78 1.82H8.8V3.2Z"] },
+  { id: 17, label: "Puzzle 17", style: "solid", paths: ["M10 3h4v3.8c.48-.43 1.12-.7 1.82-.7a2.72 2.72 0 1 1 0 5.44c-.7 0-1.34-.27-1.82-.7V14h-3.16c.43.48.7 1.12.7 1.82a2.72 2.72 0 1 1-5.44 0c0-.7.27-1.34.7-1.82H3V9.8h3.8a2.72 2.72 0 1 1 0-3.6H3V3h7Z"] },
+  { id: 18, label: "Puzzle 18", style: "outline", paths: ["M4 4h5.2a2.8 2.8 0 1 1 5.6 0H20v5.2a2.8 2.8 0 1 0 0 5.6V20h-5.2a2.8 2.8 0 1 0-5.6 0H4v-5.2a2.8 2.8 0 1 1 0-5.6V4Z"] },
+  { id: 19, label: "Puzzle 19", style: "solid", paths: ["M9.4 3.3h4.9v4.05c.5-.62 1.27-1.02 2.13-1.02a2.72 2.72 0 1 1 0 5.44c-.86 0-1.63-.4-2.13-1.02v3.55h-3.55c.62.5 1.02 1.27 1.02 2.13a2.72 2.72 0 1 1-5.44 0c0-.86.4-1.63 1.02-2.13H3.3V9.4h4.05c-.62-.5-1.02-1.27-1.02-2.13a2.72 2.72 0 1 1 5.44 0c0 .86-.4 1.63-1.02 2.13H9.4V3.3Z"] },
+  { id: 20, label: "Puzzle 20", style: "solid", paths: ["M9 3h5.3v4c.48-.55 1.19-.9 1.98-.9a2.62 2.62 0 1 1 0 5.24c-.79 0-1.5-.35-1.98-.9V15H9.7c.55.48.9 1.19.9 1.98a2.62 2.62 0 1 1-5.24 0c0-.79.35-1.5.9-1.98H3V9.7h3.26a2.62 2.62 0 1 1 0-3.4H3V3h6Z"] },
+];
+
+const recycleIcons = [
+  { id: 21, label: "Recyklácia 21", style: "outline", paths: ["M7.4 7.8 10.2 3l2.7 4.8h-1.6l-2 3.5H5.4l2-3.5h0Z", "M16.6 7.8h-3.5l2.7-4.8 2.8 4.8 2.5 4.4h-4.8l.8-1.4-.5-3Z", "M6.8 13.4h3.9l2 3.5h1.6L11.6 21H6.1l-2.8-4.8 2.7-4.7.8 1.9Z"] },
+  { id: 22, label: "Recyklácia 22", style: "outline", paths: ["m8.7 7.2 2.2-3.8 2.4 4.1-1.6-.1-2.1 3.7H5.4l2.4-4.2.9.3Z", "m16.1 6.4 2.4 4.1 2.2 3.9h-4.7l.9-1.5-3.2-5.5 2.4-1Z", "M9 16.7h6.4L13 20.8H7.6l-2.4-4.1 2.4-4.1 1.4 4.1Z"] },
+  { id: 23, label: "Recyklácia 23", style: "solid", paths: ["M10 3.2h4.2l-1.3 2.2 2.3 3.9h-4.6L8.3 5.4 10 3.2Z", "M18.7 8.2 21 12.1l-1.5 2.6h-4.6l1.4-2.4-2.2-3.8 4.6-.3Z", "M5.2 11.8h4.5l-2.3 3.9h6.9L12.8 19H6.1L3.8 15l1.4-3.2Z"] },
+  { id: 24, label: "Recyklácia 24", style: "solid", paths: ["m9 3.4 4.2.1-1.1 1.9 2.3 4H9.9L7.7 5.7 9 3.4Z", "m18.2 7.5 2.2 3.8 1.2 2.2h-4.4l.9-1.6-2.3-4 2.4-.4Z", "M6 12.5h4.5l-2.2 3.8h6.2l-1.4 2.4H6.4l-2.2-3.8L6 12.5Z"] },
+  { id: 25, label: "Recyklácia 25", style: "outline", paths: ["M8.6 7.7 11.3 3l2.8 4.7h-1.9l-1.9 3.3H5.9l1.9-3.3h.8Z", "M16.7 6.7 19.4 11l2.2 3.7h-5.4l1-1.7-2.7-4.7 2.2-1.6Z", "M7.1 12.9h4.4l-2.7 4.7h6.4L13.2 21H6.8l-2.7-4.7 3-3.4Z"] },
+  { id: 26, label: "Recyklácia 26", style: "solid", paths: ["M8.8 7.2 11.2 3l2.5 4.3h-1.5l-2.3 4H5.5l2.3-4h1Z", "M16.2 6.5 19 11.2l2 3.5h-4.8l.9-1.6-3-5.1 2.1-1.5Z", "M7.2 13.1h4.9l-2.6 4.5h6L13.5 21H7l-2.7-4.6 2.9-3.3Z"] },
+  { id: 27, label: "Recyklácia 27", style: "outline", paths: ["m9.5 3.1 2.8 4.8-1.8-.1-2 3.5H4.9l2.2-3.9-.9-.5 3.3-3.8Z", "m16.4 6.6 3 5.2 1.5-.8-.7 5-4.8-1.7 1.4-.8-2.8-4.9 2.4-2Z", "m7.2 12.9 2.1 3.6h5.7V21H6.4l-2.3-4 3.1-4.1Z"] },
+  { id: 28, label: "Recyklácia 28", style: "solid", paths: ["M9.4 3.1h4.8l-1.4 2.3 2.1 3.7h-4.5L8.2 5.3l1.2-2.2Z", "m17.1 7.2 3.5 6.1h-4.7l.9-1.6-2.5-4.3 2.8-.2Z", "M5.2 12h4.6l-2.7 4.7h6.8L12.4 20H5.6l-2.2-3.8L5.2 12Z"] },
+  { id: 29, label: "Recyklácia 29", style: "outline", paths: ["M8.2 8.1 11.1 3l3 5.1h-2l-1.8 3.2H5.4l1.8-3.2h1Z", "M16.8 6.9 21 14h-5l1-1.7-2.7-4.7 2.5-.7Z", "M7.1 12.7h4.8l-2.8 4.9h6.2L13.4 21H6.7l-2.6-4.6 3-3.7Z"] },
+  { id: 30, label: "Recyklácia 30", style: "solid", paths: ["M9.1 3.2c.5-.9 1.8-.9 2.3 0l2.2 3.8-2.5 1.5-.8-1.4-2.8 4.8H4.6l4.5-8.7Z", "M17.1 5.9c1 0 1.9.5 2.4 1.4l2.6 4.5c.5.9-.1 1.9-1.1 1.9h-4.4v2.4l-4.8-4 4.8-4v2.4h1.7l-2.1-3.6-1.3.8V4.7l2.2 1.2Z", "M6.1 14.1h3l-.8 1.4h5.5v2.9H5.3c-1 0-1.6-1.1-1.1-1.9l1.9-3.4-2-1.2 5.9-1.6 1.6 5.9-2-1.2-.5.9h-3Z"] },
+];
+---
+
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test ikoniek – ToneryMaxim</title>
+  </head>
+  <body>
+    <main class="tm-design-page tm-icons-test-page">
+      <a class="tm-design-back" href="/design/product-list">← Späť na výpis</a>
+
+      <section class="tm-icons-test-head">
+        <div>
+          <h1>Test ikoniek</h1>
+          <p>Vyber čísla ikoniek. Napríklad: štít 4, puzzle 17, recyklácia 26.</p>
+        </div>
+      </section>
+
+      <section class="tm-icons-test-section tm-icons-test-section--blue">
+        <div class="tm-icons-section-title">
+          <h2>Štít / Originál</h2>
+          <span>1–10</span>
+        </div>
+        <div class="tm-icons-grid">
+          {shieldIcons.map((icon) => (
+            <article class="tm-icon-option tm-icon-option--blue">
+              <strong>{icon.id}</strong>
+              <div class="tm-row-symbol tm-icon-test-symbol" aria-hidden="true">
+                <svg class={`tm-test-svg tm-test-svg--${icon.style}`} viewBox="0 0 24 24">
+                  {icon.paths.map((path) => <path d={path} />)}
+                </svg>
+              </div>
+              <span>{icon.label}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="tm-icons-test-section tm-icons-test-section--green">
+        <div class="tm-icons-section-title">
+          <h2>Puzzle / Kompatibilný</h2>
+          <span>11–20</span>
+        </div>
+        <div class="tm-icons-grid">
+          {puzzleIcons.map((icon) => (
+            <article class="tm-icon-option tm-icon-option--green">
+              <strong>{icon.id}</strong>
+              <div class="tm-row-symbol tm-icon-test-symbol" aria-hidden="true">
+                <svg class={`tm-test-svg tm-test-svg--${icon.style}`} viewBox="0 0 24 24">
+                  {icon.paths.map((path) => <path d={path} />)}
+                </svg>
+              </div>
+              <span>{icon.label}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="tm-icons-test-section tm-icons-test-section--orange">
+        <div class="tm-icons-section-title">
+          <h2>Recyklácia / Renovovaný</h2>
+          <span>21–30</span>
+        </div>
+        <div class="tm-icons-grid">
+          {recycleIcons.map((icon) => (
+            <article class="tm-icon-option tm-icon-option--orange">
+              <strong>{icon.id}</strong>
+              <div class="tm-row-symbol tm-icon-test-symbol" aria-hidden="true">
+                <svg class={`tm-test-svg tm-test-svg--${icon.style}`} viewBox="0 0 24 24">
+                  {icon.paths.map((path) => <path d={path} />)}
+                </svg>
+              </div>
+              <span>{icon.label}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

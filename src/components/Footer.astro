@@ -1,0 +1,212 @@
+<section class="trust-section" aria-label="Heureka hodnotenie ToneryMaxim">
+  <div class="wrap trust-card">
+    <a
+      class="trust-card-link"
+      href="https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Otvoriť recenzie ToneryMaxim na Heureke"
+    >
+      <div>
+        <span class="trust-kicker">Overené zákazníkmi</span>
+        <h2>Heureka hodnotenie e-shopu</h2>
+        <p>Skutočné recenzie zákazníkov pomáhajú novým kupujúcim rozhodnúť sa s väčšou istotou.</p>
+      </div>
+
+      <div class="trust-score">
+        <strong data-heureka-recommendation>100 %</strong>
+        <span>zákazníkov odporúča obchod</span>
+      </div>
+
+      <div class="trust-stars" aria-label="Heureka hodnotenie">
+        <span data-heureka-stars>★★★★★</span>
+        <small><strong data-heureka-rating>4,9</strong> / 5 · <span data-heureka-count>1 323</span> recenzií</small>
+      </div>
+    </a>
+  </div>
+</section>
+
+<section class="heureka-reviews-section" aria-label="Overené recenzie zákazníkov">
+  <div class="wrap heureka-reviews-wrap">
+    <div class="heureka-reviews-intro">
+      <span class="trust-kicker">Overené recenzie zákazníkov</span>
+      <h2>Overené našimi zákazníkmi</h2>
+      <p>
+        <strong data-heureka-bottom-recommendation>100 %</strong> zákazníkov odporúča náš obchod
+        <span data-heureka-bottom-count-wrap>(z <span data-heureka-bottom-count>1 323</span> recenzií)</span>.
+        Prezrite si vybrané hodnotenia našich zákazníkov.
+      </p>
+      <a href="https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left" target="_blank" rel="noopener noreferrer">
+        → Ďalšie hodnotenia na Heureka.sk
+      </a>
+    </div>
+
+    <div class="heureka-review-cards" data-heureka-review-cards>
+      <article class="heureka-review-card">
+        <p>„Spokojnosť, rýchlo vybavená objednávka, výborná kvalita obchodu“</p>
+        <div><span class="heureka-mini-badge">✓</span><small>Overený zákazník</small></div>
+        <strong>★★★★★</strong>
+      </article>
+      <article class="heureka-review-card">
+        <p>„Rýchlosť a spoľahlivosť“</p>
+        <div><span class="heureka-mini-badge">✓</span><small>Overený zákazník</small></div>
+        <strong>★★★★★</strong>
+      </article>
+      <article class="heureka-review-card">
+        <p>„Rýchle doručenie“</p>
+        <div><span class="heureka-mini-badge">✓</span><small>Overený zákazník</small></div>
+        <strong>★★★★★</strong>
+      </article>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer" id="kontakt">
+  <div class="wrap footer-main">
+    <div class="footer-brand">
+      <img src="/images/logo.png" alt="ToneryMaxim" />
+      <p>Slovenský obchod s tonermi, atramentmi a komponentmi pre tlačiarne. Pomáhame zákazníkom nájsť správnu náplň rýchlo a bez omylov.</p>
+    </div>
+
+    <div>
+      <h3>Zákaznícka podpora</h3>
+      <a href="/#kontakt">Kontakt</a>
+      <a href="#">Doprava</a>
+      <a href="#">Reklamácie</a>
+      <a href="#">Obchodné podmienky</a>
+    </div>
+
+    <div>
+      <h3>Sortiment</h3>
+      <a href="/produkty?category=tonery&search=toner">Tonery</a>
+      <a href="/produkty?category=atramentove-naplne&search=atrament">Atramentové náplne</a>
+      <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Optické valce</a>
+      <a href="/produkty?category=ostatne-komponenty&search=komponent">Ostatné komponenty</a>
+    </div>
+
+    <div>
+      <h3>Kontakt</h3>
+      <p class="footer-contact">☎ +421 910 123 456</p>
+      <p class="footer-contact">✉ info@tonerymaxim.sk</p>
+      <p class="footer-contact">Po–Pi 9:00–16:00</p>
+    </div>
+  </div>
+
+  <div class="wrap footer-payments">
+    <div>
+      <strong>Platby</strong>
+      <span>Visa · Mastercard · Google Pay · Dobierka</span>
+    </div>
+
+    <div>
+      <strong>Doprava</strong>
+      <span>GLS · DPD · Packeta · Slovenská pošta</span>
+    </div>
+  </div>
+
+  <div class="wrap footer-bottom">
+    <span>© 2026 ToneryMaxim.sk</span>
+    <div>
+      <a href="#">GDPR</a>
+      <a href="#">Cookies</a>
+      <a href="#">Obchodné podmienky</a>
+      <a href="#">Reklamácie</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const HEUREKA_REVIEW_URL = "https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left";
+
+  function formatSkNumber(value) {
+    const number = Number(value || 0);
+    if (!Number.isFinite(number) || number <= 0) return "1 323";
+    return new Intl.NumberFormat("sk-SK").format(number);
+  }
+
+  function formatSkRating(value) {
+    const number = Number(value || 0);
+    if (!Number.isFinite(number) || number <= 0) return "4,9";
+    return number.toLocaleString("sk-SK", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  }
+
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>'"]/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#039;",
+      '"': "&quot;",
+    }[char]));
+  }
+
+  function renderStars(rating) {
+    const value = Number(rating || 0);
+    const rounded = Math.max(0, Math.min(5, Math.round(value)));
+    return "★".repeat(rounded || 5) + "☆".repeat(Math.max(0, 5 - (rounded || 5)));
+  }
+
+  function updateHeurekaDom(data) {
+    const recommendation = Number(data?.recommendationPercent || 100);
+    const rating = Number(data?.averageRating || 4.9);
+    const reviewCount = Number(data?.reviewCount || 1323);
+    const countText = formatSkNumber(reviewCount);
+    const ratingText = formatSkRating(rating);
+    const stars = renderStars(rating);
+
+    document.querySelectorAll("[data-heureka-recommendation], [data-heureka-bottom-recommendation]").forEach((node) => {
+      node.textContent = `${recommendation} %`;
+    });
+
+    document.querySelectorAll("[data-heureka-count], [data-heureka-bottom-count]").forEach((node) => {
+      node.textContent = countText;
+    });
+
+    document.querySelectorAll("[data-heureka-rating]").forEach((node) => {
+      node.textContent = ratingText;
+    });
+
+    document.querySelectorAll("[data-heureka-stars]").forEach((node) => {
+      node.textContent = stars;
+    });
+
+    document.querySelectorAll("[data-heureka-mini-score]").forEach((node) => {
+      node.textContent = `${ratingText}/5`;
+    });
+
+    document.querySelectorAll("[data-heureka-mini-count]").forEach((node) => {
+      node.textContent = `${countText} recenzií`;
+    });
+
+    const cards = document.querySelector("[data-heureka-review-cards]");
+    const reviews = Array.isArray(data?.reviews) ? data.reviews.slice(0, 3) : [];
+
+    if (cards && reviews.length) {
+      cards.innerHTML = reviews.map((review) => {
+        const text = review.summary || review.pros || "Overený zákazník odporúča obchod.";
+        return `
+          <a class="heureka-review-card" href="${HEUREKA_REVIEW_URL}" target="_blank" rel="noopener noreferrer">
+            <p>„${escapeHtml(text)}“</p>
+            <div><span class="heureka-mini-badge">✓</span><small>Overený zákazník</small></div>
+            <strong>${renderStars(review.rating || 5)}</strong>
+          </a>
+        `;
+      }).join("");
+    }
+  }
+
+  async function loadHeurekaStats() {
+    try {
+      const response = await fetch("/api/heureka-reviews", {
+        headers: { Accept: "application/json" },
+        cache: "default",
+      });
+      const data = await response.json();
+      updateHeurekaDom(data);
+    } catch (error) {
+      // Fallback hodnoty ostanú v HTML.
+    }
+  }
+
+  loadHeurekaStats();
+</script>

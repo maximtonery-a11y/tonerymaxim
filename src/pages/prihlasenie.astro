@@ -1,0 +1,106 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/account.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import { readCustomerSession } from "../lib/auth-session";
+
+const session = readCustomerSession(Astro.cookies);
+if (session) return Astro.redirect("/ucet");
+const next = Astro.url.searchParams.get("next") || "/ucet";
+const logout = Astro.url.searchParams.get("logout") === "1";
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prihlásenie | ToneryMaxim.sk</title>
+  </head>
+  <body>
+    <div class="page account-page">
+      <Header />
+      <main class="auth-wrap">
+        <section class="auth-card">
+          <img class="auth-logo" src="/images/logo.png" alt="ToneryMaxim" />
+          <h1>Prihlásenie</h1>
+          <p>Vitajte späť. Prihláste sa do svojho účtu a objednajte tonery rýchlejšie.</p>
+
+          <div class:list={["auth-alert", logout && "is-success"]} data-auth-message hidden={!logout}>{logout ? "Boli ste odhlásený." : ""}</div>
+
+          <form class="auth-form" data-login-form data-next={next}>
+            <div class="tm-field">
+              <label for="login-email">E-mailová adresa</label>
+              <input id="login-email" name="email" type="email" placeholder="vas@email.sk" autocomplete="email" required />
+            </div>
+
+            <div class="tm-field">
+              <label for="login-password">Heslo</label>
+              <input id="login-password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+            </div>
+
+            <div class="auth-row">
+              <label class="tm-check"><input type="checkbox" /> Zapamätať si ma</label>
+              <a href="/zabudnute-heslo">Zabudli ste heslo?</a>
+            </div>
+
+            <button class="tm-btn" type="submit" data-auth-submit>Prihlásiť sa</button>
+          </form>
+
+          <p class="auth-switch">Nemáte účet? <a href="/registracia">Registrovať sa</a></p>
+        </section>
+
+        <section class="auth-benefits">
+          <div class="auth-benefit-card"><strong>Rýchle objednanie</strong><p>Uložené tlačiarne a produkty budete mať vždy pripravené.</p></div>
+          <div class="auth-benefit-card"><strong>Objednať znova</strong><p>Opakovanú objednávku vybavíte na pár klikov.</p></div>
+          <div class="auth-benefit-card"><strong>Rýchla reklamácia</strong><p>Reklamáciu vytvoríte priamo z konkrétnej objednávky.</p></div>
+        </section>
+      </main>
+      <Footer />
+      <FloatingAdvisor />
+    </div>
+
+    <script>
+      const form = document.querySelector("[data-login-form]");
+      const message = document.querySelector("[data-auth-message]");
+      const submit = document.querySelector("[data-auth-submit]");
+
+      function showMessage(text, type = "error") {
+        message.hidden = false;
+        message.textContent = text;
+        message.className = `auth-alert is-${type}`;
+      }
+
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(form));
+        data.next = form.dataset.next || "/ucet";
+
+        submit.disabled = true;
+        submit.textContent = "Prihlasujem...";
+        message.hidden = true;
+
+        try {
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+          const result = await response.json();
+          if (!response.ok || !result.ok) throw new Error(result.error || "Prihlásenie zlyhalo.");
+
+          showMessage("Prihlásenie prebehlo úspešne. Presmerovávam...", "success");
+          window.location.href = result.redirect || "/ucet";
+        } catch (error) {
+          showMessage(error.message || "Prihlásenie zlyhalo.");
+        } finally {
+          submit.disabled = false;
+          submit.textContent = "Prihlásiť sa";
+        }
+      });
+    </script>
+  </body>
+</html>

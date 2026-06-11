@@ -1,0 +1,443 @@
+.trust-section {
+  padding: 36px 0 18px;
+  background: #fff;
+}
+
+.trust-card {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  box-shadow: var(--shadow-sm);
+  padding: 28px 34px;
+  display: grid;
+  grid-template-columns: 1fr 220px 220px;
+  gap: 32px;
+  align-items: center;
+}
+
+.trust-kicker {
+  color: var(--blue);
+  font-weight: 850;
+  font-size: 14px;
+}
+
+.trust-card h2 {
+  margin: 6px 0 8px;
+  color: var(--navy);
+  font-size: 28px;
+}
+
+.trust-card p {
+  margin: 0;
+  color: #667085;
+  line-height: 1.55;
+}
+
+.trust-score {
+  text-align: center;
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  padding: 8px 26px;
+}
+
+.trust-score strong {
+  display: block;
+  color: #20a844;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.trust-score span {
+  color: #475467;
+  font-size: 14px;
+}
+
+.trust-stars {
+  text-align: center;
+  color: #17a8e5;
+  font-size: 28px;
+  letter-spacing: 2px;
+  font-weight: 900;
+}
+
+.trust-stars small {
+  display: block;
+  margin-top: 8px;
+  color: #667085;
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.site-footer {
+  margin-top: 26px;
+  background: #071b3a;
+  color: #dbe6f5;
+}
+
+.footer-main {
+  padding: 52px 0 34px;
+  display: grid;
+  grid-template-columns: 1.45fr .8fr .8fr 1fr;
+  gap: 50px;
+}
+
+.footer-brand img {
+  width: 230px;
+  background: white;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+}
+
+.footer-brand p,
+.site-footer p {
+  margin: 0;
+  color: #aebbd0;
+  line-height: 1.65;
+}
+
+.site-footer h3 {
+  margin: 0 0 18px;
+  color: white;
+  font-size: 17px;
+}
+
+.site-footer a {
+  display: block;
+  color: #dbe6f5;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.footer-contact {
+  margin-bottom: 10px !important;
+}
+
+.footer-payments {
+  border-top: 1px solid rgba(255,255,255,.12);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  padding: 18px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 28px;
+  color: #aebbd0;
+}
+
+.footer-payments strong {
+  color: white;
+  margin-right: 12px;
+}
+
+.footer-bottom {
+  padding: 20px 0 26px;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  color: #aebbd0;
+  font-size: 13px;
+}
+
+.footer-bottom div {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.footer-bottom a {
+  margin: 0;
+  font-size: 13px;
+  color: #aebbd0;
+}
+
+.floating-advisor {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 50;
+}
+
+.advisor-button {
+  border: 0;
+  border-radius: 999px;
+  background: var(--navy);
+  color: white;
+  padding: 15px 20px;
+  font-weight: 850;
+  font-size: 15px;
+  box-shadow: 0 18px 38px rgba(7, 27, 58, .28);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.advisor-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.14);
+}
+
+.advisor-panel {
+  position: absolute;
+  right: 0;
+  bottom: 62px;
+  width: 260px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: white;
+  box-shadow: var(--shadow);
+  padding: 18px;
+  color: var(--navy);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: .18s ease;
+}
+
+.floating-advisor:hover .advisor-panel {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.advisor-panel strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.advisor-panel p {
+  margin: 0 0 12px;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.advisor-panel a {
+  display: block;
+  padding: 9px 0;
+  color: var(--navy);
+  font-weight: 750;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 1100px) {
+  .trust-card,
+  .footer-main {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-score {
+    border-left: 0;
+    border-right: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 20px 0;
+  }
+
+  .footer-payments,
+  .footer-bottom {
+    flex-direction: column;
+  }
+
+  .advisor-button span:last-child {
+    display: none;
+  }
+}
+
+/* Heureka – klikateľný rating blok a spodné recenzie */
+.trust-card-link {
+  display: grid;
+  grid-template-columns: 1fr 220px 240px;
+  gap: 32px;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.trust-card-link:hover h2,
+.trust-card-link:focus-visible h2 {
+  color: #009ee3;
+}
+
+.trust-card-link:focus-visible {
+  outline: 3px solid rgba(0, 158, 227, .22);
+  outline-offset: 6px;
+  border-radius: 20px;
+}
+
+.heureka-reviews-section {
+  padding: 22px 0 34px;
+  background: #fff;
+}
+
+.heureka-reviews-wrap {
+  display: grid;
+  grid-template-columns: .95fr 2.1fr;
+  gap: 28px;
+  align-items: stretch;
+  padding: 26px 0;
+  border-top: 1px solid #edf2f7;
+}
+
+.heureka-reviews-intro {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.heureka-reviews-intro h2 {
+  margin: 8px 0 14px;
+  color: var(--navy);
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1.08;
+  letter-spacing: -.04em;
+}
+
+.heureka-reviews-intro p {
+  margin: 0 0 12px;
+  color: #334155;
+  font-size: 17px;
+  line-height: 1.55;
+  max-width: 440px;
+}
+
+.heureka-reviews-intro a {
+  color: #0078d4;
+  font-weight: 850;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.heureka-review-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.heureka-review-card {
+  min-height: 190px;
+  border: 1px solid #edf2f7;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .86);
+  box-shadow: 0 16px 42px rgba(7, 27, 58, .055);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 18px;
+  color: var(--navy);
+  text-decoration: none;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
+.heureka-review-card:hover,
+.heureka-review-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: #cfe2f5;
+  box-shadow: 0 22px 52px rgba(7, 27, 58, .10);
+  outline: none;
+}
+
+.heureka-review-card p {
+  margin: 0 auto auto 0;
+  color: #071b3a;
+  font-size: 15px;
+  line-height: 1.45;
+  font-weight: 750;
+}
+
+.heureka-review-card div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.heureka-review-card strong {
+  color: #ffc400;
+  font-size: 19px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.heureka-mini-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #eaf8ff;
+  color: #009ee3;
+  font-weight: 950;
+}
+
+@media (max-width: 1100px) {
+  .trust-card-link,
+  .heureka-reviews-wrap,
+  .heureka-review-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .heureka-reviews-wrap {
+    padding: 18px 0;
+  }
+
+  .heureka-review-card {
+    min-height: 150px;
+  }
+}
+
+.trust-section .trust-card {
+  display: block;
+}
+
+
+/* Global footer hardening for all subpages */
+.site-footer,
+.trust-section,
+.heureka-reviews-section {
+  font-family: inherit;
+}
+
+.site-footer a,
+.trust-card-link,
+.heureka-review-card {
+  text-decoration: none;
+}
+
+.site-footer img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.footer-brand img {
+  object-fit: contain;
+  max-height: 92px;
+}
+
+@media (max-width: 760px) {
+  .trust-section {
+    padding: 24px 0 12px;
+  }
+
+  .trust-card {
+    padding: 22px;
+    border-radius: 20px;
+  }
+
+  .footer-main {
+    padding: 38px 0 26px;
+    gap: 28px;
+  }
+
+  .site-footer {
+    margin-top: 18px;
+  }
+}

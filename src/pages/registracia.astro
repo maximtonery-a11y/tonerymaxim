@@ -1,0 +1,97 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/account.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import { readCustomerSession } from "../lib/auth-session";
+
+const session = readCustomerSession(Astro.cookies);
+if (session) return Astro.redirect("/ucet");
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registrácia | ToneryMaxim.sk</title>
+  </head>
+  <body>
+    <div class="page account-page">
+      <Header />
+      <main class="auth-wrap">
+        <section class="auth-card">
+          <img class="auth-logo" src="/images/logo.png" alt="ToneryMaxim" />
+          <h1>Registrácia</h1>
+          <p>Zaregistrujte sa a získajte rýchle objednanie, uložené tlačiarne a odmeny.</p>
+
+          <div class="auth-alert" data-auth-message hidden></div>
+
+          <form class="auth-form" data-register-form>
+            <div class="auth-grid-2">
+              <div class="tm-field"><label for="first-name">Meno</label><input id="first-name" name="firstName" placeholder="Ján" autocomplete="given-name" required /></div>
+              <div class="tm-field"><label for="last-name">Priezvisko</label><input id="last-name" name="lastName" placeholder="Novák" autocomplete="family-name" required /></div>
+            </div>
+            <div class="tm-field"><label for="reg-email">E-mailová adresa</label><input id="reg-email" name="email" type="email" placeholder="vas@email.sk" autocomplete="email" required /></div>
+            <div class="tm-field"><label for="reg-password">Heslo</label><input id="reg-password" name="password" type="password" placeholder="aspoň 8 znakov" autocomplete="new-password" required minlength="8" /></div>
+            <div class="tm-field"><label for="reg-password2">Potvrďte heslo</label><input id="reg-password2" name="password2" type="password" placeholder="zopakujte heslo" autocomplete="new-password" required minlength="8" /></div>
+            <label class="tm-check"><input name="consent" type="checkbox" required /> Súhlasím so spracovaním osobných údajov.</label>
+            <button class="tm-btn" type="submit" data-auth-submit>Zaregistrovať sa</button>
+          </form>
+
+          <p class="auth-switch">Už máte účet? <a href="/prihlasenie">Prihlásiť sa</a></p>
+        </section>
+
+        <section class="auth-benefits">
+          <div class="auth-benefit-card"><strong>Moje tlačiarne</strong><p>Uložíte si model tlačiarne a nabudúce nemusíte nič hľadať.</p></div>
+          <div class="auth-benefit-card"><strong>Vernostné body</strong><p>Za objednávky získate body použiteľné pri ďalšom nákupe.</p></div>
+          <div class="auth-benefit-card"><strong>🎁 Zotrite si zľavu</strong><p>Po registrácii získate možnosť zotrieť si svoju odmenu.</p></div>
+        </section>
+      </main>
+      <Footer />
+      <FloatingAdvisor />
+    </div>
+
+    <script>
+      const form = document.querySelector("[data-register-form]");
+      const message = document.querySelector("[data-auth-message]");
+      const submit = document.querySelector("[data-auth-submit]");
+
+      function showMessage(text, type = "error") {
+        message.hidden = false;
+        message.textContent = text;
+        message.className = `auth-alert is-${type}`;
+      }
+
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(form));
+        data.consent = Boolean(form.querySelector('input[name="consent"]')?.checked);
+
+        submit.disabled = true;
+        submit.textContent = "Registrujem...";
+        message.hidden = true;
+
+        try {
+          const response = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+          const result = await response.json();
+          if (!response.ok || !result.ok) throw new Error(result.error || "Registrácia zlyhala.");
+
+          showMessage("Registrácia prebehla úspešne. Presmerovávam do účtu...", "success");
+          window.location.href = result.redirect || "/ucet";
+        } catch (error) {
+          showMessage(error.message || "Registrácia zlyhala.");
+        } finally {
+          submit.disabled = false;
+          submit.textContent = "Zaregistrovať sa";
+        }
+      });
+    </script>
+  </body>
+</html>

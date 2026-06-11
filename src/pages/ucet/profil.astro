@@ -1,0 +1,25 @@
+---
+import "../../styles/global.css";
+import "../../styles/footer.css";
+import "../../styles/account.css";
+import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import AccountShell from "../../components/AccountShell.astro";
+
+const customer = readCustomerSession(Astro.cookies);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+const customerName = customerDisplayName(customer);
+---
+
+<!doctype html>
+<html lang="sk">
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Profil | ToneryMaxim.sk</title></head>
+  <body>
+    <AccountShell user={customer} active="profil" title="Profil" subtitle="Osobné údaje, heslo a newsletter nastavenia.">
+      
+<div class="account-grid-2">
+  <section class="account-panel"><h2>Osobné údaje</h2><div class="account-list-row"><span>Meno</span><strong>Peter Novák</strong></div><div class="account-list-row"><span>E-mail</span><strong>peter.novak@email.sk</strong></div><div class="account-list-row"><span>Telefón</span><strong>+421 900 123 456</strong></div><a class="tm-btn" href="#">Upraviť profil</a></section>
+  <section class="account-panel"><h2>Nastavenia</h2><div class="account-list-row"><span>Zmena hesla</span><span>›</span></div><div class="account-list-row"><span>Newsletter</span><strong>Prihlásený</strong></div><div class="account-list-row"><span>Notifikácie</span><strong>E-mail, SMS</strong></div></section>
+</div>
+    </AccountShell>
+  </body>
+</html>

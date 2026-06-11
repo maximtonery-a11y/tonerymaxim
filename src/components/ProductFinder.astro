@@ -1,0 +1,103 @@
+<section class="wrap product-finder">
+  <div class="finder-block">
+    <h2 class="section-label">Alebo vyhľadať podľa tlačiarne</h2>
+
+    <div class="brand-grid">
+      <a class="finder-card" href="/tlaciarne/hp"><span class="brand-logo hp">hp</span><strong>HP</strong></a>
+      <a class="finder-card" href="/tlaciarne/canon"><span class="brand-logo canon">Canon</span><strong>Canon</strong></a>
+      <a class="finder-card" href="/tlaciarne/brother"><span class="brand-logo brother">brother</span><strong>Brother</strong></a>
+      <button class="finder-card finder-card-button" type="button" data-open-brand-modal><span class="brand-logo more">•••</span><strong>Ďalšie značky</strong></button>
+    </div>
+  </div>
+
+  <div class="finder-block finder-block-products">
+    <h2 class="section-label">Alebo vyhľadať podľa typu produktu</h2>
+
+    <div class="type-grid">
+      <a class="finder-card product-card" href="/produkty?s=toner">
+        <span class="product-icon toner-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <rect x="9" y="22" width="46" height="22" rx="8" fill="#071b3a"/>
+            <rect x="16" y="29" width="32" height="6" rx="3" fill="#009ee3"/>
+            <circle cx="13" cy="33" r="5" fill="#17233a"/>
+            <circle cx="51" cy="33" r="5" fill="#17233a"/>
+          </svg>
+        </span>
+        <strong>Tonery</strong>
+      </a>
+
+      <a class="finder-card product-card" href="/produkty?s=atramentová náplň">
+        <span class="product-icon ink-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <path d="M32 8C24 19 18 27 18 37c0 9 6.5 16 14 16s14-7 14-16C46 27 40 19 32 8Z" fill="#009ee3"/>
+            <path d="M25 40c1 4 4 7 8 7" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".75"/>
+          </svg>
+        </span>
+        <strong>Atramentové náplne</strong>
+      </a>
+
+      <a class="finder-card product-card" href="/produkty?s=optický valec">
+        <span class="product-icon drum-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <rect x="12" y="22" width="40" height="20" rx="6" fill="#dff2f5" stroke="#071b3a" stroke-width="3"/>
+            <rect x="18" y="27" width="28" height="10" rx="5" fill="#6ed6d7"/>
+            <circle cx="17" cy="32" r="3" fill="#071b3a"/>
+            <circle cx="47" cy="32" r="3" fill="#071b3a"/>
+          </svg>
+        </span>
+        <strong>Optické valce</strong>
+      </a>
+
+      <a class="finder-card product-card" href="/produkty?s=ostatné komponenty">
+        <span class="product-icon parts-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <path d="M32 13v7M32 44v7M19 19l5 5M40 40l5 5M13 32h7M44 32h7M19 45l5-5M40 24l5-5" stroke="#071b3a" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="32" cy="32" r="13" fill="#eef4fb" stroke="#071b3a" stroke-width="4"/>
+            <circle cx="32" cy="32" r="4" fill="#009ee3"/>
+          </svg>
+        </span>
+        <strong>Ostatné komponenty</strong>
+      </a>
+    </div>
+  </div>
+</section>
+
+<dialog class="brand-modal" data-brand-modal>
+  <div class="brand-modal-card">
+    <button class="brand-modal-close" type="button" data-close-brand-modal aria-label="Zavrieť">×</button>
+    <h2>Vyberte značku tlačiarne</h2>
+    <p>Značky sú klikateľné a otvoria výber modelu tlačiarne pre vybranú značku.</p>
+    <div class="brand-modal-grid">
+      {[
+        "HP",
+        "Canon",
+        "Brother",
+        "Epson",
+        "Xerox",
+        "Samsung",
+        "Lexmark",
+        "Kyocera",
+        "OKI",
+        "Ricoh",
+        "Konica Minolta",
+        "Utax",
+        "Panasonic",
+        "Toshiba",
+        "Dell",
+      ].map((brand) => <a href={`/tlaciarne/${String(brand).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`}>{brand}</a>)}
+    </div>
+  </div>
+</dialog>
+
+<script>
+  const brandModal = document.querySelector("[data-brand-modal]");
+  document.querySelector("[data-open-brand-modal]")?.addEventListener("click", () => {
+    if (brandModal instanceof HTMLDialogElement) brandModal.showModal();
+  });
+  document.querySelector("[data-close-brand-modal]")?.addEventListener("click", () => {
+    if (brandModal instanceof HTMLDialogElement) brandModal.close();
+  });
+  brandModal?.addEventListener("click", (event) => {
+    if (event.target === brandModal && brandModal instanceof HTMLDialogElement) brandModal.close();
+  });
+</script>

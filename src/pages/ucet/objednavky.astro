@@ -1,0 +1,26 @@
+---
+import "../../styles/global.css";
+import "../../styles/footer.css";
+import "../../styles/account.css";
+import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import AccountShell from "../../components/AccountShell.astro";
+
+const customer = readCustomerSession(Astro.cookies);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+const customerName = customerDisplayName(customer);
+---
+
+<!doctype html>
+<html lang="sk">
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Objednávky | ToneryMaxim.sk</title></head>
+  <body>
+    <AccountShell user={customer} active="objednavky" title="Objednávky" subtitle="História nákupov, faktúry, opakovaná objednávka a rýchla reklamácia.">
+      
+<div class="account-section-grid">
+  <section class="account-list-card"><h3>#202600145</h3><p>Brother TN-2421 kompatibilný toner<br/>DR-2401 kompatibilný valec</p><span class="status-pill">Doručená</span><br/><br/><a class="tm-btn" href="#">Objednať znova</a></section>
+  <section class="account-list-card"><h3>#202600123</h3><p>Canon CRG-057H kompatibilný toner</p><span class="status-pill">Doručená</span><br/><br/><a class="tm-btn is-outline" href="#">Reklamovať</a></section>
+  <section class="account-list-card"><h3>#202600098</h3><p>Kancelársky papier A4<br/>Pákový šanón</p><span class="status-pill">Doručená</span><br/><br/><a class="tm-btn" href="#">Objednať znova</a></section>
+</div>
+    </AccountShell>
+  </body>
+</html>

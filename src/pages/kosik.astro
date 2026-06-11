@@ -1,0 +1,71 @@
+---
+import "../styles/global.css";
+import "../styles/cart.css";
+import Header from "../components/Header.astro";
+import "../styles/footer.css";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+
+const title = "Košík | ToneryMaxim.sk";
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+
+  <body>
+    <div class="page cart-page">
+      <Header />
+
+      <main class="wrap cart-layout">
+        <section class="cart-content">
+          <div class="cart-heading">
+            <span>Košík</span>
+            <h1>Vaše produkty</h1>
+            <p>Skontrolujte produkty v košíku. Pokladňu pridáme v ďalšom kroku.</p>
+          </div>
+
+          <div class="cart-empty" data-cart-empty hidden>
+            <h2>Košík je prázdny</h2>
+            <p>Pridajte si toner, atrament alebo komponent do košíka.</p>
+            <a href="/test-produkt" class="cart-back">Otvoriť testovací produkt</a>
+          </div>
+
+          <div class="cart-list" data-cart-list></div>
+        </section>
+
+        <aside class="cart-summary" data-cart-summary hidden>
+          <h2>Súhrn objednávky</h2>
+
+          <div class="summary-line">
+            <span>Medzisúčet</span>
+            <strong data-cart-subtotal>0,00 €</strong>
+          </div>
+
+          <div class="summary-line">
+            <span>Doprava GLS</span>
+            <strong data-cart-shipping>0,00 €</strong>
+          </div>
+
+          <div class="summary-note">
+            Doprava zdarma od 29 €. Cenu dopravy a dobierku doladíme v pokladni.
+          </div>
+
+          <div class="summary-total">
+            <span>Spolu</span>
+            <strong data-cart-total>0,00 €</strong>
+          </div>
+
+          <a href="/pokladna" class="checkout-button">Pokračovať do pokladne</a>
+          <button class="clear-cart" type="button" data-cart-action="clear">Vyprázdniť košík</button>
+        </aside>
+      </main>
+      <Footer />
+      <FloatingAdvisor />
+    </div>
+  </body>
+</html>

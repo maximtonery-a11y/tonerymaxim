@@ -1,0 +1,38 @@
+---
+export const prerender = false;
+
+import "../../styles/global.css";
+import "../../styles/footer.css";
+import "../../styles/product-detail.css";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+
+const { slug } = Astro.params;
+const title = "Detail produktu | ToneryMaxim.sk";
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+
+  <body>
+    <div class="page">
+      <Header />
+
+      <main class="product-detail-page" data-product-slug={slug}>
+        <div class="detail-wrap">
+          <a class="back-link" href="/produkty">← Späť na produkty</a>
+          <section data-product-root class="product-detail-loading">Načítavam produkt...</section>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+
+    <script src="/src/scripts/product-detail.js"></script>
+  </body>
+</html>
