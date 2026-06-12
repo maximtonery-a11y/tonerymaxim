@@ -55,6 +55,8 @@ export const GET: APIRoute = async ({ url, request }) => {
         ok: true,
         mode: localRequest ? "local-manual" : "protected",
         refreshed: result.refreshed,
+        warning: result.warning || result.cache.sync?.warning || "",
+        sync: result.cache.sync || null,
         total: result.cache.total,
         generated_at: result.cache.generated_at,
         duration_ms: Date.now() - startedAt,

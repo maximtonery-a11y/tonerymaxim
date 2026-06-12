@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export type TmProduct = Record<string, any>;
@@ -9,12 +9,29 @@ type CacheFile = {
   generated_at: string;
   total: number;
   products: TmProduct[];
+  sync?: {
+    ok: boolean;
+    source?: string;
+    pages?: number;
+    warning?: string;
+    error?: string;
+  };
+};
+
+type SyncResult = {
+  cache: CacheFile;
+  refreshed: boolean;
+  warning?: string;
 };
 
 const CACHE_VERSION = 1;
-const CACHE_DIR = path.join(process.cwd(), ".tm-cache");
+const CACHE_DIR = path.resolve(String(import.meta.env.TM_CACHE_DIR || process.env.TM_CACHE_DIR || path.join(process.cwd(), ".tm-cache")));
 const CACHE_FILE = path.join(CACHE_DIR, "products.json");
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const DEFAULT_PER_PAGE = 50;
+const DEFAULT_TIMEOUT_MS = 20_000;
+const DEFAULT_PAGE_DELAY_MS = 250;
+const DEFAULT_MAX_RETRIES = 2;
 const WOO_FIELDS = [
   "id",
   "sku",
@@ -38,6 +55,27 @@ const globalStore = globalThis as typeof globalThis & { __TM_PRODUCTS_FILE_CACHE
 
 function env(name: string) {
   return String(import.meta.env[name] || process.env[name] || "").trim();
+}
+
+function numberEnv(name: string, fallback: number, min: number, max: number) {
+  const value = Number(env(name));
+  if (!Number.isFinite(value)) return fallback;
+  return Math.min(max, Math.max(min, value));
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function emptyCache(warning = "Produktová cache zatiaľ neexistuje. Spustite /api/sync-products?force=1."): CacheFile {
+  return {
+    ok: true,
+    version: CACHE_VERSION,
+    generated_at: new Date(0).toISOString(),
+    total: 0,
+    products: [],
+    sync: { ok: false, warning },
+  };
 }
 
 function getAuthHeader() {
@@ -250,7 +288,6 @@ function isFresh(cache: CacheFile) {
 }
 
 export async function readProductsCache(): Promise<CacheFile | null> {
-  if (globalStore.__TM_PRODUCTS_FILE_CACHE__) return globalStore.__TM_PRODUCTS_FILE_CACHE__;
   try {
     const text = await readFile(CACHE_FILE, "utf8");
     const data = JSON.parse(text) as CacheFile;
@@ -258,18 +295,8 @@ export async function readProductsCache(): Promise<CacheFile | null> {
     globalStore.__TM_PRODUCTS_FILE_CACHE__ = data;
     return data;
   } catch {
-    return null;
+    return globalStore.__TM_PRODUCTS_FILE_CACHE__ || null;
   }
-}
-
-const WOO_PER_PAGE = 25;
-const WOO_MAX_RETRIES = 2;
-const WOO_REQUEST_TIMEOUT_MS = 15000;
-const WOO_PAGE_DELAY_MS = 600;
-const WOO_MAX_PAGES = 300;
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function parseWooJson(text: string) {
@@ -277,72 +304,68 @@ function parseWooJson(text: string) {
   try {
     data = JSON.parse(text);
   } catch {
-    throw new Error(`WooCommerce nevrátil JSON: ${text.slice(0, 300)}`);
+    throw new Error(`WooCommerce nevrátil JSON: ${text.slice(0, 250)}`);
   }
 
+  // Niektoré hostingy/API vrstvy vrátia JSON ešte raz zabalený ako string.
   if (typeof data === "string") {
-    try {
-      data = JSON.parse(data);
-    } catch {
-      throw new Error(`WooCommerce vrátil JSON ako text, ale nedá sa rozbaliť: ${data.slice(0, 300)}`);
+    const trimmed = data.trim();
+    if ((trimmed.startsWith("[") && trimmed.endsWith("]")) || (trimmed.startsWith("{") && trimmed.endsWith("}"))) {
+      try {
+        data = JSON.parse(trimmed);
+      } catch {
+        throw new Error(`WooCommerce vrátil neplatný zabalený JSON: ${trimmed.slice(0, 250)}`);
+      }
     }
   }
 
   return data;
 }
 
-async function fetchWooPage(wooUrl: string, page: number) {
-  const params = new URLSearchParams({
-    per_page: String(WOO_PER_PAGE),
-    page: String(page),
-    status: "publish",
-    orderby: "menu_order",
-    order: "asc",
-    _fields: WOO_FIELDS,
-  });
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
-  const url = `${wooUrl}/wp-json/wc/v3/products?${params.toString()}`;
-  let lastError = "";
+async function fetchWooPage(url: string, page: number, perPage: number) {
+  const timeoutMs = numberEnv("WOO_SYNC_TIMEOUT_MS", DEFAULT_TIMEOUT_MS, 5_000, 60_000);
+  const maxRetries = numberEnv("WOO_SYNC_RETRIES", DEFAULT_MAX_RETRIES, 0, 5);
 
-  for (let attempt = 1; attempt <= WOO_MAX_RETRIES; attempt += 1) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), WOO_REQUEST_TIMEOUT_MS);
-
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
     try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          Authorization: getAuthHeader(),
-          Accept: "application/json",
-          "User-Agent": "ToneryMaxim-Astro-Sync/1.0",
-        },
-      });
-
+      const response = await fetchWithTimeout(url, { headers: { Authorization: getAuthHeader(), Accept: "application/json" } }, timeoutMs);
       const text = await response.text();
-      clearTimeout(timeout);
+      const data = parseWooJson(text);
 
       if (!response.ok) {
-        lastError = `WooCommerce API chyba ${response.status} na strane ${page}: ${text.slice(0, 300)}`;
-        if ((response.status === 429 || response.status >= 500) && attempt < WOO_MAX_RETRIES) {
-          await sleep(1500 * attempt);
-          continue;
-        }
-        throw new Error(lastError);
+        const retryable = response.status === 429 || response.status === 500 || response.status === 502 || response.status === 503 || response.status === 504;
+        const message = `WooCommerce API chyba ${response.status} na strane ${page}: ${JSON.stringify(data).slice(0, 300)}`;
+        if (!retryable) throw new Error(message);
+        lastError = new Error(message);
+      } else if (!Array.isArray(data)) {
+        throw new Error(`WooCommerce nevrátil pole produktov na strane ${page}: ${JSON.stringify(data).slice(0, 300)}`);
+      } else {
+        return {
+          data,
+          totalPages: Number(response.headers.get("x-wp-totalpages") || 0),
+        };
       }
-
-      const data = parseWooJson(text);
-      return { data, totalPages: Number(response.headers.get("x-wp-totalpages") || 0) };
     } catch (error: any) {
-      clearTimeout(timeout);
-      lastError = error?.name === "AbortError" ? `WooCommerce timeout na strane ${page}` : error?.message || String(error);
-      if (attempt < WOO_MAX_RETRIES) {
-        await sleep(1500 * attempt);
-        continue;
-      }
+      lastError = new Error(error?.name === "AbortError" ? `WooCommerce timeout na strane ${page}` : error?.message || `WooCommerce chyba na strane ${page}`);
+    }
+
+    if (attempt < maxRetries) {
+      await wait(600 * (attempt + 1));
     }
   }
 
-  throw new Error(`WooCommerce stránka ${page} zlyhala: ${lastError}`);
+  throw lastError || new Error(`WooCommerce stránka ${page} zlyhala.`);
 }
 
 async function fetchAllWooProducts() {
@@ -351,47 +374,70 @@ async function fetchAllWooProducts() {
   const secret = env("WOO_CONSUMER_SECRET");
   if (!wooUrl || !key || !secret) throw new Error("Chýba WOO_URL, WOO_CONSUMER_KEY alebo WOO_CONSUMER_SECRET v .env");
 
+  const perPage = numberEnv("WOO_SYNC_PER_PAGE", DEFAULT_PER_PAGE, 10, 100);
+  const pageDelayMs = numberEnv("WOO_SYNC_PAGE_DELAY_MS", DEFAULT_PAGE_DELAY_MS, 0, 5_000);
+  const maxPages = numberEnv("WOO_SYNC_MAX_PAGES", 250, 1, 1000);
   const all: any[] = [];
   let page = 1;
+  let totalPages = 0;
 
-  while (page <= WOO_MAX_PAGES) {
-    const { data, totalPages } = await fetchWooPage(wooUrl, page);
-    if (!Array.isArray(data)) throw new Error(`WooCommerce stránka ${page} nevrátila zoznam produktov: ${JSON.stringify(data).slice(0, 300)}`);
-    if (data.length === 0) break;
+  while (page <= maxPages) {
+    const params = new URLSearchParams({
+      per_page: String(perPage),
+      page: String(page),
+      status: "publish",
+      orderby: "menu_order",
+      order: "asc",
+      _fields: WOO_FIELDS,
+    });
 
-    all.push(...data);
+    const result = await fetchWooPage(`${wooUrl}/wp-json/wc/v3/products?${params.toString()}`, page, perPage);
+    totalPages = result.totalPages || totalPages;
+    if (result.data.length === 0) break;
 
-    if (totalPages ? page >= totalPages : data.length < WOO_PER_PAGE) break;
+    all.push(...result.data);
 
+    if (totalPages ? page >= totalPages : result.data.length < perPage) break;
     page += 1;
-    await sleep(WOO_PAGE_DELAY_MS);
+    if (pageDelayMs > 0) await wait(pageDelayMs);
   }
 
-  if (page > WOO_MAX_PAGES) {
-    throw new Error(`Synchronizácia prekročila limit ${WOO_MAX_PAGES} strán.`);
-  }
-
-  return all;
+  return { products: all, pages: page };
 }
 
-export async function syncProductsCache(options: { force?: boolean } = {}) {
+export async function syncProductsCache(options: { force?: boolean } = {}): Promise<SyncResult> {
   const current = await readProductsCache();
   if (!options.force && current && isFresh(current)) return { cache: current, refreshed: false };
 
   try {
-    const rawProducts = await fetchAllWooProducts();
-    const products = sortProducts(rawProducts.map(mapProduct));
-    const next: CacheFile = { ok: true, version: CACHE_VERSION, generated_at: new Date().toISOString(), total: products.length, products };
+    const raw = await fetchAllWooProducts();
+    if (!raw.products.length) {
+      if (current?.products?.length) return { cache: current, refreshed: false, warning: "WooCommerce vrátil 0 produktov, ponechávam pôvodnú cache." };
+      throw new Error("WooCommerce vrátil 0 produktov a neexistuje pôvodná cache.");
+    }
+
+    const products = sortProducts(raw.products.map(mapProduct));
+    const next: CacheFile = {
+      ok: true,
+      version: CACHE_VERSION,
+      generated_at: new Date().toISOString(),
+      total: products.length,
+      products,
+      sync: { ok: true, source: "woocommerce", pages: raw.pages },
+    };
+
     await mkdir(CACHE_DIR, { recursive: true });
-    const tmp = `${CACHE_FILE}.tmp`;
+    const tmp = `${CACHE_FILE}.${Date.now()}.tmp`;
     await writeFile(tmp, JSON.stringify(next, null, 2), "utf8");
     await rename(tmp, CACHE_FILE);
     globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
     return { cache: next, refreshed: true };
-  } catch (error) {
-    if (current) {
+  } catch (error: any) {
+    await rm(`${CACHE_FILE}.tmp`, { force: true }).catch(() => undefined);
+    if (current?.products?.length) {
+      current.sync = { ok: false, warning: "Synchronizácia zlyhala, web používa poslednú funkčnú cache.", error: error?.message || String(error) };
       globalStore.__TM_PRODUCTS_FILE_CACHE__ = current;
-      return { cache: current, refreshed: false, error };
+      return { cache: current, refreshed: false, warning: current.sync.warning };
     }
     throw error;
   }
@@ -400,7 +446,7 @@ export async function syncProductsCache(options: { force?: boolean } = {}) {
 export async function getProductsCache() {
   const current = await readProductsCache();
   if (current) return current;
-  return (await syncProductsCache({ force: true })).cache;
+  return emptyCache();
 }
 
 function matchesCategory(product: TmProduct, category: string) {
