@@ -1,46 +1,20 @@
 <header class="site-header">
-  <div class="site-header-top">
-    <button class="mobile-menu-toggle" type="button" aria-label="Otvoriť menu" aria-expanded="false" data-mobile-menu-toggle>
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
+  <button class="mobile-menu-toggle" type="button" aria-label="Otvoriť menu" aria-expanded="false" data-mobile-menu-toggle>
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 
-    <a class="site-logo-link" href="/" aria-label="ToneryMaxim domov">
-      <img class="site-logo" src="/images/logo.png" alt="ToneryMaxim" />
-    </a>
+  <a class="site-logo-link" href="/" aria-label="ToneryMaxim domov">
+    <img class="site-logo" src="/images/logo.png" alt="ToneryMaxim" />
+  </a>
 
-    <nav class="site-nav" aria-label="Hlavná navigácia">
-      <a href="/produkty?category=tonery&search=toner">Tonery</a>
-      <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramenty</a>
-      <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
-      <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
-    </nav>
-
-    <div class="header-actions">
-      <a
-        class="header-heureka"
-        href="https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Heureka recenzie ToneryMaxim"
-        data-heureka-mini
-      >
-        <span class="header-heureka-badge" aria-hidden="true">★</span>
-        <span class="header-heureka-text">
-          <strong data-heureka-mini-score>5,0/5</strong>
-          <small data-heureka-mini-count>1 323 recenzií</small>
-        </span>
-      </a>
-
-      <a href="/prihlasenie" class="account-link" aria-label="Prihlásenie alebo účet">Účet</a>
-
-      <a href="/kosik" class="icon-btn cart-btn" aria-label="Košík">
-        🛒
-        <span class="cart-dot" data-cart-count>0</span>
-      </a>
-    </div>
-  </div>
+  <nav class="site-nav" aria-label="Hlavná navigácia">
+    <a href="/produkty?category=tonery&search=toner">Tonery</a>
+    <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramenty</a>
+    <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
+    <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
+  </nav>
 
   <div class="header-search-area">
     <form class="header-search" action="/produkty" method="get" data-smart-search>
@@ -49,47 +23,91 @@
         type="search"
         name="s"
         data-smart-search-input
-        placeholder="Hľadať toner, náplň alebo tlačiareň..."
+        placeholder="Hľadať toner alebo tlačiareň..."
         aria-label="Hľadať toner, náplň alebo tlačiareň"
       />
       <button type="submit" aria-label="Vyhľadať">Hľadať</button>
     </form>
   </div>
 
-  <nav class="mobile-drawer" aria-label="Mobilná navigácia" data-mobile-drawer>
-    <a href="/produkty?category=tonery&search=toner">Tonery</a>
-    <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramenty</a>
-    <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
-    <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
-    <a href="/produkty">Všetky produkty</a>
-  </nav>
+  <div class="header-actions">
+    <a
+      class="header-heureka"
+      href="https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Heureka recenzie ToneryMaxim"
+      data-heureka-mini
+    >
+      <span class="header-heureka-badge" aria-hidden="true">★</span>
+      <span class="header-heureka-text">
+        <strong data-heureka-mini-score>5,0/5</strong>
+        <small data-heureka-mini-count>1 323 recenzií</small>
+      </span>
+    </a>
+
+    <a href="/prihlasenie" class="account-link" aria-label="Prihlásenie alebo účet">Účet</a>
+
+    <a href="/kosik" class="icon-btn cart-btn" aria-label="Košík">
+      🛒
+      <span class="cart-dot" data-cart-count>0</span>
+    </a>
+  </div>
+
+  <div class="mobile-drawer" data-mobile-drawer aria-hidden="true">
+    <div class="mobile-drawer-panel">
+      <div class="mobile-drawer-head">
+        <strong>Menu</strong>
+        <button type="button" aria-label="Zavrieť menu" data-mobile-menu-close>×</button>
+      </div>
+      <nav class="mobile-drawer-nav" aria-label="Mobilná navigácia">
+        <a href="/produkty?category=tonery&search=toner">Tonery</a>
+        <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramenty</a>
+        <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
+        <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
+        <a href="/tlaciarne/hp">Tlačiarne HP</a>
+        <a href="/tlaciarne/brother">Tlačiarne Brother</a>
+        <a href="/tlaciarne/canon">Tlačiarne Canon</a>
+      </nav>
+    </div>
+  </div>
 </header>
 
 <nav class="mobile-bottom-nav" aria-label="Rýchla mobilná navigácia">
-  <a href="/" aria-label="Domov"><span>⌂</span><small>Domov</small></a>
-  <a href="/produkty" aria-label="Produkty"><span>▦</span><small>Produkty</small></a>
-  <a href="/produkty?s=" aria-label="Hľadať"><span>⌕</span><small>Hľadať</small></a>
-  <a href="/prihlasenie" aria-label="Účet"><span>◎</span><small>Účet</small></a>
-  <a href="/kosik" aria-label="Košík" class="mobile-bottom-cart"><span>🛒</span><small>Košík</small><i data-cart-count>0</i></a>
+  <a href="/" aria-label="Domov"><span>⌂</span><strong>Domov</strong></a>
+  <a href="/#znacky" aria-label="Značky"><span>▦</span><strong>Značky</strong></a>
+  <a href="/#hladat" class="mobile-bottom-nav-search" aria-label="Hľadať"><span>⌕</span><strong>Hľadať</strong></a>
+  <a href="/#pomoc" aria-label="Pomoc"><span>?</span><strong>Pomoc</strong></a>
+  <a href="/kosik" aria-label="Košík"><span>🛒</span><strong>Košík</strong></a>
 </nav>
 
 <script>
   import "../scripts/cart.js";
   import "../scripts/smart-search.js";
 
-  const menuButton = document.querySelector('[data-mobile-menu-toggle]');
-  const drawer = document.querySelector('[data-mobile-drawer]');
+  const menuToggle = document.querySelector("[data-mobile-menu-toggle]");
+  const menuClose = document.querySelector("[data-mobile-menu-close]");
+  const drawer = document.querySelector("[data-mobile-drawer]");
 
-  menuButton?.addEventListener('click', () => {
-    const isOpen = document.body.classList.toggle('mobile-menu-open');
-    menuButton.setAttribute('aria-expanded', String(isOpen));
-    drawer?.setAttribute('aria-hidden', String(!isOpen));
+  const setMobileMenu = (open) => {
+    if (!(drawer instanceof HTMLElement) || !(menuToggle instanceof HTMLButtonElement)) return;
+    drawer.classList.toggle("is-open", open);
+    drawer.setAttribute("aria-hidden", open ? "false" : "true");
+    menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    document.documentElement.classList.toggle("mobile-menu-open", open);
+  };
+
+  menuToggle?.addEventListener("click", () => {
+    setMobileMenu(!drawer?.classList.contains("is-open"));
   });
 
-  drawer?.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', () => {
-      document.body.classList.remove('mobile-menu-open');
-      menuButton?.setAttribute('aria-expanded', 'false');
-    });
+  menuClose?.addEventListener("click", () => setMobileMenu(false));
+
+  drawer?.addEventListener("click", (event) => {
+    if (event.target === drawer) setMobileMenu(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMobileMenu(false);
   });
 </script>
