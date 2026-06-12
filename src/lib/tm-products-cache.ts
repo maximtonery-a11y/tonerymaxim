@@ -262,6 +262,95 @@ export async function readProductsCache(): Promise<CacheFile | null> {
   }
 }
 
+const WOO_PER_PAGE = 50;
+const WOO_MAX_RETRIES = 5;
+const WOO_REQUEST_TIMEOUT_MS = 45000;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseWooJson(text: string) {
+  let data: any;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(`WooCommerce nevrátil JSON: ${text.slice(0, 300)}`);
+  }
+
+  // Niektoré hostingy/pluginy vrátia JSON ešte raz zabalený ako string:
+  // "[{\"id\":123,...}]". Toto rozbalíme druhým parse.
+  if (typeof data === "string") {
+    try {
+      data = JSON.parse(data);
+    } catch {
+      throw new Error(`WooCommerce vrátil JSON ako text, ale nedá sa rozbaliť: ${data.slice(0, 300)}`);
+    }
+  }
+
+  return data;
+}
+
+async function fetchWooPage(wooUrl: string, page: number) {
+  const params = new URLSearchParams({
+    per_page: String(WOO_PER_PAGE),
+    page: String(page),
+    status: "publish",
+    orderby: "menu_order",
+    order: "asc",
+    _fields: WOO_FIELDS,
+  });
+
+  const url = `${wooUrl}/wp-json/wc/v3/products?${params.toString()}`;
+  let lastError = "";
+
+  for (let attempt = 1; attempt <= WOO_MAX_RETRIES; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), WOO_REQUEST_TIMEOUT_MS);
+
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          Authorization: getAuthHeader(),
+          Accept: "application/json",
+          "User-Agent": "ToneryMaxim-Astro-Sync/1.0",
+        },
+      });
+
+      const text = await response.text();
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        lastError = `WooCommerce API chyba ${response.status}: ${text.slice(0, 300)}`;
+
+        // 429/5xx sú typicky dočasné chyby hostingu alebo limitu. Skúsime znova.
+        if (response.status === 429 || response.status >= 500) {
+          const retryAfter = Number(response.headers.get("retry-after") || 0);
+          const delay = retryAfter > 0 ? retryAfter * 1000 : 1000 * attempt * attempt;
+          await sleep(delay);
+          continue;
+        }
+
+        throw new Error(lastError);
+      }
+
+      const data = parseWooJson(text);
+      return { data, totalPages: Number(response.headers.get("x-wp-totalpages") || 0) };
+    } catch (error: any) {
+      clearTimeout(timeout);
+      lastError = error?.name === "AbortError" ? `WooCommerce timeout na strane ${page}` : error?.message || String(error);
+
+      if (attempt < WOO_MAX_RETRIES) {
+        await sleep(1000 * attempt * attempt);
+        continue;
+      }
+    }
+  }
+
+  throw new Error(`WooCommerce stránka ${page} zlyhala po ${WOO_MAX_RETRIES} pokusoch: ${lastError}`);
+}
+
 async function fetchAllWooProducts() {
   const wooUrl = env("WOO_URL").replace(/\/$/, "");
   const key = env("WOO_CONSUMER_KEY");
@@ -270,19 +359,22 @@ async function fetchAllWooProducts() {
 
   const all: any[] = [];
   let page = 1;
+
   while (true) {
-    const params = new URLSearchParams({ per_page: "100", page: String(page), status: "publish", orderby: "menu_order", order: "asc", _fields: WOO_FIELDS });
-    const response = await fetch(`${wooUrl}/wp-json/wc/v3/products?${params.toString()}`, { headers: { Authorization: getAuthHeader(), Accept: "application/json" } });
-    const text = await response.text();
-    let data: any;
-    try { data = JSON.parse(text); } catch { throw new Error(`WooCommerce nevrátil JSON: ${text.slice(0, 200)}`); }
-    if (!response.ok) throw new Error(`WooCommerce API chyba ${response.status}: ${JSON.stringify(data).slice(0, 300)}`);
-    if (!Array.isArray(data) || data.length === 0) break;
+    const { data, totalPages } = await fetchWooPage(wooUrl, page);
+    if (!Array.isArray(data)) throw new Error(`WooCommerce stránka ${page} nevrátila zoznam produktov: ${JSON.stringify(data).slice(0, 300)}`);
+    if (data.length === 0) break;
+
     all.push(...data);
-    const totalPages = Number(response.headers.get("x-wp-totalpages") || 0);
-    if (totalPages ? page >= totalPages : data.length < 100) break;
+
+    if (totalPages ? page >= totalPages : data.length < WOO_PER_PAGE) break;
+
     page += 1;
+
+    // Malá pauza, aby Woo hosting nevracal 503 pri veľkom importe.
+    await sleep(250);
   }
+
   return all;
 }
 
