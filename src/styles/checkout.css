@@ -300,11 +300,12 @@
 
 .checkout-summary {
   padding: 24px;
+  position: sticky;
+  top: 104px;
 }
 
 .summary-sticky {
-  position: sticky;
-  top: 104px;
+  position: static;
 }
 
 .checkout-summary h2 {
@@ -346,16 +347,32 @@
   object-fit: contain;
 }
 
-.checkout-product strong {
+.checkout-product strong,
+.checkout-product-name {
   display: block;
   color: var(--navy);
   font-size: 13px;
   line-height: 1.25;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.checkout-product-name:hover {
+  color: var(--blue);
 }
 
 .checkout-product span {
   color: #667085;
   font-size: 12px;
+}
+
+.checkout-product-attrs {
+  display: block;
+  margin-top: 3px;
+  color: #475467;
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 800;
 }
 
 .checkout-product b {
@@ -491,6 +508,7 @@
     grid-template-columns: 1fr;
   }
 
+  .checkout-summary,
   .summary-sticky {
     position: static;
   }

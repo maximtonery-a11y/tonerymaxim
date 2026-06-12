@@ -219,6 +219,27 @@
     }[char]));
   }
 
+  function cartFirstFilled(...values) {
+    for (const value of values) {
+      if (value === null || value === undefined) continue;
+      const text = String(value).trim();
+      if (text && text.toLowerCase() !== "neuvedené") return text;
+    }
+    return "";
+  }
+
+  function cartProductCapacity(product) {
+    return cartFirstFilled(product?.capacity, product?.kapacita, product?.yield, product?.page_yield, product?.pageYield, product?.pages, product?.ml, product?.volume);
+  }
+
+  function cartProductUrl(product) {
+    const direct = String(product?.url || product?.detail_url || "").trim();
+    if (direct && direct !== "#") return direct;
+    const slug = String(product?.slug || "").trim();
+    if (slug) return `/produkt/${encodeURIComponent(slug)}`;
+    return "/produkty";
+  }
+
   function addToCart(product) {
     const cart = readCart();
     const id = String(product.id || product.sku || product.name);
@@ -226,6 +247,16 @@
 
     if (existing) {
       existing.qty = Number(existing.qty || 1) + 1;
+      existing.url = existing.url && existing.url !== "#" ? existing.url : cartProductUrl(product);
+      existing.slug = existing.slug || product.slug || "";
+      existing.color = existing.color || product.color || "";
+      existing.capacity = existing.capacity || cartProductCapacity(product);
+      existing.yield = existing.yield || product.yield || "";
+      existing.page_yield = existing.page_yield || product.page_yield || "";
+      existing.warranty = existing.warranty || "24 mesiacov";
+      existing.stock_status = product.stock_status || existing.stock_status || "";
+      existing.stock_quantity = product.stock_quantity ?? existing.stock_quantity ?? null;
+      existing.stock_text = existing.stock_text || (typeof stockText === "function" ? stockText(product) : "");
     } else {
       cart.push({
         id,
@@ -233,8 +264,19 @@
         name: product.name,
         price: Number(product.price || 0),
         image: product.image || "",
-        url: product.detail_url || "#",
+        url: cartProductUrl(product),
+        slug: product.slug || "",
         qty: 1,
+        product_type_key: product.product_type_key || "",
+        product_type_label: product.product_type_label || product.product_type_detail_label || "",
+        color: product.color || "",
+        capacity: cartProductCapacity(product),
+        yield: product.yield || "",
+        page_yield: product.page_yield || "",
+        warranty: "24 mesiacov",
+        stock_status: product.stock_status || "",
+        stock_quantity: product.stock_quantity ?? null,
+        stock_text: stockText(product),
       });
     }
 

@@ -19,7 +19,7 @@
 
 html {
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -27,7 +27,7 @@ body {
   font-family: Inter, Arial, sans-serif;
   color: var(--text);
   background: #fff;
-  overflow-x: hidden;
+  overflow-x: clip;
   padding-top: 84px;
 }
 
@@ -56,6 +56,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
   padding: 0 56px;
   border-bottom: 1px solid var(--line);
   background: rgba(255, 255, 255, .88);
@@ -69,22 +70,104 @@ input {
 }
 
 .site-logo {
-  width: 245px;
+  width: 218px;
   display: block;
 }
 
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 38px;
+  gap: 24px;
   font-size: 15px;
   font-weight: 700;
 }
+.header-search-area {
+  flex: 1 1 420px;
+  max-width: 520px;
+  min-width: 260px;
+}
+
+.header-search-area .tm-smart-search-wrap {
+  width: 100%;
+  z-index: 1200;
+}
+
+.header-search {
+  width: 100%;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px 5px 12px;
+  border: 1px solid #dce7f4;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 10px 26px rgba(7, 27, 58, .06);
+}
+
+.header-search:focus-within {
+  border-color: #b9d5f3;
+  box-shadow: 0 14px 34px rgba(7, 27, 58, .10);
+}
+
+.header-search-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: #0b1736;
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.header-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.header-search input::placeholder {
+  color: #667085;
+  font-weight: 650;
+}
+
+.header-search button {
+  min-height: 34px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.header-search button:hover,
+.header-search button:focus-visible {
+  background: #0d2b5c;
+  outline: none;
+}
+
+.header-search-area .tm-smart-search-panel {
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(620px, calc(100vh - 120px));
+}
+
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 14px;
   color: var(--navy);
   font-weight: 700;
   font-size: 14px;
@@ -94,6 +177,28 @@ input {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+}
+
+.account-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 15px;
+  border: 1px solid #dce7f4;
+  border-radius: 999px;
+  background: #f7fbff;
+  color: var(--navy);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.account-link:hover,
+.account-link:focus-visible {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+  outline: none;
 }
 
 .login-link {
@@ -164,20 +269,46 @@ input {
 
 @media (max-width: 1100px) {
   body {
-    padding-top: 74px;
+    padding-top: 124px;
   }
 
   .site-header {
-    height: 74px;
-    padding: 0 18px;
+    min-height: 124px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    padding: 12px 18px;
+  }
+
+  .site-logo-link {
+    order: 1;
   }
 
   .site-logo {
-    width: 190px;
+    width: 178px;
   }
 
   .site-nav {
     display: none;
+  }
+
+  .header-search-area {
+    order: 3;
+    flex: 0 0 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .header-search {
+    min-height: 44px;
+  }
+
+  .header-search-area .tm-smart-search-panel {
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    max-height: min(520px, calc(100vh - 150px));
   }
 
   .header-heureka {
@@ -185,7 +316,14 @@ input {
   }
 
   .header-actions {
+    order: 2;
+    margin-left: auto;
     gap: 12px;
+  }
+
+  .account-link {
+    min-height: 36px;
+    padding: 0 13px;
   }
 
   .register-link {
@@ -213,6 +351,22 @@ input {
   .login-link::before {
     content: '◎';
     font-size: 18px;
+  }
+
+  .account-link {
+    font-size: 0;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+  }
+
+  .account-link::before {
+    content: '◎';
+    font-size: 18px;
+  }
+
+  .header-search button {
+    padding: 0 13px;
   }
 }
 

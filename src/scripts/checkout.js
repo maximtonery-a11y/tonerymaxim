@@ -49,6 +49,56 @@
     return number;
   }
 
+  function esc(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function firstFilled(...values) {
+    for (const value of values) {
+      if (value === null || value === undefined) continue;
+      const text = String(value).trim();
+      if (text && text.toLowerCase() !== "neuvedené") return text;
+    }
+    return "";
+  }
+
+  function productCapacity(item) {
+    return firstFilled(
+      item?.capacity,
+      item?.kapacita,
+      item?.yield,
+      item?.page_yield,
+      item?.pageYield,
+      item?.pages,
+      item?.ml,
+      item?.volume
+    );
+  }
+
+  function productUrl(item) {
+    const url = String(item?.url || item?.detail_url || "").trim();
+    if (url && url !== "#") return url;
+    const slug = String(item?.slug || "").trim();
+    if (slug) return `/produkt/${encodeURIComponent(slug)}`;
+    return "/produkty";
+  }
+
+  function stockText(item) {
+    if (item?.stock_text) return String(item.stock_text);
+    if (item?.stock_status === "instock") {
+      if (item.stock_quantity !== null && item.stock_quantity !== undefined && item.stock_quantity !== "") return `Skladom ${item.stock_quantity} ks`;
+      return "Skladom";
+    }
+    if (item?.stock_status === "onbackorder") return "Na objednávku";
+    if (item?.stock_status === "outofstock") return "Nie je skladom";
+    return "Dostupnosť neznáma";
+  }
+
   function normalizeCartItem(item, index) {
     if (!item || typeof item !== "object") return null;
 
@@ -82,8 +132,18 @@
       price,
       qty: cleanQty(qty),
       image: item.image || item.img || item.thumbnail || "",
+      url: productUrl(item),
+      slug: String(item.slug || ""),
+      color: firstFilled(item.color, item.farba),
+      capacity: productCapacity(item),
+      stock_status: String(item.stock_status || item.stockStatus || "instock"),
+      stock_quantity: item.stock_quantity ?? item.stockQuantity ?? null,
+      stock_text: String(item.stock_text || item.stockText || ""),
       product_type_key: String(item.product_type_key || item.productTypeKey || item.type || ""),
       product_type_label: String(item.product_type_label || item.productTypeLabel || ""),
+      series_pack_key: String(item.series_pack_key || item.seriesPackKey || ""),
+      series_pack_label: String(item.series_pack_label || item.seriesPackLabel || ""),
+      series_pack_discount_rate: Number(item.series_pack_discount_rate || item.seriesPackDiscountRate || 0),
     };
   }
 
@@ -142,7 +202,7 @@
     return type === "compatible" || label.includes("kompatibil");
   }
 
-  function discountRate(item) {
+  function quantityDiscountRate(item) {
     if (!isCompatibleDiscountItem(item)) return 0;
     const qty = cleanQty(item.qty);
     if (qty >= 4) return 0.25;
@@ -150,16 +210,109 @@
     return 0;
   }
 
+  function normalizeSeriesText(value) {
+    return String(value || "")
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^A-Z0-9]/g, "");
+  }
+
+  function seriesText(item) {
+    return `${item?.sku || ""} ${item?.name || ""} ${item?.series_pack_key || ""} ${item?.series_pack_label || ""}`;
+  }
+
+  function seriesColorKey(item) {
+    const compact = normalizeSeriesText(seriesText(item));
+    const readable = String(seriesText(item) || "")
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, " ");
+
+    let match = compact.match(/W\d{3}([0-3])A?/);
+    if (match) return { "0": "black", "1": "cyan", "2": "yellow", "3": "magenta" }[match[1]] || "";
+
+    match = compact.match(/(?:CF|CE|CB)\d{2}([0-3])(?:A|X|XC|YC|AC)?/);
+    if (match) return { "0": "black", "1": "cyan", "2": "yellow", "3": "magenta" }[match[1]] || "";
+
+    match = compact.match(/(?:TN|LC|BU|WT|CRG|CLI|PGI|PG|CL|T)\d{2,5}(BK|BLACK|C|CYAN|M|MAGENTA|Y|YELLOW|K)/);
+    if (match) {
+      const suffix = match[1];
+      if (suffix === "BK" || suffix === "BLACK" || suffix === "K") return "black";
+      if (suffix === "C" || suffix === "CYAN") return "cyan";
+      if (suffix === "M" || suffix === "MAGENTA") return "magenta";
+      if (suffix === "Y" || suffix === "YELLOW") return "yellow";
+    }
+
+    if (/(BK|BLACK|CIERNA|K)$/.test(compact) || /\b(BK|BLACK|CIERNA|CIERNA)\b/.test(readable)) return "black";
+    if (/(C|CYAN)$/.test(compact) || /\b(C|CYAN|AZUROVA|AZUROVA|MODRA)\b/.test(readable)) return "cyan";
+    if (/(M|MAGENTA)$/.test(compact) || /\b(M|MAGENTA|PURPUROVA|PURPUROVA)\b/.test(readable)) return "magenta";
+    if (/(Y|YELLOW)$/.test(compact) || /\b(Y|YELLOW|ZLTA|ZLTA)\b/.test(readable)) return "yellow";
+    return "";
+  }
+
+  function seriesBaseKey(item) {
+    if (item?.series_pack_key) return normalizeSeriesText(item.series_pack_key);
+    const compact = normalizeSeriesText(seriesText(item));
+
+    let match = compact.match(/(W\d{3})[0-3]A?/);
+    if (match) return match[1];
+
+    match = compact.match(/((?:CF|CE|CB)\d{2})[0-3](?:A|X|XC|YC|AC)?/);
+    if (match) return match[1];
+
+    match = compact.match(/((?:TN|LC|BU|WT|CRG|CLI|PGI|PG|CL|T)\d{2,5})(?:BK|BLACK|C|CYAN|M|MAGENTA|Y|YELLOW|K)/);
+    if (match) return match[1];
+
+    return "";
+  }
+
+  function seriesPackDiscount(cart) {
+    const groups = new Map();
+    (cart || []).forEach((item) => {
+      const base = seriesBaseKey(item);
+      const color = seriesColorKey(item);
+      if (!base || !color) return;
+      if (!groups.has(base)) groups.set(base, new Map());
+      const byColor = groups.get(base);
+      if (!byColor.has(color)) byColor.set(color, []);
+      byColor.get(color).push(item);
+    });
+
+    let discount = 0;
+    groups.forEach((byColor) => {
+      const required = ["black", "cyan", "magenta", "yellow"];
+      if (!required.every((color) => byColor.has(color))) return;
+
+      const colorLines = required.map((color) => {
+        const items = byColor.get(color) || [];
+        const qty = items.reduce((sum, item) => sum + cleanQty(item.qty), 0);
+        const total = items.reduce((sum, item) => sum + Number(item.price || 0) * cleanQty(item.qty), 0);
+        return { qty, unit: total / Math.max(1, qty) };
+      });
+
+      const setQty = Math.min(...colorLines.map((line) => line.qty));
+      if (setQty < 1) return;
+      const oneSetTotal = colorLines.reduce((sum, line) => sum + Number(line.unit || 0), 0);
+      discount += Math.round(oneSetTotal * setQty * 0.05 * 100) / 100;
+    });
+
+    return Math.round(discount * 100) / 100;
+  }
+
   function cartPricing(cart) {
-    return cart.reduce((totals, item) => {
+    const totals = (cart || []).reduce((acc, item) => {
       const qty = cleanQty(item.qty);
       const lineOriginal = Number(item.price || 0) * qty;
-      const rate = discountRate(item);
+      const rate = quantityDiscountRate(item);
       const lineDiscount = Math.round(lineOriginal * rate * 100) / 100;
-      totals.subtotal += lineOriginal;
-      totals.discount += lineDiscount;
-      return totals;
+      acc.subtotal += lineOriginal;
+      acc.discount += lineDiscount;
+      return acc;
     }, { subtotal: 0, discount: 0 });
+
+    totals.discount = Math.round((totals.discount + seriesPackDiscount(cart || [])) * 100) / 100;
+    return totals;
   }
 
   function getSelected(name) {
@@ -380,17 +533,16 @@
 
     cart.forEach((item) => {
       const qty = cleanQty(item.qty);
-      const lineOriginal = Number(item.price || 0) * qty;
-      const rate = discountRate(item);
-      const lineDiscount = Math.round(lineOriginal * rate * 100) / 100;
-      const lineFinal = Math.max(0, lineOriginal - lineDiscount);
+      const lineFinal = Number(item.price || 0) * qty;
       const row = document.createElement("div");
       row.className = "checkout-product";
+      const attrs = [item.color, item.capacity, stockText(item)].filter(Boolean).map(esc).join(" · ");
       row.innerHTML = `
-        <div class="checkout-product-thumb">${item.image ? `<img src="${item.image}" alt="${item.name}" />` : "TM"}</div>
+        <a class="checkout-product-thumb" href="${esc(item.url)}" aria-label="Otvoriť detail produktu ${esc(item.name)}">${item.image ? `<img src="${esc(item.image)}" alt="${esc(item.name)}" />` : "TM"}</a>
         <div>
-          <strong>${item.name}</strong>
-          <span>${qty} × ${money(item.price)}${lineDiscount > 0 ? ` · zľava ${Math.round(rate * 100)} %` : ""}</span>
+          <a class="checkout-product-name" href="${esc(item.url)}">${esc(item.name)}</a>
+          <span>${qty} × ${money(item.price)}</span>
+          ${attrs ? `<small class="checkout-product-attrs">${attrs}</small>` : ""}
         </div>
         <b>${money(lineFinal)}</b>
       `;

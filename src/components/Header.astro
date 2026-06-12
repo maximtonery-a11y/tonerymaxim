@@ -5,11 +5,24 @@
 
   <nav class="site-nav" aria-label="Hlavná navigácia">
     <a href="/produkty?category=tonery&search=toner">Tonery</a>
-    <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a>
-    <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Optické valce</a>
-    <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Ostatné komponenty</a>
-    <a href="/#kontakt">Kontakt</a>
+    <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramenty</a>
+    <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
+    <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
   </nav>
+
+  <div class="header-search-area">
+    <form class="header-search" action="/produkty" method="get" data-smart-search>
+      <span class="header-search-icon" aria-hidden="true">⌕</span>
+      <input
+        type="search"
+        name="s"
+        data-smart-search-input
+        placeholder="Hľadať toner alebo tlačiareň..."
+        aria-label="Hľadať toner, náplň alebo tlačiareň"
+      />
+      <button type="submit" aria-label="Vyhľadať">Hľadať</button>
+    </form>
+  </div>
 
   <div class="header-actions">
     <a
@@ -27,12 +40,8 @@
       </span>
     </a>
 
-    <div class="header-auth">
-      <a href="/prihlasenie" class="login-link">◎ Prihlásenie</a>
-      <a href="/registracia" class="register-link">Registrácia</a>
-    </div>
+    <a href="/prihlasenie" class="account-link" aria-label="Prihlásenie alebo účet">Účet</a>
 
-    <a href="#" class="icon-btn" aria-label="Obľúbené produkty">♡</a>
     <a href="/kosik" class="icon-btn cart-btn" aria-label="Košík">
       🛒
       <span class="cart-dot" data-cart-count>0</span>

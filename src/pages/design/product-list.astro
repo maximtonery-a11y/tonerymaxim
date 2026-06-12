@@ -1,5 +1,7 @@
 ---
 import "../../styles/global.css";
+import "../../styles/footer.css";
+import Footer from "../../components/Footer.astro";
 import "../../styles/product-design.css";
 
 const printerModels = [
@@ -191,5 +193,6 @@ const products = [
         if (event.target === modal && modal instanceof HTMLDialogElement) modal.close();
       });
     </script>
+      <Footer />
   </body>
 </html>

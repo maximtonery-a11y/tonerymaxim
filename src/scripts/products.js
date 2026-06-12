@@ -33,6 +33,27 @@
     }).format(Number(value || 0));
   }
 
+  function cartFirstFilled(...values) {
+    for (const value of values) {
+      if (value === null || value === undefined) continue;
+      const text = String(value).trim();
+      if (text && text.toLowerCase() !== "neuvedené") return text;
+    }
+    return "";
+  }
+
+  function cartProductCapacity(product) {
+    return cartFirstFilled(product?.capacity, product?.kapacita, product?.yield, product?.page_yield, product?.pageYield, product?.pages, product?.ml, product?.volume);
+  }
+
+  function cartProductUrl(product) {
+    const direct = String(product?.url || product?.detail_url || "").trim();
+    if (direct && direct !== "#") return direct;
+    const slug = String(product?.slug || "").trim();
+    if (slug) return `/produkt/${encodeURIComponent(slug)}`;
+    return "/produkty";
+  }
+
   function addToCart(product) {
     const cart = readCart();
     const id = String(product.id || product.sku || product.name);
@@ -47,7 +68,19 @@
         name: product.name,
         price: Number(product.price || 0),
         image: product.image || "",
+        url: cartProductUrl(product),
+        slug: product.slug || "",
         qty: 1,
+        product_type_key: product.product_type_key || "",
+        product_type_label: product.product_type_label || product.product_type_detail_label || "",
+        color: product.color || "",
+        capacity: cartProductCapacity(product),
+        yield: product.yield || "",
+        page_yield: product.page_yield || "",
+        warranty: "24 mesiacov",
+        stock_status: product.stock_status || "",
+        stock_quantity: product.stock_quantity ?? null,
+        stock_text: product.stock_status === "instock" ? (product.stock_quantity != null ? `Skladom ${product.stock_quantity} ks` : "Skladom") : (product.stock_status || ""),
       });
     }
 
