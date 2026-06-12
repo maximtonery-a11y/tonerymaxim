@@ -3,6 +3,7 @@ import "../styles/global.css";
 import "../styles/hero.css";
 import "../styles/benefits.css";
 import "../styles/footer.css";
+import "../styles/home-mobile.css";
 
 import Header from "../components/Header.astro";
 import HeroSearch from "../components/HeroSearch.astro";
@@ -22,17 +23,65 @@ const title = "ToneryMaxim.sk";
     <title>{title}</title>
   </head>
 
-  <body>
+  <body class="home-page">
     <div class="page">
       <Header />
 
+      <header class="home-mobile-header" aria-label="Mobilná hlavička">
+        <a class="home-mobile-menu" href="#mobile-home-brands" aria-label="Otvoriť značky">☰</a>
+        <a class="home-mobile-logo" href="/" aria-label="ToneryMaxim domov">
+          <img src="/images/logo.png" alt="ToneryMaxim" />
+        </a>
+        <a class="home-mobile-cart" href="/kosik" aria-label="Košík">
+          🛒
+          <span data-cart-count>0</span>
+        </a>
+      </header>
+
       <main>
         <HeroSearch />
+
+        <section class="home-mobile-brands" id="mobile-home-brands" aria-label="Výber značky výrobcu">
+          <div class="home-mobile-section-head">
+            <h2>Vyberte značku výrobcu</h2>
+            <p>Najrýchlejší spôsob, ak poznáte značku tlačiarne.</p>
+          </div>
+
+          <div class="home-mobile-brand-grid">
+            <a href="/tlaciarne/hp"><strong>HP</strong><span>Zobraziť modely</span></a>
+            <a href="/tlaciarne/brother"><strong>Brother</strong><span>Zobraziť modely</span></a>
+            <a href="/tlaciarne/canon"><strong>Canon</strong><span>Zobraziť modely</span></a>
+            <a href="/tlaciarne/epson"><strong>Epson</strong><span>Zobraziť modely</span></a>
+            <a href="/tlaciarne/samsung"><strong>Samsung</strong><span>Zobraziť modely</span></a>
+            <a href="/tlaciarne/xerox"><strong>Xerox</strong><span>Zobraziť modely</span></a>
+            <a href="/tlaciarne/lexmark"><strong>Lexmark</strong><span>Zobraziť modely</span></a>
+            <a href="/tlaciarne"><strong>Ďalšie značky</strong><span>Zobraziť všetky</span></a>
+          </div>
+        </section>
+
+        <section class="home-mobile-trust" aria-label="Prečo nakupovať u nás">
+          <h2>Prečo nakupovať u nás?</h2>
+          <div class="home-mobile-trust-grid">
+            <div><strong>17 rokov</strong><span>skúseností</span></div>
+            <div><strong>30 000+</strong><span>objednávok</span></div>
+            <div><strong>od 3,90 €</strong><span>doručenie</span></div>
+            <div><strong>4,9 / 5</strong><span>Heureka</span></div>
+          </div>
+        </section>
+
         <ProductFinder />
         <Benefits />
       </main>
 
       <Footer showTrust={false} />
+      <nav class="home-mobile-bottom-nav" aria-label="Mobilná navigácia">
+        <a class="is-active" href="/">⌂<span>Domov</span></a>
+        <a href="#mobile-home-brands">▦<span>Značky</span></a>
+        <a href="#home-search">⌕<span>Hľadať</span></a>
+        <a href="/#kontakt">?<span>Pomoc</span></a>
+        <a href="/kosik">🛒<span>Košík</span><b data-cart-count>0</b></a>
+      </nav>
+
       <FloatingAdvisor />
     </div>
 
