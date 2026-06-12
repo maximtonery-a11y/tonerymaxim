@@ -3,7 +3,6 @@ import "../styles/global.css";
 import "../styles/hero.css";
 import "../styles/benefits.css";
 import "../styles/footer.css";
-import "../styles/home-mobile.css";
 
 import Header from "../components/Header.astro";
 import HeroSearch from "../components/HeroSearch.astro";
@@ -13,16 +12,6 @@ import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 
 const title = "ToneryMaxim.sk";
-
-const mobileBrands = [
-  { name: "HP", slug: "hp", logo: "hp", className: "hp" },
-  { name: "Brother", slug: "brother", logo: "brother", className: "brother" },
-  { name: "Canon", slug: "canon", logo: "Canon", className: "canon" },
-  { name: "Epson", slug: "epson", logo: "EPSON", className: "epson" },
-  { name: "Samsung", slug: "samsung", logo: "SAMSUNG", className: "samsung" },
-  { name: "Xerox", slug: "xerox", logo: "Xerox", className: "xerox" },
-  { name: "Lexmark", slug: "lexmark", logo: "Lexmark", className: "lexmark" },
-];
 ---
 
 <!doctype html>
@@ -33,50 +22,11 @@ const mobileBrands = [
     <title>{title}</title>
   </head>
 
-  <body class="home-page">
+  <body>
     <div class="page">
       <Header />
 
       <main>
-        <section id="hladat" class="tm-mobile-home" aria-label="Mobilná úvodná stránka ToneryMaxim">
-          <div class="tm-mobile-home-search">
-            <form class="tm-mobile-search" action="/produkty" method="get" data-smart-search>
-              <span class="tm-mobile-search-icon" aria-hidden="true">⌕</span>
-              <input
-                type="search"
-                name="s"
-                data-smart-search-input
-                placeholder="Napíšte model tlačiarne alebo tonera"
-                aria-label="Napíšte model tlačiarne alebo tonera"
-              />
-              <button type="submit" aria-label="Vyhľadať">Hľadať</button>
-            </form>
-          </div>
-
-          <div class="tm-mobile-brand-grid" aria-label="Značky výrobcov tlačiarní">
-            {mobileBrands.map((brand) => (
-              <a class="tm-mobile-brand-card" href={`/tlaciarne/${brand.slug}`} aria-label={`Zobraziť tlačiarne ${brand.name}`}>
-                <span class={`tm-mobile-brand-logo ${brand.className}`}>{brand.logo}</span>
-                <strong>{brand.name}</strong>
-              </a>
-            ))}
-
-            <a class="tm-mobile-brand-card tm-mobile-brand-card-more" href="/tlaciarne" aria-label="Zobraziť všetky značky tlačiarní">
-              <span class="tm-mobile-brand-logo more">•••</span>
-              <strong>Ostatné značky</strong>
-            </a>
-          </div>
-
-          <div class="tm-mobile-benefits" aria-label="Výhody nákupu v ToneryMaxim">
-            <article><span aria-hidden="true">✓</span><strong>Overená kompatibilita</strong></article>
-            <article><span aria-hidden="true">🚚</span><strong>Rýchle doručenie</strong></article>
-            <article><span aria-hidden="true">★</span><strong>Kvalitné produkty</strong></article>
-            <article><span aria-hidden="true">€</span><strong>Výhodné ceny</strong></article>
-            <article><span aria-hidden="true">☎</span><strong>Zákaznícka podpora</strong></article>
-            <article><span aria-hidden="true">🔒</span><strong>Bezpečný nákup</strong></article>
-          </div>
-        </section>
-
         <HeroSearch />
         <ProductFinder />
         <Benefits />
@@ -85,5 +35,6 @@ const mobileBrands = [
       <Footer showTrust={false} />
       <FloatingAdvisor />
     </div>
+
   </body>
 </html>

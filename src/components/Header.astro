@@ -1,16 +1,6 @@
----
-import tmLogoMobile from "../assets/tonerymaxim-logo-mobile.png";
----
 <header class="site-header">
-  <button class="mobile-menu-toggle" type="button" aria-label="Menu" data-mobile-menu-toggle>
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-
   <a class="site-logo-link" href="/" aria-label="ToneryMaxim domov">
-    <img class="site-logo site-logo-desktop" src="/images/logo.png" alt="ToneryMaxim" />
-    <img class="site-logo-mobile" src={tmLogoMobile.src} alt="ToneryMaxim" />
+    <img class="site-logo" src="/images/logo.png" alt="ToneryMaxim" />
   </a>
 
   <nav class="site-nav" aria-label="Hlavná navigácia">
@@ -59,30 +49,7 @@ import tmLogoMobile from "../assets/tonerymaxim-logo-mobile.png";
   </div>
 </header>
 
-<nav class="mobile-drawer" aria-label="Mobilné menu" data-mobile-drawer>
-  <a href="/produkty?category=tonery&search=toner">Tonery</a>
-  <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramenty</a>
-  <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
-  <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
-</nav>
-
-<nav class="mobile-bottom-nav" aria-label="Spodná mobilná navigácia">
-  <a href="/"><span>⌂</span><strong>Domov</strong></a>
-  <a href="/tlaciarne"><span>▦</span><strong>Značky</strong></a>
-  <a href="/produkty"><span>⌕</span><strong>Hľadať</strong></a>
-  <a href="/kontakt"><span>?</span><strong>Pomoc</strong></a>
-  <a href="/prihlasenie"><span>◎</span><strong>Účet</strong></a>
-</nav>
-
 <script>
   import "../scripts/cart.js";
   import "../scripts/smart-search.js";
-
-  const mobileMenuToggle = document.querySelector("[data-mobile-menu-toggle]");
-  const mobileDrawer = document.querySelector("[data-mobile-drawer]");
-
-  mobileMenuToggle?.addEventListener("click", () => {
-    const isOpen = mobileDrawer?.classList.toggle("is-open") ?? false;
-    mobileMenuToggle.setAttribute("aria-expanded", String(isOpen));
-  });
 </script>
