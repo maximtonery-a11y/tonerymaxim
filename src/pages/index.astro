@@ -23,38 +23,6 @@ const mobileBrands = [
   { name: "Xerox", slug: "xerox", logo: "Xerox", className: "xerox" },
   { name: "Lexmark", slug: "lexmark", logo: "Lexmark", className: "lexmark" },
 ];
-
-const allPrinterBrands = [
-  "HP",
-  "Canon",
-  "Brother",
-  "Epson",
-  "Samsung",
-  "Xerox",
-  "Lexmark",
-  "Kyocera",
-  "OKI",
-  "Ricoh",
-  "Konica Minolta",
-  "Utax",
-  "Panasonic",
-  "Toshiba",
-  "Dell",
-  "Sharp",
-  "Minolta",
-  "Olivetti",
-  "Philips",
-  "Tally",
-  "Triumph Adler",
-];
-
-const toSlug = (brand: string) =>
-  brand
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 ---
 
 <!doctype html>
@@ -87,16 +55,16 @@ const toSlug = (brand: string) =>
 
           <div class="tm-mobile-brand-grid" aria-label="Značky výrobcov tlačiarní">
             {mobileBrands.map((brand) => (
-              <a class="tm-mobile-brand-card" href={`/tlaciarne/${brand.slug}`}>
+              <a class="tm-mobile-brand-card" href={`/tlaciarne/${brand.slug}`} aria-label={`Zobraziť tlačiarne ${brand.name}`}>
                 <span class={`tm-mobile-brand-logo ${brand.className}`}>{brand.logo}</span>
                 <strong>{brand.name}</strong>
               </a>
             ))}
 
-            <button class="tm-mobile-brand-card tm-mobile-brand-card-more" type="button" data-open-mobile-brand-modal>
+            <a class="tm-mobile-brand-card tm-mobile-brand-card-more" href="/tlaciarne" aria-label="Zobraziť všetky značky tlačiarní">
               <span class="tm-mobile-brand-logo more">•••</span>
               <strong>Ostatné značky</strong>
-            </button>
+            </a>
           </div>
 
           <div class="tm-mobile-benefits" aria-label="Výhody nákupu v ToneryMaxim">
@@ -117,30 +85,5 @@ const toSlug = (brand: string) =>
       <Footer showTrust={false} />
       <FloatingAdvisor />
     </div>
-
-    <dialog class="tm-mobile-brand-modal" data-mobile-brand-modal>
-      <div class="tm-mobile-brand-modal-card">
-        <button class="tm-mobile-brand-modal-close" type="button" data-close-mobile-brand-modal aria-label="Zavrieť">×</button>
-        <strong class="tm-mobile-brand-modal-title">Všetky značky</strong>
-        <div class="tm-mobile-brand-modal-grid">
-          {allPrinterBrands.map((brand) => (
-            <a href={`/tlaciarne/${toSlug(brand)}`}>{brand}</a>
-          ))}
-        </div>
-      </div>
-    </dialog>
-
-    <script>
-      const mobileBrandModal = document.querySelector("[data-mobile-brand-modal]");
-      document.querySelector("[data-open-mobile-brand-modal]")?.addEventListener("click", () => {
-        if (mobileBrandModal instanceof HTMLDialogElement) mobileBrandModal.showModal();
-      });
-      document.querySelector("[data-close-mobile-brand-modal]")?.addEventListener("click", () => {
-        if (mobileBrandModal instanceof HTMLDialogElement) mobileBrandModal.close();
-      });
-      mobileBrandModal?.addEventListener("click", (event) => {
-        if (event.target === mobileBrandModal && mobileBrandModal instanceof HTMLDialogElement) mobileBrandModal.close();
-      });
-    </script>
   </body>
 </html>

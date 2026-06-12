@@ -1,5 +1,5 @@
 ---
-import tmLogo from "../assets/tonerymaxim-logo.png";
+import tmLogoMobile from "../assets/tonerymaxim-logo-mobile.png";
 ---
 <header class="site-header">
   <button class="mobile-menu-toggle" type="button" aria-label="Menu" data-mobile-menu-toggle>
@@ -9,7 +9,8 @@ import tmLogo from "../assets/tonerymaxim-logo.png";
   </button>
 
   <a class="site-logo-link" href="/" aria-label="ToneryMaxim domov">
-    <img class="site-logo" src={tmLogo.src} alt="ToneryMaxim" />
+    <img class="site-logo site-logo-desktop" src="/images/logo.png" alt="ToneryMaxim" />
+    <img class="site-logo-mobile" src={tmLogoMobile.src} alt="ToneryMaxim" />
   </a>
 
   <nav class="site-nav" aria-label="Hlavná navigácia">
