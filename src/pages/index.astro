@@ -13,6 +13,48 @@ import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 
 const title = "ToneryMaxim.sk";
+
+const mobileBrands = [
+  { name: "HP", slug: "hp", logo: "hp", className: "hp" },
+  { name: "Brother", slug: "brother", logo: "brother", className: "brother" },
+  { name: "Canon", slug: "canon", logo: "Canon", className: "canon" },
+  { name: "Epson", slug: "epson", logo: "EPSON", className: "epson" },
+  { name: "Samsung", slug: "samsung", logo: "SAMSUNG", className: "samsung" },
+  { name: "Xerox", slug: "xerox", logo: "Xerox", className: "xerox" },
+  { name: "Lexmark", slug: "lexmark", logo: "Lexmark", className: "lexmark" },
+];
+
+const allPrinterBrands = [
+  "HP",
+  "Canon",
+  "Brother",
+  "Epson",
+  "Samsung",
+  "Xerox",
+  "Lexmark",
+  "Kyocera",
+  "OKI",
+  "Ricoh",
+  "Konica Minolta",
+  "Utax",
+  "Panasonic",
+  "Toshiba",
+  "Dell",
+  "Sharp",
+  "Minolta",
+  "Olivetti",
+  "Philips",
+  "Tally",
+  "Triumph Adler",
+];
+
+const toSlug = (brand: string) =>
+  brand
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 ---
 
 <!doctype html>
@@ -27,63 +69,78 @@ const title = "ToneryMaxim.sk";
     <div class="page">
       <Header />
 
-      <header class="home-mobile-header" aria-label="Mobilná hlavička">
-        <a class="home-mobile-menu" href="#mobile-home-brands" aria-label="Otvoriť značky">☰</a>
-        <a class="home-mobile-logo" href="/" aria-label="ToneryMaxim domov">
-          <img src="/images/logo.png" alt="ToneryMaxim" />
-        </a>
-        <a class="home-mobile-cart" href="/kosik" aria-label="Košík">
-          🛒
-          <span data-cart-count>0</span>
-        </a>
-      </header>
-
       <main>
+        <section id="hladat" class="tm-mobile-home" aria-label="Mobilná úvodná stránka ToneryMaxim">
+          <div class="tm-mobile-home-search">
+            <form class="tm-mobile-search" action="/produkty" method="get" data-smart-search>
+              <span class="tm-mobile-search-icon" aria-hidden="true">⌕</span>
+              <input
+                type="search"
+                name="s"
+                data-smart-search-input
+                placeholder="Napíšte model tlačiarne alebo tonera"
+                aria-label="Napíšte model tlačiarne alebo tonera"
+              />
+              <button type="submit" aria-label="Vyhľadať">Hľadať</button>
+            </form>
+          </div>
+
+          <div class="tm-mobile-brand-grid" aria-label="Značky výrobcov tlačiarní">
+            {mobileBrands.map((brand) => (
+              <a class="tm-mobile-brand-card" href={`/tlaciarne/${brand.slug}`}>
+                <span class={`tm-mobile-brand-logo ${brand.className}`}>{brand.logo}</span>
+                <strong>{brand.name}</strong>
+              </a>
+            ))}
+
+            <button class="tm-mobile-brand-card tm-mobile-brand-card-more" type="button" data-open-mobile-brand-modal>
+              <span class="tm-mobile-brand-logo more">•••</span>
+              <strong>Ostatné značky</strong>
+            </button>
+          </div>
+
+          <div class="tm-mobile-benefits" aria-label="Výhody nákupu v ToneryMaxim">
+            <article><span aria-hidden="true">✓</span><strong>Overená kompatibilita</strong></article>
+            <article><span aria-hidden="true">🚚</span><strong>Rýchle doručenie</strong></article>
+            <article><span aria-hidden="true">★</span><strong>Kvalitné produkty</strong></article>
+            <article><span aria-hidden="true">€</span><strong>Výhodné ceny</strong></article>
+            <article><span aria-hidden="true">☎</span><strong>Zákaznícka podpora</strong></article>
+            <article><span aria-hidden="true">🔒</span><strong>Bezpečný nákup</strong></article>
+          </div>
+        </section>
+
         <HeroSearch />
-
-        <section class="home-mobile-brands" id="mobile-home-brands" aria-label="Výber značky výrobcu">
-          <div class="home-mobile-section-head">
-            <h2>Vyberte značku výrobcu</h2>
-            <p>Najrýchlejší spôsob, ak poznáte značku tlačiarne.</p>
-          </div>
-
-          <div class="home-mobile-brand-grid">
-            <a href="/tlaciarne/hp"><strong>HP</strong><span>Zobraziť modely</span></a>
-            <a href="/tlaciarne/brother"><strong>Brother</strong><span>Zobraziť modely</span></a>
-            <a href="/tlaciarne/canon"><strong>Canon</strong><span>Zobraziť modely</span></a>
-            <a href="/tlaciarne/epson"><strong>Epson</strong><span>Zobraziť modely</span></a>
-            <a href="/tlaciarne/samsung"><strong>Samsung</strong><span>Zobraziť modely</span></a>
-            <a href="/tlaciarne/xerox"><strong>Xerox</strong><span>Zobraziť modely</span></a>
-            <a href="/tlaciarne/lexmark"><strong>Lexmark</strong><span>Zobraziť modely</span></a>
-            <a href="/tlaciarne"><strong>Ďalšie značky</strong><span>Zobraziť všetky</span></a>
-          </div>
-        </section>
-
-        <section class="home-mobile-trust" aria-label="Prečo nakupovať u nás">
-          <h2>Prečo nakupovať u nás?</h2>
-          <div class="home-mobile-trust-grid">
-            <div><strong>17 rokov</strong><span>skúseností</span></div>
-            <div><strong>30 000+</strong><span>objednávok</span></div>
-            <div><strong>od 3,90 €</strong><span>doručenie</span></div>
-            <div><strong>4,9 / 5</strong><span>Heureka</span></div>
-          </div>
-        </section>
-
         <ProductFinder />
         <Benefits />
       </main>
 
       <Footer showTrust={false} />
-      <nav class="home-mobile-bottom-nav" aria-label="Mobilná navigácia">
-        <a class="is-active" href="/">⌂<span>Domov</span></a>
-        <a href="#mobile-home-brands">▦<span>Značky</span></a>
-        <a href="#home-search">⌕<span>Hľadať</span></a>
-        <a href="/#kontakt">?<span>Pomoc</span></a>
-        <a href="/kosik">🛒<span>Košík</span><b data-cart-count>0</b></a>
-      </nav>
-
       <FloatingAdvisor />
     </div>
 
+    <dialog class="tm-mobile-brand-modal" data-mobile-brand-modal>
+      <div class="tm-mobile-brand-modal-card">
+        <button class="tm-mobile-brand-modal-close" type="button" data-close-mobile-brand-modal aria-label="Zavrieť">×</button>
+        <strong class="tm-mobile-brand-modal-title">Všetky značky</strong>
+        <div class="tm-mobile-brand-modal-grid">
+          {allPrinterBrands.map((brand) => (
+            <a href={`/tlaciarne/${toSlug(brand)}`}>{brand}</a>
+          ))}
+        </div>
+      </div>
+    </dialog>
+
+    <script>
+      const mobileBrandModal = document.querySelector("[data-mobile-brand-modal]");
+      document.querySelector("[data-open-mobile-brand-modal]")?.addEventListener("click", () => {
+        if (mobileBrandModal instanceof HTMLDialogElement) mobileBrandModal.showModal();
+      });
+      document.querySelector("[data-close-mobile-brand-modal]")?.addEventListener("click", () => {
+        if (mobileBrandModal instanceof HTMLDialogElement) mobileBrandModal.close();
+      });
+      mobileBrandModal?.addEventListener("click", (event) => {
+        if (event.target === mobileBrandModal && mobileBrandModal instanceof HTMLDialogElement) mobileBrandModal.close();
+      });
+    </script>
   </body>
 </html>
