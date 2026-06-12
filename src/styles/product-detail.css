@@ -1892,3 +1892,219 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Mobile responsive patch v1 – product detail */
+@media (max-width: 760px) {
+  .product-detail-page {
+    padding: 18px 0 44px;
+  }
+
+  .detail-wrap {
+    width: min(100% - 24px, 1040px);
+  }
+
+  .back-link {
+    margin-bottom: 14px;
+  }
+
+  .detail-hero-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 14px;
+    border-radius: 20px;
+    border-left-width: 4px;
+  }
+
+  .product-info {
+    order: 1;
+  }
+
+  .product-gallery {
+    order: 2;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .purchase-panel {
+    order: 3;
+    grid-column: auto;
+    max-width: none;
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .badge-row {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .product-info h1 {
+    max-width: none;
+    margin-bottom: 10px;
+    font-size: clamp(27px, 8.6vw, 36px);
+    line-height: 1.07;
+    letter-spacing: -0.045em;
+  }
+
+  .rating-row,
+  .summary-subtitle {
+    font-size: 13px;
+  }
+
+  .summary-subtitle {
+    margin-bottom: 14px;
+  }
+
+  .compat-preview {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .chips {
+    gap: 7px;
+    margin-bottom: 12px;
+  }
+
+  .chip {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .main-image {
+    min-height: 248px;
+    border-radius: 16px;
+  }
+
+  .main-image img {
+    max-height: 238px;
+    padding: 20px;
+  }
+
+  .thumbs {
+    order: 2;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .thumbs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .thumbs button {
+    flex: 0 0 50px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .price-row strong {
+    font-size: 36px;
+  }
+
+  .add-main,
+  .buy-now {
+    height: 48px;
+  }
+
+  .purchase-note {
+    display: grid;
+    gap: 7px;
+  }
+
+  .compat-section,
+  .info-grid,
+  .related-section {
+    margin-top: 16px;
+  }
+
+  .compat-section,
+  .params-card,
+  .description-card,
+  .related-column {
+    border-radius: 18px;
+  }
+
+  .compat-section,
+  .params-card,
+  .description-card,
+  .related-column {
+    padding: 18px 16px;
+  }
+
+  .section-head {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .section-head h2,
+  .params-card h2,
+  .description-card h2,
+  .related-column h2 {
+    font-size: 20px;
+  }
+
+  .compat-pills {
+    gap: 8px;
+  }
+
+  .compat-pills a,
+  .compat-pills button {
+    min-height: 35px;
+    padding: 0 11px;
+    font-size: 12px;
+  }
+
+  .info-grid,
+  .related-section,
+  .accessory-grid,
+  .alternative-grid,
+  .micro-benefits,
+  .compat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .params-card dl div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 10px 0;
+  }
+
+  .params-card dd {
+    text-align: left;
+  }
+
+  .micro-benefits div {
+    border-right: 0;
+    border-bottom: 1px solid #edf2f8;
+    padding: 12px 0;
+  }
+
+  .micro-benefits div:last-child {
+    border-bottom: 0;
+  }
+
+  .accessory-card,
+  .mini-product {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .accessory-card button,
+  .mini-product button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .compat-modal {
+    padding: 12px;
+  }
+
+  .compat-modal-card {
+    max-height: calc(100vh - 24px);
+    padding: 22px 16px 16px;
+    border-radius: 20px;
+  }
+}

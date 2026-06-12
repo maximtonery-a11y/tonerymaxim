@@ -823,3 +823,82 @@ body.has-gls-modal {
   color: #0b9f55;
   font-weight: 900;
 }
+
+/* Mobile responsive patch v1 – checkout */
+@media (max-width: 720px) {
+  .checkout-wrap {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .checkout-page {
+    padding-bottom: 52px;
+  }
+
+  .checkout-progress {
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .checkout-layout {
+    gap: 18px;
+  }
+
+  .checkout-card,
+  .checkout-summary,
+  .checkout-empty {
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .checkout-card h2,
+  .checkout-summary h2 {
+    font-size: 21px;
+  }
+
+  .checkout-card input {
+    min-height: 48px;
+    border-radius: 12px;
+  }
+
+  .option-tile,
+  .option-tile.compact {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 10px;
+    padding: 13px;
+    border-radius: 14px;
+  }
+
+  .option-tile b,
+  .option-tile.compact b {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .checkout-product {
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .checkout-product-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+  }
+
+  .checkout-product strong,
+  .checkout-product-name {
+    font-size: 13px;
+  }
+
+  .gls-widget-modal,
+  .dpd-widget-modal {
+    padding: 8px;
+  }
+
+  .gls-widget-dialog,
+  .dpd-widget-dialog {
+    width: calc(100vw - 16px);
+    height: calc(100vh - 16px);
+    border-radius: 16px;
+  }
+}
