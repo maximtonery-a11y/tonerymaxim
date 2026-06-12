@@ -262,9 +262,11 @@ export async function readProductsCache(): Promise<CacheFile | null> {
   }
 }
 
-const WOO_PER_PAGE = 50;
-const WOO_MAX_RETRIES = 5;
-const WOO_REQUEST_TIMEOUT_MS = 45000;
+const WOO_PER_PAGE = 25;
+const WOO_MAX_RETRIES = 2;
+const WOO_REQUEST_TIMEOUT_MS = 15000;
+const WOO_PAGE_DELAY_MS = 600;
+const WOO_MAX_PAGES = 300;
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -278,8 +280,6 @@ function parseWooJson(text: string) {
     throw new Error(`WooCommerce nevrátil JSON: ${text.slice(0, 300)}`);
   }
 
-  // Niektoré hostingy/pluginy vrátia JSON ešte raz zabalený ako string:
-  // "[{\"id\":123,...}]". Toto rozbalíme druhým parse.
   if (typeof data === "string") {
     try {
       data = JSON.parse(data);
@@ -322,16 +322,11 @@ async function fetchWooPage(wooUrl: string, page: number) {
       clearTimeout(timeout);
 
       if (!response.ok) {
-        lastError = `WooCommerce API chyba ${response.status}: ${text.slice(0, 300)}`;
-
-        // 429/5xx sú typicky dočasné chyby hostingu alebo limitu. Skúsime znova.
-        if (response.status === 429 || response.status >= 500) {
-          const retryAfter = Number(response.headers.get("retry-after") || 0);
-          const delay = retryAfter > 0 ? retryAfter * 1000 : 1000 * attempt * attempt;
-          await sleep(delay);
+        lastError = `WooCommerce API chyba ${response.status} na strane ${page}: ${text.slice(0, 300)}`;
+        if ((response.status === 429 || response.status >= 500) && attempt < WOO_MAX_RETRIES) {
+          await sleep(1500 * attempt);
           continue;
         }
-
         throw new Error(lastError);
       }
 
@@ -340,15 +335,14 @@ async function fetchWooPage(wooUrl: string, page: number) {
     } catch (error: any) {
       clearTimeout(timeout);
       lastError = error?.name === "AbortError" ? `WooCommerce timeout na strane ${page}` : error?.message || String(error);
-
       if (attempt < WOO_MAX_RETRIES) {
-        await sleep(1000 * attempt * attempt);
+        await sleep(1500 * attempt);
         continue;
       }
     }
   }
 
-  throw new Error(`WooCommerce stránka ${page} zlyhala po ${WOO_MAX_RETRIES} pokusoch: ${lastError}`);
+  throw new Error(`WooCommerce stránka ${page} zlyhala: ${lastError}`);
 }
 
 async function fetchAllWooProducts() {
@@ -360,7 +354,7 @@ async function fetchAllWooProducts() {
   const all: any[] = [];
   let page = 1;
 
-  while (true) {
+  while (page <= WOO_MAX_PAGES) {
     const { data, totalPages } = await fetchWooPage(wooUrl, page);
     if (!Array.isArray(data)) throw new Error(`WooCommerce stránka ${page} nevrátila zoznam produktov: ${JSON.stringify(data).slice(0, 300)}`);
     if (data.length === 0) break;
@@ -370,9 +364,11 @@ async function fetchAllWooProducts() {
     if (totalPages ? page >= totalPages : data.length < WOO_PER_PAGE) break;
 
     page += 1;
+    await sleep(WOO_PAGE_DELAY_MS);
+  }
 
-    // Malá pauza, aby Woo hosting nevracal 503 pri veľkom importe.
-    await sleep(250);
+  if (page > WOO_MAX_PAGES) {
+    throw new Error(`Synchronizácia prekročila limit ${WOO_MAX_PAGES} strán.`);
   }
 
   return all;
@@ -381,15 +377,24 @@ async function fetchAllWooProducts() {
 export async function syncProductsCache(options: { force?: boolean } = {}) {
   const current = await readProductsCache();
   if (!options.force && current && isFresh(current)) return { cache: current, refreshed: false };
-  const rawProducts = await fetchAllWooProducts();
-  const products = sortProducts(rawProducts.map(mapProduct));
-  const next: CacheFile = { ok: true, version: CACHE_VERSION, generated_at: new Date().toISOString(), total: products.length, products };
-  await mkdir(CACHE_DIR, { recursive: true });
-  const tmp = `${CACHE_FILE}.tmp`;
-  await writeFile(tmp, JSON.stringify(next, null, 2), "utf8");
-  await rename(tmp, CACHE_FILE);
-  globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
-  return { cache: next, refreshed: true };
+
+  try {
+    const rawProducts = await fetchAllWooProducts();
+    const products = sortProducts(rawProducts.map(mapProduct));
+    const next: CacheFile = { ok: true, version: CACHE_VERSION, generated_at: new Date().toISOString(), total: products.length, products };
+    await mkdir(CACHE_DIR, { recursive: true });
+    const tmp = `${CACHE_FILE}.tmp`;
+    await writeFile(tmp, JSON.stringify(next, null, 2), "utf8");
+    await rename(tmp, CACHE_FILE);
+    globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
+    return { cache: next, refreshed: true };
+  } catch (error) {
+    if (current) {
+      globalStore.__TM_PRODUCTS_FILE_CACHE__ = current;
+      return { cache: current, refreshed: false, error };
+    }
+    throw error;
+  }
 }
 
 export async function getProductsCache() {
