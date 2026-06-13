@@ -8,7 +8,12 @@
 @media (hover: none) and (pointer: coarse), (max-width: 760px) {
   body.home-page {
     margin: 0;
+    padding-top: 0 !important;
     background: #f7fbff;
+  }
+
+  body.home-page .page {
+    padding-top: 0 !important;
   }
 
   body.home-page .site-header,
@@ -36,16 +41,18 @@
   }
 
   body.home-page .tm-mobile-topbar {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
-    height: 72px;
+    height: 68px;
     display: grid;
     grid-template-columns: 48px minmax(0, 1fr) 48px;
     align-items: center;
     gap: 10px;
-    padding: 9px 18px;
-    background: rgba(255,255,255,.94);
+    padding: 8px 18px;
+    background: rgba(255,255,255,.96);
     border-bottom: 1px solid rgba(216, 228, 241, .72);
     backdrop-filter: blur(18px);
   }
@@ -84,8 +91,8 @@
   }
 
   body.home-page .tm-mobile-logo-link img {
-    width: min(290px, 58vw);
-    max-height: 40px;
+    width: min(310px, 60vw);
+    max-height: 42px;
     object-fit: contain;
     display: block;
   }
@@ -117,17 +124,17 @@
   body.home-page .tm-mobile-content {
     width: min(100%, 560px);
     margin: 0 auto;
-    padding: 20px 18px max(22px, env(safe-area-inset-bottom));
+    padding: 88px 18px max(22px, env(safe-area-inset-bottom));
   }
 
   body.home-page .tm-mobile-hero-search {
     position: relative;
     min-height: 96px;
     display: grid;
-    grid-template-columns: 62px minmax(0, 1fr) 36px;
+    grid-template-columns: 52px minmax(0, 1fr) 32px;
     align-items: center;
-    gap: 8px;
-    padding: 14px 18px;
+    gap: 4px;
+    padding: 14px 14px 14px 18px;
     border: 4px solid transparent;
     border-radius: 24px;
     background:
@@ -151,7 +158,7 @@
     outline: 0;
     background: transparent;
     color: #071b3a;
-    font-size: clamp(18px, 4.25vw, 24px);
+    font-size: clamp(17px, 4.2vw, 23px);
     font-weight: 700;
   }
 
@@ -201,9 +208,9 @@
   }
 
   body.home-page .tm-mobile-printer-picker {
-    min-height: 76px;
+    min-height: 82px;
     display: grid;
-    grid-template-columns: 54px minmax(0, 1fr) 30px;
+    grid-template-columns: 56px minmax(0, 1fr) 30px;
     align-items: center;
     gap: 14px;
     margin: 0 0 18px;
@@ -215,15 +222,20 @@
     text-decoration: none;
   }
 
-  body.home-page .tm-mobile-printer-icon {
-    font-size: 38px;
-    line-height: 1;
+  body.home-page .tm-mobile-printer-icon svg {
+    width: 50px;
+    height: 50px;
+    display: block;
+    stroke-width: 2.4;
   }
 
   body.home-page .tm-mobile-printer-picker strong {
-    font-size: 23px;
+    min-width: 0;
+    display: block;
+    font-size: clamp(20px, 5.2vw, 25px);
     font-weight: 950;
     line-height: 1.05;
+    white-space: nowrap;
   }
 
   body.home-page .tm-mobile-printer-arrow {
@@ -257,10 +269,11 @@
     border-right: 0;
   }
 
-  body.home-page .tm-trust-icon {
-    font-size: 32px;
-    line-height: 1;
-    font-weight: 900;
+  body.home-page .tm-trust-icon svg {
+    width: 36px;
+    height: 36px;
+    display: block;
+    stroke-width: 2.2;
   }
 
   body.home-page .tm-pink { color: #ec008c; }
@@ -278,14 +291,16 @@
   }
 
   body.home-page .tm-mobile-help-card {
+    min-height: 170px;
     display: grid;
-    grid-template-columns: 54px minmax(0, 1fr);
-    gap: 12px 14px;
+    grid-template-columns: 42% minmax(0, 1fr);
+    gap: 12px;
     align-items: center;
     padding: 18px;
-    border-radius: 24px;
-    background: rgba(255,255,255,.76);
-    box-shadow: 0 18px 42px rgba(7, 27, 58, .07);
+    border-radius: 22px;
+    background: linear-gradient(135deg, #f6fbff 0%, #ffffff 55%, #f5f9ff 100%);
+    box-shadow: 0 16px 38px rgba(7, 27, 58, .055);
+    overflow: hidden;
   }
 
   body.home-page .tm-mobile-help-icon {
@@ -301,34 +316,109 @@
   }
 
   body.home-page .tm-mobile-help-card h2 {
-    margin: 0;
+    margin: 0 0 7px;
     color: #071b3a;
-    font-size: 24px;
+    font-size: clamp(22px, 5.6vw, 28px);
     font-weight: 950;
     line-height: 1.05;
+    letter-spacing: -.025em;
   }
 
   body.home-page .tm-mobile-help-card p {
-    margin: 4px 0 0;
-    color: #475569;
-    font-size: 17px;
-    font-weight: 650;
+    margin: 0 0 13px;
+    color: #25324a;
+    font-size: clamp(15px, 4vw, 18px);
+    font-weight: 600;
+    line-height: 1.35;
   }
 
   body.home-page .tm-mobile-help-card a {
-    grid-column: 1 / -1;
     min-height: 46px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0 18px;
+    gap: 10px;
+    padding: 0 16px;
     border: 1px solid #dbe5f1;
     border-radius: 16px;
     background: #ffffff;
     color: #071b3a;
-    font-size: 17px;
+    box-shadow: 0 10px 24px rgba(7, 27, 58, .06);
+    font-size: 16px;
     font-weight: 950;
     text-decoration: none;
+  }
+
+  body.home-page .tm-mobile-help-card a svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  body.home-page .tm-mobile-product-visual {
+    position: relative;
+    min-width: 0;
+    height: 130px;
+  }
+
+  body.home-page .tm-mobile-toner {
+    position: absolute;
+    left: 0;
+    bottom: 10px;
+    width: 78%;
+    height: 42px;
+    border-radius: 13px 16px 18px 12px;
+    background: linear-gradient(180deg, #151b22, #030509);
+    box-shadow: 0 18px 28px rgba(7, 27, 58, .22);
+  }
+
+  body.home-page .tm-mobile-toner::before,
+  body.home-page .tm-mobile-toner::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    width: 29px;
+    height: 29px;
+    border-radius: 50%;
+    background: #0a0e14;
+    box-shadow: inset 0 0 0 5px #1d242d;
+  }
+
+  body.home-page .tm-mobile-toner::before { left: -10px; }
+  body.home-page .tm-mobile-toner::after { right: -12px; }
+
+  body.home-page .tm-mobile-toner span {
+    position: absolute;
+    left: 18%;
+    top: -7px;
+    width: 52%;
+    height: 11px;
+    border-radius: 999px;
+    background: #f36d21;
+  }
+
+  body.home-page .tm-mobile-box {
+    position: absolute;
+    right: 0;
+    top: 10px;
+    width: 78%;
+    height: 80px;
+    border-radius: 4px 12px 12px 4px;
+    background:
+      linear-gradient(90deg, rgba(0,158,227,.16), transparent 28%),
+      linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
+    border: 1px solid #dbe8f7;
+    box-shadow: 0 14px 26px rgba(7, 27, 58, .10);
+    transform: perspective(420px) rotateY(-11deg);
+    display: grid;
+    place-items: center;
+    padding: 10px;
+  }
+
+  body.home-page .tm-mobile-box img {
+    width: 92%;
+    max-height: 40px;
+    object-fit: contain;
+    display: block;
   }
 
   body.home-page .tm-mobile-footer-lock {
@@ -428,12 +518,12 @@
 @media (hover: none) and (pointer: coarse) and (orientation: landscape) {
   body.home-page .tm-mobile-content {
     width: min(100%, 900px);
-    padding-top: 14px;
+    padding-top: 78px;
   }
 
   body.home-page .tm-mobile-topbar {
-    height: 62px;
-    padding-block: 7px;
+    height: 60px;
+    padding-block: 6px;
   }
 
   body.home-page .tm-mobile-logo-link img {

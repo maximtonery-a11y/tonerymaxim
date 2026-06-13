@@ -103,41 +103,62 @@ const title = "ToneryMaxim.sk";
             </div>
 
             <a class="tm-mobile-printer-picker" href="/tlaciarne">
-              <span class="tm-mobile-printer-icon" aria-hidden="true">▣</span>
+              <span class="tm-mobile-printer-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none">
+                  <path d="M18 24V12h28v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 44H10a6 6 0 0 1-6-6v-8a6 6 0 0 1 6-6h44a6 6 0 0 1 6 6v8a6 6 0 0 1-6 6h-6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M18 38h28v14H18V38Z" stroke="currentColor" stroke-linejoin="round"/>
+                  <path d="M48 31h4" stroke="currentColor" stroke-linecap="round"/>
+                </svg>
+              </span>
               <strong>Vybrať podľa tlačiarne</strong>
               <span class="tm-mobile-printer-arrow" aria-hidden="true">›</span>
             </a>
 
             <div class="tm-mobile-trust-row" aria-label="Výhody nákupu">
               <article>
-                <span class="tm-trust-icon tm-pink" aria-hidden="true">♡</span>
+                <span class="tm-trust-icon tm-pink" aria-hidden="true">
+                  <svg viewBox="0 0 48 48" fill="none"><path d="M24 5 39 11v11c0 10-6.4 17.3-15 21-8.6-3.7-15-11-15-21V11l15-6Z" stroke="currentColor"/><path d="m17 24 5 5 10-11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
                 <strong>17 rokov</strong>
                 <small>skúseností</small>
               </article>
               <article>
-                <span class="tm-trust-icon tm-cyan" aria-hidden="true">□</span>
+                <span class="tm-trust-icon tm-cyan" aria-hidden="true">
+                  <svg viewBox="0 0 48 48" fill="none"><path d="M8 16 24 8l16 8-16 8-16-8Z" stroke="currentColor" stroke-linejoin="round"/><path d="M8 16v16l16 8 16-8V16" stroke="currentColor" stroke-linejoin="round"/><path d="M24 24v16" stroke="currentColor"/></svg>
+                </span>
                 <strong>30 000+</strong>
                 <small>objednávok</small>
               </article>
               <article>
-                <span class="tm-trust-icon tm-yellow" aria-hidden="true">▱</span>
+                <span class="tm-trust-icon tm-yellow" aria-hidden="true">
+                  <svg viewBox="0 0 48 48" fill="none"><path d="M6 15h24v18H6V15Z" stroke="currentColor" stroke-linejoin="round"/><path d="M30 22h7l5 6v5H30V22Z" stroke="currentColor" stroke-linejoin="round"/><path d="M14 38a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM36 38a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor"/></svg>
+                </span>
                 <strong>Doručenie</strong>
                 <small>do 24h</small>
               </article>
               <article>
-                <span class="tm-trust-icon tm-green" aria-hidden="true">☆</span>
+                <span class="tm-trust-icon tm-green" aria-hidden="true">
+                  <svg viewBox="0 0 48 48" fill="none"><path d="m24 5 5.5 11.2 12.4 1.8-9 8.8 2.1 12.4L24 33.4l-11 5.8 2.1-12.4-9-8.8 12.4-1.8L24 5Z" stroke="currentColor" stroke-linejoin="round"/></svg>
+                </span>
                 <strong>Heureka</strong>
                 <small>4,9/5</small>
               </article>
             </div>
 
-            <section class="tm-mobile-help-card">
-              <div class="tm-mobile-help-icon" aria-hidden="true">?</div>
+            <section class="tm-mobile-help-card" aria-label="Pomoc s výberom">
+              <div class="tm-mobile-product-visual" aria-hidden="true">
+                <div class="tm-mobile-box"><img src={mobileLogo.src} alt="" /></div>
+                <div class="tm-mobile-toner"><span></span></div>
+              </div>
               <div class="tm-mobile-help-copy">
                 <h2>Potrebujete poradiť?</h2>
                 <p>Sme tu pre vás.</p>
+                <a href="/kontakt">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.8 8.4 9.5 9.5 0 0 1-3-.5L3 21l1.7-5.7a8.1 8.1 0 0 1-.8-3.8A8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                  Kontaktujte nás
+                </a>
               </div>
-              <a href="/kontakt">Kontaktujte nás</a>
             </section>
 
             <div class="tm-mobile-footer-lock" aria-label="Doména">
