@@ -3,6 +3,7 @@ import "../styles/global.css";
 import "../styles/hero.css";
 import "../styles/benefits.css";
 import "../styles/footer.css";
+import "../styles/home-mobile.css";
 
 import Header from "../components/Header.astro";
 import HeroSearch from "../components/HeroSearch.astro";
@@ -22,11 +23,70 @@ const title = "ToneryMaxim.sk";
     <title>{title}</title>
   </head>
 
-  <body>
+  <body class="home-page">
     <div class="page">
       <Header />
 
       <main>
+
+        <section class="tm-mobile-home" aria-label="Mobilná úvodná stránka ToneryMaxim">
+          <form class="tm-mobile-search" action="/produkty" method="get" data-smart-search>
+            <span class="tm-mobile-search-icon" aria-hidden="true">⌕</span>
+            <input
+              type="search"
+              name="s"
+              data-smart-search-input
+              placeholder="Napíšte model tlačiarne alebo tonera"
+              aria-label="Napíšte model tlačiarne alebo tonera"
+            />
+            <button type="submit">Hľadať</button>
+          </form>
+
+          <details class="tm-mobile-wizard">
+            <summary>Nemôžete nájsť model? Vyhľadať podľa tlačiarne</summary>
+            <div class="tm-mobile-wizard-grid">
+              <label>
+                <span>1. Značka</span>
+                <select aria-label="Vyberte značku tlačiarne">
+                  <option>Vyberte značku</option>
+                  <option>HP</option>
+                  <option>Brother</option>
+                  <option>Canon</option>
+                  <option>Epson</option>
+                </select>
+              </label>
+              <label>
+                <span>2. Séria</span>
+                <select aria-label="Vyberte sériu tlačiarne">
+                  <option>Vyberte sériu</option>
+                </select>
+              </label>
+              <label>
+                <span>3. Model</span>
+                <select aria-label="Vyberte model tlačiarne">
+                  <option>Vyberte model</option>
+                </select>
+              </label>
+              <a class="tm-mobile-wizard-button" href="/tlaciarne/hp">Nájsť náplne</a>
+            </div>
+          </details>
+
+          <div class="tm-mobile-brand-grid" aria-label="Najčastejšie značky tlačiarní">
+            <a class="tm-mobile-brand-card" href="/tlaciarne/hp"><span class="tm-brand-logo tm-brand-logo-hp">hp</span></a>
+            <a class="tm-mobile-brand-card" href="/tlaciarne/canon"><span class="tm-brand-logo tm-brand-logo-canon">Canon</span></a>
+            <a class="tm-mobile-brand-card" href="/tlaciarne/brother"><span class="tm-brand-logo tm-brand-logo-brother">brother</span></a>
+            <a class="tm-mobile-brand-card" href="/tlaciarne/epson"><span class="tm-brand-logo tm-brand-logo-epson">EPSON</span></a>
+            <a class="tm-mobile-brand-card" href="/tlaciarne/samsung"><span class="tm-brand-logo tm-brand-logo-samsung">SAMSUNG</span></a>
+            <a class="tm-mobile-brand-card" href="/tlaciarne/xerox"><span class="tm-brand-logo tm-brand-logo-xerox">xerox</span></a>
+          </div>
+
+          <div class="tm-mobile-benefits" aria-label="Výhody nákupu">
+            <span>✓ Overená kompatibilita</span>
+            <span>✓ Rýchle doručenie</span>
+            <span>✓ Výhodné ceny</span>
+            <span>✓ Zákaznícka podpora</span>
+          </div>
+        </section>
         <HeroSearch />
         <ProductFinder />
         <Benefits />

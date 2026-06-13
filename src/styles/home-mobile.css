@@ -1,155 +1,125 @@
-/* ToneryMaxim – mobilná úvodná stránka v6
-   Izolované iba pre body.home-page do 760px. Desktop layout ostáva nedotknutý. */
+/* ToneryMaxim – technický základ pre 4 režimy:
+   mobile / mobile-landscape / tablet / desktop.
+   Desktop sa nemení. Mobil sa nezapína iba podľa šírky, ale aj podľa touch zariadenia. */
 
-.site-logo-mobile,
-.tm-mobile-home,
 .mobile-menu-toggle,
 .mobile-drawer,
-.mobile-bottom-nav {
+.tm-mobile-home {
   display: none;
 }
 
-@media (max-width: 760px) {
+html.tm-device-mobile,
+html.tm-device-tablet {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* MOBILE PORTRAIT + MOBILE LANDSCAPE
+   Rovnaký mobilný layout zostane aj po otočení telefónu na šírku. */
+@media (max-width: 760px), (hover: none) and (pointer: coarse) and (max-height: 620px) and (orientation: landscape) {
   body.home-page {
-    padding-top: 126px;
-    padding-bottom: 0;
-    background: #ffffff;
+    padding-top: 0;
+    background: #fff;
   }
 
-  body.home-page .page {
-    background: #ffffff;
-  }
-
-  /* Horný sticky bar: menu + logo + účet + košík */
   body.home-page .site-header {
-    height: 60px;
-    min-height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: 64px;
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr) 38px 38px;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
     align-items: center;
-    gap: 7px;
-    padding: 8px 12px;
+    gap: 10px;
+    padding: 8px 14px;
     border-bottom: 1px solid #e8edf5;
-    background: rgba(255, 255, 255, .98);
-    box-shadow: 0 6px 18px rgba(7, 27, 58, .055);
+    background: rgba(255, 255, 255, .96);
     backdrop-filter: blur(16px);
   }
 
   body.home-page .mobile-menu-toggle {
-    grid-column: 1;
-    width: 38px;
-    height: 38px;
     display: inline-grid;
+    width: 42px;
+    height: 42px;
     place-items: center;
     border: 1px solid #dfe7f2;
-    border-radius: 13px;
-    background: #ffffff;
-    box-shadow: 0 7px 16px rgba(7, 27, 58, .055);
-    cursor: pointer;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(7, 27, 58, .06);
   }
 
   body.home-page .mobile-menu-toggle span {
-    width: 18px;
+    width: 19px;
     height: 2px;
     display: block;
     margin: 2px 0;
-    border-radius: 999px;
+    border-radius: 99px;
     background: #071b3a;
   }
 
   body.home-page .site-logo-link {
-    grid-column: 2;
     justify-self: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
     min-width: 0;
   }
 
-  body.home-page .site-logo-desktop,
   body.home-page .site-logo {
-    display: none !important;
-  }
-
-  body.home-page .site-logo-mobile {
-    display: block !important;
-    width: min(215px, 46vw);
-    height: auto;
-    max-height: 34px;
+    width: min(220px, 52vw);
+    max-height: 42px;
     object-fit: contain;
   }
 
   body.home-page .site-nav,
   body.home-page .header-search-area,
-  body.home-page .header-heureka {
+  body.home-page .header-heureka,
+  body.home-page .account-link {
     display: none !important;
   }
 
   body.home-page .header-actions {
-    display: contents !important;
+    display: contents;
   }
 
-  body.home-page .account-link,
   body.home-page .cart-btn {
-    width: 38px;
-    height: 38px;
-    min-height: 38px;
-    display: inline-grid !important;
+    justify-self: end;
+    width: 42px;
+    height: 42px;
+    display: inline-grid;
     place-items: center;
-    padding: 0;
     border: 1px solid #dfe7f2;
-    border-radius: 13px;
-    background: #ffffff;
-    box-shadow: 0 7px 16px rgba(7, 27, 58, .055);
-    color: #071b3a;
-    text-decoration: none;
-  }
-
-  body.home-page .account-link {
-    grid-column: 3;
-    justify-self: end;
-    font-size: 0;
-  }
-
-  body.home-page .account-link::before {
-    content: "👤";
-    font-size: 18px;
-    line-height: 1;
-  }
-
-  body.home-page .cart-btn {
-    grid-column: 4;
-    justify-self: end;
-    font-size: 18px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(7, 27, 58, .06);
+    font-size: 20px;
   }
 
   body.home-page .cart-dot {
-    top: -6px;
-    right: -6px;
-    min-width: 18px;
+    top: -7px;
+    right: -7px;
+    min-width: 19px;
     width: auto;
+    height: 19px;
     padding: 0 5px;
-    height: 18px;
     border-radius: 999px;
     background: #0f75ff;
+    color: #fff;
     font-size: 11px;
-    font-weight: 950;
+    font-weight: 900;
   }
 
-  /* Mobilné menu */
   body.home-page .mobile-drawer {
     position: fixed;
-    top: 66px;
-    left: 12px;
-    right: 12px;
-    z-index: 1200;
-    display: none;
+    top: 72px;
+    left: 14px;
+    right: 14px;
+    z-index: 1300;
     padding: 8px;
     border: 1px solid #dfe7f2;
     border-radius: 18px;
-    background: #ffffff;
+    background: #fff;
     box-shadow: 0 24px 60px rgba(7, 27, 58, .18);
+  }
+
+  body.home-page .mobile-drawer:not(.is-open) {
+    display: none;
   }
 
   body.home-page .mobile-drawer.is-open {
@@ -169,7 +139,6 @@
     font-weight: 900;
   }
 
-  /* Homepage mobile – nahrádza desktopové sekcie len na úvodnej stránke */
   body.home-page .hero-shell,
   body.home-page .product-finder,
   body.home-page .benefits {
@@ -178,70 +147,63 @@
 
   body.home-page .tm-mobile-home {
     display: block;
-    padding: 10px 12px 16px;
+    padding: 14px 14px 22px;
     background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
   }
 
-  /* Sticky vyhľadávanie pod headerom */
-  body.home-page .tm-mobile-home-search {
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    z-index: 1050;
-    padding: 8px 12px 10px;
-    border-bottom: 1px solid #e8edf5;
-    background: rgba(255, 255, 255, .98);
-    box-shadow: 0 8px 22px rgba(7, 27, 58, .045);
-    backdrop-filter: blur(16px);
-  }
-
   body.home-page .tm-mobile-search {
-    position: relative;
-    min-height: 48px;
+    position: sticky;
+    top: 64px;
+    z-index: 900;
+    min-height: 54px;
     display: grid;
-    grid-template-columns: 34px minmax(0, 1fr);
+    grid-template-columns: 36px minmax(0, 1fr) 1px;
     align-items: center;
-    gap: 4px;
-    padding: 6px 10px;
-    border: 1px solid #d8e4f1;
-    border-radius: 16px;
-    background: #ffffff;
-    box-shadow: 0 8px 20px rgba(7, 27, 58, .055);
+    gap: 6px;
+    margin: 0 0 14px;
+    padding: 7px 12px;
+    border: 2px solid #071b3a;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 10px 22px rgba(7, 27, 58, .06);
   }
 
-  body.home-page .tm-mobile-search:focus-within {
-    border-color: #b7d7ff;
-    box-shadow: 0 12px 28px rgba(7, 27, 58, .10);
+  body.home-page .tm-mobile-search::before {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: -2px;
+    height: 3px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #009ee3 0 25%, #e6007e 25% 50%, #ffd100 50% 75%, #071b3a 75% 100%);
   }
 
   body.home-page .tm-mobile-search-icon {
-    width: 32px;
-    height: 32px;
     display: grid;
     place-items: center;
     color: #071b3a;
-    font-size: 22px;
-    font-weight: 950;
+    font-size: 24px;
+    font-weight: 900;
     line-height: 1;
   }
 
   body.home-page .tm-mobile-search input {
     width: 100%;
     min-width: 0;
-    height: 36px;
+    height: 38px;
     border: 0;
     outline: 0;
     background: transparent;
     color: #071b3a;
-    font-size: 15px;
-    font-weight: 850;
+    font-size: 16px;
+    font-weight: 750;
   }
 
   body.home-page .tm-mobile-search input::placeholder {
-    color: #5f6873;
+    color: #6b7280;
     opacity: 1;
-    font-weight: 850;
+    font-weight: 650;
   }
 
   body.home-page .tm-mobile-search button {
@@ -250,193 +212,184 @@
     height: 1px;
     overflow: hidden;
     clip: rect(0 0 0 0);
-    white-space: nowrap;
   }
 
-  body.home-page .tm-mobile-home-search .tm-smart-search-wrap,
-  body.home-page .tm-mobile-home-search .tm-mobile-search {
+  body.home-page .tm-mobile-wizard {
+    margin: 0 0 18px;
+    padding: 0;
+    border: 1px solid #dfe7f2;
+    border-radius: 18px;
+    background: #f4f6f4;
+    box-shadow: 0 10px 24px rgba(7, 27, 58, .04);
+  }
+
+  body.home-page .tm-mobile-wizard summary {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    color: #071b3a;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  body.home-page .tm-mobile-wizard-grid {
+    display: grid;
+    gap: 11px;
+    padding: 0 16px 16px;
+  }
+
+  body.home-page .tm-mobile-wizard label {
+    display: grid;
+    gap: 6px;
+    color: #071b3a;
+    font-size: 15px;
+    font-weight: 900;
+  }
+
+  body.home-page .tm-mobile-wizard select {
     width: 100%;
+    min-height: 44px;
+    border: 1px solid #cfd8e3;
+    border-radius: 12px;
+    padding: 0 12px;
+    background: #fff;
+    color: #071b3a;
+    font-size: 15px;
   }
 
-  body.home-page .tm-mobile-home-search .tm-smart-search-panel {
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-height: min(520px, calc(100vh - 132px));
-    border-radius: 17px;
+  body.home-page .tm-mobile-wizard-button {
+    min-height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background: #071b3a;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 950;
+    text-transform: uppercase;
   }
 
-  /* Značky – menšie bloky, bez modalu */
   body.home-page .tm-mobile-brand-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
-    margin: 0 0 14px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 18px;
   }
 
   body.home-page .tm-mobile-brand-card {
-    min-height: 70px;
+    min-height: 86px;
     display: grid;
     place-items: center;
-    align-content: center;
-    padding: 10px 8px;
-    border: 1px solid #e2eaf4;
-    border-radius: 17px;
-    background: #ffffff;
-    box-shadow: 0 7px 17px rgba(7, 27, 58, .04);
-    color: #071b3a;
-    text-align: center;
+    border: 1px solid #dfe7f2;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(7, 27, 58, .04);
   }
 
-  body.home-page .tm-mobile-brand-card:active {
-    transform: translateY(1px);
-  }
-
-  body.home-page .tm-mobile-brand-logo {
-    display: grid;
-    place-items: center;
+  body.home-page .tm-brand-logo {
+    display: block;
     font-weight: 950;
     line-height: 1;
-    letter-spacing: -.03em;
+    letter-spacing: -.04em;
   }
 
-  body.home-page .tm-mobile-brand-logo.hp { color: #1373c8; font-size: 38px; text-transform: lowercase; }
-  body.home-page .tm-mobile-brand-logo.brother { color: #0046ad; font-size: 25px; letter-spacing: -.04em; }
-  body.home-page .tm-mobile-brand-logo.canon { color: #d71920; font-size: 30px; }
-  body.home-page .tm-mobile-brand-logo.epson { color: #003f96; font-size: 25px; letter-spacing: .02em; }
-  body.home-page .tm-mobile-brand-logo.samsung { color: #1428a0; font-size: 22px; letter-spacing: .01em; }
-  body.home-page .tm-mobile-brand-logo.xerox { color: #e2231a; font-size: 30px; }
-  body.home-page .tm-mobile-brand-logo.lexmark { color: #00a65a; font-size: 25px; }
-  body.home-page .tm-mobile-brand-logo.more { color: #071b3a; font-size: 25px; letter-spacing: 4px; }
+  body.home-page .tm-brand-logo-hp { color: #111; font-size: 38px; text-transform: lowercase; }
+  body.home-page .tm-brand-logo-canon { color: #111; font-size: 22px; }
+  body.home-page .tm-brand-logo-brother { color: #111; font-size: 21px; }
+  body.home-page .tm-brand-logo-epson { color: #111; font-size: 22px; letter-spacing: .02em; }
+  body.home-page .tm-brand-logo-samsung { color: #111; font-size: 19px; letter-spacing: .01em; }
+  body.home-page .tm-brand-logo-xerox { color: #111; font-size: 25px; }
 
-  body.home-page .tm-mobile-brand-card:not(.tm-mobile-brand-card-more) strong {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    overflow: hidden !important;
-    clip: rect(0 0 0 0) !important;
-    white-space: nowrap !important;
-  }
-
-  body.home-page .tm-mobile-brand-card-more {
-    gap: 4px;
-  }
-
-  body.home-page .tm-mobile-brand-card-more strong {
-    display: block;
-    margin: 0;
-    color: #071b3a;
-    font-size: 12px;
-    font-weight: 950;
-    line-height: 1.1;
-  }
-
-  /* Benefity – čistý kompaktný zoznam */
   body.home-page .tm-mobile-benefits {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px 10px;
-    margin: 0 0 12px;
+    gap: 8px 12px;
     padding: 12px 0 0;
     border-top: 1px solid #e8edf5;
   }
 
-  body.home-page .tm-mobile-benefits article {
-    min-height: 26px;
-    display: grid;
-    grid-template-columns: 19px minmax(0, 1fr);
-    align-items: center;
-    gap: 7px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
   body.home-page .tm-mobile-benefits span {
-    width: 19px;
-    height: 19px;
-    display: grid;
-    place-items: center;
-    border-radius: 7px;
-    background: #fff7dc;
     color: #071b3a;
-    font-size: 11px;
-    font-weight: 950;
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.25;
   }
 
-  body.home-page .tm-mobile-benefits strong {
-    display: block;
-    color: #071b3a;
-    font-size: 12px;
-    font-weight: 950;
-    line-height: 1.1;
-  }
-
-  /* Footer – len veľmi stručný spodok */
   body.home-page .site-footer {
-    margin-top: 0;
-    padding: 0;
-    background: #071b3a;
-  }
-
-  body.home-page .footer-main,
-  body.home-page .footer-trust-row,
-  body.home-page .footer-support-strip,
-  body.home-page .footer-brand,
-  body.home-page .footer-col,
-  body.home-page .footer-contact-box,
-  body.home-page .footer-rating,
-  body.home-page .footer-logo,
-  body.home-page .footer-brand p {
-    display: none !important;
-  }
-
-  body.home-page .footer-bottom {
-    min-height: 54px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    color: rgba(255, 255, 255, .78);
-    text-align: center;
-    font-size: 12px;
-  }
-
-  body.home-page .footer-bottom div {
-    display: none !important;
-  }
-
-  body.home-page .mobile-bottom-nav {
-    display: none !important;
-  }
-
-  body.home-page .tm-mobile-brand-modal {
     display: none !important;
   }
 
   body.home-page .floating-advisor,
-  body.home-page .advisor-floating,
   body.home-page [class*="advisor"] {
     display: none !important;
   }
 }
 
-@media (max-width: 380px) {
-  body.home-page .site-logo-mobile {
-    width: min(185px, 43vw);
+/* MOBILE LANDSCAPE – stále mobil, len kompaktnejšie rozloženie */
+@media (hover: none) and (pointer: coarse) and (max-height: 620px) and (orientation: landscape) {
+  body.home-page .site-header {
+    height: 56px;
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+    padding: 7px 12px;
   }
 
-  body.home-page .tm-mobile-search input {
-    font-size: 14px;
+  body.home-page .site-logo {
+    width: min(190px, 34vw);
+    max-height: 36px;
+  }
+
+  body.home-page .tm-mobile-home {
+    padding: 10px 12px 14px;
+  }
+
+  body.home-page .tm-mobile-search {
+    top: 56px;
+    min-height: 46px;
+    margin-bottom: 10px;
+    border-radius: 15px;
+  }
+
+  body.home-page .tm-mobile-wizard {
+    margin-bottom: 12px;
+  }
+
+  body.home-page .tm-mobile-wizard-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: end;
+  }
+
+  body.home-page .tm-mobile-brand-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
   }
 
   body.home-page .tm-mobile-brand-card {
     min-height: 66px;
+    border-radius: 12px;
   }
 
-  body.home-page .tm-mobile-brand-logo.hp { font-size: 34px; }
-  body.home-page .tm-mobile-brand-logo.brother { font-size: 22px; }
-  body.home-page .tm-mobile-brand-logo.canon { font-size: 27px; }
-  body.home-page .tm-mobile-brand-logo.epson { font-size: 23px; }
+  body.home-page .tm-brand-logo-hp { font-size: 30px; }
+  body.home-page .tm-brand-logo-canon,
+  body.home-page .tm-brand-logo-brother,
+  body.home-page .tm-brand-logo-epson,
+  body.home-page .tm-brand-logo-xerox { font-size: 18px; }
+  body.home-page .tm-brand-logo-samsung { font-size: 16px; }
+
+  body.home-page .tm-mobile-benefits {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
 }
+
+/* TABLET – samostatná vrstva pripravená na ďalšie úpravy, desktop ostáva mimo. */
+@media (min-width: 761px) and (max-width: 1179px) {
+  body.home-page.tm-device-tablet .wrap,
+  html.tm-device-tablet body.home-page .wrap {
+    width: min(100% - 48px, 1120px);
+  }
+}
+
+/* DESKTOP – zámerne bez zmien. */
