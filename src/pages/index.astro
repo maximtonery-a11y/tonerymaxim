@@ -12,7 +12,7 @@ import Benefits from "../components/Benefits.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
-import tmHelpProduct from "../assets/tm-help-product-variant-b.png";
+import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 
 const title = "ToneryMaxim.sk";
 ---
@@ -148,17 +148,9 @@ const title = "ToneryMaxim.sk";
             </div>
 
             <section class="tm-mobile-help-card" aria-label="Pomoc s výberom">
-              <div class="tm-mobile-product-visual" aria-hidden="true">
-                <img class="tm-mobile-help-product-img" src={tmHelpProduct.src} alt="" loading="lazy" decoding="async" />
-              </div>
-              <div class="tm-mobile-help-copy">
-                <h2>Potrebujete poradiť?</h2>
-                <p>Sme tu pre vás.</p>
-                <a href="/kontakt">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.8 8.4 9.5 9.5 0 0 1-3-.5L3 21l1.7-5.7a8.1 8.1 0 0 1-.8-3.8A8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-                  Kontaktujte nás
-                </a>
-              </div>
+              <a class="tm-mobile-help-card-link" href="/kontakt" aria-label="Kontaktujte nás">
+                <img class="tm-mobile-help-card-image" src={tmHelpVisual.src} alt="Potrebujete poradiť? Sme tu pre vás. Kontaktujte nás." loading="lazy" decoding="async" />
+              </a>
             </section>
 
             <div class="tm-mobile-footer-lock" aria-label="Copyright">

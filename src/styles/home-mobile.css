@@ -565,3 +565,54 @@
     font-size: 14px;
   }
 }
+
+/* Final help block: exact approved image, no generated product layout. */
+@media (hover: none) and (pointer: coarse), (max-width: 760px) {
+  body.home-page .tm-mobile-help-card {
+    min-height: 0;
+    display: block;
+    padding: 0;
+    border-radius: 22px;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  body.home-page .tm-mobile-help-card-link {
+    display: block;
+    width: min(100%, 563px);
+    margin: 0 auto;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 16px 38px rgba(7, 27, 58, .07);
+    text-decoration: none;
+    overflow: hidden;
+  }
+
+  body.home-page .tm-mobile-help-card-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: inherit;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  body.home-page .tm-mobile-help-card {
+    min-height: 0;
+    padding: 0;
+    margin-top: 12px;
+  }
+
+  body.home-page .tm-mobile-help-card-link {
+    width: min(100%, 563px);
+    max-width: 563px;
+    border-radius: 18px;
+  }
+
+  body.home-page .tm-mobile-help-card-image {
+    max-height: 160px;
+    object-fit: contain;
+    background: #fff;
+  }
+}
