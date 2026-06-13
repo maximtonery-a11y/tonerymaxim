@@ -815,10 +815,3 @@ input {
   }
 }
 
-
-/* Base: mobilné ovládanie headera je skryté mimo mobilných pravidiel.
-   Chráni desktop a ostatné stránky, ktoré nepoužívajú home-mobile.css. */
-.mobile-menu-toggle,
-.mobile-drawer {
-  display: none;
-}

@@ -1,15 +1,6 @@
----
-import logoUrl from "../assets/tonerymaxim-logo.png";
----
-
 <header class="site-header">
-  <button class="mobile-menu-toggle" type="button" aria-label="Otvoriť menu" aria-expanded="false" data-mobile-menu-toggle>
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
   <a class="site-logo-link" href="/" aria-label="ToneryMaxim domov">
-    <img class="site-logo" src={logoUrl.src} alt="ToneryMaxim" />
+    <img class="site-logo" src="/images/logo.png" alt="ToneryMaxim" />
   </a>
 
   <nav class="site-nav" aria-label="Hlavná navigácia">
@@ -58,16 +49,7 @@ import logoUrl from "../assets/tonerymaxim-logo.png";
   </div>
 </header>
 
-<nav class="mobile-drawer" aria-label="Mobilné menu" data-mobile-drawer>
-  <a href="/produkty?category=tonery&search=toner">Tonery</a>
-  <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramenty</a>
-  <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
-  <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
-  <a href="/prihlasenie">Môj účet</a>
-</nav>
-
 <script>
   import "../scripts/cart.js";
-  import "../scripts/device-layout.js";
   import "../scripts/smart-search.js";
 </script>
