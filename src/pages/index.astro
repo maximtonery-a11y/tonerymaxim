@@ -5,14 +5,13 @@ import "../styles/benefits.css";
 import "../styles/footer.css";
 import "../styles/home-mobile.css";
 
-import tmLogo from "../assets/tonerymaxim-logo-main.png";
-
 import Header from "../components/Header.astro";
 import HeroSearch from "../components/HeroSearch.astro";
 import ProductFinder from "../components/ProductFinder.astro";
 import Benefits from "../components/Benefits.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
 
 const title = "ToneryMaxim.sk";
 ---
@@ -30,172 +29,122 @@ const title = "ToneryMaxim.sk";
       <Header />
 
       <main>
-
-        <section class="tm-mobile-home-v7" aria-label="Mobilná úvodná stránka ToneryMaxim">
-          <header class="tm-mh-header">
-            <button class="tm-mh-icon-btn tm-mh-burger" type="button" aria-label="Otvoriť menu" data-tm-mobile-menu-open>
-              <span></span><span></span><span></span>
+        <section class="tm-mobile-home-final" aria-label="Mobilná úvodná stránka ToneryMaxim">
+          <div class="tm-mobile-topbar">
+            <button class="tm-mobile-menu-button" type="button" aria-label="Otvoriť menu" aria-expanded="false" data-tm-mobile-menu-toggle>
+              <span></span>
+              <span></span>
+              <span></span>
             </button>
 
-            <a class="tm-mh-logo-link" href="/" aria-label="ToneryMaxim domov">
-              <img class="tm-mh-logo" src={tmLogo.src} alt="ToneryMaxim" />
+            <a class="tm-mobile-logo-link" href="/" aria-label="ToneryMaxim domov">
+              <img src={mobileLogo.src} alt="ToneryMaxim" loading="eager" decoding="async" />
             </a>
 
-            <a class="tm-mh-icon-btn tm-mh-cart" href="/kosik" aria-label="Košík">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M4 5h2l2.1 10.2a2 2 0 0 0 2 1.6h6.7a2 2 0 0 0 1.9-1.4L21 8H7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M10 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM18 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="currentColor"/>
-              </svg>
-              <span class="tm-mh-cart-count" data-cart-count>0</span>
+            <a class="tm-mobile-cart-link" href="/kosik" aria-label="Košík">
+              <span aria-hidden="true">🛒</span>
+              <strong data-cart-count>0</strong>
             </a>
-          </header>
+          </div>
 
-          <form class="tm-mh-search" action="/produkty" method="get" data-smart-search>
-            <span class="tm-mh-search-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M10.8 18.1a7.3 7.3 0 1 1 0-14.6 7.3 7.3 0 0 1 0 14.6Z" stroke="currentColor" stroke-width="2.2"/>
-                <path d="m16.4 16.4 4.1 4.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-              </svg>
-            </span>
-            <input type="search" name="s" data-smart-search-input placeholder="Hľadajte tlačiareň alebo toner..." aria-label="Hľadať tlačiareň alebo toner" />
-            <button type="submit" aria-label="Vyhľadať">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-          </form>
+          <div class="tm-mobile-drawer" data-tm-mobile-menu aria-hidden="true">
+            <div class="tm-mobile-drawer-panel">
+              <div class="tm-mobile-drawer-head">
+                <strong>Menu</strong>
+                <button type="button" aria-label="Zavrieť menu" data-tm-mobile-menu-close>×</button>
+              </div>
 
-          <nav class="tm-mh-examples" aria-label="Príklady vyhľadávania">
-            <a class="tm-mh-chip" href="/produkty?s=HP%20M110w">HP M110w</a>
-            <span class="tm-mh-dot" aria-hidden="true">•</span>
-            <a class="tm-mh-chip" href="/produkty?s=Brother%20DCP-L2532DW">Brother DCP-L2532DW</a>
-            <a class="tm-mh-chip" href="/produkty?s=Canon%20MF655Cdw">Canon MF655Cdw</a>
-            <span class="tm-mh-dot" aria-hidden="true">•</span>
-            <a class="tm-mh-chip" href="/produkty?s=TN-2421">TN-2421</a>
-            <span class="tm-mh-dot" aria-hidden="true">•</span>
-            <a class="tm-mh-chip" href="/produkty?s=W1420A">W1420A</a>
-          </nav>
+              <section>
+                <strong>Môj účet</strong>
+                <a href="/prihlasenie">Prihlásenie</a>
+                <a href="/ucet">Môj účet</a>
+                <a href="/ucet/objednavky">Moje objednávky</a>
+              </section>
 
-          <div class="tm-mh-home-landscape-grid">
-            <a class="tm-mh-finder-link" href="/#vyber-podla-tlaciarne">
-              <span class="tm-mh-finder-icon" aria-hidden="true">
-                <svg viewBox="0 0 64 64" fill="none">
-                  <path d="M18 24V12h28v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M16 44H10a6 6 0 0 1-6-6v-8a6 6 0 0 1 6-6h44a6 6 0 0 1 6 6v8a6 6 0 0 1-6 6h-6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M18 38h28v14H18V38Z" stroke="currentColor" stroke-linejoin="round"/>
-                  <path d="M48 31h4" stroke="currentColor" stroke-linecap="round"/>
-                </svg>
-              </span>
-              <span class="tm-mh-finder-copy">
-                <strong>Vybrať podľa tlačiarne</strong>
-                <span>Postupne vyberte značku, sériu a model</span>
-              </span>
-              <span class="tm-mh-finder-arrow" aria-hidden="true">›</span>
+              <section>
+                <strong>Informácie</strong>
+                <a href="/kontakt">Kontakt</a>
+                <a href="/doprava-a-platba">Doprava a platba</a>
+                <a href="/reklamacie">Reklamácie</a>
+                <a href="/obchodne-podmienky">Obchodné podmienky</a>
+                <a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
+              </section>
+
+              <section>
+                <strong>Ponuka</strong>
+                <a href="/produkty?category=tonery&search=toner">Tonery</a>
+                <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a>
+                <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
+                <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
+              </section>
+            </div>
+          </div>
+
+          <div class="tm-mobile-content">
+            <form class="tm-mobile-hero-search" action="/produkty" method="get" data-smart-search>
+              <span class="tm-mobile-search-icon" aria-hidden="true">⌕</span>
+              <input
+                type="search"
+                name="s"
+                data-smart-search-input
+                placeholder="Hľadať tlačiareň alebo toner"
+                aria-label="Hľadať tlačiareň alebo toner"
+              />
+              <button type="submit" aria-label="Vyhľadať">›</button>
+            </form>
+
+            <div class="tm-mobile-search-examples" aria-label="Príklady hľadania">
+              <a href="/produkty?s=HP%20M110w">HP M110w</a>
+              <a href="/produkty?s=Brother%20DCP-L2532DW">Brother DCP-L2532DW</a>
+              <a href="/produkty?s=HP%20305">HP 305</a>
+              <a href="/produkty?s=TN-2421">TN-2421</a>
+              <a href="/produkty?s=HP%20LaserJet%20M1132MFP">HP LaserJet M1132MFP</a>
+              <a href="/produkty?s=W1420A">W1420A</a>
+            </div>
+
+            <a class="tm-mobile-printer-picker" href="/tlaciarne">
+              <span class="tm-mobile-printer-icon" aria-hidden="true">▣</span>
+              <strong>Vybrať podľa tlačiarne</strong>
+              <span class="tm-mobile-printer-arrow" aria-hidden="true">›</span>
             </a>
 
-            <section class="tm-mh-trust" aria-label="Výhody nákupu">
-              <div class="tm-mh-trust-item">
-                <span class="tm-mh-trust-icon tm-mh-trust-icon--pink" aria-hidden="true">
-                  <svg viewBox="0 0 48 48" fill="none"><path d="M24 5 39 11v11c0 10-6.4 17.3-15 21-8.6-3.7-15-11-15-21V11l15-6Z" stroke="currentColor"/><path d="m17 24 5 5 10-11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-                <span class="tm-mh-trust-title">17 rokov<br/>skúseností</span>
+            <div class="tm-mobile-trust-row" aria-label="Výhody nákupu">
+              <article>
+                <span class="tm-trust-icon tm-pink" aria-hidden="true">♡</span>
+                <strong>17 rokov</strong>
+                <small>skúseností</small>
+              </article>
+              <article>
+                <span class="tm-trust-icon tm-cyan" aria-hidden="true">□</span>
+                <strong>30 000+</strong>
+                <small>objednávok</small>
+              </article>
+              <article>
+                <span class="tm-trust-icon tm-yellow" aria-hidden="true">▱</span>
+                <strong>Doručenie</strong>
+                <small>do 24h</small>
+              </article>
+              <article>
+                <span class="tm-trust-icon tm-green" aria-hidden="true">☆</span>
+                <strong>Heureka</strong>
+                <small>4,9/5</small>
+              </article>
+            </div>
+
+            <section class="tm-mobile-help-card">
+              <div class="tm-mobile-help-icon" aria-hidden="true">?</div>
+              <div class="tm-mobile-help-copy">
+                <h2>Potrebujete poradiť?</h2>
+                <p>Sme tu pre vás.</p>
               </div>
-              <div class="tm-mh-trust-item">
-                <span class="tm-mh-trust-icon tm-mh-trust-icon--blue" aria-hidden="true">
-                  <svg viewBox="0 0 48 48" fill="none"><path d="M8 16 24 8l16 8-16 8-16-8Z" stroke="currentColor" stroke-linejoin="round"/><path d="M8 16v16l16 8 16-8V16" stroke="currentColor" stroke-linejoin="round"/><path d="M24 24v16" stroke="currentColor"/></svg>
-                </span>
-                <span class="tm-mh-trust-title">30 000+<br/>objednávok</span>
-              </div>
-              <div class="tm-mh-trust-item">
-                <span class="tm-mh-trust-icon tm-mh-trust-icon--yellow" aria-hidden="true">
-                  <svg viewBox="0 0 48 48" fill="none"><path d="M6 15h24v18H6V15Z" stroke="currentColor" stroke-linejoin="round"/><path d="M30 22h7l5 6v5H30V22Z" stroke="currentColor" stroke-linejoin="round"/><path d="M14 38a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM36 38a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor"/></svg>
-                </span>
-                <span class="tm-mh-trust-title">Doručenie<br/>do 24h</span>
-              </div>
-              <div class="tm-mh-trust-item">
-                <span class="tm-mh-trust-icon tm-mh-trust-icon--green" aria-hidden="true">
-                  <svg viewBox="0 0 48 48" fill="none"><path d="m24 5 5.5 11.2 12.4 1.8-9 8.8 2.1 12.4L24 33.4l-11 5.8 2.1-12.4-9-8.8 12.4-1.8L24 5Z" stroke="currentColor" stroke-linejoin="round"/></svg>
-                </span>
-                <span class="tm-mh-trust-title">Heureka<br/>4,9/5</span>
-              </div>
+              <a href="/kontakt">Kontaktujte nás</a>
             </section>
+
+            <div class="tm-mobile-footer-lock" aria-label="Doména">
+              <span aria-hidden="true">🔒</span> tonerymaxim.sk
+            </div>
           </div>
-
-          <section class="tm-mh-advice" aria-label="Pomoc s výberom">
-            <div class="tm-mh-product-visual" aria-hidden="true">
-              <div class="tm-mh-box"><img class="tm-mh-box-logo" src={tmLogo.src} alt="" /></div>
-              <div class="tm-mh-toner"><span class="tm-mh-toner-accent"></span></div>
-            </div>
-            <div class="tm-mh-advice-copy">
-              <h2>Potrebujete poradiť?</h2>
-              <p>Sme tu pre vás každý pracovný deň 8:00 – 16:30</p>
-              <a class="tm-mh-contact-btn" href="/kontakt">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-8.8 8.4 9.5 9.5 0 0 1-3-.5L3 21l1.7-5.7a8.1 8.1 0 0 1-.8-3.8A8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-                Kontaktujte nás
-              </a>
-            </div>
-          </section>
-
-          <div class="tm-mh-mini-footer" aria-label="Doména">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2"/><path d="M6 10h12v10H6V10Z" fill="currentColor" opacity=".78"/></svg>
-            tonerymaxim.sk
-          </div>
-
-          <div class="tm-mh-drawer-backdrop" data-tm-mobile-menu-close></div>
-          <aside class="tm-mh-drawer" aria-label="Mobilné menu" aria-hidden="true" data-tm-mobile-menu>
-            <div class="tm-mh-drawer-head">
-              <img class="tm-mh-drawer-logo" src={tmLogo.src} alt="ToneryMaxim" />
-              <button class="tm-mh-drawer-close" type="button" aria-label="Zavrieť menu" data-tm-mobile-menu-close>×</button>
-            </div>
-            <nav class="tm-mh-drawer-section" aria-label="Môj účet">
-              <h3>Môj účet</h3>
-              <a href="/prihlasenie">Prihlásenie</a>
-              <a href="/ucet/objednavky">Moje objednávky</a>
-              <a href="/ucet/tlaciarne">Moje tlačiarne</a>
-            </nav>
-            <nav class="tm-mh-drawer-section" aria-label="Informácie">
-              <h3>Informácie</h3>
-              <a href="/kontakt">Kontakt</a>
-              <a href="/doprava-a-platba">Doprava a platba</a>
-              <a href="/reklamacie">Reklamácie</a>
-              <a href="/obchodne-podmienky">Obchodné podmienky</a>
-            </nav>
-            <nav class="tm-mh-drawer-section" aria-label="Ponuka">
-              <h3>Ponuka</h3>
-              <a href="/produkty?category=tonery&search=toner">Tonery</a>
-              <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a>
-              <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
-              <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
-            </nav>
-          </aside>
         </section>
-
-        <script is:inline>
-          (() => {
-            const openBtn = document.querySelector('[data-tm-mobile-menu-open]');
-            const drawer = document.querySelector('[data-tm-mobile-menu]');
-            const backdrop = document.querySelector('.tm-mh-drawer-backdrop');
-            const closeBtns = document.querySelectorAll('[data-tm-mobile-menu-close]');
-            if (!openBtn || !drawer || !backdrop) return;
-            const open = () => {
-              drawer.classList.add('is-open');
-              backdrop.classList.add('is-open');
-              drawer.setAttribute('aria-hidden', 'false');
-              document.documentElement.style.overflow = 'hidden';
-            };
-            const close = () => {
-              drawer.classList.remove('is-open');
-              backdrop.classList.remove('is-open');
-              drawer.setAttribute('aria-hidden', 'true');
-              document.documentElement.style.overflow = '';
-            };
-            openBtn.addEventListener('click', open);
-            closeBtns.forEach((button) => button.addEventListener('click', close));
-            document.addEventListener('keydown', (event) => {
-              if (event.key === 'Escape') close();
-            });
-          })();
-        </script>
 
         <HeroSearch />
         <ProductFinder />
@@ -206,5 +155,27 @@ const title = "ToneryMaxim.sk";
       <FloatingAdvisor />
     </div>
 
+    <script>
+      const menuToggle = document.querySelector('[data-tm-mobile-menu-toggle]');
+      const menu = document.querySelector('[data-tm-mobile-menu]');
+      const menuClose = document.querySelector('[data-tm-mobile-menu-close]');
+
+      function setMenu(open) {
+        if (!menu || !menuToggle) return;
+        menu.classList.toggle('is-open', open);
+        menu.setAttribute('aria-hidden', String(!open));
+        menuToggle.setAttribute('aria-expanded', String(open));
+        document.documentElement.classList.toggle('tm-menu-open', open);
+      }
+
+      menuToggle?.addEventListener('click', () => setMenu(!menu?.classList.contains('is-open')));
+      menuClose?.addEventListener('click', () => setMenu(false));
+      menu?.addEventListener('click', (event) => {
+        if (event.target === menu) setMenu(false);
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setMenu(false);
+      });
+    </script>
   </body>
 </html>
