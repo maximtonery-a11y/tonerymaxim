@@ -5,6 +5,7 @@ import Header from "../components/Header.astro";
 import "../styles/footer.css";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 
 const title = "Produkty | ToneryMaxim.sk";
 ---
@@ -17,7 +18,7 @@ const title = "Produkty | ToneryMaxim.sk";
     <title>{title}</title>
   </head>
 
-  <body>
+  <body class="catalog-body">
     <div class="page">
       <Header />
 
@@ -99,6 +100,8 @@ const title = "Produkty | ToneryMaxim.sk";
                 <button type="button" data-filter="stock" data-filter-value="instock" class="quick-filter quick-filter-stock">✓ Skladom</button>
               </div>
 
+              <div class="catalog-mobile-query" data-mobile-query-label hidden></div>
+
               <div class="catalog-toolbar">
                 <div>
                   <div data-catalog-status>Načítavam produkty...</div>
@@ -118,12 +121,28 @@ const title = "Produkty | ToneryMaxim.sk";
                 <span data-page-info>Strana 1</span>
                 <button type="button" data-next-page>Ďalšie</button>
               </div>
+
+              <section class="catalog-mobile-help-card" aria-label="Pomoc s výberom">
+                <a class="catalog-mobile-help-link" href="/kontakt" aria-label="Kontaktujte nás">
+                  <img src={tmHelpVisual.src} alt="Potrebujete poradiť? Sme tu pre vás. Kontaktujte nás." loading="lazy" decoding="async" />
+                </a>
+              </section>
+
+              <div class="catalog-mobile-footer-lock" aria-label="Copyright">
+                © 2026 ToneryMaxim.sk
+              </div>
             </div>
           </div>
         </section>
       </main>
       <Footer />
       <FloatingAdvisor />
+
+      <form class="catalog-mobile-bottom-search" action="/produkty" method="get" data-catalog-mobile-search>
+        <span aria-hidden="true">⌕</span>
+        <input type="search" name="s" placeholder="Hľadať toner alebo tlačiareň" aria-label="Hľadať toner alebo tlačiareň" data-catalog-mobile-search-input />
+        <button type="submit" aria-label="Hľadať">Hľadať</button>
+      </form>
     </div>
 
     <script>

@@ -1438,3 +1438,221 @@ button.catalog-filter-chip:hover {
     grid-column: 1 / -1;
   }
 }
+
+/* Mobile listing final pass – unified header, bottom search, compact controls. Desktop rows stay unchanged. */
+.catalog-mobile-query,
+.catalog-mobile-help-card,
+.catalog-mobile-footer-lock,
+.catalog-mobile-bottom-search {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse), (max-width: 760px) {
+  body.catalog-body {
+    background: #f7fbff;
+  }
+
+  body.catalog-body .floating-advisor,
+  body.catalog-body [class*="advisor"] {
+    display: none !important;
+  }
+
+  body.catalog-body .footer-support-strip,
+  body.catalog-body .site-footer {
+    display: none !important;
+  }
+
+  .catalog-page {
+    padding-top: 0;
+    background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  }
+
+  .catalog-hero {
+    display: none !important;
+  }
+
+  .catalog-content {
+    padding: 14px 0 calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .catalog-content .wrap {
+    width: min(100% - 28px, 560px);
+  }
+
+  .catalog-quick-filters {
+    position: sticky;
+    top: 68px;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 -2px 10px;
+    padding: 10px 2px 9px;
+    overflow: visible;
+    background: rgba(247, 251, 255, .96);
+    backdrop-filter: blur(16px);
+  }
+
+  .quick-filter-all,
+  .quick-filter-stock {
+    display: none !important;
+  }
+
+  .quick-filter {
+    min-height: 40px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: -.01em;
+  }
+
+  .quick-filter span {
+    width: 8px;
+    height: 8px;
+    margin-right: 5px;
+  }
+
+  .catalog-toolbar {
+    display: none !important;
+  }
+
+  .catalog-mobile-query {
+    display: block;
+    margin: 0 0 12px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 850;
+  }
+
+  .catalog-mobile-query[hidden] {
+    display: none !important;
+  }
+
+  .catalog-mobile-query strong {
+    color: #071b3a;
+    font-weight: 950;
+  }
+
+  .tm-mobile-product-group {
+    margin-top: 18px;
+    margin-bottom: 8px;
+    font-size: 17px;
+  }
+
+  .catalog-mobile-help-card {
+    display: block;
+    margin: 22px 0 12px;
+  }
+
+  .catalog-mobile-help-link {
+    display: block;
+    overflow: hidden;
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 18px 42px rgba(7, 27, 58, .075);
+  }
+
+  .catalog-mobile-help-link img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .catalog-mobile-footer-lock {
+    display: block;
+    padding: 8px 0 4px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 850;
+    text-align: center;
+  }
+
+  .catalog-mobile-bottom-search {
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 1200;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    height: 58px;
+    padding: 6px 7px 6px 14px;
+    border: 1px solid rgba(216, 228, 241, .9);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .96);
+    box-shadow: 0 18px 46px rgba(7, 27, 58, .18);
+    backdrop-filter: blur(18px);
+  }
+
+  .catalog-mobile-bottom-search span {
+    display: grid;
+    place-items: center;
+    color: #071b3a;
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 900;
+  }
+
+  .catalog-mobile-bottom-search input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #071b3a;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .catalog-mobile-bottom-search input::placeholder {
+    color: #64748b;
+    opacity: 1;
+  }
+
+  .catalog-mobile-bottom-search button {
+    height: 44px;
+    border: 0;
+    border-radius: 999px;
+    background: #071b3a;
+    color: #fff;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 950;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  .catalog-content .wrap {
+    width: min(100% - 32px, 940px);
+  }
+
+  .catalog-quick-filters {
+    top: 68px;
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .catalog-mobile-query {
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+
+  .catalog-mobile-help-card,
+  .catalog-mobile-footer-lock {
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .catalog-mobile-bottom-search {
+    left: 50%;
+    right: auto;
+    width: min(620px, calc(100vw - 32px));
+    transform: translateX(-50%);
+  }
+}

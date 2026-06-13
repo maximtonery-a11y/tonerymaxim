@@ -128,6 +128,25 @@
     ].filter(Boolean);
   }
 
+  function updateMobileSearchLabel() {
+    const target = document.querySelector("[data-mobile-query-label]");
+    if (!target) return;
+
+    const query = currentPrinter || currentSearch;
+    if (!query) {
+      target.hidden = true;
+      target.innerHTML = "";
+      return;
+    }
+
+    target.hidden = false;
+    target.innerHTML = `Hľadanie: <strong>${esc(query)}</strong>`;
+
+    document.querySelectorAll("[data-catalog-mobile-search-input]").forEach((input) => {
+      if (!input.matches(":focus")) input.value = query;
+    });
+  }
+
   function clearFilter(kind) {
     if (kind === "brand") currentBrand = "";
     if (kind === "category") currentCategory = "";
@@ -146,6 +165,8 @@
   }
 
   function updateFilterButtons() {
+    updateMobileSearchLabel();
+
     document.querySelector("[data-active-filters]")?.addEventListener("click", (event) => {
       const button = event.target.closest("[data-clear-filter]");
       if (!button) return;
@@ -764,6 +785,11 @@
     const searchInput = document.querySelector("[data-catalog-search]");
     if (searchInput && currentSearch) searchInput.value = currentSearch;
 
+    document.querySelectorAll("[data-catalog-mobile-search-input]").forEach((input) => {
+      input.value = currentPrinter || currentSearch || "";
+    });
+
+    updateMobileSearchLabel();
     loadProducts();
 
     document.querySelector("[data-catalog-form]")?.addEventListener("submit", (event) => {
@@ -772,6 +798,19 @@
       currentSearch = document.querySelector("[data-catalog-search]").value.trim();
       currentPrinter = "";
       loadProducts();
+    });
+
+    document.querySelectorAll("[data-catalog-mobile-search]").forEach((form) => {
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const input = form.querySelector("[data-catalog-mobile-search-input]");
+        currentPage = 1;
+        currentSearch = String(input?.value || "").trim();
+        currentPrinter = "";
+        const desktopInput = document.querySelector("[data-catalog-search]");
+        if (desktopInput) desktopInput.value = currentSearch;
+        loadProducts();
+      });
     });
 
     document.querySelector("[data-active-filters]")?.addEventListener("click", (event) => {
