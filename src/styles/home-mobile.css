@@ -402,11 +402,18 @@
 
   body.home-page .tm-mobile-drawer-panel {
     width: min(86vw, 360px);
-    min-height: 100%;
-    padding: max(18px, env(safe-area-inset-top)) 18px 24px;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    padding: max(18px, env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom));
     background: #ffffff;
     box-shadow: 24px 0 60px rgba(7, 27, 58, .20);
     overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
   }
 
   body.home-page .tm-mobile-drawer-head {
