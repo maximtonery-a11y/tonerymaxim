@@ -304,6 +304,21 @@
     return "is-unknown";
   }
 
+  function mobileGroupInfo(key, count) {
+    if (key === "compatible") return { title: `Kompatibilné tonery (${count})`, key };
+    if (key === "original") return { title: `Originálne tonery (${count})`, key };
+    if (key === "renovated") return { title: `Renovované tonery (${count})`, key };
+    return { title: `Ostatné produkty (${count})`, key: "product" };
+  }
+
+  function mobileGroupCounts(products) {
+    return products.reduce((acc, product) => {
+      const key = product?.product_type_key || "product";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+  }
+
   function dispatchText(product) {
     return product.stock_status === "instock" ? "Expedujeme dnes" : "Termín dodania overíme";
   }
@@ -569,8 +584,22 @@
     const sortedProducts = sortProducts(products);
     status.textContent = `Načítané produkty: ${sortedProducts.length}`;
 
+    const groupCounts = mobileGroupCounts(sortedProducts);
+    let previousMobileGroup = "";
+
     sortedProducts.forEach((product) => {
       const type = typeData(product);
+      const mobileGroupKey = type.key || "product";
+
+      if (mobileGroupKey !== previousMobileGroup) {
+        previousMobileGroup = mobileGroupKey;
+        const group = mobileGroupInfo(mobileGroupKey, groupCounts[mobileGroupKey] || 0);
+        const heading = document.createElement("h2");
+        heading.className = `tm-mobile-product-group tm-mobile-product-group--${group.key}`;
+        heading.textContent = group.title;
+        list.appendChild(heading);
+      }
+
       const printers = getPrinters(product);
       const row = document.createElement("article");
       row.className = `tm-product-row tm-product-row--${type.key}`;
@@ -598,7 +627,7 @@
           <div class="tm-row-info-line">
             <div class="tm-row-meta">${productParams(product)}</div>
             <div class="tm-row-compat">
-              <button type="button" data-open-printers>Všetky modely tlačiarní (${printers.length || 0})</button>
+              <button type="button" data-open-printers>Vhodné pre ${printers.length || 0} tlačiarní</button>
               <span class="tm-dispatch">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
                 ${esc(dispatchText(product))}
