@@ -355,34 +355,21 @@
   }
 
   body.home-page .tm-mobile-product-visual {
-    position: relative;
     min-width: 0;
     height: 132px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  body.home-page .tm-mobile-help-box-img,
-  body.home-page .tm-mobile-help-toner-img {
-    position: absolute;
+  body.home-page .tm-mobile-help-product-img {
+    width: min(100%, 235px);
+    height: auto;
     display: block;
     object-fit: contain;
+    filter: drop-shadow(0 18px 22px rgba(7, 27, 58, .14));
     user-select: none;
     pointer-events: none;
-  }
-
-  body.home-page .tm-mobile-help-box-img {
-    right: 0;
-    top: 0;
-    width: 82%;
-    height: auto;
-    filter: drop-shadow(0 12px 18px rgba(7, 27, 58, .10));
-  }
-
-  body.home-page .tm-mobile-help-toner-img {
-    left: -8px;
-    bottom: 2px;
-    width: 92%;
-    height: auto;
-    filter: drop-shadow(0 16px 18px rgba(7, 27, 58, .16));
   }
 
   body.home-page .tm-mobile-footer-lock {
@@ -549,19 +536,12 @@
   }
 
   body.home-page .tm-mobile-product-visual {
-    height: 84px;
+    height: 82px;
   }
 
-  body.home-page .tm-mobile-help-box-img {
-    width: 86px;
-    right: 8px;
-    top: -2px;
-  }
-
-  body.home-page .tm-mobile-help-toner-img {
-    width: 118px;
-    left: -6px;
-    bottom: -4px;
+  body.home-page .tm-mobile-help-product-img {
+    width: 150px;
+    max-height: 90px;
   }
 
   body.home-page .tm-mobile-help-card h2 {
