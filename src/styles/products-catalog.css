@@ -1439,32 +1439,15 @@ button.catalog-filter-chip:hover {
   }
 }
 
-/* Mobile listing final pass – unified header, bottom search, compact controls. Desktop rows stay unchanged. */
-.catalog-mobile-query,
-.catalog-mobile-help-card,
-.catalog-mobile-footer-lock,
+/* Mobile listing v3 – spodné hľadanie, jednotný help blok, čistejší horný filter. */
+.catalog-mobile-help-area,
 .catalog-mobile-bottom-search {
   display: none;
 }
 
 @media (hover: none) and (pointer: coarse), (max-width: 760px) {
-  body.catalog-body {
-    background: #f7fbff;
-  }
-
-  body.catalog-body .floating-advisor,
-  body.catalog-body [class*="advisor"] {
-    display: none !important;
-  }
-
-  body.catalog-body .footer-support-strip,
-  body.catalog-body .site-footer {
-    display: none !important;
-  }
-
   .catalog-page {
-    padding-top: 0;
-    background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+    padding-bottom: 96px;
   }
 
   .catalog-hero {
@@ -1472,60 +1455,34 @@ button.catalog-filter-chip:hover {
   }
 
   .catalog-content {
-    padding: 14px 0 calc(92px + env(safe-area-inset-bottom));
-  }
-
-  .catalog-content .wrap {
-    width: min(100% - 28px, 560px);
+    padding-top: 14px;
+    padding-bottom: 28px;
   }
 
   .catalog-quick-filters {
     position: sticky;
     top: 68px;
-    z-index: 50;
+    z-index: 40;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
-    margin: 0 -2px 10px;
-    padding: 10px 2px 9px;
-    overflow: visible;
-    background: rgba(247, 251, 255, .96);
-    backdrop-filter: blur(16px);
+    margin: 0 -6px 14px;
+    padding: 10px 6px 12px;
+    background: rgba(247, 251, 255, .94);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(216, 228, 241, .75);
   }
 
-  .quick-filter-all,
-  .quick-filter-stock {
-    display: none !important;
-  }
-
-  .quick-filter {
-    min-height: 40px;
-    padding: 0 8px;
-    border-radius: 999px;
-    font-size: 12px;
-    letter-spacing: -.01em;
-  }
-
-  .quick-filter span {
-    width: 8px;
-    height: 8px;
-    margin-right: 5px;
-  }
-
-  .catalog-toolbar {
+  .catalog-quick-filters .quick-filter-all,
+  .catalog-quick-filters .quick-filter-stock {
     display: none !important;
   }
 
   .catalog-mobile-query {
-    display: block;
-    margin: 0 0 12px;
+    margin: 4px 0 18px;
     color: #64748b;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 850;
-  }
-
-  .catalog-mobile-query[hidden] {
-    display: none !important;
   }
 
   .catalog-mobile-query strong {
@@ -1533,126 +1490,185 @@ button.catalog-filter-chip:hover {
     font-weight: 950;
   }
 
-  .tm-mobile-product-group {
-    margin-top: 18px;
-    margin-bottom: 8px;
-    font-size: 17px;
+  .catalog-toolbar {
+    display: none !important;
+  }
+
+  .catalog-pagination {
+    margin: 24px 0 18px;
+  }
+
+  .catalog-mobile-help-area {
+    display: block;
+    margin: 18px auto 0;
+    padding: 18px 18px 0;
+    background: linear-gradient(180deg, rgba(232, 246, 255, .55) 0%, rgba(247, 251, 255, 0) 100%);
+  }
+
+  .catalog-mobile-help-area > p {
+    width: min(100%, 560px);
+    margin: 0 auto 10px;
+    color: #00aeef;
+    font-size: 13px;
+    font-weight: 950;
+    letter-spacing: .06em;
+    text-transform: uppercase;
   }
 
   .catalog-mobile-help-card {
+    width: min(100%, 560px);
     display: block;
-    margin: 22px 0 12px;
-  }
-
-  .catalog-mobile-help-link {
-    display: block;
-    overflow: hidden;
+    margin: 0 auto;
+    padding: 10px;
+    border: 1px solid #dfeaf6;
     border-radius: 24px;
     background: #fff;
-    box-shadow: 0 18px 42px rgba(7, 27, 58, .075);
+    box-shadow: 0 14px 36px rgba(7, 27, 58, .07);
+    text-decoration: none;
   }
 
-  .catalog-mobile-help-link img {
-    display: block;
+  .catalog-mobile-help-card img {
     width: 100%;
-    height: auto;
+    display: block;
+    border-radius: 18px;
   }
 
-  .catalog-mobile-footer-lock {
-    display: block;
-    padding: 8px 0 4px;
+  body:not(.home-page) .footer-support-strip,
+  body:not(.home-page) .footer-main,
+  body:not(.home-page) .footer-trust-row,
+  body:not(.home-page) .footer-bottom div {
+    display: none !important;
+  }
+
+  body:not(.home-page) .site-footer {
+    margin-top: 18px;
+    padding: 0 0 108px;
+    background: transparent;
+  }
+
+  body:not(.home-page) .footer-bottom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 18px 18px 6px;
     color: #64748b;
-    font-size: 12px;
-    font-weight: 850;
     text-align: center;
+  }
+
+  body:not(.home-page) .footer-bottom span {
+    width: 100%;
+    color: #64748b;
+    font-size: 16px;
+    font-weight: 850;
+  }
+
+  body:not(.home-page) .floating-advisor {
+    display: none !important;
   }
 
   .catalog-mobile-bottom-search {
     position: fixed;
-    left: 14px;
-    right: 14px;
-    bottom: max(12px, env(safe-area-inset-bottom));
-    z-index: 1200;
-    display: grid;
-    grid-template-columns: 36px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 8px;
-    height: 58px;
-    padding: 6px 7px 6px 14px;
-    border: 1px solid rgba(216, 228, 241, .9);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, .96);
-    box-shadow: 0 18px 46px rgba(7, 27, 58, .18);
-    backdrop-filter: blur(18px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1150;
+    display: block;
+    padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(247,251,255,0) 0%, rgba(247,251,255,.96) 24%, rgba(247,251,255,1) 100%);
   }
 
-  .catalog-mobile-bottom-search span {
+  .catalog-mobile-bottom-search form {
+    width: min(100%, 560px);
+    min-height: 64px;
     display: grid;
-    place-items: center;
+    grid-template-columns: 42px minmax(0, 1fr) 96px;
+    align-items: center;
+    gap: 8px;
+    margin: 0 auto;
+    padding: 8px 10px 8px 18px;
+    border: 1px solid #d8e5f2;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 16px 42px rgba(7, 27, 58, .16);
+  }
+
+  .catalog-mobile-bottom-search form > span {
     color: #071b3a;
-    font-size: 30px;
+    font-size: 40px;
     line-height: 1;
     font-weight: 900;
   }
 
   .catalog-mobile-bottom-search input {
-    width: 100%;
     min-width: 0;
+    width: 100%;
+    height: 44px;
     border: 0;
     outline: 0;
     background: transparent;
     color: #071b3a;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 17px;
+    font-weight: 900;
   }
 
   .catalog-mobile-bottom-search input::placeholder {
-    color: #64748b;
+    color: #8a96a8;
     opacity: 1;
   }
 
   .catalog-mobile-bottom-search button {
-    height: 44px;
+    height: 50px;
     border: 0;
     border-radius: 999px;
     background: #071b3a;
     color: #fff;
-    padding: 0 16px;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 950;
+  }
+
+  .catalog-mobile-bottom-search .tm-smart-search-panel {
+    position: fixed;
+    left: 18px;
+    right: 18px;
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    width: auto;
+    max-height: min(62vh, 520px);
+    overflow-y: auto;
+    border-radius: 22px;
+    box-shadow: 0 24px 80px rgba(7, 27, 58, .22);
   }
 }
 
 @media (hover: none) and (pointer: coarse) and (orientation: landscape) {
-  .catalog-content .wrap {
-    width: min(100% - 32px, 940px);
-  }
-
   .catalog-quick-filters {
-    top: 68px;
-    max-width: 620px;
+    top: 60px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: min(100%, 940px);
     margin-left: auto;
     margin-right: auto;
   }
 
-  .catalog-mobile-query {
-    max-width: 620px;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
+  .catalog-mobile-help-area {
+    padding-top: 12px;
   }
 
+  .catalog-mobile-help-area > p,
   .catalog-mobile-help-card,
-  .catalog-mobile-footer-lock {
-    max-width: 620px;
-    margin-left: auto;
-    margin-right: auto;
+  .catalog-mobile-bottom-search form {
+    max-width: 940px;
+  }
+
+  .catalog-mobile-help-card {
+    padding: 8px;
+  }
+
+  .catalog-mobile-help-card img {
+    max-height: 150px;
+    object-fit: cover;
+    object-position: center;
   }
 
   .catalog-mobile-bottom-search {
-    left: 50%;
-    right: auto;
-    width: min(620px, calc(100vw - 32px));
-    transform: translateX(-50%);
+    padding-inline: 28px;
   }
 }

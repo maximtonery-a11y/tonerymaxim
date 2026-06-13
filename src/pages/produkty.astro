@@ -18,7 +18,7 @@ const title = "Produkty | ToneryMaxim.sk";
     <title>{title}</title>
   </head>
 
-  <body class="catalog-body">
+  <body>
     <div class="page">
       <Header />
 
@@ -100,7 +100,7 @@ const title = "Produkty | ToneryMaxim.sk";
                 <button type="button" data-filter="stock" data-filter-value="instock" class="quick-filter quick-filter-stock">✓ Skladom</button>
               </div>
 
-              <div class="catalog-mobile-query" data-mobile-query-label hidden></div>
+              <div class="catalog-mobile-query" data-catalog-mobile-query hidden></div>
 
               <div class="catalog-toolbar">
                 <div>
@@ -121,32 +121,40 @@ const title = "Produkty | ToneryMaxim.sk";
                 <span data-page-info>Strana 1</span>
                 <button type="button" data-next-page>Ďalšie</button>
               </div>
-
-              <section class="catalog-mobile-help-card" aria-label="Pomoc s výberom">
-                <a class="catalog-mobile-help-link" href="/kontakt" aria-label="Kontaktujte nás">
-                  <img src={tmHelpVisual.src} alt="Potrebujete poradiť? Sme tu pre vás. Kontaktujte nás." loading="lazy" decoding="async" />
-                </a>
-              </section>
-
-              <div class="catalog-mobile-footer-lock" aria-label="Copyright">
-                © 2026 ToneryMaxim.sk
-              </div>
             </div>
           </div>
         </section>
       </main>
-      <Footer />
-      <FloatingAdvisor />
 
-      <form class="catalog-mobile-bottom-search" action="/produkty" method="get" data-catalog-mobile-search>
-        <span aria-hidden="true">⌕</span>
-        <input type="search" name="s" placeholder="Hľadať toner alebo tlačiareň" aria-label="Hľadať toner alebo tlačiareň" data-catalog-mobile-search-input />
-        <button type="submit" aria-label="Hľadať">Hľadať</button>
-      </form>
+      <section class="catalog-mobile-help-area" aria-label="Pomoc s výberom správnej náplne">
+        <p>Poradíme s výberom</p>
+        <a class="catalog-mobile-help-card" href="/kontakt" aria-label="Kontaktujte nás">
+          <img src={tmHelpVisual.src} alt="Potrebujete poradiť? Sme tu pre vás. Kontaktujte nás." loading="lazy" decoding="async" />
+        </a>
+      </section>
+
+      <Footer showTrust={false} />
+
+      <div class="catalog-mobile-bottom-search tm-smart-search-wrap" data-catalog-bottom-search>
+        <form action="/produkty" method="get" data-smart-search>
+          <span aria-hidden="true">⌕</span>
+          <input type="search" name="s" data-smart-search-input data-catalog-bottom-search-input placeholder="Hľadať toner alebo tlačiareň" aria-label="Hľadať toner alebo tlačiareň" />
+          <button type="submit">Hľadať</button>
+        </form>
+      </div>
+
+      <FloatingAdvisor />
     </div>
 
     <script>
       import "../scripts/catalog.js";
+    </script>
+    <script>
+      const bottomSearchInput = document.querySelector('[data-catalog-bottom-search-input]');
+      if (bottomSearchInput) {
+        const params = new URLSearchParams(window.location.search);
+        bottomSearchInput.value = params.get('s') || params.get('search') || params.get('q') || '';
+      }
     </script>
   </body>
 </html>

@@ -128,25 +128,6 @@
     ].filter(Boolean);
   }
 
-  function updateMobileSearchLabel() {
-    const target = document.querySelector("[data-mobile-query-label]");
-    if (!target) return;
-
-    const query = currentPrinter || currentSearch;
-    if (!query) {
-      target.hidden = true;
-      target.innerHTML = "";
-      return;
-    }
-
-    target.hidden = false;
-    target.innerHTML = `Hľadanie: <strong>${esc(query)}</strong>`;
-
-    document.querySelectorAll("[data-catalog-mobile-search-input]").forEach((input) => {
-      if (!input.matches(":focus")) input.value = query;
-    });
-  }
-
   function clearFilter(kind) {
     if (kind === "brand") currentBrand = "";
     if (kind === "category") currentCategory = "";
@@ -165,8 +146,6 @@
   }
 
   function updateFilterButtons() {
-    updateMobileSearchLabel();
-
     document.querySelector("[data-active-filters]")?.addEventListener("click", (event) => {
       const button = event.target.closest("[data-clear-filter]");
       if (!button) return;
@@ -589,6 +568,22 @@
     if (modal instanceof HTMLDialogElement) modal.showModal();
   }
 
+
+  function updateMobileQuery() {
+    const node = document.querySelector("[data-catalog-mobile-query]");
+    if (!node) return;
+
+    const label = currentPrinter || currentSearch || currentBrand || "";
+    if (!label) {
+      node.hidden = true;
+      node.textContent = "";
+      return;
+    }
+
+    node.hidden = false;
+    node.innerHTML = `Hľadanie: <strong>${esc(label)}</strong>`;
+  }
+
   function renderProducts(products) {
     const list = document.querySelector("[data-catalog-grid]");
     const status = document.querySelector("[data-catalog-status]");
@@ -703,6 +698,7 @@
   }
 
   async function loadProducts(options = {}) {
+    updateMobileQuery();
     updateFilterButtons();
     setUrlState();
     const status = document.querySelector("[data-catalog-status]");
@@ -784,12 +780,9 @@
 
     const searchInput = document.querySelector("[data-catalog-search]");
     if (searchInput && currentSearch) searchInput.value = currentSearch;
+    const bottomSearchInput = document.querySelector("[data-catalog-bottom-search-input]");
+    if (bottomSearchInput && currentSearch) bottomSearchInput.value = currentSearch;
 
-    document.querySelectorAll("[data-catalog-mobile-search-input]").forEach((input) => {
-      input.value = currentPrinter || currentSearch || "";
-    });
-
-    updateMobileSearchLabel();
     loadProducts();
 
     document.querySelector("[data-catalog-form]")?.addEventListener("submit", (event) => {
@@ -798,19 +791,6 @@
       currentSearch = document.querySelector("[data-catalog-search]").value.trim();
       currentPrinter = "";
       loadProducts();
-    });
-
-    document.querySelectorAll("[data-catalog-mobile-search]").forEach((form) => {
-      form.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const input = form.querySelector("[data-catalog-mobile-search-input]");
-        currentPage = 1;
-        currentSearch = String(input?.value || "").trim();
-        currentPrinter = "";
-        const desktopInput = document.querySelector("[data-catalog-search]");
-        if (desktopInput) desktopInput.value = currentSearch;
-        loadProducts();
-      });
     });
 
     document.querySelector("[data-active-filters]")?.addEventListener("click", (event) => {

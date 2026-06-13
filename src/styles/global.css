@@ -980,32 +980,96 @@ input {
   }
 }
 
-/* Mobile header unification – non-home pages use the same visual proportions as mobile homepage. */
+/* Mobile drawer: zjednotený s úvodnou stránkou */
 @media (hover: none) and (pointer: coarse), (max-width: 760px) {
-  body:not(.home-page) {
-    padding-top: 68px !important;
+  body:not(.home-page) .tm-global-mobile-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: none;
+    background: rgba(7, 27, 58, .38);
+    backdrop-filter: blur(10px);
   }
 
-  body:not(.home-page) .site-header {
-    height: 68px !important;
-    min-height: 68px !important;
-    padding: 0 !important;
-    background: rgba(255, 255, 255, .96) !important;
-    border-bottom: 1px solid rgba(216, 228, 241, .72) !important;
-    box-shadow: none !important;
-    backdrop-filter: blur(18px);
+  body:not(.home-page) .tm-global-mobile-drawer.is-open {
+    display: block;
   }
 
-  body:not(.home-page) .tm-global-mobile-bar {
-    height: 68px;
-    grid-template-columns: 48px minmax(0, 1fr) 48px;
-    gap: 10px;
-    padding: 8px 18px;
+  body:not(.home-page) .tm-global-mobile-drawer-panel {
+    width: min(86vw, 360px);
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    padding: max(18px, env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom));
+    background: #fff;
+    box-shadow: 24px 0 60px rgba(7, 27, 58, .20);
   }
 
-  body:not(.home-page) .tm-global-mobile-logo img {
-    width: min(310px, 60vw);
-    max-height: 42px;
-    object-fit: contain;
+  body:not(.home-page) .tm-global-mobile-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 18px;
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  body:not(.home-page) .tm-global-mobile-drawer-head strong {
+    color: #071b3a;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: -.035em;
+    font-weight: 950;
+  }
+
+  body:not(.home-page) .tm-global-mobile-drawer-head button {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #dce7f3;
+    border-radius: 14px;
+    background: #fff;
+    color: #071b3a;
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 900;
+  }
+
+  body:not(.home-page) .tm-global-mobile-drawer section {
+    display: grid;
+    gap: 8px;
+    margin: 18px 0 0;
+    padding: 18px 0 0;
+    border-top: 1px solid #e6edf5;
+    border-bottom: 0;
+  }
+
+  body:not(.home-page) .tm-global-mobile-drawer section > strong {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 950;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  body:not(.home-page) .tm-global-mobile-drawer a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 13px;
+    border-radius: 13px;
+    background: #f6f9fd;
+    color: #071b3a;
+    font-size: 15px;
+    font-weight: 850;
+    text-decoration: none;
   }
 }
