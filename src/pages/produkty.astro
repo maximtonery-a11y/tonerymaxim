@@ -127,12 +127,15 @@ const title = "Produkty | ToneryMaxim.sk";
 
       <section class="catalog-mobile-help-area" aria-label="Pomoc s výberom správnej náplne">
         <div class="catalog-mobile-help-card">
-          <p class="catalog-mobile-help-kicker">Potrebujete poradiť?</p>
-          <h2>Pomôžeme vám vybrať správnu náplň ešte pred objednávkou.</h2>
-          <div class="catalog-mobile-help-contacts">
-            <a href="tel:+421910123456"><span aria-hidden="true">☎</span> +421 910 123 456</a>
-            <a href="mailto:info@tonerymaxim.sk"><span aria-hidden="true">✉</span> info@tonerymaxim.sk</a>
-          </div>
+          <p>Radi vám pomôžeme</p>
+          <a class="catalog-mobile-help-row" href="tel:+421917859206">
+            <span aria-hidden="true">☎</span>
+            <strong>0917 859 206</strong>
+          </a>
+          <a class="catalog-mobile-help-row" href="mailto:info@tonerymaxim.sk">
+            <span aria-hidden="true">✉</span>
+            <strong>info@tonerymaxim.sk</strong>
+          </a>
         </div>
       </section>
 
@@ -152,7 +155,10 @@ const title = "Produkty | ToneryMaxim.sk";
     <script>
       import "../scripts/catalog.js";
       import "../scripts/smart-search.js";
-      window.TMInitSmartSearch?.();
+    </script>
+    <script>
+      window.tmInitSmartSearch?.();
+      document.addEventListener('DOMContentLoaded', () => window.tmInitSmartSearch?.());
     </script>
     <script>
       const bottomSearchInput = document.querySelector('[data-catalog-bottom-search-input]');

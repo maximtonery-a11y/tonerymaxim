@@ -1673,136 +1673,186 @@ button.catalog-filter-chip:hover {
   }
 }
 
-/* Mobile listing v4 – oprava bez zásahu do desktopu. */
+/* Mobile listing v4 fixes: header restore, help block, bottom autocomplete */
 @media (hover: none) and (pointer: coarse), (max-width: 760px) {
+  body:not(.home-page) {
+    padding-top: 68px !important;
+  }
+
   body:not(.home-page) .site-header {
-    z-index: 2200;
-    background: #fff;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    height: 68px !important;
+    min-height: 68px !important;
+    padding: 0 !important;
+    background: rgba(255, 255, 255, .96) !important;
+    border-bottom: 1px solid rgba(216, 228, 241, .72) !important;
+    backdrop-filter: blur(18px) !important;
+    z-index: 2200 !important;
   }
 
   body:not(.home-page) .tm-global-mobile-bar {
-    background: #fff;
+    height: 68px !important;
+    display: grid !important;
+    grid-template-columns: 48px minmax(0, 1fr) 48px !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 8px 18px !important;
+    background: transparent !important;
   }
 
-  .catalog-quick-filters {
-    top: 68px;
-    z-index: 900;
+  body:not(.home-page) .tm-global-mobile-menu-button,
+  body:not(.home-page) .tm-global-mobile-cart {
+    width: 44px !important;
+    height: 44px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #071b3a !important;
+  }
+
+  body:not(.home-page) .tm-global-mobile-menu-button span {
+    width: 26px !important;
+    height: 3px !important;
+    margin: 3px 0 !important;
+    border-radius: 999px !important;
+    background: #071b3a !important;
+  }
+
+  body:not(.home-page) .tm-global-mobile-logo img {
+    width: min(310px, 60vw) !important;
+    max-height: 42px !important;
+    object-fit: contain !important;
+  }
+
+  body:not(.home-page) .tm-global-mobile-cart {
+    justify-self: end !important;
+    position: relative !important;
+    font-size: 30px !important;
+    line-height: 1 !important;
+  }
+
+  body:not(.home-page) .catalog-quick-filters {
+    top: 68px !important;
+    z-index: 1100 !important;
+  }
+
+  body:not(.home-page) .tm-global-mobile-drawer {
+    z-index: 3000 !important;
+  }
+
+  body:not(.home-page) .tm-global-mobile-drawer-panel {
+    width: min(86vw, 360px) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    touch-action: pan-y !important;
+    padding: max(18px, env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom)) !important;
+    background: #fff !important;
+    box-shadow: 24px 0 60px rgba(7, 27, 58, .20) !important;
+  }
+
+  .catalog-mobile-help-area {
+    display: block !important;
+    width: min(100%, 560px);
+    margin: 22px auto 0;
+    padding: 0 18px;
+    background: transparent !important;
+  }
+
+  .catalog-mobile-help-card {
+    width: 100% !important;
+    display: grid !important;
+    gap: 12px !important;
+    margin: 0 auto !important;
+    padding: 22px 22px 24px !important;
+    border: 1px solid #dfeaf6 !important;
+    border-radius: 24px !important;
+    background: #fff !important;
+    box-shadow: 0 18px 44px rgba(7, 27, 58, .07) !important;
+    text-decoration: none !important;
+  }
+
+  .catalog-mobile-help-card > p {
+    margin: 0 0 2px !important;
+    color: #071b3a !important;
+    font-size: 24px !important;
+    line-height: 1.12 !important;
+    font-weight: 950 !important;
+    letter-spacing: -.035em !important;
+    text-transform: none !important;
+  }
+
+  .catalog-mobile-help-row {
+    min-height: 58px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    padding: 0 16px !important;
+    border: 1px solid #dce7f3 !important;
+    border-radius: 999px !important;
+    background: #fff !important;
+    color: #071b3a !important;
+    text-decoration: none !important;
+    box-shadow: 0 10px 24px rgba(7, 27, 58, .04) !important;
+  }
+
+  .catalog-mobile-help-row span {
+    font-size: 20px !important;
+    line-height: 1 !important;
+  }
+
+  .catalog-mobile-help-row strong {
+    font-size: 17px !important;
+    font-weight: 950 !important;
+    letter-spacing: -.02em !important;
+  }
+
+  .catalog-mobile-bottom-search {
+    z-index: 2100 !important;
+  }
+
+  .catalog-mobile-bottom-search .tm-smart-search-panel {
+    z-index: 2140 !important;
+    bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+    top: auto !important;
+    transform: none !important;
+    max-height: min(58vh, 480px) !important;
   }
 
   html.tm-menu-open .catalog-mobile-bottom-search {
     display: none !important;
   }
-
-  .catalog-mobile-help-area {
-    margin: 18px auto 0;
-    padding: 22px 18px 0;
-    background: linear-gradient(180deg, rgba(232, 246, 255, .55) 0%, rgba(247, 251, 255, 0) 100%);
-  }
-
-  .catalog-mobile-help-area > p {
-    display: none !important;
-  }
-
-  .catalog-mobile-help-card {
-    width: min(100%, 560px);
-    display: block;
-    margin: 0 auto;
-    padding: 22px;
-    border: 1px solid #dfeaf6;
-    border-radius: 24px;
-    background: #ffffff;
-    box-shadow: 0 14px 36px rgba(7, 27, 58, .07);
-    text-decoration: none;
-  }
-
-  .catalog-mobile-help-kicker {
-    margin: 0 0 8px;
-    color: #00aeef;
-    font-size: 13px;
-    font-weight: 950;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-  }
-
-  .catalog-mobile-help-card h2 {
-    margin: 0 0 18px;
-    color: #071b3a;
-    font-size: 22px;
-    line-height: 1.2;
-    letter-spacing: -.03em;
-    font-weight: 950;
-  }
-
-  .catalog-mobile-help-contacts {
-    display: grid;
-    gap: 10px;
-  }
-
-  .catalog-mobile-help-contacts a {
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 9px;
-    padding: 0 14px;
-    border: 1px solid #d8e5f2;
-    border-radius: 999px;
-    background: #fff;
-    color: #071b3a;
-    box-shadow: 0 8px 22px rgba(7, 27, 58, .045);
-    font-size: 16px;
-    font-weight: 950;
-    text-decoration: none;
-  }
-
-  .catalog-mobile-help-contacts a span {
-    color: #071b3a;
-    font-size: 18px;
-    line-height: 1;
-  }
-
-  .catalog-mobile-help-card img {
-    display: none !important;
-  }
-
-  .catalog-mobile-bottom-search .tm-smart-search-panel {
-    z-index: 1300;
-  }
 }
 
 @media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  body:not(.home-page) .catalog-quick-filters {
+    top: 68px !important;
+  }
+
   .catalog-mobile-help-area {
-    padding-inline: 28px;
+    width: min(100%, 940px) !important;
+    padding: 0 28px !important;
   }
 
   .catalog-mobile-help-card {
-    max-width: 940px;
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(360px, .8fr);
-    align-items: center;
-    gap: 18px;
-    padding: 18px 22px;
+    grid-template-columns: auto 1fr 1fr !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 16px 20px !important;
   }
 
-  .catalog-mobile-help-card h2 {
-    margin-bottom: 0;
-    font-size: 21px;
+  .catalog-mobile-help-card > p {
+    font-size: 22px !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
   }
 
-  .catalog-mobile-help-kicker {
-    grid-column: 1 / -1;
-    margin-bottom: -4px;
-  }
-
-  .catalog-mobile-help-contacts {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .catalog-mobile-help-contacts a {
-    min-height: 48px;
-    font-size: 15px;
+  .catalog-mobile-help-row {
+    min-height: 48px !important;
   }
 }
