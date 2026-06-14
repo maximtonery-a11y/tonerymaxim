@@ -9,18 +9,18 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
 
 const title = "Vybrať podľa tlačiarne | ToneryMaxim.sk";
 const brands = [
-  ["HP", "/tlaciarne/hp"],
-  ["Brother", "/tlaciarne/brother"],
-  ["Canon", "/tlaciarne/canon"],
-  ["Epson", "/tlaciarne/epson"],
-  ["Samsung", "/tlaciarne/samsung"],
-  ["Xerox", "/tlaciarne/xerox"],
-  ["Lexmark", "/tlaciarne/lexmark"],
-  ["Kyocera", "/tlaciarne/kyocera"],
-  ["OKI", "/tlaciarne/oki"],
-  ["Ricoh", "/tlaciarne/ricoh"],
-  ["Toshiba", "/tlaciarne/toshiba"],
-  ["Dell", "/tlaciarne/dell"],
+  { name: "HP", href: "/tlaciarne/hp", logo: "hp", className: "hp" },
+  { name: "Brother", href: "/tlaciarne/brother", logo: "brother", className: "brother" },
+  { name: "Canon", href: "/tlaciarne/canon", logo: "Canon", className: "canon" },
+  { name: "Epson", href: "/tlaciarne/epson", logo: "EPSON", className: "epson" },
+  { name: "Samsung", href: "/tlaciarne/samsung", logo: "SAMSUNG", className: "samsung" },
+  { name: "Xerox", href: "/tlaciarne/xerox", logo: "Xerox", className: "xerox" },
+  { name: "Lexmark", href: "/tlaciarne/lexmark", logo: "Lexmark", className: "lexmark" },
+  { name: "Kyocera", href: "/tlaciarne/kyocera", logo: "KYOCERA", className: "kyocera" },
+  { name: "OKI", href: "/tlaciarne/oki", logo: "OKI", className: "oki" },
+  { name: "Ricoh", href: "/tlaciarne/ricoh", logo: "Ricoh", className: "ricoh" },
+  { name: "Toshiba", href: "/tlaciarne/toshiba", logo: "TOSHIBA", className: "toshiba" },
+  { name: "Dell", href: "/tlaciarne/dell", logo: "Dell", className: "dell" },
 ];
 ---
 
@@ -76,7 +76,7 @@ const brands = [
         <section class="wrap printer-mobile-brand-section">
           <h2>Značka tlačiarne</h2>
           <div class="printer-mobile-brand-grid">
-            {brands.map(([name, href]) => <a href={href}>{name}</a>)}
+            {brands.map((brand) => <a href={brand.href} aria-label={brand.name}><span class={`printer-brand-logo printer-brand-logo--${brand.className}`}>{brand.logo}</span></a>)}
           </div>
         </section>
       </main>
@@ -103,6 +103,7 @@ const brands = [
 
     <script>
       import "../scripts/smart-search.js";
+      window.tmInitSmartSearch?.();
     </script>
     <script>
       const printerMenuToggle = document.querySelector('[data-printer-mobile-menu-toggle]');

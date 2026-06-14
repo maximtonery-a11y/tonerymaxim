@@ -1075,3 +1075,145 @@
     bottom: 10px;
   }
 }
+
+/* Patch: mobilný výber podľa tlačiarne – opravy podľa posledného zadania. */
+@media (hover: none) and (pointer: coarse), (max-width: 760px) {
+  body.printer-page {
+    padding-top: 0 !important;
+  }
+
+  body.printer-page .page {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  body.printer-page .site-header {
+    display: none !important;
+  }
+
+  body.printer-page .printer-mobile-topbar {
+    position: sticky;
+    top: 0;
+    margin-top: 0 !important;
+  }
+
+  body.printer-page .printer-mobile-shell {
+    margin-top: 0 !important;
+  }
+
+  body.printer-page .printer-brand-list-page,
+  body.printer-page .printer-finder-page {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  body.printer-page .printer-mobile-brand-section {
+    padding-top: 16px !important;
+  }
+
+  body.printer-page .printer-mobile-brand-section h2 {
+    margin-bottom: 12px;
+  }
+
+  body.printer-page .printer-mobile-brand-grid a {
+    min-height: 76px;
+    padding: 10px 12px;
+  }
+
+  body.printer-page .printer-brand-logo {
+    display: block;
+    line-height: 1;
+    font-weight: 950;
+    letter-spacing: -.04em;
+    text-align: center;
+  }
+
+  body.printer-page .printer-brand-logo--hp {
+    color: #1782c5;
+    font-size: 38px;
+    text-transform: lowercase;
+  }
+
+  body.printer-page .printer-brand-logo--brother {
+    color: #0052a5;
+    font-size: 28px;
+    text-transform: lowercase;
+  }
+
+  body.printer-page .printer-brand-logo--canon {
+    color: #d71920;
+    font-size: 32px;
+  }
+
+  body.printer-page .printer-brand-logo--epson {
+    color: #004b93;
+    font-size: 29px;
+    letter-spacing: .01em;
+  }
+
+  body.printer-page .printer-brand-logo--samsung {
+    color: #1d3aa6;
+    font-size: 25px;
+    letter-spacing: .02em;
+  }
+
+  body.printer-page .printer-brand-logo--xerox {
+    color: #e1251b;
+    font-size: 31px;
+  }
+
+  body.printer-page .printer-brand-logo--lexmark {
+    color: #00a65a;
+    font-size: 27px;
+  }
+
+  body.printer-page .printer-brand-logo--kyocera,
+  body.printer-page .printer-brand-logo--oki,
+  body.printer-page .printer-brand-logo--ricoh,
+  body.printer-page .printer-brand-logo--toshiba,
+  body.printer-page .printer-brand-logo--dell {
+    color: #071b3a;
+    font-size: 24px;
+    letter-spacing: .01em;
+  }
+
+  body.printer-page .printer-mobile-help-area {
+    padding-top: 10px !important;
+    padding-bottom: 0 !important;
+  }
+
+  body.printer-page .printer-mobile-help-area + .printer-help-section,
+  body.printer-page .printer-help-section {
+    display: none !important;
+  }
+
+  body.printer-page::after {
+    padding-top: 14px !important;
+    padding-bottom: 84px !important;
+  }
+
+  body.printer-page .printer-mobile-bottom-search .tm-smart-search-wrap {
+    position: relative;
+  }
+
+  body.printer-page .printer-mobile-bottom-search .tm-smart-search-panel {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: calc(100% + 10px) !important;
+    max-height: 50svh;
+    overflow: auto;
+    z-index: 1200;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  body.printer-page .printer-mobile-brand-grid a {
+    min-height: 64px;
+  }
+
+  body.printer-page .printer-mobile-help-area {
+    padding-top: 8px !important;
+  }
+}
