@@ -1,10 +1,12 @@
 ---
 import "../../styles/global.css";
 import "../../styles/printer-finder.css";
+import "../../styles/home-mobile.css";
 import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import "../../styles/footer.css";
+import mobileLogo from "../../assets/tonerymaxim-mobile-approved-logo.png";
 
 const brandParam = String(Astro.params.brand || "");
 const brandMap: Record<string, string> = {
@@ -35,11 +37,94 @@ const title = `Náplne do tlačiarní ${selectedBrand} | ToneryMaxim.sk`;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
   </head>
-  <body>
+  <body class="printer-brand-page">
     <div class="page">
       <Header />
 
-      <main class="printer-finder-page" data-printer-finder data-brand={selectedBrand}>
+      <section class="tm-printer-mobile" aria-label={`Vybrať tlačiareň ${selectedBrand}`} data-printer-finder data-brand={selectedBrand}>
+        <div class="tm-printer-mobile-topbar">
+          <button class="tm-printer-mobile-menu-button" type="button" aria-label="Otvoriť menu" aria-expanded="false" data-tm-printer-menu-toggle>
+            <span></span><span></span><span></span>
+          </button>
+          <a class="tm-printer-mobile-logo-link" href="/" aria-label="ToneryMaxim domov">
+            <img src={mobileLogo.src} alt="ToneryMaxim" loading="eager" decoding="async" />
+          </a>
+          <a class="tm-printer-mobile-cart-link" href="/kosik" aria-label="Košík">
+            <span aria-hidden="true">🛒</span>
+            <strong data-cart-count>0</strong>
+          </a>
+        </div>
+
+        <div class="tm-printer-mobile-drawer" data-tm-printer-menu aria-hidden="true">
+          <div class="tm-printer-mobile-drawer-panel">
+            <div class="tm-printer-mobile-drawer-head">
+              <strong>Menu</strong>
+              <button type="button" aria-label="Zavrieť menu" data-tm-printer-menu-close>×</button>
+            </div>
+            <section>
+              <strong>Môj účet</strong>
+              <a href="/prihlasenie">Prihlásenie</a>
+              <a href="/ucet">Môj účet</a>
+              <a href="/ucet/objednavky">Moje objednávky</a>
+            </section>
+            <section>
+              <strong>Informácie</strong>
+              <a href="/kontakt">Kontakt</a>
+              <a href="/doprava-a-platba">Doprava a platba</a>
+              <a href="/reklamacie">Reklamácie</a>
+              <a href="/obchodne-podmienky">Obchodné podmienky</a>
+              <a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
+            </section>
+            <section>
+              <strong>Ponuka</strong>
+              <a href="/produkty?category=tonery&search=toner">Tonery</a>
+              <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a>
+              <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
+              <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
+            </section>
+          </div>
+        </div>
+
+        <main class="tm-printer-mobile-content tm-printer-mobile-content--brand">
+          <a class="tm-printer-back" href="/tlaciarne">← Zmeniť značku</a>
+
+          <div class="tm-printer-mobile-field tm-printer-mobile-field--brand">
+            <span>Značka tlačiarne</span>
+            <a href="/tlaciarne">{selectedBrand}</a>
+          </div>
+
+          <div class="tm-printer-mobile-field tm-printer-mobile-field--model">
+            <label for="tm-printer-model-input">Model tlačiarne</label>
+            <div class="tm-printer-model-control">
+              <input id="tm-printer-model-input" type="search" data-printer-input placeholder="Začnite písať model" autocomplete="off" />
+              <button type="button" data-clear-printer hidden aria-label="Vymazať model">×</button>
+            </div>
+            <div class="printer-suggestions tm-printer-model-suggestions" data-printer-suggestions hidden></div>
+          </div>
+
+          <section class="tm-printer-popular-mobile">
+            <h1>Najčastejšie hľadané tlačiarne {selectedBrand}</h1>
+            <div class="printer-popular-grid" data-printer-popular-grid></div>
+          </section>
+
+          <section class="tm-printer-mobile-help" aria-label="Pomoc s výberom">
+            <h2>Radi vám pomôžeme</h2>
+            <a href="tel:+421917859206" class="tm-printer-help-row"><span aria-hidden="true">☎</span><strong>0917 859 206</strong></a>
+            <a href="mailto:info@tonerymaxim.sk" class="tm-printer-help-row"><span aria-hidden="true">✉</span><strong>info@tonerymaxim.sk</strong></a>
+          </section>
+          <div class="tm-printer-mobile-footer">© 2026 ToneryMaxim.sk</div>
+        </main>
+
+        <div class="tm-printer-bottom-search tm-smart-search-wrap">
+          <form action="/produkty" method="get" data-smart-search>
+            <span aria-hidden="true">⌕</span>
+            <input type="search" name="s" data-smart-search-input placeholder="Hľadať toner alebo tlačiareň" aria-label="Hľadať toner alebo tlačiareň" />
+            <button type="submit">Hľadať</button>
+          </form>
+        </div>
+      </section>
+
+      <main class="printer-finder-page printer-desktop-fallback" data-printer-finder data-brand={selectedBrand}>
         <section class="printer-finder-hero">
           <div class="wrap printer-finder-hero-inner">
             <div class="printer-finder-copy">
@@ -94,20 +179,6 @@ const title = `Náplne do tlačiarní ${selectedBrand} | ToneryMaxim.sk`;
 
           <div class="printer-popular-grid" data-printer-popular-grid></div>
         </section>
-
-        <section class="wrap printer-help-section">
-          <div class="printer-help-card">
-            <div>
-              <p class="eyebrow">Pomoc s výberom</p>
-              <h2>Neviete presný model tlačiarne?</h2>
-              <p>Napíšte nám označenie tonera, fotku štítku alebo model tlačiarne. Pomôžeme vybrať správnu náplň.</p>
-            </div>
-            <div class="printer-help-actions">
-              <a href="mailto:info@tonerymaxim.sk">Napísať e-mail</a>
-              <a href="tel:+421910123456">Zavolať</a>
-            </div>
-          </div>
-        </section>
       </main>
 
       <dialog class="printer-brand-modal" data-brand-modal>
@@ -125,6 +196,22 @@ const title = `Náplne do tlačiarní ${selectedBrand} | ToneryMaxim.sk`;
 
     <script>
       import "../../scripts/printer-finder.js";
+      import "../../scripts/smart-search.js";
+
+      const menuToggle = document.querySelector('[data-tm-printer-menu-toggle]');
+      const menu = document.querySelector('[data-tm-printer-menu]');
+      const menuClose = document.querySelector('[data-tm-printer-menu-close]');
+      function setMenu(open) {
+        if (!menu || !menuToggle) return;
+        menu.classList.toggle('is-open', open);
+        menu.setAttribute('aria-hidden', String(!open));
+        menuToggle.setAttribute('aria-expanded', String(open));
+        document.documentElement.classList.toggle('tm-menu-open', open);
+      }
+      menuToggle?.addEventListener('click', () => setMenu(!menu?.classList.contains('is-open')));
+      menuClose?.addEventListener('click', () => setMenu(false));
+      menu?.addEventListener('click', (event) => { if (event.target === menu) setMenu(false); });
+      document.addEventListener('keydown', (event) => { if (event.key === 'Escape') setMenu(false); });
     </script>
   </body>
 </html>

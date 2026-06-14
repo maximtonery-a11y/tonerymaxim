@@ -1876,3 +1876,21 @@ button.catalog-filter-chip:hover {
     padding-top: 10px !important;
   }
 }
+
+/* Desktop safety fix: only the mobile-only query line is hidden on desktop.
+   Desktop toolbar/status/active filter chips stay exactly as in the original desktop UI. */
+.catalog-mobile-query {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse), (max-width: 760px) {
+  .catalog-mobile-query:not([hidden]) {
+    display: block;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 761px) {
+  .catalog-mobile-query {
+    display: none !important;
+  }
+}
