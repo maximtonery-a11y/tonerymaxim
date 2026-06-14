@@ -346,6 +346,13 @@
   color: var(--navy);
 }
 
+.cart-item-total del {
+  color: #98a2b3;
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration-thickness: 2px;
+}
+
 .cart-item-total small,
 .summary-discount strong {
   color: #0b9f55;
@@ -488,6 +495,7 @@
 
 /* Mobile cart v1: desktop zostáva bez zmeny */
 .cart-mobile-help,
+.cart-mobile-footer,
 .cart-mobile-sticky {
   display: none;
 }
@@ -496,6 +504,13 @@
   .cart-page {
     background: linear-gradient(180deg, #eef9ff 0%, #fff5fb 48%, #eef7ff 100%);
     padding-bottom: 104px;
+  }
+
+  .cart-page .footer-support-strip,
+  .cart-page .site-footer,
+  .cart-page .floating-advisor,
+  .cart-page [class*="advisor"] {
+    display: none !important;
   }
 
   .cart-layout {
@@ -598,9 +613,23 @@
   .cart-item-total {
     grid-column: 2;
     justify-self: end;
-    margin-top: -40px;
+    margin-top: -44px;
     font-size: 22px;
     line-height: 1;
+    text-align: right;
+  }
+
+  .cart-item-total del {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 13px;
+  }
+
+  .cart-item-total small {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 11px;
+    color: #0b9f55;
   }
 
   .cart-remove {
@@ -702,6 +731,16 @@
     white-space: nowrap;
     font-size: 20px;
     font-weight: 900;
+  }
+
+  .cart-mobile-footer {
+    display: block;
+    margin: 18px auto 96px;
+    text-align: center;
+    color: #667085;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -.35px;
   }
 
   .cart-mobile-sticky {

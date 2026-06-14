@@ -436,7 +436,9 @@
     cart.forEach((item) => {
       const qty = cleanQty(item.qty);
       const itemTotal = Number(item.price || 0) * qty;
-      const itemFinal = itemTotal;
+      const itemDiscountRate = quantityDiscountRate(item);
+      const itemDiscount = Math.round(itemTotal * itemDiscountRate * 100) / 100;
+      const itemFinal = Math.max(0, itemTotal - itemDiscount);
 
       const row = document.createElement("article");
       row.className = "cart-item";
@@ -469,6 +471,8 @@
         </div>
 
         <div class="cart-item-total">
+          ${itemDiscount > 0 ? `<small class="cart-line-discount">Zľava ${Math.round(itemDiscountRate * 100)} % · -${formatMoney(itemDiscount)}</small>` : ``}
+          ${itemDiscount > 0 ? `<del>${formatMoney(itemTotal)}</del>` : ``}
           <strong>${formatMoney(itemFinal)}</strong>
         </div>
       `;
