@@ -1,0 +1,126 @@
+---
+import "../styles/global.css";
+import "../styles/printer-finder.css";
+import "../styles/footer.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
+
+const title = "Vybrať podľa tlačiarne | ToneryMaxim.sk";
+const brands = [
+  ["HP", "/tlaciarne/hp"],
+  ["Brother", "/tlaciarne/brother"],
+  ["Canon", "/tlaciarne/canon"],
+  ["Epson", "/tlaciarne/epson"],
+  ["Samsung", "/tlaciarne/samsung"],
+  ["Xerox", "/tlaciarne/xerox"],
+  ["Lexmark", "/tlaciarne/lexmark"],
+  ["Kyocera", "/tlaciarne/kyocera"],
+  ["OKI", "/tlaciarne/oki"],
+  ["Ricoh", "/tlaciarne/ricoh"],
+  ["Toshiba", "/tlaciarne/toshiba"],
+  ["Dell", "/tlaciarne/dell"],
+];
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+  <body class="printer-page printer-index-page">
+    <div class="page">
+      <Header />
+
+      <section class="printer-mobile-shell" aria-label="Mobilné vyhľadanie podľa tlačiarne">
+        <div class="printer-mobile-topbar">
+          <button class="printer-mobile-menu-button" type="button" aria-label="Otvoriť menu" aria-expanded="false" data-printer-mobile-menu-toggle>
+            <span></span><span></span><span></span>
+          </button>
+          <a class="printer-mobile-logo-link" href="/" aria-label="ToneryMaxim domov">
+            <img src={mobileLogo.src} alt="ToneryMaxim" loading="eager" decoding="async" />
+          </a>
+          <a class="printer-mobile-cart-link" href="/kosik" aria-label="Košík">
+            <span aria-hidden="true">🛒</span><strong data-cart-count>0</strong>
+          </a>
+        </div>
+
+        <div class="printer-mobile-drawer" data-printer-mobile-menu aria-hidden="true">
+          <div class="printer-mobile-drawer-panel">
+            <div class="printer-mobile-drawer-head">
+              <strong>Menu</strong>
+              <button type="button" aria-label="Zavrieť menu" data-printer-mobile-menu-close>×</button>
+            </div>
+            <section><strong>Môj účet</strong><a href="/prihlasenie">Prihlásenie</a><a href="/ucet">Môj účet</a><a href="/ucet/objednavky">Moje objednávky</a></section>
+            <section><strong>Informácie</strong><a href="/kontakt">Kontakt</a><a href="/doprava-a-platba">Doprava a platba</a><a href="/reklamacie">Reklamácie</a><a href="/obchodne-podmienky">Obchodné podmienky</a><a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a></section>
+            <section><strong>Ponuka</strong><a href="/produkty?category=tonery&search=toner">Tonery</a><a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a><a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a><a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a></section>
+          </div>
+        </div>
+      </section>
+
+      <main class="printer-finder-page printer-brand-list-page">
+        <section class="printer-finder-hero">
+          <div class="wrap printer-finder-hero-inner printer-brand-list-hero-inner">
+            <div class="printer-finder-copy">
+              <a class="printer-back-link" href="/">← späť na úvod</a>
+              <p class="eyebrow">Vyhľadanie podľa tlačiarne</p>
+              <h1>Vyberte značku tlačiarne</h1>
+              <p class="lead">Najskôr vyberte značku a potom model tlačiarne. Následne zobrazíme vhodné tonery a náplne.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="wrap printer-mobile-brand-section">
+          <h2>Značka tlačiarne</h2>
+          <div class="printer-mobile-brand-grid">
+            {brands.map(([name, href]) => <a href={href}>{name}</a>)}
+          </div>
+        </section>
+      </main>
+
+      <section class="printer-mobile-help-area" aria-label="Pomoc s výberom správnej náplne">
+        <div class="printer-mobile-help-card">
+          <h2>Radi vám pomôžeme</h2>
+          <a class="printer-mobile-help-row" href="tel:0917859206"><span class="printer-mobile-help-icon" aria-hidden="true">☎</span><strong>0917 859 206</strong></a>
+          <a class="printer-mobile-help-row" href="mailto:info@tonerymaxim.sk"><span class="printer-mobile-help-icon" aria-hidden="true">✉</span><strong>info@tonerymaxim.sk</strong></a>
+        </div>
+      </section>
+
+      <div class="printer-mobile-bottom-search" data-printer-bottom-search>
+        <form action="/produkty" method="get" data-smart-search>
+          <span aria-hidden="true">⌕</span>
+          <input type="search" name="s" data-smart-search-input placeholder="Hľadať toner alebo tlačiareň" aria-label="Hľadať toner alebo tlačiareň" />
+          <button type="submit">Hľadať</button>
+        </form>
+      </div>
+
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+
+    <script>
+      import "../scripts/smart-search.js";
+    </script>
+    <script>
+      const printerMenuToggle = document.querySelector('[data-printer-mobile-menu-toggle]');
+      const printerMenu = document.querySelector('[data-printer-mobile-menu]');
+      const printerMenuClose = document.querySelector('[data-printer-mobile-menu-close]');
+      function setPrinterMenu(open) {
+        if (!printerMenu || !printerMenuToggle) return;
+        printerMenu.classList.toggle('is-open', open);
+        printerMenu.setAttribute('aria-hidden', String(!open));
+        printerMenuToggle.setAttribute('aria-expanded', String(open));
+        document.documentElement.classList.toggle('tm-menu-open', open);
+      }
+      printerMenuToggle?.addEventListener('click', () => setPrinterMenu(!printerMenu?.classList.contains('is-open')));
+      printerMenuClose?.addEventListener('click', () => setPrinterMenu(false));
+      printerMenu?.addEventListener('click', (event) => { if (event.target === printerMenu) setPrinterMenu(false); });
+      document.addEventListener('keydown', (event) => { if (event.key === 'Escape') setPrinterMenu(false); });
+      window.tmInitSmartSearch?.();
+      document.addEventListener('DOMContentLoaded', () => window.tmInitSmartSearch?.());
+    </script>
+  </body>
+</html>
