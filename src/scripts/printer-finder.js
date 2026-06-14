@@ -217,13 +217,7 @@
   suggestions?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-printer-choice]");
     if (!button) return;
-    const choice = button.dataset.printerChoice || "";
-    setSelectedPrinter(choice);
-
-    const isMobileLayout = window.matchMedia?.("(hover: none) and (pointer: coarse), (max-width: 760px)")?.matches;
-    if (choice && isMobileLayout) {
-      window.location.href = printerUrl(choice);
-    }
+    setSelectedPrinter(button.dataset.printerChoice || "");
   });
 
   clearButton?.addEventListener("click", () => {
