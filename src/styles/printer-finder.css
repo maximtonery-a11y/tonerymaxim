@@ -1096,202 +1096,36 @@
   }
 }
 
-/* Mobile printer finder compact restore + remove duplicated desktop help */
+
+/* Mobile printer finder final cleanup: prevent old desktop help/footer from leaking under the mobile UI. */
 @media (hover: none) and (pointer: coarse), (max-width: 760px) {
+  body:has(.tm-printer-mobile) .printer-desktop-fallback,
+  body:has(.tm-printer-mobile) .printer-help-section,
+  body:has(.tm-printer-mobile) .footer-support-strip,
+  body:has(.tm-printer-mobile) .site-footer,
+  body:has(.tm-printer-mobile) .floating-advisor,
+  body.printer-index-page .printer-desktop-fallback,
+  body.printer-brand-page .printer-desktop-fallback,
   body.printer-index-page .printer-help-section,
   body.printer-brand-page .printer-help-section,
-  body.printer-index-page .printer-help-card,
-  body.printer-brand-page .printer-help-card {
+  body.printer-index-page .footer-support-strip,
+  body.printer-brand-page .footer-support-strip,
+  body.printer-index-page .site-footer,
+  body.printer-brand-page .site-footer,
+  body.printer-index-page .floating-advisor,
+  body.printer-brand-page .floating-advisor {
     display: none !important;
   }
 
   .tm-printer-mobile-content {
-    width: min(100%, 560px);
-    padding: 14px 18px 96px;
-  }
-
-  .tm-printer-mobile-content h1 {
-    margin: 0 0 14px;
-    font-size: clamp(30px, 7.5vw, 38px);
-    line-height: 1;
-    letter-spacing: -.055em;
-  }
-
-  .tm-printer-brand-logo-grid {
-    gap: 12px;
-  }
-
-  .tm-printer-brand-logo {
-    min-height: 92px;
-    border-radius: 20px;
-  }
-
-  .tm-printer-brand-logo span {
-    font-size: 24px;
-  }
-
-  .tm-printer-brand-logo--hp span { font-size: 42px; }
-  .tm-printer-brand-logo--brother span { font-size: 27px; }
-  .tm-printer-brand-logo--canon span { font-size: 31px; }
-  .tm-printer-brand-logo--epson span { font-size: 29px; }
-  .tm-printer-brand-logo--samsung span { font-size: 23px; }
-  .tm-printer-brand-logo--xerox span { font-size: 29px; }
-  .tm-printer-brand-logo--lexmark span { font-size: 26px; }
-
-  .tm-printer-back {
-    margin: 0 0 12px;
-    font-size: 15px;
-  }
-
-  .tm-printer-mobile-content--brand {
-    padding-top: 14px;
-  }
-
-  .tm-printer-mobile-field {
-    min-height: 76px;
-    padding: 13px 20px;
-    margin-bottom: 12px;
-    border-radius: 20px;
-    gap: 5px;
-  }
-
-  .tm-printer-mobile-field span,
-  .tm-printer-mobile-field label {
-    font-size: 12px;
-    letter-spacing: .065em;
-  }
-
-  .tm-printer-mobile-field--brand a {
-    font-size: 24px;
-  }
-
-  .tm-printer-mobile-field--brand::after {
-    right: 20px;
-    bottom: 18px;
-    font-size: 22px;
-  }
-
-  .tm-printer-model-control {
-    grid-template-columns: minmax(0, 1fr) 36px;
-  }
-
-  .tm-printer-model-control input {
-    font-size: 22px;
-  }
-
-  .tm-printer-model-control button {
-    width: 36px;
-    height: 36px;
-    font-size: 24px;
-  }
-
-  .tm-printer-popular-mobile {
-    margin-top: 18px;
-  }
-
-  .tm-printer-popular-mobile h1 {
-    margin-bottom: 14px;
-    font-size: clamp(28px, 7vw, 36px);
-  }
-
-  .tm-printer-popular-mobile .printer-popular-grid {
-    gap: 12px;
-  }
-
-  .tm-printer-popular-mobile .printer-popular-card {
-    min-height: 112px;
-    padding: 15px;
-    border-radius: 20px;
-  }
-
-  .tm-printer-popular-mobile .printer-popular-card.has-printer-image {
-    min-height: 112px;
-    grid-template-columns: 76px minmax(0, 1fr);
-    column-gap: 12px;
-  }
-
-  .tm-printer-popular-mobile .printer-popular-image {
-    width: 76px;
-    height: 64px;
-    border-radius: 12px;
-  }
-
-  .tm-printer-popular-mobile .printer-popular-image img {
-    width: 70px;
-    height: 58px;
-  }
-
-  .tm-printer-popular-mobile .printer-popular-title {
-    font-size: 17px;
-    line-height: 1.12;
-  }
-
-  .tm-printer-popular-mobile .printer-popular-meta {
-    font-size: 13px;
+    padding-bottom: 92px !important;
   }
 
   .tm-printer-mobile-help {
-    margin: 18px 0 12px;
-    padding: 22px 20px;
-    border-radius: 24px;
-  }
-
-  .tm-printer-mobile-help h2 {
-    margin-bottom: 16px;
-    font-size: 28px;
-  }
-
-  .tm-printer-help-row {
-    min-height: 56px;
-    grid-template-columns: 48px minmax(0, 1fr);
-    margin-top: 12px;
-    padding: 0 16px;
-  }
-
-  .tm-printer-help-row span {
-    font-size: 21px;
-  }
-
-  .tm-printer-help-row strong {
-    font-size: 19px;
+    margin-bottom: 14px !important;
   }
 
   .tm-printer-mobile-footer {
-    padding: 12px 0 10px;
-    font-size: 20px;
-  }
-
-  .tm-printer-bottom-search {
-    left: 14px;
-    right: 14px;
-  }
-
-  .tm-printer-bottom-search form {
-    min-height: 62px;
-    grid-template-columns: 42px minmax(0, 1fr) 108px;
-    padding: 6px 8px 6px 16px;
-    gap: 8px;
-  }
-
-  .tm-printer-bottom-search form > span {
-    font-size: 38px;
-  }
-
-  .tm-printer-bottom-search input {
-    font-size: 18px;
-  }
-
-  .tm-printer-bottom-search button {
-    height: 50px;
-    font-size: 19px;
-  }
-}
-
-@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
-  .tm-printer-brand-logo {
-    min-height: 72px;
-  }
-  .tm-printer-mobile-help {
-    margin-top: 16px;
+    padding: 12px 0 86px !important;
   }
 }
