@@ -1153,6 +1153,16 @@
           <div class="description-modal-content">${descriptionHtml(product)}</div>
         </div>
       </div>
+
+      <div class="product-mobile-sticky-cart" data-mobile-sticky-cart aria-hidden="true">
+        <div>
+          <span>${esc(stockText(product))}</span>
+          <strong>${money(product.price)}</strong>
+        </div>
+        <button type="button" class="${isProductInStock(product) ? "" : "availability-main"}" data-mobile-sticky-add>
+          ${isProductInStock(product) ? "Pridať do košíka" : "Overiť dostupnosť"}
+        </button>
+      </div>
     `;
 
     root.querySelectorAll("[data-image]").forEach((button) => {
@@ -1198,6 +1208,31 @@
     root.querySelector("[data-add-main]")?.addEventListener("click", (event) => {
       addCurrentProductAndConfirm(event.currentTarget);
     });
+
+    root.querySelector("[data-mobile-sticky-add]")?.addEventListener("click", (event) => {
+      addCurrentProductAndConfirm(event.currentTarget);
+    });
+
+    const stickyCart = root.querySelector("[data-mobile-sticky-cart]");
+    const mainAddButton = root.querySelector("[data-add-main]");
+    if (stickyCart && mainAddButton) {
+      const setStickyVisible = (visible) => {
+        stickyCart.classList.toggle("is-visible", Boolean(visible));
+        stickyCart.setAttribute("aria-hidden", String(!visible));
+      };
+
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver((entries) => {
+          const entry = entries[0];
+          setStickyVisible(!entry.isIntersecting);
+        }, { threshold: 0.15 });
+        observer.observe(mainAddButton);
+      } else {
+        const onScroll = () => setStickyVisible(window.scrollY > 520);
+        window.addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
+      }
+    }
 
     root.querySelector("[data-buy-now]")?.addEventListener("click", () => {
       if (!isProductInStock(product)) {
