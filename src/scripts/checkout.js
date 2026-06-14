@@ -574,6 +574,9 @@
     const mobileTotal = document.querySelector("[data-mobile-total]");
     if (mobileTotal) mobileTotal.textContent = money(total);
 
+    const mobileSummaryTotal = document.querySelector("[data-mobile-summary-total]");
+    if (mobileSummaryTotal) mobileSummaryTotal.textContent = money(total);
+
     const mobileSticky = document.querySelector("[data-checkout-mobile-sticky]");
     if (mobileSticky) mobileSticky.hidden = cart.length === 0;
 
@@ -1331,6 +1334,13 @@
       input.addEventListener("input", () => {
         if (input.classList.contains("is-invalid")) validateField(input);
       });
+    });
+
+    document.querySelector("[data-mobile-summary-toggle]")?.addEventListener("click", (event) => {
+      const summary = event.currentTarget.closest(".checkout-summary");
+      const open = !summary?.classList.contains("is-open");
+      summary?.classList.toggle("is-open", open);
+      event.currentTarget.setAttribute("aria-expanded", String(open));
     });
 
     document.querySelector("[data-load-company]")?.addEventListener("click", loadCompanyByIco);

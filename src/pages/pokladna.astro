@@ -157,6 +157,10 @@ const title = "Pokladňa | ToneryMaxim.sk";
           <aside class="checkout-summary">
             <div class="summary-sticky">
               <h2>Súhrn objednávky</h2>
+              <button class="checkout-mobile-summary-toggle" type="button" data-mobile-summary-toggle aria-expanded="false">
+                <span>Objednávka</span>
+                <strong data-mobile-summary-total>0,00 €</strong>
+              </button>
               <div class="checkout-items" data-checkout-items></div>
               <div class="free-shipping-box" data-free-shipping></div>
               <div class="summary-line"><span>Tovar</span><strong data-summary-subtotal>0,00 €</strong></div>
@@ -166,13 +170,28 @@ const title = "Pokladňa | ToneryMaxim.sk";
               <div class="summary-total"><span>Spolu s DPH</span><strong data-summary-total>0,00 €</strong></div>
               <label class="checkline terms-line"><input id="terms" type="checkbox" /> Súhlasím s obchodnými podmienkami a spracovaním osobných údajov.</label>
               <button class="order-button" type="button" data-submit-order>🔒 Objednať s povinnosťou platby</button>
-              <div class="secure-note">Bezpečná platba cez GoPay · Pomoc na telefóne +421 910 123 456</div>
+              <div class="secure-note">Bezpečná platba cez GoPay · Pomoc na telefóne 0917 859 206</div>
               <div class="trust-mini"><span>✓ 17 rokov skúseností</span><span>✓ 30 000+ objednávok</span><span>✓ Overené zákazníkmi</span></div>
               <div class="order-status" data-order-status></div>
             </div>
           </aside>
         </div>
       </main>
+
+
+      <section class="checkout-mobile-support" aria-label="Pomoc s objednávkou">
+        <h2>Radi vám pomôžeme</h2>
+        <a href="tel:0917859206" class="checkout-mobile-support-link">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.7 5.1 6.6 6.6l2.2-2.2c.3-.3.8-.4 1.2-.3 1.3.4 2.6.6 4 .6.7 0 1.2.5 1.2 1.2v3.5c0 .7-.5 1.2-1.2 1.2C10.7 21.4 2.6 13.3 2.6 3.4c0-.7.5-1.2 1.2-1.2h3.5c.7 0 1.2.5 1.2 1.2 0 1.4.2 2.7.6 4 .1.4 0 .9-.3 1.2l-2.2 2.2Z" fill="currentColor"/></svg>
+          <span>0917 859 206</span>
+        </a>
+        <a href="mailto:info@tonerymaxim.sk" class="checkout-mobile-support-link">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4V6Zm1.7 1.8L12 12.5l6.3-4.7H5.7Zm-.2 8.7h13V9.4L12 14.2 5.5 9.4v7.1Z" fill="currentColor"/></svg>
+          <span>info@tonerymaxim.sk</span>
+        </a>
+      </section>
+
+      <div class="checkout-mobile-footer">© 2026 ToneryMaxim.sk</div>
 
       <div class="checkout-mobile-sticky" data-checkout-mobile-sticky hidden>
         <a class="checkout-mobile-search" href="/produkty" aria-label="Hľadať ďalší toner alebo tlačiareň">
