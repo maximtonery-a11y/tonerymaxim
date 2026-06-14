@@ -84,6 +84,27 @@ const title = "Košík | ToneryMaxim.sk";
           <button class="clear-cart" type="button" data-cart-action="clear">Vyprázdniť košík</button>
         </aside>
       </main>
+
+      <section class="cart-mobile-help" aria-label="Pomoc s výberom">
+        <h2>Radi vám pomôžeme</h2>
+        <a href="tel:+421917859206" class="cart-mobile-help-line" aria-label="Zavolať na zákaznícku podporu">
+          <span aria-hidden="true">☎</span>
+          <strong>0917 859 206</strong>
+        </a>
+        <a href="mailto:info@tonerymaxim.sk" class="cart-mobile-help-line" aria-label="Napísať e-mail zákazníckej podpore">
+          <span aria-hidden="true">✉</span>
+          <strong>info@tonerymaxim.sk</strong>
+        </a>
+      </section>
+
+      <div class="cart-mobile-sticky" data-cart-mobile-sticky hidden>
+        <a class="cart-mobile-sticky-search" href="/produkty" aria-label="Hľadať ďalší toner alebo tlačiareň">⌕</a>
+        <a class="cart-mobile-sticky-checkout" href="/pokladna" aria-label="Pokračovať do pokladne">
+          <span data-cart-mobile-total>0,00 €</span>
+          <strong>Pokračovať</strong>
+        </a>
+      </div>
+
       <Footer />
       <FloatingAdvisor />
     </div>

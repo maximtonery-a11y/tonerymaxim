@@ -411,6 +411,8 @@
     const list = document.querySelector("[data-cart-list]");
     const empty = document.querySelector("[data-cart-empty]");
     const summary = document.querySelector("[data-cart-summary]");
+    const mobileSticky = document.querySelector("[data-cart-mobile-sticky]");
+    const mobileTotalEl = document.querySelector("[data-cart-mobile-total]");
     const subtotalEl = document.querySelector("[data-cart-subtotal]");
     const totalEl = document.querySelector("[data-cart-total]");
 
@@ -422,12 +424,14 @@
     if (cart.length === 0) {
       if (empty) empty.hidden = false;
       if (summary) summary.hidden = true;
+      if (mobileSticky) mobileSticky.hidden = true;
       refreshCartCounters();
       return;
     }
 
     if (empty) empty.hidden = true;
     if (summary) summary.hidden = false;
+    if (mobileSticky) mobileSticky.hidden = false;
 
     cart.forEach((item) => {
       const qty = cleanQty(item.qty);
@@ -492,6 +496,7 @@
     const discountValueEl = document.querySelector("[data-cart-discount]");
     if (discountValueEl) discountValueEl.textContent = `-${formatMoney(discount)}`;
     if (totalEl) totalEl.textContent = formatMoney(total);
+    if (mobileTotalEl) mobileTotalEl.textContent = formatMoney(total);
 
     refreshCartCounters();
   }
