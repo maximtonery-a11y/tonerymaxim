@@ -2458,3 +2458,73 @@
     font-size: 18px !important;
   }
 }
+
+/* Product detail mobile v3: bottom search shortcut separated from sticky cart. Desktop untouched. */
+@media (hover: none) and (pointer: coarse), (max-width: 880px) {
+  body.product-detail-body .product-mobile-search-shortcut {
+    top: auto !important;
+    right: auto !important;
+    left: 14px !important;
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    z-index: 1003 !important;
+    width: 64px !important;
+    height: 64px !important;
+    display: grid !important;
+    place-items: center !important;
+    border: 1px solid #d8e4f1 !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,.96) !important;
+    color: #071b3a !important;
+    box-shadow: 0 18px 44px rgba(7,27,58,.16) !important;
+  }
+
+  body.product-detail-body .product-mobile-search-shortcut svg {
+    width: 30px !important;
+    height: 30px !important;
+    stroke-width: 2.4 !important;
+  }
+
+  body.product-detail-body .product-mobile-sticky-cart {
+    left: 88px !important;
+    right: 14px !important;
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    min-height: 64px !important;
+    grid-template-columns: minmax(72px, .85fr) minmax(126px, 1.15fr) !important;
+    gap: 8px !important;
+    padding: 8px 10px 8px 14px !important;
+  }
+
+  body.product-detail-body .product-mobile-sticky-cart button {
+    min-width: 0 !important;
+    width: 100% !important;
+    height: 48px !important;
+    padding: 0 14px !important;
+    font-size: 15px !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (max-width: 390px), (max-width: 390px) {
+  body.product-detail-body .product-mobile-search-shortcut {
+    left: 10px !important;
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  body.product-detail-body .product-mobile-sticky-cart {
+    left: 78px !important;
+    right: 10px !important;
+    min-height: 60px !important;
+    padding: 7px 8px 7px 12px !important;
+    grid-template-columns: minmax(66px, .8fr) minmax(116px, 1.2fr) !important;
+  }
+
+  body.product-detail-body .product-mobile-sticky-cart strong {
+    font-size: 20px !important;
+  }
+
+  body.product-detail-body .product-mobile-sticky-cart button {
+    height: 46px !important;
+    font-size: 14px !important;
+  }
+}
