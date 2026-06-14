@@ -571,6 +571,12 @@
     document.querySelector("[data-summary-payment]").textContent = paymentPrice === 0 ? "Bez poplatku" : money(paymentPrice);
     document.querySelector("[data-summary-total]").textContent = money(total);
 
+    const mobileTotal = document.querySelector("[data-mobile-total]");
+    if (mobileTotal) mobileTotal.textContent = money(total);
+
+    const mobileSticky = document.querySelector("[data-checkout-mobile-sticky]");
+    if (mobileSticky) mobileSticky.hidden = cart.length === 0;
+
     const freeBox = document.querySelector("[data-free-shipping]");
     if (freeBox) {
       if (discountedSubtotal >= 29) {
@@ -1329,5 +1335,6 @@
 
     document.querySelector("[data-load-company]")?.addEventListener("click", loadCompanyByIco);
     document.querySelector("[data-submit-order]")?.addEventListener("click", submitOrder);
+    document.querySelector("[data-mobile-submit-order]")?.addEventListener("click", submitOrder);
   });
 })();
