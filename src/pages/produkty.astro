@@ -5,7 +5,6 @@ import Header from "../components/Header.astro";
 import "../styles/footer.css";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
-import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 
 const title = "Produkty | ToneryMaxim.sk";
 ---
@@ -127,10 +126,14 @@ const title = "Produkty | ToneryMaxim.sk";
       </main>
 
       <section class="catalog-mobile-help-area" aria-label="Pomoc s výberom správnej náplne">
-        <p>Poradíme s výberom</p>
-        <a class="catalog-mobile-help-card" href="/kontakt" aria-label="Kontaktujte nás">
-          <img src={tmHelpVisual.src} alt="Potrebujete poradiť? Sme tu pre vás. Kontaktujte nás." loading="lazy" decoding="async" />
-        </a>
+        <div class="catalog-mobile-help-card">
+          <p class="catalog-mobile-help-kicker">Potrebujete poradiť?</p>
+          <h2>Pomôžeme vám vybrať správnu náplň ešte pred objednávkou.</h2>
+          <div class="catalog-mobile-help-contacts">
+            <a href="tel:+421910123456"><span aria-hidden="true">☎</span> +421 910 123 456</a>
+            <a href="mailto:info@tonerymaxim.sk"><span aria-hidden="true">✉</span> info@tonerymaxim.sk</a>
+          </div>
+        </div>
       </section>
 
       <Footer showTrust={false} />
@@ -148,6 +151,8 @@ const title = "Produkty | ToneryMaxim.sk";
 
     <script>
       import "../scripts/catalog.js";
+      import "../scripts/smart-search.js";
+      window.TMInitSmartSearch?.();
     </script>
     <script>
       const bottomSearchInput = document.querySelector('[data-catalog-bottom-search-input]');

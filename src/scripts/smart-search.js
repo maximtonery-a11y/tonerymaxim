@@ -1,5 +1,8 @@
 (() => {
-  if (window.__TM_SMART_SEARCH_INIT__) return;
+  if (window.__TM_SMART_SEARCH_INIT__) {
+    window.TMInitSmartSearch?.();
+    return;
+  }
   window.__TM_SMART_SEARCH_INIT__ = true;
 
   const CACHE_KEY = "tm_smart_search_v3";
@@ -346,6 +349,15 @@
     document.querySelectorAll("form.search, form.catalog-search, [data-smart-search]").forEach(installSmartSearch);
   }
 
+  window.TMInitSmartSearch = init;
+
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
+
+  try {
+    const observer = new MutationObserver(() => init());
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  } catch {
+    // MutationObserver nemusí byť dostupný v starších prehliadačoch.
+  }
 })();
