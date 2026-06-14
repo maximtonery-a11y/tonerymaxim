@@ -1095,3 +1095,94 @@
     margin-right: auto;
   }
 }
+
+/* Mobile printer finder size restore only – compact proportions */
+@media (hover: none) and (pointer: coarse), (max-width: 760px) {
+  .tm-printer-mobile-content {
+    padding: 14px 18px 104px;
+  }
+
+  .tm-printer-mobile-content h1 {
+    margin-bottom: 14px;
+    font-size: clamp(26px, 7vw, 34px);
+    line-height: 1.02;
+  }
+
+  .tm-printer-brand-logo-grid {
+    gap: 10px;
+  }
+
+  .tm-printer-brand-logo {
+    min-height: 86px;
+    border-radius: 20px;
+  }
+
+  .tm-printer-brand-logo span {
+    font-size: 24px;
+  }
+
+  .tm-printer-brand-logo--hp span { font-size: 42px; }
+  .tm-printer-brand-logo--brother span { font-size: 25px; }
+  .tm-printer-brand-logo--canon span { font-size: 31px; }
+  .tm-printer-brand-logo--epson span { font-size: 29px; }
+  .tm-printer-brand-logo--samsung span { font-size: 23px; }
+  .tm-printer-brand-logo--xerox span { font-size: 30px; }
+  .tm-printer-brand-logo--lexmark span { font-size: 26px; }
+
+  .tm-printer-mobile-help {
+    margin: 18px 0 12px;
+    padding: 20px 18px;
+    border-radius: 24px;
+  }
+
+  .tm-printer-mobile-help h2 {
+    margin-bottom: 14px;
+    font-size: 28px;
+    line-height: 1.06;
+  }
+
+  .tm-printer-help-row {
+    min-height: 56px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    margin-top: 10px;
+    padding: 0 16px;
+  }
+
+  .tm-printer-help-row span {
+    font-size: 21px;
+  }
+
+  .tm-printer-help-row strong {
+    font-size: 20px;
+  }
+
+  .tm-printer-mobile-footer {
+    padding: 14px 0 10px;
+    font-size: 20px;
+  }
+
+  .tm-printer-bottom-search form {
+    min-height: 64px;
+    grid-template-columns: 46px minmax(0, 1fr) 112px;
+    padding: 7px 8px 7px 18px;
+  }
+
+  .tm-printer-bottom-search form > span {
+    font-size: 40px;
+  }
+
+  .tm-printer-bottom-search input {
+    font-size: 20px;
+  }
+
+  .tm-printer-bottom-search button {
+    height: 50px;
+    font-size: 19px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  .tm-printer-brand-logo {
+    min-height: 70px;
+  }
+}
