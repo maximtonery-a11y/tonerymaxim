@@ -1,173 +1,43 @@
----
-const { showTrust = true } = Astro.props;
-
-const heurekaUrl = "https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left";
----
-
-{showTrust && (
-  <section class="footer-support-strip" aria-label="Kontakt a dôvera ToneryMaxim">
-    <div class="wrap footer-support-inner">
-      <div class="footer-support-copy">
-        <span>Potrebujete poradiť?</span>
-        <strong>Pomôžeme vám vybrať správnu náplň ešte pred objednávkou.</strong>
-      </div>
-      <div class="footer-support-actions">
-        <a href="tel:+421910123456">☎ +421 910 123 456</a>
-        <a href="mailto:info@tonerymaxim.sk">✉ info@tonerymaxim.sk</a>
-        <small>Po–Pi 9:00–16:00</small>
-      </div>
-    </div>
-  </section>
-)}
-
 <footer class="site-footer" id="kontakt">
-  <div class="wrap footer-main">
-    <div class="footer-brand">
-      <a class="footer-logo" href="/" aria-label="ToneryMaxim.sk">
-        <img src="/images/logo.png" alt="ToneryMaxim" />
+  <div class="wrap footer-help-card">
+    <h2>Radi vám pomôžeme</h2>
+
+    <div class="footer-help-actions" aria-label="Kontakt">
+      <a href="tel:0917859206" class="footer-help-pill">
+        <span aria-hidden="true">☎</span>
+        <strong>0917 859 206</strong>
       </a>
-      <p>Slovenský špecialista na tonery, atramentové náplne a komponenty pre tlačiarne. Pomáhame zákazníkom nájsť správnu náplň rýchlo a bez omylov.</p>
 
-      <a class="footer-rating" href={heurekaUrl} target="_blank" rel="noopener noreferrer" aria-label="Otvoriť recenzie ToneryMaxim na Heureke">
-        <span data-heureka-stars>★★★★★</span>
-        <strong><span data-heureka-rating>5,0</span> / 5</strong>
-        <small><b data-heureka-count>1 323</b> recenzií na Heureke</small>
-      </a>
-    </div>
-
-    <nav class="footer-col" aria-label="Zákaznícka podpora">
-      <h3>Zákaznícka podpora</h3>
-      <a href="/#kontakt">Kontakt</a>
-      <a href="#">Doprava</a>
-      <a href="#">Reklamácie</a>
-      <a href="#">Obchodné podmienky</a>
-    </nav>
-
-    <nav class="footer-col" aria-label="Sortiment">
-      <h3>Sortiment</h3>
-      <a href="/produkty?category=tonery&search=toner">Tonery</a>
-      <a href="/produkty?category=atramentove-naplne&search=atrament">Atramentové náplne</a>
-      <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Optické valce</a>
-      <a href="/produkty?category=ostatne-komponenty&search=komponent">Ostatné komponenty</a>
-    </nav>
-
-    <nav class="footer-col" aria-label="Firma">
-      <h3>Firma</h3>
-      <a href="#">O nás</a>
-      <a href="/#kontakt">Kontakt</a>
-      <a href="#">GDPR</a>
-      <a href="#">Cookies</a>
-    </nav>
-
-    <div class="footer-contact-box">
-      <h3>Kontakt</h3>
-      <a href="tel:+421910123456">☎ +421 910 123 456</a>
-      <a href="mailto:info@tonerymaxim.sk">✉ info@tonerymaxim.sk</a>
-      <p>Po–Pi 9:00–16:00</p>
-      <a class="footer-contact-rating" href={heurekaUrl} target="_blank" rel="noopener noreferrer">
-        <span data-heureka-stars>★★★★★</span>
-        <strong><span data-heureka-rating>5,0</span> / 5</strong>
-        <small><b data-heureka-count>1 323</b> recenzií</small>
+      <a href="mailto:info@tonerymaxim.sk" class="footer-help-pill">
+        <span aria-hidden="true">✉</span>
+        <strong>info@tonerymaxim.sk</strong>
       </a>
     </div>
   </div>
 
-  <div class="wrap footer-trust-row" aria-label="Platby a doprava">
-    <div class="footer-methods footer-payment-methods">
-      <strong>Platby</strong>
-      <span class="footer-logo-pill footer-logo-pill--visa" aria-label="Visa">
-        <svg viewBox="0 0 70 24" role="img" aria-hidden="true"><text x="4" y="17">VISA</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--mastercard" aria-label="Mastercard">
-        <svg viewBox="0 0 92 24" role="img" aria-hidden="true"><circle cx="22" cy="12" r="8"></circle><circle cx="33" cy="12" r="8"></circle><text x="47" y="16">mastercard</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--gpay" aria-label="Google Pay">
-        <svg viewBox="0 0 96 24" role="img" aria-hidden="true"><text x="4" y="16">G Pay</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--cod" aria-label="Dobierka">
-        <svg viewBox="0 0 108 24" role="img" aria-hidden="true"><path d="M8 7h10v10H8z"></path><path d="M11 10h7"></path><text x="26" y="16">Dobierka</text></svg>
-      </span>
-    </div>
-
-    <div class="footer-methods footer-shipping-methods">
-      <strong>Doprava</strong>
-      <span class="footer-logo-pill footer-logo-pill--gls" aria-label="GLS">
-        <svg viewBox="0 0 64 24" role="img" aria-hidden="true"><text x="4" y="16">GLS</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--dpd" aria-label="DPD">
-        <svg viewBox="0 0 64 24" role="img" aria-hidden="true"><path d="M11 6l8 4v8l-8-4z"></path><path d="M19 10l8-4v8l-8 4z"></path><text x="34" y="16">DPD</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--packeta" aria-label="Packeta">
-        <svg viewBox="0 0 94 24" role="img" aria-hidden="true"><path d="M8 7h13v10H8z"></path><path d="M8 7l6.5 5L21 7"></path><text x="29" y="16">Packeta</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--post" aria-label="Slovenská pošta">
-        <svg viewBox="0 0 130 24" role="img" aria-hidden="true"><path d="M8 7h15v10H8z"></path><path d="M8 8l7.5 5L23 8"></path><text x="31" y="16">Slovenská pošta</text></svg>
-      </span>
-    </div>
-  </div>
-
-  <div class="wrap footer-bottom">
-    <span>© 2026 ToneryMaxim.sk</span>
-    <div>
-      <a href="#">GDPR</a>
-      <a href="#">Cookies</a>
-      <a href="#">Obchodné podmienky</a>
-      <a href="#">Reklamácie</a>
-    </div>
+  <div class="wrap footer-bottom-simple">
+    © 2026 ToneryMaxim.sk
   </div>
 </footer>
 
 <script>
-  function formatSkNumber(value) {
-    const number = Number(value || 0);
-    if (!Number.isFinite(number) || number <= 0) return "1 323";
-    return new Intl.NumberFormat("sk-SK").format(number);
-  }
+  // Odstráni prípadný druhý poradenský blok vložený staršou komponentou alebo starým layoutom.
+  function removeDuplicateHelpBlocks() {
+    const cards = Array.from(document.querySelectorAll(".footer-help-card, .help-card, .advisor-card, .support-card, .need-help-card, [data-help-card], [data-advisor-card]"));
+    const visibleTextCards = cards.filter((card) => /potrebujete poradiť|pomôžeme vám vybrať|radi vám pomôžeme/i.test(card.textContent || ""));
 
-  function formatSkRating(value) {
-    const number = Number(value || 0);
-    if (!Number.isFinite(number) || number <= 0) return "5,0";
-    return number.toLocaleString("sk-SK", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  }
-
-  function renderStars(rating) {
-    const value = Number(rating || 0);
-    const rounded = Math.max(0, Math.min(5, Math.round(value)));
-    return "★".repeat(rounded || 5) + "☆".repeat(Math.max(0, 5 - (rounded || 5)));
-  }
-
-  function updateFooterHeureka(data) {
-    const rating = Number(data?.averageRating || 5);
-    const reviewCount = Number(data?.reviewCount || 1323);
-    const ratingText = formatSkRating(rating);
-    const countText = formatSkNumber(reviewCount);
-    const stars = renderStars(rating);
-
-    document.querySelectorAll("[data-heureka-count], [data-heureka-bottom-count]").forEach((node) => {
-      node.textContent = countText;
+    visibleTextCards.forEach((card, index) => {
+      if (index > 0) card.remove();
     });
 
-    document.querySelectorAll("[data-heureka-rating], [data-heureka-mini-score]").forEach((node) => {
-      node.textContent = ratingText;
-    });
-
-    document.querySelectorAll("[data-heureka-stars]").forEach((node) => {
-      node.textContent = stars;
+    document.querySelectorAll("section, div, article").forEach((node) => {
+      const text = node.textContent || "";
+      if (/Potrebujete poradiť/i.test(text) && /Pomôžeme vám vybrať správnu náplň/i.test(text)) {
+        node.remove();
+      }
     });
   }
 
-  async function loadFooterHeurekaStats() {
-    try {
-      const response = await fetch("/api/heureka-reviews", {
-        headers: { Accept: "application/json" },
-        cache: "default",
-      });
-      const data = await response.json();
-      updateFooterHeureka(data);
-    } catch (error) {
-      // Fallback hodnoty ostanú v HTML.
-    }
-  }
-
-  loadFooterHeurekaStats();
+  removeDuplicateHelpBlocks();
+  document.addEventListener("DOMContentLoaded", removeDuplicateHelpBlocks);
 </script>
