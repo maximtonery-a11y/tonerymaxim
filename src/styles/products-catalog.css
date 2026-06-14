@@ -1798,3 +1798,81 @@ button.catalog-filter-chip:hover {
     font-size: 16px !important;
   }
 }
+
+/* Mobile listing v6 – restore previous bottom search behavior, move help closer, improve contact icons. */
+@media (hover: none) and (pointer: coarse), (max-width: 760px) {
+  body:not(.home-page) .tm-global-mobile-logo img {
+    width: min(310px, 60vw) !important;
+    max-height: 42px !important;
+  }
+
+  body:not(.home-page) .catalog-content {
+    padding-bottom: 0 !important;
+  }
+
+  body:not(.home-page) .catalog-pagination {
+    margin: 18px 0 0 !important;
+  }
+
+  body:not(.home-page) .catalog-mobile-help-area {
+    margin: 0 auto !important;
+    padding: 14px 18px 8px !important;
+  }
+
+  body:not(.home-page) .catalog-mobile-help-card {
+    padding: 22px 22px !important;
+  }
+
+  body:not(.home-page) .catalog-mobile-help-card h2 {
+    text-align: center !important;
+  }
+
+  body:not(.home-page) .catalog-mobile-help-row span.catalog-mobile-help-icon {
+    width: 34px !important;
+    height: 34px !important;
+    display: grid !important;
+    place-items: center !important;
+    color: #071b3a !important;
+  }
+
+  body:not(.home-page) .catalog-mobile-help-row span.catalog-mobile-help-icon svg {
+    width: 22px !important;
+    height: 22px !important;
+    display: block !important;
+  }
+
+  body:not(.home-page) .catalog-mobile-help-icon-mail svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  body:not(.home-page) .catalog-mobile-bottom-search {
+    overflow: visible !important;
+  }
+
+  body:not(.home-page) .catalog-mobile-bottom-search .tm-smart-search-panel {
+    position: fixed !important;
+    left: 18px !important;
+    right: 18px !important;
+    bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+    top: auto !important;
+    width: auto !important;
+    max-height: min(58vh, 480px) !important;
+    overflow-y: auto !important;
+    border-radius: 22px !important;
+    background: #fff !important;
+    box-shadow: 0 24px 80px rgba(7, 27, 58, .22) !important;
+    z-index: 2140 !important;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  body:not(.home-page) .catalog-content {
+    padding-bottom: 0 !important;
+  }
+
+  body:not(.home-page) .catalog-mobile-help-area {
+    margin-top: 0 !important;
+    padding-top: 10px !important;
+  }
+}
