@@ -5,6 +5,7 @@ import Header from "../components/Header.astro";
 import "../styles/footer.css";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 
 const title = "Produkty | ToneryMaxim.sk";
 ---
@@ -126,13 +127,13 @@ const title = "Produkty | ToneryMaxim.sk";
       </main>
 
       <section class="catalog-mobile-help-area" aria-label="Pomoc s výberom správnej náplne">
-        <div class="catalog-mobile-help-card">
-          <p>Radi vám pomôžeme</p>
-          <a class="catalog-mobile-help-row" href="tel:+421917859206">
+        <div class="catalog-mobile-help-card" aria-label="Radi vám pomôžeme">
+          <h2>Radi vám pomôžeme</h2>
+          <a class="catalog-mobile-help-row" href="tel:0917859206" aria-label="Zavolať 0917 859 206">
             <span aria-hidden="true">☎</span>
             <strong>0917 859 206</strong>
           </a>
-          <a class="catalog-mobile-help-row" href="mailto:info@tonerymaxim.sk">
+          <a class="catalog-mobile-help-row" href="mailto:info@tonerymaxim.sk" aria-label="Napísať e-mail info@tonerymaxim.sk">
             <span aria-hidden="true">✉</span>
             <strong>info@tonerymaxim.sk</strong>
           </a>
@@ -157,15 +158,12 @@ const title = "Produkty | ToneryMaxim.sk";
       import "../scripts/smart-search.js";
     </script>
     <script>
-      window.tmInitSmartSearch?.();
-      document.addEventListener('DOMContentLoaded', () => window.tmInitSmartSearch?.());
-    </script>
-    <script>
       const bottomSearchInput = document.querySelector('[data-catalog-bottom-search-input]');
       if (bottomSearchInput) {
         const params = new URLSearchParams(window.location.search);
         bottomSearchInput.value = params.get('s') || params.get('search') || params.get('q') || '';
       }
+      window.TMInitSmartSearch?.();
     </script>
   </body>
 </html>

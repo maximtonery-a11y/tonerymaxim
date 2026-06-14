@@ -1,9 +1,6 @@
 (() => {
-  if (window.__TM_SMART_SEARCH_MODULE_READY__) {
-    window.tmInitSmartSearch?.();
-    return;
-  }
-  window.__TM_SMART_SEARCH_MODULE_READY__ = true;
+  if (window.__TM_SMART_SEARCH_INIT__) return;
+  window.__TM_SMART_SEARCH_INIT__ = true;
 
   const CACHE_KEY = "tm_smart_search_v3";
   const CACHE_TTL = 20 * 60 * 1000;
@@ -349,7 +346,7 @@
     document.querySelectorAll("form.search, form.catalog-search, [data-smart-search]").forEach(installSmartSearch);
   }
 
-  window.tmInitSmartSearch = init;
+  window.TMInitSmartSearch = init;
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();

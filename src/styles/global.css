@@ -887,15 +887,17 @@ input {
   }
 
   body:not(.home-page) .tm-global-mobile-logo img {
-    width: min(270px, 62vw);
+    width: min(310px, 60vw);
+    max-height: 42px;
     height: auto;
+    object-fit: contain;
     display: block;
   }
 
   body:not(.home-page) .tm-global-mobile-cart {
     justify-self: end;
     position: relative;
-    font-size: 28px;
+    font-size: 30px;
     line-height: 1;
   }
 
