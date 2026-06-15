@@ -1128,11 +1128,12 @@
       root.innerHTML = "";
 
       const zip = getWidgetZip();
+      const isMobileGlsWidget = window.matchMedia && window.matchMedia("(max-width: 720px)").matches;
       const options = {
         lang: "sk",
         renderTo: "#gls-widget-root",
         find: 1,
-        noHeader: 0,
+        noHeader: isMobileGlsWidget ? 1 : 0,
         ctrCode: "SK",
       };
 
