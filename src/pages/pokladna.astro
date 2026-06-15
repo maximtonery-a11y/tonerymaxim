@@ -51,7 +51,6 @@ const title = "Pokladňa | ToneryMaxim.sk";
                 <label>Email *<input id="email" name="email" type="email" autocomplete="email" required placeholder="vas@email.sk" /></label>
                 <label>Telefón *<input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="+421 900 000 000" /></label>
               </div>
-              <button class="checkout-step-next" type="button" data-checkout-next="delivery">Pokračovať na dopravu</button>
               </div>
             </section>
 
@@ -95,7 +94,6 @@ const title = "Pokladňa | ToneryMaxim.sk";
                   </div>
                 </div>
               </div>
-              <button class="checkout-step-next" type="button" data-checkout-next="billing">Pokračovať na údaje</button>
               </div>
             </section>
 
@@ -158,7 +156,6 @@ const title = "Pokladňa | ToneryMaxim.sk";
                   <label>Telefón<input name="delivery_phone" type="tel" inputmode="tel" autocomplete="shipping tel" placeholder="+421 900 000 000" /></label>
                 </div>
               </div>
-              <button class="checkout-step-next" type="button" data-checkout-next="summary">Skontrolovať objednávku</button>
               </div>
             </section>
           </form>
@@ -203,12 +200,9 @@ const title = "Pokladňa | ToneryMaxim.sk";
       <div class="checkout-mobile-footer">© 2026 ToneryMaxim.sk</div>
 
       <div class="checkout-mobile-sticky" data-checkout-mobile-sticky hidden>
-        <a class="checkout-mobile-search" href="/produkty" aria-label="Hľadať ďalší toner alebo tlačiareň">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.8 18.1a7.3 7.3 0 1 1 0-14.6 7.3 7.3 0 0 1 0 14.6Zm5.5-1.8 4 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
-        </a>
         <button class="checkout-mobile-submit" type="button" data-mobile-submit-order>
           <strong data-mobile-total>0,00 €</strong>
-          <span>Objednať</span>
+          <span>Objednať s povinnosťou platby</span>
         </button>
       </div>
 
