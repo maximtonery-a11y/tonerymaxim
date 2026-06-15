@@ -1315,39 +1315,50 @@ body.has-gls-modal {
   }
 }
 
-
-/* GLS pickup modal mobile fix - viac priestoru pre zoznam pobočiek, desktop bez zmeny */
+/* GLS mobile modal only - checkout layout/sticky bar untouched */
 @media (max-width: 720px) {
+  body.has-gls-modal {
+    overflow: hidden !important;
+    touch-action: none;
+  }
+
   .gls-widget-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 30000 !important;
     padding: 0 !important;
-    align-items: stretch !important;
-    justify-items: stretch !important;
-    place-items: stretch !important;
+    display: block !important;
+    background: rgba(7, 27, 58, .62) !important;
   }
 
   .gls-widget-dialog {
+    position: fixed !important;
+    inset: 0 !important;
     width: 100vw !important;
     height: 100dvh !important;
-    max-height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
     border-radius: 0 !important;
+    display: grid !important;
     grid-template-rows: auto minmax(0, 1fr) !important;
+    overflow: hidden !important;
   }
 
   .gls-widget-head {
-    min-height: 58px !important;
-    padding: 10px 14px !important;
+    min-height: 54px !important;
+    padding: 8px 12px !important;
     gap: 10px !important;
   }
 
   .gls-widget-head strong {
     font-size: 16px !important;
-    line-height: 1.15 !important;
+    line-height: 1.12 !important;
   }
 
   .gls-widget-head span {
     margin-top: 2px !important;
     font-size: 12px !important;
-    line-height: 1.2 !important;
+    line-height: 1.15 !important;
   }
 
   .gls-widget-head button {
@@ -1362,18 +1373,13 @@ body.has-gls-modal {
     min-height: 0 !important;
     overflow: auto !important;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .gls-widget-root iframe,
   .gls-widget-root > div {
     height: 100% !important;
-    min-height: 0 !important;
+    min-height: calc(100dvh - 54px) !important;
     max-height: none !important;
-  }
-
-  body.has-gls-modal .checkout-mobile-sticky,
-  body.has-gls-modal .mobile-bottom-search,
-  body.has-gls-modal .floating-advisor {
-    display: none !important;
   }
 }
