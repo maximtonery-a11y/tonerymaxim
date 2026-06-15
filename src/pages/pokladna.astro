@@ -37,8 +37,8 @@ const title = "Pokladňa | ToneryMaxim.sk";
 
         <div class="checkout-layout" data-checkout-form>
           <form class="checkout-form" onsubmit="return false;">
-            <section class="checkout-card">
-              <div class="section-head">
+            <section class="checkout-card checkout-step is-active" data-checkout-step="contact">
+              <div class="section-head" data-checkout-step-head>
                 <span>1</span>
                 <div>
                   <h2>Kontakt</h2>
@@ -46,14 +46,17 @@ const title = "Pokladňa | ToneryMaxim.sk";
                 </div>
               </div>
 
+              <div class="checkout-step-body">
               <div class="form-grid two">
                 <label>Email *<input id="email" name="email" type="email" autocomplete="email" required placeholder="vas@email.sk" /></label>
                 <label>Telefón *<input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="+421 900 000 000" /></label>
               </div>
+              <button class="checkout-step-next" type="button" data-checkout-next="delivery">Pokračovať na dopravu</button>
+              </div>
             </section>
 
-            <section class="checkout-card">
-              <div class="section-head">
+            <section class="checkout-card checkout-step" data-checkout-step="delivery">
+              <div class="section-head" data-checkout-step-head>
                 <span>2</span>
                 <div>
                   <h2>Doprava a platba</h2>
@@ -61,6 +64,7 @@ const title = "Pokladňa | ToneryMaxim.sk";
                 </div>
               </div>
 
+              <div class="checkout-step-body">
               <div class="delivery-payment-grid">
                 <div>
                   <h3 class="subsection-title">Doprava</h3>
@@ -91,10 +95,12 @@ const title = "Pokladňa | ToneryMaxim.sk";
                   </div>
                 </div>
               </div>
+              <button class="checkout-step-next" type="button" data-checkout-next="billing">Pokračovať na údaje</button>
+              </div>
             </section>
 
-            <section class="checkout-card">
-              <div class="section-head">
+            <section class="checkout-card checkout-step" data-checkout-step="billing">
+              <div class="section-head" data-checkout-step-head>
                 <span>3</span>
                 <div>
                   <h2>Fakturačné údaje</h2>
@@ -102,6 +108,7 @@ const title = "Pokladňa | ToneryMaxim.sk";
                 </div>
               </div>
 
+              <div class="checkout-step-body">
               <label class="checkline"><input id="company_enabled" type="checkbox" /> Nakupujem na firmu</label>
 
               <div class="company-box" data-company-box hidden>
@@ -150,6 +157,8 @@ const title = "Pokladňa | ToneryMaxim.sk";
                   <label>Email<input name="delivery_email" type="email" autocomplete="shipping email" placeholder="email pre doručenie" /></label>
                   <label>Telefón<input name="delivery_phone" type="tel" inputmode="tel" autocomplete="shipping tel" placeholder="+421 900 000 000" /></label>
                 </div>
+              </div>
+              <button class="checkout-step-next" type="button" data-checkout-next="summary">Skontrolovať objednávku</button>
               </div>
             </section>
           </form>

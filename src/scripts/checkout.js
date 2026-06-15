@@ -1315,12 +1315,64 @@
     }
   }
 
+
+
+  function isCheckoutMobileLayout() {
+    return window.matchMedia("(max-width: 920px), (hover: none) and (pointer: coarse)").matches;
+  }
+
+  function openCheckoutStep(stepName, shouldScroll = true) {
+    const steps = Array.from(document.querySelectorAll("[data-checkout-step]"));
+    if (!steps.length) return;
+
+    const target = steps.find((step) => step.dataset.checkoutStep === stepName) || steps[0];
+    steps.forEach((step) => step.classList.toggle("is-active", step === target));
+
+    if (stepName === "summary") {
+      const summary = document.querySelector(".checkout-summary");
+      const toggle = document.querySelector("[data-mobile-summary-toggle]");
+      summary?.classList.add("is-open");
+      toggle?.setAttribute("aria-expanded", "true");
+      if (shouldScroll) summary?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    if (shouldScroll) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function setupMobileCheckoutSteps() {
+    const steps = Array.from(document.querySelectorAll("[data-checkout-step]"));
+    if (!steps.length) return;
+
+    if (!steps.some((step) => step.classList.contains("is-active"))) {
+      steps[0].classList.add("is-active");
+    }
+
+    document.querySelectorAll("[data-checkout-step-head]").forEach((head) => {
+      head.addEventListener("click", () => {
+        if (!isCheckoutMobileLayout()) return;
+        const step = head.closest("[data-checkout-step]");
+        if (!step) return;
+        openCheckoutStep(step.dataset.checkoutStep, false);
+      });
+    });
+
+    document.querySelectorAll("[data-checkout-next]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (!isCheckoutMobileLayout()) return;
+        openCheckoutStep(button.dataset.checkoutNext || "contact", true);
+      });
+    });
+
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     restorePickupState();
     renderCheckoutSummary();
     updateVisibility();
     setupPostalAutofill();
     setupPickupWidgets();
+    setupMobileCheckoutSteps();
 
     document.querySelectorAll('input[name="shipping"], input[name="payment"], #company_enabled, #different_address').forEach((input) => {
       input.addEventListener("change", () => {
