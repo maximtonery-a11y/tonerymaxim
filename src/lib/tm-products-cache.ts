@@ -11,7 +11,7 @@ type CacheFile = {
   products: TmProduct[];
 };
 
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
 const CACHE_DIR = path.join(process.cwd(), ".tm-cache");
 const CACHE_FILE = path.join(CACHE_DIR, "products.json");
 const FALLBACK_CACHE_FILES = [
@@ -99,6 +99,109 @@ function uniqueStrings(values: string[], minLength = 3) {
     out.push(clean);
   });
   return out;
+}
+
+
+function cleanAttributeName(value: unknown) {
+  return String(value || "")
+    .replace(/^pa[_-]/i, "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function cleanAttributeValue(value: unknown) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "object") {
+    const obj = value as any;
+    return cleanAttributeValue(obj.name ?? obj.label ?? obj.value ?? obj.option ?? obj.title ?? "");
+  }
+  return String(value)
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeWooAttributeName(value: unknown) {
+  return compactKey(cleanAttributeName(value));
+}
+
+function normalizeAttributeValues(value: unknown): string[] {
+  if (Array.isArray(value)) return uniqueStrings(value.map(cleanAttributeValue).filter(Boolean), 1);
+  const clean = cleanAttributeValue(value);
+  if (!clean) return [];
+  return uniqueStrings(clean.split(/\s*[,;|]\s*/).map(cleanAttributeValue).filter(Boolean), 1);
+}
+
+function extractWooAttributes(product: any) {
+  const out: Array<{ id?: number; name: string; slug: string; values: string[]; value: string; visible?: boolean; variation?: boolean }> = [];
+  const seen = new Set<string>();
+  const attributes = Array.isArray(product?.attributes) ? product.attributes : [];
+
+  attributes.forEach((attribute: any) => {
+    const name = cleanAttributeName(attribute?.name || attribute?.slug || "");
+    if (!name) return;
+    const values = normalizeAttributeValues(attribute?.options ?? attribute?.option ?? attribute?.value);
+    if (!values.length) return;
+    const slug = normalizeWooAttributeName(attribute?.slug || name);
+    const key = `${slug}:${values.map(compactKey).join('|')}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({
+      id: attribute?.id,
+      name,
+      slug,
+      values,
+      value: values.join(", "),
+      visible: attribute?.visible,
+      variation: attribute?.variation,
+    });
+  });
+
+  return out;
+}
+
+function attributeNameMatches(attribute: { name: string; slug: string }, aliases: string[]) {
+  const name = normalizeWooAttributeName(attribute.name);
+  const slug = normalizeWooAttributeName(attribute.slug);
+  return aliases.some((alias) => {
+    const key = compactKey(alias);
+    return name === key || slug === key || name.includes(key) || slug.includes(key);
+  });
+}
+
+function getWooAttributeValue(attributes: ReturnType<typeof extractWooAttributes>, aliases: string[]) {
+  const found = attributes.find((attribute) => attributeNameMatches(attribute, aliases));
+  return found?.value || "";
+}
+
+function normalizeWooColor(value: string) {
+  const text = normalize(value);
+  const compact = compactKey(value);
+  if (!text) return "";
+  if (compact === "k" || text.includes("black") || text.includes("cierna") || text.includes("čierna")) return "Čierna";
+  if (compact === "c" || text.includes("cyan") || text.includes("azurov") || text.includes("azúrov")) return "Azúrová";
+  if (compact === "m" || text.includes("magenta") || text.includes("purpurov")) return "Purpurová";
+  if (compact === "y" || text.includes("yellow") || text.includes("zlta") || text.includes("žlta") || text.includes("zlt") || text.includes("žlt")) return "Žltá";
+  if (text.includes("cmyk") || text.includes("multipack") || /^(c|m|y|k){2,}$/i.test(compact)) return value.toUpperCase();
+  return value;
+}
+
+function normalizeWooCapacity(value: string) {
+  const clean = cleanAttributeValue(value);
+  if (!clean) return "";
+  const lower = normalize(clean);
+  if (/\b(stran|strán|pages?|ml)\b/i.test(clean)) return clean;
+  if (/^\d[\d\s.,]*$/.test(clean)) return `${clean.replace(/\s+/g, " ").trim()} strán`;
+  if (lower.includes("stran") || lower.includes("page")) return clean;
+  return clean;
+}
+
+function wooAttributeText(attributes: ReturnType<typeof extractWooAttributes>) {
+  return attributes.map((attribute) => `${attribute.name} ${attribute.value}`).join(" ");
 }
 
 function cleanupPrinterCandidate(value: string) {
@@ -219,12 +322,13 @@ export function mapProduct(product: any): TmProduct {
   const type = detectType(product);
   const description = product.description || "";
   const shortDescription = product.short_description || "";
+  const wooAttributes = extractWooAttributes(product);
   const compatiblePrinters = extractPrinters(product);
   const categories = Array.isArray(product.categories) ? product.categories.map((cat: any) => ({ id: cat.id, name: cat.name, slug: cat.slug })) : [];
   const tagText = Array.isArray(product.tags) ? product.tags.map((tag: any) => `${tag.name || ""} ${tag.slug || ""}`).join(" ") : "";
   const categoryText = categories.map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ");
   const plainText = stripHtml(`${shortDescription}\n${description}`);
-  const searchableText = normalize(`${product.name || ""} ${product.sku || ""} ${categoryText} ${tagText} ${plainText} ${compatiblePrinters.join(" ")}`);
+  const searchableText = normalize(`${product.name || ""} ${product.sku || ""} ${categoryText} ${tagText} ${wooAttributeText(wooAttributes)} ${plainText} ${compatiblePrinters.join(" ")}`);
   return {
     id: product.id,
     sku: product.sku || "",
@@ -246,8 +350,15 @@ export function mapProduct(product: any): TmProduct {
     product_type_detail_label: type.detailLabel,
     product_type_note: type.note,
     product_type_icon: type.icon,
-    color: detectColor(product),
-    yield: detectYield(product),
+    attributes: wooAttributes,
+    attributes_all: wooAttributes,
+    color: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])),
+    farba: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])),
+    capacity: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
+    kapacita: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
+    yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
+    page_yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages"])),
+    warranty: getWooAttributeValue(wooAttributes, ["Záruka", "Zaruka", "Warranty"]),
     compatible_printers: compatiblePrinters,
     printers: compatiblePrinters,
     categories,
