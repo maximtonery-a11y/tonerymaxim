@@ -11,7 +11,7 @@ type CacheFile = {
   products: TmProduct[];
 };
 
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
 const CACHE_DIR = path.join(process.cwd(), ".tm-cache");
 const CACHE_FILE = path.join(CACHE_DIR, "products.json");
 const FALLBACK_CACHE_FILES = [
@@ -300,6 +300,172 @@ function detectYield(product: any) {
   return match ? `${match[1].replace(/\s+/g, " ").trim()} strán` : "";
 }
 
+
+function hasUsefulValue(value: unknown) {
+  const text = String(value || "").trim();
+  if (!text) return false;
+  const normalized = normalize(text);
+  return !["neuvedene", "neuvedeny", "neuvedena", "n/a", "null", "undefined", "-"].includes(normalized);
+}
+
+function isKnownColor(value: unknown) {
+  const color = normalizeWooColor(String(value || ""));
+  const key = normalize(color);
+  return key.includes("cier") || key.includes("azur") || key.includes("cyan") || key.includes("purp") || key.includes("magenta") || key.includes("zlt") || key.includes("yellow") || key.includes("cmyk") || key.includes("multi");
+}
+
+function colorFamily(value: unknown) {
+  const color = normalizeWooColor(String(value || ""));
+  const key = normalize(color);
+  if (key.includes("cier") || key.includes("black")) return "black";
+  if (key.includes("azur") || key.includes("cyan")) return "cyan";
+  if (key.includes("purp") || key.includes("magenta")) return "magenta";
+  if (key.includes("zlt") || key.includes("yellow")) return "yellow";
+  if (key.includes("cmyk") || key.includes("multi")) return "multipack";
+  return "";
+}
+
+function detectColorFromTitle(product: any) {
+  return normalizeWooColor(detectColor({
+    name: product?.name || "",
+    short_description: "",
+    description: "",
+  }));
+}
+
+function canonicalOemToken(value: string) {
+  return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function oemSeriesKey(token: string, color: unknown) {
+  let key = canonicalOemToken(token);
+  if (!/\d/.test(key) || key.length < 4) return "";
+  const family = colorFamily(color);
+  if (family === "black") key = key.replace(/(?:BLACK|BK|K)$/i, "");
+  if (family === "cyan") key = key.replace(/(?:CYAN|C)$/i, "");
+  if (family === "magenta") key = key.replace(/(?:MAGENTA|M)$/i, "");
+  if (family === "yellow") key = key.replace(/(?:YELLOW|Y)$/i, "");
+  if (family === "multipack") key = key.replace(/(?:CMYK|MULTIPACK|MULTI)$/i, "");
+  return /\d/.test(key) && key.length >= 4 ? key : "";
+}
+
+function extractOemSeriesKeys(product: any) {
+  const text = `${product?.sku || ""} ${product?.name || ""}`;
+  const color = product?.color || product?.farba || detectColorFromTitle(product);
+  const patterns = [
+    /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CF|CE|CB|CC|CRG|W|Q|TK|C13T|T)\s*[- ]?\s*\d{2,6}\s*[- ]?\s*[A-Z0-9]{0,6}\b/gi,
+    /\b\d{2,5}\s*XL\b/gi,
+  ];
+  const keys: string[] = [];
+  patterns.forEach((pattern) => {
+    for (const match of text.matchAll(pattern)) {
+      const raw = canonicalOemToken(match[0]);
+      const series = oemSeriesKey(raw, color);
+      if (series) keys.push(series);
+    }
+  });
+  return uniqueStrings(keys, 4);
+}
+
+function productCapacityValue(product: any) {
+  return String(product?.capacity || product?.kapacita || product?.yield || product?.page_yield || "").trim();
+}
+
+function setProductCapacity(product: any, value: string) {
+  const normalized = normalizeWooCapacity(value);
+  if (!normalized) return;
+  if (!hasUsefulValue(product.capacity)) product.capacity = normalized;
+  if (!hasUsefulValue(product.kapacita)) product.kapacita = normalized;
+  if (!hasUsefulValue(product.yield)) product.yield = normalized;
+  if (!hasUsefulValue(product.page_yield)) product.page_yield = normalized;
+}
+
+function addInferredAttribute(product: any, name: string, value: string) {
+  if (!hasUsefulValue(value)) return;
+  const attributes = Array.isArray(product.attributes) ? product.attributes : [];
+  const slug = normalizeWooAttributeName(name);
+  const exists = attributes.some((attribute: any) => attributeNameMatches(attribute, [name]));
+  if (exists) return;
+  const attribute = { name, slug, values: [value], value, visible: true, variation: false, inferred: true };
+  product.attributes = [...attributes, attribute];
+  product.attributes_all = Array.isArray(product.attributes_all) ? [...product.attributes_all, attribute] : [...product.attributes];
+}
+
+function rebuildProductSearchText(product: any) {
+  const categoryText = Array.isArray(product.categories) ? product.categories.map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ") : "";
+  const attrText = Array.isArray(product.attributes) ? product.attributes.map((attribute: any) => `${attribute.name || ""} ${attribute.value || ""}`).join(" ") : "";
+  const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers.join(" ") : "";
+  product.search_text = normalize(`${product.name || ""} ${product.sku || ""} ${categoryText} ${attrText} ${product.color || ""} ${product.capacity || ""} ${product.yield || ""} ${printers} ${product.description || ""}`);
+}
+
+function enrichProductsFromRelatedProducts(products: TmProduct[]) {
+  const groups = new Map<string, TmProduct[]>();
+
+  products.forEach((product) => {
+    const titleColor = detectColorFromTitle(product);
+    if (!hasUsefulValue(product.color) && isKnownColor(titleColor)) {
+      product.color = titleColor;
+      product.farba = titleColor;
+      addInferredAttribute(product, "Farba", titleColor);
+    }
+
+    extractOemSeriesKeys(product).forEach((key) => {
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(product);
+    });
+  });
+
+  groups.forEach((group) => {
+    if (group.length < 2) return;
+
+    const groupPrinters = uniqueStrings(group.flatMap((product) => {
+      const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : Array.isArray(product.printers) ? product.printers : [];
+      return printers.map(String);
+    }), 3);
+
+    const capacityByColor = new Map<string, string[]>();
+    const allCapacities: string[] = [];
+
+    group.forEach((product) => {
+      const capacity = productCapacityValue(product);
+      if (!hasUsefulValue(capacity)) return;
+      const normalizedCapacity = normalizeWooCapacity(capacity);
+      allCapacities.push(normalizedCapacity);
+      const family = colorFamily(product.color || product.farba || detectColorFromTitle(product));
+      if (!family) return;
+      if (!capacityByColor.has(family)) capacityByColor.set(family, []);
+      capacityByColor.get(family)!.push(normalizedCapacity);
+    });
+
+    const uniqueCapacities = uniqueStrings(allCapacities, 1);
+
+    group.forEach((product) => {
+      let changed = false;
+
+      if ((!Array.isArray(product.compatible_printers) || !product.compatible_printers.length) && groupPrinters.length) {
+        product.compatible_printers = groupPrinters;
+        product.printers = groupPrinters;
+        changed = true;
+      }
+
+      if (!hasUsefulValue(productCapacityValue(product))) {
+        const family = colorFamily(product.color || product.farba || detectColorFromTitle(product));
+        const colorCapacities = family ? uniqueStrings(capacityByColor.get(family) || [], 1) : [];
+        const inferredCapacity = colorCapacities.length === 1 ? colorCapacities[0] : uniqueCapacities.length === 1 ? uniqueCapacities[0] : "";
+        if (inferredCapacity) {
+          setProductCapacity(product, inferredCapacity);
+          addInferredAttribute(product, "Kapacita", inferredCapacity);
+          changed = true;
+        }
+      }
+
+      if (changed) rebuildProductSearchText(product);
+    });
+  });
+
+  return products;
+}
+
 function typeRank(key: string) {
   if (key === "compatible") return 0;
   if (key === "original") return 1;
@@ -374,9 +540,7 @@ function isFresh(cache: CacheFile) {
 function parseCacheFile(text: string): CacheFile | null {
   try {
     const data = JSON.parse(text) as CacheFile;
-    if (!data || !Array.isArray(data.products)) return null;
-    // Zachová kompatibilitu so starou cache, aby ručný cron nepadol, ak Woo API dočasne zlyhá.
-    if (data.version !== CACHE_VERSION && data.version !== 2) return null;
+    if (!data || data.version !== CACHE_VERSION || !Array.isArray(data.products)) return null;
     return data;
   } catch {
     return null;
@@ -534,7 +698,7 @@ export async function syncProductsCache(options: { force?: boolean } = {}) {
     throw new Error(message);
   }
 
-  const products = sortProducts(raw.products.map(mapProduct));
+  const products = sortProducts(enrichProductsFromRelatedProducts(raw.products.map(mapProduct)));
   const next: CacheFile = { ok: true, version: CACHE_VERSION, generated_at: new Date().toISOString(), total: products.length, products };
 
   await mkdir(CACHE_DIR, { recursive: true });
