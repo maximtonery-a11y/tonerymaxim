@@ -300,167 +300,128 @@ function detectYield(product: any) {
   return match ? `${match[1].replace(/\s+/g, " ").trim()} strán` : "";
 }
 
-
-function hasUsefulValue(value: unknown) {
-  const text = String(value || "").trim();
-  if (!text) return false;
-  const normalized = normalize(text);
-  return !["neuvedene", "neuvedeny", "neuvedena", "n/a", "null", "undefined", "-"].includes(normalized);
+function isMissingAttribute(value: unknown) {
+  const text = normalize(value);
+  return !text || text === "neuvedene" || text === "neuvedena" || text === "n/a" || text === "nezname" || text === "neznamy";
 }
 
-function isKnownColor(value: unknown) {
-  const color = normalizeWooColor(String(value || ""));
-  const key = normalize(color);
-  return key.includes("cier") || key.includes("azur") || key.includes("cyan") || key.includes("purp") || key.includes("magenta") || key.includes("zlt") || key.includes("yellow") || key.includes("cmyk") || key.includes("multi");
-}
-
-function colorFamily(value: unknown) {
-  const color = normalizeWooColor(String(value || ""));
-  const key = normalize(color);
-  if (key.includes("cier") || key.includes("black")) return "black";
-  if (key.includes("azur") || key.includes("cyan")) return "cyan";
-  if (key.includes("purp") || key.includes("magenta")) return "magenta";
-  if (key.includes("zlt") || key.includes("yellow")) return "yellow";
-  if (key.includes("cmyk") || key.includes("multi")) return "multipack";
-  return "";
-}
-
-function detectColorFromTitle(product: any) {
-  return normalizeWooColor(detectColor({
-    name: product?.name || "",
-    short_description: "",
-    description: "",
-  }));
-}
-
-function canonicalOemToken(value: string) {
-  return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
-}
-
-function oemSeriesKey(token: string, color: unknown) {
-  let key = canonicalOemToken(token);
-  if (!/\d/.test(key) || key.length < 4) return "";
-  const family = colorFamily(color);
-  if (family === "black") key = key.replace(/(?:BLACK|BK|K)$/i, "");
-  if (family === "cyan") key = key.replace(/(?:CYAN|C)$/i, "");
-  if (family === "magenta") key = key.replace(/(?:MAGENTA|M)$/i, "");
-  if (family === "yellow") key = key.replace(/(?:YELLOW|Y)$/i, "");
-  if (family === "multipack") key = key.replace(/(?:CMYK|MULTIPACK|MULTI)$/i, "");
-  return /\d/.test(key) && key.length >= 4 ? key : "";
-}
-
-function extractOemSeriesKeys(product: any) {
-  const text = `${product?.sku || ""} ${product?.name || ""}`;
-  const color = product?.color || product?.farba || detectColorFromTitle(product);
-  const patterns = [
-    /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CF|CE|CB|CC|CRG|W|Q|TK|C13T|T)\s*[- ]?\s*\d{2,6}\s*[- ]?\s*[A-Z0-9]{0,6}\b/gi,
-    /\b\d{2,5}\s*XL\b/gi,
-  ];
+function extractOemFamilyKeys(value: unknown) {
+  const source = String(value || "").toUpperCase();
   const keys: string[] = [];
+  const patterns = [
+    /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CRG|CF|CE|W|Q|C|T|TK|MLT|CLT|TN-|DR-|LC-|CLI-|PGI-|PG-|CL-|CRG-|CF-|CE-|TK-)\s*[- ]?\s*[A-Z0-9]{2,8}(?:[- ]?[A-Z0-9]{1,4})?\b/g,
+    /\b[A-Z]{1,5}[- ]?\d{2,5}[A-Z0-9]{0,5}\b/g,
+  ];
+
   patterns.forEach((pattern) => {
-    for (const match of text.matchAll(pattern)) {
-      const raw = canonicalOemToken(match[0]);
-      const series = oemSeriesKey(raw, color);
-      if (series) keys.push(series);
+    for (const match of source.matchAll(pattern)) {
+      let code = match[0].replace(/[^A-Z0-9]/g, "");
+      if (code.length < 4) continue;
+
+      // Pri farbách a kapacitách zjednotíme OEM na rodinu, aby napr. TN426K a TN-426 Black patrili spolu.
+      code = code
+        .replace(/(BLACK|CYAN|MAGENTA|YELLOW|CIERNA|AZUROVA|PURPUROVA|ZLTA)$/i, "")
+        .replace(/(BK|K|C|M|Y)$/i, "")
+        .replace(/(XL|XXL)$/i, "");
+
+      if (code.length >= 4) keys.push(code.toLowerCase());
     }
   });
-  return uniqueStrings(keys, 4);
+
+  return uniqueStrings(keys, 4).slice(0, 8);
 }
 
-function productCapacityValue(product: any) {
-  return String(product?.capacity || product?.kapacita || product?.yield || product?.page_yield || "").trim();
+function productOemKeys(product: TmProduct) {
+  return extractOemFamilyKeys(`${product.name || ""} ${product.sku || ""} ${product.search_text || ""}`);
 }
 
-function setProductCapacity(product: any, value: string) {
-  const normalized = normalizeWooCapacity(value);
-  if (!normalized) return;
-  if (!hasUsefulValue(product.capacity)) product.capacity = normalized;
-  if (!hasUsefulValue(product.kapacita)) product.kapacita = normalized;
-  if (!hasUsefulValue(product.yield)) product.yield = normalized;
-  if (!hasUsefulValue(product.page_yield)) product.page_yield = normalized;
+function mergeSearchText(product: TmProduct) {
+  product.search_text = normalize(`${product.search_text || ""} ${product.color || ""} ${product.capacity || ""} ${product.yield || ""} ${(product.compatible_printers || []).join(" ")}`);
 }
 
-function addInferredAttribute(product: any, name: string, value: string) {
-  if (!hasUsefulValue(value)) return;
-  const attributes = Array.isArray(product.attributes) ? product.attributes : [];
-  const slug = normalizeWooAttributeName(name);
-  const exists = attributes.some((attribute: any) => attributeNameMatches(attribute, [name]));
-  if (exists) return;
-  const attribute = { name, slug, values: [value], value, visible: true, variation: false, inferred: true };
-  product.attributes = [...attributes, attribute];
-  product.attributes_all = Array.isArray(product.attributes_all) ? [...product.attributes_all, attribute] : [...product.attributes];
+function selectRelatedProducts(product: TmProduct, byOem: Map<string, TmProduct[]>) {
+  const related = new Map<string, TmProduct>();
+  productOemKeys(product).forEach((key) => {
+    (byOem.get(key) || []).forEach((item) => {
+      if (item.id !== product.id) related.set(String(item.id || item.slug || item.name), item);
+    });
+  });
+  return [...related.values()];
 }
 
-function rebuildProductSearchText(product: any) {
-  const categoryText = Array.isArray(product.categories) ? product.categories.map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ") : "";
-  const attrText = Array.isArray(product.attributes) ? product.attributes.map((attribute: any) => `${attribute.name || ""} ${attribute.value || ""}`).join(" ") : "";
-  const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers.join(" ") : "";
-  product.search_text = normalize(`${product.name || ""} ${product.sku || ""} ${categoryText} ${attrText} ${product.color || ""} ${product.capacity || ""} ${product.yield || ""} ${printers} ${product.description || ""}`);
+function bestRelatedValue(product: TmProduct, related: TmProduct[], field: "capacity" | "yield" | "page_yield") {
+  const productColor = normalize(product.color || product.farba || "");
+  const scored = related
+    .map((item) => {
+      const value = item[field] || item.capacity || item.yield || item.page_yield || "";
+      if (isMissingAttribute(value)) return null;
+      let score = 0;
+      if (productColor && normalize(item.color || item.farba || "") === productColor) score += 100;
+      if (item.product_type_key === product.product_type_key) score += 20;
+      if (Array.isArray(item.compatible_printers) && item.compatible_printers.length) score += 10;
+      return { value, score };
+    })
+    .filter(Boolean) as Array<{ value: string; score: number }>;
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0]?.value || "";
 }
 
-function enrichProductsFromRelatedProducts(products: TmProduct[]) {
-  const groups = new Map<string, TmProduct[]>();
+function bestRelatedPrinters(related: TmProduct[]) {
+  const values: string[] = [];
+  related.forEach((item) => {
+    if (Array.isArray(item.compatible_printers)) values.push(...item.compatible_printers);
+    else if (Array.isArray(item.printers)) values.push(...item.printers);
+  });
+  return uniqueStrings(values).slice(0, 80);
+}
+
+function enrichProductsFromRelated(products: TmProduct[]) {
+  const byOem = new Map<string, TmProduct[]>();
 
   products.forEach((product) => {
-    const titleColor = detectColorFromTitle(product);
-    if (!hasUsefulValue(product.color) && isKnownColor(titleColor)) {
-      product.color = titleColor;
-      product.farba = titleColor;
-      addInferredAttribute(product, "Farba", titleColor);
-    }
-
-    extractOemSeriesKeys(product).forEach((key) => {
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key)!.push(product);
+    productOemKeys(product).forEach((key) => {
+      const list = byOem.get(key) || [];
+      list.push(product);
+      byOem.set(key, list);
     });
   });
 
-  groups.forEach((group) => {
-    if (group.length < 2) return;
-
-    const groupPrinters = uniqueStrings(group.flatMap((product) => {
-      const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : Array.isArray(product.printers) ? product.printers : [];
-      return printers.map(String);
-    }), 3);
-
-    const capacityByColor = new Map<string, string[]>();
-    const allCapacities: string[] = [];
-
-    group.forEach((product) => {
-      const capacity = productCapacityValue(product);
-      if (!hasUsefulValue(capacity)) return;
-      const normalizedCapacity = normalizeWooCapacity(capacity);
-      allCapacities.push(normalizedCapacity);
-      const family = colorFamily(product.color || product.farba || detectColorFromTitle(product));
-      if (!family) return;
-      if (!capacityByColor.has(family)) capacityByColor.set(family, []);
-      capacityByColor.get(family)!.push(normalizedCapacity);
-    });
-
-    const uniqueCapacities = uniqueStrings(allCapacities, 1);
-
-    group.forEach((product) => {
-      let changed = false;
-
-      if ((!Array.isArray(product.compatible_printers) || !product.compatible_printers.length) && groupPrinters.length) {
-        product.compatible_printers = groupPrinters;
-        product.printers = groupPrinters;
-        changed = true;
+  products.forEach((product) => {
+    if (isMissingAttribute(product.color || product.farba)) {
+      const color = detectColor(product);
+      if (color) {
+        product.color = color;
+        product.farba = color;
       }
+    }
 
-      if (!hasUsefulValue(productCapacityValue(product))) {
-        const family = colorFamily(product.color || product.farba || detectColorFromTitle(product));
-        const colorCapacities = family ? uniqueStrings(capacityByColor.get(family) || [], 1) : [];
-        const inferredCapacity = colorCapacities.length === 1 ? colorCapacities[0] : uniqueCapacities.length === 1 ? uniqueCapacities[0] : "";
-        if (inferredCapacity) {
-          setProductCapacity(product, inferredCapacity);
-          addInferredAttribute(product, "Kapacita", inferredCapacity);
-          changed = true;
-        }
+    const related = selectRelatedProducts(product, byOem);
+    if (!related.length) {
+      mergeSearchText(product);
+      return;
+    }
+
+    if (isMissingAttribute(product.capacity || product.kapacita || product.yield || product.page_yield)) {
+      const capacity = bestRelatedValue(product, related, "capacity");
+      if (capacity) {
+        product.capacity = capacity;
+        product.kapacita = capacity;
+        product.yield = capacity;
+        product.page_yield = capacity;
       }
+    }
 
-      if (changed) rebuildProductSearchText(product);
-    });
+    const currentPrinters = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
+    if (!currentPrinters.length) {
+      const printers = bestRelatedPrinters(related);
+      if (printers.length) {
+        product.compatible_printers = printers;
+        product.printers = printers;
+      }
+    }
+
+    mergeSearchText(product);
   });
 
   return products;
@@ -518,12 +479,12 @@ export function mapProduct(product: any): TmProduct {
     product_type_icon: type.icon,
     attributes: wooAttributes,
     attributes_all: wooAttributes,
-    color: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])),
-    farba: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])),
-    capacity: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
-    kapacita: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
-    yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
-    page_yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages"])),
+    color: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])) || detectColor(product),
+    farba: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])) || detectColor(product),
+    capacity: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])) || detectYield(product),
+    kapacita: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])) || detectYield(product),
+    yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])) || detectYield(product),
+    page_yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages"])) || detectYield(product),
     warranty: getWooAttributeValue(wooAttributes, ["Záruka", "Zaruka", "Warranty"]),
     compatible_printers: compatiblePrinters,
     printers: compatiblePrinters,
@@ -698,7 +659,7 @@ export async function syncProductsCache(options: { force?: boolean } = {}) {
     throw new Error(message);
   }
 
-  const products = sortProducts(enrichProductsFromRelatedProducts(raw.products.map(mapProduct)));
+  const products = sortProducts(enrichProductsFromRelated(raw.products.map(mapProduct)));
   const next: CacheFile = { ok: true, version: CACHE_VERSION, generated_at: new Date().toISOString(), total: products.length, products };
 
   await mkdir(CACHE_DIR, { recursive: true });
