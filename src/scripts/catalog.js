@@ -1,5 +1,22 @@
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+
+  const TM_GENERIC_IMAGE_PATTERNS = [
+    "toner-coloriq-kompatible.png",
+    "toner-coloriq-renovacie.png",
+    "drum-compatible.png",
+    "image-coming-soon",
+    "no-image",
+    "placeholder",
+  ];
+
+  function productImageSrc(value) {
+    const url = String(value || "").trim();
+    if (!url) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+    const lower = url.toLowerCase();
+    return TM_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern)) ? TM_PRODUCT_PLACEHOLDER_IMAGE : url;
+  }
+
   const CART_KEY = "tm_cart_v1";
 
   const CATALOG_CACHE_VERSION = "tm_catalog_v3";
@@ -635,7 +652,7 @@
         </div>
 
         <a href="${esc(product.detail_url)}" class="tm-row-photo" aria-label="Otvoriť produkt">
-          ${product.image ? `<img src="${esc(product.image)}" alt="${esc(product.name)}" loading="lazy">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${esc(product.name)}" loading="lazy">`}
+          ${`<img src="${esc(productImageSrc(product.image))}" alt="${esc(product.name)}" loading="lazy">`}
         </a>
 
         <div class="tm-row-main">

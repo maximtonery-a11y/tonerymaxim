@@ -2528,3 +2528,90 @@
     font-size: 14px !important;
   }
 }
+
+
+.image-zoom-open {
+  overflow: hidden;
+}
+
+.image-zoom-modal[hidden] {
+  display: none !important;
+}
+
+.image-zoom-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.image-zoom-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 27, 58, .72);
+  backdrop-filter: blur(5px);
+}
+
+.image-zoom-card {
+  position: relative;
+  z-index: 1;
+  width: min(1040px, 96vw);
+  height: min(760px, 88vh);
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 30px 90px rgba(7, 27, 58, .35);
+  overflow: hidden;
+}
+
+.image-zoom-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 34px;
+}
+
+.image-zoom-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #dbe5f2;
+  border-radius: 999px;
+  background: #fff;
+  color: #071b3a;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(7, 27, 58, .14);
+}
+
+.main-image img[src*="tm-product-placeholder-box"] {
+  max-height: 330px;
+}
+
+.tm-row-photo img[src*="tm-product-placeholder-box"],
+.woo-product-image img[src*="tm-product-placeholder-box"] {
+  padding: 6px;
+}
+
+@media (max-width: 760px) {
+  .image-zoom-modal {
+    padding: 12px;
+  }
+
+  .image-zoom-card {
+    width: 96vw;
+    height: 78vh;
+    border-radius: 18px;
+  }
+
+  .image-zoom-card img {
+    padding: 18px;
+  }
+}

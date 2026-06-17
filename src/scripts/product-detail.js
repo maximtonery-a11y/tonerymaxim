@@ -1,5 +1,22 @@
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+
+  const TM_GENERIC_IMAGE_PATTERNS = [
+    "toner-coloriq-kompatible.png",
+    "toner-coloriq-renovacie.png",
+    "drum-compatible.png",
+    "image-coming-soon",
+    "no-image",
+    "placeholder",
+  ];
+
+  function productImageSrc(value) {
+    const url = String(value || "").trim();
+    if (!url) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+    const lower = url.toLowerCase();
+    return TM_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern)) ? TM_PRODUCT_PLACEHOLDER_IMAGE : url;
+  }
+
   const CART_KEY = "tm_cart_v1";
 
   function readCart() {
@@ -794,7 +811,7 @@
 
   function realProductCardHtml(product, className = "mini-product") {
     const typeKey = product.product_type_key || "product";
-    const image = product.image || product.images?.[0] || "";
+    const image = productImageSrc(product.image || product.images?.[0] || "");
     return `
       <article class="${className} ${esc(typeKey)}" data-related-id="${esc(product.id || product.sku || product.slug)}">
         <a class="mini-img" href="${esc(getProductUrl(product))}">${image ? `<img src="${esc(image)}" alt="${esc(product.name)}">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${esc(product.name)}">`}</a>
@@ -995,7 +1012,8 @@
     const root = document.querySelector("[data-product-root]");
     if (!root) return;
 
-    const images = product.images?.length ? product.images : product.image ? [product.image] : [];
+    const rawImages = product.images?.length ? product.images : product.image ? [product.image] : [];
+    const images = Array.from(new Set((rawImages.length ? rawImages : [TM_PRODUCT_PLACEHOLDER_IMAGE]).map(productImageSrc).filter(Boolean)));
     const theme = productTheme(product);
     const productColor = product.color || "Neuvedené";
     const productYield = normalizeYield(product);
@@ -1018,8 +1036,8 @@
           </div>
 
           <div class="main-image">
-            ${images[0] ? `<img src="${esc(images[0])}" alt="${esc(product.name)}">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${esc(product.name)}">`}
-            <button type="button" class="zoom-button" aria-label="Zväčšiť obrázok">
+            <img src="${esc(images[0] || TM_PRODUCT_PLACEHOLDER_IMAGE)}" alt="${esc(product.name)}">
+            <button type="button" class="zoom-button" data-zoom-image aria-label="Zväčšiť obrázok">
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
             </button>
           </div>
@@ -1179,6 +1197,14 @@
         </div>
       </div>
 
+      <div class="image-zoom-modal" data-image-zoom-modal hidden>
+        <div class="image-zoom-backdrop" data-close-zoom></div>
+        <div class="image-zoom-card" role="dialog" aria-modal="true" aria-label="Zväčšený obrázok produktu">
+          <button type="button" class="image-zoom-close" data-close-zoom aria-label="Zavrieť zväčšený obrázok">×</button>
+          <img src="${esc(images[0] || TM_PRODUCT_PLACEHOLDER_IMAGE)}" alt="${esc(product.name)}" data-zoom-modal-image>
+        </div>
+      </div>
+
       <div class="product-mobile-sticky-cart" data-mobile-sticky-cart aria-hidden="true">
         <div>
           <span>${esc(stockText(product))}</span>
@@ -1197,13 +1223,41 @@
         if (!mainImage) return;
         mainImage.innerHTML = `
           <img src="${esc(image)}" alt="${esc(product.name)}">
-          <button type="button" class="zoom-button" aria-label="Zväčšiť obrázok">
+          <button type="button" class="zoom-button" data-zoom-image aria-label="Zväčšiť obrázok">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
           </button>
         `;
         root.querySelectorAll("[data-image]").forEach((btn) => btn.classList.remove("active"));
         button.classList.add("active");
       });
+    });
+
+    function openZoomModal() {
+      const modal = root.querySelector("[data-image-zoom-modal]");
+      const modalImage = root.querySelector("[data-zoom-modal-image]");
+      const mainImage = root.querySelector(".main-image img");
+      if (!modal || !modalImage || !mainImage) return;
+      modalImage.src = mainImage.getAttribute("src") || TM_PRODUCT_PLACEHOLDER_IMAGE;
+      modalImage.alt = product.name || "Produkt";
+      modal.hidden = false;
+      document.body.classList.add("image-zoom-open");
+    }
+
+    function closeZoomModal() {
+      const modal = root.querySelector("[data-image-zoom-modal]");
+      if (!modal) return;
+      modal.hidden = true;
+      document.body.classList.remove("image-zoom-open");
+    }
+
+    root.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target?.closest?.("[data-zoom-image]")) openZoomModal();
+      if (target?.closest?.("[data-close-zoom]")) closeZoomModal();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeZoomModal();
     });
 
     const qtyInput = root.querySelector("[data-qty]");

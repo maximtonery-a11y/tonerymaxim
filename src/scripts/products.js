@@ -1,5 +1,22 @@
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+
+  const TM_GENERIC_IMAGE_PATTERNS = [
+    "toner-coloriq-kompatible.png",
+    "toner-coloriq-renovacie.png",
+    "drum-compatible.png",
+    "image-coming-soon",
+    "no-image",
+    "placeholder",
+  ];
+
+  function productImageSrc(value) {
+    const url = String(value || "").trim();
+    if (!url) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+    const lower = url.toLowerCase();
+    return TM_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern)) ? TM_PRODUCT_PLACEHOLDER_IMAGE : url;
+  }
+
   const CART_KEY = "tm_cart_v1";
 
   function readCart() {
@@ -109,7 +126,7 @@
 
       card.innerHTML = `
         <div class="woo-product-image">
-          ${product.image ? `<img src="${product.image}" alt="${product.name}" loading="lazy">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${product.name}" loading="lazy">`}
+          ${`<img src="${productImageSrc(product.image)}" alt="${product.name}" loading="lazy">`}
         </div>
         <div class="woo-product-body">
           <div class="woo-product-sku">${product.sku || "bez SKU"}</div>

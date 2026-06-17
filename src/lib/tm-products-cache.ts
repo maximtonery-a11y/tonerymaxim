@@ -47,6 +47,32 @@ const WOO_FIELDS = [
 
 const globalStore = globalThis as typeof globalThis & { __TM_PRODUCTS_FILE_CACHE__?: CacheFile };
 
+const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+const TM_GENERIC_IMAGE_PATTERNS = [
+  "toner-coloriq-kompatible.png",
+  "toner-coloriq-renovacie.png",
+  "drum-compatible.png",
+  "image-coming-soon",
+  "no-image",
+  "placeholder",
+];
+
+function normalizeProductImageUrl(value: unknown) {
+  const url = String(value || "").trim();
+  if (!url) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+  const lower = url.toLowerCase();
+  if (TM_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern))) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+  return url;
+}
+
+function normalizeProductImages(images: unknown) {
+  const values = Array.isArray(images)
+    ? images.map((img: any) => normalizeProductImageUrl(img?.src || img?.url || img)).filter(Boolean)
+    : [];
+  return uniqueStrings(values, 1).filter(Boolean);
+}
+
+
 function env(name: string) {
   return String(import.meta.env[name] || process.env[name] || "").trim();
 }
@@ -490,6 +516,8 @@ export function mapProduct(product: any): TmProduct {
   const categoryText = categories.map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ");
   const plainText = stripHtml(`${shortDescription}\n${description}`);
   const searchableText = normalize(`${product.name || ""} ${product.sku || ""} ${categoryText} ${tagText} ${wooAttributeText(wooAttributes)} ${plainText} ${compatiblePrinters.join(" ")}`);
+  const normalizedImages = normalizeProductImages(product.images);
+  const primaryImage = normalizedImages[0] || TM_PRODUCT_PLACEHOLDER_IMAGE;
   return {
     id: product.id,
     sku: product.sku || "",
@@ -500,8 +528,8 @@ export function mapProduct(product: any): TmProduct {
     sale_price: cleanPrice(product.sale_price),
     stock_quantity: product.stock_quantity ?? null,
     stock_status: product.stock_status || "",
-    image: product.images?.[0]?.src || "",
-    images: Array.isArray(product.images) ? product.images.map((img: any) => img.src).filter(Boolean) : [],
+    image: primaryImage,
+    images: normalizedImages.length ? normalizedImages : [TM_PRODUCT_PLACEHOLDER_IMAGE],
     detail_url: `/produkt/${product.slug || product.id}`,
     description_html: description,
     short_description_html: shortDescription,

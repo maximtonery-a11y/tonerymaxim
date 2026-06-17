@@ -1,5 +1,22 @@
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+
+  const TM_GENERIC_IMAGE_PATTERNS = [
+    "toner-coloriq-kompatible.png",
+    "toner-coloriq-renovacie.png",
+    "drum-compatible.png",
+    "image-coming-soon",
+    "no-image",
+    "placeholder",
+  ];
+
+  function productImageSrc(value) {
+    const url = String(value || "").trim();
+    if (!url) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+    const lower = url.toLowerCase();
+    return TM_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern)) ? TM_PRODUCT_PLACEHOLDER_IMAGE : url;
+  }
+
   if (window.__TM_CART_INIT__) return;
   window.__TM_CART_INIT__ = true;
 
