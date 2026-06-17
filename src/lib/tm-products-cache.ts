@@ -305,34 +305,47 @@ function isMissingAttribute(value: unknown) {
   return !text || text === "neuvedene" || text === "neuvedena" || text === "n/a" || text === "nezname" || text === "neznamy";
 }
 
-function extractOemFamilyKeys(value: unknown) {
+function normalizeStrictOemCode(raw: string) {
+  let code = String(raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (code.length < 4) return "";
+
+  // Slovné farby v názvoch typu "TN-426 Black" nepatria do OEM.
+  code = code.replace(/(BLACK|CYAN|MAGENTA|YELLOW|CIERNA|AZUROVA|PURPUROVA|ZLTA)$/i, "");
+
+  // Jednopísmenové farebné koncovky pri toneroch/kazetách sa považujú za rovnakú OEM sériu:
+  // TN-426K / TN-426C / TN-426M / TN-426Y -> TN426.
+  // Dôležité: XL/XXL sa NESMIE odstraňovať, aby sa TN-426 a TN-426XL nemiešali.
+  if (/^(TN|DR|LC|CLI|PGI|PG|CL|CRG|CF|CE|W|Q|TK|MLT|CLT|T)\d{2,6}[KCMY]$/.test(code)) {
+    code = code.slice(0, -1);
+  }
+
+  return code.length >= 4 ? code.toLowerCase() : "";
+}
+
+function extractStrictOemKeys(value: unknown) {
   const source = String(value || "").toUpperCase();
   const keys: string[] = [];
+
+  // Iba reálne OEM kódy, nie názvy tlačiarní/modely typu HL-L8360CDW.
   const patterns = [
-    /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CRG|CF|CE|W|Q|C|T|TK|MLT|CLT|TN-|DR-|LC-|CLI-|PGI-|PG-|CL-|CRG-|CF-|CE-|TK-)\s*[- ]?\s*[A-Z0-9]{2,8}(?:[- ]?[A-Z0-9]{1,4})?\b/g,
-    /\b[A-Z]{1,5}[- ]?\d{2,5}[A-Z0-9]{0,5}\b/g,
+    /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CRG|CF|CE|W|Q|TK|MLT|CLT|T)[\s-]*\d{2,6}(?:[\s-]*(?:K|C|M|Y|BK|BLACK|CYAN|MAGENTA|YELLOW|CIERNA|AZUROVA|PURPUROVA|ZLTA|XL|XXL))?\b/g,
+    /\b(?:C13T|C13S)\d{4,12}\b/g,
   ];
 
   patterns.forEach((pattern) => {
     for (const match of source.matchAll(pattern)) {
-      let code = match[0].replace(/[^A-Z0-9]/g, "");
-      if (code.length < 4) continue;
-
-      // Pri farbách a kapacitách zjednotíme OEM na rodinu, aby napr. TN426K a TN-426 Black patrili spolu.
-      code = code
-        .replace(/(BLACK|CYAN|MAGENTA|YELLOW|CIERNA|AZUROVA|PURPUROVA|ZLTA)$/i, "")
-        .replace(/(BK|K|C|M|Y)$/i, "")
-        .replace(/(XL|XXL)$/i, "");
-
-      if (code.length >= 4) keys.push(code.toLowerCase());
+      const key = normalizeStrictOemCode(match[0]);
+      if (key) keys.push(key);
     }
   });
 
-  return uniqueStrings(keys, 4).slice(0, 8);
+  return uniqueStrings(keys, 4).slice(0, 6);
 }
 
 function productOemKeys(product: TmProduct) {
-  return extractOemFamilyKeys(`${product.name || ""} ${product.sku || ""} ${product.search_text || ""}`);
+  // Prísne len názov + SKU. Nepoužívame search_text ani kompatibilné tlačiarne,
+  // lebo tam sú často modely tlačiarní a texty, ktoré by spojili nesúvisiace produkty.
+  return extractStrictOemKeys(`${product.name || ""} ${product.sku || ""}`);
 }
 
 function mergeSearchText(product: TmProduct) {
@@ -351,30 +364,52 @@ function selectRelatedProducts(product: TmProduct, byOem: Map<string, TmProduct[
 
 function bestRelatedValue(product: TmProduct, related: TmProduct[], field: "capacity" | "yield" | "page_yield") {
   const productColor = normalize(product.color || product.farba || "");
-  const scored = related
+  const productType = product.product_type_key || "";
+  const candidates = related
     .map((item) => {
       const value = item[field] || item.capacity || item.yield || item.page_yield || "";
       if (isMissingAttribute(value)) return null;
       let score = 0;
-      if (productColor && normalize(item.color || item.farba || "") === productColor) score += 100;
-      if (item.product_type_key === product.product_type_key) score += 20;
-      if (Array.isArray(item.compatible_printers) && item.compatible_printers.length) score += 10;
-      return { value, score };
+      const itemColor = normalize(item.color || item.farba || "");
+      if (productColor && itemColor === productColor) score += 1000;
+      if (productType && item.product_type_key === productType) score += 200;
+      const printerCount = Array.isArray(item.compatible_printers) ? item.compatible_printers.length : 0;
+      if (printerCount > 0 && printerCount <= 20) score += 50;
+      if (printerCount > 20) score -= 200;
+      return { value: String(value), score };
     })
     .filter(Boolean) as Array<{ value: string; score: number }>;
 
-  scored.sort((a, b) => b.score - a.score);
-  return scored[0]?.value || "";
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates[0]?.value || "";
 }
 
-function bestRelatedPrinters(related: TmProduct[]) {
-  const values: string[] = [];
-  related.forEach((item) => {
-    if (Array.isArray(item.compatible_printers)) values.push(...item.compatible_printers);
-    else if (Array.isArray(item.printers)) values.push(...item.printers);
-  });
-  return uniqueStrings(values).slice(0, 80);
+function bestRelatedPrinters(product: TmProduct, related: TmProduct[]) {
+  const productColor = normalize(product.color || product.farba || "");
+  const productType = product.product_type_key || "";
+  const candidates = related
+    .map((item) => {
+      const printers = Array.isArray(item.compatible_printers) ? item.compatible_printers : Array.isArray(item.printers) ? item.printers : [];
+      const cleanPrinters = uniqueStrings(printers.map(String).filter(Boolean)).slice(0, 30);
+      if (!cleanPrinters.length) return null;
+
+      let score = 0;
+      const itemColor = normalize(item.color || item.farba || "");
+      if (productColor && itemColor === productColor) score += 1000;
+      if (productType && item.product_type_key === productType) score += 200;
+      // Uprednostni konkrétny zdroj s menším počtom modelov, nie spájanie všetkého dokopy.
+      if (cleanPrinters.length <= 10) score += 100;
+      if (cleanPrinters.length > 20) score -= 500;
+      score -= cleanPrinters.length;
+
+      return { printers: cleanPrinters, score };
+    })
+    .filter(Boolean) as Array<{ printers: string[]; score: number }>;
+
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates[0]?.printers || [];
 }
+
 
 function enrichProductsFromRelated(products: TmProduct[]) {
   const byOem = new Map<string, TmProduct[]>();
@@ -414,7 +449,7 @@ function enrichProductsFromRelated(products: TmProduct[]) {
 
     const currentPrinters = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
     if (!currentPrinters.length) {
-      const printers = bestRelatedPrinters(related);
+      const printers = bestRelatedPrinters(product, related);
       if (printers.length) {
         product.compatible_printers = printers;
         product.printers = printers;
