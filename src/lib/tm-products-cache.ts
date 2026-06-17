@@ -11,7 +11,7 @@ type CacheFile = {
   products: TmProduct[];
 };
 
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 1;
 const CACHE_DIR = path.join(process.cwd(), ".tm-cache");
 const CACHE_FILE = path.join(CACHE_DIR, "products.json");
 const FALLBACK_CACHE_FILES = [
@@ -374,7 +374,9 @@ function isFresh(cache: CacheFile) {
 function parseCacheFile(text: string): CacheFile | null {
   try {
     const data = JSON.parse(text) as CacheFile;
-    if (!data || data.version !== CACHE_VERSION || !Array.isArray(data.products)) return null;
+    if (!data || !Array.isArray(data.products)) return null;
+    // Zachová kompatibilitu so starou cache, aby ručný cron nepadol, ak Woo API dočasne zlyhá.
+    if (data.version !== CACHE_VERSION && data.version !== 2) return null;
     return data;
   } catch {
     return null;
