@@ -1,4 +1,5 @@
 (() => {
+  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
   const CART_KEY = "tm_cart_v1";
 
   const CATALOG_CACHE_VERSION = "tm_catalog_v3";
@@ -634,7 +635,7 @@
         </div>
 
         <a href="${esc(product.detail_url)}" class="tm-row-photo" aria-label="Otvoriť produkt">
-          ${product.image ? `<img src="${esc(product.image)}" alt="${esc(product.name)}" loading="lazy">` : `<span>TM</span>`}
+          ${product.image ? `<img src="${esc(product.image)}" alt="${esc(product.name)}" loading="lazy">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${esc(product.name)}" loading="lazy">`}
         </a>
 
         <div class="tm-row-main">

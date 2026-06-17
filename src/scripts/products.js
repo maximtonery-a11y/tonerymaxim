@@ -1,4 +1,5 @@
 (() => {
+  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
   const CART_KEY = "tm_cart_v1";
 
   function readCart() {
@@ -108,7 +109,7 @@
 
       card.innerHTML = `
         <div class="woo-product-image">
-          ${product.image ? `<img src="${product.image}" alt="${product.name}" loading="lazy">` : `<span>TM</span>`}
+          ${product.image ? `<img src="${product.image}" alt="${product.name}" loading="lazy">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${product.name}" loading="lazy">`}
         </div>
         <div class="woo-product-body">
           <div class="woo-product-sku">${product.sku || "bez SKU"}</div>

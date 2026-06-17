@@ -1,4 +1,5 @@
 (() => {
+  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
   const CART_KEY = "tm_cart_v1";
 
   function readCart() {
@@ -520,7 +521,7 @@
       existing.capacity = existing.capacity || cartProductCapacity(product);
       existing.yield = existing.yield || product.yield || "";
       existing.page_yield = existing.page_yield || product.page_yield || "";
-      existing.warranty = existing.warranty || "24 mesiacov";
+      existing.warranty = existing.warranty || product.warranty || "";
       existing.stock_status = product.stock_status || existing.stock_status || "";
       existing.stock_quantity = product.stock_quantity ?? existing.stock_quantity ?? null;
       existing.stock_text = existing.stock_text || (typeof stockText === "function" ? stockText(product) : "");
@@ -544,7 +545,7 @@
         capacity: cartProductCapacity(product),
         yield: product.yield || "",
         page_yield: product.page_yield || "",
-        warranty: "24 mesiacov",
+        warranty: product.warranty || "",
         stock_status: product.stock_status || "",
         stock_quantity: product.stock_quantity ?? null,
         stock_text: stockText(product),
@@ -653,7 +654,29 @@
   }
 
   function normalizeYield(product) {
-    return product.yield || product.page_yield || "Neuvedené";
+    return product.yield || product.page_yield || product.capacity || product.kapacita || "Neuvedené";
+  }
+
+  function productWarranty(product) {
+    return product.warranty || product.zaruka || product.guarantee || "Neuvedené";
+  }
+
+  function productAttributeRows(product) {
+    const attrs = Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [];
+    const skip = new Set(["farba", "color", "colour", "barva", "kapacita", "vytaznost", "vyťažnosť", "pocetstran", "početstrán", "pageyield", "yield", "pages", "zaruka", "záruka", "warranty"]);
+    return attrs
+      .map((attribute) => ({
+        name: String(attribute?.name || "").trim(),
+        value: String(attribute?.value || (Array.isArray(attribute?.values) ? attribute.values.join(", ") : "")).trim(),
+        key: String(attribute?.slug || attribute?.name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, ""),
+      }))
+      .filter((attribute) => attribute.name && attribute.value && !skip.has(attribute.key));
+  }
+
+  function productAttributeRowsHtml(product) {
+    return productAttributeRows(product)
+      .map((attribute) => `<div><dt>${esc(attribute.name)}</dt><dd>${esc(attribute.value)}</dd></div>`)
+      .join("");
   }
 
   function normalizePrinter(value) {
@@ -774,7 +797,7 @@
     const image = product.image || product.images?.[0] || "";
     return `
       <article class="${className} ${esc(typeKey)}" data-related-id="${esc(product.id || product.sku || product.slug)}">
-        <a class="mini-img" href="${esc(getProductUrl(product))}">${image ? `<img src="${esc(image)}" alt="${esc(product.name)}">` : `<span>TM</span>`}</a>
+        <a class="mini-img" href="${esc(getProductUrl(product))}">${image ? `<img src="${esc(image)}" alt="${esc(product.name)}">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${esc(product.name)}">`}</a>
         <div>
           <span class="mini-badge">${esc(productTypeLabel(typeKey))}</span>
           <a class="mini-title" href="${esc(getProductUrl(product))}">${esc(product.name)}</a>
@@ -976,6 +999,7 @@
     const theme = productTheme(product);
     const productColor = product.color || "Neuvedené";
     const productYield = normalizeYield(product);
+    const productWarrantyValue = productWarranty(product);
     const stats = productStats(product);
     const priceWithoutVat = Number(product.price || 0) / 1.23;
     const printers = getPrinters(product);
@@ -994,7 +1018,7 @@
           </div>
 
           <div class="main-image">
-            ${images[0] ? `<img src="${esc(images[0])}" alt="${esc(product.name)}">` : `<span>TM</span>`}
+            ${images[0] ? `<img src="${esc(images[0])}" alt="${esc(product.name)}">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${esc(product.name)}">`}
             <button type="button" class="zoom-button" aria-label="Zväčšiť obrázok">
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
             </button>
@@ -1026,7 +1050,7 @@
           <div class="chips chips-inline">
             <span class="chip chip-color">${colorEmoji(productColor)} ${esc(productColor)}</span>
             <span class="chip">📄 ${esc(productYield)}</span>
-            <span class="chip">🛡️ 24 mes. záruka</span>
+            <span class="chip">🛡️ ${esc(productWarrantyValue)}</span>
           </div>
 
           <div class="stock-line ${isProductInStock(product) ? "is-available" : "is-unavailable"}">
@@ -1103,7 +1127,8 @@
             <div><dt>Typ produktu</dt><dd>${esc(product.product_type_detail_label || product.product_type_label || theme.label)}</dd></div>
             <div><dt>Farba</dt><dd>${esc(productColor)}</dd></div>
             <div><dt>Výťažnosť</dt><dd>${esc(productYield)}</dd></div>
-            <div><dt>Záruka</dt><dd>24 mesiacov</dd></div>
+            <div><dt>Záruka</dt><dd>${esc(productWarrantyValue)}</dd></div>
+            ${productAttributeRowsHtml(product)}
             <div><dt>Dostupnosť</dt><dd>${esc(stockText(product))}</dd></div>
             <div><dt>Kód produktu</dt><dd>${esc(product.sku || "bez SKU")}</dd></div>
           </dl>

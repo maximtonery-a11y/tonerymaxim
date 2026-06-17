@@ -1,4 +1,5 @@
 (() => {
+  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
   if (window.__TM_CART_INIT__) return;
   window.__TM_CART_INIT__ = true;
 
@@ -449,7 +450,7 @@
           ${
             item.image
               ? `<img src="${esc(item.image)}" alt="${esc(item.name)}" />`
-              : `<div class="cart-item-placeholder">TM</div>`
+              : `<img src="${esc(TM_PRODUCT_PLACEHOLDER_IMAGE)}" alt="${esc(item.name)}" />`
           }
         </a>
 
