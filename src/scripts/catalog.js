@@ -1,19 +1,44 @@
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+  const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
 
   const TM_GENERIC_IMAGE_PATTERNS = [
-    "toner-coloriq-kompatible.png",
-    "toner-coloriq-renovacie.png",
-    "drum-compatible.png",
+    "toner-coloriq-kompatible",
+    "toner-coloriq-renovacie",
+    "drum-compatible",
+    "remanufactured-drum",
     "image-coming-soon",
     "no-image",
     "placeholder",
   ];
 
-  function productImageSrc(value) {
+  const TM_INK_IMAGE_PATTERNS = [
+    "ink-remanufactured",
+    "compatible-ink-coloriq",
+  ];
+
+  function isMissingValue(value) {
+    const text = String(value || "").trim().toLowerCase();
+    return !text || text === "neuvedené" || text === "neuvedene" || text === "n/a" || text === "-";
+  }
+
+  function isInkProduct(product) {
+    const attrs = Array.isArray(product?.attributes_all) ? product.attributes_all : Array.isArray(product?.attributes) ? product.attributes : [];
+    const attrText = attrs.map((attr) => `${attr?.name || ""} ${attr?.slug || ""} ${attr?.value || ""}`).join(" ");
+    const categoryText = Array.isArray(product?.categories) ? product.categories.map((cat) => `${cat?.name || ""} ${cat?.slug || ""}`).join(" ") : "";
+    const text = `${product?.name || ""} ${product?.slug || ""} ${product?.sku || ""} ${product?.product_type_label || ""} ${product?.product_type_detail_label || ""} ${categoryText} ${attrText}`.toLowerCase();
+    return text.includes("atrament") || text.includes("ink") || text.includes("nápl") || text.includes("napl") || text.includes("kazeta") || text.includes("cartridge");
+  }
+
+  function productImageSrc(value, product) {
     const url = String(value || "").trim();
-    if (!url) return TM_PRODUCT_PLACEHOLDER_IMAGE;
     const lower = url.toLowerCase();
+    const inkProduct = isInkProduct(product);
+    if (!url) return inkProduct ? TM_INK_PLACEHOLDER_IMAGE : TM_PRODUCT_PLACEHOLDER_IMAGE;
+    if (lower.includes("tm-ink-placeholder-box")) return TM_INK_PLACEHOLDER_IMAGE;
+    if (lower.includes("tm-product-placeholder-box") && inkProduct) return TM_INK_PLACEHOLDER_IMAGE;
+    if (lower.includes("tm-product-placeholder-box")) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+    if (TM_INK_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern))) return TM_INK_PLACEHOLDER_IMAGE;
     return TM_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern)) ? TM_PRODUCT_PLACEHOLDER_IMAGE : url;
   }
 
@@ -403,7 +428,7 @@
     params.push(`
       <span>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
-        ${esc(product.yield || product.page_yield || "Neuvedené")}
+        ${esc(product.yield || product.page_yield || product.capacity || product.kapacita || "Neuvedené")}
       </span>
     `);
 
@@ -652,7 +677,7 @@
         </div>
 
         <a href="${esc(product.detail_url)}" class="tm-row-photo" aria-label="Otvoriť produkt">
-          ${`<img src="${esc(productImageSrc(product.image))}" alt="${esc(product.name)}" loading="lazy">`}
+          ${`<img src="${esc(productImageSrc(product.image, product))}" alt="${esc(product.name)}" loading="lazy">`}
         </a>
 
         <div class="tm-row-main">

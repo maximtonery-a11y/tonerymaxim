@@ -1,19 +1,44 @@
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+  const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
 
   const TM_GENERIC_IMAGE_PATTERNS = [
-    "toner-coloriq-kompatible.png",
-    "toner-coloriq-renovacie.png",
-    "drum-compatible.png",
+    "toner-coloriq-kompatible",
+    "toner-coloriq-renovacie",
+    "drum-compatible",
+    "remanufactured-drum",
     "image-coming-soon",
     "no-image",
     "placeholder",
   ];
 
-  function productImageSrc(value) {
+  const TM_INK_IMAGE_PATTERNS = [
+    "ink-remanufactured",
+    "compatible-ink-coloriq",
+  ];
+
+  function isMissingValue(value) {
+    const text = String(value || "").trim().toLowerCase();
+    return !text || text === "neuvedené" || text === "neuvedene" || text === "n/a" || text === "-";
+  }
+
+  function isInkProduct(product) {
+    const attrs = Array.isArray(product?.attributes_all) ? product.attributes_all : Array.isArray(product?.attributes) ? product.attributes : [];
+    const attrText = attrs.map((attr) => `${attr?.name || ""} ${attr?.slug || ""} ${attr?.value || ""}`).join(" ");
+    const categoryText = Array.isArray(product?.categories) ? product.categories.map((cat) => `${cat?.name || ""} ${cat?.slug || ""}`).join(" ") : "";
+    const text = `${product?.name || ""} ${product?.slug || ""} ${product?.sku || ""} ${product?.product_type_label || ""} ${product?.product_type_detail_label || ""} ${categoryText} ${attrText}`.toLowerCase();
+    return text.includes("atrament") || text.includes("ink") || text.includes("nápl") || text.includes("napl") || text.includes("kazeta") || text.includes("cartridge");
+  }
+
+  function productImageSrc(value, product) {
     const url = String(value || "").trim();
-    if (!url) return TM_PRODUCT_PLACEHOLDER_IMAGE;
     const lower = url.toLowerCase();
+    const inkProduct = isInkProduct(product);
+    if (!url) return inkProduct ? TM_INK_PLACEHOLDER_IMAGE : TM_PRODUCT_PLACEHOLDER_IMAGE;
+    if (lower.includes("tm-ink-placeholder-box")) return TM_INK_PLACEHOLDER_IMAGE;
+    if (lower.includes("tm-product-placeholder-box") && inkProduct) return TM_INK_PLACEHOLDER_IMAGE;
+    if (lower.includes("tm-product-placeholder-box")) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+    if (TM_INK_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern))) return TM_INK_PLACEHOLDER_IMAGE;
     return TM_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern)) ? TM_PRODUCT_PLACEHOLDER_IMAGE : url;
   }
 
@@ -675,7 +700,8 @@
   }
 
   function productWarranty(product) {
-    return product.warranty || product.zaruka || product.guarantee || "Neuvedené";
+    const value = product.warranty || product.zaruka || product.guarantee || "";
+    return isMissingValue(value) ? "24 mesiacov" : value;
   }
 
   function productAttributeRows(product) {
@@ -811,7 +837,7 @@
 
   function realProductCardHtml(product, className = "mini-product") {
     const typeKey = product.product_type_key || "product";
-    const image = productImageSrc(product.image || product.images?.[0] || "");
+    const image = productImageSrc(product.image || product.images?.[0] || "", product);
     return `
       <article class="${className} ${esc(typeKey)}" data-related-id="${esc(product.id || product.sku || product.slug)}">
         <a class="mini-img" href="${esc(getProductUrl(product))}">${image ? `<img src="${esc(image)}" alt="${esc(product.name)}">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${esc(product.name)}">`}</a>
@@ -1013,7 +1039,7 @@
     if (!root) return;
 
     const rawImages = product.images?.length ? product.images : product.image ? [product.image] : [];
-    const images = Array.from(new Set((rawImages.length ? rawImages : [TM_PRODUCT_PLACEHOLDER_IMAGE]).map(productImageSrc).filter(Boolean)));
+    const images = Array.from(new Set((rawImages.length ? rawImages : [TM_PRODUCT_PLACEHOLDER_IMAGE]) .map((image) => productImageSrc(image, product)).filter(Boolean)));
     const theme = productTheme(product);
     const productColor = product.color || "Neuvedené";
     const productYield = normalizeYield(product);

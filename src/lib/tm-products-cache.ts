@@ -48,7 +48,7 @@ const WOO_FIELDS = [
 const globalStore = globalThis as typeof globalThis & { __TM_PRODUCTS_FILE_CACHE__?: CacheFile };
 
 const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
-const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box-v3.jpg";
+const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
 
 const TM_TONER_GENERIC_IMAGE_PATTERNS = [
   "toner-coloriq-kompatible",
@@ -99,19 +99,37 @@ function imageMatchesPattern(imageUrl: string, patterns: string[]) {
   });
 }
 
-function normalizeProductImageUrl(value: unknown) {
+function isInkProduct(product: any) {
+  const categoryText = Array.isArray(product?.categories)
+    ? product.categories.map((cat: any) => `${cat?.name || ""} ${cat?.slug || ""}`).join(" ")
+    : "";
+  const attrText = Array.isArray(product?.attributes)
+    ? product.attributes.map((attr: any) => `${attr?.name || ""} ${attr?.slug || ""} ${Array.isArray(attr?.options) ? attr.options.join(" ") : ""}`).join(" ")
+    : "";
+  const text = normalize(`${product?.name || ""} ${product?.slug || ""} ${product?.sku || ""} ${categoryText} ${attrText}`);
+  return text.includes("atrament") || text.includes("ink") || text.includes("napln") || text.includes("naplne") || text.includes("kazeta") || text.includes("cartridge");
+}
+
+function normalizeProductImageUrl(value: unknown, product?: any) {
   const url = String(value || "").trim();
-  if (!url) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+  const inkProduct = isInkProduct(product);
+  if (!url) return inkProduct ? TM_INK_PLACEHOLDER_IMAGE : TM_PRODUCT_PLACEHOLDER_IMAGE;
 
   const normalizedUrl = normalizeImageName(url);
+  const normalizedFull = String(url || "").toLowerCase();
 
   // Už nahradené lokálne obrázky nikdy neposielame späť cez generické pravidlá.
-  if (normalizedUrl.includes("tm-ink-placeholder-box")) return TM_INK_PLACEHOLDER_IMAGE;
-  if (normalizedUrl.includes("tm-product-placeholder-box")) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+  if (normalizedUrl.includes("tm-ink-placeholder-box") || normalizedFull.includes("tm-ink-placeholder-box")) return TM_INK_PLACEHOLDER_IMAGE;
+  if ((normalizedUrl.includes("tm-product-placeholder-box") || normalizedFull.includes("tm-product-placeholder-box")) && inkProduct) return TM_INK_PLACEHOLDER_IMAGE;
+  if (normalizedUrl.includes("tm-product-placeholder-box") || normalizedFull.includes("tm-product-placeholder-box")) return TM_PRODUCT_PLACEHOLDER_IMAGE;
 
-  // Atramentové ColorIQ placeholdery musia ísť na atramentovú krabičku.
-  // Kontrolujeme slovné spojenie bez ohľadu na príponu, veľkosť písmen, -768x768 varianty alebo .webp konverziu.
-  if (normalizedUrl.includes("ink-remanufactured") || normalizedUrl.includes("compatible-ink-coloriq")) {
+  // Atramentové ColorIQ placeholdery: stačí slovné spojenie kdekoľvek v URL/názve.
+  if (
+    normalizedUrl.includes("ink-remanufactured") ||
+    normalizedFull.includes("ink-remanufactured") ||
+    normalizedUrl.includes("compatible-ink-coloriq") ||
+    normalizedFull.includes("compatible-ink-coloriq")
+  ) {
     return TM_INK_PLACEHOLDER_IMAGE;
   }
 
@@ -120,11 +138,13 @@ function normalizeProductImageUrl(value: unknown) {
   return url;
 }
 
-function normalizeProductImages(images: unknown) {
+function normalizeProductImages(images: unknown, product?: any) {
   const values = Array.isArray(images)
-    ? images.map((img: any) => normalizeProductImageUrl(img?.src || img?.url || img)).filter(Boolean)
+    ? images.map((img: any) => normalizeProductImageUrl(img?.src || img?.url || img, product)).filter(Boolean)
     : [];
-  return uniqueStrings(values, 1).filter(Boolean);
+  const unique = uniqueStrings(values, 1).filter(Boolean);
+  if (unique.length) return unique;
+  return [isInkProduct(product) ? TM_INK_PLACEHOLDER_IMAGE : TM_PRODUCT_PLACEHOLDER_IMAGE];
 }
 
 
@@ -607,7 +627,7 @@ export function mapProduct(product: any): TmProduct {
   const categoryText = categories.map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ");
   const plainText = stripHtml(`${shortDescription}\n${description}`);
   const searchableText = normalize(`${product.name || ""} ${product.sku || ""} ${categoryText} ${tagText} ${wooAttributeText(wooAttributes)} ${plainText} ${compatiblePrinters.join(" ")}`);
-  const normalizedImages = normalizeProductImages(product.images);
+  const normalizedImages = normalizeProductImages(product.images, product);
   const primaryImage = normalizedImages[0] || TM_PRODUCT_PLACEHOLDER_IMAGE;
   return {
     id: product.id,
