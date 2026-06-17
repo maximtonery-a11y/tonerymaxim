@@ -78,6 +78,20 @@
   }
 
   const printerImages = {
+    [compactKey("HP LaserJet M110w")]: "/printer-images/hp/m110w.webp",
+    [compactKey("HP LaserJet Pro M404dn")]: "/printer-images/hp/m404dn.webp",
+    [compactKey("HP LaserJet Pro MFP M428fdw")]: "/printer-images/hp/m428fdw.webp",
+    [compactKey("HP LaserJet Pro MFP M140w")]: "/printer-images/hp/m140w.webp",
+    [compactKey("HP LaserJet P1102")]: "/printer-images/hp/p1102.webp",
+    [compactKey("HP LaserJet Pro M15w")]: "/printer-images/hp/m15w.webp",
+    [compactKey("HP LaserJet Pro MFP M28w")]: "/printer-images/hp/m28w.webp",
+    [compactKey("HP LaserJet Pro M203dn")]: "/printer-images/hp/m203dn.webp",
+    [compactKey("HP Color LaserJet Pro 3202DN")]: "/printer-images/hp/color-3202dn.webp",
+    [compactKey("HP Color LaserJet Pro 3202DW")]: "/printer-images/hp/color-3202dw.webp",
+    [compactKey("HP Color LaserJet Pro M254dw")]: "/printer-images/hp/m254dw.webp",
+    [compactKey("HP Color LaserJet Pro M254nw")]: "/printer-images/hp/m254nw.webp",
+    [compactKey("HP Color LaserJet Pro M255DW")]: "/printer-images/hp/m255dw.webp",
+
     [compactKey("Brother DCP-L2532DW")]: "/printer-images/brother/dcp-l2532dw.png",
     [compactKey("Brother DCP-L2512D")]: "/printer-images/brother/dcp-l2512d.png",
     [compactKey("Brother HL-L2372DN")]: "/printer-images/brother/hl-l2372dn.png",
