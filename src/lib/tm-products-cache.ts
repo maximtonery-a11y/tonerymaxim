@@ -270,7 +270,6 @@ function extractPrinters(product: any) {
       });
     } else pushFrom(item?.value);
   });
-  values.push(...extractKnownPrinterModels(`${product.short_description || ""}\n${product.description || ""}`));
   return uniqueStrings(values).slice(0, 80);
 }
 
@@ -391,7 +390,7 @@ function bestRelatedPrinters(product: TmProduct, related: TmProduct[]) {
     .map((item) => {
       const printers = Array.isArray(item.compatible_printers) ? item.compatible_printers : Array.isArray(item.printers) ? item.printers : [];
       const cleanPrinters = uniqueStrings(printers.map(String).filter(Boolean)).slice(0, 30);
-      if (!cleanPrinters.length) return null;
+      if (!cleanPrinters.length || cleanPrinters.length > 20) return null;
 
       let score = 0;
       const itemColor = normalize(item.color || item.farba || "");
@@ -516,10 +515,10 @@ export function mapProduct(product: any): TmProduct {
     attributes_all: wooAttributes,
     color: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])) || detectColor(product),
     farba: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])) || detectColor(product),
-    capacity: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])) || detectYield(product),
-    kapacita: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])) || detectYield(product),
-    yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])) || detectYield(product),
-    page_yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages"])) || detectYield(product),
+    capacity: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
+    kapacita: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
+    yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
+    page_yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages"])),
     warranty: getWooAttributeValue(wooAttributes, ["Záruka", "Zaruka", "Warranty"]),
     compatible_printers: compatiblePrinters,
     printers: compatiblePrinters,
