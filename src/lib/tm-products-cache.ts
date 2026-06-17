@@ -11,7 +11,7 @@ type CacheFile = {
   products: TmProduct[];
 };
 
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 const CACHE_DIR = path.join(process.cwd(), ".tm-cache");
 const CACHE_FILE = path.join(CACHE_DIR, "products.json");
 const FALLBACK_CACHE_FILES = [
@@ -48,7 +48,7 @@ const WOO_FIELDS = [
 const globalStore = globalThis as typeof globalThis & { __TM_PRODUCTS_FILE_CACHE__?: CacheFile };
 
 const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
-const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
+const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box-v3.jpg";
 
 const TM_TONER_GENERIC_IMAGE_PATTERNS = [
   "toner-coloriq-kompatible",
@@ -57,12 +57,14 @@ const TM_TONER_GENERIC_IMAGE_PATTERNS = [
   "remanufactured-drum",
   "image-coming-soon",
   "no-image",
-  "placeholder",
+  "image-placeholder",
 ];
 
 const TM_INK_GENERIC_IMAGE_PATTERNS = [
   "ink-remanufactured",
+  "ink-remanufactured.png",
   "compatible-ink-coloriq",
+  "compatible-ink-coloriq.png",
 ];
 
 function normalizeImageName(value: unknown) {
@@ -100,6 +102,19 @@ function imageMatchesPattern(imageUrl: string, patterns: string[]) {
 function normalizeProductImageUrl(value: unknown) {
   const url = String(value || "").trim();
   if (!url) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+
+  const normalizedUrl = normalizeImageName(url);
+
+  // Už nahradené lokálne obrázky nikdy neposielame späť cez generické pravidlá.
+  if (normalizedUrl.includes("tm-ink-placeholder-box")) return TM_INK_PLACEHOLDER_IMAGE;
+  if (normalizedUrl.includes("tm-product-placeholder-box")) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+
+  // Atramentové ColorIQ placeholdery musia ísť na atramentovú krabičku.
+  // Kontrolujeme slovné spojenie bez ohľadu na príponu, veľkosť písmen, -768x768 varianty alebo .webp konverziu.
+  if (normalizedUrl.includes("ink-remanufactured") || normalizedUrl.includes("compatible-ink-coloriq")) {
+    return TM_INK_PLACEHOLDER_IMAGE;
+  }
+
   if (imageMatchesPattern(url, TM_INK_GENERIC_IMAGE_PATTERNS)) return TM_INK_PLACEHOLDER_IMAGE;
   if (imageMatchesPattern(url, TM_TONER_GENERIC_IMAGE_PATTERNS)) return TM_PRODUCT_PLACEHOLDER_IMAGE;
   return url;
@@ -266,11 +281,39 @@ function normalizeWooCapacity(value: string) {
   return clean;
 }
 
+const DEFAULT_WARRANTY = "24 mesiacov";
+
+function isMissingValue(value: unknown) {
+  const normalized = normalize(String(value || ""));
+  return !normalized || normalized === "neuvedene" || normalized === "neuvedena" || normalized === "n/a" || normalized === "na" || normalized === "nezname" || normalized === "neznamy" || normalized === "null" || normalized === "undefined";
+}
+
 function normalizeWooWarranty(value: string) {
   const clean = cleanAttributeValue(value);
-  const normalized = normalize(clean);
-  if (!normalized || normalized === "neuvedene" || normalized === "neuvedena" || normalized === "n/a" || normalized === "nezname" || normalized === "neznamy") return "24 mesiacov";
+  if (isMissingValue(clean)) return DEFAULT_WARRANTY;
   return clean;
+}
+
+function ensureDefaultWarrantyAttribute(attributes: ReturnType<typeof extractWooAttributes>) {
+  const result = attributes.map((attribute) => ({ ...attribute }));
+  const warranty = result.find((attribute) => normalize(attribute.name).replace(/[^a-z0-9]+/g, "") === "zaruka" || normalize(attribute.name).replace(/[^a-z0-9]+/g, "") === "warranty");
+
+  if (warranty) {
+    if (isMissingValue(warranty.value)) warranty.value = DEFAULT_WARRANTY;
+    if (Array.isArray(warranty.options)) {
+      warranty.options = warranty.options.length ? warranty.options.map((option: unknown) => isMissingValue(option) ? DEFAULT_WARRANTY : String(option)) : [DEFAULT_WARRANTY];
+    }
+    return result;
+  }
+
+  result.push({
+    id: 0,
+    name: "Záruka",
+    slug: "zaruka",
+    value: DEFAULT_WARRANTY,
+    options: [DEFAULT_WARRANTY],
+  });
+  return result;
 }
 
 function wooAttributeText(attributes: ReturnType<typeof extractWooAttributes>) {
@@ -556,7 +599,8 @@ export function mapProduct(product: any): TmProduct {
   const type = detectType(product);
   const description = product.description || "";
   const shortDescription = product.short_description || "";
-  const wooAttributes = extractWooAttributes(product);
+  const wooAttributes = ensureDefaultWarrantyAttribute(extractWooAttributes(product));
+  const warrantyValue = normalizeWooWarranty(getWooAttributeValue(wooAttributes, ["Záruka", "Zaruka", "Warranty"]));
   const compatiblePrinters = extractPrinters(product);
   const categories = Array.isArray(product.categories) ? product.categories.map((cat: any) => ({ id: cat.id, name: cat.name, slug: cat.slug })) : [];
   const tagText = Array.isArray(product.tags) ? product.tags.map((tag: any) => `${tag.name || ""} ${tag.slug || ""}`).join(" ") : "";
@@ -594,8 +638,8 @@ export function mapProduct(product: any): TmProduct {
     kapacita: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
     yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
     page_yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages"])),
-    warranty: normalizeWooWarranty(getWooAttributeValue(wooAttributes, ["Záruka", "Zaruka", "Warranty"])),
-    zaruka: normalizeWooWarranty(getWooAttributeValue(wooAttributes, ["Záruka", "Zaruka", "Warranty"])),
+    warranty: warrantyValue,
+    zaruka: warrantyValue,
     compatible_printers: compatiblePrinters,
     printers: compatiblePrinters,
     categories,
