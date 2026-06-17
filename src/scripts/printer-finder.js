@@ -22,11 +22,15 @@
       "HP LaserJet M110w",
       "HP LaserJet Pro M404dn",
       "HP LaserJet Pro MFP M428fdw",
-      "HP LaserJet Pro MFP M140w",
       "HP LaserJet P1102",
       "HP LaserJet Pro M15w",
       "HP LaserJet Pro MFP M28w",
       "HP LaserJet Pro M203dn",
+      "HP Color LaserJet Pro 3202DN",
+      "HP Color LaserJet Pro 3202DW",
+      "HP Color LaserJet Pro M254dw",
+      "HP Color LaserJet Pro M254nw",
+      "HP Color LaserJet Pro M255DW",
     ],
     Brother: [
       "Brother DCP-L2532DW",
@@ -47,10 +51,15 @@
       "Canon i-SENSYS LBP223dw",
       "Canon i-SENSYS MF643Cdw",
       "Canon i-SENSYS MF645Cx",
-      "Canon PIXMA TS3350",
+      "Canon i-SENSYS MF752Cdw",
       "Canon PIXMA MG3650",
-      "Canon PIXMA G3411",
+      "Canon PIXMA TS3350",
+      "Canon imagePROGRAF TM-200",
+      "Canon PIXMA TS3150",
       "Canon PIXMA TS5150",
+      "Canon PIXMA G3411",
+      "Canon PIXMA MX495",
+      "Canon imagePROGRAF iPF8300",
     ],
   };
 
@@ -92,22 +101,47 @@
     [compactKey("HP Color LaserJet Pro M254nw")]: "/printer-images/hp/m254nw.webp",
     [compactKey("HP Color LaserJet Pro M255DW")]: "/printer-images/hp/m255dw.webp",
 
-    [compactKey("Brother DCP-L2532DW")]: "/printer-images/brother/dcp-l2532dw.png",
-    [compactKey("Brother DCP-L2512D")]: "/printer-images/brother/dcp-l2512d.png",
-    [compactKey("Brother HL-L2372DN")]: "/printer-images/brother/hl-l2372dn.png",
-    [compactKey("Brother MFC-L2712DN")]: "/printer-images/brother/mfc-l2712dn.png",
-    [compactKey("Brother MFC-L2732DW")]: "/printer-images/brother/mfc-l2732dw.png",
-    [compactKey("Brother DCP-T500W")]: "/printer-images/brother/dcp-t500w.png",
-    [compactKey("Brother DCP-T510W")]: "/printer-images/brother/dcp-t510w.png",
-    [compactKey("Brother DCP-J4110DW")]: "/printer-images/brother/dcp-j4110dw.png",
-    [compactKey("Brother MFC-J4410DW")]: "/printer-images/brother/mfc-j4410dw.png",
-    [compactKey("Brother MFC-J4510DW")]: "/printer-images/brother/mfc-j4510dw.png",
-    [compactKey("Brother MFC-J4610DW")]: "/printer-images/brother/mfc-j4610dw.png",
-    [compactKey("Brother MFC-J4710DW")]: "/printer-images/brother/mfc-j4710dw.png",
+    [compactKey("Canon i-SENSYS MF655Cdw")]: "/printer-images/canon/mf655cdw.webp",
+    [compactKey("Canon i-SENSYS LBP223dw")]: "/printer-images/canon/lbp223dw.webp",
+    [compactKey("Canon i-SENSYS MF643Cdw")]: "/printer-images/canon/mf643cdw.webp",
+    [compactKey("Canon i-SENSYS MF645Cx")]: "/printer-images/canon/mf645cx.webp",
+    [compactKey("Canon i-SENSYS MF752Cdw")]: "/printer-images/canon/mf752cdw.webp",
+    [compactKey("Canon PIXMA MG3650")]: "/printer-images/canon/mg3650.webp",
+    [compactKey("Canon PIXMA TS3350")]: "/printer-images/canon/ts3350.webp",
+    [compactKey("Canon imagePROGRAF TM-200")]: "/printer-images/canon/imageprograf.webp",
+    [compactKey("Canon PIXMA TS3150")]: "/printer-images/canon/ts3150.webp",
+    [compactKey("Canon PIXMA TS5150")]: "/printer-images/canon/ts5150.webp",
+    [compactKey("Canon PIXMA G3411")]: "/printer-images/canon/pixma-g3411.webp",
+    [compactKey("Canon PIXMA MX495")]: "/printer-images/canon/pixma-mx495.webp",
+    [compactKey("Canon imagePROGRAF iPF8300")]: "/printer-images/canon/ipf8300.webp",
+
+    [compactKey("Brother DCP-L2532DW")]: "/printer-images/brother/dcp-l2532dw.webp",
+    [compactKey("Brother DCP-L2512D")]: "/printer-images/brother/dcp-l2512d.webp",
+    [compactKey("Brother HL-L2372DN")]: "/printer-images/brother/hl-l2372dn.webp",
+    [compactKey("Brother MFC-L2712DN")]: "/printer-images/brother/mfc-l2712dn.webp",
+    [compactKey("Brother MFC-L2732DW")]: "/printer-images/brother/mfc-l2732dw.webp",
+    [compactKey("Brother DCP-T500W")]: "/printer-images/brother/dcp-t500w.webp",
+    [compactKey("Brother DCP-T510W")]: "/printer-images/brother/dcp-t510w.webp",
+    [compactKey("Brother DCP-J4110DW")]: "/printer-images/brother/dcp-j4110dw.webp",
+    [compactKey("Brother MFC-J4410DW")]: "/printer-images/brother/mfc-j4410dw.webp",
+    [compactKey("Brother MFC-J4510DW")]: "/printer-images/brother/mfc-j4510dw.webp",
+    [compactKey("Brother MFC-J4610DW")]: "/printer-images/brother/mfc-j4610dw.webp",
+    [compactKey("Brother MFC-J4710DW")]: "/printer-images/brother/mfc-j4710dw.webp",
   };
 
   function printerImage(title) {
     return printerImages[compactKey(title)] || "";
+  }
+
+  function mobilePrinterTitle(title, brand) {
+    const source = String(title || "").trim();
+    const currentBrand = String(brand || "").trim();
+    if (!source || !currentBrand) return source;
+    const sourceKey = normalize(source);
+    const brandKey = normalize(currentBrand);
+    if (sourceKey === brandKey) return source;
+    if (!sourceKey.startsWith(`${brandKey} `)) return source;
+    return source.slice(currentBrand.length).trim();
   }
 
   function renderGlobalBrands() {
@@ -185,8 +219,11 @@
         })
         .slice(0, 12);
 
+      const isMobileRoot = root.classList.contains("tm-printer-mobile");
+
       popularGrid.innerHTML = items.map((printer) => {
         const image = printerImage(printer.title);
+        const title = isMobileRoot ? mobilePrinterTitle(printer.title, brand) : printer.title;
         const hasImageClass = image ? " has-printer-image" : "";
         return `
           <a href="${printerUrl(printer.title)}" class="printer-popular-card${hasImageClass}">
@@ -196,7 +233,7 @@
               </span>
             ` : ""}
             <span class="printer-popular-content">
-              <span class="printer-popular-title">${escapeHtml(printer.title)}</span>
+              <span class="printer-popular-title">${escapeHtml(title)}</span>
               <span class="printer-popular-meta">${Number(printer.product_count || 0)} ${productWord(printer.product_count)}</span>
               <strong>Zobraziť náplne →</strong>
             </span>

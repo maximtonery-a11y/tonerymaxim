@@ -1129,3 +1129,107 @@
     padding: 12px 0 86px !important;
   }
 }
+
+/* Mobile/tablet brand printer list – Alza-style full-width rows. Desktop remains unchanged. */
+@media (hover: none) and (pointer: coarse), (max-width: 760px) {
+  .tm-printer-popular-mobile {
+    margin-top: 24px;
+  }
+
+  .tm-printer-popular-mobile h1 {
+    margin-bottom: 18px;
+    font-size: clamp(31px, 9vw, 44px);
+    line-height: 1;
+    letter-spacing: -.06em;
+  }
+
+  .tm-printer-popular-mobile .printer-popular-grid {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  .tm-printer-popular-mobile .printer-popular-card,
+  .tm-printer-popular-mobile .printer-popular-card.has-printer-image {
+    min-height: 104px;
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    align-items: center;
+    align-content: center;
+    column-gap: 14px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, .96);
+    box-shadow: 0 12px 30px rgba(7, 27, 58, .055);
+    transform: none;
+  }
+
+  .tm-printer-popular-mobile .printer-popular-card:not(.has-printer-image) {
+    grid-template-columns: 1fr;
+    min-height: 84px;
+  }
+
+  .tm-printer-popular-mobile .printer-popular-card:hover {
+    transform: none;
+  }
+
+  .tm-printer-popular-mobile .printer-popular-image {
+    width: 112px;
+    height: 80px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f9fd 100%);
+  }
+
+  .tm-printer-popular-mobile .printer-popular-image img {
+    width: 104px;
+    height: 72px;
+    object-fit: contain;
+  }
+
+  .tm-printer-popular-mobile .printer-popular-content {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+    align-content: center;
+  }
+
+  .tm-printer-popular-mobile .printer-popular-title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    color: #071b3a;
+    font-size: 22px;
+    line-height: 1.08;
+    font-weight: 950;
+    letter-spacing: -.035em;
+    overflow-wrap: anywhere;
+  }
+
+  .tm-printer-popular-mobile .printer-popular-meta {
+    color: #6a778b;
+    font-size: 15px;
+    line-height: 1.2;
+    font-weight: 900;
+  }
+
+  .tm-printer-popular-mobile .printer-popular-card strong {
+    display: inline-flex;
+    color: #0c6cb8;
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 950;
+  }
+
+  .tm-printer-mobile-content {
+    padding-bottom: 138px !important;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (min-width: 761px), (min-width: 761px) and (max-width: 1024px) {
+  .tm-printer-popular-mobile .printer-popular-grid {
+    grid-template-columns: 1fr !important;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+}
