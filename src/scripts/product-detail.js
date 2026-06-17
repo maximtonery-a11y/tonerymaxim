@@ -17,6 +17,87 @@
     "compatible-ink-coloriq",
   ];
 
+
+  function ensureProductImageFitStyles() {
+    if (document.getElementById("tm-product-image-fit-styles")) return;
+    const style = document.createElement("style");
+    style.id = "tm-product-image-fit-styles";
+    style.textContent = `
+      .tm-row-photo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .tm-row-photo img,
+      .main-image img {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+      }
+      .tm-row-photo img {
+        max-height: 124px;
+      }
+      .main-image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .image-zoom-modal[hidden] {
+        display: none !important;
+      }
+      .image-zoom-modal:not([hidden]) {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .image-zoom-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(13, 28, 51, 0.72);
+      }
+      .image-zoom-card {
+        position: relative;
+        z-index: 1;
+        width: min(920px, calc(100vw - 48px));
+        height: min(720px, calc(100vh - 48px));
+        background: #fff;
+        border-radius: 24px;
+        padding: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-shadow: 0 24px 80px rgba(13, 28, 51, 0.28);
+      }
+      .image-zoom-card img {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+      }
+      .image-zoom-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        z-index: 2;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function isMissingValue(value) {
     const text = String(value || "").trim().toLowerCase();
     return !text || text === "neuvedené" || text === "neuvedene" || text === "n/a" || text === "-";
@@ -840,7 +921,7 @@
     const image = productImageSrc(product.image || product.images?.[0] || "", product);
     return `
       <article class="${className} ${esc(typeKey)}" data-related-id="${esc(product.id || product.sku || product.slug)}">
-        <a class="mini-img" href="${esc(getProductUrl(product))}">${image ? `<img src="${esc(image)}" alt="${esc(product.name)}">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${esc(product.name)}">`}</a>
+        <a class="mini-img" href="${esc(getProductUrl(product))}">${image ? `<img src="${esc(image)}" alt="${esc(product.name)}" class="tm-product-fit-image">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${esc(product.name)}">`}</a>
         <div>
           <span class="mini-badge">${esc(productTypeLabel(typeKey))}</span>
           <a class="mini-title" href="${esc(getProductUrl(product))}">${esc(product.name)}</a>
@@ -1035,6 +1116,7 @@
   }
 
   function render(product) {
+    ensureProductImageFitStyles();
     const root = document.querySelector("[data-product-root]");
     if (!root) return;
 
@@ -1062,7 +1144,7 @@
           </div>
 
           <div class="main-image">
-            <img src="${esc(images[0] || TM_PRODUCT_PLACEHOLDER_IMAGE)}" alt="${esc(product.name)}">
+            <img src="${esc(images[0] || TM_PRODUCT_PLACEHOLDER_IMAGE)}" alt="${esc(product.name)}" class="tm-product-fit-image">
             <button type="button" class="zoom-button" data-zoom-image aria-label="Zväčšiť obrázok">
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
             </button>
@@ -1227,7 +1309,7 @@
         <div class="image-zoom-backdrop" data-close-zoom></div>
         <div class="image-zoom-card" role="dialog" aria-modal="true" aria-label="Zväčšený obrázok produktu">
           <button type="button" class="image-zoom-close" data-close-zoom aria-label="Zavrieť zväčšený obrázok">×</button>
-          <img src="${esc(images[0] || TM_PRODUCT_PLACEHOLDER_IMAGE)}" alt="${esc(product.name)}" data-zoom-modal-image>
+          <img src="${esc(images[0] || TM_PRODUCT_PLACEHOLDER_IMAGE)}" alt="${esc(product.name)}" data-zoom-modal-image class="tm-product-fit-image">
         </div>
       </div>
 
@@ -1248,7 +1330,7 @@
         const mainImage = root.querySelector(".main-image");
         if (!mainImage) return;
         mainImage.innerHTML = `
-          <img src="${esc(image)}" alt="${esc(product.name)}">
+          <img src="${esc(image)}" alt="${esc(product.name)}" class="tm-product-fit-image">
           <button type="button" class="zoom-button" data-zoom-image aria-label="Zväčšiť obrázok">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
           </button>

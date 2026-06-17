@@ -17,6 +17,38 @@
     "compatible-ink-coloriq",
   ];
 
+
+  function ensureCatalogImageFitStyles() {
+    if (document.getElementById("tm-catalog-image-fit-styles")) return;
+    const style = document.createElement("style");
+    style.id = "tm-catalog-image-fit-styles";
+    style.textContent = `
+      .tm-row-photo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .tm-row-photo img {
+        width: 100%;
+        height: 100%;
+        max-width: 160px;
+        max-height: 124px;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+        margin: auto;
+      }
+      @media (max-width: 760px) {
+        .tm-row-photo img {
+          max-width: 120px;
+          max-height: 104px;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function isMissingValue(value) {
     const text = String(value || "").trim().toLowerCase();
     return !text || text === "neuvedené" || text === "neuvedene" || text === "n/a" || text === "-";
@@ -628,6 +660,7 @@
   }
 
   function renderProducts(products) {
+    ensureCatalogImageFitStyles();
     const list = document.querySelector("[data-catalog-grid]");
     const status = document.querySelector("[data-catalog-status]");
 
@@ -677,7 +710,7 @@
         </div>
 
         <a href="${esc(product.detail_url)}" class="tm-row-photo" aria-label="Otvoriť produkt">
-          ${`<img src="${esc(productImageSrc(product.image, product))}" alt="${esc(product.name)}" loading="lazy">`}
+          ${`<img src="${esc(productImageSrc(product.image, product))}" alt="${esc(product.name)}" loading="lazy" class="tm-product-fit-image">`}
         </a>
 
         <div class="tm-row-main">
