@@ -48,20 +48,29 @@ const WOO_FIELDS = [
 const globalStore = globalThis as typeof globalThis & { __TM_PRODUCTS_FILE_CACHE__?: CacheFile };
 
 const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
-const TM_GENERIC_IMAGE_PATTERNS = [
+const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
+
+const TM_TONER_GENERIC_IMAGE_PATTERNS = [
   "toner-coloriq-kompatible.png",
   "toner-coloriq-renovacie.png",
   "drum-compatible.png",
+  "remanufactured-drum.png",
   "image-coming-soon",
   "no-image",
   "placeholder",
+];
+
+const TM_INK_GENERIC_IMAGE_PATTERNS = [
+  "ink-remanufactured.png",
+  "compatible-ink-coloriq.png",
 ];
 
 function normalizeProductImageUrl(value: unknown) {
   const url = String(value || "").trim();
   if (!url) return TM_PRODUCT_PLACEHOLDER_IMAGE;
   const lower = url.toLowerCase();
-  if (TM_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern))) return TM_PRODUCT_PLACEHOLDER_IMAGE;
+  if (TM_INK_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern))) return TM_INK_PLACEHOLDER_IMAGE;
+  if (TM_TONER_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern))) return TM_PRODUCT_PLACEHOLDER_IMAGE;
   return url;
 }
 
