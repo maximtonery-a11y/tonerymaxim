@@ -1,14 +1,15 @@
 ---
 import "../styles/global.css";
-import Header from "../components/Header.astro";
 import "../styles/footer.css";
+import "../styles/account.css";
+import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import { readCustomerSession } from "../lib/auth-session";
 
-const title = "Zabudnuté heslo | ToneryMaxim.sk";
-
-const WOO_RESET_URL = "https://www.coloriq.store/wp-login.php?action=lostpassword";
-const REDIRECT_URL = "http://localhost:4321/prihlasenie?reset=sent";
+const session = readCustomerSession(Astro.cookies);
+if (session) return Astro.redirect("/ucet");
+const sent = Astro.url.searchParams.get("sent") === "1";
 ---
 
 <!doctype html>
@@ -16,73 +17,81 @@ const REDIRECT_URL = "http://localhost:4321/prihlasenie?reset=sent";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <title>Zabudnuté heslo | ToneryMaxim.sk</title>
   </head>
-
   <body>
-    <div class="page">
+    <div class="page account-page">
       <Header />
+      <main class="auth-wrap">
+        <section class="auth-card">
+          <img class="auth-logo" src="/images/logo.png" alt="ToneryMaxim" />
+          <h1>Zabudnuté heslo</h1>
+          <p>Zadajte e-mail, ktorý používate pri účte. Ak účet existuje, pošleme vám odkaz na obnovu hesla.</p>
 
-      <main class="auth-page">
-        <section class="auth-shell">
-          <div class="auth-card">
-            <a class="auth-logo" href="/">
-              <img src="/images/tonerymaxim-logo.png" alt="ToneryMaxim.sk" />
-            </a>
+          <div class:list={["auth-alert", sent && "is-success"]} data-auth-message hidden={!sent}>
+            {sent ? "Žiadosť bola odoslaná. Skontrolujte e-mail aj spam." : ""}
+          </div>
 
-            <h1>Zabudnuté heslo</h1>
-
-            <p>
-              Zadajte e-mail, ktorý používate pri účte. Pošleme vám odkaz na obnovu hesla.
-            </p>
-
-            <form class="auth-form" method="post" action={WOO_RESET_URL}>
-              <input type="hidden" name="redirect_to" value={REDIRECT_URL} />
-
-              <label for="user_login">E-mailová adresa</label>
-              <input
-                id="user_login"
-                name="user_login"
-                type="email"
-                placeholder="vas@email.sk"
-                required
-              />
-
-              <button type="submit">Odoslať odkaz na obnovu hesla</button>
-            </form>
-
-            <div class="auth-bottom">
-              <a href="/prihlasenie">Späť na prihlásenie</a>
+          <form class="auth-form" data-forgot-form>
+            <div class="tm-field">
+              <label for="reset-email">E-mailová adresa</label>
+              <input id="reset-email" name="email" type="email" placeholder="vas@email.sk" autocomplete="email" required />
             </div>
-          </div>
 
-          <div class="auth-benefits">
-            <article>
-              <h2>Bezpečná obnova hesla</h2>
-              <p>
-                Obnovu hesla spracuje priamo WordPress/WooCommerce systém, ktorý už odosielanie e-mailov zvláda.
-              </p>
-            </article>
+            <button class="tm-btn" type="submit" data-auth-submit>Odoslať odkaz na obnovu hesla</button>
+          </form>
 
-            <article>
-              <h2>Skontrolujte aj spam</h2>
-              <p>
-                Ak e-mail nepríde do pár minút, pozrite priečinok spam alebo hromadnú poštu.
-              </p>
-            </article>
+          <p class="auth-switch"><a href="/prihlasenie">Späť na prihlásenie</a></p>
+        </section>
 
-            <article>
-              <h2>Pomoc s prihlásením</h2>
-              <p>
-                Ak sa neviete dostať do účtu, kontaktujte nás a účet vám preveríme.
-              </p>
-            </article>
-          </div>
+        <section class="auth-benefits is-grid" aria-label="Pomoc pri obnove hesla">
+          <div class="auth-benefit-card"><strong>🔐 Bezpečná obnova</strong><p>Odkaz na nové heslo sa odosiela cez WordPress/WooCommerce účet.</p></div>
+          <div class="auth-benefit-card"><strong>📩 Skontrolujte e-mail</strong><p>Správa môže prísť do prijatej pošty, spamu alebo hromadnej pošty.</p></div>
+          <div class="auth-benefit-card"><strong>⏱️ Platnosť odkazu</strong><p>Odkaz použite čo najskôr, aby ste si mohli nastaviť nové heslo.</p></div>
+          <div class="auth-benefit-card"><strong>💬 Pomoc s účtom</strong><p>Ak obnova nepríde, účet vieme preveriť podľa e-mailovej adresy.</p></div>
         </section>
       </main>
-
       <Footer />
       <FloatingAdvisor />
     </div>
+
+    <script>
+      const form = document.querySelector("[data-forgot-form]");
+      const message = document.querySelector("[data-auth-message]");
+      const submit = document.querySelector("[data-auth-submit]");
+
+      function showMessage(text, type = "error") {
+        message.hidden = false;
+        message.textContent = text;
+        message.className = `auth-alert is-${type}`;
+      }
+
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(form));
+
+        submit.disabled = true;
+        submit.textContent = "Odosielam...";
+        message.hidden = true;
+
+        try {
+          const response = await fetch("/api/auth/forgot-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+          const result = await response.json();
+          if (!response.ok || !result.ok) throw new Error(result.error || "Odoslanie obnovy hesla zlyhalo.");
+
+          showMessage(result.message || "Ak účet existuje, poslali sme vám odkaz na obnovu hesla.", "success");
+          form.reset();
+        } catch (error) {
+          showMessage(error.message || "Odoslanie obnovy hesla zlyhalo.");
+        } finally {
+          submit.disabled = false;
+          submit.textContent = "Odoslať odkaz na obnovu hesla";
+        }
+      });
+    </script>
   </body>
 </html>

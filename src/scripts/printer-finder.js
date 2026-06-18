@@ -17,6 +17,9 @@
       "Epson EcoTank L3250",
       "Epson EcoTank L5190",
       "Epson EcoTank L5290",
+      "Epson Stylus SX425W",
+      "Epson Stylus S20",
+      "Epson Stylus SX100",
     ],
     HP: [
       "HP LaserJet M110w",
@@ -87,6 +90,19 @@
   }
 
   const printerImages = {
+    [compactKey("Epson EcoTank L3251")]: "/printer-images/epson/l3251.webp",
+    [compactKey("Epson EcoTank L3151")]: "/printer-images/epson/l3151.webp",
+    [compactKey("Epson EcoTank L3110")]: "/printer-images/epson/l3110.webp",
+    [compactKey("Epson EcoTank L3101")]: "/printer-images/epson/l3101.webp",
+    [compactKey("Epson EcoTank L3260")]: "/printer-images/epson/l3260.webp",
+    [compactKey("Epson EcoTank L1210")]: "/printer-images/epson/l1210.webp",
+    [compactKey("Epson EcoTank L3250")]: "/printer-images/epson/l3250.webp",
+    [compactKey("Epson EcoTank L5190")]: "/printer-images/epson/l5190.webp",
+    [compactKey("Epson EcoTank L5290")]: "/printer-images/epson/l5290.webp",
+    [compactKey("Epson Stylus SX425W")]: "/printer-images/epson/sx425w.webp",
+    [compactKey("Epson Stylus S20")]: "/printer-images/epson/s20.webp",
+    [compactKey("Epson Stylus SX100")]: "/printer-images/epson/sx100.webp",
+
     [compactKey("HP LaserJet M110w")]: "/printer-images/hp/m110w.webp",
     [compactKey("HP LaserJet Pro M404dn")]: "/printer-images/hp/m404dn.webp",
     [compactKey("HP LaserJet Pro MFP M428fdw")]: "/printer-images/hp/m428fdw.webp",

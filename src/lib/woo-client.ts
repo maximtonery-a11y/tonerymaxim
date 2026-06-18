@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 export type WooCustomer = {
   id: number;
   email: string;
@@ -87,11 +88,15 @@ export async function createWooCustomer(input: {
   billing?: Record<string, any>;
   shipping?: Record<string, any>;
 }): Promise<WooCustomer> {
-  const username = input.email.split("@")[0].replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 40) || input.email;
+  const cleanEmail = String(input.email || "").trim().toLowerCase();
+  const emailHash = createHmac("sha256", env("WOO_CONSUMER_SECRET") || "tonerymaxim").update(cleanEmail).digest("hex").slice(0, 8);
+  const usernameBase = cleanEmail.split("@")[0].replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 28) || "zakaznik";
+  const username = `${usernameBase}-${emailHash}`;
+
   return wooRequest<WooCustomer>("/customers", {
     method: "POST",
     body: {
-      email: input.email,
+      email: cleanEmail,
       username,
       password: input.password,
       first_name: input.first_name || "",
@@ -99,7 +104,7 @@ export async function createWooCustomer(input: {
       billing: {
         first_name: input.first_name || "",
         last_name: input.last_name || "",
-        email: input.email,
+        email: cleanEmail,
         ...(input.billing || {}),
       },
       shipping: {

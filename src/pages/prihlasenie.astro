@@ -11,6 +11,7 @@ const session = readCustomerSession(Astro.cookies);
 if (session) return Astro.redirect("/ucet");
 const next = Astro.url.searchParams.get("next") || "/ucet";
 const logout = Astro.url.searchParams.get("logout") === "1";
+const resetSent = Astro.url.searchParams.get("reset") === "sent";
 ---
 
 <!doctype html>
@@ -29,7 +30,7 @@ const logout = Astro.url.searchParams.get("logout") === "1";
           <h1>Prihlásenie</h1>
           <p>Prihláste sa do svojho účtu a vybavte opakovaný nákup, reklamáciu alebo kontrolu objednávok rýchlejšie.</p>
 
-          <div class:list={["auth-alert", logout && "is-success"]} data-auth-message hidden={!logout}>{logout ? "Boli ste odhlásený." : ""}</div>
+          <div class:list={["auth-alert", (logout || resetSent) && "is-success"]} data-auth-message hidden={!(logout || resetSent)}>{logout ? "Boli ste odhlásený." : resetSent ? "Ak účet existuje, poslali sme vám odkaz na obnovu hesla." : ""}</div>
 
           <form class="auth-form" data-login-form data-next={next}>
             <div class="tm-field">
