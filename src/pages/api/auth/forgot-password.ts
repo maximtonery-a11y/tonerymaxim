@@ -1,5 +1,7 @@
 import type { APIRoute } from "astro";
-import { findWooCustomerByEmail, requestWordPressPasswordReset } from "../../../lib/woo-client";
+import { findWooCustomerByEmail } from "../../../lib/woo-client";
+import { sendPasswordResetEmail } from "../../../lib/mail";
+import { makePasswordResetToken } from "../../../lib/password-reset";
 
 export const prerender = false;
 
@@ -13,6 +15,12 @@ function json(data: unknown, status = 200) {
   });
 }
 
+function siteUrlFromRequest(request: Request): string {
+  const configured = import.meta.env.PUBLIC_SITE_URL || import.meta.env.SITE_URL || import.meta.env.TM_SITE_URL;
+  if (typeof configured === "string" && configured.trim()) return configured.trim().replace(/\/$/, "");
+  return new URL(request.url).origin;
+}
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json().catch(() => ({}));
@@ -24,8 +32,10 @@ export const POST: APIRoute = async ({ request }) => {
 
     const customer = await findWooCustomerByEmail(email).catch(() => null);
 
-    if (customer) {
-      await requestWordPressPasswordReset(email);
+    if (customer?.id) {
+      const token = makePasswordResetToken(customer.id, email);
+      const resetUrl = `${siteUrlFromRequest(request)}/reset-hesla?token=${encodeURIComponent(token)}`;
+      await sendPasswordResetEmail({ email, resetUrl });
     }
 
     return json({
@@ -33,6 +43,7 @@ export const POST: APIRoute = async ({ request }) => {
       message: "Ak účet s týmto e-mailom existuje, poslali sme vám odkaz na obnovu hesla.",
     });
   } catch (error: any) {
+    console.error("ToneryMAXIM password reset email failed:", error);
     return json({
       ok: false,
       error: error?.message || "Obnovu hesla sa nepodarilo odoslať.",

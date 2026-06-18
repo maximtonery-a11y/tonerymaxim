@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { createWooCustomer, findWooCustomerByEmail } from "../../../lib/woo-client";
 import { setCustomerCookie } from "../../../lib/auth-session";
+import { sendWelcomeEmail } from "../../../lib/mail";
 
 export const prerender = false;
 
@@ -9,6 +10,12 @@ function json(data: unknown, status = 200) {
     status,
     headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
   });
+}
+
+function siteUrlFromRequest(request: Request): string {
+  const configured = import.meta.env.PUBLIC_SITE_URL || import.meta.env.SITE_URL || import.meta.env.TM_SITE_URL;
+  if (typeof configured === "string" && configured.trim()) return configured.trim().replace(/\/$/, "");
+  return new URL(request.url).origin;
 }
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -38,10 +45,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       last_name: lastName,
     });
 
+    let emailSent = true;
+    try {
+      await sendWelcomeEmail({
+        email,
+        firstName,
+        siteUrl: siteUrlFromRequest(request),
+      });
+    } catch (mailError) {
+      emailSent = false;
+      console.error("ToneryMAXIM welcome email failed:", mailError);
+    }
+
     setCustomerCookie(cookies, customer);
 
     return json({
       ok: true,
+      emailSent,
       customer: {
         id: customer.id,
         email: customer.email,

@@ -116,6 +116,16 @@ export async function createWooCustomer(input: {
   });
 }
 
+export async function updateWooCustomerPassword(customerId: number, password: string): Promise<WooCustomer> {
+  if (!customerId) throw new Error("Chýba ID zákazníka.");
+  if (!password || password.length < 8) throw new Error("Heslo musí mať aspoň 8 znakov.");
+
+  return wooRequest<WooCustomer>(`/customers/${customerId}`, {
+    method: "PUT",
+    body: { password },
+  });
+}
+
 export async function verifyWordPressLogin(email: string, password: string): Promise<boolean> {
   const base = getWooBaseUrl();
   const form = new URLSearchParams();

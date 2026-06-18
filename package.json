@@ -16,6 +16,7 @@
     "@astrojs/node": "^10.1.3",
     "@woocommerce/woocommerce-rest-api": "^1.0.2",
     "astro": "^6.4.4",
-    "gopay-nodejs": "^1.2.2"
+    "gopay-nodejs": "^1.2.2",
+    "nodemailer": "^9.0.1"
   }
 }
