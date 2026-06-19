@@ -8,7 +8,13 @@ export type WooCustomer = {
   billing?: Record<string, any>;
   shipping?: Record<string, any>;
   date_created?: string;
+  meta_data?: Array<{ id?: number; key: string; value: any }>;
 };
+
+export const TONERYMAXIM_META_DATA = [
+  { key: "source", value: "tonerymaxim" },
+  { key: "sales_channel", value: "tonerymaxim" },
+];
 
 type WooRequestOptions = {
   method?: string;
@@ -87,6 +93,7 @@ export async function createWooCustomer(input: {
   last_name?: string;
   billing?: Record<string, any>;
   shipping?: Record<string, any>;
+  meta_data?: Array<{ key: string; value: any }>;
 }): Promise<WooCustomer> {
   const cleanEmail = String(input.email || "").trim().toLowerCase();
   const emailHash = createHmac("sha256", env("WOO_CONSUMER_SECRET") || "tonerymaxim").update(cleanEmail).digest("hex").slice(0, 8);
@@ -112,17 +119,34 @@ export async function createWooCustomer(input: {
         last_name: input.last_name || "",
         ...(input.shipping || {}),
       },
+      meta_data: input.meta_data || [],
     },
   });
 }
 
-export async function updateWooCustomerPassword(customerId: number, password: string): Promise<WooCustomer> {
+export async function updateWooCustomerPassword(
+  customerId: number,
+  password: string,
+  metaData: Array<{ key: string; value: any }> = [],
+): Promise<WooCustomer> {
   if (!customerId) throw new Error("Chýba ID zákazníka.");
   if (!password || password.length < 8) throw new Error("Heslo musí mať aspoň 8 znakov.");
 
   return wooRequest<WooCustomer>(`/customers/${customerId}`, {
     method: "PUT",
-    body: { password },
+    body: {
+      password,
+      ...(metaData.length ? { meta_data: metaData } : {}),
+    },
+  });
+}
+
+export async function markWooCustomerAsToneryMaxim(customerId: number): Promise<WooCustomer> {
+  if (!customerId) throw new Error("Chýba ID zákazníka.");
+
+  return wooRequest<WooCustomer>(`/customers/${customerId}`, {
+    method: "PUT",
+    body: { meta_data: TONERYMAXIM_META_DATA },
   });
 }
 

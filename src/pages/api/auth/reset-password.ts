@@ -1,8 +1,15 @@
 import type { APIRoute } from "astro";
-import { updateWooCustomerPassword } from "../../../lib/woo-client";
+import { TONERYMAXIM_META_DATA, updateWooCustomerPassword } from "../../../lib/woo-client";
+import { sendPasswordChangedEmail } from "../../../lib/mail";
 import { verifyPasswordResetToken } from "../../../lib/password-reset";
 
 export const prerender = false;
+
+function siteUrlFromRequest(request: Request): string {
+  const configured = import.meta.env.PUBLIC_SITE_URL || import.meta.env.SITE_URL || import.meta.env.TM_SITE_URL;
+  if (typeof configured === "string" && configured.trim()) return configured.trim().replace(/\/$/, "");
+  return new URL(request.url).origin;
+}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -28,7 +35,16 @@ export const POST: APIRoute = async ({ request }) => {
     const payload = verifyPasswordResetToken(token);
     if (!payload) return json({ ok: false, error: "Odkaz na obnovu hesla je neplatný alebo expiroval." }, 400);
 
-    await updateWooCustomerPassword(payload.customerId, password);
+    await updateWooCustomerPassword(payload.customerId, password, TONERYMAXIM_META_DATA);
+
+    try {
+      await sendPasswordChangedEmail({
+        email: payload.email,
+        siteUrl: siteUrlFromRequest(request),
+      });
+    } catch (mailError) {
+      console.error("ToneryMAXIM password changed email failed:", mailError);
+    }
 
     return json({
       ok: true,

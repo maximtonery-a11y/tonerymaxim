@@ -112,6 +112,31 @@ export async function sendPasswordResetEmail(input: {
   });
 }
 
+export async function sendPasswordChangedEmail(input: {
+  email: string;
+  siteUrl: string;
+}) {
+  const loginUrl = `${input.siteUrl.replace(/\/$/, "")}/prihlasenie`;
+  const text = `Dobrý deň,\n\nvaše heslo v ToneryMAXIM.sk bolo úspešne zmenené.\n\nPrihlásenie:\n${loginUrl}\n\nAk ste túto zmenu neurobili vy, kontaktujte nás čo najskôr.\n\nToneryMAXIM.sk`;
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.55;color:#061735;max-width:640px;margin:0 auto;padding:24px">
+      <h1 style="font-size:24px;margin:0 0 12px">Heslo bolo zmenené</h1>
+      <p>Dobrý deň,</p>
+      <p>vaše heslo v ToneryMAXIM.sk bolo úspešne zmenené.</p>
+      <p><a href="${loginUrl}" style="display:inline-block;background:#061735;color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:700">Prihlásiť sa</a></p>
+      <p style="color:#60708c">Ak ste túto zmenu neurobili vy, kontaktujte nás čo najskôr.</p>
+      <p>ToneryMAXIM.sk</p>
+    </div>`;
+
+  return sendMail({
+    to: input.email,
+    subject: "Heslo bolo zmenené | ToneryMAXIM.sk",
+    text,
+    html,
+  });
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")

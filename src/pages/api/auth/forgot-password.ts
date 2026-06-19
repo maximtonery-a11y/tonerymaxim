@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { findWooCustomerByEmail } from "../../../lib/woo-client";
+import { findWooCustomerByEmail, markWooCustomerAsToneryMaxim } from "../../../lib/woo-client";
 import { sendPasswordResetEmail } from "../../../lib/mail";
 import { makePasswordResetToken } from "../../../lib/password-reset";
 
@@ -33,6 +33,10 @@ export const POST: APIRoute = async ({ request }) => {
     const customer = await findWooCustomerByEmail(email).catch(() => null);
 
     if (customer?.id) {
+      await markWooCustomerAsToneryMaxim(customer.id).catch((error) => {
+        console.error("ToneryMAXIM customer meta update failed:", error);
+      });
+
       const token = makePasswordResetToken(customer.id, email);
       const resetUrl = `${siteUrlFromRequest(request)}/reset-hesla?token=${encodeURIComponent(token)}`;
       await sendPasswordResetEmail({ email, resetUrl });

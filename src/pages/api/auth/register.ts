@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { createWooCustomer, findWooCustomerByEmail } from "../../../lib/woo-client";
+import { createWooCustomer, findWooCustomerByEmail, TONERYMAXIM_META_DATA } from "../../../lib/woo-client";
 import { setCustomerCookie } from "../../../lib/auth-session";
 import { sendWelcomeEmail } from "../../../lib/mail";
 
@@ -43,6 +43,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       password,
       first_name: firstName,
       last_name: lastName,
+      meta_data: TONERYMAXIM_META_DATA,
     });
 
     let emailSent = true;
