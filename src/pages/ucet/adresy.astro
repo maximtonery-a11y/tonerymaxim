@@ -2,25 +2,101 @@
 import "../../styles/global.css";
 import "../../styles/footer.css";
 import "../../styles/account.css";
-import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import { readCustomerSession, setCustomerCookie } from "../../lib/auth-session";
+import { getWooCustomerById } from "../../lib/woo-client";
+import { customerToSession, getBilling, getShipping } from "../../lib/account-data";
 import AccountShell from "../../components/AccountShell.astro";
 
-const customer = readCustomerSession(Astro.cookies);
-if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
-const customerName = customerDisplayName(customer);
+const session = readCustomerSession(Astro.cookies);
+if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+const wooCustomer = await getWooCustomerById(session.id);
+if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+setCustomerCookie(Astro.cookies, wooCustomer);
+const customer = customerToSession(wooCustomer);
+const billing = getBilling(wooCustomer);
+const shipping = getShipping(wooCustomer);
 ---
 
 <!doctype html>
 <html lang="sk">
   <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Adresy | ToneryMaxim.sk</title></head>
   <body>
-    <AccountShell user={customer} active="adresy" title="Adresy" subtitle="Fakturačné a dodacie adresy pre rýchlejšiu pokladňu.">
-      
-<div class="account-section-grid">
-  <section class="account-list-card"><h3>Fakturačná adresa</h3><p>Peter Novák<br/>Hlavná 123<br/>831 01 Bratislava<br/>Slovensko</p><a class="account-link" href="#">Upraviť</a></section>
-  <section class="account-list-card"><h3>Dodacia adresa</h3><p>Peter Novák<br/>Hlavná 123<br/>831 01 Bratislava<br/>Slovensko</p><a class="account-link" href="#">Upraviť</a></section>
-  <section class="account-list-card"><h3>Nová adresa</h3><p>Pridajte inú dodaciu adresu alebo firemnú pobočku.</p><a class="tm-btn" href="#">Pridať adresu</a></section>
-</div>
+    <AccountShell user={customer} active="adresy" title="Adresy" subtitle="Fakturačná a dodacia adresa pre objednávky.">
+      <div class="auth-alert" data-address-message hidden></div>
+      <form class="account-section-grid" data-address-form>
+        <section class="account-list-card">
+          <h3>Fakturačná adresa</h3>
+          <label class="tm-field"><span>Meno</span><input class="account-input" name="billing.first_name" value={billing.first_name || customer.first_name || ""} required /></label>
+          <label class="tm-field"><span>Priezvisko</span><input class="account-input" name="billing.last_name" value={billing.last_name || customer.last_name || ""} required /></label>
+          <label class="tm-field"><span>Firma</span><input class="account-input" name="billing.company" value={billing.company || ""} /></label>
+          <label class="tm-field"><span>Ulica a číslo</span><input class="account-input" name="billing.address_1" value={billing.address_1 || ""} required /></label>
+          <label class="tm-field"><span>Doplnenie adresy</span><input class="account-input" name="billing.address_2" value={billing.address_2 || ""} /></label>
+          <label class="tm-field"><span>PSČ</span><input class="account-input" name="billing.postcode" value={billing.postcode || ""} required /></label>
+          <label class="tm-field"><span>Mesto</span><input class="account-input" name="billing.city" value={billing.city || ""} required /></label>
+          <label class="tm-field"><span>Krajina</span><input class="account-input" name="billing.country" value={billing.country || "SK"} required /></label>
+          <label class="tm-field"><span>Telefón</span><input class="account-input" name="billing.phone" value={billing.phone || ""} /></label>
+        </section>
+
+        <section class="account-list-card">
+          <h3>Dodacia adresa</h3>
+          <p class="account-muted">Ak necháte pole prázdne, použije sa fakturačná adresa.</p>
+          <label class="tm-field"><span>Meno</span><input class="account-input" name="shipping.first_name" value={shipping.first_name || ""} /></label>
+          <label class="tm-field"><span>Priezvisko</span><input class="account-input" name="shipping.last_name" value={shipping.last_name || ""} /></label>
+          <label class="tm-field"><span>Firma</span><input class="account-input" name="shipping.company" value={shipping.company || ""} /></label>
+          <label class="tm-field"><span>Ulica a číslo</span><input class="account-input" name="shipping.address_1" value={shipping.address_1 || ""} /></label>
+          <label class="tm-field"><span>Doplnenie adresy</span><input class="account-input" name="shipping.address_2" value={shipping.address_2 || ""} /></label>
+          <label class="tm-field"><span>PSČ</span><input class="account-input" name="shipping.postcode" value={shipping.postcode || ""} /></label>
+          <label class="tm-field"><span>Mesto</span><input class="account-input" name="shipping.city" value={shipping.city || ""} /></label>
+          <label class="tm-field"><span>Krajina</span><input class="account-input" name="shipping.country" value={shipping.country || "SK"} /></label>
+          <label class="tm-field"><span>Telefón</span><input class="account-input" name="shipping.phone" value={shipping.phone || ""} /></label>
+        </section>
+
+        <section class="account-list-card">
+          <h3>Uloženie</h3>
+          <p>Uložené adresy použijeme pri ďalšej objednávke.</p>
+          <button class="tm-btn" type="submit" data-address-submit>Uložiť adresy</button>
+        </section>
+      </form>
     </AccountShell>
+
+    <script>
+      const form = document.querySelector("[data-address-form]");
+      const msg = document.querySelector("[data-address-message]");
+      const submit = document.querySelector("[data-address-submit]");
+      const nest = (entries) => {
+        const out = { billing: {}, shipping: {} };
+        for (const [key, value] of entries) {
+          const [group, field] = key.split(".");
+          if (out[group] && field) out[group][field] = value;
+        }
+        return out;
+      };
+      const show = (text, type = "error") => {
+        msg.hidden = false;
+        msg.textContent = text;
+        msg.className = `auth-alert is-${type}`;
+      };
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        submit.disabled = true;
+        submit.textContent = "Ukladám...";
+        msg.hidden = true;
+        try {
+          const response = await fetch("/api/account/update-addresses", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(nest(new FormData(form).entries())),
+          });
+          const result = await response.json();
+          if (!response.ok || !result.ok) throw new Error(result.error || "Adresy sa nepodarilo uložiť.");
+          show(result.message || "Adresy boli uložené.", "success");
+        } catch (error) {
+          show(error.message || "Adresy sa nepodarilo uložiť.");
+        } finally {
+          submit.disabled = false;
+          submit.textContent = "Uložiť adresy";
+        }
+      });
+    </script>
   </body>
 </html>

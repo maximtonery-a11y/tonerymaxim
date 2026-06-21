@@ -8,13 +8,8 @@ export type WooCustomer = {
   billing?: Record<string, any>;
   shipping?: Record<string, any>;
   date_created?: string;
-  meta_data?: Array<{ id?: number; key: string; value: any }>;
+  meta_data?: Array<{ id?: number; key?: string; value?: any }>;
 };
-
-export const TONERYMAXIM_META_DATA = [
-  { key: "source", value: "tonerymaxim" },
-  { key: "sales_channel", value: "tonerymaxim" },
-];
 
 type WooRequestOptions = {
   method?: string;
@@ -119,35 +114,176 @@ export async function createWooCustomer(input: {
         last_name: input.last_name || "",
         ...(input.shipping || {}),
       },
-      meta_data: input.meta_data || [],
+      meta_data: Array.isArray(input.meta_data) ? input.meta_data : [],
     },
   });
 }
 
-export async function updateWooCustomerPassword(
-  customerId: number,
-  password: string,
-  metaData: Array<{ key: string; value: any }> = [],
-): Promise<WooCustomer> {
+export async function updateWooCustomerPassword(customerId: number, password: string): Promise<WooCustomer> {
   if (!customerId) throw new Error("Chýba ID zákazníka.");
   if (!password || password.length < 8) throw new Error("Heslo musí mať aspoň 8 znakov.");
 
   return wooRequest<WooCustomer>(`/customers/${customerId}`, {
     method: "PUT",
-    body: {
-      password,
-      ...(metaData.length ? { meta_data: metaData } : {}),
+    body: { password },
+  });
+}
+
+
+export type WooOrderLineItem = {
+  id?: number;
+  name?: string;
+  product_id?: number;
+  variation_id?: number;
+  quantity?: number;
+  subtotal?: string;
+  total?: string;
+  sku?: string;
+};
+
+export type WooOrder = {
+  id: number;
+  number?: string;
+  status?: string;
+  date_created?: string;
+  total?: string;
+  currency?: string;
+  payment_method_title?: string;
+  billing?: Record<string, any>;
+  shipping?: Record<string, any>;
+  line_items?: WooOrderLineItem[];
+  meta_data?: Array<{ key?: string; value?: any }>;
+};
+
+export async function getWooCustomerById(customerId: number): Promise<WooCustomer | null> {
+  if (!customerId) return null;
+  try {
+    return await wooRequest<WooCustomer>(`/customers/${customerId}`);
+  } catch (error: any) {
+    if (error?.status === 404) return null;
+    throw error;
+  }
+}
+
+export async function updateWooCustomer(customerId: number, body: Record<string, any>): Promise<WooCustomer> {
+  if (!customerId) throw new Error("Chýba ID zákazníka.");
+  return wooRequest<WooCustomer>(`/customers/${customerId}`, {
+    method: "PUT",
+    body,
+  });
+}
+
+export async function getWooCustomerOrders(customerId: number, perPage = 20): Promise<WooOrder[]> {
+  if (!customerId) return [];
+  return wooRequest<WooOrder[]>("/orders", {
+    query: {
+      customer: customerId,
+      per_page: perPage,
+      orderby: "date",
+      order: "desc",
     },
   });
 }
 
-export async function markWooCustomerAsToneryMaxim(customerId: number): Promise<WooCustomer> {
-  if (!customerId) throw new Error("Chýba ID zákazníka.");
 
-  return wooRequest<WooCustomer>(`/customers/${customerId}`, {
-    method: "PUT",
-    body: { meta_data: TONERYMAXIM_META_DATA },
+export const TONERYMAXIM_META_DATA = [
+  { key: "source", value: "tonerymaxim" },
+  { key: "sales_channel", value: "tonerymaxim" },
+  { key: "created_via", value: "tonerymaxim_astro" },
+] as const;
+
+export function addMonthsIso(date = new Date(), months = 1): string {
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + months);
+  return next.toISOString();
+}
+
+export function welcomeCouponCode(customerId: number): string {
+  return `VITAJTE5-${String(customerId).padStart(4, "0")}`;
+}
+
+export function getCustomerMeta(customer: WooCustomer | null | undefined, key: string): any {
+  const meta = Array.isArray(customer?.meta_data) ? customer!.meta_data : [];
+  const item = meta.find((entry) => entry?.key === key);
+  return item?.value;
+}
+
+export function parseJsonMeta<T>(value: any, fallback: T): T {
+  if (Array.isArray(value) || (value && typeof value === "object")) return value as T;
+  if (typeof value !== "string" || !value.trim()) return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed as T;
+  } catch {
+    return fallback;
+  }
+}
+
+export type SavedPrinter = {
+  title: string;
+  brand?: string;
+  url?: string;
+  product_count?: number;
+  added_at?: string;
+};
+
+export function getSavedPrintersFromCustomer(customer: WooCustomer | null | undefined): SavedPrinter[] {
+  const value = getCustomerMeta(customer, "tm_saved_printers");
+  const printers = parseJsonMeta<SavedPrinter[]>(value, []);
+  return Array.isArray(printers)
+    ? printers
+        .filter((printer) => String(printer?.title || "").trim())
+        .map((printer) => ({
+          title: String(printer.title || "").trim(),
+          brand: String(printer.brand || "").trim(),
+          url: String(printer.url || "").trim(),
+          product_count: Number(printer.product_count || 0),
+          added_at: String(printer.added_at || "").trim(),
+        }))
+    : [];
+}
+
+export async function saveWooCustomerPrinters(customerId: number, printers: SavedPrinter[]): Promise<WooCustomer> {
+  return updateWooCustomer(customerId, {
+    meta_data: [
+      ...TONERYMAXIM_META_DATA,
+      { key: "tm_saved_printers", value: JSON.stringify(printers) },
+    ],
   });
+}
+
+export function getHiddenRecentProductKeys(customer: WooCustomer | null | undefined): string[] {
+  const value = getCustomerMeta(customer, "tm_hidden_recent_products");
+  const keys = parseJsonMeta<string[]>(value, []);
+  return Array.isArray(keys) ? keys.map((key) => String(key)).filter(Boolean) : [];
+}
+
+export async function saveHiddenRecentProductKeys(customerId: number, keys: string[]): Promise<WooCustomer> {
+  const unique = [...new Set(keys.map((key) => String(key)).filter(Boolean))];
+  return updateWooCustomer(customerId, {
+    meta_data: [
+      ...TONERYMAXIM_META_DATA,
+      { key: "tm_hidden_recent_products", value: JSON.stringify(unique) },
+    ],
+  });
+}
+
+export function getWelcomeReward(customer: WooCustomer | null | undefined) {
+  const expires = String(getCustomerMeta(customer, "tm_welcome_discount_expires") || "");
+  const used = String(getCustomerMeta(customer, "tm_welcome_discount_used") || "no").toLowerCase() === "yes";
+  const percent = Number(getCustomerMeta(customer, "tm_welcome_discount_percent") || 5);
+  const now = Date.now();
+  const expTime = expires ? new Date(expires).getTime() : 0;
+  return {
+    percent: Number.isFinite(percent) && percent > 0 ? percent : 5,
+    expires,
+    active: Boolean(expires && expTime > now && !used),
+    used,
+  };
+}
+
+export async function markWooCustomerAsToneryMaxim(customerId: number): Promise<WooCustomer> {
+  return updateWooCustomer(customerId, { meta_data: [...TONERYMAXIM_META_DATA] });
 }
 
 export async function verifyWordPressLogin(email: string, password: string): Promise<boolean> {
@@ -201,4 +337,47 @@ export async function requestWordPressPasswordReset(email: string): Promise<void
   if (response.status >= 200 && response.status < 400) return;
 
   throw new Error(`WordPress odmietol požiadavku na obnovu hesla (${response.status}).`);
+}
+
+export type SavedProduct = {
+  id?: number;
+  sku?: string;
+  title: string;
+  url?: string;
+  image?: string;
+  price?: number;
+  type?: string;
+  type_label?: string;
+  stock_status?: string;
+  added_at?: string;
+};
+
+export function getSavedProductsFromCustomer(customer: WooCustomer | null | undefined): SavedProduct[] {
+  const value = getCustomerMeta(customer, "tm_saved_products");
+  const products = parseJsonMeta<SavedProduct[]>(value, []);
+  return Array.isArray(products)
+    ? products
+        .filter((product) => String(product?.title || product?.sku || product?.id || "").trim())
+        .map((product) => ({
+          id: product.id ? Number(product.id) : undefined,
+          sku: String(product.sku || "").trim(),
+          title: String(product.title || "Produkt").trim(),
+          url: String(product.url || "").trim(),
+          image: String(product.image || "").trim(),
+          price: Number(product.price || 0),
+          type: String(product.type || "").trim(),
+          type_label: String(product.type_label || "").trim(),
+          stock_status: String(product.stock_status || "").trim(),
+          added_at: String(product.added_at || "").trim(),
+        }))
+    : [];
+}
+
+export async function saveWooCustomerSavedProducts(customerId: number, products: SavedProduct[]): Promise<WooCustomer> {
+  return updateWooCustomer(customerId, {
+    meta_data: [
+      ...TONERYMAXIM_META_DATA,
+      { key: "tm_saved_products", value: JSON.stringify(products) },
+    ],
+  });
 }

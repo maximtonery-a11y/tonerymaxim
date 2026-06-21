@@ -2,25 +2,55 @@
 import "../../styles/global.css";
 import "../../styles/footer.css";
 import "../../styles/account.css";
-import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import { readCustomerSession, setCustomerCookie } from "../../lib/auth-session";
+import { getWooCustomerById, getWooCustomerOrders } from "../../lib/woo-client";
+import { customerToSession, formatDate, formatMoney, orderNumber, orderStatusLabel, safeText } from "../../lib/account-data";
 import AccountShell from "../../components/AccountShell.astro";
 
-const customer = readCustomerSession(Astro.cookies);
-if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
-const customerName = customerDisplayName(customer);
+const session = readCustomerSession(Astro.cookies);
+if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+
+const wooCustomer = await getWooCustomerById(session.id);
+if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+setCustomerCookie(Astro.cookies, wooCustomer);
+const customer = customerToSession(wooCustomer);
+const orders = await getWooCustomerOrders(customer.id, 50);
 ---
 
 <!doctype html>
 <html lang="sk">
   <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Objednávky | ToneryMaxim.sk</title></head>
   <body>
-    <AccountShell user={customer} active="objednavky" title="Objednávky" subtitle="História nákupov, faktúry, opakovaná objednávka a rýchla reklamácia.">
-      
-<div class="account-section-grid">
-  <section class="account-list-card"><h3>#202600145</h3><p>Brother TN-2421 kompatibilný toner<br/>DR-2401 kompatibilný valec</p><span class="status-pill">Doručená</span><br/><br/><a class="tm-btn" href="#">Objednať znova</a></section>
-  <section class="account-list-card"><h3>#202600123</h3><p>Canon CRG-057H kompatibilný toner</p><span class="status-pill">Doručená</span><br/><br/><a class="tm-btn is-outline" href="#">Reklamovať</a></section>
-  <section class="account-list-card"><h3>#202600098</h3><p>Kancelársky papier A4<br/>Pákový šanón</p><span class="status-pill">Doručená</span><br/><br/><a class="tm-btn" href="#">Objednať znova</a></section>
-</div>
+    <AccountShell user={customer} active="objednavky" title="Objednávky" subtitle="História nákupov, stav objednávok a opakované objednanie.">
+      {orders.length ? (
+        <div class="account-section-grid">
+          {orders.map((order) => (
+            <section class="account-list-card">
+              <div class="order-head">
+                <h3>{orderNumber(order)}</h3>
+                <span class="status-pill">{orderStatusLabel(order.status)}</span>
+              </div>
+              <div class="account-list-row"><span>Dátum</span><strong>{formatDate(order.date_created)}</strong></div>
+              <div class="account-list-row"><span>Spolu</span><strong>{formatMoney(order.total, order.currency || "EUR")}</strong></div>
+              <div class="order-preview">
+                {(order.line_items || []).slice(0, 6).map((item) => (
+                  <div class="order-item">
+                    <span>{safeText(item.name)} × {item.quantity || 1}</span>
+                    <strong>{formatMoney(item.total, order.currency || "EUR")}</strong>
+                  </div>
+                ))}
+              </div>
+
+            </section>
+          ))}
+        </div>
+      ) : (
+        <section class="account-panel">
+          <h2>Zatiaľ nemáte objednávky</h2>
+          <p class="account-muted">Objednávky vytvorené na ToneryMAXIM.sk sa po prihlásení zobrazia tu.</p>
+          <a class="tm-btn" href="/produkty">Prejsť na produkty</a>
+        </section>
+      )}
     </AccountShell>
   </body>
 </html>

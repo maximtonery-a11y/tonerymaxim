@@ -2,12 +2,23 @@
 import "../styles/global.css";
 import "../styles/footer.css";
 import "../styles/account.css";
-import { readCustomerSession, customerDisplayName } from "../lib/auth-session";
+import { readCustomerSession, setCustomerCookie, customerDisplayName } from "../lib/auth-session";
+import { getWooCustomerById, getWooCustomerOrders } from "../lib/woo-client";
+import { customerToSession, formatDate, formatMoney, orderNumber, orderStatusLabel, safeText } from "../lib/account-data";
 import AccountShell from "../components/AccountShell.astro";
 
-const customer = readCustomerSession(Astro.cookies);
-if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+const session = readCustomerSession(Astro.cookies);
+if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+
+const wooCustomer = await getWooCustomerById(session.id);
+if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+setCustomerCookie(Astro.cookies, wooCustomer);
+const customer = customerToSession(wooCustomer);
 const customerName = customerDisplayName(customer);
+const orders = await getWooCustomerOrders(customer.id, 10);
+const lastOrder = orders[0] || null;
+const totalSpent = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+const billing = wooCustomer.billing || {};
 ---
 
 <!doctype html>
@@ -18,122 +29,55 @@ const customerName = customerDisplayName(customer);
     <title>Môj účet | ToneryMaxim.sk</title>
   </head>
   <body>
-    <AccountShell user={customer} active="prehlad" title={`Dobrý deň, ${customerName}! 👋`} subtitle="Tu je prehľad vášho účtu, objednávok, tlačiarní a odmien.">
-      <div class="account-printers-summary">
-        <section class="account-panel account-dashboard-printers">
-          <div class="account-dashboard-printers-head">
-            <div>
-              <h2>Moje tlačiarne</h2>
-              <p class="account-muted">Uložené modely pre rýchly nákup tonerov a náplní.</p>
-            </div>
-            <a class="account-link-pill" href="/ucet/tlaciarne">Spravovať</a>
-          </div>
-
-          <div class="account-dashboard-printer-list">
-            <div class="account-dashboard-printer-row">
-              <span class="account-dashboard-printer-icon">🖨️</span>
-              <div>
-                <strong>Brother DCP-L2532DW</strong>
-                <small>TN-2421, DR-2401</small>
-              </div>
-              <a class="account-link-pill is-small" href="/produkty?printer=Brother+DCP-L2532DW">Náplne</a>
-            </div>
-            <div class="account-dashboard-printer-row">
-              <span class="account-dashboard-printer-icon">🖨️</span>
-              <div>
-                <strong>HP LaserJet M110w</strong>
-                <small>W1420A</small>
-              </div>
-              <a class="account-link-pill is-small" href="/produkty?printer=HP+LaserJet+M110w">Náplne</a>
-            </div>
-            <div class="account-dashboard-printer-row">
-              <span class="account-dashboard-printer-icon">🖨️</span>
-              <div>
-                <strong>Canon MF655Cdw</strong>
-                <small>CRG-067 séria</small>
-              </div>
-              <a class="account-link-pill is-small" href="/produkty?printer=Canon+MF655Cdw">Náplne</a>
-            </div>
-          </div>
-        </section>
-
-        <section class="account-panel">
-          <h2>Rýchle objednanie</h2>
-          <p class="account-muted">Najčastejšie kupované produkty máte pripravené bez hľadania.</p>
-          <div class="order-preview account-quick-order-list">
-            <div class="account-quick-order-row">
-              <div>
-                <a href="/produkt/brother-tn-2421-kompatibilny-toner">Brother TN-2421 kompatibilný toner</a>
-                <small>Kompatibilný toner</small>
-              </div>
-              <strong>10,28 €</strong>
-              <div class="account-product-actions">
-                <a class="account-link-pill is-small" href="/produkt/brother-tn-2421-kompatibilny-toner">Zobraziť</a>
-                <button class="tm-btn is-green is-small" type="button" data-account-add-product="tn2421-compatible">Objednať</button>
-              </div>
-            </div>
-            <div class="account-quick-order-row">
-              <div>
-                <a href="/produkty?s=dr2401">Brother DR-2401 kompatibilný valec</a>
-                <small>Optický valec</small>
-              </div>
-              <strong>36,27 €</strong>
-              <div class="account-product-actions">
-                <a class="account-link-pill is-small" href="/produkty?s=dr2401">Zobraziť</a>
-                <button class="tm-btn is-green is-small" type="button" data-account-add-product="dr2401">Objednať</button>
-              </div>
-            </div>
-            <div class="account-quick-order-row">
-              <div>
-                <a href="/produkt/kancelarsky-papier-a4-80g-500-harkov">Kancelársky papier A4</a>
-                <small>Doplnkový produkt</small>
-              </div>
-              <strong>6,88 €</strong>
-              <div class="account-product-actions">
-                <a class="account-link-pill is-small" href="/produkt/kancelarsky-papier-a4-80g-500-harkov">Zobraziť</a>
-                <button class="tm-btn is-green is-small" type="button" data-account-add-product="paper-a4">Objednať</button>
-              </div>
-            </div>
-            <button class="tm-btn is-green" type="button" data-account-add-set="last-order" data-redirect-cart="true">Vložiť posledný nákup do košíka</button>
-          </div>
-        </section>
-      </div>
-
+    <AccountShell user={customer} active="prehlad" title={`Dobrý deň, ${customerName}! 👋`} subtitle="Prehľad účtu, objednávok a uložených údajov.">
       <div class="account-stats">
-        <a class="account-stat" href="/ucet/tlaciarne"><span class="account-stat-icon">▤</span><small>Moje tlačiarne</small><strong>3</strong><span class="account-link">Zobraziť všetky</span></a>
-        <a class="account-stat" href="/ucet/objednavky"><span class="account-stat-icon">▣</span><small>Objednávky</small><strong>12</strong><span class="account-link">Zobraziť všetky</span></a>
-        <a class="account-stat" href="/ucet/vernost"><span class="account-stat-icon">★</span><small>Vernostné body</small><strong>540</strong><span>5,40 € zľava</span></a>
-        <a class="account-stat" href="/ucet/odmeny"><span class="account-stat-icon">🎁</span><small>Kupóny</small><strong>2</strong><span class="account-link">Zobraziť</span></a>
-        <a class="account-stat" href="/ucet/reklamacie"><span class="account-stat-icon">◇</span><small>Reklamácie</small><strong>1</strong><span class="account-link">Sledovať</span></a>
-      </div>
-
-      <div class="account-actions">
-        <a class="account-action" href="/ucet/tlaciarne"><span class="account-action-icon">＋</span><span><strong>Pridať tlačiareň</strong><p>Uložte si model tlačiarne a nabudúce objednáte rýchlejšie.</p></span></a>
-        <button class="account-action account-action-button" type="button" data-account-add-set="last-order" data-redirect-cart="true"><span class="account-action-icon">↻</span><span><strong>Objednať znova</strong><p>Pridajte poslednú objednávku do košíka jedným klikom.</p></span></button>
-        <a class="account-action is-reward" href="/ucet/odmeny"><span class="account-action-icon">🎁</span><span><strong>Mesačná odmena</strong><p>Zotrite si novú zľavu alebo bonus.</p></span></a>
+        <a class="account-stat" href="/ucet/objednavky"><span class="account-stat-icon">▣</span><small>Objednávky</small><strong>{orders.length}</strong><span class="account-link">Zobraziť všetky</span></a>
+        <a class="account-stat" href="/ucet/adresy"><span class="account-stat-icon">⌖</span><small>Adresa</small><strong>{billing.city ? "OK" : "Chýba"}</strong><span>{billing.city || "Doplniť adresu"}</span></a>
+        <a class="account-stat" href="/ucet/profil"><span class="account-stat-icon">◎</span><small>Profil</small><strong>{customer.email ? "OK" : "—"}</strong><span class="account-link">Upraviť</span></a>
+        <a class="account-stat" href="/ucet/objednavky"><span class="account-stat-icon">€</span><small>Celkový nákup</small><strong>{formatMoney(totalSpent)}</strong><span>spolu za objednávky</span></a>
       </div>
 
       <div class="account-grid-2">
         <section class="account-panel">
           <h2>Posledná objednávka</h2>
-          <div class="order-preview">
-            <div class="order-head"><strong>#202600145</strong><span class="status-pill">Doručená</span></div>
-            <div class="order-item"><span>Brother TN-2421 kompatibilný toner</span><strong>24,90 €</strong></div>
-            <div class="order-item"><span>DR-2401 kompatibilný valec</span><strong>19,90 €</strong></div>
-            <div class="order-total"><span>Spolu</span><strong>44,80 €</strong></div>
-            <div class="account-order-actions">
-              <a class="tm-btn is-outline" href="/ucet/objednavky">Zobraziť objednávku</a>
-              <button class="tm-btn" type="button" data-account-add-set="brother-dcp-l2532dw" data-redirect-cart="true">Objednať znova</button>
+          {lastOrder ? (
+            <div class="order-preview">
+              <div class="order-head"><strong>{orderNumber(lastOrder)}</strong><span class="status-pill">{orderStatusLabel(lastOrder.status)}</span></div>
+              <div class="account-list-row"><span>Dátum</span><strong>{formatDate(lastOrder.date_created)}</strong></div>
+              {(lastOrder.line_items || []).slice(0, 5).map((item) => (
+                <div class="order-item"><span>{safeText(item.name)} × {item.quantity || 1}</span><strong>{formatMoney(item.total, lastOrder.currency || "EUR")}</strong></div>
+              ))}
+              <div class="order-total"><span>Spolu</span><strong>{formatMoney(lastOrder.total, lastOrder.currency || "EUR")}</strong></div>
+              <div class="account-order-actions">
+                <a class="tm-btn is-outline" href="/ucet/objednavky">Zobraziť objednávky</a>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div class="account-empty-soft">
+              <strong>Zatiaľ bez objednávky</strong>
+              <p>Po prvej objednávke sa tu zobrazí jej stav a možnosť opakovaného nákupu.</p>
+              <a class="tm-btn" href="/produkty">Prejsť na produkty</a>
+            </div>
+          )}
         </section>
 
         <section class="account-panel">
-          <h2>Aktívne kupóny</h2>
-          <div class="coupon-row"><div><span class="coupon-code">7 % ZĽAVA</span><small>Platný do 15. 7. 2026</small></div><span>›</span></div>
-          <div class="coupon-row"><div><span class="coupon-code">DOPRAVA ZDARMA</span><small>Platný do 30. 7. 2026</small></div><span>›</span></div>
-          <a class="tm-btn is-outline" href="/ucet/odmeny">Zobraziť odmeny</a>
+          <h2>Údaje zákazníka</h2>
+          <div class="account-list-row"><span>Meno</span><strong>{customerName}</strong></div>
+          <div class="account-list-row"><span>E-mail</span><strong>{customer.email}</strong></div>
+          <div class="account-list-row"><span>Telefón</span><strong>{safeText(billing.phone)}</strong></div>
+          <div class="account-list-row"><span>Adresa</span><strong>{billing.address_1 ? `${billing.address_1}, ${billing.postcode || ""} ${billing.city || ""}` : "Chýba"}</strong></div>
+          <div class="account-order-actions">
+            <a class="tm-btn" href="/ucet/profil">Upraviť profil</a>
+            <a class="tm-btn is-outline" href="/ucet/adresy">Upraviť adresy</a>
+          </div>
         </section>
+      </div>
+
+      <div class="account-actions">
+        <a class="account-action" href="/ucet/objednavky"><span class="account-action-icon">▣</span><span><strong>Objednávky</strong><p>Prehľad objednávok, produktov a stavu nákupu.</p></span></a>
+        <a class="account-action" href="/ucet/adresy"><span class="account-action-icon">⌖</span><span><strong>Adresy</strong><p>Fakturačná a dodacia adresa pre ďalšie objednávky.</p></span></a>
+        <a class="account-action" href="/ucet/profil"><span class="account-action-icon">◎</span><span><strong>Profil a heslo</strong><p>Osobné údaje, telefón a zmena hesla.</p></span></a>
       </div>
     </AccountShell>
   </body>

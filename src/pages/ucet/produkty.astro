@@ -1,0 +1,87 @@
+---
+import "../../styles/global.css";
+import "../../styles/footer.css";
+import "../../styles/account.css";
+import { readCustomerSession } from "../../lib/auth-session";
+import AccountShell from "../../components/AccountShell.astro";
+import { getSavedProductsFromCustomer, getWooCustomerById } from "../../lib/woo-client";
+import { formatMoney } from "../../lib/account-data";
+
+const customer = readCustomerSession(Astro.cookies);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+
+const wooCustomer = await getWooCustomerById(customer.id);
+const savedProducts = getSavedProductsFromCustomer(wooCustomer);
+
+function productKey(product: any) {
+  return String(product.id || product.sku || product.title || "").trim();
+}
+
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moje produkty | ToneryMaxim.sk</title>
+  </head>
+  <body>
+    <AccountShell user={customer} active="produkty" title="Moje produkty" subtitle="Uložte si produkty, ktoré objednávate opakovane.">
+      <div class="saved-products-layout">
+        <section class="account-panel saved-product-search-panel">
+          <h2>Pridať produkt</h2>
+          <p class="account-muted">Začnite písať názov alebo kód produktu a vyberte ho zo zoznamu.</p>
+
+          <form class="account-add-product-form" data-add-saved-product-form autocomplete="off">
+            <label class="tm-field product-autocomplete-field">
+              <span>Produkt</span>
+              <input class="account-input" name="product" placeholder="napr. W1420A, TN-2421, PG-545" required data-product-search-input />
+              <div class="product-suggestions" data-product-suggestions hidden></div>
+            </label>
+            <input type="hidden" name="productId" data-selected-product-id />
+            <input type="hidden" name="productSku" data-selected-product-sku />
+            <button class="tm-btn" type="submit">Uložiť produkt</button>
+            <div class="account-form-message" data-product-form-message hidden></div>
+          </form>
+        </section>
+
+        <section class="account-panel saved-products-panel">
+          <div class="account-panel-head">
+            <div>
+              <h2>Uložené produkty</h2>
+              <p class="account-muted">Produkty pripravené na rýchle objednanie.</p>
+            </div>
+          </div>
+
+          <div class="saved-products-list" data-saved-products-list>
+            {savedProducts.length > 0 ? (
+              savedProducts.map((product) => (
+                <article class="saved-product-card" data-saved-product-card data-product-key={productKey(product)} data-product-name={product.title} data-product-sku={product.sku || product.id || ""} data-product-price={Number(product.price || 0)} data-product-url={product.url || `/produkty?s=${encodeURIComponent(product.sku || product.title)}`} data-product-image={product.image || ""}>
+                  <div class="saved-product-image-wrap">
+                    {product.image ? <img src={product.image} alt={product.title} loading="lazy" /> : <span>▧</span>}
+                  </div>
+                  <div class="saved-product-body">
+                    <strong>{product.title}</strong>
+                    <span>{[product.sku, product.type_label].filter(Boolean).join(" · ")}</span>
+                    <b>{product.price ? formatMoney(product.price, "EUR") : "—"}</b>
+                  </div>
+                  <div class="saved-product-actions">
+                    <a class="account-link-pill is-small" href={product.url || `/produkty?s=${encodeURIComponent(product.sku || product.title)}`}>Zobraziť</a>
+                    <button class="tm-btn is-green is-small" type="button" data-add-saved-product-to-cart>Objednať</button>
+                    <button class="tm-btn is-danger-soft is-small" type="button" data-remove-saved-product>Odstrániť</button>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <div class="account-empty-box" data-no-saved-products-box>
+                <strong>Nemáte uložený žiadny produkt.</strong>
+                <p>Pridajte si toner, náplň alebo valec a ďalšiu objednávku vybavíte rýchlejšie.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+    </AccountShell>
+  </body>
+</html>

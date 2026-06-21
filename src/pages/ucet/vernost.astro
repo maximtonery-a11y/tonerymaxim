@@ -2,12 +2,16 @@
 import "../../styles/global.css";
 import "../../styles/footer.css";
 import "../../styles/account.css";
-import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import { readCustomerSession } from "../../lib/auth-session";
 import AccountShell from "../../components/AccountShell.astro";
+import { getCustomerMeta, getWooCustomerById, parseJsonMeta } from "../../lib/woo-client";
 
 const customer = readCustomerSession(Astro.cookies);
 if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
-const customerName = customerDisplayName(customer);
+const wooCustomer = await getWooCustomerById(customer.id);
+const points = Number(getCustomerMeta(wooCustomer, "tm_loyalty_points") || 0);
+const history = parseJsonMeta<any[]>(getCustomerMeta(wooCustomer, "tm_loyalty_history"), []);
+const discountValue = Math.floor(points / 100);
 ---
 
 <!doctype html>
@@ -22,16 +26,16 @@ const customerName = customerDisplayName(customer);
       <section class="loyalty-hero account-panel">
         <div>
           <p class="account-kicker">Aktuálny stav</p>
-          <h2>540 bodov</h2>
-          <p>Vaše body majú aktuálnu hodnotu <strong>5,40 €</strong> pri ďalšom nákupe.</p>
+          <h2>{points} bodov</h2>
+          <p>{points > 0 ? <>Vaše body majú aktuálnu hodnotu <strong>{discountValue},00 €</strong> pri ďalšom nákupe.</> : <>Body získate po vybavení objednávky.</>}</p>
           <div class="loyalty-progress" aria-label="Postup k ďalšej odmene">
-            <span style="width: 72%"></span>
+            <span style={`width: ${Math.min(100, Math.round((points / 750) * 100))}%`}></span>
           </div>
-          <small>Do odmeny „Doprava zdarma“ vám chýba ešte 210 bodov.</small>
+          <small>{points >= 750 ? "Dosiahli ste hranicu pre odmenu." : `Do odmeny „Doprava zdarma“ vám chýba ešte ${750 - points} bodov.`}</small>
         </div>
         <div class="loyalty-value-card">
           <span>Hodnota zľavy</span>
-          <strong>5,40 €</strong>
+          <strong>{discountValue},00 €</strong>
           <a class="tm-btn is-green" href="/produkty">Použiť pri nákupe</a>
         </div>
       </section>
@@ -59,46 +63,38 @@ const customerName = customerDisplayName(customer);
           <div class="account-panel-head">
             <div>
               <h2>Najbližšie odmeny</h2>
-              <p class="account-muted">Motivačné míľniky, ku ktorým sa blížite.</p>
+              <p class="account-muted">Míľniky vernostného programu.</p>
             </div>
           </div>
-
           <div class="reward-milestones">
-            <div class="reward-milestone is-current">
+            <div class="reward-milestone">
               <div><strong>750 bodov</strong><span>Doprava zdarma</span></div>
-              <small>chýba 210 bodov</small>
+              <small>{points >= 750 ? "dostupné" : `chýba ${750 - points} bodov`}</small>
             </div>
             <div class="reward-milestone">
               <div><strong>1000 bodov</strong><span>Kupón 10 €</span></div>
-              <small>chýba 460 bodov</small>
-            </div>
-            <div class="reward-milestone">
-              <div><strong>1500 bodov</strong><span>Extra odmena pre verných zákazníkov</span></div>
-              <small>chýba 960 bodov</small>
+              <small>{points >= 1000 ? "dostupné" : `chýba ${1000 - points} bodov`}</small>
             </div>
           </div>
         </section>
 
         <section class="account-panel">
           <h2>História bodov</h2>
-          <div class="points-history">
-            <div class="points-row is-plus">
-              <span>+50</span>
-              <div><strong>Objednávka TM-202600145</strong><small>14. 5. 2026</small></div>
+          {history.length > 0 ? (
+            <div class="points-history">
+              {history.map((item) => (
+                <div class={`points-row ${Number(item.points || 0) >= 0 ? "is-plus" : "is-minus"}`}>
+                  <span>{Number(item.points || 0) >= 0 ? `+${item.points}` : item.points}</span>
+                  <div><strong>{item.title}</strong><small>{item.date}</small></div>
+                </div>
+              ))}
             </div>
-            <div class="points-row is-plus">
-              <span>+40</span>
-              <div><strong>Objednávka TM-202600123</strong><small>2. 5. 2026</small></div>
+          ) : (
+            <div class="account-empty-box">
+              <strong>Zatiaľ bez bodov.</strong>
+              <p>História bodov sa zobrazí po prvej vybavenej objednávke.</p>
             </div>
-            <div class="points-row is-minus">
-              <span>-100</span>
-              <div><strong>Uplatnenie zľavy</strong><small>28. 4. 2026</small></div>
-            </div>
-            <div class="points-row is-plus">
-              <span>+32</span>
-              <div><strong>Objednávka TM-202600118</strong><small>16. 4. 2026</small></div>
-            </div>
-          </div>
+          )}
         </section>
       </div>
     </AccountShell>

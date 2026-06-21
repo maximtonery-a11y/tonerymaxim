@@ -1,15 +1,9 @@
 import type { APIRoute } from "astro";
-import { TONERYMAXIM_META_DATA, updateWooCustomerPassword } from "../../../lib/woo-client";
-import { sendPasswordChangedEmail } from "../../../lib/mail";
+import { markWooCustomerAsToneryMaxim, updateWooCustomerPassword, getWooCustomerById } from "../../../lib/woo-client";
 import { verifyPasswordResetToken } from "../../../lib/password-reset";
+import { sendPasswordChangedEmail } from "../../../lib/mail";
 
 export const prerender = false;
-
-function siteUrlFromRequest(request: Request): string {
-  const configured = import.meta.env.PUBLIC_SITE_URL || import.meta.env.SITE_URL || import.meta.env.TM_SITE_URL;
-  if (typeof configured === "string" && configured.trim()) return configured.trim().replace(/\/$/, "");
-  return new URL(request.url).origin;
-}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -19,6 +13,13 @@ function json(data: unknown, status = 200) {
       "Cache-Control": "no-store",
     },
   });
+}
+
+function siteUrl(request: Request): string {
+  const configured = import.meta.env.SITE_URL || import.meta.env.PUBLIC_SITE_URL;
+  if (configured) return String(configured).replace(/\/$/, "");
+  const url = new URL(request.url);
+  return `${url.protocol}//${url.host}`;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -35,15 +36,15 @@ export const POST: APIRoute = async ({ request }) => {
     const payload = verifyPasswordResetToken(token);
     if (!payload) return json({ ok: false, error: "Odkaz na obnovu hesla je neplatný alebo expiroval." }, 400);
 
-    await updateWooCustomerPassword(payload.customerId, password, TONERYMAXIM_META_DATA);
+    await markWooCustomerAsToneryMaxim(payload.customerId).catch(() => null);
+    await updateWooCustomerPassword(payload.customerId, password);
 
-    try {
+    const customer = await getWooCustomerById(payload.customerId);
+    if (customer?.email) {
       await sendPasswordChangedEmail({
-        email: payload.email,
-        siteUrl: siteUrlFromRequest(request),
+        email: customer.email,
+        loginUrl: `${siteUrl(request)}/prihlasenie`,
       });
-    } catch (mailError) {
-      console.error("ToneryMAXIM password changed email failed:", mailError);
     }
 
     return json({

@@ -2,12 +2,16 @@
 import "../../styles/global.css";
 import "../../styles/footer.css";
 import "../../styles/account.css";
-import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import { readCustomerSession } from "../../lib/auth-session";
 import AccountShell from "../../components/AccountShell.astro";
+import { getWelcomeReward, getWooCustomerById, welcomeCouponCode } from "../../lib/woo-client";
+import { formatDate } from "../../lib/account-data";
 
 const customer = readCustomerSession(Astro.cookies);
 if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
-const customerName = customerDisplayName(customer);
+const wooCustomer = await getWooCustomerById(customer.id);
+const reward = getWelcomeReward(wooCustomer);
+const code = welcomeCouponCode(customer.id);
 ---
 
 <!doctype html>
@@ -18,22 +22,34 @@ const customerName = customerDisplayName(customer);
     <title>Moje odmeny | ToneryMaxim.sk</title>
   </head>
   <body>
-    <AccountShell user={customer} active="odmeny" title="Moje odmeny" subtitle="Stieracie odmeny, kupóny a výhody na ďalší nákup.">
+    <AccountShell user={customer} active="odmeny" title="Moje odmeny" subtitle="Kupóny a zľavy pre váš účet.">
       <section class="account-grid-2">
         <article class="account-panel scratch-panel">
           <div class="scratch-copy">
             <span class="scratch-gift">🎁</span>
             <div>
-              <p class="account-kicker">Mesačná odmena</p>
+              <p class="account-kicker">Uvítacia odmena</p>
               <h2>Zotrite si zľavu</h2>
-              <p>Po registrácii získate možnosť zotrieť si svoju odmenu.</p>
+              <p>Zľava 5 % platí na kompatibilný spotrebný materiál 1 mesiac od registrácie.</p>
             </div>
           </div>
 
-          <div class="reward-scratch-card reward-scratch-card-large">
-            <div class="reward-strip">Zotrite tu a odhaľte zľavu</div>
-            <button class="tm-btn" type="button">Zotrieť odmenu</button>
-          </div>
+          {reward.active ? (
+            <div class="reward-scratch-card reward-scratch-card-large" data-scratch-card>
+              <div class="reward-strip" data-scratch-cover>Zotrite tu a odhaľte zľavu</div>
+              <div class="reward-result" data-scratch-result hidden>
+                <strong>5 % zľava</strong>
+                <span>{code}</span>
+                <small>Platí do {formatDate(reward.expires)} iba na kompatibilný spotrebný materiál.</small>
+              </div>
+              <button class="tm-btn" type="button" data-reveal-reward>Zotrieť odmenu</button>
+            </div>
+          ) : (
+            <div class="account-empty-box">
+              <strong>Momentálne nemáte aktívnu odmenu.</strong>
+              <p>Nové odmeny sa zobrazia priamo v tejto sekcii.</p>
+            </div>
+          )}
         </article>
 
         <article class="account-panel">
@@ -44,16 +60,22 @@ const customerName = customerDisplayName(customer);
             </div>
           </div>
 
-          <div class="coupon-card-list">
-            <a class="coupon-card is-percent" href="/produkty">
-              <div><strong>7 % ZĽAVA</strong><small>Platný do 15. 7. 2026</small></div>
-              <span>DAKUJEME7</span>
-            </a>
-            <a class="coupon-card is-delivery" href="/produkty">
-              <div><strong>DOPRAVA ZDARMA</strong><small>Platný do 30. 7. 2026</small></div>
-              <span>DOPRAVAZDARMA</span>
-            </a>
-          </div>
+          {reward.active ? (
+            <div class="coupon-card-list">
+              <a class="coupon-card is-percent" href="/produkty?type=compatible">
+                <div>
+                  <strong>5 % ZĽAVA</strong>
+                  <small>Platí do {formatDate(reward.expires)}</small>
+                </div>
+                <span>{code}</span>
+              </a>
+            </div>
+          ) : (
+            <div class="account-empty-box">
+              <strong>Nemáte aktívny kupón.</strong>
+              <p>Platné kupóny sa zobrazia v tejto časti.</p>
+            </div>
+          )}
         </article>
       </section>
 
@@ -61,17 +83,25 @@ const customerName = customerDisplayName(customer);
         <div class="account-panel-head">
           <div>
             <h2>História odmien</h2>
-            <p class="account-muted">Prehľad zliav a bonusov, ktoré ste získali.</p>
+            <p class="account-muted">Prehľad získaných a použitých odmien.</p>
           </div>
         </div>
-
-        <div class="reward-history-grid">
-          <div class="reward-history-card"><span>7 %</span><strong>Zľava na ďalší nákup</strong><small>Získané po objednávke TM-202600145</small></div>
-          <div class="reward-history-card"><span>5 %</span><strong>Uvítacia zľava</strong><small>Získané po registrácii</small></div>
-          <div class="reward-history-card"><span>🚚</span><strong>Doprava zdarma</strong><small>Mesačná odmena</small></div>
-          <div class="reward-history-card"><span>10 %</span><strong>Špeciálna zľava</strong><small>Sezónna akcia</small></div>
+        <div class="account-empty-box">
+          <strong>Zatiaľ bez histórie odmien.</strong>
+          <p>Po získaní alebo použití odmeny sa záznam zobrazí tu.</p>
         </div>
       </section>
     </AccountShell>
+    <script>
+      document.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-reveal-reward]');
+        if (!button) return;
+        const card = button.closest('[data-scratch-card]');
+        card?.querySelector('[data-scratch-cover]')?.setAttribute('hidden', '');
+        card?.querySelector('[data-scratch-result]')?.removeAttribute('hidden');
+        button.textContent = 'Zľava je odhalená';
+        button.disabled = true;
+      });
+    </script>
   </body>
 </html>
