@@ -17,6 +17,30 @@ function productKey(product: any) {
   return String(product.id || product.sku || product.title || "").trim();
 }
 
+function normalizeType(value: any) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function productTypeClass(product: any) {
+  const value = normalizeType(`${product?.type || ""} ${product?.type_label || ""}`);
+  if (value.includes("kompatibil") || value.includes("compatible")) return "is-compatible";
+  if (value.includes("original")) return "is-original";
+  if (value.includes("renov") || value.includes("repas")) return "is-renovated";
+  return "";
+}
+
+function productTypeText(product: any) {
+  const cls = productTypeClass(product);
+  if (cls === "is-compatible") return "Kompatibilný";
+  if (cls === "is-original") return "Originálny";
+  if (cls === "is-renovated") return "Renovovaný";
+  return String(product?.type_label || product?.type || "").trim();
+}
+
 ---
 
 <!doctype html>
@@ -57,11 +81,12 @@ function productKey(product: any) {
           <div class="saved-products-list" data-saved-products-list>
             {savedProducts.length > 0 ? (
               savedProducts.map((product) => (
-                <article class="saved-product-card" data-saved-product-card data-product-key={productKey(product)} data-product-name={product.title} data-product-sku={product.sku || product.id || ""} data-product-price={Number(product.price || 0)} data-product-url={product.url || `/produkty?s=${encodeURIComponent(product.sku || product.title)}`} data-product-image={product.image || ""}>
+                <article class={`saved-product-card ${productTypeClass(product)}`.trim()} data-saved-product-card data-product-key={productKey(product)} data-product-name={product.title} data-product-sku={product.sku || product.id || ""} data-product-price={Number(product.price || 0)} data-product-url={product.url || `/produkty?s=${encodeURIComponent(product.sku || product.title)}`} data-product-image={product.image || ""}>
                   <div class="saved-product-image-wrap">
                     {product.image ? <img src={product.image} alt={product.title} loading="lazy" /> : <span>▧</span>}
                   </div>
                   <div class="saved-product-body">
+                    {productTypeText(product) ? <em class={`account-product-type ${productTypeClass(product)}`.trim()}>{productTypeText(product)}</em> : null}
                     <strong>{product.title}</strong>
                     <span>{[product.sku, product.type_label].filter(Boolean).join(" · ")}</span>
                     <b>{product.price ? formatMoney(product.price, "EUR") : "—"}</b>

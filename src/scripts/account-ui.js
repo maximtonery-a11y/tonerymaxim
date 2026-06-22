@@ -505,10 +505,26 @@
   }
 
   function productTypeClass(type, label = '') {
-    const normalized = normalize(`${type || ''} ${label || ''}`);
-    if (normalized.includes('kompatibil') || normalized.includes('compatible')) return 'is-compatible';
-    if (normalized.includes('original') || normalized.includes('originalny') || normalized.includes('originalne')) return 'is-original';
-    if (normalized.includes('renov') || normalized.includes('repas')) return 'is-renovated';
+    const raw = `${type || ''} ${label || ''}`;
+    const normalized = normalize(raw);
+    if (
+      normalized.includes('kompatibil') ||
+      normalized.includes('compatible') ||
+      normalized.includes('compat') ||
+      normalized === 'k'
+    ) return 'is-compatible';
+    if (
+      normalized.includes('original') ||
+      normalized.includes('originalny') ||
+      normalized.includes('originalne') ||
+      normalized.includes('orig')
+    ) return 'is-original';
+    if (
+      normalized.includes('renov') ||
+      normalized.includes('repas') ||
+      normalized.includes('reman') ||
+      normalized.includes('recykl')
+    ) return 'is-renovated';
     return '';
   }
 
@@ -518,6 +534,26 @@
     if (cls === 'is-original') return 'Originálny';
     if (cls === 'is-renovated') return 'Renovovaný';
     return String(label || type || '').trim();
+  }
+
+  function productTypeSlug(type, label = '') {
+    const cls = productTypeClass(type, label);
+    if (cls === 'is-compatible') return 'compatible';
+    if (cls === 'is-original') return 'original';
+    if (cls === 'is-renovated') return 'renovated';
+    return 'other';
+  }
+
+  function productGroupLabel(slug) {
+    if (slug === 'compatible') return 'Kompatibilné';
+    if (slug === 'original') return 'Originálne';
+    if (slug === 'renovated') return 'Renovované';
+    return 'Produkty';
+  }
+
+  function productGroupSubtitle(slug, count) {
+    const label = count === 1 ? 'produkt' : count > 1 && count < 5 ? 'produkty' : 'produktov';
+    return `${count} ${label} · zobraziť`;
   }
 
   function renderProductSuggestions(products = []) {
@@ -530,29 +566,72 @@
       return;
     }
 
-    productSuggestionsBox.innerHTML = products.slice(0, 10).map((product, index) => {
-      const title = String(product.title || product.name || '').trim();
-      const sku = String(product.sku || '').trim();
-      const price = Number(product.price || 0);
-      const type = product.type || '';
-      const typeLabel = product.typeLabel || product.type_label || '';
-      const image = product.image || '';
-      const typeClass = productTypeClass(type, typeLabel);
-      const typeText = productTypeText(type, typeLabel);
+    const groups = [
+      ['compatible', 'Kompatibilné'],
+      ['original', 'Originálne'],
+      ['renovated', 'Renovované'],
+      ['other', 'Produkty'],
+    ];
+
+    const typed = new Map();
+    for (const [slug] of groups) typed.set(slug, []);
+
+    products.forEach((product, originalIndex) => {
+      const slug = productTypeSlug(product.type || product.product_type_key || '', product.typeLabel || product.type_label || product.product_type_label || '');
+      const target = typed.get(slug) ? slug : 'other';
+      typed.get(target).push({ product, originalIndex });
+    });
+
+    const groupRows = groups.map(([slug]) => {
+      const items = typed.get(slug) || [];
+      if (!items.length) return '';
       return `
-        <button type="button" class="product-suggestion ${typeClass}" data-product-index="${index}">
-          <span class="product-suggestion-image">${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy">` : '▧'}</span>
-          <span class="product-suggestion-main">
-            <span class="product-suggestion-titleline">
-              <strong>${escapeHtml(title)}</strong>
-              ${typeText ? `<em class="product-type-badge ${typeClass}">${escapeHtml(typeText)}</em>` : ''}
-            </span>
-            <small>${escapeHtml([sku, typeLabel].filter(Boolean).join(' · '))}</small>
+        <button type="button" class="tm-smart-group tm-smart-group--${slug} account-smart-group" data-product-index="${items[0].originalIndex}">
+          <span class="tm-smart-group-dot"></span>
+          <span>
+            <strong>${escapeHtml(productGroupLabel(slug))} (${items.length})</strong>
+            <small>${escapeHtml(productGroupSubtitle(slug, items.length))}</small>
           </span>
-          <span class="product-suggestion-price ${typeClass}">${formatEuro(price)}</span>
+          <b>Vybrať</b>
         </button>
       `;
     }).join('');
+
+    const productRows = products.slice(0, 14).map((product, originalIndex) => {
+      const title = String(product.title || product.name || '').trim();
+      const sku = String(product.sku || '').trim();
+      const price = Number(product.price || 0);
+      const type = product.type || product.product_type_key || '';
+      const typeLabel = product.typeLabel || product.type_label || product.product_type_label || '';
+      const image = product.image || '';
+      const slug = productTypeSlug(type, typeLabel);
+      const typeText = productTypeText(type, typeLabel);
+
+      return `
+        <button type="button" class="tm-smart-item tm-smart-item--${slug} account-smart-product-item" data-product-index="${originalIndex}">
+          <span class="tm-smart-thumb">${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy">` : '🧾'}</span>
+          <span class="tm-smart-copy">
+            <span>${escapeHtml(title)}</span>
+            ${sku || typeText ? `<small>${escapeHtml([sku, typeText].filter(Boolean).join(' · '))}</small>` : ''}
+          </span>
+          <span class="tm-smart-side">
+            ${typeText ? `<em class="tm-smart-type tm-smart-type--${slug}">${escapeHtml(typeText)}</em>` : ''}
+            ${price ? `<span class="tm-smart-price"><strong>${formatEuro(price)}</strong></span>` : '<span class="tm-smart-arrow">›</span>'}
+          </span>
+        </button>
+      `;
+    }).join('');
+
+    productSuggestionsBox.innerHTML = `
+      <section class="tm-smart-section tm-smart-section--productGroups account-smart-product-groups">
+        <h3>Nájdené typy produktov</h3>
+        <div>${groupRows}</div>
+      </section>
+      <section class="tm-smart-section tm-smart-section--products account-smart-product-results">
+        <h3>Produkty</h3>
+        <div>${productRows}</div>
+      </section>
+    `;
     productSuggestionsBox.hidden = false;
   }
 
@@ -663,6 +742,14 @@
     const title = String(product?.title || '').trim();
     if (!key || !title) return;
 
+    const type = product.type || product.product_type_key || '';
+    const typeLabel = product.type_label || product.typeLabel || product.product_type_label || '';
+    const typeClass = productTypeClass(type, typeLabel);
+    const typeText = productTypeText(type, typeLabel);
+    const price = Number(product.price || 0);
+    const image = product.image || '';
+    const url = product.url || `/produkty?s=${encodeURIComponent(product.sku || title)}`;
+
     const empty = savedProductsList.querySelector('[data-no-saved-products-box]');
     empty?.remove();
 
@@ -672,20 +759,21 @@
     article.dataset.productKey = key;
     article.dataset.productName = title;
     article.dataset.productSku = product.sku || product.id || '';
-    article.dataset.productPrice = String(product.price || 0);
-    article.dataset.productUrl = product.url || `/produkty?s=${encodeURIComponent(product.sku || title)}`;
-    article.dataset.productImage = product.image || '';
+    article.dataset.productPrice = String(price || 0);
+    article.dataset.productUrl = url;
+    article.dataset.productImage = image;
     article.innerHTML = `
       <div class="saved-product-image-wrap">
-        ${product.image ? `<img src="${escapeHtml(product.image)}" alt="${escapeHtml(title)}" loading="lazy">` : '<span>▧</span>'}
+        ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" loading="lazy">` : '<span>▧</span>'}
       </div>
       <div class="saved-product-body">
+        ${typeText ? `<em class="account-product-type ${typeClass}">${escapeHtml(typeText)}</em>` : ''}
         <strong>${escapeHtml(title)}</strong>
-        <span>${escapeHtml([product.sku, product.type_label || product.typeLabel].filter(Boolean).join(' · '))}</span>
-        <b>${formatEuro(product.price)}</b>
+        <span>${escapeHtml([product.sku, typeLabel].filter(Boolean).join(' · '))}</span>
+        <b>${formatEuro(price)}</b>
       </div>
       <div class="saved-product-actions">
-        <a class="account-link-pill is-small" href="${escapeHtml(article.dataset.productUrl)}">Zobraziť</a>
+        <a class="account-link-pill is-small" href="${escapeHtml(url)}">Zobraziť</a>
         <button class="tm-btn is-green is-small" type="button" data-add-saved-product-to-cart>Objednať</button>
         <button class="tm-btn is-danger-soft is-small" type="button" data-remove-saved-product>Odstrániť</button>
       </div>
