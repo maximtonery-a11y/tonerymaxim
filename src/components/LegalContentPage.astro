@@ -1,0 +1,34 @@
+---
+import InfoPageShell from "./InfoPageShell.astro";
+import RichLegalText from "./RichLegalText.astro";
+const { page, active, highlights = [], steps = [] } = Astro.props;
+---
+
+<InfoPageShell active={active} title={page.title} intro={page.intro}>
+  {(highlights.length > 0 || steps.length > 0) && (
+    <section class="info-summary-grid">
+      {steps.map((item, index) => (
+        <article class="info-summary-card info-step-card">
+          <span>{String(index + 1).padStart(2, "0")}</span>
+          <h2>{item.title}</h2>
+          <p>{item.text}</p>
+        </article>
+      ))}
+      {highlights.map((item) => (
+        <article class="info-summary-card">
+          <span>{item.icon}</span>
+          <h2>{item.title}</h2>
+          <p>{item.text}</p>
+        </article>
+      ))}
+    </section>
+  )}
+
+  <article class="info-article-card">
+    <div class="info-article-head">
+      <p>Detailné znenie</p>
+      <h2>{page.title}</h2>
+    </div>
+    <RichLegalText body={page.body} />
+  </article>
+</InfoPageShell>

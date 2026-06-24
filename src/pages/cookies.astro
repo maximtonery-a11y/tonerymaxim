@@ -1,0 +1,31 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+const cards = [
+  ["○", "Čo sú cookies", "Malé textové súbory, ktoré sa ukladajú do zariadenia a pomáhajú zlepšiť fungovanie webu.", "", ""],
+  ["✓", "Nevyhnutné cookies", "Zabezpečujú základné funkcie webu, košík, prihlásenie a navigáciu.", "Vždy aktívne", "green"],
+  ["↗", "Analytické cookies", "Pomáhajú pochopiť, ako návštevníci používajú web, aby sme ho mohli zlepšovať.", "Voliteľné", "blue"],
+  ["◎", "Marketingové cookies", "Používajú sa na zobrazovanie relevantnej reklamy na našom webe aj mimo neho.", "Voliteľné", "red"],
+];
+---
+<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Cookies | ToneryMaxim.sk</title></head><body><div class="page"><Header /><main>
+<InfoPageShell active="/cookies" eyebrow="Cookies" title="Cookies" intro="Zásady používania súborov cookies na webe ToneryMaxim.sk.">
+  <section class="cookie-grid">{cards.map(([icon,title,text,state,color]) => <article class="cookie-card"><span class="info-icon">{icon}</span><h2>{title}</h2><p>{text}</p>{state && <div class:list={["cookie-state", color]}>{state}</div>}</article>)}</section>
+  <article class="legal-panel">
+    <header class="legal-panel-head"><h2>Správa cookies</h2><p>Cookies môžete kedykoľvek zmeniť alebo zablokovať v nastaveniach vášho prehliadača. Niektoré cookies sú nevyhnutné pre správne fungovanie webu.</p></header>
+    <div class="legal-content">
+      <section><h2>1. Čo sú cookies</h2><p>Cookie je malý textový súbor, ktorý sa uloží vo vašom počítači, tablete alebo mobilnom zariadení. Web si vďaka nemu môže zapamätať niektoré vaše nastavenia alebo úkony.</p></section>
+      <section><h2>2. Aké cookies používame</h2><h3>Nevyhnutné cookies</h3><p>Tieto cookies sú potrebné pre fungovanie webu, nákupného košíka, pokladne, prihlásenia a bezpečnosti. Bez nich by web nemusel fungovať správne.</p><h3>Analytické cookies</h3><p>Pomáhajú nám rozumieť návštevnosti a používaniu webu. Využívame ich na zlepšenie obsahu, vyhľadávania a používateľského zážitku.</p><h3>Marketingové cookies</h3><p>Môžu slúžiť na zobrazovanie relevantnej reklamy a meranie účinnosti reklamy. Používajú sa iba vtedy, ak je na to potrebný a udelený súhlas.</p></section>
+      <section><h2>3. Aké údaje môžu cookies spracúvať</h2><p>Cookies môžu spracúvať najmä technické údaje o zariadení, prehliadači, čase návštevy, zobrazených stránkach, spôsoboch používania webu a prípadne identifikátory uložené v prehliadači.</p></section>
+      <section><h2>4. Cookies tretích strán</h2><p>Na webe môžu byť použité služby tretích strán, napríklad analytické, reklamné alebo platobné služby. Tieto služby môžu používať vlastné cookies podľa svojich pravidiel.</p><p>Nepoužívame cookies na predaj osobných údajov tretím stranám.</p></section>
+      <section><h2>5. Ako cookies upraviť alebo vymazať</h2><p>Cookies môžete vymazať alebo blokovať priamo v nastaveniach internetového prehliadača. Ak zablokujete všetky cookies, niektoré časti webu nemusia fungovať správne.</p></section>
+      <section><h2>6. Kontakt</h2><div class="legal-contact-box"><strong>Otázky ku cookies</strong><a href="mailto:info@tonerymaxim.sk">info@tonerymaxim.sk</a><span>+421 917 859 206, Po–Pi 9:00–15:00</span></div></section>
+    </div>
+  </article>
+</InfoPageShell>
+</main><Footer showTrust={false} /><FloatingAdvisor /></div></body></html>

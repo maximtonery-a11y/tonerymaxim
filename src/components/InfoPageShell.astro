@@ -1,0 +1,17 @@
+---
+import InfoNav from "./InfoNav.astro";
+const { active, eyebrow = "Centrum pomoci", title, intro, wide = false } = Astro.props;
+---
+<section class="info-page-section">
+  <div class:list={["wrap", "info-layout", wide && "is-wide"]}>
+    <InfoNav active={active} />
+    <main class="info-content">
+      <header class="info-page-head">
+        <p>{eyebrow}</p>
+        <h1>{title}</h1>
+        {intro && <span>{intro}</span>}
+      </header>
+      <slot />
+    </main>
+  </div>
+</section>

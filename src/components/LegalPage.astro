@@ -1,0 +1,58 @@
+---
+const { title, intro, body } = Astro.props;
+
+const blocks = String(body || "")
+  .split(/\n\s*\n/g)
+  .map((block) => block.trim())
+  .filter(Boolean);
+
+function isHeading(block) {
+  const clean = block.trim();
+  if (clean.length > 90) return false;
+  return /^(Článok\s+[IVXLCDM]+\.?|\d+\.|[A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ][^\n]{2,80})$/.test(clean);
+}
+
+function isListBlock(block) {
+  const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
+  return lines.length > 1 && lines.every((line) => /^([a-z]\)|\d+\.|[·•-])\s+/.test(line) || line.length < 180);
+}
+---
+
+<section class="legal-hero">
+  <div class="wrap legal-hero-inner">
+    <p class="legal-eyebrow">Informácie pre zákazníkov</p>
+    <h1>{title}</h1>
+    <p>{intro}</p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap legal-layout">
+    <aside class="legal-nav" aria-label="Informačné stránky">
+      <strong>Informačné stránky</strong>
+      <a href="/kontakt">Kontakt</a>
+      <a href="/doprava-a-platba">Doprava a platba</a>
+      <a href="/reklamacie">Reklamácie</a>
+      <a href="/obchodne-podmienky">Obchodné podmienky</a>
+      <a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
+      <a href="/cookies">Cookies</a>
+    </aside>
+
+    <article class="legal-card">
+      {blocks.map((block) => {
+        const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
+        if (isHeading(block)) {
+          return <h2>{block}</h2>;
+        }
+        if (isListBlock(block) && lines.length > 1) {
+          return (
+            <ul>
+              {lines.map((line) => <li>{line.replace(/^([a-z]\)|\d+\.|[·•-])\s+/, "")}</li>)}
+            </ul>
+          );
+        }
+        return <p>{lines.join(" ")}</p>;
+      })}
+    </article>
+  </div>
+</section>

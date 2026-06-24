@@ -1,0 +1,76 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+---
+<!doctype html>
+<html lang="sk">
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Kontakt | ToneryMaxim.sk</title></head>
+  <body><div class="page"><Header /><main>
+    <InfoPageShell active="/kontakt" eyebrow="Kontakt" title="Kontakt" intro="Napíšte nám pri výbere tonera, objednávke alebo reklamácii. Radi vám pomôžeme.">
+      <section class="quick-contact-grid">
+        <article class="contact-card"><span class="info-icon">✉</span><div><h2>E-mail</h2><a href="mailto:info@tonerymaxim.sk">info@tonerymaxim.sk</a><p>Odpovieme čo najskôr.</p></div></article>
+        <article class="contact-card"><span class="info-icon">☎</span><div><h2>Telefón</h2><a href="tel:+421917859206">+421 917 859 206</a><p>Po–Pi 9:00–15:00</p></div></article>
+        <article class="contact-card"><span class="info-icon">◷</span><div><h2>Pracovný čas</h2><strong>Po–Pi 9:00–15:00</strong><p>Sme tu pre vás.</p></div></article>
+      </section>
+
+      <section class="contact-main-grid">
+        <article class="contact-form-card">
+          <span class="card-eyebrow">Kontaktný formulár</span>
+          <h2>Napíšte nám správu</h2>
+          <form class="tm-contact-form" id="tm-contact-form" method="post" action="/api/contact" novalidate>
+            <div class="form-row">
+              <label>Meno a priezvisko<input name="name" type="text" autocomplete="name" placeholder="Vaše meno" required /></label>
+              <label>E-mail<input name="email" type="email" autocomplete="email" placeholder="vas@email.sk" required /></label>
+            </div>
+            <div class="form-row">
+              <label>Telefón <span>nepovinné</span><input name="phone" type="tel" autocomplete="tel" placeholder="+421 917 859 206" /></label>
+              <label>Číslo objednávky <span>voliteľné</span><input name="order" type="text" placeholder="napr. 202600123" /></label>
+            </div>
+            <label>Správa<textarea name="message" placeholder="Napíšte, s čím potrebujete pomôcť. Pri produktoch uveďte model tlačiarne alebo označenie tonera." required></textarea></label>
+            <label class="form-check"><input name="privacy" type="checkbox" required /><span>Súhlasím so spracovaním osobných údajov pre vybavenie tejto správy.</span></label>
+            <input type="hidden" name="type" value="Kontakt" />
+            <div class="form-actions"><button type="submit">Odoslať správu</button><p id="tm-contact-status" role="status" aria-live="polite"></p></div>
+          </form>
+        </article>
+        <aside class="contact-side-stack">
+          <article class="company-card"><span class="card-eyebrow">Firemné údaje</span><h2>Prevádzkovateľ</h2><dl><div><dt>Názov</dt><dd>Roman Babčan INkarus</dd></div><div><dt>Sídlo</dt><dd>Tajov 265<br />976 34 Tajov</dd></div><div><dt>IČO</dt><dd>37 328 344</dd></div><div><dt>DIČ</dt><dd>1020059920</dd></div><div><dt>IČ DPH</dt><dd>SK1020059920</dd></div></dl></article>
+          <article class="company-card"><span class="card-eyebrow">Platby</span><h2>Bankové spojenie</h2><dl><div><dt>Banka</dt><dd>VÚB</dd></div><div><dt>IBAN</dt><dd>SK62 0200 0000 0032 9932 3851</dd></div></dl></article>
+        </aside>
+      </section>
+    </InfoPageShell>
+  </main><Footer showTrust={false} /><FloatingAdvisor /></div>
+  <script>
+    const form = document.getElementById("tm-contact-form");
+    const status = document.getElementById("tm-contact-status");
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!(form instanceof HTMLFormElement) || !status) return;
+      const button = form.querySelector("button[type='submit']");
+      const original = button?.textContent || "Odoslať správu";
+      status.textContent = "Odosielam...";
+      status.className = "";
+      button?.setAttribute("disabled", "disabled");
+      if (button) button.textContent = "Odosielam...";
+      try {
+        const response = await fetch(form.action, { method: "POST", body: new FormData(form) });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result?.message || "Správu sa nepodarilo odoslať.");
+        form.reset();
+        status.textContent = "Správa bola odoslaná.";
+        status.className = "is-success";
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : "Správu sa nepodarilo odoslať.";
+        status.className = "is-error";
+      } finally {
+        button?.removeAttribute("disabled");
+        if (button) button.textContent = original;
+      }
+    });
+  </script>
+  </body>
+</html>

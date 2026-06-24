@@ -1,0 +1,40 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+const notices = [
+  ["↺", "Reklamáciu nám najskôr oznámte", "Napíšte na info@tonerymaxim.sk a uveďte číslo objednávky."],
+  ["☎", "Pred odoslaním nás kontaktujte", "Pomôžeme urýchliť vybavenie reklamácie."],
+  ["!", "Tovar neposielajte na dobierku", "Dobierkové zásielky nebudú prevzaté."],
+];
+const steps = [
+  ["▤", "Vyplňte údaje", "Uveďte číslo objednávky, produkt a popis vady."],
+  ["□", "Zabaľte tovar", "Tovar zabaľte tak, aby sa počas prepravy nepoškodil."],
+  ["🚚", "Odošlite zásielku", "Priložte doklad o kúpe alebo číslo objednávky."],
+  ["✓", "Vybavenie do 30 dní", "O výsledku vás budeme informovať e-mailom."],
+];
+---
+<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Reklamácie | ToneryMaxim.sk</title></head><body><div class="page"><Header /><main>
+<InfoPageShell active="/reklamacie" eyebrow="Reklamácie" title="Reklamačné podmienky" intro="Reklamovať je možné len tovar zakúpený u predávajúceho, ktorý je vlastníctvom kupujúceho.">
+  <section class="notice-row">{notices.map(([icon,title,text]) => <article class="notice-card"><span class="info-icon">{icon}</span><div><b>{title}</b><small>{text}</small></div></article>)}</section>
+  <h2 class="section-title">Ako prebieha reklamácia?</h2>
+  <section class="steps-grid">{steps.map(([icon,title,text], index) => <article class="step-card"><span class="step-no">{index + 1}</span><span class="info-icon">{icon}</span><h2>{title}</h2><p>{text}</p></article>)}</section>
+
+  <article class="legal-panel">
+    <header class="legal-panel-head"><h2>Úplné znenie reklamačných podmienok</h2><p>Text je rozdelený do odsekov, aby bol čitateľný a použiteľný pre zákazníka.</p></header>
+    <div class="legal-content">
+      <section><h2>1. Základné pravidlá reklamácie</h2><p>Reklamovať je možné len tovar, ktorý bol zakúpený u predávajúceho a ktorý je vlastníctvom kupujúceho.</p><p>Ak je kupujúci spotrebiteľom, na všetok ponúkaný tovar sa poskytuje záruka v trvaní 24 mesiacov, ak nie je pri tovare uvedené inak. Pri použitom tovare môže byť záručná doba 12 mesiacov, ak bol kupujúci o tejto skutočnosti informovaný.</p><p>Ak kupujúci nie je spotrebiteľom, postupuje sa podľa príslušných ustanovení Obchodného zákonníka. Záručná doba je 1 rok, ak nie je dohodnuté inak.</p></section>
+      <section><h2>2. Začiatok záručnej doby</h2><p>Záručná doba začína plynúť dňom prevzatia tovaru od prepravnej spoločnosti alebo priamo od predávajúceho.</p><p>Kupujúci je povinný reklamáciu uplatniť bez zbytočného odkladu po zistení vady.</p></section>
+      <section><h2>3. Na čo sa zodpovednosť za vady nevzťahuje</h2><p>Zodpovednosť za vady sa nevzťahuje najmä na vady spôsobené:</p><ul><li>mechanickým poškodením výrobku spôsobeným kupujúcim,</li><li>nesprávnym zaobchádzaním s výrobkom alebo používaním v rozpore s návodom,</li><li>používaním tovaru v podmienkach, ktoré nezodpovedajú prirodzenému prostrediu tovaru,</li><li>zanedbaním starostlivosti a údržby,</li><li>nadmerným zaťažovaním,</li><li>používaním v rozpore s dokumentáciou, technickými normami alebo bezpečnostnými predpismi,</li><li>bežným opotrebením tovaru alebo jeho časti,</li><li>živelnou udalosťou.</li></ul></section>
+      <section><h2>4. Ako reklamáciu uplatniť</h2><p>Reklamáciu odporúčame vopred oznámiť e-mailom na <a href="mailto:info@tonerymaxim.sk">info@tonerymaxim.sk</a>. Do e-mailu uveďte číslo objednávky, názov produktu, popis vady a podľa možnosti priložte fotografiu.</p><p>Reklamovaný tovar je potrebné vhodne zabaliť, aby počas prepravy nedošlo k jeho poškodeniu. K zásielke priložte kópiu dokladu o kúpe alebo číslo objednávky a stručný popis vady.</p><p>Tovar neposielajte na dobierku. Dobierkové zásielky nebudú prevzaté.</p></section>
+      <section><h2>5. Potvrdenie prijatia a vybavenie reklamácie</h2><p>Predávajúci potvrdí prijatie reklamácie a vydá kupujúcemu potvrdenie o uplatnení reklamácie vhodnou formou.</p><p>Predávajúci určí spôsob vybavenia reklamácie bez zbytočného odkladu, v zložitých prípadoch najneskôr v zákonom stanovenej lehote. Reklamácia bude vybavená najneskôr do 30 dní odo dňa jej uplatnenia.</p><p>Po uplynutí lehoty na vybavenie reklamácie má spotrebiteľ práva podľa platných právnych predpisov.</p></section>
+      <section><h2>6. Práva kupujúceho pri reklamácii</h2><ul><li>Pri odstrániteľnej vade má kupujúci právo, aby bola vada bezplatne, včas a riadne odstránená.</li><li>Kupujúci môže namiesto odstránenia vady požadovať výmenu veci, ak tým predávajúcemu nevzniknú neprimerané náklady.</li><li>Pri neodstrániteľnej vade, ktorá bráni riadnemu používaniu veci, má kupujúci právo na výmenu veci alebo odstúpenie od zmluvy.</li><li>Pri inej neodstrániteľnej vade má kupujúci právo na primeranú zľavu z ceny.</li></ul></section>
+      <section><h2>7. Ukončenie reklamácie</h2><p>Reklamácia sa považuje za vybavenú odovzdaním opraveného alebo vymeneného tovaru, vrátením kúpnej ceny, poskytnutím primeranej zľavy, písomnou výzvou na prevzatie plnenia alebo odôvodneným zamietnutím reklamácie.</p><p>O výsledku reklamačného konania je kupujúci informovaný v zákonnej lehote.</p><div class="legal-contact-box"><strong>Kontakt pre reklamácie</strong><span>Roman Babčan INkarus, Tajov 265, 976 34 Tajov</span><a href="mailto:info@tonerymaxim.sk">info@tonerymaxim.sk</a><span>+421 917 859 206, Po–Pi 9:00–15:00</span></div></section>
+    </div>
+  </article>
+</InfoPageShell>
+</main><Footer showTrust={false} /><FloatingAdvisor /></div></body></html>

@@ -1,0 +1,119 @@
+---
+const { body = "" } = Astro.props;
+
+type Block = { type: "article" | "heading" | "paragraph" | "list"; text?: string; items?: string[] };
+
+const dropExact = new Set([
+  "Všeobecné obchodné podmienky internetového obchodu (e-shopu)",
+  "Reklamačné podmienky internetového obchodu (e-shopu)",
+  "neoddeliteľná súčasť všeobecných obchodných podmienok",
+  "Zásady ochrany osobných údajov",
+  "ZÁSADY SÚBOROV COOKIES",
+  "FORMULÁRE",
+]);
+
+function cleanLine(line: string) {
+  return line.replace(/\s+/g, " ").trim();
+}
+
+function isArticle(line: string) {
+  return /^Článok\s+[IVXLCDM]+\.?$/i.test(line);
+}
+
+function isNumberedLine(line: string) {
+  return /^\d+\.\s+/.test(line);
+}
+
+function isListLine(line: string) {
+  return /^(?:[a-z]\)|[·•\-–])\s*/i.test(line) || /^\d+\.\s+/.test(line);
+}
+
+function stripMarker(line: string) {
+  return line.replace(/^(?:[a-z]\)|[·•\-–]|\d+\.)\s*/i, "").trim();
+}
+
+function isHeading(line: string) {
+  if (isArticle(line) || isListLine(line)) return false;
+  if (line.length < 4 || line.length > 80) return false;
+  if (/[.!?:;,]$/.test(line)) return false;
+  if (/^(v\s|a\s|ak\s|pri\s|na\s|za\s|po\s)/i.test(line)) return false;
+  return /^(Cena|Objednávka|Platobné podmienky|Dodacie podmienky|Poplatky|Prevod|Storno|Právo|Práva|Ochrana|Náhrada|Záverečné|Čo sú|Aké cookies|Aké osobné|Účely|Ako sú|Súhlas|Kontrola|Cookies tretích|Na čo|Kategória|Tabuľka|Kontakt|Vymedzenie|Reklamácie|Reklamovať|Zodpovednosť|Vybavenie reklamácie)/i.test(line);
+}
+
+function splitLongParagraph(text: string) {
+  const trimmed = text.replace(/\s+/g, " ").trim();
+  if (trimmed.length <= 460) return [trimmed];
+  const sentences = trimmed.match(/[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$/g) || [trimmed];
+  const out: string[] = [];
+  let current = "";
+  for (const sentence of sentences.map((s) => s.trim()).filter(Boolean)) {
+    if ((current + " " + sentence).trim().length > 420 && current) {
+      out.push(current.trim());
+      current = sentence;
+    } else {
+      current = (current + " " + sentence).trim();
+    }
+  }
+  if (current) out.push(current.trim());
+  return out;
+}
+
+const rawLines = String(body)
+  .replace(/\r/g, "")
+  .split("\n")
+  .map(cleanLine)
+  .filter(Boolean)
+  .filter((line) => !dropExact.has(line))
+  .filter((line) => !/^verzia\s+1\./i.test(line));
+
+const blocks: Block[] = [];
+let paragraph: string[] = [];
+let list: string[] = [];
+
+function flushParagraph() {
+  if (!paragraph.length) return;
+  const joined = paragraph.join(" ").replace(/\s+/g, " ").trim();
+  for (const part of splitLongParagraph(joined)) blocks.push({ type: "paragraph", text: part });
+  paragraph = [];
+}
+
+function flushList() {
+  if (!list.length) return;
+  blocks.push({ type: "list", items: list });
+  list = [];
+}
+
+for (const line of rawLines) {
+  if (isArticle(line)) {
+    flushParagraph();
+    flushList();
+    blocks.push({ type: "article", text: line });
+    continue;
+  }
+  if (isListLine(line)) {
+    flushParagraph();
+    list.push(stripMarker(line));
+    continue;
+  }
+  if (isHeading(line)) {
+    flushParagraph();
+    flushList();
+    blocks.push({ type: "heading", text: line });
+    continue;
+  }
+  flushList();
+  paragraph.push(line);
+  if (paragraph.join(" ").length > 360 || isNumberedLine(line)) flushParagraph();
+}
+flushParagraph();
+flushList();
+---
+
+<div class="legal-rich-text">
+  {blocks.map((block) => {
+    if (block.type === "article") return <h2>{block.text}</h2>;
+    if (block.type === "heading") return <h3>{block.text}</h3>;
+    if (block.type === "list") return <ul>{block.items?.map((item) => <li>{item}</li>)}</ul>;
+    return <p>{block.text}</p>;
+  })}
+</div>

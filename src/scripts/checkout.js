@@ -26,10 +26,12 @@
   let glsWidgetLoading = null;
 
   const PAYMENT = {
-    gopay: { label: "Platba kartou online", price: 0, gopayInstrument: "PAYMENT_CARD" },
+    gopay: { label: "Platba online GoPay", price: 0, gopayInstrument: "PAYMENT_CARD" },
     applepay: { label: "Apple Pay", price: 0, gopayInstrument: "APPLE_PAY" },
     googlepay: { label: "Google Pay", price: 0, gopayInstrument: "GOOGLE_PAY" },
     cod: { label: "Dobierka", price: 1.2 },
+    bank_prepaid: { label: "Platba prevodným príkazom vopred", price: 0 },
+    invoice_org: { label: "Prevodný príkaz pre organizácie a firmy", price: 0 },
   };
 
   function normalizeNumber(value) {

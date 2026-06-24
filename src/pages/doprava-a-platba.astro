@@ -1,0 +1,44 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+const shipping = [
+  ["▣", "Kuriér GLS a DPD", "Doručenie priamo na adresu zákazníka.", "3,90 € s DPH", false],
+  ["▦", "GLS Balíkomat / ParcelShop", "Vyzdvihnutie v balíkomate alebo na výdajnom mieste GLS.", "2,90 € s DPH", false],
+  ["□", "DPD Pickup a DPD Pickup Box", "Vyzdvihnutie na výdajnom mieste alebo v boxe DPD.", "2,90 € s DPH", false],
+  ["✓", "Doprava od 29 € s DPH", "Pri objednávke nad stanovenú hodnotu je doprava zdarma.", "0 €", true],
+];
+const payments = [
+  ["G", "GoPay online", "Online platba kartou alebo podporovanou platobnou metódou.", "0 €"],
+  ["↺", "Dobierka", "Platba pri prevzatí zásielky.", "1,20 € s DPH"],
+  ["€", "Platba prevodným príkazom vopred", "Objednávka je expedovaná po prijatí úhrady na účet.", "0 €"],
+  ["⌂", "Prevodný príkaz pre štátne organizácie a firmy", "Pre školy, obce, mestá, štátne organizácie a firmy.", "0 €"],
+];
+---
+<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Doprava a platba | ToneryMaxim.sk</title></head><body><div class="page"><Header /><main>
+<InfoPageShell active="/doprava-a-platba" eyebrow="Doprava a platba" title="Doprava a platba" intro="Vyberte si spôsob doručenia a platby, ktorý vám najviac vyhovuje.">
+  <section class="shipping-highlights">
+    <article class="contact-card"><span class="info-icon">🚚</span><div><h2>Doručenie kuriérom</h2><p>GLS alebo DPD doručí zásielku priamo na adresu zákazníka.</p></div></article>
+    <article class="contact-card"><span class="info-icon">📦</span><div><h2>Boxy a výdajné miesta</h2><p>GLS Balíkomat, GLS ParcelShop, DPD Pickup a DPD Pickup Box.</p></div></article>
+    <article class="contact-card"><span class="info-icon">✓</span><div><h2>Doprava zdarma</h2><p>Pri objednávke od 29 € s DPH je doprava za 0 €.</p></div></article>
+  </section>
+  <section class="shipping-grid">
+    <article class="price-card"><span class="card-eyebrow">Doprava</span><h2>Možnosti doručenia</h2><div class="price-list">
+      {shipping.map(([icon, name, desc, price, free]) => <div class:list={["price-row", free && "is-free"]}><span class="info-icon">{icon}</span><div><strong>{name}</strong><small>{desc}</small></div><b>{price}</b></div>)}
+    </div></article>
+    <article class="price-card"><span class="card-eyebrow">Platba</span><h2>Možnosti platby</h2><div class="price-list">
+      {payments.map(([icon, name, desc, price]) => <div class="price-row"><span class="info-icon">{icon}</span><div><strong>{name}</strong><small>{desc}</small></div><b>{price}</b></div>)}
+    </div></article>
+  </section>
+  <section class="trust-row">
+    <div class="trust-pill"><span>🚚</span>Expedujeme do 24 hodín pri tovare skladom</div>
+    <div class="trust-pill"><span>☆</span>17+ rokov skúseností na trhu</div>
+    <div class="trust-pill"><span>◎</span>30 000+ vybavených objednávok</div>
+    <div class="trust-pill"><span>🔒</span>Bezpečný nákup a ochrana údajov</div>
+  </section>
+</InfoPageShell>
+</main><Footer showTrust={false} /><FloatingAdvisor /></div></body></html>
