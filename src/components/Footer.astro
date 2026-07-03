@@ -2,6 +2,23 @@
 const { showTrust = true } = Astro.props;
 
 const heurekaUrl = "https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left";
+
+const paymentLogos = [
+  { src: "/images/footer-logos/gopay-banner-colorfull.png", alt: "GoPay" },
+  { src: "/images/footer-logos/img (1).png", alt: "Visa" },
+  { src: "/images/footer-logos/img (2).png", alt: "Visa Electron" },
+  { src: "/images/footer-logos/img.png", alt: "Verified by Visa" },
+  { src: "/images/footer-logos/mc_vrt_opt_pos_73_2x.png", alt: "Mastercard" },
+  { src: "/images/footer-logos/ms_vrt_opt_pos_73_2x.png", alt: "Maestro" },
+  { src: "/images/footer-logos/mc_securecode_156px_width.png", alt: "Mastercard SecureCode" },
+];
+
+const shippingLogos = [
+  { src: "/images/footer-logos/gls-logo.png", alt: "GLS kuriér" },
+  { src: "/images/footer-logos/gls-ptp.png", alt: "GLS ParcelShop" },
+  { src: "/images/footer-logos/dpd-logo.png", alt: "DPD kuriér" },
+  { src: "/images/footer-logos/dpd-pickup.png", alt: "DPD Pickup" },
+];
 ---
 
 {showTrust && (
@@ -26,13 +43,7 @@ const heurekaUrl = "https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews
       <a class="footer-logo" href="/" aria-label="ToneryMaxim.sk">
         <img src="/images/logo.png" alt="ToneryMaxim" />
       </a>
-      <p>Slovenský špecialista na tonery, atramentové náplne a komponenty pre tlačiarne. Pomáhame zákazníkom nájsť správnu náplň rýchlo a bez omylov.</p>
-
-      <a class="footer-rating" href={heurekaUrl} target="_blank" rel="noopener noreferrer" aria-label="Otvoriť recenzie ToneryMaxim na Heureke">
-        <span data-heureka-stars>★★★★★</span>
-        <strong><span data-heureka-rating>5,0</span> / 5</strong>
-        <small><b data-heureka-count>1 323</b> recenzií na Heureke</small>
-      </a>
+      <p>Slovenský špecialista na tonery, atramentové náplne a komponenty pre tlačiarne.</p>
     </div>
 
     <nav class="footer-col" aria-label="Zákaznícka podpora">
@@ -64,7 +75,7 @@ const heurekaUrl = "https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews
       <a href="tel:+421917859206">☎ +421 917 859 206</a>
       <a href="mailto:info@tonerymaxim.sk">✉ info@tonerymaxim.sk</a>
       <p>Po–Pi 9:00–15:00</p>
-      <a class="footer-contact-rating" href={heurekaUrl} target="_blank" rel="noopener noreferrer">
+      <a class="footer-contact-rating" href={heurekaUrl} target="_blank" rel="noopener noreferrer" aria-label="Otvoriť recenzie ToneryMaxim na Heureke">
         <span data-heureka-stars>★★★★★</span>
         <strong><span data-heureka-rating>5,0</span> / 5</strong>
         <small><b data-heureka-count>1 323</b> recenzií</small>
@@ -75,34 +86,24 @@ const heurekaUrl = "https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews
   <div class="wrap footer-trust-row" aria-label="Platby a doprava">
     <div class="footer-methods footer-payment-methods">
       <strong>Platby</strong>
-      <span class="footer-logo-pill footer-logo-pill--visa" aria-label="Visa">
-        <svg viewBox="0 0 70 24" role="img" aria-hidden="true"><text x="4" y="17">VISA</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--mastercard" aria-label="Mastercard">
-        <svg viewBox="0 0 92 24" role="img" aria-hidden="true"><circle cx="22" cy="12" r="8"></circle><circle cx="33" cy="12" r="8"></circle><text x="47" y="16">mastercard</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--gpay" aria-label="Google Pay">
-        <svg viewBox="0 0 96 24" role="img" aria-hidden="true"><text x="4" y="16">G Pay</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--cod" aria-label="Dobierka">
-        <svg viewBox="0 0 108 24" role="img" aria-hidden="true"><path d="M8 7h10v10H8z"></path><path d="M11 10h7"></path><text x="26" y="16">Dobierka</text></svg>
-      </span>
+      <div class="footer-logo-list footer-logo-list--payments">
+        {paymentLogos.map((logo) => (
+          <span class="footer-logo-tile">
+            <img src={logo.src} alt={logo.alt} loading="lazy" />
+          </span>
+        ))}
+      </div>
     </div>
 
     <div class="footer-methods footer-shipping-methods">
       <strong>Doprava</strong>
-      <span class="footer-logo-pill footer-logo-pill--gls" aria-label="GLS">
-        <svg viewBox="0 0 64 24" role="img" aria-hidden="true"><text x="4" y="16">GLS</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--dpd" aria-label="DPD">
-        <svg viewBox="0 0 64 24" role="img" aria-hidden="true"><path d="M11 6l8 4v8l-8-4z"></path><path d="M19 10l8-4v8l-8 4z"></path><text x="34" y="16">DPD</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--packeta" aria-label="Packeta">
-        <svg viewBox="0 0 94 24" role="img" aria-hidden="true"><path d="M8 7h13v10H8z"></path><path d="M8 7l6.5 5L21 7"></path><text x="29" y="16">Packeta</text></svg>
-      </span>
-      <span class="footer-logo-pill footer-logo-pill--post" aria-label="Slovenská pošta">
-        <svg viewBox="0 0 130 24" role="img" aria-hidden="true"><path d="M8 7h15v10H8z"></path><path d="M8 8l7.5 5L23 8"></path><text x="31" y="16">Slovenská pošta</text></svg>
-      </span>
+      <div class="footer-logo-list footer-logo-list--shipping">
+        {shippingLogos.map((logo) => (
+          <span class="footer-logo-tile footer-logo-tile--shipping">
+            <img src={logo.src} alt={logo.alt} loading="lazy" />
+          </span>
+        ))}
+      </div>
     </div>
   </div>
 

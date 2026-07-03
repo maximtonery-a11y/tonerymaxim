@@ -866,9 +866,40 @@ function matchesCategory(product: TmProduct, category: string) {
   return text.includes(normalize(category));
 }
 
+function searchTokens(value: unknown) {
+  return normalize(value)
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 2);
+}
+
+function matchesLooseSearch(text: string, query: string) {
+  const search = normalize(query);
+  if (!search) return true;
+
+  const compactText = compactKey(text);
+  const compactSearch = compactKey(query);
+
+  if (text.includes(search)) return true;
+  if (compactSearch && compactText.includes(compactSearch)) return true;
+
+  const tokens = searchTokens(query);
+  if (!tokens.length) return true;
+
+  // Dôležité pre dotazy typu „hp 652xl“, „canon 054“, „brother 2421“:
+  // v názve produktu býva medzi značkou a modelom OEM kód, preto presná fráza nemusí existovať.
+  // Stačí, aby sa našli všetky zadané tokeny nezávisle od poradia.
+  return tokens.every((token) => {
+    const compactToken = compactKey(token);
+    if (text.includes(token)) return true;
+    if (compactToken && compactText.includes(compactToken)) return true;
+    return false;
+  });
+}
+
 export function filterProducts(products: TmProduct[], filters: { search?: string; brand?: string; category?: string; type?: string; printer?: string; color?: string; stock?: string }) {
   const search = normalize(filters.search || "");
-  const compactSearch = compactKey(filters.search || "");
   const brand = normalize(filters.brand || "");
   const printer = normalize(filters.printer || "");
   const color = normalize(filters.color || "");
@@ -895,8 +926,8 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
       else if (!text.includes(brand)) return false;
     }
     if (filters.category && !matchesCategory(product, filters.category)) return false;
-    if (printer && !text.includes(printer)) return false;
-    if (search && !text.includes(search) && !compactKey(text).includes(compactSearch)) return false;
+    if (printer && !matchesLooseSearch(text, printer)) return false;
+    if (search && !matchesLooseSearch(text, search)) return false;
     return true;
   });
 }
