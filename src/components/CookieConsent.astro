@@ -1,0 +1,289 @@
+<div class="tm-cookie-consent" data-cookie-consent hidden>
+  <div class="tm-cookie-card" role="dialog" aria-live="polite" aria-label="Nastavenie cookies">
+    <div class="tm-cookie-main">
+      <span class="tm-cookie-badge">Cookies</span>
+      <h2>Používame cookies</h2>
+      <p>
+        Nevyhnutné cookies zabezpečujú fungovanie košíka, prihlásenia a objednávky.
+        Analytické a marketingové cookies použijeme iba po vašom súhlase.
+      </p>
+      <a href="/cookies">Viac informácií o cookies</a>
+    </div>
+
+    <div class="tm-cookie-options" data-cookie-options hidden>
+      <label class="tm-cookie-toggle is-locked">
+        <input type="checkbox" checked disabled />
+        <span>
+          <strong>Nevyhnutné</strong>
+          <small>Vždy aktívne</small>
+        </span>
+      </label>
+
+      <label class="tm-cookie-toggle">
+        <input type="checkbox" data-cookie-category="analytics" />
+        <span>
+          <strong>Analytické</strong>
+          <small>Meranie návštevnosti a zlepšovanie webu</small>
+        </span>
+      </label>
+
+      <label class="tm-cookie-toggle">
+        <input type="checkbox" data-cookie-category="marketing" />
+        <span>
+          <strong>Marketingové</strong>
+          <small>Relevantná reklama a meranie kampaní</small>
+        </span>
+      </label>
+    </div>
+
+    <div class="tm-cookie-actions">
+      <button type="button" class="tm-cookie-secondary" data-cookie-settings>Prispôsobiť</button>
+      <button type="button" class="tm-cookie-secondary" data-cookie-reject>Odmietnuť voliteľné</button>
+      <button type="button" class="tm-cookie-primary" data-cookie-accept>Prijať všetko</button>
+      <button type="button" class="tm-cookie-primary" data-cookie-save hidden>Uložiť výber</button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    const STORAGE_KEY = "tm_cookie_consent_v1";
+    const root = document.querySelector("[data-cookie-consent]");
+    if (!root) return;
+
+    const options = root.querySelector("[data-cookie-options]");
+    const settingsButton = root.querySelector("[data-cookie-settings]");
+    const rejectButton = root.querySelector("[data-cookie-reject]");
+    const acceptButton = root.querySelector("[data-cookie-accept]");
+    const saveButton = root.querySelector("[data-cookie-save]");
+    const analyticsInput = root.querySelector('[data-cookie-category="analytics"]');
+    const marketingInput = root.querySelector('[data-cookie-category="marketing"]');
+
+    function readConsent() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function writeConsent(consent) {
+      const payload = {
+        necessary: true,
+        analytics: Boolean(consent.analytics),
+        marketing: Boolean(consent.marketing),
+        savedAt: new Date().toISOString(),
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      window.dispatchEvent(new CustomEvent("tm:cookies", { detail: payload }));
+      root.hidden = true;
+    }
+
+    function openSettings() {
+      options.hidden = false;
+      saveButton.hidden = false;
+      acceptButton.hidden = true;
+      settingsButton.hidden = true;
+      rejectButton.textContent = "Odmietnuť";
+    }
+
+    window.ToneryMaximCookies = {
+      open: function () {
+        root.hidden = false;
+        openSettings();
+      },
+      get: readConsent,
+      reset: function () {
+        localStorage.removeItem(STORAGE_KEY);
+        root.hidden = false;
+      },
+    };
+
+    settingsButton.addEventListener("click", openSettings);
+    acceptButton.addEventListener("click", function () {
+      writeConsent({ analytics: true, marketing: true });
+    });
+    rejectButton.addEventListener("click", function () {
+      writeConsent({ analytics: false, marketing: false });
+    });
+    saveButton.addEventListener("click", function () {
+      writeConsent({
+        analytics: analyticsInput.checked,
+        marketing: marketingInput.checked,
+      });
+    });
+
+    const existingConsent = readConsent();
+    if (existingConsent) {
+      window.dispatchEvent(new CustomEvent("tm:cookies", { detail: existingConsent }));
+      return;
+    }
+
+    root.hidden = false;
+
+  })();
+</script>
+
+<style>
+  .tm-cookie-consent {
+    position: fixed;
+    inset: auto 18px 18px;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .tm-cookie-card {
+    width: min(100%, 980px);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 18px 24px;
+    align-items: end;
+    padding: 20px;
+    border: 1px solid rgba(203, 213, 225, .95);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, .18);
+    backdrop-filter: blur(18px);
+    pointer-events: auto;
+  }
+
+  .tm-cookie-main h2 {
+    margin: 8px 0 6px;
+    color: #071b3a;
+    font-size: 22px;
+    line-height: 1.15;
+    letter-spacing: -.035em;
+  }
+
+  .tm-cookie-main p {
+    max-width: 680px;
+    margin: 0;
+    color: #526172;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .tm-cookie-main a {
+    display: inline-flex;
+    margin-top: 8px;
+    color: #0b63ce;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .tm-cookie-badge {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #0b63ce;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .tm-cookie-options {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .tm-cookie-toggle {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 13px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #f8fafc;
+    cursor: pointer;
+  }
+
+  .tm-cookie-toggle input {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: #0b63ce;
+  }
+
+  .tm-cookie-toggle strong {
+    display: block;
+    color: #071b3a;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  .tm-cookie-toggle small {
+    display: block;
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .tm-cookie-toggle.is-locked {
+    cursor: default;
+  }
+
+  .tm-cookie-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 9px;
+  }
+
+  .tm-cookie-actions button {
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .tm-cookie-primary {
+    border: 1px solid #071b3a;
+    background: #071b3a;
+    color: #fff;
+  }
+
+  .tm-cookie-secondary {
+    border: 1px solid #d7e1ee;
+    background: #fff;
+    color: #071b3a;
+  }
+
+  @media (max-width: 760px) {
+    .tm-cookie-consent {
+      inset: auto 10px 10px;
+    }
+
+    .tm-cookie-card {
+      grid-template-columns: 1fr;
+      padding: 16px;
+      border-radius: 22px;
+    }
+
+    .tm-cookie-options {
+      grid-template-columns: 1fr;
+    }
+
+    .tm-cookie-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    .tm-cookie-actions button {
+      width: 100%;
+    }
+  }
+</style>
