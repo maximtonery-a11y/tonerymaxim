@@ -1,4 +1,6 @@
 ---
+import CookieConsent from "./CookieConsent.astro";
+
 const { showTrust = true } = Astro.props;
 
 const heurekaUrl = "https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left";
@@ -67,7 +69,7 @@ const shippingLogos = [
       <a href="/kontakt">O nás</a>
       <a href="/kontakt">Kontakt</a>
       <a href="/ochrana-osobnych-udajov">GDPR</a>
-      <a href="/cookies">Cookies</a>
+      <a href="/cookies#nastavenia" data-open-cookie-settings>Nastavenia cookies</a>
     </nav>
 
     <div class="footer-contact-box">
@@ -117,6 +119,8 @@ const shippingLogos = [
     </div>
   </div>
 </footer>
+
+<CookieConsent />
 
 <script>
   function formatSkNumber(value) {

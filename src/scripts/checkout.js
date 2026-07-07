@@ -34,6 +34,107 @@
     invoice_org: { label: "Prevodný príkaz pre organizácie a firmy", price: 0 },
   };
 
+  const CHECKOUT_SELECTION_KEY = "tm_checkout_selection_v1";
+
+  function setRadioValue(name, value) {
+    const input = document.querySelector(`input[name="${name}"][value="${CSS.escape(String(value || ""))}"]`);
+    if (input) input.checked = true;
+  }
+
+  function saveCheckoutSelection() {
+    try {
+      localStorage.setItem(CHECKOUT_SELECTION_KEY, JSON.stringify({
+        shipping: getSelected("shipping") || "dpd_courier",
+        payment: getSelected("payment") || "gopay",
+        savedAt: new Date().toISOString(),
+      }));
+    } catch {
+      // noop
+    }
+  }
+
+  function restoreCheckoutSelection() {
+    try {
+      const raw = localStorage.getItem(CHECKOUT_SELECTION_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data?.shipping && SHIPPING[data.shipping]) setRadioValue("shipping", data.shipping);
+      if (data?.payment && PAYMENT[data.payment]) setRadioValue("payment", data.payment);
+    } catch {
+      // noop
+    }
+  }
+
+  function writeInput(selectorOrName, value, overwrite = false) {
+    const input = selectorOrName.startsWith("#")
+      ? document.querySelector(selectorOrName)
+      : document.querySelector(`[name="${selectorOrName}"]`);
+    if (!input) return;
+    const text = String(value ?? "").trim();
+    if (!text) return;
+    if (!overwrite && String(input.value || "").trim()) return;
+    input.value = text;
+    input.classList.remove("is-invalid");
+  }
+
+  function normalizePhone(value) {
+    const text = String(value || "").trim();
+    if (!text) return "";
+    return text;
+  }
+
+  function addressDiffers(a = {}, b = {}) {
+    const keys = ["address_1", "city", "postcode", "first_name", "last_name"];
+    return keys.some((key) => String(a?.[key] || "").trim() && String(a?.[key] || "").trim() !== String(b?.[key] || "").trim());
+  }
+
+  async function loadLoggedInCustomerToCheckout() {
+    try {
+      const response = await fetch("/api/auth/me", { headers: { Accept: "application/json" }, cache: "no-store" });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.ok || !data.customer) return null;
+
+      const customer = data.customer;
+      const billing = customer.billing || {};
+      const shipping = customer.shipping || {};
+      const firstName = customer.first_name || billing.first_name || "";
+      const lastName = customer.last_name || billing.last_name || "";
+      const subtitle = document.querySelector("[data-contact-subtitle]");
+      if (subtitle) subtitle.textContent = `Nakupujete ako prihlásený zákazník ${[firstName, lastName].filter(Boolean).join(" ") || customer.email}. Údaje sme doplnili z účtu.`;
+
+      writeInput("#email", customer.email || billing.email || "", true);
+      writeInput("#phone", normalizePhone(billing.phone || shipping.phone || ""), true);
+
+      writeInput("first_name", billing.first_name || firstName, true);
+      writeInput("last_name", billing.last_name || lastName, true);
+      writeInput("company", billing.company || "", true);
+      writeInput("address", billing.address_1 || "", true);
+      writeInput("zip", billing.postcode || "", true);
+      writeInput("city", billing.city || "", true);
+
+      const companyEnabled = document.querySelector("#company_enabled");
+      if (companyEnabled && String(billing.company || "").trim()) companyEnabled.checked = true;
+
+      if (shipping && addressDiffers(shipping, billing)) {
+        const different = document.querySelector("#different_address");
+        if (different) different.checked = true;
+        writeInput("delivery_first_name", shipping.first_name || billing.first_name || firstName, true);
+        writeInput("delivery_last_name", shipping.last_name || billing.last_name || lastName, true);
+        writeInput("delivery_street", shipping.address_1 || "", true);
+        writeInput("delivery_zip", shipping.postcode || "", true);
+        writeInput("delivery_city", shipping.city || "", true);
+        writeInput("delivery_phone", normalizePhone(shipping.phone || billing.phone || ""), true);
+        writeInput("delivery_email", customer.email || billing.email || "", true);
+      }
+
+      updateVisibility();
+      renderCheckoutSummary();
+      return customer;
+    } catch {
+      return null;
+    }
+  }
+
   function normalizeNumber(value) {
     if (typeof value === "number") return value;
     if (typeof value === "string") {
@@ -183,6 +284,18 @@
     }
 
     return [];
+  }
+
+  const VAT_RATE = 0.23;
+
+  function netFromGross(value) {
+    const number = Number(value || 0);
+    return Math.round((number / (1 + VAT_RATE)) * 100) / 100;
+  }
+
+  function vatFromGross(value) {
+    const number = Number(value || 0);
+    return Math.round((number - netFromGross(number)) * 100) / 100;
   }
 
   function money(value) {
@@ -571,6 +684,10 @@
     document.querySelector("[data-summary-shipping]").textContent = shippingPrice === 0 ? "Zdarma" : money(shippingPrice);
     document.querySelector("[data-summary-payment-label]").textContent = payment.label;
     document.querySelector("[data-summary-payment]").textContent = paymentPrice === 0 ? "Bez poplatku" : money(paymentPrice);
+    const summaryNet = document.querySelector("[data-summary-net]");
+    if (summaryNet) summaryNet.textContent = money(netFromGross(total));
+    const summaryVat = document.querySelector("[data-summary-vat]");
+    if (summaryVat) summaryVat.textContent = money(vatFromGross(total));
     document.querySelector("[data-summary-total]").textContent = money(total);
 
     const mobileTotal = document.querySelector("[data-mobile-total]");
@@ -1282,18 +1399,15 @@
 
     localStorage.setItem("tm_last_order_preview", JSON.stringify(orderPreview));
 
-    if (orderPreview.payment === "cod") {
-      status.textContent = "Dobierková objednávka je pripravená. Ostré uloženie objednávky pridáme v ďalšom kroku.";
-      status.className = "order-status is-success";
-      return;
-    }
+    const onlinePayments = ["gopay", "applepay", "googlepay"];
+    const isOnlinePayment = onlinePayments.includes(orderPreview.payment);
 
     try {
       submitButton.disabled = true;
-      status.textContent = "Vytváram GoPay platbu...";
+      status.textContent = isOnlinePayment ? "Vytváram GoPay platbu..." : "Ukladám objednávku...";
       status.className = "order-status";
 
-      const response = await fetch("/api/gopay-create", {
+      const response = await fetch(isOnlinePayment ? "/api/gopay-create" : "/api/order-create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1303,16 +1417,27 @@
 
       const data = await response.json();
 
-      if (!response.ok || !data.ok || !data.gwUrl) {
-        throw new Error(data.error || "Nepodarilo sa vytvoriť GoPay platbu.");
+      if (isOnlinePayment) {
+        if (!response.ok || !data.ok || !data.gwUrl) {
+          throw new Error(data.error || "Nepodarilo sa vytvoriť GoPay platbu.");
+        }
+
+        status.textContent = "Presmerujem vás na GoPay...";
+        status.className = "order-status is-success";
+        window.location.href = data.gwUrl;
+        return;
       }
 
-      status.textContent = "Presmerujem vás na GoPay...";
-      status.className = "order-status is-success";
+      if (!response.ok || !data.ok || !data.orderId) {
+        throw new Error(data.error || "Nepodarilo sa uložiť objednávku.");
+      }
 
-      window.location.href = data.gwUrl;
+      localStorage.removeItem("tm_cart_v1");
+      status.textContent = "Objednávka bola uložená. Presmerujem vás na potvrdenie...";
+      status.className = "order-status is-success";
+      window.location.href = `/platba-dokoncena?order=${encodeURIComponent(data.orderNumber || data.orderId)}&method=${encodeURIComponent(orderPreview.payment)}`;
     } catch (error) {
-      status.textContent = error.message || "Nepodarilo sa vytvoriť GoPay platbu.";
+      status.textContent = error.message || "Nepodarilo sa dokončiť objednávku.";
       status.className = "order-status is-error";
       submitButton.disabled = false;
     }
@@ -1370,15 +1495,18 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    restoreCheckoutSelection();
     restorePickupState();
     renderCheckoutSummary();
     updateVisibility();
+    loadLoggedInCustomerToCheckout();
     setupPostalAutofill();
     setupPickupWidgets();
     setupMobileCheckoutSteps();
 
     document.querySelectorAll('input[name="shipping"], input[name="payment"], #company_enabled, #different_address').forEach((input) => {
       input.addEventListener("change", () => {
+        if (input.name === "shipping" || input.name === "payment") saveCheckoutSelection();
         updateVisibility();
         renderCheckoutSummary();
       });

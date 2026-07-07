@@ -44,7 +44,7 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
       </span>
     </a>
 
-    <a href="/prihlasenie" class="account-link" aria-label="Prihlásenie alebo účet">Účet</a>
+    <a href="/prihlasenie" class="account-link" aria-label="Prihlásenie alebo účet" data-account-link>Účet</a>
 
     <a href="/kosik" class="icon-btn cart-btn" aria-label="Košík">
       🛒
@@ -128,4 +128,24 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") setGlobalMenu(false);
   });
+
+  async function updateAccountLink() {
+    const link = document.querySelector("[data-account-link]");
+    if (!link) return;
+    try {
+      const response = await fetch("/api/auth/me", { headers: { Accept: "application/json" }, cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok || !data?.ok || !data.customer) return;
+      const customer = data.customer;
+      const name = [customer.first_name || customer.billing?.first_name, customer.last_name || customer.billing?.last_name].filter(Boolean).join(" ").trim();
+      link.href = "/ucet";
+      link.textContent = name ? `Účet: ${name.split(" ")[0]}` : "Môj účet";
+      link.setAttribute("aria-label", "Môj účet");
+      link.classList.add("is-logged-in");
+    } catch {
+      // noop
+    }
+  }
+
+  updateAccountLink();
 </script>

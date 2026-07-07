@@ -1,4 +1,6 @@
 import type { APIRoute } from "astro";
+import { readCustomerSession } from "../../lib/auth-session";
+import { savePendingGoPayOrder } from "../../lib/gopay-order";
 
 export const prerender = false;
 
@@ -16,16 +18,20 @@ type CartItem = {
 };
 
 const SHIPPING: Record<string, { label: string; price: number }> = {
-  courier: { label: "GLS kuriér na adresu", price: 3.9 },
-  pickup: { label: "GLS ParcelShop", price: 2.9 },
-  box: { label: "GLS Balíkomat", price: 2.9 },
+  dpd_courier: { label: "DPD kuriér na adresu", price: 3.9 },
+  dpd_pickup: { label: "DPD Pickup", price: 2.9 },
+  dpd_box: { label: "DPD Pickup Box", price: 2.9 },
+  gls_courier: { label: "GLS kuriér na adresu", price: 3.9 },
+  gls_pickup: { label: "GLS ParcelShop / Balíkomat", price: 2.9 },
+  courier: { label: "Kuriér na adresu", price: 3.9 },
+  pickup: { label: "Odberné miesto", price: 2.9 },
+  box: { label: "Balíkomat", price: 2.9 },
 };
 
 const PAYMENT: Record<string, { label: string; price: number; gopayInstrument?: string }> = {
-  gopay: { label: "Platba kartou online", price: 0, gopayInstrument: "PAYMENT_CARD" },
-  applepay: { label: "Apple Pay", price: 0, gopayInstrument: "PAYMENT_CARD" },
-  googlepay: { label: "Google Pay", price: 0, gopayInstrument: "PAYMENT_CARD" },
-  cod: { label: "Dobierka", price: 1.2 },
+  gopay: { label: "Platba online GoPay", price: 0, gopayInstrument: "PAYMENT_CARD" },
+  applepay: { label: "Apple Pay", price: 0, gopayInstrument: "APPLE_PAY" },
+  googlepay: { label: "Google Pay", price: 0, gopayInstrument: "GOOGLE_PAY" },
 };
 
 function getGoPayHost() {
@@ -35,7 +41,7 @@ function getGoPayHost() {
 }
 
 function env(name: string) {
-  return String(import.meta.env[name] || "").trim();
+  return String(import.meta.env[name] || process.env[name] || "").trim();
 }
 
 function basicAuth(clientId: string, clientSecret: string) {
@@ -182,7 +188,7 @@ async function getAccessToken(scope: "payment-create" | "payment-all") {
   return String(tokenData.access_token);
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const goid = env("GOPAY_GOID");
     const returnUrl = env("GOPAY_RETURN_URL");
@@ -198,6 +204,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    const session = readCustomerSession(cookies);
     const body = await request.json().catch(() => ({}));
     const cart = normalizeCart(Array.isArray(body.cart) ? body.cart : []);
 
@@ -211,21 +218,29 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const shippingCode = String(body.shipping || "courier");
-    const paymentCode = String(body.payment || "gopay");
+    const shippingCode = String(
+      typeof body.shipping === "string"
+        ? body.shipping
+        : body.shipping?.method || "courier"
+    );
+    const paymentCode = String(
+      typeof body.payment === "string"
+        ? body.payment
+        : body.payment?.method || "gopay"
+    );
 
-    if (paymentCode === "cod") {
+    if (!PAYMENT[paymentCode]) {
       return new Response(JSON.stringify({
         ok: false,
-        error: "Dobierka sa neposiela do GoPay.",
+        error: "Táto platobná metóda sa neposiela do GoPay.",
       }), {
         status: 400,
         headers: { "Content-Type": "application/json; charset=utf-8" },
       });
     }
 
-    const shipping = SHIPPING[shippingCode] || SHIPPING.courier;
-    const payment = PAYMENT[paymentCode] || PAYMENT.gopay;
+    const shipping = SHIPPING[shippingCode] || SHIPPING.dpd_courier;
+    const payment = PAYMENT[paymentCode];
 
     const subtotal = cart.reduce((sum, item) => sum + discountedLine(item).final, 0);
     const shippingPrice = subtotal >= 29 ? 0 : shipping.price;
@@ -266,7 +281,7 @@ export const POST: APIRoute = async ({ request }) => {
     const paymentBody = {
       payer: {
         default_payment_instrument: payment.gopayInstrument || "PAYMENT_CARD",
-        allowed_payment_instruments: ["PAYMENT_CARD"],
+        allowed_payment_instruments: [payment.gopayInstrument || "PAYMENT_CARD"],
         contact: {
           first_name: String(body?.billing?.firstName || ""),
           last_name: String(body?.billing?.lastName || ""),
@@ -338,6 +353,27 @@ export const POST: APIRoute = async ({ request }) => {
         headers: { "Content-Type": "application/json; charset=utf-8" },
       });
     }
+
+    await savePendingGoPayOrder({
+      orderNumber,
+      paymentId: String(paymentData.id),
+      amountCents: totalCents,
+      currency: "EUR",
+      cart,
+      billing: body.billing || {},
+      delivery: { ...(body.delivery || {}), pickup: body.shipping?.pickup || body.delivery?.pickup || null },
+      contact: body.contact || {},
+      shippingCode,
+      shippingLabel: shipping.label,
+      shippingPrice,
+      paymentCode,
+      paymentLabel: payment.label,
+      paymentPrice,
+      subtotal: Math.round(subtotal * 100) / 100,
+      total: Math.round((totalCents / 100) * 100) / 100,
+      createdAt: new Date().toISOString(),
+      customerId: session?.id || undefined,
+    });
 
     return new Response(JSON.stringify({
       ok: true,

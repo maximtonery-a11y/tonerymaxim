@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { processPaidGoPayOrder } from "../../lib/gopay-order";
 
 export const prerender = false;
 
@@ -9,7 +10,7 @@ function getGoPayHost() {
 }
 
 function env(name: string) {
-  return String(import.meta.env[name] || "").trim();
+  return String(import.meta.env[name] || process.env[name] || "").trim();
 }
 
 function basicAuth(clientId: string, clientSecret: string) {
@@ -98,7 +99,7 @@ function getUiState(state: string) {
       return {
         type: "paid",
         title: "Platba bola úspešná",
-        message: "Platbu sme prijali. V ostrej prevádzke tu automaticky vytvoríme a označíme objednávku ako zaplatenú.",
+        message: "Platbu sme prijali a objednávka bola odoslaná do systému.",
       };
     case "CANCELED":
       return {
@@ -145,18 +146,31 @@ export const GET: APIRoute = async ({ url }) => {
     const payment = await getPayment(paymentId);
     const state = String(payment?.state || "UNKNOWN");
 
+    let orderResult: any = null;
+
+    if (state === "PAID") {
+      orderResult = await processPaidGoPayOrder(payment);
+    }
+
     console.log("GoPay status check", {
       id: payment.id,
       state,
       order_number: payment.order_number,
       amount: payment.amount,
       currency: payment.currency,
+      woo_order_id: orderResult?.orderId || null,
+      woo_order_created: orderResult?.created || false,
     });
 
     return new Response(JSON.stringify({
       ok: true,
       state,
       ui: getUiState(state),
+      order: orderResult ? {
+        created: orderResult.created,
+        id: orderResult.orderId,
+        number: orderResult.orderNumber,
+      } : null,
       payment: {
         id: payment.id,
         state: payment.state,

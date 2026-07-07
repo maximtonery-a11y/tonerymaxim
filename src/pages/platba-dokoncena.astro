@@ -385,7 +385,7 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
         <section class="thank-wrap">
           <div class="thank-hero" data-thank-hero>
             <div class="thank-check" data-thank-icon>✓</div>
-            <div class="thank-kicker">GoPay platba</div>
+            <div class="thank-kicker" data-payment-kicker>GoPay platba</div>
             <h1 data-payment-title>Overujeme objednávku</h1>
             <p class="thank-success-line" data-payment-subtitle>Načítavame stav online platby.</p>
             <p data-payment-text>
@@ -442,7 +442,7 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
                 </div>
                 <div class="thank-summary-row">
                   <span>Spôsob platby</span>
-                  <strong>Online platba GoPay</strong>
+                  <strong data-summary-payment-method>Online platba GoPay</strong>
                 </div>
               </div>
               <div class="thank-debug" data-payment-debug hidden></div>
@@ -511,7 +511,9 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
       const subtitleEl = document.querySelector("[data-payment-subtitle]");
       const textEl = document.querySelector("[data-payment-text]");
       const iconEl = document.querySelector("[data-thank-icon]");
+      const kickerEl = document.querySelector("[data-payment-kicker]");
       const stateEl = document.querySelector("[data-summary-state]");
+      const paymentMethodEl = document.querySelector("[data-summary-payment-method]");
       const paymentIdEl = document.querySelector("[data-summary-payment-id]");
       const orderEl = document.querySelector("[data-summary-order]");
       const dateEl = document.querySelector("[data-summary-date]");
@@ -524,6 +526,8 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
 
       const params = new URLSearchParams(window.location.search);
       const paymentId = params.get("id");
+      const directOrder = params.get("order");
+      const directMethod = params.get("method");
 
       const now = new Intl.DateTimeFormat("sk-SK", {
         day: "numeric",
@@ -540,10 +544,47 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
         return data?.payment?.order_number || (paymentId ? `TM-${paymentId}` : "—");
       }
 
+      function paymentLabel(method) {
+        if (method === "cod") return "Objednávka na dobierku";
+        if (method === "bank_prepaid") return "Objednávka s platbou prevodom vopred";
+        if (method === "invoice_org") return "Objednávka s prevodným príkazom";
+        return "Objednávka";
+      }
+
+      function paymentMethodText(method) {
+        if (method === "cod") return "Dobierka";
+        if (method === "bank_prepaid") return "Platba prevodom vopred";
+        if (method === "invoice_org") return "Prevodný príkaz pre organizácie a firmy";
+        if (method === "applepay") return "Apple Pay";
+        if (method === "googlepay") return "Google Pay";
+        return "Online platba GoPay";
+      }
+
+      function showDirectOrder() {
+        const orderNumber = directOrder || "—";
+
+        iconEl.textContent = "✓";
+        kickerEl.textContent = paymentMethodText(directMethod);
+        paymentMethodEl.textContent = paymentMethodText(directMethod);
+        titleEl.innerHTML = `Ďakujeme za objednávku<br><span class="thank-order-number">č. ${orderNumber}</span>`;
+        subtitleEl.innerHTML = `${paymentLabel(directMethod)} bola <strong>úspešne uložená</strong>.`;
+        textEl.textContent = "Potvrdenie objednávky sme poslali na e-mail uvedený v pokladni.";
+
+        stateEl.innerHTML = '<span class="thank-paid-pill">ULOŽENÉ</span>';
+        paymentIdEl.textContent = "—";
+        orderEl.textContent = orderNumber;
+        rewardSection.hidden = false;
+        successActions.hidden = false;
+
+        localStorage.removeItem("tm_cart_v1");
+      }
+
       function showPaid(data) {
         const orderNumber = getOrderNumber(data);
 
         iconEl.textContent = "✓";
+        kickerEl.textContent = paymentMethodText(directMethod);
+        paymentMethodEl.textContent = paymentMethodText(directMethod);
         titleEl.innerHTML = `Ďakujeme za objednávku<br><span class="thank-order-number">č. ${orderNumber}</span>`;
         subtitleEl.innerHTML = "Vaša platba online prebehla <strong>úspešne</strong>.";
         textEl.textContent = "Potvrdenie objednávky sme poslali na e-mail uvedený v pokladni.";
@@ -605,6 +646,11 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
       }
 
       async function loadStatus() {
+        if (directOrder) {
+          showDirectOrder();
+          return;
+        }
+
         if (!paymentId) {
           titleEl.textContent = "Chýba ID platby";
           subtitleEl.textContent = "GoPay nevrátilo ID platby.";

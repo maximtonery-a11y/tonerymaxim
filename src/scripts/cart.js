@@ -203,7 +203,19 @@
     `;
   }
 
-  function formatMoney(value) {
+  const VAT_RATE = 0.23;
+
+function netFromGross(value) {
+  const number = Number(value || 0);
+  return Math.round((number / (1 + VAT_RATE)) * 100) / 100;
+}
+
+function vatFromGross(value) {
+  const number = Number(value || 0);
+  return Math.round((number - netFromGross(number)) * 100) / 100;
+}
+
+function formatMoney(value) {
     return new Intl.NumberFormat("sk-SK", {
       style: "currency",
       currency: "EUR",
@@ -432,6 +444,8 @@
     const mobileSticky = document.querySelector("[data-cart-mobile-sticky]");
     const mobileTotalEl = document.querySelector("[data-cart-mobile-total]");
     const subtotalEl = document.querySelector("[data-cart-subtotal]");
+    const netEl = document.querySelector("[data-cart-net]");
+    const vatEl = document.querySelector("[data-cart-vat]");
     const totalEl = document.querySelector("[data-cart-total]");
 
     if (!list) return;
@@ -517,6 +531,8 @@
     if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);
     const discountValueEl = document.querySelector("[data-cart-discount]");
     if (discountValueEl) discountValueEl.textContent = `-${formatMoney(discount)}`;
+    if (netEl) netEl.textContent = formatMoney(netFromGross(total));
+    if (vatEl) vatEl.textContent = formatMoney(vatFromGross(total));
     if (totalEl) totalEl.textContent = formatMoney(total);
     if (mobileTotalEl) mobileTotalEl.textContent = formatMoney(total);
 

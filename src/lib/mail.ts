@@ -136,6 +136,101 @@ export async function sendPasswordChangedEmail(input: {
   });
 }
 
+
+const VAT_RATE = 0.23;
+
+function toNumber(value: unknown): number {
+  const number = typeof value === "number" ? value : Number(String(value ?? "0").replace(/\s/g, "").replace("€", "").replace(",", "."));
+  return Number.isFinite(number) ? Math.round(number * 100) / 100 : 0;
+}
+
+function netFromGross(value: unknown): number {
+  return Math.round((toNumber(value) / (1 + VAT_RATE)) * 100) / 100;
+}
+
+function vatFromGross(value: unknown): number {
+  const gross = toNumber(value);
+  return Math.round((gross - netFromGross(gross)) * 100) / 100;
+}
+
+function formatMoney(value: unknown): string {
+  return new Intl.NumberFormat("sk-SK", { style: "currency", currency: "EUR" }).format(toNumber(value));
+}
+
+export async function sendOrderConfirmationEmail(input: {
+  to: string;
+  orderNumber: string;
+  source: any;
+  paymentTitle: string;
+  shippingTitle: string;
+}) {
+  const source = input.source || {};
+  const contact = source.contact || {};
+  const billing = source.billing || {};
+  const firstName = String(billing.firstName || contact.name || "").trim().split(/\s+/)[0] || "zákazník";
+  const items = Array.isArray(source.cart) ? source.cart : [];
+
+  const subtotalGross = toNumber(source.subtotal);
+  const shippingGross = toNumber(source.shippingPrice);
+  const paymentGross = toNumber(source.paymentPrice);
+  const totalGross = toNumber(source.total);
+  const totalNet = netFromGross(totalGross);
+  const totalVat = vatFromGross(totalGross);
+
+  const rowsText = items.map((item: any) => {
+    const gross = toNumber(Number(item.price || 0) * Number(item.qty || 1));
+    return `- ${item.name} ×${item.qty}: ${formatMoney(gross)} s DPH / ${formatMoney(netFromGross(gross))} bez DPH`;
+  }).join("\n");
+  const rowsHtml = items.map((item: any) => {
+    const gross = toNumber(Number(item.price || 0) * Number(item.qty || 1));
+    return `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #e6edf5"><strong>${escapeHtml(String(item.name || "Produkt"))}</strong><br><span style="color:#64748b">SKU: ${escapeHtml(String(item.sku || ""))}</span></td>
+      <td style="padding:10px 0;border-bottom:1px solid #e6edf5;text-align:center">×${escapeHtml(String(item.qty || 1))}</td>
+      <td style="padding:10px 0;border-bottom:1px solid #e6edf5;text-align:right"><strong>${formatMoney(gross)}</strong><br><span style="color:#64748b;font-size:12px">${formatMoney(netFromGross(gross))} bez DPH</span></td>
+    </tr>`;
+  }).join("");
+
+  const text = `Dobrý deň, ${firstName},\n\nďakujeme za objednávku č. ${input.orderNumber}.\n\nObjednávku sme prijali a spracujeme ju čo najskôr.\n\nProdukty:\n${rowsText}\n\nDoprava: ${input.shippingTitle}\nSpôsob platby: ${input.paymentTitle}\nCena spolu s DPH: ${formatMoney(totalGross)}
+Základ bez DPH: ${formatMoney(totalNet)}
+DPH 23 %: ${formatMoney(totalVat)}\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk`;
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.55;color:#061735;max-width:680px;margin:0 auto;padding:24px">
+      <div style="font-size:13px;color:#1d6cf2;font-weight:800;margin-bottom:8px">ToneryMAXIM.sk</div>
+      <h1 style="font-size:28px;margin:0 0 14px">Ďakujeme za objednávku</h1>
+      <p>Dobrý deň, ${escapeHtml(firstName)},</p>
+      <p>ďakujeme za objednávku <strong>č. ${escapeHtml(input.orderNumber)}</strong>. Objednávku sme prijali a spracujeme ju čo najskôr.</p>
+      <table style="width:100%;border-collapse:collapse;margin:22px 0">
+        <thead>
+          <tr>
+            <th style="text-align:left;border-bottom:2px solid #dbe7f4;padding-bottom:8px">Produkt</th>
+            <th style="text-align:center;border-bottom:2px solid #dbe7f4;padding-bottom:8px">Počet</th>
+            <th style="text-align:right;border-bottom:2px solid #dbe7f4;padding-bottom:8px">Cena</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <table style="width:100%;border-collapse:collapse;margin:18px 0">
+        <tr><td style="padding:6px 0;color:#64748b">Medzisúčet tovaru s DPH:</td><td style="padding:6px 0;text-align:right">${formatMoney(subtotalGross)}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b">Doprava:</td><td style="padding:6px 0;text-align:right">${escapeHtml(input.shippingTitle)} · ${formatMoney(shippingGross)}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b">Spôsob platby:</td><td style="padding:6px 0;text-align:right">${escapeHtml(input.paymentTitle)} · ${formatMoney(paymentGross)}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b">Základ bez DPH:</td><td style="padding:6px 0;text-align:right">${formatMoney(totalNet)}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b">DPH 23 %:</td><td style="padding:6px 0;text-align:right">${formatMoney(totalVat)}</td></tr>
+        <tr><td style="padding:10px 0;font-weight:800">Cena spolu s DPH:</td><td style="padding:10px 0;text-align:right;font-weight:800;font-size:18px">${formatMoney(totalGross)}</td></tr>
+      </table>
+      <p style="color:#64748b">O odoslaní zásielky vás budeme informovať e-mailom.</p>
+      <p>ToneryMAXIM.sk<br><a href="mailto:info@tonerymaxim.sk">info@tonerymaxim.sk</a></p>
+    </div>`;
+
+  return sendMail({
+    to: input.to,
+    subject: `Objednávka č. ${input.orderNumber} bola prijatá | ToneryMAXIM.sk`,
+    text,
+    html,
+  });
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")

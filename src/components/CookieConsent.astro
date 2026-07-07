@@ -1,289 +1,449 @@
-<div class="tm-cookie-consent" data-cookie-consent hidden>
-  <div class="tm-cookie-card" role="dialog" aria-live="polite" aria-label="Nastavenie cookies">
-    <div class="tm-cookie-main">
-      <span class="tm-cookie-badge">Cookies</span>
-      <h2>Používame cookies</h2>
-      <p>
-        Nevyhnutné cookies zabezpečujú fungovanie košíka, prihlásenia a objednávky.
-        Analytické a marketingové cookies použijeme iba po vašom súhlase.
-      </p>
-      <a href="/cookies">Viac informácií o cookies</a>
+<div class="tm-cookie-consent" id="tm-cookie-consent" data-cookie-consent>
+  <button type="button" class="tm-cookie-floating" id="tm-cookie-floating" aria-label="Otvoriť nastavenia cookies">
+    <span aria-hidden="true">🍪</span>
+    <strong>Cookies</strong>
+  </button>
+
+  <section class="tm-cookie-panel" id="tm-cookie-panel" role="dialog" aria-live="polite" aria-label="Nastavenia cookies">
+    <button type="button" class="tm-cookie-close" id="tm-cookie-close" aria-label="Zavrieť cookies lištu">×</button>
+
+    <div class="tm-cookie-content">
+      <div class="tm-cookie-text">
+        <span class="tm-cookie-label">Cookies</span>
+        <h2>Používame cookies</h2>
+        <p>
+          Nevyhnutné cookies zabezpečujú fungovanie košíka, prihlásenia a objednávky.
+          Analytické a marketingové cookies použijeme iba po vašom súhlase.
+        </p>
+        <a href="/cookies">Viac informácií o cookies</a>
+      </div>
+
+      <div class="tm-cookie-options" aria-label="Výber cookies">
+        <label class="tm-cookie-option tm-cookie-option-locked">
+          <input type="checkbox" checked disabled />
+          <span>
+            <strong>Nevyhnutné</strong>
+            <small>Vždy aktívne – košík, prihlásenie, objednávka.</small>
+          </span>
+        </label>
+
+        <label class="tm-cookie-option">
+          <input type="checkbox" id="tm-cookie-analytics" />
+          <span>
+            <strong>Analytické</strong>
+            <small>Meranie návštevnosti a zlepšovanie webu.</small>
+          </span>
+        </label>
+
+        <label class="tm-cookie-option">
+          <input type="checkbox" id="tm-cookie-marketing" />
+          <span>
+            <strong>Marketingové</strong>
+            <small>Reklama a meranie kampaní.</small>
+          </span>
+        </label>
+      </div>
+
+      <div class="tm-cookie-actions">
+        <button type="button" class="tm-cookie-btn tm-cookie-btn-light" id="tm-cookie-reject">Odmietnuť voliteľné</button>
+        <button type="button" class="tm-cookie-btn tm-cookie-btn-light" id="tm-cookie-save">Uložiť výber</button>
+        <button type="button" class="tm-cookie-btn tm-cookie-btn-dark" id="tm-cookie-accept">Prijať všetko</button>
+      </div>
     </div>
-
-    <div class="tm-cookie-options" data-cookie-options hidden>
-      <label class="tm-cookie-toggle is-locked">
-        <input type="checkbox" checked disabled />
-        <span>
-          <strong>Nevyhnutné</strong>
-          <small>Vždy aktívne</small>
-        </span>
-      </label>
-
-      <label class="tm-cookie-toggle">
-        <input type="checkbox" data-cookie-category="analytics" />
-        <span>
-          <strong>Analytické</strong>
-          <small>Meranie návštevnosti a zlepšovanie webu</small>
-        </span>
-      </label>
-
-      <label class="tm-cookie-toggle">
-        <input type="checkbox" data-cookie-category="marketing" />
-        <span>
-          <strong>Marketingové</strong>
-          <small>Relevantná reklama a meranie kampaní</small>
-        </span>
-      </label>
-    </div>
-
-    <div class="tm-cookie-actions">
-      <button type="button" class="tm-cookie-secondary" data-cookie-settings>Prispôsobiť</button>
-      <button type="button" class="tm-cookie-secondary" data-cookie-reject>Odmietnuť voliteľné</button>
-      <button type="button" class="tm-cookie-primary" data-cookie-accept>Prijať všetko</button>
-      <button type="button" class="tm-cookie-primary" data-cookie-save hidden>Uložiť výber</button>
-    </div>
-  </div>
+  </section>
 </div>
 
-<script is:inline>
-  (function () {
-    const STORAGE_KEY = "tm_cookie_consent_v1";
-    const root = document.querySelector("[data-cookie-consent]");
-    if (!root) return;
-
-    const options = root.querySelector("[data-cookie-options]");
-    const settingsButton = root.querySelector("[data-cookie-settings]");
-    const rejectButton = root.querySelector("[data-cookie-reject]");
-    const acceptButton = root.querySelector("[data-cookie-accept]");
-    const saveButton = root.querySelector("[data-cookie-save]");
-    const analyticsInput = root.querySelector('[data-cookie-category="analytics"]');
-    const marketingInput = root.querySelector('[data-cookie-category="marketing"]');
-
-    function readConsent() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-      } catch (error) {
-        return null;
-      }
-    }
-
-    function writeConsent(consent) {
-      const payload = {
-        necessary: true,
-        analytics: Boolean(consent.analytics),
-        marketing: Boolean(consent.marketing),
-        savedAt: new Date().toISOString(),
-      };
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      window.dispatchEvent(new CustomEvent("tm:cookies", { detail: payload }));
-      root.hidden = true;
-    }
-
-    function openSettings() {
-      options.hidden = false;
-      saveButton.hidden = false;
-      acceptButton.hidden = true;
-      settingsButton.hidden = true;
-      rejectButton.textContent = "Odmietnuť";
-    }
-
-    window.ToneryMaximCookies = {
-      open: function () {
-        root.hidden = false;
-        openSettings();
-      },
-      get: readConsent,
-      reset: function () {
-        localStorage.removeItem(STORAGE_KEY);
-        root.hidden = false;
-      },
-    };
-
-    settingsButton.addEventListener("click", openSettings);
-    acceptButton.addEventListener("click", function () {
-      writeConsent({ analytics: true, marketing: true });
-    });
-    rejectButton.addEventListener("click", function () {
-      writeConsent({ analytics: false, marketing: false });
-    });
-    saveButton.addEventListener("click", function () {
-      writeConsent({
-        analytics: analyticsInput.checked,
-        marketing: marketingInput.checked,
-      });
-    });
-
-    const existingConsent = readConsent();
-    if (existingConsent) {
-      window.dispatchEvent(new CustomEvent("tm:cookies", { detail: existingConsent }));
-      return;
-    }
-
-    root.hidden = false;
-
-  })();
-</script>
-
-<style>
-  .tm-cookie-consent {
-    position: fixed;
-    inset: auto 18px 18px;
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    pointer-events: none;
+<style is:inline>
+  #tm-cookie-consent,
+  #tm-cookie-consent *,
+  #tm-cookie-consent *::before,
+  #tm-cookie-consent *::after {
+    box-sizing: border-box;
   }
 
-  .tm-cookie-card {
-    width: min(100%, 980px);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 18px 24px;
-    align-items: end;
-    padding: 20px;
-    border: 1px solid rgba(203, 213, 225, .95);
-    border-radius: 24px;
-    background: rgba(255, 255, 255, .98);
-    box-shadow: 0 24px 70px rgba(15, 23, 42, .18);
-    backdrop-filter: blur(18px);
-    pointer-events: auto;
+  #tm-cookie-consent {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 18px !important;
+    z-index: 2147483647 !important;
+    display: flex !important;
+    justify-content: center !important;
+    padding: 0 18px !important;
+    pointer-events: none !important;
+    font-family: inherit !important;
   }
 
-  .tm-cookie-main h2 {
-    margin: 8px 0 6px;
-    color: #071b3a;
-    font-size: 22px;
-    line-height: 1.15;
-    letter-spacing: -.035em;
+  #tm-cookie-panel {
+    position: relative !important;
+    width: min(100%, 1040px) !important;
+    margin: 0 auto !important;
+    padding: 22px !important;
+    border: 1px solid rgba(203, 213, 225, .95) !important;
+    border-radius: 26px !important;
+    background: rgba(255, 255, 255, .98) !important;
+    box-shadow: 0 24px 80px rgba(15, 23, 42, .20) !important;
+    backdrop-filter: blur(18px) !important;
+    pointer-events: auto !important;
   }
 
-  .tm-cookie-main p {
-    max-width: 680px;
-    margin: 0;
-    color: #526172;
-    font-size: 14px;
-    line-height: 1.55;
+  #tm-cookie-consent.tm-cookie-is-hidden #tm-cookie-panel {
+    display: none !important;
   }
 
-  .tm-cookie-main a {
-    display: inline-flex;
-    margin-top: 8px;
-    color: #0b63ce;
-    font-size: 13px;
-    font-weight: 800;
-    text-decoration: none;
+  #tm-cookie-consent.tm-cookie-is-open #tm-cookie-panel {
+    display: block !important;
   }
 
-  .tm-cookie-badge {
-    display: inline-flex;
-    align-items: center;
-    height: 26px;
-    padding: 0 10px;
-    border-radius: 999px;
-    background: #eff6ff;
-    color: #0b63ce;
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: .04em;
-    text-transform: uppercase;
+  #tm-cookie-floating {
+    position: fixed !important;
+    right: 18px !important;
+    bottom: 96px !important;
+    z-index: 2147483647 !important;
+    display: none !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-height: 46px !important;
+    padding: 0 15px !important;
+    border: 1px solid #d7e1ee !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    color: #071b3a !important;
+    box-shadow: 0 14px 38px rgba(15, 23, 42, .18) !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+  }
+
+  #tm-cookie-consent.tm-cookie-is-hidden #tm-cookie-floating {
+    display: inline-flex !important;
+  }
+
+  #tm-cookie-floating span {
+    width: 26px !important;
+    height: 26px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 999px !important;
+    background: #eff6ff !important;
+    font-size: 14px !important;
+  }
+
+  .tm-cookie-close {
+    position: absolute !important;
+    top: 12px !important;
+    right: 14px !important;
+    width: 34px !important;
+    height: 34px !important;
+    border: 1px solid #d7e1ee !important;
+    border-radius: 999px !important;
+    background: #fff !important;
+    color: #071b3a !important;
+    font-size: 22px !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+  }
+
+  .tm-cookie-content {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    padding-right: 30px !important;
+  }
+
+  .tm-cookie-label {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 26px !important;
+    padding: 0 10px !important;
+    border-radius: 999px !important;
+    background: #eff6ff !important;
+    color: #0b63ce !important;
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    letter-spacing: .04em !important;
+    text-transform: uppercase !important;
+  }
+
+  .tm-cookie-text h2 {
+    margin: 8px 0 6px !important;
+    color: #071b3a !important;
+    font-size: 22px !important;
+    line-height: 1.15 !important;
+    letter-spacing: -.035em !important;
+  }
+
+  .tm-cookie-text p {
+    max-width: 760px !important;
+    margin: 0 !important;
+    color: #526172 !important;
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+  .tm-cookie-text a {
+    display: inline-flex !important;
+    margin-top: 8px !important;
+    color: #0b63ce !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    text-decoration: none !important;
   }
 
   .tm-cookie-options {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
   }
 
-  .tm-cookie-toggle {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 13px;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    background: #f8fafc;
-    cursor: pointer;
+  .tm-cookie-option {
+    display: flex !important;
+    gap: 10px !important;
+    align-items: flex-start !important;
+    min-height: 66px !important;
+    padding: 13px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    background: #f8fafc !important;
+    cursor: pointer !important;
   }
 
-  .tm-cookie-toggle input {
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
-    accent-color: #0b63ce;
+  .tm-cookie-option input {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    margin: 2px 0 0 !important;
+    accent-color: #0b63ce !important;
   }
 
-  .tm-cookie-toggle strong {
-    display: block;
-    color: #071b3a;
-    font-size: 14px;
-    line-height: 1.2;
+  .tm-cookie-option strong {
+    display: block !important;
+    color: #071b3a !important;
+    font-size: 14px !important;
+    line-height: 1.2 !important;
   }
 
-  .tm-cookie-toggle small {
-    display: block;
-    margin-top: 3px;
-    color: #64748b;
-    font-size: 12px;
-    line-height: 1.35;
+  .tm-cookie-option small {
+    display: block !important;
+    margin-top: 3px !important;
+    color: #64748b !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
   }
 
-  .tm-cookie-toggle.is-locked {
-    cursor: default;
+  .tm-cookie-option-locked {
+    cursor: default !important;
   }
 
   .tm-cookie-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 9px;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+    gap: 9px !important;
   }
 
-  .tm-cookie-actions button {
-    min-height: 44px;
-    padding: 0 16px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 900;
-    cursor: pointer;
-    white-space: nowrap;
+  .tm-cookie-btn {
+    min-height: 44px !important;
+    padding: 0 17px !important;
+    border-radius: 999px !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
   }
 
-  .tm-cookie-primary {
-    border: 1px solid #071b3a;
-    background: #071b3a;
-    color: #fff;
+  .tm-cookie-btn-dark {
+    border: 1px solid #071b3a !important;
+    background: #071b3a !important;
+    color: #fff !important;
   }
 
-  .tm-cookie-secondary {
-    border: 1px solid #d7e1ee;
-    background: #fff;
-    color: #071b3a;
+  .tm-cookie-btn-light {
+    border: 1px solid #d7e1ee !important;
+    background: #fff !important;
+    color: #071b3a !important;
   }
 
   @media (max-width: 760px) {
-    .tm-cookie-consent {
-      inset: auto 10px 10px;
+    #tm-cookie-consent {
+      bottom: 10px !important;
+      padding: 0 10px !important;
     }
 
-    .tm-cookie-card {
-      grid-template-columns: 1fr;
-      padding: 16px;
-      border-radius: 22px;
+    #tm-cookie-panel {
+      padding: 16px !important;
+      border-radius: 22px !important;
+    }
+
+    .tm-cookie-content {
+      padding-right: 0 !important;
     }
 
     .tm-cookie-options {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr !important;
     }
 
     .tm-cookie-actions {
-      display: grid;
-      grid-template-columns: 1fr;
+      display: grid !important;
+      grid-template-columns: 1fr !important;
     }
 
-    .tm-cookie-actions button {
-      width: 100%;
+    .tm-cookie-btn {
+      width: 100% !important;
+    }
+
+    #tm-cookie-floating {
+      right: 12px !important;
+      bottom: 86px !important;
+      min-height: 42px !important;
+      padding: 0 12px !important;
     }
   }
 </style>
+
+<script is:inline>
+(function () {
+  var STORAGE_KEY = "tm_cookie_consent_v10";
+  var OLD_KEYS = [
+    "tm_cookie_consent",
+    "tonerymaxim_cookie_consent",
+    "tm_cookie_consent_v1",
+    "tm_cookie_consent_v2",
+    "tm_cookie_consent_v3",
+    "tm_cookie_consent_v4",
+    "tm_cookie_consent_v5",
+    "tm_cookie_consent_v6",
+    "tm_cookie_consent_v7",
+    "tm_cookie_consent_v8",
+    "tm_cookie_consent_v9"
+  ];
+
+  function el(id) { return document.getElementById(id); }
+  function root() { return el("tm-cookie-consent"); }
+  function analytics() { return el("tm-cookie-analytics"); }
+  function marketing() { return el("tm-cookie-marketing"); }
+
+  function parse(value) {
+    try { return JSON.parse(value || "null"); } catch (error) { return null; }
+  }
+
+  function readConsent() {
+    try { return parse(window.localStorage.getItem(STORAGE_KEY)); } catch (error) { return null; }
+  }
+
+  function cleanOldKeys() {
+    try { OLD_KEYS.forEach(function (key) { window.localStorage.removeItem(key); }); } catch (error) {}
+  }
+
+  function setChecks(consent) {
+    if (analytics()) analytics().checked = !!(consent && consent.analytics);
+    if (marketing()) marketing().checked = !!(consent && consent.marketing);
+  }
+
+  function emit(consent) {
+    try { window.dispatchEvent(new CustomEvent("tm:cookies", { detail: consent })); } catch (error) {}
+  }
+
+  function openPanel() {
+    var r = root();
+    if (!r) return;
+    r.classList.remove("tm-cookie-is-hidden");
+    r.classList.add("tm-cookie-is-open");
+  }
+
+  function closePanel() {
+    var r = root();
+    if (!r) return;
+    r.classList.remove("tm-cookie-is-open");
+    r.classList.add("tm-cookie-is-hidden");
+  }
+
+  function saveConsent(analyticsValue, marketingValue) {
+    var consent = {
+      necessary: true,
+      analytics: !!analyticsValue,
+      marketing: !!marketingValue,
+      savedAt: new Date().toISOString()
+    };
+
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(consent));
+      cleanOldKeys();
+    } catch (error) {}
+
+    setChecks(consent);
+    emit(consent);
+    closePanel();
+    return consent;
+  }
+
+  function acceptAll() { return saveConsent(true, true); }
+  function rejectOptional() { return saveConsent(false, false); }
+  function saveSelection() {
+    return saveConsent(analytics() && analytics().checked, marketing() && marketing().checked);
+  }
+
+  function resetConsent() {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+      cleanOldKeys();
+    } catch (error) {}
+    setChecks({ analytics: false, marketing: false });
+    openPanel();
+  }
+
+  function bind() {
+    var accept = el("tm-cookie-accept");
+    var reject = el("tm-cookie-reject");
+    var save = el("tm-cookie-save");
+    var close = el("tm-cookie-close");
+    var floating = el("tm-cookie-floating");
+
+    if (accept) accept.addEventListener("click", function (event) { event.preventDefault(); acceptAll(); });
+    if (reject) reject.addEventListener("click", function (event) { event.preventDefault(); rejectOptional(); });
+    if (save) save.addEventListener("click", function (event) { event.preventDefault(); saveSelection(); });
+    if (close) close.addEventListener("click", function (event) { event.preventDefault(); closePanel(); });
+    if (floating) floating.addEventListener("click", function (event) { event.preventDefault(); openPanel(); });
+
+    document.addEventListener("click", function (event) {
+      var target = event.target;
+      if (!target || !target.closest) return;
+      var trigger = target.closest('[data-open-cookie-settings], a[href="/cookies#nastavenia"], a[href="#cookies"]');
+      if (!trigger) return;
+      event.preventDefault();
+      openPanel();
+    });
+  }
+
+  function init() {
+    var consent = readConsent();
+    if (consent) {
+      setChecks(consent);
+      emit(consent);
+      closePanel();
+    } else {
+      setChecks({ analytics: false, marketing: false });
+      openPanel();
+    }
+    bind();
+  }
+
+  window.ToneryMaximCookies = {
+    open: openPanel,
+    close: closePanel,
+    acceptAll: acceptAll,
+    reject: rejectOptional,
+    saveSelection: saveSelection,
+    get: readConsent,
+    reset: resetConsent
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
+})();
+</script>

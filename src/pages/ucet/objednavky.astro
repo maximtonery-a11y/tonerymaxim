@@ -15,6 +15,13 @@ if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 const orders = await getWooCustomerOrders(customer.id, 50);
+const VAT_RATE = 0.23;
+function moneyNumber(value: unknown) {
+  const number = Number(String(value ?? "0").replace(",", "."));
+  return Number.isFinite(number) ? Math.round(number * 100) / 100 : 0;
+}
+function netFromGross(value: unknown) { return Math.round((moneyNumber(value) / (1 + VAT_RATE)) * 100) / 100; }
+function vatFromGross(value: unknown) { const gross = moneyNumber(value); return Math.round((gross - netFromGross(gross)) * 100) / 100; }
 ---
 
 <!doctype html>
@@ -31,12 +38,14 @@ const orders = await getWooCustomerOrders(customer.id, 50);
                 <span class="status-pill">{orderStatusLabel(order.status)}</span>
               </div>
               <div class="account-list-row"><span>Dátum</span><strong>{formatDate(order.date_created)}</strong></div>
-              <div class="account-list-row"><span>Spolu</span><strong>{formatMoney(order.total, order.currency || "EUR")}</strong></div>
+              <div class="account-list-row"><span>Spolu s DPH</span><strong>{formatMoney(order.total, order.currency || "EUR")}</strong></div>
+              <div class="account-list-row"><span>Základ bez DPH</span><strong>{formatMoney(netFromGross(order.total), order.currency || "EUR")}</strong></div>
+              <div class="account-list-row"><span>DPH 23 %</span><strong>{formatMoney(vatFromGross(order.total), order.currency || "EUR")}</strong></div>
               <div class="order-preview">
                 {(order.line_items || []).slice(0, 6).map((item) => (
                   <div class="order-item">
                     <span>{safeText(item.name)} × {item.quantity || 1}</span>
-                    <strong>{formatMoney(item.total, order.currency || "EUR")}</strong>
+                    <strong>{formatMoney(item.total, order.currency || "EUR")} s DPH</strong>
                   </div>
                 ))}
               </div>
