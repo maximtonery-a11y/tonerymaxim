@@ -316,6 +316,12 @@
   }
 
   function addToCart(product) {
+    if (window.ToneryMaximCart && typeof window.ToneryMaximCart.addToCart === "function") {
+      window.ToneryMaximCart.addToCart(product);
+      if (typeof window.ToneryMaximCart.showAddCartDrawer === "function") window.ToneryMaximCart.showAddCartDrawer(product);
+      return;
+    }
+
     const cart = readCart();
     const id = String(product.id || product.sku || product.name);
     const existing = cart.find((item) => String(item.id) === id);

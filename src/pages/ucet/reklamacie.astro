@@ -2,12 +2,11 @@
 import "../../styles/global.css";
 import "../../styles/footer.css";
 import "../../styles/account.css";
-import { readCustomerSession, customerDisplayName } from "../../lib/auth-session";
+import { readCustomerSession } from "../../lib/auth-session";
 import AccountShell from "../../components/AccountShell.astro";
 
 const customer = readCustomerSession(Astro.cookies);
 if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
-const customerName = customerDisplayName(customer);
 ---
 
 <!doctype html>
@@ -19,47 +18,9 @@ const customerName = customerDisplayName(customer);
   </head>
   <body>
     <AccountShell user={customer} active="reklamacie" title="Reklamácie" subtitle="Rýchle reklamácie naviazané priamo na objednávky a konkrétne produkty.">
-      <section class="claims-layout">
-        <div class="claims-list">
-          <article class="claim-card account-panel">
-            <div class="claim-head">
-              <div>
-                <span class="claim-id">#R20260012</span>
-                <h2>Brother TN-2421 kompatibilný toner</h2>
-                <p>Objednávka <strong>TM-202600145</strong> · odoslané 14. 5. 2026</p>
-              </div>
-              <span class="status-pill">Prijatá</span>
-            </div>
-
-            <div class="claim-steps">
-              <div class="claim-step is-active"><span></span><strong>Prijatá</strong></div>
-              <div class="claim-step"><span></span><strong>Kontrolujeme</strong></div>
-              <div class="claim-step"><span></span><strong>Schválená</strong></div>
-              <div class="claim-step"><span></span><strong>Vybavená</strong></div>
-            </div>
-
-            <p class="claim-note">Reklamáciu sme prijali. Po kontrole vás budeme kontaktovať e-mailom.</p>
-          </article>
-
-          <article class="claim-card account-panel">
-            <div class="claim-head">
-              <div>
-                <span class="claim-id">#R20260009</span>
-                <h2>Canon CRG-057H kompatibilný toner</h2>
-                <p>Objednávka <strong>TM-202600123</strong> · odoslané 2. 5. 2026</p>
-              </div>
-              <span class="status-pill is-warning">Kontrolujeme</span>
-            </div>
-
-            <div class="claim-steps">
-              <div class="claim-step is-done"><span></span><strong>Prijatá</strong></div>
-              <div class="claim-step is-active"><span></span><strong>Kontrolujeme</strong></div>
-              <div class="claim-step"><span></span><strong>Schválená</strong></div>
-              <div class="claim-step"><span></span><strong>Vybavená</strong></div>
-            </div>
-
-            <p class="claim-note">Produkt kontrolujeme. Stav reklamácie tu bude priebežne aktualizovaný.</p>
-          </article>
+      <section class="claims-layout" data-claims-app>
+        <div class="claims-list" data-claims-list>
+          <article class="account-panel claim-loading">Načítavam reklamácie…</article>
         </div>
 
         <aside class="account-panel claim-form-panel">
@@ -67,48 +28,207 @@ const customerName = customerDisplayName(customer);
           <h2>Vytvoriť reklamáciu</h2>
           <p class="account-muted">Vyberte objednávku, produkt a popíšte problém.</p>
 
-          <form class="claim-form">
+          <form class="claim-form" data-claim-form>
             <label>
               <span>Objednávka</span>
-              <select class="account-select">
-                <option>TM-202600145</option>
-                <option>TM-202600123</option>
+              <select class="account-select" name="order_id" data-claim-order required>
+                <option value="">Načítavam objednávky…</option>
               </select>
             </label>
 
             <label>
               <span>Produkt</span>
-              <select class="account-select">
-                <option>Brother TN-2421 kompatibilný toner</option>
-                <option>Brother DR-2401 kompatibilný valec</option>
-                <option>Canon CRG-057H kompatibilný toner</option>
+              <select class="account-select" name="product_id" data-claim-product required>
+                <option value="">Najprv vyberte objednávku</option>
               </select>
             </label>
 
             <label>
               <span>Dôvod reklamácie</span>
-              <select class="account-select">
-                <option>Produkt netlačí správne</option>
-                <option>Produkt nepasuje do tlačiarne</option>
-                <option>Produkt prišiel poškodený</option>
-                <option>Iný dôvod</option>
+              <select class="account-select" name="reason" required>
+                <option value="Produkt netlačí správne">Produkt netlačí správne</option>
+                <option value="Produkt nepasuje do tlačiarne">Produkt nepasuje do tlačiarne</option>
+                <option value="Produkt prišiel poškodený">Produkt prišiel poškodený</option>
+                <option value="Objednaný alebo doručený iný produkt">Objednaný alebo doručený iný produkt</option>
+                <option value="Iný dôvod">Iný dôvod</option>
               </select>
             </label>
 
             <label>
               <span>Popis problému</span>
-              <textarea class="account-textarea" rows="5" placeholder="Popíšte problém s produktom..."></textarea>
+              <textarea class="account-textarea" name="message" rows="5" placeholder="Popíšte problém s produktom..." required></textarea>
             </label>
 
-            <label>
-              <span>Priložiť fotografiu</span>
-              <input class="account-input" type="file" />
-            </label>
+            <p class="claim-form-info">Fotografie a doplňujúce podklady nám môžete poslať odpoveďou na potvrdenie reklamácie.</p>
+            <p class="claim-form-message" data-claim-message hidden></p>
 
-            <button class="tm-btn is-dark" type="button">Odoslať reklamáciu</button>
+            <button class="tm-btn is-dark" type="submit" data-claim-submit>Odoslať reklamáciu</button>
           </form>
         </aside>
       </section>
     </AccountShell>
+
+    <script>
+      const app = document.querySelector("[data-claims-app]");
+      const listEl = document.querySelector("[data-claims-list]");
+      const form = document.querySelector("[data-claim-form]");
+      const orderSelect = document.querySelector("[data-claim-order]");
+      const productSelect = document.querySelector("[data-claim-product]");
+      const messageEl = document.querySelector("[data-claim-message]");
+      const submitBtn = document.querySelector("[data-claim-submit]");
+
+      let orders = [];
+      let claims = [];
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" }[char]));
+      }
+
+      function formatDate(value) {
+        if (!value) return "";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return new Intl.DateTimeFormat("sk-SK", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+      }
+
+      function statusIndex(status) {
+        return ["received", "checking", "approved", "resolved"].indexOf(status || "received");
+      }
+
+      function renderClaims() {
+        if (!listEl) return;
+        if (!claims.length) {
+          listEl.innerHTML = `
+            <article class="account-panel claim-empty">
+              <strong>Zatiaľ nemáte žiadnu reklamáciu.</strong>
+              <p>Vyberte objednávku vpravo, produkt a odošlite reklamáciu. Stav potom uvidíte priamo tu.</p>
+            </article>`;
+          return;
+        }
+
+        listEl.innerHTML = claims.map((claim) => {
+          const index = statusIndex(claim.status);
+          const steps = [
+            ["received", "Prijatá"],
+            ["checking", "Kontrolujeme"],
+            ["approved", "Schválená"],
+            ["resolved", "Vybavená"],
+          ].map(([key, label], stepIndex) => {
+            const cls = stepIndex < index ? "is-done" : stepIndex === index ? "is-active" : "";
+            return `<div class="claim-step ${cls}"><span></span><strong>${label}</strong></div>`;
+          }).join("");
+
+          return `
+            <article class="claim-card account-panel">
+              <div class="claim-head">
+                <div>
+                  <span class="claim-id">#${escapeHtml(claim.id)}</span>
+                  <h2>${escapeHtml(claim.product_name)}</h2>
+                  <p>Objednávka <strong>${escapeHtml(claim.order_number)}</strong> · odoslané ${formatDate(claim.created_at)}</p>
+                </div>
+                <span class="status-pill ${claim.status === "checking" ? "is-warning" : claim.status === "resolved" ? "is-done" : ""}">${escapeHtml(claim.status_label)}</span>
+              </div>
+              <div class="claim-steps">${steps}</div>
+              <div class="claim-detail-grid">
+                <div><span>Dôvod</span><strong>${escapeHtml(claim.reason)}</strong></div>
+                ${claim.product_sku ? `<div><span>SKU</span><strong>${escapeHtml(claim.product_sku)}</strong></div>` : ""}
+              </div>
+              <p class="claim-note">${escapeHtml(claim.message || "Reklamáciu sme prijali. Po kontrole vás budeme kontaktovať e-mailom.")}</p>
+            </article>`;
+        }).join("");
+      }
+
+      function renderOrders() {
+        if (!orderSelect || !productSelect) return;
+        if (!orders.length) {
+          orderSelect.innerHTML = `<option value="">Nemáte objednávku vhodnú na reklamáciu</option>`;
+          productSelect.innerHTML = `<option value="">Najprv musí existovať objednávka</option>`;
+          submitBtn && (submitBtn.disabled = true);
+          return;
+        }
+
+        orderSelect.innerHTML = `<option value="">Vyberte objednávku</option>` + orders.map((order) => {
+          const label = `#${order.number} · ${formatDate(order.date_created)} · ${order.total || ""} €`;
+          return `<option value="${order.id}">${escapeHtml(label)}</option>`;
+        }).join("");
+        submitBtn && (submitBtn.disabled = false);
+        renderProducts();
+      }
+
+      function renderProducts() {
+        if (!orderSelect || !productSelect) return;
+        const order = orders.find((item) => Number(item.id) === Number(orderSelect.value));
+        if (!order) {
+          productSelect.innerHTML = `<option value="">Najprv vyberte objednávku</option>`;
+          return;
+        }
+        productSelect.innerHTML = `<option value="">Vyberte produkt</option>` + order.items.map((item) => {
+          const id = item.product_id || item.variation_id;
+          const sku = item.sku ? ` · SKU: ${item.sku}` : "";
+          return `<option value="${id}">${escapeHtml(item.name)} × ${item.quantity}${escapeHtml(sku)}</option>`;
+        }).join("");
+      }
+
+      function setMessage(text, type = "") {
+        if (!messageEl) return;
+        messageEl.hidden = !text;
+        messageEl.textContent = text || "";
+        messageEl.className = `claim-form-message ${type}`;
+      }
+
+      async function loadClaims() {
+        try {
+          const res = await fetch("/api/account/claims", { headers: { Accept: "application/json" } });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.error || "Reklamácie sa nepodarilo načítať.");
+          orders = Array.isArray(data.orders) ? data.orders : [];
+          claims = Array.isArray(data.claims) ? data.claims : [];
+          renderClaims();
+          renderOrders();
+        } catch (error) {
+          if (listEl) listEl.innerHTML = `<article class="account-panel claim-empty is-error"><strong>Reklamácie sa nepodarilo načítať.</strong><p>${escapeHtml(error.message || "Skúste stránku obnoviť.")}</p></article>`;
+          setMessage(error.message || "Reklamácie sa nepodarilo načítať.", "is-error");
+        }
+      }
+
+      orderSelect?.addEventListener("change", renderProducts);
+
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        setMessage("");
+        if (!submitBtn) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Odosielam…";
+
+        const payload = {
+          order_id: Number(orderSelect?.value || 0),
+          product_id: Number(productSelect?.value || 0),
+          reason: form.reason?.value || "",
+          message: form.message?.value || "",
+        };
+
+        try {
+          const res = await fetch("/api/account/claims", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.error || "Reklamáciu sa nepodarilo odoslať.");
+          claims = [data.claim, ...claims];
+          form.reset();
+          renderProducts();
+          renderClaims();
+          setMessage("Reklamáciu sme prijali. Potvrdenie sme poslali na e-mail.", "is-success");
+        } catch (error) {
+          setMessage(error.message || "Reklamáciu sa nepodarilo odoslať.", "is-error");
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Odoslať reklamáciu";
+        }
+      });
+
+      loadClaims();
+    </script>
   </body>
 </html>

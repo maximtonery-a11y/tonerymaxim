@@ -6,12 +6,27 @@ import { readCustomerSession } from "../../lib/auth-session";
 import AccountShell from "../../components/AccountShell.astro";
 import { getWelcomeReward, getWooCustomerById, welcomeCouponCode } from "../../lib/woo-client";
 import { formatDate } from "../../lib/account-data";
+import { getCustomerLoyalty } from "../../lib/loyalty";
+import { couponUsageText, getCustomerActiveCoupons } from "../../lib/coupons";
 
 const customer = readCustomerSession(Astro.cookies);
 if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+
 const wooCustomer = await getWooCustomerById(customer.id);
 const reward = getWelcomeReward(wooCustomer);
-const code = welcomeCouponCode(customer.id);
+const welcomeCode = welcomeCouponCode(customer.id);
+const loyalty = await getCustomerLoyalty(customer.id);
+const points = loyalty.points;
+const activeCoupons = await getCustomerActiveCoupons(customer.id);
+const visibleCoupons = [
+  ...(reward.active ? [{ code: welcomeCode, label: "Uvítacia zľava 5 %", detail: `Na celý sortiment · platí do ${formatDate(reward.expires)}`, href: "/produkty" }] : []),
+  ...activeCoupons.map((coupon) => ({
+    code: coupon.code,
+    label: coupon.label,
+    detail: `${coupon.scope === "compatible" ? "Na kompatibilné produkty" : "Na celý sortiment"} · ${couponUsageText(coupon)}`,
+    href: coupon.scope === "compatible" ? "/produkty?type=compatible" : "/produkty",
+  })),
+];
 ---
 
 <!doctype html>
@@ -29,8 +44,8 @@ const code = welcomeCouponCode(customer.id);
             <span class="scratch-gift">🎁</span>
             <div>
               <p class="account-kicker">Uvítacia odmena</p>
-              <h2>Zotrite si zľavu</h2>
-              <p>Zľava 5 % platí na kompatibilný spotrebný materiál 1 mesiac od registrácie.</p>
+              <h2>Zľava 5 % po registrácii</h2>
+              <p>Zľava 5 % platí na celý sortiment pri jednej objednávke, 1 mesiac od registrácie.</p>
             </div>
           </div>
 
@@ -39,15 +54,15 @@ const code = welcomeCouponCode(customer.id);
               <div class="reward-strip" data-scratch-cover>Zotrite tu a odhaľte zľavu</div>
               <div class="reward-result" data-scratch-result hidden>
                 <strong>5 % zľava</strong>
-                <span>{code}</span>
-                <small>Platí do {formatDate(reward.expires)} iba na kompatibilný spotrebný materiál.</small>
+                <span>{welcomeCode}</span>
+                <small>Platí do {formatDate(reward.expires)} na celý sortiment.</small>
               </div>
               <button class="tm-btn" type="button" data-reveal-reward>Zotrieť odmenu</button>
             </div>
           ) : (
             <div class="account-empty-box">
-              <strong>Momentálne nemáte aktívnu odmenu.</strong>
-              <p>Nové odmeny sa zobrazia priamo v tejto sekcii.</p>
+              <strong>Uvítacia zľava je použitá alebo expirovaná.</strong>
+              <p>Aktívne kupóny sa automaticky použijú v košíku.</p>
             </div>
           )}
         </article>
@@ -56,24 +71,26 @@ const code = welcomeCouponCode(customer.id);
           <div class="account-panel-head">
             <div>
               <h2>Aktívne kupóny</h2>
-              <p class="account-muted">Kupóny pripravené pre ďalší nákup.</p>
+              <p class="account-muted">Jednorazové kupóny pripravené pre ďalší nákup.</p>
             </div>
           </div>
 
-          {reward.active ? (
+          {visibleCoupons.length > 0 ? (
             <div class="coupon-card-list">
-              <a class="coupon-card is-percent" href="/produkty?type=compatible">
-                <div>
-                  <strong>5 % ZĽAVA</strong>
-                  <small>Platí do {formatDate(reward.expires)}</small>
-                </div>
-                <span>{code}</span>
-              </a>
+              {visibleCoupons.map((coupon) => (
+                <a class="coupon-card is-percent" href={coupon.href}>
+                  <div>
+                    <strong>{coupon.label}</strong>
+                    <small>{coupon.detail}</small>
+                  </div>
+                  <span>Automaticky v košíku</span>
+                </a>
+              ))}
             </div>
           ) : (
             <div class="account-empty-box">
               <strong>Nemáte aktívny kupón.</strong>
-              <p>Platné kupóny sa zobrazia v tejto časti.</p>
+              <p>Nový 7 % kupón na kompatibilné produkty získate po ďalšej objednávke.</p>
             </div>
           )}
         </article>
@@ -82,24 +99,25 @@ const code = welcomeCouponCode(customer.id);
       <section class="account-panel account-gap-top">
         <div class="account-panel-head">
           <div>
-            <h2>História odmien</h2>
-            <p class="account-muted">Prehľad získaných a použitých odmien.</p>
+            <h2>Odmeny za vernostné body</h2>
+            <p class="account-muted">Aktuálne máte {points} bodov.</p>
           </div>
         </div>
-        <div class="account-empty-box">
-          <strong>Zatiaľ bez histórie odmien.</strong>
-          <p>Po získaní alebo použití odmeny sa záznam zobrazí tu.</p>
+        <div class="reward-milestones">
+          <div class="reward-milestone"><div><strong>500 bodov</strong><span>1× kancelársky papier (500 listov)</span></div><small>{points >= 500 ? "dostupné" : `chýba ${500 - points} bodov`}</small></div>
+          <div class="reward-milestone"><div><strong>750 bodov</strong><span>2× kancelársky papier (1000 listov)</span></div><small>{points >= 750 ? "dostupné" : `chýba ${750 - points} bodov`}</small></div>
+          <div class="reward-milestone"><div><strong>1000 bodov</strong><span>3× kancelársky papier (1500 listov)</span></div><small>{points >= 1000 ? "dostupné" : `chýba ${1000 - points} bodov`}</small></div>
         </div>
       </section>
     </AccountShell>
     <script>
-      document.addEventListener('click', (event) => {
-        const button = event.target.closest('[data-reveal-reward]');
+      document.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-reveal-reward]");
         if (!button) return;
-        const card = button.closest('[data-scratch-card]');
-        card?.querySelector('[data-scratch-cover]')?.setAttribute('hidden', '');
-        card?.querySelector('[data-scratch-result]')?.removeAttribute('hidden');
-        button.textContent = 'Zľava je odhalená';
+        const card = button.closest("[data-scratch-card]");
+        card?.querySelector("[data-scratch-cover]")?.setAttribute("hidden", "");
+        card?.querySelector("[data-scratch-result]")?.removeAttribute("hidden");
+        button.textContent = "Zľava je odhalená";
         button.disabled = true;
       });
     </script>

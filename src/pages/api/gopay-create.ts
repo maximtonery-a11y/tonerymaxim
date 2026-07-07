@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
 import { readCustomerSession } from "../../lib/auth-session";
 import { savePendingGoPayOrder } from "../../lib/gopay-order";
+import { getCustomerLoyalty } from "../../lib/loyalty";
+import { validateCheckoutCoupon } from "../../lib/coupons";
 
 export const prerender = false;
 
@@ -245,6 +247,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const subtotal = cart.reduce((sum, item) => sum + discountedLine(item).final, 0);
     const shippingPrice = subtotal >= 29 ? 0 : shipping.price;
     const paymentPrice = payment.price;
+    let coupon = null as Awaited<ReturnType<typeof validateCheckoutCoupon>> | null;
+    let couponDiscount = 0;
+    const couponCode = String(body?.coupon?.code || body?.coupon || "").trim();
+    if (couponCode) {
+      coupon = await validateCheckoutCoupon(session?.id, couponCode, cart);
+      if (!coupon.ok) {
+        return new Response(JSON.stringify({ ok: false, error: coupon.reason || "Kupón nie je platný." }), {
+          status: 400,
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+        });
+      }
+      couponDiscount = Math.min(Number(coupon.discount || 0), Math.max(0, subtotal + shippingPrice + paymentPrice));
+      coupon.discount = Math.round(couponDiscount * 100) / 100;
+    }
+    let loyaltyDiscount = 0;
+    if (session?.id && body?.loyalty?.apply) {
+      const loyalty = await getCustomerLoyalty(session.id);
+      const requested = Math.max(0, Math.round(Number(body?.loyalty?.discount || 0) * 10) / 10);
+      loyaltyDiscount = Math.min(requested, loyalty.discountValue, Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount) * 100) / 100));
+    }
 
     const items = [
       ...cart.map((item) => {
@@ -264,6 +286,25 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         vat_rate: 23,
       },
     ];
+
+    if (couponDiscount > 0) {
+      items.push({
+        type: "DISCOUNT",
+        name: coupon?.label || "Kupónová zľava",
+        amount: -toCents(couponDiscount),
+        count: 1,
+        vat_rate: VAT_RATE_PERCENT,
+      });
+    }
+
+    if (loyaltyDiscount > 0) {
+      items.push({
+        name: "Vernostná zľava",
+        amount: -toCents(loyaltyDiscount),
+        count: 1,
+        vat_rate: 23,
+      });
+    }
 
     if (paymentPrice > 0) {
       items.push({
@@ -369,6 +410,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       paymentCode,
       paymentLabel: payment.label,
       paymentPrice,
+      coupon,
+      loyaltyDiscount,
+      loyaltyPointsUsed: loyaltyDiscount * 100,
       subtotal: Math.round(subtotal * 100) / 100,
       total: Math.round((totalCents / 100) * 100) / 100,
       createdAt: new Date().toISOString(),

@@ -1,6 +1,93 @@
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
 
+  let tmLoyalty = { ok: false, points: 0, discountValue: 0 };
+  let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") === "1";
+  let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
+
+  async function loadLoyalty() {
+    try {
+      const response = await fetch("/api/account/loyalty", { credentials: "same-origin" });
+      if (!response.ok) throw new Error("not logged");
+      const data = await response.json();
+      tmLoyalty = { ok: true, points: Number(data.points || 0), discountValue: Number(data.discountValue || 0) };
+      if (tmLoyalty.discountValue <= 0) tmLoyaltyApply = false;
+      renderCartPage();
+    } catch {
+      tmLoyalty = { ok: false, points: 0, discountValue: 0 };
+      tmLoyaltyApply = false;
+    }
+  }
+
+  function loyaltyDiscountForTotal(total) {
+    if (!tmLoyaltyApply || !tmLoyalty.ok) return 0;
+    return Math.min(Number(tmLoyalty.discountValue || 0), Math.max(0, Number(total || 0)));
+  }
+
+
+  function couponDiscountForTotal(total) {
+    if (!tmCoupon || !tmCoupon.ok) return 0;
+    const discount = Number(tmCoupon.discount || 0);
+    return Math.min(Number.isFinite(discount) ? discount : 0, Math.max(0, Number(total || 0)));
+  }
+
+  async function validateCouponCode(code) {
+    const clean = String(code || "").trim();
+    if (!clean) {
+      tmCoupon = null;
+      localStorage.removeItem("tm_coupon_v1");
+      renderCartPage();
+      return;
+    }
+    try {
+      const response = await fetch("/api/coupon-validate", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: clean, cart: readCart() }),
+      });
+      const data = await response.json().catch(() => ({}));
+      tmCoupon = data;
+      localStorage.setItem("tm_coupon_v1", JSON.stringify(data));
+      renderCartPage();
+    } catch {
+      tmCoupon = { ok: false, code: clean, reason: "Kupón sa nepodarilo overiť." };
+      localStorage.setItem("tm_coupon_v1", JSON.stringify(tmCoupon));
+      renderCartPage();
+    }
+  }
+
+
+  async function autoLoadBestCoupon() {
+    const cart = readCart();
+    if (!cart.length) return;
+    try {
+      const response = await fetch("/api/coupon-active", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cart }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (data?.ok && data.code) {
+        const current = String(tmCoupon?.code || "").toUpperCase();
+        const next = String(data.code || "").toUpperCase();
+        if (!tmCoupon?.ok || current !== next) {
+          tmCoupon = data;
+          localStorage.setItem("tm_coupon_v1", JSON.stringify(data));
+          renderCartPage();
+        }
+      } else if (tmCoupon?.ok) {
+        // Ak uložený kupón už nie je aktívny/použiteľný, vyčisti ho.
+        tmCoupon = null;
+        localStorage.removeItem("tm_coupon_v1");
+        renderCartPage();
+      }
+    } catch {
+      // bez tichej chyby, ručné zadanie kupónu zostáva funkčné
+    }
+  }
+
   const TM_GENERIC_IMAGE_PATTERNS = [
     "toner-coloriq-kompatible.png",
     "toner-coloriq-renovacie.png",
@@ -367,6 +454,9 @@ function formatMoney(value) {
     const existing = cart.find((item) => item.sku === sku);
 
     if (existing) {
+      existing.id = existing.id || product.id || product.productId || product.product_id || sku;
+      existing.productId = existing.productId || product.productId || product.product_id || product.id || "";
+      existing.product_id = existing.product_id || product.product_id || product.productId || product.id || "";
       existing.qty = cleanQty(existing.qty) + cleanQty(product.qty || 1);
       if (!existing.product_type_key && (product.product_type_key || product.productTypeKey || product.type)) {
         existing.product_type_key = product.product_type_key || product.productTypeKey || product.type || "";
@@ -387,6 +477,9 @@ function formatMoney(value) {
       existing.stock_text = product.stock_text || existing.stock_text || "";
     } else {
       cart.push({
+        id: product.id || product.productId || product.product_id || sku,
+        productId: product.productId || product.product_id || product.id || "",
+        product_id: product.product_id || product.productId || product.id || "",
         sku,
         name: product.name || "Produkt",
         price: Number(product.price || 0),
@@ -409,6 +502,121 @@ function formatMoney(value) {
     }
 
     saveCart(cart);
+  }
+
+  let addCartDrawerTimer = null;
+
+  function ensureAddCartDrawer() {
+    let drawer = document.querySelector('[data-add-cart-drawer]');
+    if (drawer) return drawer;
+
+    drawer = document.createElement('div');
+    drawer.className = 'add-cart-drawer';
+    drawer.dataset.addCartDrawer = '';
+    drawer.hidden = true;
+    drawer.innerHTML = `
+      <div class="add-cart-backdrop" data-add-cart-close></div>
+      <aside class="add-cart-panel" role="dialog" aria-modal="true" aria-labelledby="add-cart-title">
+        <button class="add-cart-close" type="button" data-add-cart-close aria-label="Zavrieť">×</button>
+        <div class="add-cart-status" data-add-cart-status></div>
+        <div class="add-cart-product" data-add-cart-product></div>
+        <div class="add-cart-summary" data-add-cart-summary></div>
+        <div class="add-cart-actions">
+          <a class="btn-primary" href="/pokladna">Do pokladne</a>
+          <a class="btn-secondary" href="/kosik">Do košíka</a>
+          <button class="btn-link" type="button" data-add-cart-close>Pokračovať v nákupe</button>
+        </div>
+      </aside>
+    `;
+    document.body.appendChild(drawer);
+    drawer.addEventListener('click', (event) => {
+      if (event.target.closest('[data-add-cart-close]')) hideAddCartDrawer();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') hideAddCartDrawer();
+    });
+    return drawer;
+  }
+
+  function hideAddCartDrawer() {
+    const drawer = document.querySelector('[data-add-cart-drawer]');
+    if (!drawer) return;
+    if (addCartDrawerTimer) window.clearTimeout(addCartDrawerTimer);
+    addCartDrawerTimer = null;
+    drawer.classList.remove('is-open');
+    document.body.classList.remove('has-add-cart-drawer');
+    window.setTimeout(() => {
+      if (!drawer.classList.contains('is-open')) drawer.hidden = true;
+    }, 240);
+  }
+
+  function addCartMetaRows(item) {
+    const rows = [];
+    const type = firstFilled(item?.product_type_label, item?.productTypeLabel);
+    const color = inferColor(item);
+    const capacity = inferCapacity(item);
+    const stock = stockText(item);
+
+    if (type) rows.push(`<span>${esc(type)}</span>`);
+    if (color && color !== 'Neuvedené') rows.push(`<span>Farba: <strong>${esc(color)}</strong></span>`);
+    if (capacity && capacity !== 'Neuvedené') rows.push(`<span>Kapacita: <strong>${esc(capacity)}</strong></span>`);
+    if (stock) rows.push(`<span class="cart-stock ${stockClass(item)}"><i></i>${esc(stock)}</span>`);
+
+    return rows.length ? `<div class="add-cart-meta">${rows.join('')}</div>` : '';
+  }
+
+  function showAddCartDrawer(product) {
+    const drawer = ensureAddCartDrawer();
+    const cart = readCart();
+    const sku = String(product?.sku || '').trim();
+    const item = cart.find((cartItem) => String(cartItem.sku || '').trim() === sku) || product || cart[cart.length - 1] || {};
+    const pricing = cartPricing(cart);
+    const total = Math.max(0, pricing.subtotal - pricing.discount);
+    const missingFreeShipping = Math.max(0, 29 - total);
+    const itemGross = Number(item.price || 0);
+    const itemNet = netFromGross(itemGross);
+    const count = cartCount(cart);
+
+    const statusEl = drawer.querySelector('[data-add-cart-status]');
+    if (statusEl) {
+      statusEl.innerHTML = `
+        <strong>Produkt bol pridaný do košíka</strong>
+      `;
+      statusEl.classList.toggle('is-free', missingFreeShipping <= 0);
+    }
+
+    const productEl = drawer.querySelector('[data-add-cart-product]');
+    if (productEl) {
+      productEl.innerHTML = `
+        <div class="add-cart-thumb">
+          <img src="${esc(productImageSrc(item.image))}" alt="${esc(item.name || 'Produkt')}" />
+        </div>
+        <div class="add-cart-product-info">
+          <h2 id="add-cart-title">${esc(item.name || 'Produkt')}</h2>
+          ${addCartMetaRows(item)}
+          <div class="add-cart-pricebox">
+            <strong>${formatMoney(itemGross)}</strong>
+            <span>s DPH</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const summaryEl = drawer.querySelector('[data-add-cart-summary]');
+    if (summaryEl) {
+      summaryEl.innerHTML = `
+        <div><span>V košíku</span><strong>${count} ${count === 1 ? 'produkt' : count > 1 && count < 5 ? 'produkty' : 'produktov'}</strong></div>
+        <div><span>Spolu</span><strong>${formatMoney(total)} s DPH</strong></div>
+        <p class="${missingFreeShipping <= 0 ? 'is-free' : ''}">${missingFreeShipping <= 0 ? 'Dopravu máte zdarma' : `Do dopravy zdarma chýba ${formatMoney(missingFreeShipping)}`}</p>
+      `;
+    }
+
+
+    if (addCartDrawerTimer) window.clearTimeout(addCartDrawerTimer);
+    drawer.hidden = false;
+    document.body.classList.add('has-add-cart-drawer');
+    window.requestAnimationFrame(() => drawer.classList.add('is-open'));
+    addCartDrawerTimer = window.setTimeout(() => hideAddCartDrawer(), 10000);
   }
 
   function updateQty(sku, qty) {
@@ -515,7 +723,11 @@ function formatMoney(value) {
     const pricing = cartPricing(cart);
     const subtotal = pricing.subtotal;
     const discount = pricing.discount;
-    const total = Math.max(0, subtotal - discount);
+    const beforeCouponTotal = Math.max(0, subtotal - discount);
+    const couponDiscount = couponDiscountForTotal(beforeCouponTotal);
+    const beforeLoyaltyTotal = Math.max(0, beforeCouponTotal - couponDiscount);
+    const loyaltyDiscount = loyaltyDiscountForTotal(beforeLoyaltyTotal);
+    const total = Math.max(0, beforeLoyaltyTotal - loyaltyDiscount);
 
     let discountEl = document.querySelector("[data-cart-discount-line]");
     if (summary && !discountEl) {
@@ -526,6 +738,66 @@ function formatMoney(value) {
       summary.insertBefore(line, summary.querySelector(".summary-note"));
       discountEl = line;
     }
+
+    let couponEl = document.querySelector("[data-cart-coupon-line]");
+    if (summary && !couponEl) {
+      const line = document.createElement("div");
+      line.className = "summary-line summary-coupon";
+      line.dataset.cartCouponLine = "";
+      line.innerHTML = `<span>Kupónová zľava</span><strong data-cart-coupon>0,00 €</strong>`;
+      summary.insertBefore(line, summary.querySelector(".summary-note"));
+      couponEl = line;
+    }
+
+    let couponBox = document.querySelector("[data-cart-coupon-box]");
+    if (summary && !couponBox) {
+      couponBox = document.createElement("form");
+      couponBox.className = "summary-note coupon-note";
+      couponBox.dataset.cartCouponBox = "";
+      couponBox.innerHTML = `<strong>Zľavový kupón</strong><div class="coupon-inline"><input type="text" data-coupon-input placeholder="Zadajte kód kupónu"><button type="submit" data-coupon-apply>Použiť</button></div><small data-coupon-message></small>`;
+      summary.insertBefore(couponBox, summary.querySelector(".summary-total"));
+    }
+
+    let loyaltyEl = document.querySelector("[data-cart-loyalty-line]");
+    if (summary && !loyaltyEl) {
+      const line = document.createElement("div");
+      line.className = "summary-line summary-loyalty";
+      line.dataset.cartLoyaltyLine = "";
+      line.innerHTML = `<span>Vernostná zľava</span><strong data-cart-loyalty>0,00 €</strong>`;
+      summary.insertBefore(line, summary.querySelector(".summary-total"));
+      loyaltyEl = line;
+    }
+
+    let loyaltyBox = document.querySelector("[data-cart-loyalty-box]");
+    if (summary && !loyaltyBox) {
+      loyaltyBox = document.createElement("div");
+      loyaltyBox.className = "summary-note loyalty-note";
+      loyaltyBox.dataset.cartLoyaltyBox = "";
+      summary.insertBefore(loyaltyBox, summary.querySelector(".summary-total"));
+    }
+
+    if (loyaltyBox) {
+      loyaltyBox.hidden = !tmLoyalty.ok || tmLoyalty.discountValue <= 0;
+      if (!loyaltyBox.hidden) {
+        loyaltyBox.innerHTML = `<strong>Vernostné body</strong><span>Máte ${tmLoyalty.points} bodov = zľava ${formatMoney(tmLoyalty.discountValue)}.</span><label class="checkline"><input type="checkbox" data-loyalty-toggle ${tmLoyaltyApply ? "checked" : ""}> Použiť zľavu v tejto objednávke</label>`;
+      }
+    }
+
+    if (couponEl) couponEl.hidden = couponDiscount <= 0;
+    const couponValueEl = document.querySelector("[data-cart-coupon]");
+    if (couponValueEl) couponValueEl.textContent = `-${formatMoney(couponDiscount)}`;
+    const couponInput = document.querySelector("[data-coupon-input]");
+    if (couponInput && document.activeElement !== couponInput) couponInput.value = tmCoupon?.code || "";
+    const couponMessage = document.querySelector("[data-coupon-message]");
+    if (couponMessage) {
+      if (tmCoupon?.ok) couponMessage.textContent = `${tmCoupon.label || "Kupón"}: -${formatMoney(couponDiscount)}`;
+      else couponMessage.textContent = tmCoupon?.reason || "";
+      couponMessage.className = tmCoupon?.ok ? "is-success" : "is-error";
+    }
+
+    if (loyaltyEl) loyaltyEl.hidden = loyaltyDiscount <= 0;
+    const loyaltyValueEl = document.querySelector("[data-cart-loyalty]");
+    if (loyaltyValueEl) loyaltyValueEl.textContent = `-${formatMoney(loyaltyDiscount)}`;
 
     if (discountEl) discountEl.hidden = discount <= 0;
     if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);
@@ -539,10 +811,27 @@ function formatMoney(value) {
     refreshCartCounters();
   }
 
+
+  document.addEventListener("submit", (event) => {
+    const form = event.target.closest("[data-cart-coupon-box]");
+    if (!form) return;
+    event.preventDefault();
+    validateCouponCode(form.querySelector("[data-coupon-input]")?.value || "");
+  });
+
+  document.addEventListener("change", (event) => {
+    const loyaltyToggle = event.target.closest("[data-loyalty-toggle]");
+    if (loyaltyToggle) {
+      tmLoyaltyApply = Boolean(loyaltyToggle.checked);
+      localStorage.setItem("tm_loyalty_apply", tmLoyaltyApply ? "1" : "0");
+      renderCartPage();
+    }
+  });
+
   document.addEventListener("click", (event) => {
     const addButton = event.target.closest("[data-add-to-cart]");
     if (addButton) {
-      addToCart({
+      const product = {
         sku: addButton.dataset.sku,
         name: addButton.dataset.name,
         price: addButton.dataset.price,
@@ -558,7 +847,10 @@ function formatMoney(value) {
         stock_status: addButton.dataset.stockStatus || "instock",
         stock_quantity: addButton.dataset.stockQuantity || null,
         stock_text: addButton.dataset.stockText || "",
-      });
+      };
+
+      addToCart(product);
+      showAddCartDrawer(product);
 
       const originalText = addButton.textContent;
       addButton.textContent = "Pridané do košíka";
@@ -615,6 +907,8 @@ function formatMoney(value) {
   document.addEventListener("DOMContentLoaded", async () => {
     refreshCartCounters();
     renderCartPage();
+    loadLoyalty();
+    autoLoadBestCoupon();
     if (document.querySelector("[data-cart-list]")) {
       const changed = await hydrateCartProducts();
       if (changed) renderCartPage();
@@ -631,5 +925,7 @@ function formatMoney(value) {
     renderCartPage,
     cartPricing,
     cartDiscountedTotal,
+    showAddCartDrawer,
+    hideAddCartDrawer,
   };
 })();

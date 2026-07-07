@@ -3,6 +3,61 @@
   window.__TM_CHECKOUT_INIT__ = true;
 
   const CART_KEYS = ["tm_cart_v1", "tonerymaxim_cart", "cart", "tm_cart"];
+  let tmLoyalty = { ok: false, points: 0, discountValue: 0 };
+  let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") === "1";
+  let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
+
+  async function loadLoyalty() {
+    try {
+      const response = await fetch("/api/account/loyalty", { credentials: "same-origin" });
+      if (!response.ok) throw new Error("not logged");
+      const data = await response.json();
+      tmLoyalty = { ok: true, points: Number(data.points || 0), discountValue: Number(data.discountValue || 0) };
+      if (tmLoyalty.discountValue <= 0) tmLoyaltyApply = false;
+      renderCheckoutSummary();
+    } catch {
+      tmLoyalty = { ok: false, points: 0, discountValue: 0 };
+      tmLoyaltyApply = false;
+    }
+  }
+
+  function loyaltyDiscountForTotal(total) {
+    if (!tmLoyaltyApply || !tmLoyalty.ok) return 0;
+    return Math.min(Number(tmLoyalty.discountValue || 0), Math.max(0, Number(total || 0)));
+  }
+
+
+  function couponDiscountForTotal(total) {
+    if (!tmCoupon || !tmCoupon.ok) return 0;
+    const discount = Number(tmCoupon.discount || 0);
+    return Math.min(Number.isFinite(discount) ? discount : 0, Math.max(0, Number(total || 0)));
+  }
+
+  async function validateCouponCode(code) {
+    const clean = String(code || "").trim();
+    if (!clean) {
+      tmCoupon = null;
+      localStorage.removeItem("tm_coupon_v1");
+      renderCheckoutSummary();
+      return;
+    }
+    try {
+      const response = await fetch("/api/coupon-validate", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: clean, cart: readCart() }),
+      });
+      const data = await response.json().catch(() => ({}));
+      tmCoupon = data;
+      localStorage.setItem("tm_coupon_v1", JSON.stringify(data));
+      renderCheckoutSummary();
+    } catch {
+      tmCoupon = { ok: false, code: clean, reason: "Kupón sa nepodarilo overiť." };
+      localStorage.setItem("tm_coupon_v1", JSON.stringify(tmCoupon));
+      renderCheckoutSummary();
+    }
+  }
 
   const DPD_WIDGET_KEY = "iwzhr18lr8fiwp8xz68oicw1jv6vpow5";
   const DPD_WIDGET_LIBRARY_URL = "https://pus-maps.dpd.sk/lib/library.js";
@@ -88,48 +143,71 @@
     return keys.some((key) => String(a?.[key] || "").trim() && String(a?.[key] || "").trim() !== String(b?.[key] || "").trim());
   }
 
+  function hasUsableShippingAddress(address = {}) {
+    return Boolean(String(address?.address_1 || "").trim() && String(address?.city || "").trim() && String(address?.postcode || "").trim());
+  }
+
+  function hydrateCheckoutFromCustomer(customer) {
+    if (!customer) return null;
+
+    const billing = customer.billing || {};
+    const shipping = customer.shipping || {};
+    const firstName = customer.first_name || billing.first_name || "";
+    const lastName = customer.last_name || billing.last_name || "";
+    const fullName = [firstName, lastName].filter(Boolean).join(" ") || customer.email || "zákazník";
+
+    const subtitle = document.querySelector("[data-contact-subtitle]");
+    if (subtitle) subtitle.textContent = `Nakupujete ako prihlásený zákazník ${fullName}. Údaje sme doplnili z účtu.`;
+
+    writeInput("#email", customer.email || billing.email || "", true);
+    writeInput("#phone", normalizePhone(billing.phone || shipping.phone || customer.phone || ""), true);
+
+    writeInput("first_name", billing.first_name || firstName, true);
+    writeInput("last_name", billing.last_name || lastName, true);
+    writeInput("company", billing.company || "", true);
+    writeInput("address", billing.address_1 || billing.address || "", true);
+    writeInput("zip", billing.postcode || billing.zip || "", true);
+    writeInput("city", billing.city || "", true);
+
+    const companyEnabled = document.querySelector("#company_enabled");
+    if (companyEnabled && String(billing.company || "").trim()) companyEnabled.checked = true;
+
+    const shippingMethod = getSelected("shipping");
+    const different = document.querySelector("#different_address");
+
+    if (!needsPickupShipping(shippingMethod) && hasUsableShippingAddress(shipping) && addressDiffers(shipping, billing)) {
+      if (different) different.checked = true;
+      writeInput("delivery_first_name", shipping.first_name || billing.first_name || firstName, true);
+      writeInput("delivery_last_name", shipping.last_name || billing.last_name || lastName, true);
+      writeInput("delivery_street", shipping.address_1 || shipping.address || "", true);
+      writeInput("delivery_zip", shipping.postcode || shipping.zip || "", true);
+      writeInput("delivery_city", shipping.city || "", true);
+      writeInput("delivery_phone", normalizePhone(shipping.phone || billing.phone || ""), true);
+      writeInput("delivery_email", customer.email || billing.email || "", true);
+    } else if (needsPickupShipping(shippingMethod) && different) {
+      different.checked = false;
+    }
+
+    updateVisibility();
+    renderCheckoutSummary();
+    return customer;
+  }
+
   async function loadLoggedInCustomerToCheckout() {
     try {
-      const response = await fetch("/api/auth/me", { headers: { Accept: "application/json" }, cache: "no-store" });
+      if (window.__TM_CHECKOUT_CUSTOMER__) {
+        return hydrateCheckoutFromCustomer(window.__TM_CHECKOUT_CUSTOMER__);
+      }
+
+      const response = await fetch("/api/auth/me", {
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.ok || !data.customer) return null;
 
-      const customer = data.customer;
-      const billing = customer.billing || {};
-      const shipping = customer.shipping || {};
-      const firstName = customer.first_name || billing.first_name || "";
-      const lastName = customer.last_name || billing.last_name || "";
-      const subtitle = document.querySelector("[data-contact-subtitle]");
-      if (subtitle) subtitle.textContent = `Nakupujete ako prihlásený zákazník ${[firstName, lastName].filter(Boolean).join(" ") || customer.email}. Údaje sme doplnili z účtu.`;
-
-      writeInput("#email", customer.email || billing.email || "", true);
-      writeInput("#phone", normalizePhone(billing.phone || shipping.phone || ""), true);
-
-      writeInput("first_name", billing.first_name || firstName, true);
-      writeInput("last_name", billing.last_name || lastName, true);
-      writeInput("company", billing.company || "", true);
-      writeInput("address", billing.address_1 || "", true);
-      writeInput("zip", billing.postcode || "", true);
-      writeInput("city", billing.city || "", true);
-
-      const companyEnabled = document.querySelector("#company_enabled");
-      if (companyEnabled && String(billing.company || "").trim()) companyEnabled.checked = true;
-
-      if (shipping && addressDiffers(shipping, billing)) {
-        const different = document.querySelector("#different_address");
-        if (different) different.checked = true;
-        writeInput("delivery_first_name", shipping.first_name || billing.first_name || firstName, true);
-        writeInput("delivery_last_name", shipping.last_name || billing.last_name || lastName, true);
-        writeInput("delivery_street", shipping.address_1 || "", true);
-        writeInput("delivery_zip", shipping.postcode || "", true);
-        writeInput("delivery_city", shipping.city || "", true);
-        writeInput("delivery_phone", normalizePhone(shipping.phone || billing.phone || ""), true);
-        writeInput("delivery_email", customer.email || billing.email || "", true);
-      }
-
-      updateVisibility();
-      renderCheckoutSummary();
-      return customer;
+      return hydrateCheckoutFromCustomer(data.customer);
     } catch {
       return null;
     }
@@ -229,8 +307,10 @@
     if (!name || price <= 0) return null;
 
     return {
-      id: String(item.id || item.productId || item.product_id || item.sku || item.code || name),
-      sku: String(item.sku || item.code || item.id || ""),
+      id: String(item.product_id || item.productId || item.id || item.sku || item.code || name),
+      productId: String(item.productId || item.product_id || item.id || ""),
+      product_id: String(item.product_id || item.productId || item.id || ""),
+      sku: String(item.sku || item.code || ""),
       name: String(name),
       price,
       qty: cleanQty(qty),
@@ -622,9 +702,17 @@
       if (input) input.value = "";
     }
 
+    if (needsPickup) {
+      const different = document.querySelector("#different_address");
+      if (different) different.checked = false;
+    }
+
+    const differentAddressLine = document.querySelector("#different_address")?.closest(".checkline");
+    if (differentAddressLine) differentAddressLine.hidden = needsPickup;
+
     renderPickupSummary();
     document.querySelector("[data-company-box]")?.toggleAttribute("hidden", !company);
-    document.querySelector("[data-delivery-address]")?.toggleAttribute("hidden", !differentAddress);
+    document.querySelector("[data-delivery-address]")?.toggleAttribute("hidden", needsPickup || !document.querySelector("#different_address")?.checked);
   }
 
   function renderCheckoutSummary() {
@@ -673,7 +761,13 @@
 
     const shippingPrice = discountedSubtotal >= 29 ? 0 : shipping.price;
     const paymentPrice = payment.price;
-    const total = discountedSubtotal + shippingPrice + paymentPrice;
+    const beforeCouponTotal = discountedSubtotal + shippingPrice + paymentPrice;
+    const couponDiscount = couponDiscountForTotal(beforeCouponTotal);
+    const beforeLoyaltyTotal = Math.max(0, beforeCouponTotal - couponDiscount);
+    const loyaltyDiscount = loyaltyDiscountForTotal(beforeLoyaltyTotal);
+    const total = Math.max(0, beforeLoyaltyTotal - loyaltyDiscount);
+
+    updateShippingOptionPrices(discountedSubtotal);
 
     document.querySelector("[data-summary-subtotal]").textContent = money(subtotal);
     const discountLine = document.querySelector("[data-summary-discount-line]");
@@ -684,6 +778,61 @@
     document.querySelector("[data-summary-shipping]").textContent = shippingPrice === 0 ? "Zdarma" : money(shippingPrice);
     document.querySelector("[data-summary-payment-label]").textContent = payment.label;
     document.querySelector("[data-summary-payment]").textContent = paymentPrice === 0 ? "Bez poplatku" : money(paymentPrice);
+    let couponLine = document.querySelector("[data-summary-coupon-line]");
+    const sticky = document.querySelector(".summary-sticky");
+    if (sticky && !couponLine) {
+      couponLine = document.createElement("div");
+      couponLine.className = "summary-line summary-coupon";
+      couponLine.dataset.summaryCouponLine = "";
+      couponLine.innerHTML = `<span>Kupónová zľava</span><strong data-summary-coupon>-0,00 €</strong>`;
+      sticky.insertBefore(couponLine, document.querySelector(".summary-total"));
+    }
+    let couponBox = document.querySelector("[data-summary-coupon-box]");
+    if (sticky && !couponBox) {
+      couponBox = document.createElement("form");
+      couponBox.className = "summary-note coupon-note";
+      couponBox.dataset.summaryCouponBox = "";
+      couponBox.innerHTML = `<strong>Zľavový kupón</strong><div class="coupon-inline"><input type="text" data-coupon-input placeholder="Zadajte kód kupónu"><button type="submit">Použiť</button></div><small data-coupon-message></small>`;
+      sticky.insertBefore(couponBox, document.querySelector(".summary-total"));
+    }
+
+    let loyaltyLine = document.querySelector("[data-summary-loyalty-line]");
+    if (sticky && !loyaltyLine) {
+      loyaltyLine = document.createElement("div");
+      loyaltyLine.className = "summary-line summary-loyalty";
+      loyaltyLine.dataset.summaryLoyaltyLine = "";
+      loyaltyLine.innerHTML = `<span>Vernostná zľava</span><strong data-summary-loyalty>-0,00 €</strong>`;
+      sticky.insertBefore(loyaltyLine, document.querySelector(".summary-total"));
+    }
+    let loyaltyBox = document.querySelector("[data-summary-loyalty-box]");
+    if (sticky && !loyaltyBox) {
+      loyaltyBox = document.createElement("div");
+      loyaltyBox.className = "summary-note loyalty-note";
+      loyaltyBox.dataset.summaryLoyaltyBox = "";
+      sticky.insertBefore(loyaltyBox, document.querySelector(".summary-total"));
+    }
+    if (loyaltyBox) {
+      loyaltyBox.hidden = !tmLoyalty.ok || tmLoyalty.discountValue <= 0;
+      if (!loyaltyBox.hidden) {
+        loyaltyBox.innerHTML = `<strong>Vernostné body</strong><span>Máte ${tmLoyalty.points} bodov = zľava ${money(tmLoyalty.discountValue)}.</span><label class="checkline"><input type="checkbox" data-loyalty-toggle ${tmLoyaltyApply ? "checked" : ""}> Použiť zľavu</label>`;
+      }
+    }
+    if (couponLine) couponLine.hidden = couponDiscount <= 0;
+    const couponValue = document.querySelector("[data-summary-coupon]");
+    if (couponValue) couponValue.textContent = `-${money(couponDiscount)}`;
+    const couponInput = document.querySelector("[data-coupon-input]");
+    if (couponInput && document.activeElement !== couponInput) couponInput.value = tmCoupon?.code || "";
+    const couponMessage = document.querySelector("[data-coupon-message]");
+    if (couponMessage) {
+      if (tmCoupon?.ok) couponMessage.textContent = `${tmCoupon.label || "Kupón"}: -${money(couponDiscount)}`;
+      else couponMessage.textContent = tmCoupon?.reason || "";
+      couponMessage.className = tmCoupon?.ok ? "is-success" : "is-error";
+    }
+
+    if (loyaltyLine) loyaltyLine.hidden = loyaltyDiscount <= 0;
+    const loyaltyValue = document.querySelector("[data-summary-loyalty]");
+    if (loyaltyValue) loyaltyValue.textContent = `-${money(loyaltyDiscount)}`;
+
     const summaryNet = document.querySelector("[data-summary-net]");
     if (summaryNet) summaryNet.textContent = money(netFromGross(total));
     const summaryVat = document.querySelector("[data-summary-vat]");
@@ -709,6 +858,21 @@
         freeBox.textContent = `Do dopravy zdarma vám chýba ${money(29 - discountedSubtotal)}`;
       }
     }
+  }
+
+  function updateShippingOptionPrices(discountedSubtotal) {
+    const hasFreeShipping = Number(discountedSubtotal || 0) >= 29;
+    document.querySelectorAll('input[name="shipping"]').forEach((input) => {
+      const code = input.value;
+      const shipping = SHIPPING[code];
+      const label = input.closest("label");
+      if (!shipping || !label) return;
+      const priceEl = label.querySelector("[data-shipping-option-price], b");
+      if (!priceEl) return;
+      priceEl.textContent = hasFreeShipping ? "0 €" : money(shipping.price);
+      priceEl.classList.toggle("is-free", hasFreeShipping);
+      label.classList.toggle("has-free-shipping", hasFreeShipping);
+    });
   }
 
   function validateField(input) {
@@ -1379,7 +1543,7 @@
         zip: document.querySelector('[name="zip"]')?.value || "",
       },
       delivery: {
-        differentAddress: document.querySelector("#different_address")?.checked || false,
+        differentAddress: needsPickupShipping(getSelected("shipping")) ? false : (document.querySelector("#different_address")?.checked || false),
         firstName: document.querySelector('[name="delivery_first_name"]')?.value || "",
         lastName: document.querySelector('[name="delivery_last_name"]')?.value || "",
         email: document.querySelector('[name="delivery_email"]')?.value || "",
@@ -1394,6 +1558,8 @@
         pickup: getSelectedPickup(),
       },
       payment: getSelected("payment"),
+      coupon: tmCoupon?.ok ? { code: tmCoupon.code, label: tmCoupon.label || "Kupónová zľava", discount: couponDiscountForTotal(cartPricing(cart).subtotal - cartPricing(cart).discount) } : null,
+      loyalty: { apply: tmLoyaltyApply, discount: loyaltyDiscountForTotal(cartPricing(cart).subtotal - cartPricing(cart).discount + ((cartPricing(cart).subtotal - cartPricing(cart).discount) >= 29 ? 0 : ((SHIPPING[getSelected("shipping")] || SHIPPING.dpd_courier).price)) + ((PAYMENT[getSelected("payment")] || PAYMENT.gopay).price)) },
       createdAt: new Date().toISOString(),
     };
 
@@ -1422,6 +1588,8 @@
           throw new Error(data.error || "Nepodarilo sa vytvoriť GoPay platbu.");
         }
 
+        localStorage.removeItem("tm_coupon_v1");
+        localStorage.removeItem("tm_loyalty_apply");
         status.textContent = "Presmerujem vás na GoPay...";
         status.className = "order-status is-success";
         window.location.href = data.gwUrl;
@@ -1433,6 +1601,8 @@
       }
 
       localStorage.removeItem("tm_cart_v1");
+      localStorage.removeItem("tm_coupon_v1");
+      localStorage.removeItem("tm_loyalty_apply");
       status.textContent = "Objednávka bola uložená. Presmerujem vás na potvrdenie...";
       status.className = "order-status is-success";
       window.location.href = `/platba-dokoncena?order=${encodeURIComponent(data.orderNumber || data.orderId)}&method=${encodeURIComponent(orderPreview.payment)}`;
@@ -1494,10 +1664,65 @@
 
   }
 
+  async function autoLoadBestCoupon() {
+    try {
+      const cart = readCart();
+      if (!Array.isArray(cart) || cart.length === 0) {
+        tmCoupon = null;
+        localStorage.removeItem("tm_coupon_v1");
+        renderCheckoutSummary();
+        return;
+      }
+
+      const response = await fetch("/api/coupon-active", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ cart }),
+      });
+
+      const data = await response.json().catch(() => null);
+      if (response.ok && data?.ok) {
+        tmCoupon = data;
+        localStorage.setItem("tm_coupon_v1", JSON.stringify(data));
+      } else {
+        const savedCode = tmCoupon?.code || "";
+        if (!savedCode) {
+          tmCoupon = null;
+          localStorage.removeItem("tm_coupon_v1");
+        }
+      }
+    } catch {
+      // Ak automatické načítanie kupónu zlyhá, pokladňa musí zostať funkčná.
+    } finally {
+      renderCheckoutSummary();
+    }
+  }
+
+
+  document.addEventListener("submit", (event) => {
+    const form = event.target.closest("[data-summary-coupon-box]");
+    if (!form) return;
+    event.preventDefault();
+    validateCouponCode(form.querySelector("[data-coupon-input]")?.value || "");
+  });
+
+  document.addEventListener("change", (event) => {
+    const loyaltyToggle = event.target.closest("[data-loyalty-toggle]");
+    if (loyaltyToggle) {
+      tmLoyaltyApply = Boolean(loyaltyToggle.checked);
+      localStorage.setItem("tm_loyalty_apply", tmLoyaltyApply ? "1" : "0");
+      renderCheckoutSummary();
+    }
+  });
+
   document.addEventListener("DOMContentLoaded", () => {
     restoreCheckoutSelection();
     restorePickupState();
     renderCheckoutSummary();
+    loadLoyalty();
+    autoLoadBestCoupon();
     updateVisibility();
     loadLoggedInCustomerToCheckout();
     setupPostalAutofill();

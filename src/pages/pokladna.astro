@@ -6,6 +6,13 @@ import Header from "../components/Header.astro";
 import "../styles/footer.css";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import { readCustomerSession } from "../lib/auth-session";
+import { getWooCustomerById } from "../lib/woo-client";
+
+export const prerender = false;
+
+const session = readCustomerSession(Astro.cookies);
+const checkoutCustomer = session ? await getWooCustomerById(session.id).catch(() => null) : null;
 
 const title = "Pokladňa | ToneryMaxim.sk";
 ---
@@ -68,11 +75,11 @@ const title = "Pokladňa | ToneryMaxim.sk";
                 <div>
                   <h3 class="subsection-title">Doprava</h3>
                   <div class="option-stack">
-                    <label class="option-tile compact"><input type="radio" name="shipping" value="dpd_courier" checked /><span class="option-icon">🚚</span><span><strong>DPD kuriér na adresu</strong><small>Doručenie 1–2 pracovné dni</small></span><b>3,90 €</b></label>
-                    <label class="option-tile compact"><input type="radio" name="shipping" value="dpd_pickup" /><span class="option-icon">📍</span><span><strong>DPD Pickup</strong><small>Výdajné miesto podľa výberu</small></span><b>2,90 €</b></label>
-                    <label class="option-tile compact"><input type="radio" name="shipping" value="dpd_box" /><span class="option-icon">📦</span><span><strong>DPD Pickup Box</strong><small>Vyzdvihnutie v boxe alebo Pickup mieste</small></span><b>2,90 €</b></label>
-                    <label class="option-tile compact"><input type="radio" name="shipping" value="gls_courier" /><span class="option-icon">🚛</span><span><strong>GLS kuriér na adresu</strong><small>Doručenie 1–2 pracovné dni</small></span><b>3,90 €</b></label>
-                    <label class="option-tile compact"><input type="radio" name="shipping" value="gls_pickup" /><span class="option-icon">🏪</span><span><strong>GLS ParcelShop / Balíkomat</strong><small>Výdajné miesto alebo balíkomat podľa výberu</small></span><b>2,90 €</b></label>
+                    <label class="option-tile compact"><input type="radio" name="shipping" value="dpd_courier" checked /><span class="option-icon">🚚</span><span><strong>DPD kuriér na adresu</strong><small>Doručenie 1–2 pracovné dni</small></span><b data-shipping-option-price>3,90 €</b></label>
+                    <label class="option-tile compact"><input type="radio" name="shipping" value="dpd_pickup" /><span class="option-icon">📍</span><span><strong>DPD Pickup</strong><small>Výdajné miesto podľa výberu</small></span><b data-shipping-option-price>2,90 €</b></label>
+                    <label class="option-tile compact"><input type="radio" name="shipping" value="dpd_box" /><span class="option-icon">📦</span><span><strong>DPD Pickup Box</strong><small>Vyzdvihnutie v boxe alebo Pickup mieste</small></span><b data-shipping-option-price>2,90 €</b></label>
+                    <label class="option-tile compact"><input type="radio" name="shipping" value="gls_courier" /><span class="option-icon">🚛</span><span><strong>GLS kuriér na adresu</strong><small>Doručenie 1–2 pracovné dni</small></span><b data-shipping-option-price>3,90 €</b></label>
+                    <label class="option-tile compact"><input type="radio" name="shipping" value="gls_pickup" /><span class="option-icon">🏪</span><span><strong>GLS ParcelShop / Balíkomat</strong><small>Výdajné miesto alebo balíkomat podľa výberu</small></span><b data-shipping-option-price>2,90 €</b></label>
                   </div>
 
                   <div class="pickup-box" data-pickup-box hidden>
@@ -239,6 +246,10 @@ const title = "Pokladňa | ToneryMaxim.sk";
       <Footer />
       <FloatingAdvisor />
     </div>
+
+    <script define:vars={ checkoutCustomer }>
+      window.__TM_CHECKOUT_CUSTOMER__ = checkoutCustomer || null;
+    </script>
 
     <script>
       import "../scripts/checkout.js";

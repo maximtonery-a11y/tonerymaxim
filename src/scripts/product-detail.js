@@ -631,10 +631,18 @@
   }
 
   function addToCart(product, qty) {
+    const quantity = Math.max(1, Math.min(99, Number(qty || 1)));
+
+    if (window.ToneryMaximCart && typeof window.ToneryMaximCart.addToCart === "function") {
+      const cartProduct = { ...product, qty: quantity };
+      window.ToneryMaximCart.addToCart(cartProduct);
+      if (typeof window.ToneryMaximCart.showAddCartDrawer === "function") window.ToneryMaximCart.showAddCartDrawer(cartProduct);
+      return;
+    }
+
     const cart = readCart();
     const id = String(product.id || product.sku || product.name);
     const existing = cart.find((item) => String(item.id) === id);
-    const quantity = Math.max(1, Math.min(99, Number(qty || 1)));
 
     if (existing) {
       existing.qty = Number(existing.qty || 1) + quantity;

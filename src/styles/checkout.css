@@ -1325,3 +1325,30 @@ body.has-gls-modal {
     min-height: 68px;
   }
 }
+
+.coupon-note { display: grid; gap: 8px; }
+.coupon-inline { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.coupon-inline input { width: 100%; border: 1px solid #dbe7f5; border-radius: 12px; padding: 11px 12px; font: inherit; color: #071d41; background: #fff; }
+.coupon-inline button { border: 0; border-radius: 12px; padding: 11px 14px; font-weight: 900; color: #fff; background: #071d41; cursor: pointer; }
+.coupon-note small { color: #65748b; }
+.coupon-note small.is-success { color: #08742f; font-weight: 800; }
+.coupon-note small.is-error { color: #c0392b; font-weight: 800; }
+.summary-coupon strong { color: #08742f; }
+
+/* Clean summary blocks */
+.coupon-note,
+.loyalty-note {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f4f8fd;
+}
+.coupon-note strong,
+.loyalty-note strong {
+  font-size: 13px;
+}
+.coupon-note small,
+.loyalty-note span,
+.loyalty-note label {
+  font-size: 12px;
+  line-height: 1.35;
+}

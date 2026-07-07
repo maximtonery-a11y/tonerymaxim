@@ -4,14 +4,14 @@ import "../../styles/footer.css";
 import "../../styles/account.css";
 import { readCustomerSession } from "../../lib/auth-session";
 import AccountShell from "../../components/AccountShell.astro";
-import { getCustomerMeta, getWooCustomerById, parseJsonMeta } from "../../lib/woo-client";
+import { getCustomerLoyalty } from "../../lib/loyalty";
 
 const customer = readCustomerSession(Astro.cookies);
 if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
-const wooCustomer = await getWooCustomerById(customer.id);
-const points = Number(getCustomerMeta(wooCustomer, "tm_loyalty_points") || 0);
-const history = parseJsonMeta<any[]>(getCustomerMeta(wooCustomer, "tm_loyalty_history"), []);
-const discountValue = Math.floor(points / 100);
+const loyalty = await getCustomerLoyalty(customer.id);
+const points = loyalty.points;
+const history = loyalty.history;
+const discountValue = loyalty.discountValue;
 ---
 
 <!doctype html>
@@ -29,9 +29,9 @@ const discountValue = Math.floor(points / 100);
           <h2>{points} bodov</h2>
           <p>{points > 0 ? <>Vaše body majú aktuálnu hodnotu <strong>{discountValue},00 €</strong> pri ďalšom nákupe.</> : <>Body získate po vybavení objednávky.</>}</p>
           <div class="loyalty-progress" aria-label="Postup k ďalšej odmene">
-            <span style={`width: ${Math.min(100, Math.round((points / 750) * 100))}%`}></span>
+            <span style={`width: ${Math.min(100, Math.round((points / 1000) * 100))}%`}></span>
           </div>
-          <small>{points >= 750 ? "Dosiahli ste hranicu pre odmenu." : `Do odmeny „Doprava zdarma“ vám chýba ešte ${750 - points} bodov.`}</small>
+          <small>{points >= 500 ? "Dosiahli ste hranicu pre odmenu." : `Do odmeny „1× kancelársky papier“ vám chýba ešte ${500 - points} bodov.`}</small>
         </div>
         <div class="loyalty-value-card">
           <span>Hodnota zľavy</span>
@@ -54,7 +54,7 @@ const discountValue = Math.floor(points / 100);
         <article class="account-list-card loyalty-rule-card">
           <span class="account-stat-icon">🎁</span>
           <h3>Odmeny navyše</h3>
-          <p>Pri vybraných nákupoch získate kupóny alebo dopravu zdarma.</p>
+          <p>Za body získate kancelársky papier k objednávke.</p>
         </article>
       </section>
 
@@ -68,11 +68,15 @@ const discountValue = Math.floor(points / 100);
           </div>
           <div class="reward-milestones">
             <div class="reward-milestone">
-              <div><strong>750 bodov</strong><span>Doprava zdarma</span></div>
+              <div><strong>500 bodov</strong><span>1× kancelársky papier (500 listov)</span></div>
+              <small>{points >= 500 ? "dostupné" : `chýba ${500 - points} bodov`}</small>
+            </div>
+            <div class="reward-milestone">
+              <div><strong>750 bodov</strong><span>2× kancelársky papier (1000 listov)</span></div>
               <small>{points >= 750 ? "dostupné" : `chýba ${750 - points} bodov`}</small>
             </div>
             <div class="reward-milestone">
-              <div><strong>1000 bodov</strong><span>Kupón 10 €</span></div>
+              <div><strong>1000 bodov</strong><span>3× kancelársky papier (1500 listov)</span></div>
               <small>{points >= 1000 ? "dostupné" : `chýba ${1000 - points} bodov`}</small>
             </div>
           </div>

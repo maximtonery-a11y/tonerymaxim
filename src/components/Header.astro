@@ -44,7 +44,7 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
       </span>
     </a>
 
-    <a href="/prihlasenie" class="account-link" aria-label="Prihlásenie alebo účet" data-account-link>Účet</a>
+    <a href="/prihlasenie" class="account-link" aria-label="Prihlásenie alebo účet">Účet</a>
 
     <a href="/kosik" class="icon-btn cart-btn" aria-label="Košík">
       🛒
@@ -103,6 +103,32 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
     </div>
   </div>
 </header>
+<style is:global>
+.add-cart-drawer[hidden] { display: none !important; }
+.add-cart-drawer { position: fixed; inset: 0; z-index: 2147483000; font-family: inherit; }
+.add-cart-backdrop { position: absolute; inset: 0; background: rgba(2, 15, 40, .34); backdrop-filter: blur(3px); }
+.add-cart-panel { position: absolute; top: 0; right: 0; width: min(420px, calc(100vw - 24px)); height: 100%; background: #fff; border-left: 1px solid #dbe7f5; box-shadow: -24px 0 70px rgba(5, 20, 44, .18); padding: 26px; overflow: auto; animation: tmCartDrawerIn .18s ease-out; }
+@keyframes tmCartDrawerIn { from { transform: translateX(24px); opacity: .7; } to { transform: translateX(0); opacity: 1; } }
+.add-cart-close { position: absolute; top: 16px; right: 18px; width: 38px; height: 38px; border: 0; border-radius: 999px; background: #f2f6fb; color: #08224a; font-size: 24px; cursor: pointer; }
+.add-cart-status { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 22px; padding: 10px 14px; border-radius: 999px; background: #eaf8ef; color: #08742f; font-weight: 800; }
+.add-cart-product { display: grid; grid-template-columns: 88px 1fr; gap: 16px; align-items: center; padding: 18px 0 22px; border-bottom: 1px solid #e5edf7; }
+.add-cart-thumb { width: 88px; height: 88px; border-radius: 18px; background: #f6f9fd; display: grid; place-items: center; }
+.add-cart-thumb img { max-width: 78px; max-height: 78px; object-fit: contain; }
+.add-cart-product h2 { margin: 0 0 6px; font-size: 20px; line-height: 1.2; color: #071d41; }
+.add-cart-product p { margin: 0 0 8px; color: #65748b; }
+.add-cart-product strong { color: #071d41; font-size: 18px; }
+.add-cart-summary { padding: 18px 0; display: grid; gap: 10px; }
+.add-cart-summary div { display: flex; justify-content: space-between; gap: 16px; color: #4f6178; }
+.add-cart-summary strong { color: #071d41; }
+.add-cart-summary p { margin: 8px 0 0; padding: 12px 14px; border-radius: 14px; background: #fff7df; color: #8a5a00; font-weight: 800; }
+.add-cart-summary p.is-free { background: #eaf8ef; color: #08742f; }
+.add-cart-actions { display: grid; gap: 10px; margin-top: 8px; }
+.add-cart-actions a, .add-cart-actions button { text-align: center; text-decoration: none; border-radius: 14px; padding: 14px 16px; font-weight: 900; cursor: pointer; font-family: inherit; }
+.add-cart-actions .btn-primary { background: #071d41; color: #fff; border: 1px solid #071d41; }
+.add-cart-actions .btn-secondary { background: #f3f7fc; color: #071d41; border: 1px solid #dce8f6; }
+body.has-add-cart-drawer { overflow: hidden; }
+@media (max-width: 640px) { .add-cart-panel { top: auto; bottom: 0; width: 100%; height: auto; max-height: 88vh; border-left: 0; border-radius: 26px 26px 0 0; } }
+</style>
 
 <script>
   import "../scripts/cart.js";
@@ -129,23 +155,32 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
     if (event.key === "Escape") setGlobalMenu(false);
   });
 
-  async function updateAccountLink() {
-    const link = document.querySelector("[data-account-link]");
-    if (!link) return;
+  async function updateHeaderAccountState() {
+    const links = document.querySelectorAll('.account-link');
+    if (!links.length) return;
     try {
-      const response = await fetch("/api/auth/me", { headers: { Accept: "application/json" }, cache: "no-store" });
-      const data = await response.json();
-      if (!response.ok || !data?.ok || !data.customer) return;
-      const customer = data.customer;
-      const name = [customer.first_name || customer.billing?.first_name, customer.last_name || customer.billing?.last_name].filter(Boolean).join(" ").trim();
-      link.href = "/ucet";
-      link.textContent = name ? `Účet: ${name.split(" ")[0]}` : "Môj účet";
-      link.setAttribute("aria-label", "Môj účet");
-      link.classList.add("is-logged-in");
+      const response = await fetch('/api/auth/me', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' });
+      const data = await response.json().catch(() => ({}));
+      const customer = data?.customer;
+      if (!response.ok || !data?.ok || !customer) throw new Error('not logged');
+      const first = String(customer.first_name || customer.billing?.first_name || customer.username || customer.email || '').trim().split(/\s+/)[0] || 'Môj účet';
+      links.forEach((link) => {
+        link.setAttribute('href', '/ucet');
+        link.textContent = `Účet: ${first}`;
+        link.setAttribute('aria-label', 'Môj účet');
+      });
     } catch {
-      // noop
+      links.forEach((link) => {
+        if (link.getAttribute('href') === '/ucet') return;
+        link.setAttribute('href', '/prihlasenie');
+        link.textContent = 'Účet';
+      });
     }
   }
 
-  updateAccountLink();
+  updateHeaderAccountState();
+  window.addEventListener('storage', (event) => {
+    if (!event.key || event.key.includes('auth') || event.key.includes('customer')) updateHeaderAccountState();
+  });
+
 </script>

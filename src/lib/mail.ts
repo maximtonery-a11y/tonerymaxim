@@ -173,6 +173,7 @@ export async function sendOrderConfirmationEmail(input: {
   const subtotalGross = toNumber(source.subtotal);
   const shippingGross = toNumber(source.shippingPrice);
   const paymentGross = toNumber(source.paymentPrice);
+  const loyaltyGross = toNumber(source.loyaltyDiscount);
   const totalGross = toNumber(source.total);
   const totalNet = netFromGross(totalGross);
   const totalVat = vatFromGross(totalGross);
@@ -215,6 +216,7 @@ DPH 23 %: ${formatMoney(totalVat)}\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk`;
         <tr><td style="padding:6px 0;color:#64748b">Medzisúčet tovaru s DPH:</td><td style="padding:6px 0;text-align:right">${formatMoney(subtotalGross)}</td></tr>
         <tr><td style="padding:6px 0;color:#64748b">Doprava:</td><td style="padding:6px 0;text-align:right">${escapeHtml(input.shippingTitle)} · ${formatMoney(shippingGross)}</td></tr>
         <tr><td style="padding:6px 0;color:#64748b">Spôsob platby:</td><td style="padding:6px 0;text-align:right">${escapeHtml(input.paymentTitle)} · ${formatMoney(paymentGross)}</td></tr>
+        ${loyaltyGross > 0 ? `<tr><td style="padding:6px 0;color:#0f9f4a">Vernostná zľava:</td><td style="padding:6px 0;text-align:right;color:#0f9f4a">-${formatMoney(loyaltyGross)}</td></tr>` : ""}
         <tr><td style="padding:6px 0;color:#64748b">Základ bez DPH:</td><td style="padding:6px 0;text-align:right">${formatMoney(totalNet)}</td></tr>
         <tr><td style="padding:6px 0;color:#64748b">DPH 23 %:</td><td style="padding:6px 0;text-align:right">${formatMoney(totalVat)}</td></tr>
         <tr><td style="padding:10px 0;font-weight:800">Cena spolu s DPH:</td><td style="padding:10px 0;text-align:right;font-weight:800;font-size:18px">${formatMoney(totalGross)}</td></tr>

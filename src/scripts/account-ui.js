@@ -112,6 +112,7 @@
       const cartProduct = product ? toCartProduct(product) : null;
       if (cartProduct?.sku) {
         cartApi.addToCart(cartProduct);
+        if (typeof cartApi.showAddCartDrawer === 'function') cartApi.showAddCartDrawer(cartProduct);
         added += 1;
       }
     }
@@ -185,7 +186,9 @@
     const price = Number(card?.dataset.productPrice || 0);
     if (!sku || !price) return false;
 
-    cartApi.addToCart({ sku, name, price, qty: 1, url: `/produkty?s=${encodeURIComponent(sku || name)}` });
+    const cartProduct = { sku, name, price, qty: 1, url: `/produkty?s=${encodeURIComponent(sku || name)}` };
+    cartApi.addToCart(cartProduct);
+    if (typeof cartApi.showAddCartDrawer === 'function') cartApi.showAddCartDrawer(cartProduct);
     return true;
   }
 
@@ -836,7 +839,9 @@
       return;
     }
 
-    cartApi.addToCart({ sku, name, price, image, url, qty: 1 });
+    const cartProduct = { sku, name, price, image, url, qty: 1 };
+    cartApi.addToCart(cartProduct);
+    if (typeof cartApi.showAddCartDrawer === 'function') cartApi.showAddCartDrawer(cartProduct);
     setAddedState(button, 'Pridané do košíka');
   });
 

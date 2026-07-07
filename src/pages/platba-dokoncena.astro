@@ -180,6 +180,154 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
       .thank-summary-row span { color: var(--tm-muted); }
       .thank-summary-row strong { text-align: right; }
 
+      .thank-order-detail {
+        margin: 22px 0;
+        padding: 24px;
+      }
+
+      .thank-order-detail h2 {
+        margin: 0 0 16px;
+        font-size: 22px;
+      }
+
+
+
+      .tm-final-summary-card {
+        border: 1px solid var(--tm-line);
+        border-radius: 22px;
+        background: #ffffff;
+        overflow: hidden;
+      }
+      .tm-final-summary-list { display: grid; }
+      .tm-final-summary-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--tm-line);
+        align-items: start;
+      }
+      .tm-final-summary-row:last-child { border-bottom: 0; }
+      .tm-final-summary-title { min-width: 0; }
+      .tm-final-summary-title strong { display: block; font-weight: 950; line-height: 1.35; color: var(--tm-navy); }
+      .tm-final-summary-title small { display: block; margin-top: 4px; color: var(--tm-muted); line-height: 1.35; }
+      .tm-final-summary-price { text-align: right; white-space: nowrap; font-weight: 950; color: var(--tm-navy); }
+      .tm-final-summary-row.is-discount .tm-final-summary-title strong,
+      .tm-final-summary-row.is-discount .tm-final-summary-price { color: var(--tm-green); }
+      .tm-final-summary-totals { background: #f8fbff; padding: 8px 0; border-top: 1px solid var(--tm-line); }
+      .tm-final-summary-total {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        padding: 9px 18px;
+        color: var(--tm-muted);
+      }
+      .tm-final-summary-total strong { color: var(--tm-navy); text-align: right; white-space: nowrap; }
+      .tm-final-summary-total.is-grand {
+        margin-top: 6px;
+        padding-top: 16px;
+        border-top: 1px solid var(--tm-line);
+        color: var(--tm-navy);
+        font-size: 21px;
+        font-weight: 950;
+      }
+      .tm-final-summary-total.is-grand strong { font-size: 24px; }
+
+      .thank-order-card {
+        border: 1px solid var(--tm-line);
+        border-radius: 22px;
+        background: #fff;
+        overflow: hidden;
+      }
+
+      .thank-order-items,
+      .thank-order-totals {
+        display: grid;
+      }
+
+      .thank-order-line {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+        padding: 15px 18px;
+        border-bottom: 1px solid var(--tm-line);
+      }
+
+      .thank-order-line-title {
+        min-width: 0;
+      }
+
+      .thank-order-line-title strong {
+        display: block;
+        font-size: 15px;
+        line-height: 1.35;
+        color: var(--tm-navy);
+      }
+
+      .thank-order-line-title small {
+        display: block;
+        margin-top: 4px;
+        color: var(--tm-muted);
+        line-height: 1.35;
+      }
+
+      .thank-order-line-price {
+        white-space: nowrap;
+        text-align: right;
+        font-weight: 950;
+        color: var(--tm-navy);
+      }
+
+      .thank-order-line.is-discount .thank-order-line-price,
+      .thank-order-line.is-discount .thank-order-line-title strong {
+        color: var(--tm-green);
+      }
+
+      .thank-order-totals {
+        padding: 8px 0;
+        background: #fbfdff;
+      }
+
+      .thank-order-total-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        padding: 10px 18px;
+        color: var(--tm-muted);
+      }
+
+      .thank-order-total-row strong {
+        color: var(--tm-navy);
+        white-space: nowrap;
+        text-align: right;
+      }
+
+      .thank-order-total-row.is-grand {
+        margin-top: 6px;
+        padding-top: 16px;
+        border-top: 1px solid var(--tm-line);
+        font-size: 22px;
+        font-weight: 950;
+        color: var(--tm-navy);
+      }
+
+      .thank-order-total-row.is-grand strong {
+        font-size: 24px;
+      }
+
+      @media (max-width: 620px) {
+        .thank-order-line,
+        .thank-order-total-row {
+          grid-template-columns: 1fr;
+          gap: 7px;
+        }
+        .thank-order-line-price,
+        .thank-order-total-row strong {
+          text-align: left;
+        }
+      }
+
       .thank-paid-pill {
         display: inline-flex;
         align-items: center;
@@ -449,17 +597,22 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
             </section>
           </div>
 
+          <section class="thank-panel thank-order-detail" data-order-detail hidden>
+            <h2>Súhrn objednávky</h2>
+            <div class="thank-order-lines" data-order-lines></div>
+          </section>
+
           <section class="thank-reward" data-reward-section hidden>
             <div>
               <h2>🎁 Vaša odmena na ďalší nákup</h2>
-              <p>Ako poďakovanie za objednávku sme vám pripravili zľavu. Zotrite stieraciu plochu a získajte svoj zľavový kód.</p>
+              <p>Ako poďakovanie za objednávku sme vám pripravili 7 % zľavu na kompatibilné produkty. Automaticky ju použijeme pri vašej ďalšej objednávke.</p>
             </div>
             <div class="scratch-card" data-scratch-card>
-              <button class="scratch-surface" type="button" data-scratch-button>
-                Zotrite tu a odhaľte zľavu
-              </button>
+              <div class="scratch-surface is-ready" data-scratch-button>
+                Zľava pripravená
+              </div>
               <div class="scratch-result" data-scratch-result>
-                Získali ste zľavu 7 % na ďalší nákup. Kód: DAKUJEME7
+                Zľava 7 % na kompatibilné produkty bude automaticky použitá pri ďalšej objednávke.
               </div>
             </div>
           </section>
@@ -523,6 +676,9 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
       const infoList = document.querySelector("[data-info-list]");
       const scratchCard = document.querySelector("[data-scratch-card]");
       const scratchButton = document.querySelector("[data-scratch-button]");
+      const thankCouponCode = document.querySelector("[data-thank-coupon-code]");
+      const orderDetail = document.querySelector("[data-order-detail]");
+      const orderLines = document.querySelector("[data-order-lines]");
 
       const params = new URLSearchParams(window.location.search);
       const paymentId = params.get("id");
@@ -560,6 +716,108 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
         return "Online platba GoPay";
       }
 
+
+      function formatMoney(value) {
+        const number = Number(value || 0);
+        return new Intl.NumberFormat("sk-SK", { style: "currency", currency: "EUR" }).format(Number.isFinite(number) ? number : 0);
+      }
+
+      function setThankCoupon(orderNumber) {
+        const clean = String(orderNumber || "").replace(/\D/g, "");
+        if (thankCouponCode && clean) thankCouponCode.textContent = `NAKUP7-${clean}`;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function orderLine(title, price, meta = "", className = "") {
+        return `
+          <div class="tm-final-summary-row ${className}">
+            <div class="tm-final-summary-title">
+              <strong>${escapeHtml(title)}</strong>
+              ${meta ? `<small>${escapeHtml(meta)}</small>` : ""}
+            </div>
+            <div class="tm-final-summary-price">${price}</div>
+          </div>
+        `;
+      }
+
+      function totalRow(label, value, className = "") {
+        return `
+          <div class="tm-final-summary-total ${className}">
+            <span>${escapeHtml(label)}</span>
+            <strong>${value}</strong>
+          </div>
+        `;
+      }
+
+      function renderOrderDetail() {
+        if (!orderDetail || !orderLines) return;
+        let preview = null;
+        try { preview = JSON.parse(localStorage.getItem("tm_last_order_preview") || "null"); } catch { preview = null; }
+        const cart = Array.isArray(preview?.cart) ? preview.cart : [];
+        if (!cart.length) return;
+
+        const pricing = preview?.pricing || {};
+        const shipping = preview?.shipping || {};
+        const paymentCode = String(preview?.payment || "");
+        const paymentMap = {
+          cod: "Dobierka",
+          bank_prepaid: "Platba prevodom vopred",
+          invoice_org: "Prevodný príkaz pre organizácie a firmy",
+          gopay: "Online platba GoPay",
+          applepay: "Apple Pay",
+          googlepay: "Google Pay"
+        };
+
+        const itemsTotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
+        const quantityDiscount = Number(pricing.discount || 0);
+        const couponDiscount = Number(preview?.coupon?.discount || 0);
+        const loyaltyDiscount = Number(preview?.loyalty?.apply ? preview?.loyalty?.discount || 0 : 0);
+        const shippingPrice = Number(shipping?.price || 0);
+        const paymentPrice = paymentCode === "cod" ? 1.2 : 0;
+        const total = Math.max(0, itemsTotal - quantityDiscount - couponDiscount - loyaltyDiscount + shippingPrice + paymentPrice);
+        const net = total / 1.23;
+        const vat = total - net;
+        const paymentLabelText = paymentMap[paymentCode] || paymentCode || "—";
+        const couponLabel = preview?.coupon?.label || "Kupónová zľava";
+        const shippingLabel = shipping?.label || "Doprava";
+
+        const itemRows = cart.map((item) => {
+          const qty = Number(item.qty || 1);
+          const lineTotal = Number(item.price || 0) * qty;
+          const metaParts = [];
+          if (item.sku) metaParts.push(`SKU: ${item.sku}`);
+          if (qty > 1) metaParts.push(`${qty} ks × ${formatMoney(Number(item.price || 0))}`);
+          return orderLine(`${item.name || "Produkt"} × ${qty}`, formatMoney(lineTotal), metaParts.join(" · "));
+        }).join("");
+
+        orderLines.innerHTML = `
+          <div class="tm-final-summary-card">
+            <div class="tm-final-summary-list">
+              ${itemRows}
+              ${quantityDiscount > 0 ? orderLine("Množstevná / sadová zľava", `-${formatMoney(quantityDiscount)}`, "", "is-discount") : ""}
+              ${couponDiscount > 0 ? orderLine(couponLabel, `-${formatMoney(couponDiscount)}`, "", "is-discount") : ""}
+              ${loyaltyDiscount > 0 ? orderLine("Vernostné body", `-${formatMoney(loyaltyDiscount)}`, "", "is-discount") : ""}
+              ${orderLine(`Doprava (${shippingLabel})`, shippingPrice > 0 ? formatMoney(shippingPrice) : "Zdarma")}
+              ${orderLine(`Platba (${paymentLabelText})`, paymentPrice > 0 ? formatMoney(paymentPrice) : "Bez poplatku")}
+            </div>
+            <div class="tm-final-summary-totals">
+              ${totalRow("Základ bez DPH", formatMoney(net))}
+              ${totalRow("DPH 23 %", formatMoney(vat))}
+              ${totalRow("Spolu s DPH", formatMoney(total), "is-grand")}
+            </div>
+          </div>
+        `;
+        orderDetail.hidden = false;
+      }
+
       function showDirectOrder() {
         const orderNumber = directOrder || "—";
 
@@ -573,10 +831,14 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
         stateEl.innerHTML = '<span class="thank-paid-pill">ULOŽENÉ</span>';
         paymentIdEl.textContent = "—";
         orderEl.textContent = orderNumber;
+        setThankCoupon(orderNumber);
+        renderOrderDetail();
         rewardSection.hidden = false;
         successActions.hidden = false;
 
         localStorage.removeItem("tm_cart_v1");
+        localStorage.removeItem("tm_coupon_v1");
+        localStorage.removeItem("tm_loyalty_apply");
       }
 
       function showPaid(data) {
@@ -591,10 +853,14 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
 
         stateEl.innerHTML = '<span class="thank-paid-pill">PAID</span>';
         orderEl.textContent = orderNumber;
+        setThankCoupon(orderNumber);
+        renderOrderDetail();
         rewardSection.hidden = false;
         successActions.hidden = false;
 
         localStorage.removeItem("tm_cart_v1");
+        localStorage.removeItem("tm_coupon_v1");
+        localStorage.removeItem("tm_loyalty_apply");
       }
 
       function showCanceled(data) {

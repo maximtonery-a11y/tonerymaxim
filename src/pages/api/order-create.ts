@@ -1,9 +1,13 @@
 import type { APIRoute } from "astro";
 import { readCustomerSession } from "../../lib/auth-session";
 import { createWooOrderFromCheckout } from "../../lib/gopay-order";
+import { getCustomerLoyalty } from "../../lib/loyalty";
+import { validateCheckoutCoupon } from "../../lib/coupons";
 
 type CartItem = {
   id?: string | number;
+  productId?: string | number;
+  product_id?: string | number;
   sku?: string;
   name?: string;
   price?: number | string;
@@ -52,8 +56,8 @@ function normalizeCart(cart: CartItem[]) {
       const price = normalizePrice(item.price);
       const qty = normalizeQty(item.qty ?? item.quantity ?? 1);
       return {
-        id: String(item.id || item.sku || name),
-        sku: String(item.sku || item.id || ""),
+        id: String(item.product_id || item.productId || item.id || item.sku || name),
+        sku: String(item.sku || ""),
         name: name.slice(0, 128),
         price,
         qty,
@@ -113,7 +117,27 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const subtotal = cart.reduce((sum, item) => sum + discountedLine(item), 0);
     const shippingPrice = subtotal >= 29 ? 0 : shipping.price;
     const paymentPrice = payment.price;
-    const total = Math.round((subtotal + shippingPrice + paymentPrice) * 100) / 100;
+    let coupon = null as Awaited<ReturnType<typeof validateCheckoutCoupon>> | null;
+    let couponDiscount = 0;
+    const couponCode = String(body?.coupon?.code || body?.coupon || "").trim();
+    if (couponCode) {
+      coupon = await validateCheckoutCoupon(session?.id, couponCode, cart);
+      if (!coupon.ok) {
+        return new Response(JSON.stringify({ ok: false, error: coupon.reason || "Kupón nie je platný." }), {
+          status: 400,
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+        });
+      }
+      couponDiscount = Math.min(Number(coupon.discount || 0), Math.max(0, subtotal + shippingPrice + paymentPrice));
+      coupon.discount = Math.round(couponDiscount * 100) / 100;
+    }
+    let loyaltyDiscount = 0;
+    if (session?.id && body?.loyalty?.apply) {
+      const loyalty = await getCustomerLoyalty(session.id);
+      const requested = Math.max(0, Math.round(Number(body?.loyalty?.discount || 0) * 10) / 10);
+      loyaltyDiscount = Math.min(requested, loyalty.discountValue, Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount) * 100) / 100));
+    }
+    const total = Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount - loyaltyDiscount) * 100) / 100);
     const orderNumber = `TM-${Date.now()}`;
 
     const result = await createWooOrderFromCheckout({
@@ -129,6 +153,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       paymentCode,
       paymentLabel: payment.label,
       paymentPrice,
+      coupon,
+      loyaltyDiscount,
+      loyaltyPointsUsed: loyaltyDiscount * 100,
       subtotal: Math.round(subtotal * 100) / 100,
       total,
       amountCents: Math.round(total * 100),

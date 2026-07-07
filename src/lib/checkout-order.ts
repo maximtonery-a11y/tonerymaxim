@@ -1,10 +1,14 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { wooRequest } from "./woo-client";
+import { getWooBaseUrl, getWooAuthHeader, wooRequest } from "./woo-client";
 import { sendOrderConfirmationEmail } from "./mail";
+import { reserveLoyaltyDiscount } from "./loyalty";
+import { grantThankYouCoupon, markCouponUsed, type CouponResult } from "./coupons";
 
 export type NormalizedCartItem = {
   id: string;
+  productId?: string | number;
+  product_id?: string | number;
   sku: string;
   name: string;
   price: number;
@@ -29,6 +33,9 @@ export type CheckoutOrderSource = {
   paymentCode: string;
   paymentLabel: string;
   paymentPrice: number;
+  loyaltyDiscount?: number;
+  loyaltyPointsUsed?: number;
+  coupon?: CouponResult | null;
   subtotal: number;
   total: number;
   createdAt: string;
@@ -131,10 +138,38 @@ function addressFromOrder(source: CheckoutOrderSource, type: "billing" | "shippi
   };
 }
 
-function lineItems(source: CheckoutOrderSource) {
-  return source.cart.map((item) => {
-    const productId = Number(item.id);
+const PRODUCT_ID_CACHE = new Map<string, number>();
+
+function numericProductId(item: NormalizedCartItem) {
+  const raw = (item as any).product_id || (item as any).productId || item.id;
+  const number = Number(raw);
+  return Number.isInteger(number) && number > 0 ? number : 0;
+}
+
+async function resolveProductIdBySku(sku: string) {
+  const cleanSku = String(sku || "").trim();
+  if (!cleanSku) return 0;
+  if (PRODUCT_ID_CACHE.has(cleanSku)) return PRODUCT_ID_CACHE.get(cleanSku) || 0;
+
+  try {
+    const products = await wooRequest<any[]>("/products", { query: { sku: cleanSku, per_page: 1 } });
+    const id = Number(Array.isArray(products) && products[0]?.id ? products[0].id : 0);
+    PRODUCT_ID_CACHE.set(cleanSku, Number.isInteger(id) && id > 0 ? id : 0);
+    return PRODUCT_ID_CACHE.get(cleanSku) || 0;
+  } catch (error) {
+    console.error("Woo product lookup by SKU failed:", cleanSku, (error as any)?.message || error);
+    PRODUCT_ID_CACHE.set(cleanSku, 0);
+    return 0;
+  }
+}
+
+async function lineItems(source: CheckoutOrderSource) {
+  const lines = [];
+
+  for (const item of source.cart) {
     const total = discountedLineTotal(item);
+    const productId = numericProductId(item) || await resolveProductIdBySku(item.sku);
+
     const line: Record<string, any> = {
       name: item.name,
       quantity: item.qty,
@@ -148,9 +183,13 @@ function lineItems(source: CheckoutOrderSource) {
       ],
     };
 
-    if (Number.isInteger(productId) && productId > 0) line.product_id = productId;
-    return line;
-  });
+    if (productId > 0) line.product_id = productId;
+    else if (!item.sku) throw new Error(`ID produktu alebo SKU je povinné: ${item.name}`);
+
+    lines.push(line);
+  }
+
+  return lines;
 }
 
 
@@ -243,6 +282,11 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     { key: "tm_payment_amount_cents", value: String(source.amountCents || "") },
     { key: "tm_payment_code", value: source.paymentCode || "" },
     { key: "tm_payment_title", value: payment.title || source.paymentLabel || "" },
+    { key: "tm_loyalty_discount", value: money(source.loyaltyDiscount).toFixed(2) },
+    { key: "tm_loyalty_points_used", value: String(source.loyaltyPointsUsed || "") },
+    { key: "tm_coupon_code", value: String(source.coupon?.code || "") },
+    { key: "tm_coupon_type", value: String(source.coupon?.type || "") },
+    { key: "tm_coupon_discount", value: money(source.coupon?.discount).toFixed(2) },
     { key: "tm_shipping_code", value: source.shippingCode || "" },
     { key: "tm_shipping_title", value: source.shippingLabel || "" },
     { key: "tm_company_order", value: isCompany ? "1" : "0" },
@@ -280,6 +324,20 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
 
 function feeLines(source: CheckoutOrderSource) {
   const fees = [];
+  if (money(source.coupon?.discount) > 0) {
+    fees.push({
+      name: source.coupon?.label || `Kupón ${source.coupon?.code || ""}`.trim(),
+      total: `-${money(source.coupon?.discount).toFixed(2)}`,
+      tax_status: "taxable",
+    });
+  }
+  if (money(source.loyaltyDiscount) > 0) {
+    fees.push({
+      name: "Vernostná zľava",
+      total: `-${money(source.loyaltyDiscount).toFixed(2)}`,
+      tax_status: "taxable",
+    });
+  }
   if (source.paymentPrice > 0) {
     fees.push({
       name: source.paymentLabel,
@@ -330,7 +388,7 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
       customer_note: options.customerNote || "Objednávka vytvorená z pokladne ToneryMaxim.sk.",
       billing: billingForCreate,
       shipping,
-      line_items: lineItems(source),
+      line_items: await lineItems(source),
       shipping_lines: [shippingLine(source)],
       fee_lines: feeLines(source),
       meta_data: orderMeta({ ...source, paymentState: String(options.gopayPayment?.state || source.paymentState || "") }, paymentId, isCompany, payment),
@@ -345,6 +403,32 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
         billing: { ...billing, email: customerEmail },
       },
     }).catch((error) => console.error("Woo billing email update error:", error?.message || error));
+  }
+
+  if (Number(source.customerId || 0) > 0 && source.coupon?.ok) {
+    await markCouponUsed(Number(source.customerId), source.coupon, order.id).catch((error) => console.error("Coupon used meta error:", error?.message || error));
+  }
+
+  if (Number(source.customerId || 0) > 0 && order?.id) {
+    await grantThankYouCoupon(Number(source.customerId), order.id, order.number || order.id).catch((error) => console.error("Thank you coupon grant error:", error?.message || error));
+  }
+
+  if (Number(source.customerId || 0) > 0 && money(source.loyaltyDiscount) > 0) {
+    const used = await reserveLoyaltyDiscount(Number(source.customerId), order.id, source.loyaltyDiscount).catch((error) => {
+      console.error("Loyalty discount reserve error:", error?.message || error);
+      return { discount: 0, pointsUsed: 0 };
+    });
+    if (used.pointsUsed > 0) {
+      await wooRequest<any>(`/orders/${order.id}`, {
+        method: "PUT",
+        body: {
+          meta_data: [
+            { key: "tm_loyalty_discount", value: used.discount.toFixed(2) },
+            { key: "tm_loyalty_points_used", value: String(used.pointsUsed) },
+          ],
+        },
+      }).catch((error) => console.error("Woo loyalty meta update error:", error?.message || error));
+    }
   }
 
   if (customerEmail) {
