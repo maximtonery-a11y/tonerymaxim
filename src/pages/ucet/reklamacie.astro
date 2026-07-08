@@ -91,8 +91,44 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
         return new Intl.DateTimeFormat("sk-SK", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
       }
 
-      function statusIndex(status) {
-        return ["received", "checking", "approved", "resolved"].indexOf(status || "received");
+      function claimStepState(claim, key) {
+        const status = claim?.status || "received";
+        const decision = claim?.decision || (status === "approved" || status === "rejected" ? status : "");
+
+        if (key === "received") return "is-done";
+        if (key === "checking") {
+          if (["checking", "approved", "rejected", "resolved"].includes(status)) return status === "checking" ? "is-active" : "is-done";
+          return "";
+        }
+        if (key === "approved" || key === "rejected") {
+          if (decision !== key) return "";
+          return status === key ? "is-active" : "is-done";
+        }
+        if (key === "resolved") return status === "resolved" ? "is-active" : "";
+        return "";
+      }
+
+      function claimStepsFor(claim) {
+        const status = claim?.status || "received";
+        const decision = claim?.decision || (status === "approved" || status === "rejected" ? status : "");
+        const decisionStep = decision === "rejected" ? ["rejected", "Neschválená"] : ["approved", "Schválená"];
+
+        if (status === "received" || status === "checking") {
+          return [
+            ["received", "Prijatá"],
+            ["checking", "Kontrolujeme"],
+            ["approved", "Schválená"],
+            ["rejected", "Neschválená"],
+            ["resolved", "Vybavená"],
+          ];
+        }
+
+        return [
+          ["received", "Prijatá"],
+          ["checking", "Kontrolujeme"],
+          decisionStep,
+          ["resolved", "Vybavená"],
+        ];
       }
 
       function renderClaims() {
@@ -107,14 +143,8 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
         }
 
         listEl.innerHTML = claims.map((claim) => {
-          const index = statusIndex(claim.status);
-          const steps = [
-            ["received", "Prijatá"],
-            ["checking", "Kontrolujeme"],
-            ["approved", "Schválená"],
-            ["resolved", "Vybavená"],
-          ].map(([key, label], stepIndex) => {
-            const cls = stepIndex < index ? "is-done" : stepIndex === index ? "is-active" : "";
+          const steps = claimStepsFor(claim).map(([key, label]) => {
+            const cls = claimStepState(claim, key);
             return `<div class="claim-step ${cls}"><span></span><strong>${label}</strong></div>`;
           }).join("");
 
@@ -126,7 +156,7 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
                   <h2>${escapeHtml(claim.product_name)}</h2>
                   <p>Objednávka <strong>${escapeHtml(claim.order_number)}</strong> · odoslané ${formatDate(claim.created_at)}</p>
                 </div>
-                <span class="status-pill ${claim.status === "checking" ? "is-warning" : claim.status === "resolved" ? "is-done" : ""}">${escapeHtml(claim.status_label)}</span>
+                <span class="status-pill ${claim.status === "checking" ? "is-warning" : claim.status === "resolved" ? "is-done" : claim.status === "rejected" ? "is-error" : ""}">${escapeHtml(claim.status_label)}</span>
               </div>
               <div class="claim-steps">${steps}</div>
               <div class="claim-detail-grid">
@@ -134,6 +164,7 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
                 ${claim.product_sku ? `<div><span>SKU</span><strong>${escapeHtml(claim.product_sku)}</strong></div>` : ""}
               </div>
               <p class="claim-note">${escapeHtml(claim.message || "Reklamáciu sme prijali. Po kontrole vás budeme kontaktovať e-mailom.")}</p>
+              ${claim.admin_comment ? `<div class="claim-admin-comment"><strong>Vyjadrenie ToneryMAXIM.sk</strong><p>${escapeHtml(claim.admin_comment)}</p></div>` : ""}
             </article>`;
         }).join("");
       }

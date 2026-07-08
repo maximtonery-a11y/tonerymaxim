@@ -70,13 +70,11 @@
       });
       const data = await response.json().catch(() => ({}));
       if (data?.ok && data.code) {
-        const current = String(tmCoupon?.code || "").toUpperCase();
-        const next = String(data.code || "").toUpperCase();
-        if (!tmCoupon?.ok || current !== next) {
-          tmCoupon = data;
-          localStorage.setItem("tm_coupon_v1", JSON.stringify(data));
-          renderCartPage();
-        }
+        // Kupón načítavame vždy nanovo, aj keď je kód rovnaký.
+        // Pri zmene košíka sa totiž mení výška zľavy.
+        tmCoupon = data;
+        localStorage.setItem("tm_coupon_v1", JSON.stringify(data));
+        renderCartPage();
       } else if (tmCoupon?.ok) {
         // Ak uložený kupón už nie je aktívny/použiteľný, vyčisti ho.
         tmCoupon = null;
@@ -454,9 +452,6 @@ function formatMoney(value) {
     const existing = cart.find((item) => item.sku === sku);
 
     if (existing) {
-      existing.id = existing.id || product.id || product.productId || product.product_id || sku;
-      existing.productId = existing.productId || product.productId || product.product_id || product.id || "";
-      existing.product_id = existing.product_id || product.product_id || product.productId || product.id || "";
       existing.qty = cleanQty(existing.qty) + cleanQty(product.qty || 1);
       if (!existing.product_type_key && (product.product_type_key || product.productTypeKey || product.type)) {
         existing.product_type_key = product.product_type_key || product.productTypeKey || product.type || "";
@@ -477,9 +472,6 @@ function formatMoney(value) {
       existing.stock_text = product.stock_text || existing.stock_text || "";
     } else {
       cart.push({
-        id: product.id || product.productId || product.product_id || sku,
-        productId: product.productId || product.product_id || product.id || "",
-        product_id: product.product_id || product.productId || product.id || "",
         sku,
         name: product.name || "Produkt",
         price: Number(product.price || 0),

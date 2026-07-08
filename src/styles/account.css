@@ -2190,3 +2190,28 @@
   .saved-product-card { grid-template-columns: 72px minmax(0, 1fr) !important; }
   .saved-product-card .saved-product-actions { grid-column: 1 / -1; justify-content: flex-start !important; }
 }
+
+.status-pill.is-error {
+  background: #fff1f1;
+  color: #b42318;
+}
+
+.claim-admin-comment {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: #f8fbff;
+}
+
+.claim-admin-comment strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #0b2a5b;
+}
+
+.claim-admin-comment p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.55;
+}
