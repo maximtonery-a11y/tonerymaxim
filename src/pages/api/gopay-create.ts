@@ -3,21 +3,9 @@ import { readCustomerSession } from "../../lib/auth-session";
 import { savePendingGoPayOrder } from "../../lib/gopay-order";
 import { getCustomerLoyalty } from "../../lib/loyalty";
 import { validateCheckoutCoupon } from "../../lib/coupons";
+import { normalizeSecureCheckoutCart, discountRate, discountedLine } from "../../lib/secure-checkout-cart";
 
 export const prerender = false;
-
-type CartItem = {
-  id?: string | number;
-  sku?: string;
-  name?: string;
-  price?: number | string;
-  qty?: number | string;
-  quantity?: number | string;
-  product_type_key?: string;
-  productTypeKey?: string;
-  product_type_label?: string;
-  productTypeLabel?: string;
-};
 
 const SHIPPING: Record<string, { label: string; price: number }> = {
   dpd_courier: { label: "DPD kuriér na adresu", price: 3.9 },
@@ -54,73 +42,6 @@ function maskValue(value: string) {
   if (!value) return "EMPTY";
   if (value.length <= 4) return "*".repeat(value.length);
   return `${value.slice(0, 2)}***${value.slice(-2)} (length ${value.length})`;
-}
-
-function normalizePrice(value: unknown) {
-  if (typeof value === "number") {
-    return Number.isFinite(value) && value > 0 ? Math.round(value * 100) / 100 : 0;
-  }
-
-  if (typeof value === "string") {
-    const number = Number(value.replace(/\s/g, "").replace("€", "").replace(",", "."));
-    return Number.isFinite(number) && number > 0 ? Math.round(number * 100) / 100 : 0;
-  }
-
-  return 0;
-}
-
-function normalizeQty(value: unknown) {
-  const number = Number.parseInt(String(value ?? ""), 10);
-  if (!Number.isFinite(number) || number < 1) return 1;
-  if (number > 99) return 99;
-  return number;
-}
-
-function toCents(value: number) {
-  return Math.round(Number(value || 0) * 100);
-}
-
-function isCompatibleDiscountItem(item: ReturnType<typeof normalizeCart>[number]) {
-  const type = String(item.product_type_key || "").toLowerCase();
-  const label = String(item.product_type_label || item.name || "").toLowerCase();
-  return type === "compatible" || label.includes("kompatibil");
-}
-
-function discountRate(item: ReturnType<typeof normalizeCart>[number]) {
-  if (!isCompatibleDiscountItem(item)) return 0;
-  if (item.qty >= 4) return 0.25;
-  if (item.qty >= 2) return 0.10;
-  return 0;
-}
-
-function discountedLine(item: ReturnType<typeof normalizeCart>[number]) {
-  const original = item.price * item.qty;
-  const discount = Math.round(original * discountRate(item) * 100) / 100;
-  return {
-    original,
-    discount,
-    final: Math.max(0, Math.round((original - discount) * 100) / 100),
-  };
-}
-
-function normalizeCart(cart: CartItem[]) {
-  return cart
-    .map((item, index) => {
-      const name = String(item.name || item.sku || item.id || `Produkt ${index + 1}`).trim();
-      const price = normalizePrice(item.price);
-      const qty = normalizeQty(item.qty ?? item.quantity ?? 1);
-
-      return {
-        id: String(item.id || item.sku || name),
-        sku: String(item.sku || item.id || ""),
-        name: name.slice(0, 128),
-        price,
-        qty,
-        product_type_key: String(item.product_type_key || item.productTypeKey || ""),
-        product_type_label: String(item.product_type_label || item.productTypeLabel || ""),
-      };
-    })
-    .filter((item) => item.name && item.price > 0 && item.qty > 0);
 }
 
 async function getAccessToken(scope: "payment-create" | "payment-all") {
@@ -208,7 +129,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const session = readCustomerSession(cookies);
     const body = await request.json().catch(() => ({}));
-    const cart = normalizeCart(Array.isArray(body.cart) ? body.cart : []);
+    const cart = await normalizeSecureCheckoutCart(body.cart);
 
     if (cart.length === 0) {
       return new Response(JSON.stringify({
