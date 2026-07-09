@@ -19,479 +19,518 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
       :root {
         --tm-navy: #071b3a;
         --tm-blue: #1d6cf2;
-        --tm-green: #13a354;
+        --tm-green: #12a45b;
         --tm-yellow: #f8bd00;
-        --tm-muted: #64748b;
+        --tm-muted: #62748e;
         --tm-line: #dbe7f4;
-        --tm-soft: #f3f8fd;
-        --tm-shadow: 0 22px 54px rgba(7, 27, 58, .08);
+        --tm-soft: #f4f8fd;
+        --tm-bg: #f6faff;
+        --tm-shadow: 0 24px 70px rgba(7, 27, 58, .08);
+        --tm-radius: 30px;
       }
 
       .thank-page {
         min-height: 70vh;
-        padding: 56px 0 76px;
-        background: linear-gradient(180deg, #ffffff 0%, #f4f9ff 48%, #ffffff 100%);
+        padding: 46px 0 84px;
         color: var(--tm-navy);
+        background:
+          radial-gradient(circle at 12% 14%, rgba(29, 108, 242, .10), transparent 28%),
+          radial-gradient(circle at 88% 20%, rgba(248, 189, 0, .14), transparent 26%),
+          linear-gradient(180deg, #fff 0%, var(--tm-bg) 42%, #fff 100%);
       }
 
       .thank-wrap {
-        max-width: 1160px;
+        max-width: 1180px;
         margin: 0 auto;
         padding: 0 24px;
       }
 
-      .thank-hero,
-      .thank-panel,
-      .thank-reward,
-      .thank-action-card,
-      .thank-info {
-        background: #fff;
+      .tm-card {
+        background: rgba(255, 255, 255, .92);
         border: 1px solid var(--tm-line);
-        border-radius: 28px;
+        border-radius: var(--tm-radius);
         box-shadow: var(--tm-shadow);
       }
 
       .thank-hero {
-        text-align: center;
-        padding: 46px 38px 42px;
-        margin-bottom: 22px;
-      }
-
-      .thank-check {
-        width: 82px;
-        height: 82px;
-        margin: 0 auto 18px;
-        border-radius: 50%;
-        background: #eaf8f0;
-        color: var(--tm-green);
         display: grid;
-        place-items: center;
-        font-size: 42px;
-        box-shadow: 0 0 0 12px rgba(19, 163, 84, .08);
+        grid-template-columns: minmax(0, 1.02fr) 380px;
+        gap: 34px;
+        align-items: center;
+        padding: 36px;
+        margin-bottom: 20px;
       }
 
-      .thank-kicker {
-        color: var(--tm-blue);
+      .thank-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: #eaf8f1;
+        color: #0a8644;
         font-weight: 950;
-        margin-bottom: 8px;
+        font-size: 14px;
+        margin-bottom: 18px;
+      }
+
+      .thank-status-icon {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: var(--tm-green);
+        color: #fff;
+        display: inline-grid;
+        place-items: center;
+        font-size: 16px;
+        line-height: 1;
       }
 
       .thank-hero h1 {
         margin: 0;
-        font-size: clamp(36px, 5vw, 64px);
-        line-height: 1;
-        letter-spacing: -.055em;
+        max-width: 650px;
+        font-size: clamp(38px, 5vw, 72px);
+        line-height: .93;
+        letter-spacing: -.065em;
       }
 
-      .thank-order-number {
-        display: block;
-        color: var(--tm-blue);
-        margin-top: 8px;
+      .thank-hero h1 .soft {
+        color: #1d6cf2;
       }
 
-      .thank-hero p {
-        max-width: 760px;
-        margin: 18px auto 0;
+      .thank-lead {
+        margin: 18px 0 0;
+        max-width: 620px;
         color: var(--tm-muted);
-        line-height: 1.6;
-        font-size: 17px;
+        font-size: 18px;
+        line-height: 1.55;
       }
 
-      .thank-success-line {
-        margin-top: 16px;
-        font-weight: 950;
-        color: var(--tm-navy) !important;
-      }
-
-      .thank-success-line strong {
-        color: var(--tm-green);
-      }
-
-      .thank-grid {
-        display: grid;
-        grid-template-columns: 1.08fr .92fr;
-        gap: 22px;
-        margin-bottom: 22px;
-      }
-
-      .thank-panel {
-        padding: 28px;
-      }
-
-      .thank-panel h2,
-      .thank-reward h2,
-      .thank-info h2 {
-        margin: 0 0 20px;
-        font-size: 25px;
-        letter-spacing: -.035em;
-      }
-
-      .thank-steps {
-        display: grid;
-        gap: 16px;
-      }
-
-      .thank-step {
-        display: grid;
-        grid-template-columns: 52px 1fr;
-        gap: 16px;
-        align-items: start;
-      }
-
-      .thank-step-icon {
-        width: 52px;
-        height: 52px;
-        border-radius: 18px;
-        background: var(--tm-soft);
-        display: grid;
-        place-items: center;
-        font-size: 24px;
-      }
-
-      .thank-step strong {
-        display: block;
-        margin-bottom: 4px;
-        font-size: 17px;
-      }
-
-      .thank-step p {
-        margin: 0;
-        color: var(--tm-muted);
-        line-height: 1.48;
-      }
-
-      .thank-summary {
-        display: grid;
-        gap: 0;
-        border: 1px solid var(--tm-line);
-        border-radius: 20px;
-        overflow: hidden;
-      }
-
-      .thank-summary-row {
+      .thank-order-meta {
         display: flex;
-        justify-content: space-between;
-        gap: 20px;
-        padding: 15px 17px;
-        border-bottom: 1px solid var(--tm-line);
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
       }
 
-      .thank-summary-row:last-child { border-bottom: 0; }
-      .thank-summary-row span { color: var(--tm-muted); }
-      .thank-summary-row strong { text-align: right; }
-
-      .thank-order-detail {
-        margin: 22px 0;
-        padding: 24px;
-      }
-
-      .thank-order-detail h2 {
-        margin: 0 0 16px;
-        font-size: 22px;
-      }
-
-
-
-      .tm-final-summary-card {
-        border: 1px solid var(--tm-line);
-        border-radius: 22px;
-        background: #ffffff;
-        overflow: hidden;
-      }
-      .tm-final-summary-list { display: grid; }
-      .tm-final-summary-row {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 18px;
-        padding: 14px 18px;
-        border-bottom: 1px solid var(--tm-line);
-        align-items: start;
-      }
-      .tm-final-summary-row:last-child { border-bottom: 0; }
-      .tm-final-summary-title { min-width: 0; }
-      .tm-final-summary-title strong { display: block; font-weight: 950; line-height: 1.35; color: var(--tm-navy); }
-      .tm-final-summary-title small { display: block; margin-top: 4px; color: var(--tm-muted); line-height: 1.35; }
-      .tm-final-summary-price { text-align: right; white-space: nowrap; font-weight: 950; color: var(--tm-navy); }
-      .tm-final-summary-row.is-discount .tm-final-summary-title strong,
-      .tm-final-summary-row.is-discount .tm-final-summary-price { color: var(--tm-green); }
-      .tm-final-summary-totals { background: #f8fbff; padding: 8px 0; border-top: 1px solid var(--tm-line); }
-      .tm-final-summary-total {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 18px;
-        padding: 9px 18px;
-        color: var(--tm-muted);
-      }
-      .tm-final-summary-total strong { color: var(--tm-navy); text-align: right; white-space: nowrap; }
-      .tm-final-summary-total.is-grand {
-        margin-top: 6px;
-        padding-top: 16px;
-        border-top: 1px solid var(--tm-line);
-        color: var(--tm-navy);
-        font-size: 21px;
-        font-weight: 950;
-      }
-      .tm-final-summary-total.is-grand strong { font-size: 24px; }
-
-      .thank-order-card {
-        border: 1px solid var(--tm-line);
-        border-radius: 22px;
-        background: #fff;
-        overflow: hidden;
-      }
-
-      .thank-order-items,
-      .thank-order-totals {
-        display: grid;
-      }
-
-      .thank-order-line {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 18px;
-        align-items: start;
-        padding: 15px 18px;
-        border-bottom: 1px solid var(--tm-line);
-      }
-
-      .thank-order-line-title {
-        min-width: 0;
-      }
-
-      .thank-order-line-title strong {
-        display: block;
-        font-size: 15px;
-        line-height: 1.35;
-        color: var(--tm-navy);
-      }
-
-      .thank-order-line-title small {
-        display: block;
-        margin-top: 4px;
-        color: var(--tm-muted);
-        line-height: 1.35;
-      }
-
-      .thank-order-line-price {
-        white-space: nowrap;
-        text-align: right;
-        font-weight: 950;
-        color: var(--tm-navy);
-      }
-
-      .thank-order-line.is-discount .thank-order-line-price,
-      .thank-order-line.is-discount .thank-order-line-title strong {
-        color: var(--tm-green);
-      }
-
-      .thank-order-totals {
-        padding: 8px 0;
-        background: #fbfdff;
-      }
-
-      .thank-order-total-row {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 18px;
-        padding: 10px 18px;
-        color: var(--tm-muted);
-      }
-
-      .thank-order-total-row strong {
-        color: var(--tm-navy);
-        white-space: nowrap;
-        text-align: right;
-      }
-
-      .thank-order-total-row.is-grand {
-        margin-top: 6px;
-        padding-top: 16px;
-        border-top: 1px solid var(--tm-line);
-        font-size: 22px;
-        font-weight: 950;
-        color: var(--tm-navy);
-      }
-
-      .thank-order-total-row.is-grand strong {
-        font-size: 24px;
-      }
-
-      @media (max-width: 620px) {
-        .thank-order-line,
-        .thank-order-total-row {
-          grid-template-columns: 1fr;
-          gap: 7px;
-        }
-        .thank-order-line-price,
-        .thank-order-total-row strong {
-          text-align: left;
-        }
-      }
-
-      .thank-paid-pill {
+      .thank-meta-pill {
         display: inline-flex;
         align-items: center;
+        gap: 8px;
+        min-height: 38px;
+        padding: 0 13px;
+        border: 1px solid var(--tm-line);
         border-radius: 999px;
-        padding: 5px 10px;
-        background: #eaf8f0;
-        color: var(--tm-green);
-        font-weight: 950;
-        font-size: 13px;
+        background: #fff;
+        color: var(--tm-muted);
+        font-weight: 800;
       }
 
+      .thank-meta-pill strong { color: var(--tm-navy); }
+
+      .thank-mini-progress {
+        margin-top: 28px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        max-width: 640px;
+      }
+
+      .thank-mini-step {
+        position: relative;
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+        text-align: center;
+        font-size: 13px;
+        color: var(--tm-muted);
+        font-weight: 900;
+      }
+
+      .thank-mini-step::before {
+        content: "";
+        position: absolute;
+        top: 18px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--tm-line);
+        z-index: 0;
+      }
+
+      .thank-mini-step:first-child::before { left: 50%; }
+      .thank-mini-step:last-child::before { right: 50%; }
+
+      .thank-mini-dot {
+        position: relative;
+        z-index: 1;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: #fff;
+        border: 2px solid var(--tm-line);
+        color: var(--tm-navy);
+        font-size: 14px;
+      }
+
+      .thank-mini-step.is-active .thank-mini-dot {
+        background: var(--tm-green);
+        border-color: var(--tm-green);
+        color: #fff;
+      }
+
+      .thank-mini-step.is-active span { color: var(--tm-navy); }
+
+      .thank-product-card {
+        padding: 22px;
+        border-radius: 26px;
+        background: #fff;
+        border: 1px solid var(--tm-line);
+        box-shadow: 0 16px 44px rgba(7, 27, 58, .08);
+      }
+
+      .thank-product-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+        color: var(--tm-muted);
+        font-size: 13px;
+        font-weight: 950;
+      }
+
+      .thank-product-image {
+        min-height: 170px;
+        display: grid;
+        place-items: center;
+        border-radius: 22px;
+        background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%);
+        margin-bottom: 18px;
+        overflow: hidden;
+      }
+
+      .thank-product-image img {
+        max-width: 86%;
+        max-height: 145px;
+        object-fit: contain;
+        filter: drop-shadow(0 16px 18px rgba(7, 27, 58, .12));
+      }
+
+      .thank-product-placeholder {
+        width: 92px;
+        height: 92px;
+        border-radius: 28px;
+        display: grid;
+        place-items: center;
+        background: #fff;
+        border: 1px solid var(--tm-line);
+        font-size: 42px;
+      }
+
+      .thank-product-title {
+        margin: 0 0 6px;
+        font-size: 23px;
+        letter-spacing: -.035em;
+        line-height: 1.08;
+      }
+
+      .thank-product-sub {
+        color: var(--tm-muted);
+        font-weight: 800;
+      }
+
+      .thank-product-price {
+        margin-top: 14px;
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .thank-product-price small {
+        color: var(--tm-muted);
+        font-weight: 850;
+      }
+
+      .thank-product-price strong {
+        font-size: 34px;
+        letter-spacing: -.04em;
+      }
+
+      .thank-delivery-box {
+        margin-top: 14px;
+        padding: 16px;
+        border-radius: 20px;
+        background: #f6fbff;
+        border: 1px solid var(--tm-line);
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        gap: 13px;
+        align-items: center;
+      }
+
+      .thank-delivery-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 16px;
+        background: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 21px;
+      }
+
+      .thank-delivery-box span {
+        display: block;
+        color: var(--tm-muted);
+        font-size: 13px;
+        font-weight: 850;
+      }
+
+      .thank-delivery-box strong {
+        display: block;
+        margin-top: 2px;
+        font-size: 18px;
+      }
+
+      .thank-hero-actions {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .thank-btn {
+        min-height: 48px;
+        border-radius: 15px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-weight: 950;
+        border: 1px solid var(--tm-line);
+        color: var(--tm-navy);
+        background: #fff;
+      }
+
+      .thank-btn.is-primary {
+        border-color: var(--tm-blue);
+        background: var(--tm-blue);
+        color: #fff;
+      }
+
+      .thank-main-grid {
+        display: grid;
+        grid-template-columns: 1.06fr .94fr;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .thank-section {
+        padding: 26px;
+      }
+
+      .thank-section-head {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .thank-section h2 {
+        margin: 0;
+        font-size: 25px;
+        letter-spacing: -.04em;
+      }
+
+      .thank-section-head p {
+        margin: 4px 0 0;
+        color: var(--tm-muted);
+      }
+
+      .thank-summary-lines {
+        display: grid;
+        gap: 10px;
+      }
+
+      .thank-line {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 16px;
+        align-items: start;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--tm-line);
+      }
+
+      .thank-line:last-child { border-bottom: 0; }
+      .thank-line span { color: var(--tm-muted); }
+      .thank-line strong { text-align: right; }
+      .thank-line.is-grand {
+        margin-top: 5px;
+        padding-top: 18px;
+        border-top: 1px solid var(--tm-line);
+        font-size: 22px;
+      }
+      .thank-line.is-discount strong,
+      .thank-line.is-discount span { color: var(--tm-green); }
+
+      .thank-delivery-list .thank-line { min-height: 48px; align-items: center; }
+
       .thank-reward {
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         padding: 26px;
         display: grid;
-        grid-template-columns: .9fr 1.1fr;
+        grid-template-columns: minmax(0, 1fr) 300px;
         gap: 24px;
         align-items: center;
-        border-color: rgba(248, 189, 0, .55);
-        background: linear-gradient(135deg, #fffaf0 0%, #ffffff 70%);
+        border-color: rgba(248, 189, 0, .6);
+        background: linear-gradient(135deg, #fffaf0 0%, #fff 72%);
+      }
+
+      .thank-reward h2 {
+        margin: 0 0 8px;
+        font-size: 26px;
+        letter-spacing: -.04em;
       }
 
       .thank-reward p {
         margin: 0;
         color: var(--tm-muted);
         line-height: 1.55;
+        font-size: 16px;
       }
 
-      .scratch-card {
-        border: 1px solid rgba(248, 189, 0, .75);
-        border-radius: 22px;
+      .thank-reward-value {
+        min-height: 128px;
+        border-radius: 24px;
         background: #fff;
-        padding: 18px;
-      }
-
-      .scratch-surface {
-        min-height: 108px;
-        border-radius: 18px;
-        background: repeating-linear-gradient(135deg, #dfe4ec 0 10px, #f4f7fb 10px 20px);
+        border: 1px solid rgba(248, 189, 0, .72);
         display: grid;
         place-items: center;
         text-align: center;
-        font-weight: 950;
-        color: var(--tm-navy);
-        cursor: pointer;
-        user-select: none;
       }
 
-      .scratch-card.is-revealed .scratch-surface {
-        background: #eaf8f0;
+      .thank-reward-value strong {
+        display: block;
         color: var(--tm-green);
+        font-size: 56px;
+        letter-spacing: -.06em;
+        line-height: 1;
       }
 
-      .scratch-result {
-        margin-top: 12px;
-        padding: 13px 14px;
-        border-radius: 16px;
-        background: #eaf8f0;
-        color: #0b7d3a;
+      .thank-reward-value span {
+        display: block;
+        margin-top: 6px;
         font-weight: 950;
-        display: none;
       }
 
-      .scratch-card.is-revealed .scratch-result { display: block; }
-
-      .thank-actions-grid {
+      .thank-actions {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 18px;
-        margin-bottom: 24px;
+        grid-template-columns: 1.15fr .85fr;
+        gap: 20px;
+        margin-bottom: 20px;
       }
 
-      .thank-action-card {
-        padding: 24px;
+      .thank-shop-card {
+        padding: 28px;
+        min-height: 230px;
+        display: grid;
+        align-content: end;
+        background:
+          radial-gradient(circle at 88% 18%, rgba(29, 108, 242, .20), transparent 29%),
+          linear-gradient(135deg, #071b3a 0%, #0d3576 100%);
+        color: #fff;
+        border-radius: var(--tm-radius);
         text-decoration: none;
-        color: var(--tm-navy);
-        display: grid;
-        gap: 13px;
-        min-height: 210px;
+        box-shadow: 0 24px 70px rgba(7, 27, 58, .16);
       }
 
-      .thank-action-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 28px 65px rgba(7, 27, 58, .11);
-      }
-
-      .thank-action-icon {
-        width: 58px;
-        height: 58px;
-        border-radius: 20px;
-        background: var(--tm-soft);
+      .thank-shop-card span {
+        width: 62px;
+        height: 62px;
+        border-radius: 22px;
+        background: rgba(255,255,255,.12);
         display: grid;
         place-items: center;
-        font-size: 28px;
+        font-size: 30px;
+        margin-bottom: 28px;
       }
 
-      .thank-action-card strong {
-        font-size: 21px;
-        letter-spacing: -.025em;
+      .thank-shop-card strong {
+        font-size: 30px;
+        letter-spacing: -.045em;
       }
 
-      .thank-action-card p {
-        margin: 0;
-        color: var(--tm-muted);
+      .thank-shop-card p {
+        margin: 8px 0 0;
+        color: rgba(255,255,255,.78);
         line-height: 1.45;
       }
 
-      .thank-action-button {
-        margin-top: auto;
-        min-height: 46px;
-        border-radius: 14px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 16px;
-        font-weight: 950;
-        background: var(--tm-blue);
-        color: #fff;
+      .thank-side-actions {
+        display: grid;
+        gap: 14px;
       }
 
-      .thank-action-card.is-orders .thank-action-button { background: #7c3aed; }
-      .thank-action-card.is-printer .thank-action-button { background: var(--tm-green); }
-
-      .thank-info {
-        padding: 26px;
+      .thank-action-row {
+        padding: 18px;
         display: grid;
-        grid-template-columns: 64px 1fr auto;
+        grid-template-columns: 50px 1fr auto;
+        gap: 14px;
+        align-items: center;
+        color: var(--tm-navy);
+        text-decoration: none;
+      }
+
+      .thank-action-row-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 18px;
+        background: var(--tm-soft);
+        display: grid;
+        place-items: center;
+        font-size: 24px;
+      }
+
+      .thank-action-row strong { display: block; font-size: 18px; }
+      .thank-action-row small { display: block; color: var(--tm-muted); margin-top: 3px; line-height: 1.35; }
+      .thank-action-row .arrow { color: var(--tm-blue); font-weight: 950; }
+
+      .thank-help {
+        padding: 22px;
+        display: grid;
+        grid-template-columns: 62px 1fr auto;
         gap: 18px;
         align-items: center;
       }
 
-      .thank-info-icon {
-        width: 58px;
-        height: 58px;
-        border-radius: 20px;
+      .thank-help-icon {
+        width: 62px;
+        height: 62px;
+        border-radius: 22px;
+        background: #fff6d8;
         display: grid;
         place-items: center;
-        background: var(--tm-soft);
-        font-size: 26px;
-      }
-
-      .thank-info ul {
-        margin: 0;
-        padding-left: 20px;
-        color: var(--tm-muted);
-        line-height: 1.7;
-      }
-
-      .thank-contact {
-        min-height: 48px;
-        border: 1px solid var(--tm-line);
-        background: #fff;
-        color: var(--tm-navy);
-        border-radius: 14px;
-        padding: 0 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
+        font-size: 24px;
         font-weight: 950;
-        white-space: nowrap;
+      }
+
+      .thank-help h2 {
+        margin: 0 0 4px;
+        font-size: 25px;
+        letter-spacing: -.04em;
+      }
+
+      .thank-help p {
+        margin: 0;
+        color: var(--tm-muted);
+        line-height: 1.5;
       }
 
       .thank-hidden { display: none !important; }
+      [hidden] { display: none !important; }
 
       .thank-debug {
         margin-top: 12px;
@@ -499,28 +538,53 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
         font-size: 13px;
       }
 
-      @media (max-width: 980px) {
-        .thank-grid,
+      @media (max-width: 1020px) {
+        .thank-hero,
+        .thank-main-grid,
         .thank-reward,
-        .thank-actions-grid,
-        .thank-info {
+        .thank-actions,
+        .thank-help {
           grid-template-columns: 1fr;
         }
 
-        .thank-info { align-items: start; }
+        .thank-product-card { max-width: 560px; }
+        .thank-help { align-items: start; }
       }
 
-      @media (max-width: 640px) {
-        .thank-page { padding: 34px 0 56px; }
-        .thank-wrap { padding: 0 16px; }
-        .thank-hero,
-        .thank-panel,
-        .thank-reward,
-        .thank-action-card,
-        .thank-info { border-radius: 22px; }
-        .thank-hero { padding: 32px 22px; }
-        .thank-summary-row { flex-direction: column; gap: 4px; }
-        .thank-summary-row strong { text-align: left; }
+      @media (max-width: 720px) {
+        .thank-page { padding: 24px 0 56px; }
+        .thank-wrap { padding: 0 14px; }
+        .thank-hero { padding: 22px; gap: 22px; border-radius: 24px; }
+        .tm-card { border-radius: 24px; }
+        .thank-hero h1 { font-size: clamp(34px, 11vw, 52px); }
+        .thank-lead { font-size: 16px; }
+        .thank-order-meta { gap: 8px; }
+        .thank-meta-pill { width: 100%; justify-content: space-between; }
+        .thank-mini-progress { grid-template-columns: 1fr; gap: 12px; }
+        .thank-mini-step {
+          grid-template-columns: 42px 1fr;
+          justify-items: start;
+          text-align: left;
+          gap: 12px;
+        }
+        .thank-mini-step::before { display: none; }
+        .thank-mini-dot { width: 42px; height: 42px; }
+        .thank-product-image { min-height: 142px; }
+        .thank-product-title { font-size: 21px; }
+        .thank-product-price { align-items: center; }
+        .thank-product-price strong { font-size: 30px; }
+        .thank-hero-actions { grid-template-columns: 1fr; }
+        .thank-section, .thank-reward { padding: 20px; }
+        .thank-section-head { display: block; }
+        .thank-line { grid-template-columns: 1fr; gap: 5px; }
+        .thank-line strong { text-align: left; }
+        .thank-reward { gap: 18px; }
+        .thank-reward-value strong { font-size: 48px; }
+        .thank-shop-card { min-height: 200px; padding: 22px; }
+        .thank-action-row { grid-template-columns: 48px 1fr; }
+        .thank-action-row .arrow { display: none; }
+        .thank-help { padding: 20px; }
+        .thank-help .thank-btn { width: 100%; }
       }
     </style>
   </head>
@@ -531,126 +595,147 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
 
       <main class="thank-page">
         <section class="thank-wrap">
-          <div class="thank-hero" data-thank-hero>
-            <div class="thank-check" data-thank-icon>✓</div>
-            <div class="thank-kicker" data-payment-kicker>GoPay platba</div>
-            <h1 data-payment-title>Overujeme objednávku</h1>
-            <p class="thank-success-line" data-payment-subtitle>Načítavame stav online platby.</p>
-            <p data-payment-text>
-              O chvíľu zobrazíme potvrdenie objednávky a ďalší postup.
-            </p>
-          </div>
+          <section class="thank-hero tm-card">
+            <div class="thank-hero-copy">
+              <div class="thank-status" data-status-pill>
+                <span class="thank-status-icon" data-thank-icon>✓</span>
+                <span data-status-label>Objednávka prijatá</span>
+              </div>
 
-          <div class="thank-grid">
-            <section class="thank-panel">
-              <h2>Čo sa bude diať ďalej?</h2>
-              <div class="thank-steps">
-                <div class="thank-step">
-                  <div class="thank-step-icon">✉️</div>
-                  <div>
-                    <strong>Potvrdenie objednávky</strong>
-                    <p>Potvrdenie objednávky odošleme na e-mail uvedený v pokladni.</p>
-                  </div>
+              <h1 data-payment-title>Ďakujeme. <span class="soft">Objednávku sme prijali.</span></h1>
+              <p class="thank-lead" data-payment-text>
+                Potvrdenie objednávky sme poslali na e-mail uvedený v pokladni.
+              </p>
+
+              <div class="thank-order-meta">
+                <div class="thank-meta-pill">Objednávka <strong data-summary-order>—</strong></div>
+                <div class="thank-meta-pill">Platba <strong data-summary-payment-method>—</strong></div>
+                <div class="thank-meta-pill">Doručenie <strong data-delivery-estimate>čo najskôr</strong></div>
+              </div>
+
+              <div class="thank-mini-progress" aria-label="Priebeh objednávky">
+                <div class="thank-mini-step is-active">
+                  <div class="thank-mini-dot">✓</div>
+                  <span>Prijaté</span>
                 </div>
-                <div class="thank-step">
-                  <div class="thank-step-icon">📦</div>
-                  <div>
-                    <strong>Príprava a expedícia</strong>
-                    <p>Skladové produkty pripravíme čo najskôr. Pri objednávke do 14:00 expedujeme spravidla ešte dnes.</p>
-                  </div>
+                <div class="thank-mini-step">
+                  <div class="thank-mini-dot">2</div>
+                  <span>Príprava</span>
                 </div>
-                <div class="thank-step">
-                  <div class="thank-step-icon">🚚</div>
-                  <div>
-                    <strong>Doručenie</strong>
-                    <p>Po odoslaní zásielky dostanete e-mail s informáciami k doručeniu.</p>
-                  </div>
+                <div class="thank-mini-step">
+                  <div class="thank-mini-dot">3</div>
+                  <span>Expedícia</span>
+                </div>
+                <div class="thank-mini-step">
+                  <div class="thank-mini-dot">4</div>
+                  <span>Doručenie</span>
                 </div>
               </div>
+            </div>
+
+            <aside class="thank-product-card" data-product-card>
+              <div class="thank-product-label">
+                <span>Vaša objednávka</span>
+                <span data-product-count>1 ks</span>
+              </div>
+
+              <div class="thank-product-image" data-product-image-wrap>
+                <div class="thank-product-placeholder">▧</div>
+              </div>
+
+              <h2 class="thank-product-title" data-product-title>Produkt z objednávky</h2>
+              <div class="thank-product-sub" data-product-meta>Načítavame údaje objednávky</div>
+
+              <div class="thank-product-price">
+                <small>Spolu s DPH</small>
+                <strong data-product-total>—</strong>
+              </div>
+
+              <div class="thank-delivery-box">
+                <div class="thank-delivery-icon">🚚</div>
+                <div>
+                  <span>Predpoklad expedície</span>
+                  <strong data-expedition-text>dnes / najbližší pracovný deň</strong>
+                </div>
+              </div>
+
+              <div class="thank-hero-actions">
+                <a class="thank-btn is-primary" href="/">Pokračovať v nákupe</a>
+                <a class="thank-btn" href="/ucet/objednavky">Moje objednávky</a>
+              </div>
+            </aside>
+          </section>
+
+          <div class="thank-main-grid" data-order-detail hidden>
+            <section class="thank-section tm-card">
+              <div class="thank-section-head">
+                <div>
+                  <h2>Vaša objednávka</h2>
+                  <p data-order-items-count>Produkty a cena</p>
+                </div>
+              </div>
+              <div class="thank-summary-lines" data-order-lines></div>
             </section>
 
-            <section class="thank-panel">
-              <h2>Prehľad objednávky</h2>
-              <div class="thank-summary">
-                <div class="thank-summary-row">
-                  <span>Stav platby</span>
-                  <strong data-summary-state>Overujeme</strong>
+            <section class="thank-section tm-card">
+              <div class="thank-section-head">
+                <div>
+                  <h2>Doručenie a platba</h2>
+                  <p>Najdôležitejšie údaje</p>
                 </div>
-                <div class="thank-summary-row">
-                  <span>ID platby GoPay</span>
-                  <strong data-summary-payment-id>—</strong>
-                </div>
-                <div class="thank-summary-row">
-                  <span>Objednávka</span>
-                  <strong data-summary-order>—</strong>
-                </div>
-                <div class="thank-summary-row">
-                  <span>Dátum</span>
-                  <strong data-summary-date>—</strong>
-                </div>
-                <div class="thank-summary-row">
-                  <span>Spôsob platby</span>
-                  <strong data-summary-payment-method>Online platba GoPay</strong>
-                </div>
+              </div>
+              <div class="thank-delivery-list">
+                <div class="thank-line"><span>Doprava</span><strong data-summary-shipping>—</strong></div>
+                <div class="thank-line"><span>Platba</span><strong data-summary-payment-method-2>—</strong></div>
+                <div class="thank-line"><span>Dátum</span><strong data-summary-date>—</strong></div>
+                <div class="thank-line"><span>Stav</span><strong data-summary-state>—</strong></div>
+                <div class="thank-line"><span>ID platby GoPay</span><strong data-summary-payment-id>—</strong></div>
               </div>
               <div class="thank-debug" data-payment-debug hidden></div>
             </section>
           </div>
 
-          <section class="thank-panel thank-order-detail" data-order-detail hidden>
-            <h2>Súhrn objednávky</h2>
-            <div class="thank-order-lines" data-order-lines></div>
-          </section>
-
-          <section class="thank-reward" data-reward-section hidden>
+          <section class="thank-reward tm-card" data-reward-section hidden>
             <div>
-              <h2>🎁 Vaša odmena na ďalší nákup</h2>
-              <p>Ako poďakovanie za objednávku sme vám pripravili 7 % zľavu na kompatibilné produkty. Automaticky ju použijeme pri vašej ďalšej objednávke.</p>
+              <h2>🎁 Ďakujeme za nákup</h2>
+              <p>Na ďalší nákup máte pripravenú zľavu na kompatibilné tonery. Použije sa automaticky pri ďalšej objednávke.</p>
             </div>
-            <div class="scratch-card" data-scratch-card>
-              <div class="scratch-surface is-ready" data-scratch-button>
-                Zľava pripravená
-              </div>
-              <div class="scratch-result" data-scratch-result>
-                Zľava 7 % na kompatibilné produkty bude automaticky použitá pri ďalšej objednávke.
+            <div class="thank-reward-value">
+              <div>
+                <strong>7 %</strong>
+                <span>zľava pripravená</span>
               </div>
             </div>
           </section>
 
-          <section class="thank-actions-grid" data-success-actions hidden>
-            <a class="thank-action-card" href="/">
-              <div class="thank-action-icon">🛍️</div>
-              <strong>Pokračovať v nákupe</strong>
-              <p>Objavte ďalšie tonery, náplne a príslušenstvo za skvelé ceny.</p>
-              <span class="thank-action-button">Do obchodu →</span>
+          <section class="thank-actions" data-success-actions hidden>
+            <a class="thank-shop-card" href="/">
+              <span>🛍️</span>
+              <strong>Nakúpiť znova →</strong>
+              <p>Rýchlo nájdite ďalší toner, atrament alebo príslušenstvo.</p>
             </a>
 
-            <a class="thank-action-card is-orders" href="/ucet/objednavky">
-              <div class="thank-action-icon">📋</div>
-              <strong>Moje objednávky</strong>
-              <p>Pozrite si históriu objednávok a ich aktuálny stav.</p>
-              <span class="thank-action-button">Zobraziť objednávky →</span>
-            </a>
-
-            <a class="thank-action-card is-printer" href="/ucet/tlaciarne">
-              <div class="thank-action-icon">🖨️</div>
-              <strong>Uložiť tlačiareň</strong>
-              <p>Uložte si tlačiareň a zjednodušte si ďalší nákup kompatibilných náplní.</p>
-              <span class="thank-action-button">Uložiť tlačiareň →</span>
-            </a>
+            <div class="thank-side-actions">
+              <a class="thank-action-row tm-card" href="/ucet/objednavky">
+                <div class="thank-action-row-icon">📋</div>
+                <div><strong>Moje objednávky</strong><small>História objednávok a aktuálny stav.</small></div>
+                <div class="arrow">→</div>
+              </a>
+              <a class="thank-action-row tm-card" href="/ucet/tlaciarne">
+                <div class="thank-action-row-icon">🖨️</div>
+                <div><strong>Uložiť tlačiareň</strong><small>Ďalší nákup kompatibilných náplní bude jednoduchší.</small></div>
+                <div class="arrow">→</div>
+              </a>
+            </div>
           </section>
 
-          <section class="thank-info">
-            <div class="thank-info-icon">ℹ️</div>
+          <section class="thank-help tm-card">
+            <div class="thank-help-icon">AI</div>
             <div>
-              <h2>Dôležité informácie</h2>
-              <ul data-info-list>
-                <li>Faktúru pošleme e-mailom spolu s potvrdením objednávky.</li>
-                <li>Pri skladových produktoch objednávku pripravíme čo najskôr.</li>
-                <li>V prípade otázok nás môžete kontaktovať.</li>
-              </ul>
+              <h2>Potrebujete pomôcť?</h2>
+              <p>Tomáš z ToneryMaxim vám poradí s objednávkou, výberom tonera alebo kompatibilitou tlačiarne.</p>
             </div>
-            <a class="thank-contact" href="/kontakt">Kontaktovať nás</a>
+            <a class="thank-btn" href="/kontakt">Kontaktovať nás</a>
           </section>
         </section>
       </main>
@@ -661,24 +746,30 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
 
     <script>
       const titleEl = document.querySelector("[data-payment-title]");
-      const subtitleEl = document.querySelector("[data-payment-subtitle]");
       const textEl = document.querySelector("[data-payment-text]");
       const iconEl = document.querySelector("[data-thank-icon]");
-      const kickerEl = document.querySelector("[data-payment-kicker]");
+      const statusLabelEl = document.querySelector("[data-status-label]");
+      const statusPillEl = document.querySelector("[data-status-pill]");
       const stateEl = document.querySelector("[data-summary-state]");
       const paymentMethodEl = document.querySelector("[data-summary-payment-method]");
+      const paymentMethodEl2 = document.querySelector("[data-summary-payment-method-2]");
       const paymentIdEl = document.querySelector("[data-summary-payment-id]");
       const orderEl = document.querySelector("[data-summary-order]");
       const dateEl = document.querySelector("[data-summary-date]");
       const debugBox = document.querySelector("[data-payment-debug]");
       const rewardSection = document.querySelector("[data-reward-section]");
       const successActions = document.querySelector("[data-success-actions]");
-      const infoList = document.querySelector("[data-info-list]");
-      const scratchCard = document.querySelector("[data-scratch-card]");
-      const scratchButton = document.querySelector("[data-scratch-button]");
-      const thankCouponCode = document.querySelector("[data-thank-coupon-code]");
       const orderDetail = document.querySelector("[data-order-detail]");
       const orderLines = document.querySelector("[data-order-lines]");
+      const shippingEl = document.querySelector("[data-summary-shipping]");
+      const productImageWrap = document.querySelector("[data-product-image-wrap]");
+      const productTitleEl = document.querySelector("[data-product-title]");
+      const productMetaEl = document.querySelector("[data-product-meta]");
+      const productTotalEl = document.querySelector("[data-product-total]");
+      const productCountEl = document.querySelector("[data-product-count]");
+      const orderItemsCountEl = document.querySelector("[data-order-items-count]");
+      const deliveryEstimateEl = document.querySelector("[data-delivery-estimate]");
+      const expeditionTextEl = document.querySelector("[data-expedition-text]");
 
       const params = new URLSearchParams(window.location.search);
       const paymentId = params.get("id");
@@ -696,35 +787,14 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
       dateEl.textContent = now;
       paymentIdEl.textContent = paymentId || "—";
 
-      function getOrderNumber(data) {
-        return data?.payment?.order_number || (paymentId ? `TM-${paymentId}` : "—");
+      function previewData() {
+        try { return JSON.parse(localStorage.getItem("tm_last_order_preview") || "null"); }
+        catch { return null; }
       }
-
-      function paymentLabel(method) {
-        if (method === "cod") return "Objednávka na dobierku";
-        if (method === "bank_prepaid") return "Objednávka s platbou prevodom vopred";
-        if (method === "invoice_org") return "Objednávka s prevodným príkazom";
-        return "Objednávka";
-      }
-
-      function paymentMethodText(method) {
-        if (method === "cod") return "Dobierka";
-        if (method === "bank_prepaid") return "Platba prevodom vopred";
-        if (method === "invoice_org") return "Prevodný príkaz pre organizácie a firmy";
-        if (method === "applepay") return "Apple Pay";
-        if (method === "googlepay") return "Google Pay";
-        return "Online platba GoPay";
-      }
-
 
       function formatMoney(value) {
         const number = Number(value || 0);
         return new Intl.NumberFormat("sk-SK", { style: "currency", currency: "EUR" }).format(Number.isFinite(number) ? number : 0);
-      }
-
-      function setThankCoupon(orderNumber) {
-        const clean = String(orderNumber || "").replace(/\D/g, "");
-        if (thankCouponCode && clean) thankCouponCode.textContent = `NAKUP7-${clean}`;
       }
 
       function escapeHtml(value) {
@@ -732,50 +802,57 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
+          .replace(/\"/g, "&quot;")
           .replace(/'/g, "&#039;");
       }
 
-      function orderLine(title, price, meta = "", className = "") {
-        return `
-          <div class="tm-final-summary-row ${className}">
-            <div class="tm-final-summary-title">
-              <strong>${escapeHtml(title)}</strong>
-              ${meta ? `<small>${escapeHtml(meta)}</small>` : ""}
-            </div>
-            <div class="tm-final-summary-price">${price}</div>
-          </div>
-        `;
+      function getOrderNumber(data) {
+        return data?.payment?.order_number || (paymentId ? `TM-${paymentId}` : directOrder || "—");
       }
 
-      function totalRow(label, value, className = "") {
-        return `
-          <div class="tm-final-summary-total ${className}">
-            <span>${escapeHtml(label)}</span>
-            <strong>${value}</strong>
-          </div>
-        `;
+      function paymentMethodText(method) {
+        if (method === "cod") return "Dobierka";
+        if (method === "bank_prepaid") return "Prevod vopred";
+        if (method === "invoice_org") return "Prevod pre firmy";
+        if (method === "applepay") return "Apple Pay";
+        if (method === "googlepay") return "Google Pay";
+        return "Online platba GoPay";
       }
 
-      function renderOrderDetail() {
-        if (!orderDetail || !orderLines) return;
-        let preview = null;
-        try { preview = JSON.parse(localStorage.getItem("tm_last_order_preview") || "null"); } catch { preview = null; }
+      function paymentSuccessText(method) {
+        if (method === "cod") return "Objednávku na dobierku máme uloženú. Potvrdenie sme poslali na e-mail uvedený v pokladni.";
+        if (method === "bank_prepaid") return "Objednávku máme uloženú. Podklady k platbe prevodom sme poslali na e-mail.";
+        if (method === "invoice_org") return "Objednávku pre firmu máme uloženú. Potvrdenie sme poslali na e-mail uvedený v pokladni.";
+        return "Platba prebehla úspešne. Potvrdenie objednávky sme poslali na e-mail uvedený v pokladni.";
+      }
+
+      function deliveryEstimate(preview) {
+        const hour = new Date().getHours();
+        const shippingLabel = String(preview?.shipping?.label || "");
+        if (shippingLabel.toLowerCase().includes("box") || shippingLabel.toLowerCase().includes("pickup") || shippingLabel.toLowerCase().includes("balíkomat")) {
+          return "výdajné miesto / box";
+        }
+        return hour < 14 ? "odosielame dnes" : "najbližší pracovný deň";
+      }
+
+      function productImageSrc(item) {
+        if (item?.image) return item.image;
+        if (Array.isArray(item?.images) && item.images[0]) {
+          if (typeof item.images[0] === "string") return item.images[0];
+          return item.images[0]?.src || item.images[0]?.url || "";
+        }
+        return "";
+      }
+
+      function orderLine(label, value, className = "") {
+        return `<div class="thank-line ${className}"><span>${escapeHtml(label)}</span><strong>${value}</strong></div>`;
+      }
+
+      function pricingFromPreview(preview) {
         const cart = Array.isArray(preview?.cart) ? preview.cart : [];
-        if (!cart.length) return;
-
         const pricing = preview?.pricing || {};
         const shipping = preview?.shipping || {};
-        const paymentCode = String(preview?.payment || "");
-        const paymentMap = {
-          cod: "Dobierka",
-          bank_prepaid: "Platba prevodom vopred",
-          invoice_org: "Prevodný príkaz pre organizácie a firmy",
-          gopay: "Online platba GoPay",
-          applepay: "Apple Pay",
-          googlepay: "Google Pay"
-        };
-
+        const paymentCode = String(preview?.payment || directMethod || "");
         const itemsTotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
         const quantityDiscount = Number(pricing.discount || 0);
         const couponDiscount = Number(preview?.coupon?.discount || 0);
@@ -785,183 +862,122 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
         const total = Math.max(0, itemsTotal - quantityDiscount - couponDiscount - loyaltyDiscount + shippingPrice + paymentPrice);
         const net = total / 1.23;
         const vat = total - net;
-        const paymentLabelText = paymentMap[paymentCode] || paymentCode || "—";
-        const couponLabel = preview?.coupon?.label || "Kupónová zľava";
-        const shippingLabel = shipping?.label || "Doprava";
+        return { cart, shipping, paymentCode, itemsTotal, quantityDiscount, couponDiscount, loyaltyDiscount, shippingPrice, paymentPrice, total, net, vat };
+      }
 
-        const itemRows = cart.map((item) => {
+      function renderPreview() {
+        const preview = previewData();
+        const { cart, shipping, paymentCode, itemsTotal, quantityDiscount, couponDiscount, loyaltyDiscount, shippingPrice, paymentPrice, total, net, vat } = pricingFromPreview(preview);
+        const first = cart[0] || null;
+        const qtyTotal = cart.reduce((sum, item) => sum + Number(item.qty || 1), 0);
+        const productName = first?.name || "Produkt z objednávky";
+        const image = productImageSrc(first);
+        const firstQty = Number(first?.qty || 1);
+        const firstSku = first?.sku ? `SKU: ${first.sku}` : "Produkt z objednávky";
+
+        productTitleEl.textContent = productName;
+        productMetaEl.textContent = `${firstSku} · ${firstQty} ks`;
+        productCountEl.textContent = `${qtyTotal || 1} ks`;
+        productTotalEl.textContent = cart.length ? formatMoney(total) : "—";
+        shippingEl.textContent = shipping?.label || "—";
+        const estimate = deliveryEstimate(preview);
+        deliveryEstimateEl.textContent = estimate;
+        expeditionTextEl.textContent = estimate === "odosielame dnes" ? "dnes pri objednávke do 14:00" : estimate;
+
+        if (image) {
+          productImageWrap.innerHTML = `<img src="${escapeHtml(image)}" alt="${escapeHtml(productName)}" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;thank-product-placeholder&quot;>▧</div>';" />`;
+        }
+
+        if (!cart.length || !orderDetail || !orderLines) return;
+
+        const rows = [];
+        cart.forEach((item) => {
           const qty = Number(item.qty || 1);
-          const lineTotal = Number(item.price || 0) * qty;
-          const metaParts = [];
-          if (item.sku) metaParts.push(`SKU: ${item.sku}`);
-          if (qty > 1) metaParts.push(`${qty} ks × ${formatMoney(Number(item.price || 0))}`);
-          return orderLine(`${item.name || "Produkt"} × ${qty}`, formatMoney(lineTotal), metaParts.join(" · "));
-        }).join("");
+          rows.push(orderLine(`${item.name || "Produkt"} × ${qty}`, formatMoney(Number(item.price || 0) * qty)));
+        });
+        if (quantityDiscount > 0) rows.push(orderLine("Zľava", `-${formatMoney(quantityDiscount)}`, "is-discount"));
+        if (couponDiscount > 0) rows.push(orderLine(preview?.coupon?.label || "Kupónová zľava", `-${formatMoney(couponDiscount)}`, "is-discount"));
+        if (loyaltyDiscount > 0) rows.push(orderLine("Vernostné body", `-${formatMoney(loyaltyDiscount)}`, "is-discount"));
+        rows.push(orderLine(`Doprava (${shipping?.label || "—"})`, shippingPrice > 0 ? formatMoney(shippingPrice) : "Zdarma"));
+        rows.push(orderLine(`Platba (${paymentMethodText(paymentCode)})`, paymentPrice > 0 ? formatMoney(paymentPrice) : "Bez poplatku"));
+        rows.push(orderLine("Základ bez DPH", formatMoney(net)));
+        rows.push(orderLine("DPH 23 %", formatMoney(vat)));
+        rows.push(orderLine("Spolu s DPH", formatMoney(total), "is-grand"));
 
-        orderLines.innerHTML = `
-          <div class="tm-final-summary-card">
-            <div class="tm-final-summary-list">
-              ${itemRows}
-              ${quantityDiscount > 0 ? orderLine("Množstevná / sadová zľava", `-${formatMoney(quantityDiscount)}`, "", "is-discount") : ""}
-              ${couponDiscount > 0 ? orderLine(couponLabel, `-${formatMoney(couponDiscount)}`, "", "is-discount") : ""}
-              ${loyaltyDiscount > 0 ? orderLine("Vernostné body", `-${formatMoney(loyaltyDiscount)}`, "", "is-discount") : ""}
-              ${orderLine(`Doprava (${shippingLabel})`, shippingPrice > 0 ? formatMoney(shippingPrice) : "Zdarma")}
-              ${orderLine(`Platba (${paymentLabelText})`, paymentPrice > 0 ? formatMoney(paymentPrice) : "Bez poplatku")}
-            </div>
-            <div class="tm-final-summary-totals">
-              ${totalRow("Základ bez DPH", formatMoney(net))}
-              ${totalRow("DPH 23 %", formatMoney(vat))}
-              ${totalRow("Spolu s DPH", formatMoney(total), "is-grand")}
-            </div>
-          </div>
-        `;
+        orderLines.innerHTML = rows.join("");
+        orderItemsCountEl.textContent = `${qtyTotal} ks v objednávke`;
         orderDetail.hidden = false;
       }
 
-      function showDirectOrder() {
-        const orderNumber = directOrder || "—";
-
+      function setSuccess(orderNumber, method, stateText = "Potvrdené") {
+        const methodText = paymentMethodText(method);
         iconEl.textContent = "✓";
-        kickerEl.textContent = paymentMethodText(directMethod);
-        paymentMethodEl.textContent = paymentMethodText(directMethod);
-        titleEl.innerHTML = `Ďakujeme za objednávku<br><span class="thank-order-number">č. ${orderNumber}</span>`;
-        subtitleEl.innerHTML = `${paymentLabel(directMethod)} bola <strong>úspešne uložená</strong>.`;
-        textEl.textContent = "Potvrdenie objednávky sme poslali na e-mail uvedený v pokladni.";
-
-        stateEl.innerHTML = '<span class="thank-paid-pill">ULOŽENÉ</span>';
-        paymentIdEl.textContent = "—";
+        statusLabelEl.textContent = "Objednávka prijatá";
+        titleEl.innerHTML = `Ďakujeme. <span class="soft">Objednávku sme prijali.</span>`;
+        textEl.textContent = paymentSuccessText(method);
         orderEl.textContent = orderNumber;
-        setThankCoupon(orderNumber);
-        renderOrderDetail();
+        paymentMethodEl.textContent = methodText;
+        paymentMethodEl2.textContent = methodText;
+        stateEl.textContent = stateText;
         rewardSection.hidden = false;
         successActions.hidden = false;
-
+        renderPreview();
         localStorage.removeItem("tm_cart_v1");
         localStorage.removeItem("tm_coupon_v1");
         localStorage.removeItem("tm_loyalty_apply");
       }
 
-      function showPaid(data) {
-        const orderNumber = getOrderNumber(data);
-
-        iconEl.textContent = "✓";
-        kickerEl.textContent = paymentMethodText(directMethod);
-        paymentMethodEl.textContent = paymentMethodText(directMethod);
-        titleEl.innerHTML = `Ďakujeme za objednávku<br><span class="thank-order-number">č. ${orderNumber}</span>`;
-        subtitleEl.innerHTML = "Vaša platba online prebehla <strong>úspešne</strong>.";
-        textEl.textContent = "Potvrdenie objednávky sme poslali na e-mail uvedený v pokladni.";
-
-        stateEl.innerHTML = '<span class="thank-paid-pill">PAID</span>';
-        orderEl.textContent = orderNumber;
-        setThankCoupon(orderNumber);
-        renderOrderDetail();
-        rewardSection.hidden = false;
+      function setProblem(title, text, stateText) {
+        iconEl.textContent = "!";
+        statusLabelEl.textContent = stateText;
+        statusPillEl.style.background = "#fff1f0";
+        statusPillEl.style.color = "#d92d20";
+        titleEl.innerHTML = title;
+        textEl.textContent = text;
+        stateEl.textContent = stateText;
         successActions.hidden = false;
-
-        localStorage.removeItem("tm_cart_v1");
-        localStorage.removeItem("tm_coupon_v1");
-        localStorage.removeItem("tm_loyalty_apply");
-      }
-
-      function showCanceled(data) {
-        const orderNumber = getOrderNumber(data);
-
-        iconEl.textContent = "×";
-        titleEl.innerHTML = `Platba nebola dokončená<br><span class="thank-order-number">${orderNumber}</span>`;
-        subtitleEl.textContent = "Platbu sa nepodarilo dokončiť.";
-        textEl.textContent = "Objednávka zatiaľ nie je zaplatená. Môžete sa vrátiť do košíka alebo skúsiť platbu znova.";
-
-        stateEl.innerHTML = '<span class="thank-paid-pill" style="background:#fff1f0;color:#d92d20;">CANCELED</span>';
-        orderEl.textContent = orderNumber;
-        rewardSection.hidden = true;
-        successActions.hidden = false;
-        successActions.innerHTML = `
-          <a class="thank-action-card" href="/kosik">
-            <div class="thank-action-icon">🛒</div>
-            <strong>Otvoriť košík</strong>
-            <p>Skontrolujte produkty v košíku a pokračujte v objednávke.</p>
-            <span class="thank-action-button">Do košíka →</span>
-          </a>
-          <a class="thank-action-card is-orders" href="/pokladna">
-            <div class="thank-action-icon">💳</div>
-            <strong>Skúsiť platbu znova</strong>
-            <p>Vráťte sa do pokladne a zvoľte platobnú metódu.</p>
-            <span class="thank-action-button">Do pokladne →</span>
-          </a>
-          <a class="thank-action-card is-printer" href="/">
-            <div class="thank-action-icon">🏠</div>
-            <strong>Pokračovať v nákupe</strong>
-            <p>Vráťte sa do obchodu a pokračujte vo výbere.</p>
-            <span class="thank-action-button">Do obchodu →</span>
-          </a>
-        `;
-      }
-
-      function showPending(data, state) {
-        const orderNumber = getOrderNumber(data);
-
-        iconEl.textContent = "…";
-        titleEl.innerHTML = `Platbu ešte overujeme<br><span class="thank-order-number">${orderNumber}</span>`;
-        subtitleEl.textContent = "GoPay zatiaľ nevrátil finálny stav platby.";
-        textEl.textContent = "Skúste stránku o chvíľu obnoviť. Ak sa stav nezmení, kontaktujte nás.";
-
-        stateEl.textContent = state || "PENDING";
-        orderEl.textContent = orderNumber;
-        rewardSection.hidden = true;
-        successActions.hidden = false;
+        renderPreview();
       }
 
       async function loadStatus() {
         if (directOrder) {
-          showDirectOrder();
+          paymentIdEl.textContent = "—";
+          setSuccess(directOrder, directMethod, "Uložené");
           return;
         }
 
         if (!paymentId) {
-          titleEl.textContent = "Chýba ID platby";
-          subtitleEl.textContent = "GoPay nevrátilo ID platby.";
-          textEl.textContent = "Skontrolujte nastavenie GOPAY_RETURN_URL v .env.";
-          stateEl.textContent = "Neoverené";
+          setProblem("Chýba ID platby", "GoPay nevrátilo ID platby. Skontrolujte nastavenie návratovej URL.", "Neoverené");
           return;
         }
 
         try {
           const response = await fetch(`/api/gopay-status?id=${encodeURIComponent(paymentId)}`);
           const data = await response.json();
-
-          if (!response.ok || !data.ok) {
-            throw new Error(data.error || "Nepodarilo sa overiť stav platby.");
-          }
+          if (!response.ok || !data.ok) throw new Error(data.error || "Nepodarilo sa overiť stav platby.");
 
           const state = data.state || "UNKNOWN";
+          const orderNumber = getOrderNumber(data);
           paymentIdEl.textContent = paymentId;
 
           if (state === "PAID") {
-            showPaid(data);
+            setSuccess(orderNumber, directMethod || "gopay", "Zaplatené");
           } else if (state === "CANCELED") {
-            showCanceled(data);
+            setProblem("Platba nebola dokončená", "Objednávka zatiaľ nie je zaplatená. Môžete sa vrátiť do košíka alebo skúsiť platbu znova.", "Zrušené");
           } else {
-            showPending(data, state);
+            setProblem("Platbu ešte overujeme", "GoPay zatiaľ nevrátil finálny stav platby. Skúste stránku o chvíľu obnoviť.", state);
           }
 
           debugBox.hidden = false;
           debugBox.textContent = `Technický stav GoPay: ${state}`;
         } catch (error) {
-          iconEl.textContent = "!";
-          titleEl.textContent = "Platbu sa nepodarilo overiť";
-          subtitleEl.textContent = "E-shop nevedel načítať finálny stav platby.";
-          textEl.textContent = "GoPay platba bola vytvorená, ale stav sa nepodarilo načítať. Skúste to o chvíľu alebo nás kontaktujte.";
-          stateEl.textContent = "Chyba overenia";
+          setProblem("Platbu sa nepodarilo overiť", "GoPay platba bola vytvorená, ale stav sa nepodarilo načítať. Skúste to o chvíľu alebo nás kontaktujte.", "Chyba overenia");
           debugBox.hidden = false;
           debugBox.textContent = error.message || "Nepodarilo sa overiť stav platby.";
         }
       }
 
-      scratchButton?.addEventListener("click", () => {
-        scratchCard?.classList.add("is-revealed");
-        scratchButton.textContent = "Odmena odhalená";
-      });
-
+      renderPreview();
       loadStatus();
     </script>
   </body>

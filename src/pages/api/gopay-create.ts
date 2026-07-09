@@ -4,6 +4,8 @@ import { savePendingGoPayOrder } from "../../lib/gopay-order";
 import { getCustomerLoyalty } from "../../lib/loyalty";
 import { validateCheckoutCoupon } from "../../lib/coupons";
 import { normalizeSecureCheckoutCart, discountRate, discountedLine } from "../../lib/secure-checkout-cart";
+import { CheckoutProfiler } from "../../lib/checkout-profiler";
+import { getEnv as env, getGoPayAccessToken, getGoPayHost } from "../../lib/gopay-client";
 
 export const prerender = false;
 
@@ -24,94 +26,15 @@ const PAYMENT: Record<string, { label: string; price: number; gopayInstrument?: 
   googlepay: { label: "Google Pay", price: 0, gopayInstrument: "GOOGLE_PAY" },
 };
 
-function getGoPayHost() {
-  return import.meta.env.GOPAY_ENV === "production"
-    ? "https://gate.gopay.cz"
-    : "https://gw.sandbox.gopay.com";
-}
+const VAT_RATE_PERCENT = 23;
 
-function env(name: string) {
-  return String(import.meta.env[name] || process.env[name] || "").trim();
-}
-
-function basicAuth(clientId: string, clientSecret: string) {
-  return Buffer.from(`${clientId}:${clientSecret}`, "utf8").toString("base64");
-}
-
-function maskValue(value: string) {
-  if (!value) return "EMPTY";
-  if (value.length <= 4) return "*".repeat(value.length);
-  return `${value.slice(0, 2)}***${value.slice(-2)} (length ${value.length})`;
-}
-
-async function getAccessToken(scope: "payment-create" | "payment-all") {
-  const clientId = env("GOPAY_CLIENT_ID");
-  const clientSecret = env("GOPAY_CLIENT_SECRET");
-  const goid = env("GOPAY_GOID");
-  const tokenUrl = `${getGoPayHost()}/api/oauth2/token`;
-
-  console.log("GoPay ENV kontrola:", {
-    env: env("GOPAY_ENV") || "sandbox/default",
-    goid,
-    clientId,
-    clientSecretMasked: maskValue(clientSecret),
-    tokenUrl,
-    scope,
-  });
-
-  if (!clientId || !clientSecret) {
-    throw new Error("Chýba GOPAY_CLIENT_ID alebo GOPAY_CLIENT_SECRET v .env.");
-  }
-
-  const tokenResponse = await fetch(tokenUrl, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Basic ${basicAuth(clientId, clientSecret)}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      grant_type: "client_credentials",
-      scope,
-    }),
-  });
-
-  const tokenText = await tokenResponse.text();
-
-  let tokenData: any = {};
-  try {
-    tokenData = tokenText ? JSON.parse(tokenText) : {};
-  } catch {
-    tokenData = { raw: tokenText };
-  }
-
-  if (!tokenResponse.ok || !tokenData.access_token) {
-    console.error("GoPay OAuth chyba:", {
-      tokenUrl,
-      status: tokenResponse.status,
-      response: tokenData,
-    });
-
-    const message =
-      tokenData?.errors?.[0]?.message ||
-      tokenData?.error_description ||
-      tokenData?.error ||
-      tokenData?.raw ||
-      `GoPay OAuth chyba ${tokenResponse.status}`;
-
-    throw new Error(String(message));
-  }
-
-  console.log("GoPay OAuth OK:", {
-    tokenType: tokenData.token_type,
-    expiresIn: tokenData.expires_in,
-    scope: tokenData.scope,
-  });
-
-  return String(tokenData.access_token);
+function toCents(value: unknown) {
+  const number = typeof value === "number" ? value : Number(String(value ?? "").replace(/\s/g, "").replace("€", "").replace(",", "."));
+  return Number.isFinite(number) ? Math.round(number * 100) : 0;
 }
 
 export const POST: APIRoute = async ({ request, cookies }) => {
+  const profiler = new CheckoutProfiler("gopay-create");
   try {
     const goid = env("GOPAY_GOID");
     const returnUrl = env("GOPAY_RETURN_URL");
@@ -128,8 +51,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const session = readCustomerSession(cookies);
-    const body = await request.json().catch(() => ({}));
-    const cart = await normalizeSecureCheckoutCart(body.cart);
+    profiler.mark("session");
+    const body = await profiler.measure("request.json", () => request.json().catch(() => ({})));
+    const cart = await profiler.measure("normalize-cart", () => normalizeSecureCheckoutCart(body.cart));
 
     if (cart.length === 0) {
       return new Response(JSON.stringify({
@@ -172,7 +96,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     let couponDiscount = 0;
     const couponCode = String(body?.coupon?.code || body?.coupon || "").trim();
     if (couponCode) {
-      coupon = await validateCheckoutCoupon(session?.id, couponCode, cart);
+      coupon = await profiler.measure("coupon-validate", () => validateCheckoutCoupon(session?.id, couponCode, cart));
       if (!coupon.ok) {
         return new Response(JSON.stringify({ ok: false, error: coupon.reason || "Kupón nie je platný." }), {
           status: 400,
@@ -184,7 +108,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
     let loyaltyDiscount = 0;
     if (session?.id && body?.loyalty?.apply) {
-      const loyalty = await getCustomerLoyalty(session.id);
+      const loyalty = await profiler.measure("loyalty-load", () => getCustomerLoyalty(session.id));
       const requested = Math.max(0, Math.round(Number(body?.loyalty?.discount || 0) * 10) / 10);
       loyaltyDiscount = Math.min(requested, loyalty.discountValue, Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount) * 100) / 100));
     }
@@ -237,7 +161,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const totalCents = items.reduce((sum, item) => sum + item.amount, 0);
-    const token = await getAccessToken("payment-create");
+    const token = await profiler.measure("gopay-oauth-token", () => getGoPayAccessToken("payment-create"));
     const orderNumber = `TM-${Date.now()}`;
 
     const paymentBody = {
@@ -273,7 +197,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const paymentUrl = `${getGoPayHost()}/api/payments/payment`;
 
-    const paymentResponse = await fetch(paymentUrl, {
+    const paymentResponse = await profiler.measure("gopay-payment-create", () => fetch(paymentUrl, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -281,9 +205,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(paymentBody),
-    });
+    }));
 
-    const paymentText = await paymentResponse.text();
+    const paymentText = await profiler.measure("gopay-payment-read-response", () => paymentResponse.text());
 
     let paymentData: any = {};
     try {
@@ -316,7 +240,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    await savePendingGoPayOrder({
+    await profiler.measure("save-pending-gopay-order", () => savePendingGoPayOrder({
       orderNumber,
       paymentId: String(paymentData.id),
       amountCents: totalCents,
@@ -338,7 +262,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       total: Math.round((totalCents / 100) * 100) / 100,
       createdAt: new Date().toISOString(),
       customerId: session?.id || undefined,
-    });
+    }));
+
+    profiler.done({ paymentId: paymentData.id, orderNumber, cartItems: cart.length, paymentCode });
 
     return new Response(JSON.stringify({
       ok: true,
@@ -352,6 +278,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       headers: { "Content-Type": "application/json; charset=utf-8" },
     });
   } catch (error: any) {
+    profiler.fail(error);
     console.error("GoPay create fatal error:", error?.message || error);
 
     return new Response(JSON.stringify({

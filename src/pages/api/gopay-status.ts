@@ -1,96 +1,11 @@
 import type { APIRoute } from "astro";
 import { processPaidGoPayOrder } from "../../lib/gopay-order";
+import { getGoPayPayment } from "../../lib/gopay-client";
 
 export const prerender = false;
 
-function getGoPayHost() {
-  return import.meta.env.GOPAY_ENV === "production"
-    ? "https://gate.gopay.cz"
-    : "https://gw.sandbox.gopay.com";
-}
-
-function env(name: string) {
-  return String(import.meta.env[name] || process.env[name] || "").trim();
-}
-
-function basicAuth(clientId: string, clientSecret: string) {
-  return Buffer.from(`${clientId}:${clientSecret}`, "utf8").toString("base64");
-}
-
-async function getAccessToken() {
-  const clientId = env("GOPAY_CLIENT_ID");
-  const clientSecret = env("GOPAY_CLIENT_SECRET");
-
-  if (!clientId || !clientSecret) {
-    throw new Error("Chýba GOPAY_CLIENT_ID alebo GOPAY_CLIENT_SECRET v .env.");
-  }
-
-  const tokenResponse = await fetch(`${getGoPayHost()}/api/oauth2/token`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Basic ${basicAuth(clientId, clientSecret)}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      grant_type: "client_credentials",
-      scope: "payment-all",
-    }),
-  });
-
-  const tokenText = await tokenResponse.text();
-
-  let tokenData: any = {};
-  try {
-    tokenData = tokenText ? JSON.parse(tokenText) : {};
-  } catch {
-    tokenData = { raw: tokenText };
-  }
-
-  if (!tokenResponse.ok || !tokenData.access_token) {
-    throw new Error(
-      tokenData?.errors?.[0]?.message ||
-      tokenData?.error_description ||
-      tokenData?.error ||
-      tokenData?.raw ||
-      "Nepodarilo sa získať GoPay token."
-    );
-  }
-
-  return String(tokenData.access_token);
-}
-
 async function getPayment(paymentId: string) {
-  const token = await getAccessToken();
-
-  const response = await fetch(`${getGoPayHost()}/api/payments/payment/${encodeURIComponent(paymentId)}`, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const text = await response.text();
-
-  let data: any = {};
-  try {
-    data = text ? JSON.parse(text) : {};
-  } catch {
-    data = { raw: text };
-  }
-
-  if (!response.ok) {
-    const message =
-      data?.errors?.[0]?.message ||
-      data?.message ||
-      data?.raw ||
-      `Nepodarilo sa overiť GoPay platbu ${paymentId}.`;
-
-    throw new Error(String(message));
-  }
-
-  return data;
+  return getGoPayPayment(paymentId);
 }
 
 function getUiState(state: string) {
@@ -149,7 +64,15 @@ export const GET: APIRoute = async ({ url }) => {
     let orderResult: any = null;
 
     if (state === "PAID") {
-      orderResult = await processPaidGoPayOrder(payment);
+      processPaidGoPayOrder(payment)
+        .then((result) => console.log("GoPay status background Woo order", {
+          id: payment.id,
+          state,
+          order_number: payment.order_number,
+          woo_order_id: result?.orderId || null,
+          woo_order_created: result?.created || false,
+        }))
+        .catch((error) => console.error("GoPay status background Woo order error", error?.message || error));
     }
 
     console.log("GoPay status check", {
@@ -158,8 +81,7 @@ export const GET: APIRoute = async ({ url }) => {
       order_number: payment.order_number,
       amount: payment.amount,
       currency: payment.currency,
-      woo_order_id: orderResult?.orderId || null,
-      woo_order_created: orderResult?.created || false,
+      woo_order_background: state === "PAID",
     });
 
     return new Response(JSON.stringify({

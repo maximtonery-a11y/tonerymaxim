@@ -1,0 +1,114 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+import { faqCategories, faqItems } from "../data/faq";
+
+const categoryCounts = faqCategories.map((category) => ({
+  ...category,
+  count: faqItems.filter((item) => item.category === category.id).length,
+}));
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FAQ | Najčastejšie otázky | ToneryMaxim.sk</title>
+    <meta name="description" content="Najčastejšie otázky o výbere tonerov, kompatibilite, problémoch s tlačou, doprave, platbe a reklamáciách v e-shope ToneryMaxim.sk." />
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+      <main>
+        <InfoPageShell active="/faq" eyebrow="FAQ" title="Najčastejšie otázky" intro="Rýchle odpovede k výberu tonerov, kompatibilite, problémom s tlačou, doprave a reklamáciám.">
+          <section class="faq-hero-grid" aria-label="Kategórie FAQ">
+            {categoryCounts.map((category) => (
+              <a class="faq-category-card" href={`#${category.id}`}>
+                <span class="info-icon">{category.icon}</span>
+                <strong>{category.title}</strong>
+                <small>{category.desc}</small>
+                <b>{category.count} otázky</b>
+              </a>
+            ))}
+          </section>
+
+          <section class="faq-search-panel" aria-label="Vyhľadávanie vo FAQ">
+            <div>
+              <span class="card-eyebrow">Rýchla pomoc</span>
+              <h2>Napíšte problém alebo označenie toneru</h2>
+              <p>Skúste napríklad: <b>CF283A</b>, <b>tlačí pásy</b>, <b>kompatibilný vs originálny</b>, <b>sype sa toner</b>.</p>
+            </div>
+            <label class="faq-search-box">
+              <span>Vyhľadať vo FAQ</span>
+              <input type="search" placeholder="Napr. tlačí pásy, CF283A, renovovaný toner..." data-faq-search />
+            </label>
+          </section>
+
+          <div class="faq-sections">
+            {faqCategories.map((category) => (
+              <section class="faq-section" id={category.id} data-faq-section>
+                <header>
+                  <span class="info-icon">{category.icon}</span>
+                  <div>
+                    <p>{category.title}</p>
+                    <h2>{category.desc}</h2>
+                  </div>
+                </header>
+                <div class="faq-list">
+                  {faqItems.filter((item) => item.category === category.id).map((item) => (
+                    <details class="faq-item" data-faq-item data-faq-text={`${item.question} ${item.answer} ${item.keywords.join(" ")}`}>
+                      <summary>{item.question}</summary>
+                      <div>
+                        <p>{item.answer}</p>
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+
+          <article class="faq-help-card">
+            <div>
+              <span class="card-eyebrow">Neviete si rady?</span>
+              <h2>Pošlite nám model tlačiarne alebo označenie toneru.</h2>
+              <p>Overíme kompatibilitu a odporučíme najvýhodnejšiu možnosť pred objednávkou.</p>
+            </div>
+            <div class="faq-help-actions">
+              <a class="primary-pill" href="mailto:info@tonerymaxim.sk">Napísať e-mail</a>
+              <a class="primary-pill faq-phone" href="tel:+421917859206">Zavolať</a>
+            </div>
+          </article>
+        </InfoPageShell>
+      </main>
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+
+    <script>
+      const search = document.querySelector('[data-faq-search]');
+      const items = Array.from(document.querySelectorAll('[data-faq-item]'));
+      const sections = Array.from(document.querySelectorAll('[data-faq-section]'));
+
+      search?.addEventListener('input', () => {
+        const query = search.value.trim().toLowerCase();
+        items.forEach((item) => {
+          const text = String(item.dataset.faqText || '').toLowerCase();
+          const visible = !query || text.includes(query);
+          item.hidden = !visible;
+          if (query && visible) item.open = true;
+          if (!query) item.open = false;
+        });
+        sections.forEach((section) => {
+          const hasVisible = Array.from(section.querySelectorAll('[data-faq-item]')).some((item) => !item.hidden);
+          section.hidden = !hasVisible;
+        });
+      });
+    </script>
+  </body>
+</html>

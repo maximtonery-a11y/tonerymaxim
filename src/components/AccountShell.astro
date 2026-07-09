@@ -49,7 +49,11 @@ const navItems = [
 
         <nav class="account-nav" aria-label="Menu účtu">
           {navItems.map((item) => (
-            <a class:list={["account-nav-link", active === item.id && "is-active"]} href={item.href}>
+            <a
+              class:list={["account-nav-link", active === item.id && "is-active"]}
+              href={item.href}
+              rel={active === item.id ? undefined : "prefetch"}
+            >
               <span>{item.icon}</span>
               {item.label}
             </a>
@@ -80,4 +84,33 @@ const navItems = [
 
 <script>
   import "../scripts/account-ui.js";
+
+  const accountLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".account-nav-link[href]"));
+  const prefetched = new Set<string>();
+
+  function prefetchAccountPage(href: string) {
+    if (!href || prefetched.has(href)) return;
+    prefetched.add(href);
+
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.href = href;
+    link.as = "document";
+    document.head.appendChild(link);
+  }
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(() => {
+      accountLinks.slice(0, 4).forEach((link) => prefetchAccountPage(link.href));
+    }, { timeout: 2500 });
+  } else {
+    window.setTimeout(() => {
+      accountLinks.slice(0, 4).forEach((link) => prefetchAccountPage(link.href));
+    }, 1000);
+  }
+
+  accountLinks.forEach((link) => {
+    link.addEventListener("mouseenter", () => prefetchAccountPage(link.href), { once: true });
+    link.addEventListener("touchstart", () => prefetchAccountPage(link.href), { once: true, passive: true });
+  });
 </script>

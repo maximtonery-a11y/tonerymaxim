@@ -8,10 +8,12 @@
   const CACHE_KEY = "tm_smart_search_v3";
   const CACHE_TTL = 20 * 60 * 1000;
   const MIN_QUERY_LENGTH = 2;
-  const DEBOUNCE_MS = 220;
+  const DEBOUNCE_MS = 180;
 
   const memory = new Map();
+  const inflight = new Map();
   let activeController = null;
+  let runSerial = 0;
 
   function normalize(value) {
     return String(value || "")
@@ -249,19 +251,26 @@
     const cached = sessionRead(query);
     if (cached) return cached;
 
+    const key = cacheKey(query);
+    if (inflight.has(key)) return inflight.get(key);
+
     if (activeController) activeController.abort();
     activeController = new AbortController();
 
-    const response = await fetch(`/api/smart-search?q=${encodeURIComponent(query)}`, {
+    const promise = fetch(`/api/smart-search?q=${encodeURIComponent(query)}`, {
       headers: { Accept: "application/json" },
       signal: activeController.signal,
-    });
+    })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || !data.ok) throw new Error(data.error || "Vyhľadávanie zlyhalo.");
+        sessionWrite(query, data);
+        return data;
+      })
+      .finally(() => inflight.delete(key));
 
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || "Vyhľadávanie zlyhalo.");
-
-    sessionWrite(query, data);
-    return data;
+    inflight.set(key, promise);
+    return promise;
   }
 
   function goToSearch(input) {
@@ -281,6 +290,7 @@
 
     const run = debounce(async () => {
       const query = input.value.trim();
+      const serial = ++runSerial;
       input.setAttribute("aria-expanded", query.length >= MIN_QUERY_LENGTH ? "true" : "false");
 
       if (query.length < MIN_QUERY_LENGTH) {
@@ -299,6 +309,7 @@
 
       try {
         const data = await fetchSuggestions(query);
+        if (serial !== runSerial || input.value.trim() !== query) return;
         renderPanel(panel, data, query);
       } catch (error) {
         if (error?.name === "AbortError") return;

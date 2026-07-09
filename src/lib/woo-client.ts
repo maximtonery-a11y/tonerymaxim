@@ -1,4 +1,39 @@
 import { createHmac } from "node:crypto";
+
+const WOO_ACCOUNT_CACHE_TTL_MS = Number(import.meta.env.ACCOUNT_CACHE_TTL_MS || 60_000);
+const WOO_ACCOUNT_ORDERS_CACHE_TTL_MS = Number(import.meta.env.ACCOUNT_ORDERS_CACHE_TTL_MS || 60_000);
+
+type CacheEntry<T> = { value: T; expiresAt: number };
+const wooCustomerCache = new Map<number, CacheEntry<WooCustomer | null>>();
+const wooCustomerOrdersCache = new Map<string, CacheEntry<WooOrder[]>>();
+
+function cacheTtl(value: number, fallback: number): number {
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function getCached<T>(cache: Map<string | number, CacheEntry<T>>, key: string | number): T | undefined {
+  const entry = cache.get(key);
+  if (!entry) return undefined;
+  if (entry.expiresAt <= Date.now()) {
+    cache.delete(key);
+    return undefined;
+  }
+  return entry.value;
+}
+
+function setCached<T>(cache: Map<string | number, CacheEntry<T>>, key: string | number, value: T, ttlMs: number): T {
+  cache.set(key, { value, expiresAt: Date.now() + ttlMs });
+  return value;
+}
+
+function clearCustomerAccountCache(customerId: number): void {
+  if (!customerId) return;
+  wooCustomerCache.delete(customerId);
+  for (const key of [...wooCustomerOrdersCache.keys()]) {
+    if (key.startsWith(`${customerId}:`)) wooCustomerOrdersCache.delete(key);
+  }
+}
+
 export type WooCustomer = {
   id: number;
   email: string;
@@ -157,25 +192,40 @@ export type WooOrder = {
 
 export async function getWooCustomerById(customerId: number): Promise<WooCustomer | null> {
   if (!customerId) return null;
+
+  const cached = getCached(wooCustomerCache, customerId);
+  if (cached !== undefined) return cached;
+
   try {
-    return await wooRequest<WooCustomer>(`/customers/${customerId}`);
+    const customer = await wooRequest<WooCustomer>(`/customers/${customerId}`);
+    return setCached(wooCustomerCache, customerId, customer, cacheTtl(WOO_ACCOUNT_CACHE_TTL_MS, 60_000));
   } catch (error: any) {
-    if (error?.status === 404) return null;
+    if (error?.status === 404) {
+      return setCached(wooCustomerCache, customerId, null, 10_000);
+    }
     throw error;
   }
 }
 
 export async function updateWooCustomer(customerId: number, body: Record<string, any>): Promise<WooCustomer> {
   if (!customerId) throw new Error("Chýba ID zákazníka.");
-  return wooRequest<WooCustomer>(`/customers/${customerId}`, {
+  clearCustomerAccountCache(customerId);
+  const customer = await wooRequest<WooCustomer>(`/customers/${customerId}`, {
     method: "PUT",
     body,
   });
+  setCached(wooCustomerCache, customerId, customer, cacheTtl(WOO_ACCOUNT_CACHE_TTL_MS, 60_000));
+  return customer;
 }
 
 export async function getWooCustomerOrders(customerId: number, perPage = 20): Promise<WooOrder[]> {
   if (!customerId) return [];
-  return wooRequest<WooOrder[]>("/orders", {
+
+  const key = `${customerId}:${perPage}`;
+  const cached = getCached(wooCustomerOrdersCache, key);
+  if (cached !== undefined) return cached;
+
+  const orders = await wooRequest<WooOrder[]>("/orders", {
     query: {
       customer: customerId,
       per_page: perPage,
@@ -183,6 +233,8 @@ export async function getWooCustomerOrders(customerId: number, perPage = 20): Pr
       order: "desc",
     },
   });
+
+  return setCached(wooCustomerOrdersCache, key, Array.isArray(orders) ? orders : [], cacheTtl(WOO_ACCOUNT_ORDERS_CACHE_TTL_MS, 60_000));
 }
 
 

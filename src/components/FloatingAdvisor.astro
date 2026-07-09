@@ -1,14 +1,47 @@
-<div class="floating-advisor">
-  <button class="advisor-button" type="button" aria-label="Potrebujete poradiť?">
-    <span class="advisor-icon">💬</span>
-    <span>Potrebujete poradiť?</span>
+---
+import '../styles/ai-sales-assistant.css';
+---
+
+<section class="tm-ai-assistant" data-ai-sales-assistant aria-live="polite">
+  <button class="tm-ai-assistant__launcher" type="button" data-ai-toggle aria-label="Otvoriť online poradcu Tomáš z ToneryMaxim">
+    <span class="tm-ai-assistant__pulse"></span>
+    <span class="tm-ai-assistant__icon">AI</span>
+    <span class="tm-ai-assistant__label">Tomáš z ToneryMaxim</span>
   </button>
 
-  <div class="advisor-panel">
-    <strong>Pomoc s výberom</strong>
-    <p>Napíšte nám model tlačiarne alebo označenie toneru.</p>
-    <a href="#">🔎 Pomôcť nájsť toner</a>
-    <a href="tel:+421917859206">☎ +421 917 859 206</a>
-    <a href="mailto:info@tonerymaxim.sk">✉ Napísať email</a>
+  <div class="tm-ai-assistant__panel" data-ai-panel hidden>
+    <header class="tm-ai-assistant__head">
+      <div>
+        <strong>Tomáš z ToneryMaxim</strong>
+        <span>Váš online poradca. Poradím s výberom, dopravou, platbou, reklamáciou aj problémami pri tlači.</span>
+      </div>
+      <button type="button" data-ai-close aria-label="Zavrieť AI poradcu">×</button>
+    </header>
+
+    <div class="tm-ai-assistant__quick" data-ai-quick>
+      <button type="button" data-ai-prompt="CF283A">CF283A</button>
+      <button type="button" data-ai-prompt="Brother DCP-9020CDW">Brother DCP-9020CDW</button>
+      <button type="button" data-ai-prompt="Tlačiareň tlačí pásy">Tlačí pásy</button>
+      <button type="button" data-ai-prompt="Rozdiel kompatibilný originálny renovovaný toner">Kompatibilný / originál</button>
+      <button type="button" data-ai-prompt="Koľko stojí doprava?">Cena dopravy</button>
+      <button type="button" data-ai-prompt="Kedy mi pošlete objednávku?">Odoslanie</button>
+      <button type="button" data-ai-prompt="Toner nepasuje">Toner nepasuje</button>
+    </div>
+
+    <div class="tm-ai-assistant__messages" data-ai-messages>
+      <article class="tm-ai-msg tm-ai-msg--bot">
+        <p>Napíšte označenie toneru, model tlačiarne alebo otázku k objednávke. Napríklad <b>CF283A</b>, <b>HP 135A</b>, <b>Brother DCP-9020CDW</b>.</p>
+        <p>Alebo sa opýtajte: <b>koľko stojí doprava</b>, <b>kedy pošlete objednávku</b>, <b>tlačí pásy</b>, <b>toner nepasuje</b>.</p>
+      </article>
+    </div>
+
+    <form class="tm-ai-assistant__form" data-ai-form>
+      <input data-ai-input type="text" autocomplete="off" placeholder="Napíšte model, toner alebo otázku…" />
+      <button type="submit">Odoslať</button>
+    </form>
   </div>
-</div>
+</section>
+
+<script>
+  import "../scripts/ai-sales-assistant.js";
+</script>

@@ -4,6 +4,7 @@ import { getWooBaseUrl, getWooAuthHeader, wooRequest } from "./woo-client";
 import { sendOrderConfirmationEmail } from "./mail";
 import { reserveLoyaltyDiscount } from "./loyalty";
 import { grantThankYouCoupon, markCouponUsed, type CouponResult } from "./coupons";
+import { CheckoutProfiler } from "./checkout-profiler";
 
 export type NormalizedCartItem = {
   id: string;
@@ -365,8 +366,10 @@ function wooPaymentMethod(source: CheckoutOrderSource) {
 }
 
 export async function createWooOrderFromCheckout(source: CheckoutOrderSource, options: { gopayPayment?: GoPayPayment; customerNote?: string } = {}) {
+  const profiler = new CheckoutProfiler("woo-order", { orderNumber: source.orderNumber, paymentCode: source.paymentCode });
   const billing = addressFromOrder(source, "billing");
   const shipping = addressFromOrder(source, "shipping");
+  profiler.mark("prepare-addresses");
   const isCompany = Boolean(source.billing?.company || source.billing?.ico || source.billing?.dic || source.billing?.icDph);
   const payment = wooPaymentMethod(source);
   const paymentId = String(options.gopayPayment?.id || source.paymentId || "");
@@ -375,7 +378,9 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
   const billingForCreate = { ...billing };
   delete (billingForCreate as Record<string, any>).email;
 
-  const order = await wooRequest<any>("/orders", {
+  const lineItemsPayload = await profiler.measure("woo-line-items-resolve", () => lineItems(source));
+
+  const order = await profiler.measure("woo-post-order", () => wooRequest<any>("/orders", {
     method: "POST",
     body: {
       status: payment.status,
@@ -388,38 +393,38 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
       customer_note: options.customerNote || "Objednávka vytvorená z pokladne ToneryMaxim.sk.",
       billing: billingForCreate,
       shipping,
-      line_items: await lineItems(source),
+      line_items: lineItemsPayload,
       shipping_lines: [shippingLine(source)],
       fee_lines: feeLines(source),
       meta_data: orderMeta({ ...source, paymentState: String(options.gopayPayment?.state || source.paymentState || "") }, paymentId, isCompany, payment),
     },
-  });
+  }));
 
   if (customerEmail && order?.id) {
-    await wooRequest<any>(`/orders/${order.id}`, {
+    await profiler.measure("woo-update-billing-email", () => wooRequest<any>(`/orders/${order.id}`, {
       method: "PUT",
       body: {
         customer_id: Number(source.customerId || 0) > 0 ? Number(source.customerId) : undefined,
         billing: { ...billing, email: customerEmail },
       },
-    }).catch((error) => console.error("Woo billing email update error:", error?.message || error));
+    })).catch((error) => console.error("Woo billing email update error:", error?.message || error));
   }
 
   if (Number(source.customerId || 0) > 0 && source.coupon?.ok) {
-    await markCouponUsed(Number(source.customerId), source.coupon, order.id).catch((error) => console.error("Coupon used meta error:", error?.message || error));
+    await profiler.measure("coupon-mark-used", () => markCouponUsed(Number(source.customerId), source.coupon, order.id)).catch((error) => console.error("Coupon used meta error:", error?.message || error));
   }
 
   if (Number(source.customerId || 0) > 0 && order?.id) {
-    await grantThankYouCoupon(Number(source.customerId), order.id, order.number || order.id).catch((error) => console.error("Thank you coupon grant error:", error?.message || error));
+    await profiler.measure("coupon-grant-thank-you", () => grantThankYouCoupon(Number(source.customerId), order.id, order.number || order.id)).catch((error) => console.error("Thank you coupon grant error:", error?.message || error));
   }
 
   if (Number(source.customerId || 0) > 0 && money(source.loyaltyDiscount) > 0) {
-    const used = await reserveLoyaltyDiscount(Number(source.customerId), order.id, source.loyaltyDiscount).catch((error) => {
+    const used = await profiler.measure("loyalty-reserve", () => reserveLoyaltyDiscount(Number(source.customerId), order.id, source.loyaltyDiscount)).catch((error) => {
       console.error("Loyalty discount reserve error:", error?.message || error);
       return { discount: 0, pointsUsed: 0 };
     });
     if (used.pointsUsed > 0) {
-      await wooRequest<any>(`/orders/${order.id}`, {
+      await profiler.measure("woo-update-billing-email", () => wooRequest<any>(`/orders/${order.id}`, {
         method: "PUT",
         body: {
           meta_data: [
@@ -427,11 +432,12 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
             { key: "tm_loyalty_points_used", value: String(used.pointsUsed) },
           ],
         },
-      }).catch((error) => console.error("Woo loyalty meta update error:", error?.message || error));
+      })).catch((error) => console.error("Woo loyalty meta update error:", error?.message || error));
     }
   }
 
   if (customerEmail) {
+    profiler.mark("email-dispatch-started");
     sendOrderConfirmationEmail({
       to: customerEmail,
       orderNumber: String(order.number || order.id || ""),
@@ -440,6 +446,8 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
       shippingTitle: shippingLine(source).method_title,
     }).catch((error) => console.error("ToneryMaxim order email error:", error?.message || error));
   }
+
+  profiler.done({ orderId: order?.id, orderNumber: order?.number || order?.id });
 
   return {
     created: true,
@@ -466,7 +474,9 @@ export async function readPendingGoPayOrder(paymentId: string): Promise<Checkout
   }
 }
 
-export async function processPaidGoPayOrder(payment: GoPayPayment) {
+const GOPAY_PROCESS_LOCKS = new Map<string, Promise<{ created: boolean; orderId: number; orderNumber: string }>>();
+
+async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
   const paymentId = String(payment?.id || "");
   if (!paymentId) throw new Error("Chýba ID GoPay platby.");
 
@@ -504,4 +514,21 @@ export async function processPaidGoPayOrder(payment: GoPayPayment) {
     orderId: result.orderId,
     orderNumber: result.orderNumber,
   };
+}
+
+export async function processPaidGoPayOrder(payment: GoPayPayment) {
+  const paymentId = String(payment?.id || "");
+  if (!paymentId) throw new Error("Chýba ID GoPay platby.");
+
+  const running = GOPAY_PROCESS_LOCKS.get(paymentId);
+  if (running) return running;
+
+  const job = processPaidGoPayOrderInternal(payment);
+  GOPAY_PROCESS_LOCKS.set(paymentId, job);
+
+  try {
+    return await job;
+  } finally {
+    GOPAY_PROCESS_LOCKS.delete(paymentId);
+  }
 }

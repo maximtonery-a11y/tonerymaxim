@@ -13,11 +13,24 @@ const CATEGORIES = [
 const TYPE_ORDER: Record<string, number> = { compatible: 1, original: 2, renovated: 3, product: 4 };
 const TYPE_LABEL: Record<string, string> = { compatible: "Kompatibilné", original: "Originálne", renovated: "Renovované", product: "Ostatné" };
 
+const RESULT_CACHE_TTL_MS = Number(import.meta.env.SMART_SEARCH_CACHE_TTL_MS || process.env.SMART_SEARCH_CACHE_TTL_MS || 90_000);
+const RESULT_CACHE_MAX_ITEMS = Number(import.meta.env.SMART_SEARCH_CACHE_MAX_ITEMS || process.env.SMART_SEARCH_CACHE_MAX_ITEMS || 300);
+const MAX_PREFIX_BUCKET = Number(import.meta.env.SMART_SEARCH_MAX_PREFIX_BUCKET || process.env.SMART_SEARCH_MAX_PREFIX_BUCKET || 1200);
+
 const globalStore = globalThis as typeof globalThis & {
-  __TM_SMART_SEARCH_INDEX__?: {
-    generatedAt: string;
-    items: IndexedProduct[];
-  };
+  __TM_SMART_SEARCH_INDEX__?: SearchIndexCache;
+  __TM_SMART_SEARCH_RESULT_CACHE__?: Map<string, ResultCacheEntry>;
+};
+
+type ResultCacheEntry = {
+  expiresAt: number;
+  data: SmartSearchResponse;
+};
+
+type SearchIndexCache = {
+  generatedAt: string;
+  items: IndexedProduct[];
+  prefixMap: Map<string, number[]>;
 };
 
 type QueryInfo = {
@@ -39,13 +52,32 @@ type IndexedPrinter = {
 
 type IndexedProduct = {
   product: any;
+  index: number;
   brand: string;
   searchValue: string;
   text: string;
   compact: string;
   tokens: string[];
   printers: IndexedPrinter[];
+  candidateTokens: string[];
 };
+
+type SmartSearchResponse = {
+  ok: true;
+  source?: string;
+  cache_generated_at?: string;
+  api_cache_ttl_ms?: number;
+  query: string;
+  printers: any[];
+  productGroups: any[];
+  products: any[];
+  brands: any[];
+  categories: any[];
+  warning?: string;
+};
+
+const resultCache = globalStore.__TM_SMART_SEARCH_RESULT_CACHE__ || new Map<string, ResultCacheEntry>();
+globalStore.__TM_SMART_SEARCH_RESULT_CACHE__ = resultCache;
 
 function productBrand(product: any) {
   const text = normalize(`${product.name || ""} ${product.sku || ""} ${(product.categories || []).map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ")}`);
@@ -142,10 +174,10 @@ function searchableValue(product: any) {
   const printers = Array.isArray(product.printers) ? product.printers.join(" ") : "";
   const compatiblePrinters = Array.isArray(product.compatible_printers) ? product.compatible_printers.join(" ") : "";
   const categories = Array.isArray(product.categories) ? product.categories.map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ") : "";
-  return `${product.name || ""} ${product.sku || ""} ${categories} ${printers} ${compatiblePrinters} ${product.search_text || ""}`;
+  return `${product.name || ""} ${product.sku || ""} ${product.slug || ""} ${categories} ${printers} ${compatiblePrinters} ${product.search_text || ""}`;
 }
 
-function makeIndexedProduct(product: any): IndexedProduct {
+function makeIndexedProduct(product: any, index: number): IndexedProduct {
   const searchValue = searchableValue(product);
   const printerNames = [...new Set([...(Array.isArray(product.printers) ? product.printers : []), ...(Array.isArray(product.compatible_printers) ? product.compatible_printers : [])])];
   const printers = printerNames
@@ -161,23 +193,119 @@ function makeIndexedProduct(product: any): IndexedProduct {
     })
     .filter((printer) => printer.title);
 
+  const tokens = uniqueWords(searchValue);
+  const candidateTokens = [...new Set([
+    ...tokens,
+    ...printers.flatMap((printer) => printer.tokens),
+    compactKey(product.sku || ""),
+    compactKey(product.slug || ""),
+  ].filter((token) => token && token.length >= 2))];
+
   return {
     product,
+    index,
     brand: productBrand(product),
     searchValue,
     text: normalize(searchValue),
     compact: compactKey(searchValue),
-    tokens: uniqueWords(searchValue),
+    tokens,
     printers,
+    candidateTokens,
   };
 }
 
-function getSearchIndex(cache: any) {
-  if (globalStore.__TM_SMART_SEARCH_INDEX__?.generatedAt === cache.generated_at) return globalStore.__TM_SMART_SEARCH_INDEX__.items;
+function addPrefix(prefixMap: Map<string, number[]>, prefix: string, index: number) {
+  if (prefix.length < 2) return;
+  const current = prefixMap.get(prefix);
+  if (!current) {
+    prefixMap.set(prefix, [index]);
+    return;
+  }
+  if (current[current.length - 1] !== index && current.length < MAX_PREFIX_BUCKET) current.push(index);
+}
 
-  const items = sortProducts(cache.products).map(makeIndexedProduct);
-  globalStore.__TM_SMART_SEARCH_INDEX__ = { generatedAt: cache.generated_at, items };
-  return items;
+function buildPrefixMap(items: IndexedProduct[]) {
+  const prefixMap = new Map<string, number[]>();
+
+  for (const item of items) {
+    for (const token of item.candidateTokens) {
+      const compact = compactKey(token);
+      if (compact.length < 2) continue;
+      const max = Math.min(10, compact.length);
+      for (let len = 2; len <= max; len += 1) addPrefix(prefixMap, compact.slice(0, len), item.index);
+
+      // Modelové kódy ľudia často zadávajú bez začiatku alebo s pomlčkou, preto pridáme aj celý kompaktný token.
+      if (/\d/.test(compact)) addPrefix(prefixMap, compact, item.index);
+    }
+  }
+
+  return prefixMap;
+}
+
+function getSearchIndex(cache: any): SearchIndexCache {
+  if (globalStore.__TM_SMART_SEARCH_INDEX__?.generatedAt === cache.generated_at) return globalStore.__TM_SMART_SEARCH_INDEX__;
+
+  const items = sortProducts(cache.products).map((product, index) => makeIndexedProduct(product, index));
+  const prefixMap = buildPrefixMap(items);
+  globalStore.__TM_SMART_SEARCH_INDEX__ = { generatedAt: cache.generated_at, items, prefixMap };
+  resultCache.clear();
+  return globalStore.__TM_SMART_SEARCH_INDEX__;
+}
+
+function cachedResultKey(generatedAt: string, query: string) {
+  return `${generatedAt}:${compactKey(query) || normalize(query)}`;
+}
+
+function getCachedResult(key: string) {
+  const cached = resultCache.get(key);
+  if (!cached) return null;
+  if (cached.expiresAt <= Date.now()) {
+    resultCache.delete(key);
+    return null;
+  }
+  resultCache.delete(key);
+  resultCache.set(key, cached);
+  return cached.data;
+}
+
+function setCachedResult(key: string, data: SmartSearchResponse) {
+  if (RESULT_CACHE_TTL_MS <= 0) return;
+  resultCache.set(key, { data, expiresAt: Date.now() + RESULT_CACHE_TTL_MS });
+  while (resultCache.size > RESULT_CACHE_MAX_ITEMS) {
+    const firstKey = resultCache.keys().next().value;
+    if (!firstKey) break;
+    resultCache.delete(firstKey);
+  }
+}
+
+function queryPrefixes(query: QueryInfo) {
+  const prefixes = new Set<string>();
+  for (const token of query.tokens) {
+    const compact = compactKey(token);
+    if (compact.length >= 2) prefixes.add(compact.slice(0, Math.min(10, compact.length)));
+    if (compact.length >= 4) prefixes.add(compact);
+  }
+  if (query.compact.length >= 2) prefixes.add(query.compact.slice(0, Math.min(10, query.compact.length)));
+  if (query.compact.length >= 4) prefixes.add(query.compact);
+  return [...prefixes].filter(Boolean);
+}
+
+function getCandidateItems(index: SearchIndexCache, query: QueryInfo) {
+  const candidates = new Set<number>();
+
+  for (const prefix of queryPrefixes(query)) {
+    const bucket = index.prefixMap.get(prefix);
+    if (!bucket) continue;
+    for (const itemIndex of bucket) candidates.add(itemIndex);
+  }
+
+  if (!candidates.size) return index.items;
+  const items = [...candidates]
+    .map((itemIndex) => index.items[itemIndex])
+    .filter(Boolean);
+
+  // Ak je bucket príliš široký, pôvodné filtrovanie nad celým indexom dá lepšie výsledky než náhodne orezané kandidáty.
+  return items.length >= MAX_PREFIX_BUCKET ? index.items : items;
 }
 
 function hasTokenPrefixMatch(query: QueryInfo, tokens: string[]) {
@@ -296,7 +424,7 @@ function productItem(item: IndexedProduct, relevance: number) {
     type: product.product_type_key || "product",
     typeLabel: product.product_type_label || "PRODUKT",
     relevance,
-    printers: product.printers || [],
+    printers: Array.isArray(product.printers) ? product.printers.slice(0, 12) : [],
     brand: item.brand,
     categories: Array.isArray(product.categories) ? product.categories.map((cat: any) => ({ label: cat.name || cat.slug || "", value: cat.slug || cat.name || "" })).filter((cat: any) => cat.label) : [],
   };
@@ -333,8 +461,7 @@ function makeProductGroups(items: any[], query: string) {
 
 function findPrinterSuggestions(items: IndexedProduct[], query: QueryInfo) {
   const bestByPrinter = new Map<string, { title: string; score: number }>();
-
-  const candidateItems = items.filter((item) => isLikelyCandidate(item, query)).slice(0, 900);
+  const candidateItems = items.filter((item) => isLikelyCandidate(item, query)).slice(0, 450);
 
   for (const item of candidateItems) {
     for (const printer of item.printers) {
@@ -350,31 +477,36 @@ function findPrinterSuggestions(items: IndexedProduct[], query: QueryInfo) {
 
   return [...bestByPrinter.values()]
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, "sk"))
-    .slice(0, 10)
+    .slice(0, 8)
     .map((item) => ({ title: item.title, subtitle: "Tlačiareň · zobraziť kompatibilné produkty", url: `/produkty?s=${encodeURIComponent(item.title)}&printer=${encodeURIComponent(item.title)}`, relevance: item.score }));
 }
 
 function findProductSuggestions(items: IndexedProduct[], query: QueryInfo) {
-  const candidates = items.filter((item) => isLikelyCandidate(item, query)).slice(0, 900);
+  const candidates = items.filter((item) => isLikelyCandidate(item, query)).slice(0, 550);
   return sortSuggestionProducts(
     candidates
       .map((item) => productItem(item, relevanceScore(item, query)))
       .filter((item) => item.relevance >= 65),
-  ).slice(0, 80);
+  ).slice(0, 60);
 }
 
 export const GET: APIRoute = async ({ url }) => {
   const q = String(url.searchParams.get("q") || url.searchParams.get("search") || "").trim();
 
-  if (q.length < 2) return jsonResponse({ ok: true, query: q, printers: [], productGroups: [], products: [], brands: [], categories: [] });
+  if (q.length < 2) return jsonResponse({ ok: true, query: q, printers: [], productGroups: [], products: [], brands: [], categories: [] }, 200, "private, max-age=30");
 
   try {
     const cache = await getProductsCache();
     const index = getSearchIndex(cache);
     const query = queryInfo(q);
-    const products = findProductSuggestions(index, query);
+    const resultKey = cachedResultKey(index.generatedAt, q);
+    const cached = getCachedResult(resultKey);
+    if (cached) return jsonResponse({ ...cached, source: "smart-search-result-cache" }, 200, "private, max-age=60");
+
+    const candidateItems = getCandidateItems(index, query);
+    const products = findProductSuggestions(candidateItems, query);
     const staticResults = filteredStaticSuggestions(query);
-    const printerItems = findPrinterSuggestions(index, query);
+    const printerItems = findPrinterSuggestions(candidateItems, query);
 
     const brandMap = new Map<string, { title: string; subtitle: string; url: string }>();
     staticResults.brands.forEach((brand) => brandMap.set(compactKey(brand.title), brand));
@@ -394,17 +526,21 @@ export const GET: APIRoute = async ({ url }) => {
       });
     });
 
-    return jsonResponse({
+    const data: SmartSearchResponse = {
       ok: true,
-      source: "local-products-cache-fast-fuzzy",
+      source: "local-products-cache-ram-prefix-fuzzy",
       cache_generated_at: cache.generated_at,
+      api_cache_ttl_ms: RESULT_CACHE_TTL_MS,
       query: q,
       printers: printerItems,
       productGroups: makeProductGroups(products, q),
       products: products.slice(0, 12),
       brands: [...brandMap.values()].slice(0, 8),
       categories: [...categoryMap.values()].slice(0, 8),
-    }, 200, "private, max-age=30");
+    };
+
+    setCachedResult(resultKey, data);
+    return jsonResponse(data, 200, "private, max-age=60");
   } catch (error: any) {
     const fallback = filteredStaticSuggestions(queryInfo(q));
     return jsonResponse({ ok: true, query: q, printers: [], productGroups: [], products: [], brands: fallback.brands, categories: fallback.categories, warning: error?.message || "Smart search fallback" }, 200, "no-store");

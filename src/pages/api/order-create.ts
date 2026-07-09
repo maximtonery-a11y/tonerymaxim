@@ -1,9 +1,11 @@
 import type { APIRoute } from "astro";
 import { readCustomerSession } from "../../lib/auth-session";
 import { createWooOrderFromCheckout } from "../../lib/gopay-order";
+import { enqueueAsyncWooOrder, scheduleAsyncOrderQueue } from "../../lib/async-order-queue";
 import { getCustomerLoyalty } from "../../lib/loyalty";
 import { validateCheckoutCoupon } from "../../lib/coupons";
 import { normalizeSecureCheckoutCart, discountedLine } from "../../lib/secure-checkout-cart";
+import { CheckoutProfiler } from "../../lib/checkout-profiler";
 
 const SHIPPING: Record<string, { label: string; price: number }> = {
   dpd_courier: { label: "DPD kuriér na adresu", price: 3.9 },
@@ -22,10 +24,12 @@ const PAYMENT: Record<string, { label: string; price: number }> = {
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, cookies }) => {
+  const profiler = new CheckoutProfiler("order-create");
   try {
     const session = readCustomerSession(cookies);
-    const body = await request.json().catch(() => ({}));
-    const cart = await normalizeSecureCheckoutCart(body.cart);
+    profiler.mark("session");
+    const body = await profiler.measure("request.json", () => request.json().catch(() => ({})));
+    const cart = await profiler.measure("normalize-cart", () => normalizeSecureCheckoutCart(body.cart));
 
     if (cart.length === 0) {
       return new Response(JSON.stringify({ ok: false, error: "Košík je prázdny." }), {
@@ -53,7 +57,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     let couponDiscount = 0;
     const couponCode = String(body?.coupon?.code || body?.coupon || "").trim();
     if (couponCode) {
-      coupon = await validateCheckoutCoupon(session?.id, couponCode, cart);
+      coupon = await profiler.measure("coupon-validate", () => validateCheckoutCoupon(session?.id, couponCode, cart));
       if (!coupon.ok) {
         return new Response(JSON.stringify({ ok: false, error: coupon.reason || "Kupón nie je platný." }), {
           status: 400,
@@ -65,14 +69,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
     let loyaltyDiscount = 0;
     if (session?.id && body?.loyalty?.apply) {
-      const loyalty = await getCustomerLoyalty(session.id);
+      const loyalty = await profiler.measure("loyalty-load", () => getCustomerLoyalty(session.id));
       const requested = Math.max(0, Math.round(Number(body?.loyalty?.discount || 0) * 10) / 10);
       loyaltyDiscount = Math.min(requested, loyalty.discountValue, Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount) * 100) / 100));
     }
     const total = Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount - loyaltyDiscount) * 100) / 100);
     const orderNumber = `TM-${Date.now()}`;
 
-    const result = await createWooOrderFromCheckout({
+    const orderSource = {
       orderNumber,
       currency: "EUR",
       cart,
@@ -93,7 +97,30 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       amountCents: Math.round(total * 100),
       createdAt: new Date().toISOString(),
       customerId: session?.id || undefined,
-    });
+    };
+
+    const asyncEnabled = process.env.TM_ASYNC_WOO_ORDERS !== "0";
+
+    if (asyncEnabled) {
+      const queued = await profiler.measure("async-order-enqueue", () => enqueueAsyncWooOrder(orderSource));
+      profiler.done({ queued: true, queueId: queued.queueId, orderNumber: queued.orderNumber, cartItems: cart.length, paymentCode });
+      scheduleAsyncOrderQueue(0);
+
+      return new Response(JSON.stringify({
+        ok: true,
+        queued: true,
+        orderId: queued.queueId,
+        orderNumber: queued.orderNumber,
+        message: "Objednávka bola prijatá a spracuje sa na pozadí.",
+      }), {
+        status: 202,
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+      });
+    }
+
+    const result = await profiler.measure("woo-create-order-total", () => createWooOrderFromCheckout(orderSource));
+
+    profiler.done({ orderId: result.orderId, orderNumber: result.orderNumber, cartItems: cart.length, paymentCode });
 
     return new Response(JSON.stringify({
       ok: true,
@@ -104,6 +131,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       headers: { "Content-Type": "application/json; charset=utf-8" },
     });
   } catch (error: any) {
+    profiler.fail(error);
     console.error("Order create error:", error?.message || error, error?.details || "");
     return new Response(JSON.stringify({
       ok: false,

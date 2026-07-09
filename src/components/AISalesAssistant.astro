@@ -1,0 +1,42 @@
+---
+import '../styles/ai-sales-assistant.css';
+---
+
+<section class="tm-ai-assistant" data-ai-sales-assistant aria-live="polite">
+  <button class="tm-ai-assistant__launcher" type="button" data-ai-toggle aria-label="Otvoriť AI poradcu">
+    <span class="tm-ai-assistant__pulse"></span>
+    <span class="tm-ai-assistant__icon">AI</span>
+    <span class="tm-ai-assistant__label">Poradiť s tonerom</span>
+  </button>
+
+  <div class="tm-ai-assistant__panel" data-ai-panel hidden>
+    <header class="tm-ai-assistant__head">
+      <div>
+        <strong>AI poradca ToneryMaxim</strong>
+        <span>Nájde toner, poradí s tlačiarňou a pomôže s výberom.</span>
+      </div>
+      <button type="button" data-ai-close aria-label="Zavrieť AI poradcu">×</button>
+    </header>
+
+    <div class="tm-ai-assistant__quick" data-ai-quick>
+      <button type="button" data-ai-prompt="Mám HP LaserJet M234dw, nájdi mi správny toner">HP M234dw</button>
+      <button type="button" data-ai-prompt="Tlačiareň tlačí pásy, čo mám robiť?">Tlačí pásy</button>
+      <button type="button" data-ai-prompt="Aký je rozdiel medzi kompatibilným a originálnym tonerom?">Kompatibilný vs originál</button>
+    </div>
+
+    <div class="tm-ai-assistant__messages" data-ai-messages>
+      <article class="tm-ai-msg tm-ai-msg--bot">
+        <p>Napíšte model tlačiarne alebo toneru. Napríklad: <b>HP 135A</b>, <b>Canon MF655Cdw</b>, <b>Brother DCP-L2532DW</b>.</p>
+      </article>
+    </div>
+
+    <form class="tm-ai-assistant__form" data-ai-form>
+      <input data-ai-input type="text" autocomplete="off" placeholder="Napíšte model tlačiarne alebo otázku…" />
+      <button type="submit">Odoslať</button>
+    </form>
+  </div>
+</section>
+
+<script>
+  import "../scripts/ai-sales-assistant.js";
+</script>
