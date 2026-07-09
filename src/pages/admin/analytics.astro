@@ -1,0 +1,135 @@
+---
+import { readAnalyticsEvents, summarizeAnalytics } from '../../lib/tm-analytics';
+
+export const prerender = false;
+
+const adminKey = Astro.locals?.runtime?.env?.TM_ANALYTICS_ADMIN_KEY || process.env.TM_ANALYTICS_ADMIN_KEY || '';
+const suppliedKey = Astro.url.searchParams.get('key') || '';
+const locked = Boolean(adminKey && suppliedKey !== adminKey);
+const events = locked ? [] : await readAnalyticsEvents(15000);
+const summary = summarizeAnalytics(events);
+
+const fmt = new Intl.NumberFormat('sk-SK');
+const timeFmt = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'short', timeStyle: 'short' });
+
+function pct(value: number) {
+  return `${String(value).replace('.', ',')} %`;
+}
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>TM Analytics</title>
+    <style>
+      :root { color-scheme: light; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #081a3a; background: #f4f8ff; }
+      body { margin: 0; padding: 32px; }
+      main { max-width: 1280px; margin: 0 auto; }
+      h1 { margin: 0 0 6px; font-size: clamp(32px, 4vw, 56px); letter-spacing: -0.05em; }
+      p { color: #54627a; }
+      .top { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 28px; }
+      .badge { display: inline-flex; padding: 8px 12px; border: 1px solid #d8e3f4; border-radius: 999px; background: #fff; font-weight: 800; }
+      .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }
+      .card { background: #fff; border: 1px solid #dbe6f6; border-radius: 22px; padding: 18px; box-shadow: 0 18px 50px rgba(8, 26, 58, 0.08); }
+      .metric span { display: block; color: #6b7890; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+      .metric strong { display: block; margin-top: 8px; font-size: 34px; letter-spacing: -0.04em; }
+      .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { padding: 10px 8px; border-bottom: 1px solid #edf2fa; text-align: left; vertical-align: top; }
+      th { color: #6b7890; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+      td:last-child, th:last-child { text-align: right; }
+      .path { max-width: 520px; word-break: break-word; }
+      .locked { max-width: 680px; margin: 80px auto; text-align: center; }
+      @media (max-width: 900px) { body { padding: 18px; } .top, .two { display: block; } .grid { grid-template-columns: 1fr 1fr; } .card { margin-bottom: 14px; } }
+      @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      {locked ? (
+        <section class="card locked">
+          <h1>TM Analytics</h1>
+          <p>Prehľad je chránený. Otvor ho s platným parametrom <strong>?key=...</strong>.</p>
+        </section>
+      ) : (
+        <>
+          <div class="top">
+            <div>
+              <h1>TM Analytics</h1>
+              <p>Anonymný prehľad návštevnosti a procesov e-shopu za posledné uložené udalosti.</p>
+            </div>
+            <div class="badge">Udalosti: {fmt.format(summary.totalEvents)}</div>
+          </div>
+
+          <section class="grid">
+            <div class="card metric"><span>Dnes zobrazení</span><strong>{fmt.format(summary.todayPageviews)}</strong></div>
+            <div class="card metric"><span>7 dní zobrazení</span><strong>{fmt.format(summary.weekPageviews)}</strong></div>
+            <div class="card metric"><span>Odhad návštev</span><strong>{fmt.format(summary.estimatedSessions)}</strong></div>
+            <div class="card metric"><span>Konverzia checkout</span><strong>{pct(summary.conversionRate)}</strong></div>
+          </section>
+
+          <section class="grid">
+            <div class="card metric"><span>Pridania do košíka</span><strong>{fmt.format(summary.cartAdds)}</strong></div>
+            <div class="card metric"><span>Začaté pokladne</span><strong>{fmt.format(summary.checkoutStarts)}</strong></div>
+            <div class="card metric"><span>Odoslané objednávky</span><strong>{fmt.format(summary.orderSubmits)}</strong></div>
+            <div class="card metric"><span>Zariadenia</span><strong>{summary.devices[0]?.[0] || '—'}</strong></div>
+          </section>
+
+          <section class="two">
+            <div class="card">
+              <h2>Najnavštevovanejšie stránky</h2>
+              <table><tbody>{summary.topPages.map(([name, count]) => <tr><td class="path">{name}</td><td>{fmt.format(count)}</td></tr>)}</tbody></table>
+            </div>
+            <div class="card">
+              <h2>Zdroje návštev</h2>
+              <table><tbody>{summary.sources.map(([name, count]) => <tr><td>{name}</td><td>{fmt.format(count)}</td></tr>)}</tbody></table>
+            </div>
+          </section>
+
+          <section class="two">
+            <div class="card">
+              <h2>Vyhľadávania</h2>
+              <table><tbody>{summary.topSearches.map(([name, count]) => <tr><td class="path">{name}</td><td>{fmt.format(count)}</td></tr>)}</tbody></table>
+            </div>
+            <div class="card">
+              <h2>Produkty / kliky</h2>
+              <table><tbody>{summary.topProducts.map(([name, count]) => <tr><td class="path">{name}</td><td>{fmt.format(count)}</td></tr>)}</tbody></table>
+            </div>
+          </section>
+
+          <section class="two">
+            <div class="card">
+              <h2>Zariadenia</h2>
+              <table><tbody>{summary.devices.map(([name, count]) => <tr><td>{name}</td><td>{fmt.format(count)}</td></tr>)}</tbody></table>
+            </div>
+            <div class="card">
+              <h2>Krajiny / oblasti</h2>
+              <table><tbody>{summary.countries.map(([name, count]) => <tr><td>{name}</td><td>{fmt.format(count)}</td></tr>)}</tbody></table>
+            </div>
+          </section>
+
+          <section class="card" style="margin-top:16px">
+            <h2>Posledné udalosti</h2>
+            <table>
+              <thead><tr><th>Čas</th><th>Typ</th><th>Stránka</th><th>Zariadenie</th><th>Zdroj</th></tr></thead>
+              <tbody>
+                {summary.recent.map((event) => (
+                  <tr>
+                    <td>{timeFmt.format(new Date(event.ts))}</td>
+                    <td>{event.type}</td>
+                    <td class="path">{event.path}</td>
+                    <td>{event.device || '—'}</td>
+                    <td>{event.source || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </>
+      )}
+    </main>
+  </body>
+</html>

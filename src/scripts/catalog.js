@@ -606,7 +606,7 @@
         </div>
         <label>
           Mobil <span>voliteľné</span>
-          <input type="tel" name="phone" placeholder="+421 ...">
+          <input type="tel" name="phone" placeholder="+421917859206">
         </label>
         <button class="tm-availability-submit" type="submit">Odoslať otázku</button>
         <p class="tm-availability-note">Formulár otvorí pripravený e-mail pre zákaznícku podporu.</p>

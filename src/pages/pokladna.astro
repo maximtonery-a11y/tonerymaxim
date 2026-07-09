@@ -247,9 +247,7 @@ const title = "Pokladňa | ToneryMaxim.sk";
       <FloatingAdvisor />
     </div>
 
-    <script define:vars={{ checkoutCustomer }}>
-      window.__TM_CHECKOUT_CUSTOMER__ = checkoutCustomer || null;
-    </script>
+    <script is:inline set:html={`window.__TM_CHECKOUT_CUSTOMER__ = ${JSON.stringify(checkoutCustomer ?? null)};`}></script>
 
     <script>
       import "../scripts/checkout.js";

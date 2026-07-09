@@ -431,3 +431,10 @@
     width: min(270px, calc(100vw - 32px));
   }
 }
+
+.footer-company-data {
+  margin: 8px 0 12px;
+  color: rgba(15, 23, 42, 0.72);
+  font-size: 12px;
+  line-height: 1.55;
+}
