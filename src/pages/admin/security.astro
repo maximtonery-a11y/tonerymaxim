@@ -1,0 +1,63 @@
+---
+import { isLocalHost, securityStatus } from '../../lib/security';
+
+export const prerender = false;
+
+const adminKey = process.env.ADMIN_API_SECRET || process.env.TM_ANALYTICS_ADMIN_KEY || '';
+const suppliedKey = Astro.url.searchParams.get('key') || '';
+const local = isLocalHost(Astro.url.hostname);
+const locked = !local && Boolean(adminKey && suppliedKey !== adminKey);
+const status = securityStatus(Astro.url.hostname);
+const checks = [
+  { label: 'Bezpečnostné HTTP hlavičky', ok: true, note: 'Aktívne cez Astro middleware.' },
+  { label: 'Rate limit citlivých API', ok: true, note: `${status.rateLimitRules} pravidiel pre login, registráciu, checkout, formuláre a vyhľadávanie.` },
+  { label: 'Kontrola pôvodu POST požiadaviek', ok: true, note: 'Cudzie weby nemôžu odosielať bežné formuláre do API.' },
+  { label: 'Produkčné test endpointy', ok: status.local || status.testEndpointsBlocked, note: status.local ? 'Na localhoste sú dostupné na testovanie.' : 'V produkcii sú skryté.' },
+  { label: 'Samostatný AUTH_SECRET', ok: status.dedicatedAuthSecret, note: status.dedicatedAuthSecret ? 'Nastavený a dostatočne dlhý.' : 'Aplikácia funguje, ale odporúča sa aspoň 32 znakov.' },
+  { label: 'SYNC_SECRET', ok: status.syncProtected, note: status.syncProtected ? 'Synchronizácia je chránená.' : 'Na localhoste môže byť bez tokenu; v produkcii odporúčame aspoň 24 znakov.' },
+  { label: 'Admin prehľady', ok: status.local || status.adminProtected, note: status.local ? 'Na localhoste sú dostupné bez kľúča.' : (status.adminProtected ? 'Chránené kľúčom.' : 'Odporúča sa ADMIN_API_SECRET alebo TM_ANALYTICS_ADMIN_KEY.') },
+];
+const fmt = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'short', timeStyle: 'medium' });
+---
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>TM Security</title>
+  <style>
+    :root { font-family: Inter, system-ui, sans-serif; color:#081a3a; background:#f4f8ff; }
+    * { box-sizing:border-box; } body { margin:0; padding:28px; } main { max-width:1180px; margin:auto; }
+    h1 { margin:0 0 8px; font-size:clamp(36px,5vw,58px); letter-spacing:-.05em; } p { color:#5b6880; line-height:1.55; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:24px 0; }
+    .card { background:#fff; border:1px solid #dbe6f6; border-radius:22px; padding:18px; box-shadow:0 18px 50px rgba(8,26,58,.08); }
+    .check { display:flex; gap:12px; align-items:flex-start; } .dot { width:14px; height:14px; border-radius:50%; margin-top:5px; flex:0 0 auto; }
+    .ok { background:#16a464; } .warn { background:#f59e0b; } strong { display:block; font-size:17px; } .badge { display:inline-flex; padding:8px 12px; border-radius:999px; border:1px solid #dbe6f6; background:#fff; font-weight:900; }
+    table { width:100%; border-collapse:collapse; font-size:14px; } th,td { text-align:left; padding:10px 8px; border-bottom:1px solid #edf2fa; vertical-align:top; } th { font-size:11px; text-transform:uppercase; color:#6b7890; }
+    .locked { max-width:680px; margin:80px auto; text-align:center; } code { background:#eef4ff; padding:2px 6px; border-radius:6px; }
+    @media(max-width:760px){ body{padding:16px}.grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body><main>
+{locked ? (
+  <section class="card locked"><h1>TM Security</h1><p>Prehľad je chránený. Otvor ho s platným parametrom <strong>?key=...</strong>.</p></section>
+) : (
+  <>
+    <h1>TM Security</h1>
+    <p>Lokálna kontrola ochrany Astro projektu. Stránka nič nemení v GitHube ani v Coolify.</p>
+    <span class="badge">Host: {status.hostname}</span>
+    <section class="grid">
+      {checks.map((item) => <article class="card check"><span class:list={['dot', item.ok ? 'ok' : 'warn']}></span><div><strong>{item.label}</strong><p>{item.note}</p></div></article>)}
+    </section>
+    <section class="card">
+      <h2>Posledné blokované požiadavky</h2>
+      {status.recentEvents.length === 0 ? <p>Zatiaľ nebola zachytená žiadna blokovaná požiadavka.</p> : (
+        <table><thead><tr><th>Čas</th><th>Typ</th><th>Metóda</th><th>Cesta</th><th>IP hash</th><th>Detail</th></tr></thead><tbody>
+          {status.recentEvents.map((event) => <tr><td>{fmt.format(new Date(event.ts))}</td><td>{event.type}</td><td>{event.method}</td><td><code>{event.path}</code></td><td>{event.ipHash}</td><td>{event.detail || '—'}</td></tr>)}
+        </tbody></table>
+      )}
+    </section>
+  </>
+)}
+</main></body></html>

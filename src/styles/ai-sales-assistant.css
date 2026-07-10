@@ -303,3 +303,134 @@
 
   .tm-ai-msg { max-width: 96%; }
 }
+
+/* Mobil: na stránkach s existujúcim spodným sticky barom je Tomáš jeho súčasťou. */
+.tm-ai-mobile-nav { display: none; }
+
+@media (max-width: 760px), (hover: none) and (pointer: coarse) {
+  body.tm-ai-has-page-sticky {
+    padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.tm-ai-has-page-sticky .cart-mobile-sticky,
+  body.tm-ai-has-page-sticky .checkout-mobile-sticky,
+  body.tm-ai-has-page-sticky .product-mobile-sticky-cart,
+  body.tm-ai-has-page-sticky .tm-printer-bottom-search {
+    display: none !important;
+  }
+
+  body.tm-ai-has-page-sticky .tm-ai-assistant {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  body.tm-ai-has-page-sticky .tm-ai-assistant__launcher {
+    display: none !important;
+  }
+
+  body.tm-ai-has-page-sticky .tm-ai-mobile-nav {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    z-index: 10020;
+    min-height: 66px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow: hidden;
+    border: 1px solid rgba(8, 38, 83, .14);
+    border-radius: 24px;
+    background: rgba(255,255,255,.97);
+    box-shadow: 0 18px 48px rgba(7, 29, 58, .24);
+    backdrop-filter: blur(16px);
+    pointer-events: auto;
+  }
+
+  body.tm-ai-has-page-sticky .tm-ai-mobile-nav[hidden] {
+    display: grid !important;
+  }
+
+  .tm-ai-mobile-nav > a,
+  .tm-ai-mobile-nav > button {
+    position: relative;
+    min-width: 0;
+    min-height: 66px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: 0;
+    border-right: 1px solid #e4ebf4;
+    background: transparent;
+    color: #071d41;
+    text-decoration: none;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .tm-ai-mobile-nav > :last-child { border-right: 0; }
+  .tm-ai-mobile-nav > button { background: #071d41; color: #fff; }
+
+  .tm-ai-mobile-nav > a > span,
+  .tm-ai-mobile-nav > button > span {
+    min-height: 24px;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .tm-ai-mobile-nav small {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 900;
+  }
+
+  .tm-ai-mobile-nav__ai {
+    width: 28px;
+    height: 28px;
+    min-height: 28px !important;
+    border-radius: 999px;
+    background: #f8bd00;
+    color: #111827;
+    font-size: 11px !important;
+    font-weight: 950;
+  }
+
+  .tm-ai-mobile-nav__count {
+    position: absolute;
+    top: 7px;
+    left: calc(50% + 8px);
+    min-width: 18px;
+    height: 18px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #0b76e5;
+    color: #fff;
+    padding: 0 5px;
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  body.tm-ai-has-page-sticky .tm-ai-assistant__panel {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    height: min(72dvh, 680px);
+    max-height: calc(100dvh - 106px - env(safe-area-inset-bottom, 0px));
+    z-index: 10030;
+    pointer-events: auto;
+    border-radius: 22px;
+  }
+}

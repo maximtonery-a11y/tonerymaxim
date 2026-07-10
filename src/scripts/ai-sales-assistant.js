@@ -10,8 +10,14 @@
   const input = root.querySelector('[data-ai-input]');
   const messages = root.querySelector('[data-ai-messages]');
   const quick = root.querySelector('[data-ai-quick]');
+  const mobileToggle = root.querySelector('[data-ai-mobile-toggle]');
+  const mobileNav = root.querySelector('[data-ai-mobile-nav]');
 
   const state = { busy: false };
+
+  function isMobileNavMode() {
+    return document.body.classList.contains('tm-ai-has-page-sticky');
+  }
 
   function openPanel() {
     panel.hidden = false;
@@ -21,7 +27,29 @@
 
   function closePanel() {
     panel.hidden = true;
-    toggle.hidden = false;
+    toggle.hidden = isMobileNavMode();
+  }
+
+  function syncMobileStickyMode() {
+    const isMobile = window.matchMedia('(max-width: 760px), (hover: none) and (pointer: coarse)').matches;
+    const isHome = document.body.classList.contains('home-page');
+    const stickySelectors = [
+      '[data-cart-mobile-sticky]',
+      '[data-checkout-mobile-sticky]',
+      '[data-mobile-sticky-cart]',
+      '.tm-printer-bottom-search',
+    ];
+    const hasPageSticky = stickySelectors.some((selector) => document.querySelector(selector));
+    const enabled = isMobile && !isHome && hasPageSticky;
+
+    document.body.classList.toggle('tm-ai-has-page-sticky', enabled);
+    if (mobileNav) mobileNav.hidden = !enabled;
+
+    if (enabled) {
+      toggle.hidden = true;
+    } else if (panel.hidden) {
+      toggle.hidden = false;
+    }
   }
 
   function escapeHtml(value) {
@@ -174,7 +202,17 @@
   }
 
   toggle.addEventListener('click', openPanel);
+  mobileToggle?.addEventListener('click', () => {
+    if (panel.hidden) openPanel();
+    else closePanel();
+  });
   close.addEventListener('click', closePanel);
+
+  syncMobileStickyMode();
+  window.addEventListener('resize', syncMobileStickyMode, { passive: true });
+  window.addEventListener('orientationchange', syncMobileStickyMode, { passive: true });
+  const stickyObserver = new MutationObserver(syncMobileStickyMode);
+  stickyObserver.observe(document.body, { childList: true, subtree: true });
 
   quick.addEventListener('click', (event) => {
     const button = event.target.closest('[data-ai-prompt]');
