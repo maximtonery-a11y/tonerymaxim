@@ -6,28 +6,11 @@ import '../styles/ai-sales-assistant.css';
   <button class="tm-ai-assistant__launcher" type="button" data-ai-toggle aria-label="Otvoriť online poradcu Tomáš z ToneryMaxim">
     <span class="tm-ai-assistant__pulse"></span>
     <span class="tm-ai-assistant__icon">AI</span>
-    <span class="tm-ai-assistant__label">Tomáš z ToneryMaxim</span>
+    <span class="tm-ai-assistant__label tm-ai-assistant__label--desktop">Tomáš z ToneryMaxim</span>
+    <span class="tm-ai-assistant__label tm-ai-assistant__label--mobile">Tomáš</span>
   </button>
 
-  <nav class="tm-ai-mobile-nav" data-ai-mobile-nav aria-label="Mobilná navigácia" hidden>
-    <a href="/produkty" aria-label="Vyhľadať produkty">
-      <span aria-hidden="true">⌕</span>
-      <small>Vyhľadať</small>
-    </a>
-    <a href="/kosik" aria-label="Otvoriť košík">
-      <span aria-hidden="true">🛒</span>
-      <small>Košík</small>
-      <b class="tm-ai-mobile-nav__count" data-cart-count>0</b>
-    </a>
-    <a href="/ucet" aria-label="Otvoriť účet">
-      <span aria-hidden="true">👤</span>
-      <small>Účet</small>
-    </a>
-    <button type="button" data-ai-mobile-toggle aria-label="Otvoriť Tomáša, online poradcu">
-      <span class="tm-ai-mobile-nav__ai" aria-hidden="true">AI</span>
-      <small>Tomáš</small>
-    </button>
-  </nav>
+
 
   <div class="tm-ai-assistant__panel" data-ai-panel hidden>
     <header class="tm-ai-assistant__head">
