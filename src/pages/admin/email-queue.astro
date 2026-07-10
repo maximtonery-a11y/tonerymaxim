@@ -1,0 +1,72 @@
+---
+import { readEmailQueueState } from '../../lib/email-queue';
+
+export const prerender = false;
+
+const adminKey = Astro.locals?.runtime?.env?.TM_ANALYTICS_ADMIN_KEY || process.env.TM_ANALYTICS_ADMIN_KEY || process.env.ADMIN_API_SECRET || '';
+const suppliedKey = Astro.url.searchParams.get('key') || '';
+const locked = Boolean(adminKey && suppliedKey !== adminKey);
+const state = locked ? null : await readEmailQueueState();
+const fmt = new Intl.NumberFormat('sk-SK');
+const dt = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'short', timeStyle: 'medium' });
+const when = (value?: string) => value ? dt.format(new Date(value)) : '—';
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>TM Email Queue</title>
+    <style>
+      :root { font-family: Inter, system-ui, sans-serif; color:#081a3a; background:#f4f8ff; }
+      * { box-sizing:border-box; }
+      body { margin:0; padding:28px; }
+      main { max-width:1180px; margin:0 auto; }
+      h1 { margin:0 0 8px; font-size:clamp(34px,5vw,58px); letter-spacing:-.05em; }
+      p { color:#5d6b82; line-height:1.55; }
+      .grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:24px 0; }
+      .card { background:#fff; border:1px solid #dbe6f6; border-radius:22px; padding:20px; box-shadow:0 18px 50px rgba(8,26,58,.08); }
+      .metric span { display:block; color:#6b7890; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.05em; }
+      .metric strong { display:block; margin-top:8px; font-size:34px; }
+      .ok { color:#087b43; }
+      .bad { color:#b42318; }
+      dl { display:grid; grid-template-columns:220px 1fr; gap:12px 20px; margin:0; }
+      dt { color:#6b7890; font-weight:800; }
+      dd { margin:0; font-weight:800; overflow-wrap:anywhere; }
+      .locked { max-width:680px; margin:90px auto; text-align:center; }
+      @media (max-width:800px){ body{padding:18px}.grid{grid-template-columns:1fr 1fr}dl{grid-template-columns:1fr} }
+      @media (max-width:520px){ .grid{grid-template-columns:1fr} }
+    </style>
+  </head>
+  <body>
+    <main>
+      {locked || !state ? (
+        <section class="card locked"><h1>TM Email Queue</h1><p>Prehľad je chránený. Otvor stránku s parametrom <strong>?key=...</strong>.</p></section>
+      ) : (
+        <>
+          <h1>TM Email Queue</h1>
+          <p>Automaticky kontroluje zmeny stavov objednávok ToneryMaxim vo WooCommerce a odosiela e-maily cez Astro SMTP.</p>
+          <section class="grid">
+            <div class="card metric"><span>Odoslané</span><strong class="ok">{fmt.format(state.sentEmails)}</strong></div>
+            <div class="card metric"><span>Chyby</span><strong class={state.failedEmails ? 'bad' : 'ok'}>{fmt.format(state.failedEmails)}</strong></div>
+            <div class="card metric"><span>TM objednávky</span><strong>{fmt.format(state.tonerymaximOrders)}</strong></div>
+            <div class="card metric"><span>Interval</span><strong>{Math.round(state.intervalMs / 1000)} s</strong></div>
+          </section>
+          <section class="card">
+            <dl>
+              <dt>Spustené</dt><dd>{when(state.startedAt)}</dd>
+              <dt>Posledná kontrola</dt><dd>{when(state.lastScanAt)}</dd>
+              <dt>Posledný úspešný e-mail</dt><dd>{when(state.lastSuccessAt)}</dd>
+              <dt>Inicializované objednávky</dt><dd>{fmt.format(state.initializedOrders)}</dd>
+              <dt>Skontrolované záznamy</dt><dd>{fmt.format(state.scannedOrders)}</dd>
+              <dt>Fronta práve beží</dt><dd class={state.running ? 'ok' : ''}>{state.running ? 'Áno' : 'Nie'}</dd>
+              <dt>Posledná chyba</dt><dd class={state.lastError ? 'bad' : ''}>{state.lastError || 'Žiadna'}</dd>
+              <dt>Čas poslednej chyby</dt><dd>{when(state.lastErrorAt)}</dd>
+            </dl>
+          </section>
+        </>
+      )}
+    </main>
+  </body>
+</html>

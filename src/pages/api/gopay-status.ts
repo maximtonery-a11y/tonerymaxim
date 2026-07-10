@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { processPaidGoPayOrder } from "../../lib/gopay-order";
+import { processPaidGoPayOrder, readPendingGoPayOrder } from "../../lib/gopay-order";
 import { getGoPayPayment } from "../../lib/gopay-client";
 
 export const prerender = false;
@@ -58,6 +58,7 @@ export const GET: APIRoute = async ({ url }) => {
       });
     }
 
+    const pending = await readPendingGoPayOrder(paymentId);
     const payment = await getPayment(paymentId);
     const state = String(payment?.state || "UNKNOWN");
 
@@ -101,16 +102,32 @@ export const GET: APIRoute = async ({ url }) => {
         currency: payment.currency,
         gw_url: payment.gw_url,
       },
+      pending: pending ? {
+        orderNumber: pending.orderNumber,
+        total: pending.total,
+        amountCents: pending.amountCents,
+        paymentCode: pending.paymentCode,
+        paymentLabel: pending.paymentLabel,
+      } : null,
     }), {
       status: 200,
       headers: { "Content-Type": "application/json; charset=utf-8" },
     });
   } catch (error: any) {
     console.error("GoPay status error", error?.message || error);
+    const paymentId = url.searchParams.get("id") || "";
+    const pending = await readPendingGoPayOrder(paymentId).catch(() => null);
 
     return new Response(JSON.stringify({
       ok: false,
       error: error?.message || "Nepodarilo sa overiť platbu.",
+      pending: pending ? {
+        orderNumber: pending.orderNumber,
+        total: pending.total,
+        amountCents: pending.amountCents,
+        paymentCode: pending.paymentCode,
+        paymentLabel: pending.paymentLabel,
+      } : null,
     }), {
       status: 500,
       headers: { "Content-Type": "application/json; charset=utf-8" },

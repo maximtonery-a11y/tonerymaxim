@@ -98,7 +98,7 @@ export function normalizeCouponCode(value: unknown) {
 }
 
 export function thankYouCouponCode(orderIdOrNumber: number | string): string {
-  return `NAKUP7-${String(orderIdOrNumber || "").replace(/\D/g, "") || Date.now()}`;
+  return `MAXIM${String(orderIdOrNumber || "").replace(/\D/g, "") || Date.now()}`;
 }
 
 export function activeStoredCoupon(coupon: StoredCoupon) {
@@ -199,10 +199,32 @@ function couponDiscount(coupon: Pick<StoredCoupon, "percent" | "scope">, cart: N
   return money(discountBaseForCoupon(coupon, cart) * (Number(coupon.percent || 0) / 100));
 }
 
+function isGuestThankYouCouponCode(code: string) {
+  return /^MAXIM\d{4,}$/.test(normalizeCouponCode(code));
+}
+
+function guestThankYouCouponResult(code: string, cart: NormalizedCartItem[]): CouponResult {
+  const coupon = { percent: 7, scope: "compatible" as CouponScope };
+  const discount = couponDiscount(coupon, cart);
+  if (discount <= 0) {
+    return { ok: false, code, reason: "Kupón platí iba na kompatibilné produkty." };
+  }
+  return {
+    ok: true,
+    code: normalizeCouponCode(code),
+    type: "thankyou7",
+    label: "Zľava 7 % na kompatibilné produkty",
+    percent: 7,
+    scope: "compatible",
+    discount,
+  };
+}
+
 export async function validateCheckoutCoupon(customerId: number | undefined, rawCode: unknown, cart: NormalizedCartItem[]): Promise<CouponResult> {
   const code = normalizeCouponCode(rawCode);
   if (!code) return { ok: false, code: "", reason: "Zadajte kód kupónu." };
-  if (!customerId) return { ok: false, code, reason: "Pre použitie kupónu sa prihláste." };
+  if (isGuestThankYouCouponCode(code)) return guestThankYouCouponResult(code, cart);
+  if (!customerId) return { ok: false, code, reason: "Pre použitie kupónu sa prihláste alebo použite kupón z poslednej objednávky." };
 
   const customer = await getWooCustomerById(customerId);
   if (!customer) return { ok: false, code, reason: "Zákaznícky účet sa nenašiel." };

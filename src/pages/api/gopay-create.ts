@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { readCustomerSession } from "../../lib/auth-session";
 import { savePendingGoPayOrder } from "../../lib/gopay-order";
+import { enqueueAsyncWooOrder, scheduleAsyncOrderQueue } from "../../lib/async-order-queue";
 import { getCustomerLoyalty } from "../../lib/loyalty";
 import { validateCheckoutCoupon } from "../../lib/coupons";
 import { normalizeSecureCheckoutCart, discountRate, discountedLine } from "../../lib/secure-checkout-cart";
@@ -240,9 +241,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    await profiler.measure("save-pending-gopay-order", () => savePendingGoPayOrder({
+    const pendingSource = {
       orderNumber,
       paymentId: String(paymentData.id),
+      paymentState: "CREATED",
       amountCents: totalCents,
       currency: "EUR",
       cart,
@@ -262,7 +264,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       total: Math.round((totalCents / 100) * 100) / 100,
       createdAt: new Date().toISOString(),
       customerId: session?.id || undefined,
-    }));
+    };
+
+    await profiler.measure("save-pending-gopay-order", () => savePendingGoPayOrder(pendingSource));
+
+    // GoPay objednávku zapisujeme do Woo hneď po vytvorení platby aj vtedy,
+    // keď zákazník platbu následne zruší alebo sa ju nepodarí dokončiť.
+    // Samotné vytvorenie Woo objednávky beží na pozadí, aby sa nezdržiavalo presmerovanie na GoPay.
+    await profiler.measure("async-gopay-order-enqueue", () => enqueueAsyncWooOrder(pendingSource));
+    scheduleAsyncOrderQueue(Math.max(0, Number(process.env.TM_ASYNC_WOO_INITIAL_DELAY_MS || 500)));
 
     profiler.done({ paymentId: paymentData.id, orderNumber, cartItems: cart.length, paymentCode });
 

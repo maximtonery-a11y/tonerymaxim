@@ -696,10 +696,18 @@ function formatMoney(value) {
 
         <div class="cart-item-price">${formatMoney(item.price)}</div>
 
-        <div class="qty-control">
-          <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" aria-label="Znížiť množstvo">−</button>
-          <input type="number" min="1" max="99" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" aria-label="Množstvo" />
-          <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" aria-label="Zvýšiť množstvo">+</button>
+        <div class="cart-item-quantity">
+          <div class="qty-control">
+            <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" aria-label="Znížiť množstvo">−</button>
+            <input type="number" min="1" max="99" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" aria-label="Množstvo" />
+            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" aria-label="Zvýšiť množstvo">+</button>
+          </div>
+          ${isCompatibleDiscountItem(item) ? `
+            <p class="cart-quantity-discount-info">
+              <strong>Množstevná zľava:</strong> od 2 ks 10 %, od 4 ks 25 %.
+              <span>Zľava sa uplatní automaticky v košíku aj pokladni.</span>
+            </p>
+          ` : ``}
         </div>
 
         <div class="cart-item-total">

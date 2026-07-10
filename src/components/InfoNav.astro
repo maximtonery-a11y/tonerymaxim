@@ -5,6 +5,8 @@ const items = [
   { href: "/kontakt", label: "Kontakt", desc: "Napíšte nám alebo nájdite firemné údaje", icon: "✉" },
   { href: "/doprava-a-platba", label: "Doprava a platba", desc: "Spôsoby doručenia a platby", icon: "▣" },
   { href: "/reklamacie", label: "Reklamácie", desc: "Postup pri reklamácii", icon: "↺" },
+  { href: "/reklamacia-online", label: "Reklamácia online", desc: "Vyplniť formulár na webe", icon: "✎", group: "online" },
+  { href: "/odstupenie-od-zmluvy", label: "Odstúpenie online", desc: "Formulár a PDF na stiahnutie", icon: "↩", group: "online" },
   { href: "/obchodne-podmienky", label: "Obchodné podmienky", desc: "Pravidlá nákupu", icon: "§" },
   { href: "/ochrana-osobnych-udajov", label: "Ochrana osobných údajov", desc: "GDPR a vaše práva", icon: "◌" },
   { href: "/cookies", label: "Cookies", desc: "Používanie cookies", icon: "⌕" },
@@ -13,10 +15,10 @@ const items = [
 <aside class="info-sidebar" aria-label="Informačné stránky">
   <div class="info-sidebar-card">
     <span class="info-sidebar-label">Centrum pomoci</span>
-    <strong>Informačné stránky</strong>
+    <strong>Zákaznícka podpora</strong>
     <nav>
       {items.map((item) => (
-        <a href={item.href} class={active === item.href ? "is-active" : ""}>
+        <a href={item.href} class={`${active === item.href ? "is-active" : ""} ${item.group === "online" ? "is-online-form" : ""}`.trim()}>
           <i aria-hidden="true">{item.icon}</i>
           <span>{item.label}</span>
           <small>{item.desc}</small>

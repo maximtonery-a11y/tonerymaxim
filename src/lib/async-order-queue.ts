@@ -10,6 +10,7 @@ const DONE_DIR = join(QUEUE_ROOT, "done");
 const FAILED_DIR = join(QUEUE_ROOT, "failed");
 const MAX_ATTEMPTS = 5;
 const RETRY_DELAY_MS = 30_000;
+const INITIAL_QUEUE_DELAY_MS = Math.max(0, Number(process.env.TM_ASYNC_WOO_INITIAL_DELAY_MS || 500));
 const MAX_DONE_FILES = 500;
 
 type AsyncOrderJob = {
@@ -94,7 +95,7 @@ async function processOneJob(file: string) {
       paymentCode: job.source.paymentCode,
     });
 
-    const result = await profiler.measure("woo-create-order-total", () => createWooOrderFromCheckout(job.source));
+    const result = await profiler.measure("woo-create-order-total", () => createWooOrderFromCheckout(job.source, { waitForEmail: true }));
     profiler.done({ asyncOrderId: job.id, orderId: result.orderId, orderNumber: result.orderNumber });
 
     job.status = "done";
@@ -133,7 +134,7 @@ export async function enqueueAsyncWooOrder(source: CheckoutOrderSource) {
     updatedAt: new Date().toISOString(),
   };
   await writeJob(PENDING_DIR, job);
-  scheduleAsyncOrderQueue(0);
+  scheduleAsyncOrderQueue(INITIAL_QUEUE_DELAY_MS);
   return { queued: true, queueId: id, orderNumber: source.orderNumber };
 }
 

@@ -1,0 +1,88 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Odstúpenie od zmluvy | ToneryMaxim.sk</title>
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+      <main>
+        <InfoPageShell active="/obchodne-podmienky" eyebrow="Vrátenie tovaru" title="Odstúpenie od zmluvy" intro="Spotrebiteľ môže oznámiť odstúpenie od zmluvy online alebo stiahnuť PDF formulár.">
+          <section class="care-grid">
+            <article class="legal-panel care-panel">
+              <header class="legal-panel-head">
+                <h2>Vyplniť odstúpenie online</h2>
+                <p>Formulár je určený pre spotrebiteľov pri odstúpení od zmluvy uzavretej na diaľku.</p>
+              </header>
+              <form class="care-form" id="tm-withdrawal-form" data-care-form="withdrawal">
+                <div class="care-form-grid">
+                  <label>Číslo objednávky *<input name="orderNumber" required autocomplete="off" placeholder="napr. 51444" /></label>
+                  <label>E-mail *<input type="email" name="email" required autocomplete="email" placeholder="email@example.sk" /></label>
+                  <label>Meno a priezvisko *<input name="name" required autocomplete="name" /></label>
+                  <label>Telefón<input name="phone" autocomplete="tel" placeholder="+421 917 859 206" /></label>
+                  <label>IBAN na vrátenie peňazí *<input name="iban" required placeholder="SK.." autocomplete="off" /></label>
+                  <label>Dátum prevzatia tovaru<input type="date" name="receivedAt" /></label>
+                </div>
+                <label>Adresa kupujúceho *<textarea name="address" rows="3" required placeholder="Ulica a číslo, PSČ, mesto"></textarea></label>
+                <label>Produkty, ktorých sa odstúpenie týka *<textarea name="products" rows="5" required placeholder="Názov produktu, množstvo, prípadne SKU"></textarea></label>
+                <label>Dôvod odstúpenia - nepovinné<textarea name="message" rows="4" placeholder="Dôvod nemusíte uvádzať, pomôže nám však zlepšiť služby."></textarea></label>
+                <label class="care-check"><input type="checkbox" required /> Potvrdzujem, že žiadam o odstúpenie od zmluvy pri uvedenej objednávke.</label>
+                <div class="care-actions">
+                  <button type="submit" class="care-primary">Odoslať odstúpenie</button>
+                  <a href="/odstupenie-od-zmluvy.pdf" class="care-secondary" download>Stiahnuť PDF formulár</a>
+                </div>
+                <p class="care-result" aria-live="polite"></p>
+              </form>
+            </article>
+            <aside class="care-side">
+              <article class="notice-card"><span class="info-icon">14</span><div><b>Lehota pre spotrebiteľa</b><small>Štandardne 14 dní od prevzatia tovaru, ak zákon neustanovuje výnimku.</small></div></article>
+              <article class="notice-card"><span class="info-icon">!</span><div><b>Tovar neposielajte na dobierku</b><small>Dobierkové zásielky nebudú prevzaté.</small></div></article>
+              <article class="notice-card"><span class="info-icon">@</span><div><b>Kontakt</b><small>info@tonerymaxim.sk · +421917859206 · Po-Pi 9:00-15:00</small></div></article>
+            </aside>
+          </section>
+        </InfoPageShell>
+      </main>
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+    <script>
+      const form = document.querySelector('[data-care-form="withdrawal"]');
+      const result = form?.querySelector('.care-result');
+      form?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const button = form.querySelector('button[type="submit"]');
+        button.disabled = true;
+        result.textContent = 'Odosielam odstúpenie...';
+        result.className = 'care-result';
+        try {
+          const response = await fetch('/api/customer-care/odstupenie', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.fromEntries(new FormData(form).entries())),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data.ok) throw new Error(data.error || 'Odstúpenie sa nepodarilo odoslať.');
+          result.textContent = `Odstúpenie bolo prijaté. Číslo: ${data.caseNumber}`;
+          result.classList.add('is-ok');
+          form.reset();
+        } catch (error) {
+          result.textContent = error.message || 'Odstúpenie sa nepodarilo odoslať.';
+          result.classList.add('is-error');
+        } finally {
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,95 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online reklamácia | ToneryMaxim.sk</title>
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+      <main>
+        <InfoPageShell active="/reklamacia-online" eyebrow="Reklamácie" title="Online reklamácia" intro="Reklamáciu môžete odoslať aj bez prihlásenia. Registrovaní zákazníci môžu použiť rýchle reklamácie priamo v účte.">
+          <section class="care-grid">
+            <article class="legal-panel care-panel">
+              <header class="legal-panel-head">
+                <h2>Vyplniť reklamáciu online</h2>
+                <p>Po odoslaní vám pošleme potvrdenie na e-mail. Fotografie a doklady môžete doposlať odpoveďou na potvrdenie reklamácie.</p>
+              </header>
+              <form class="care-form" id="tm-claim-form" data-care-form="claim">
+                <div class="care-form-grid">
+                  <label>Číslo objednávky *<input name="orderNumber" required autocomplete="off" placeholder="napr. 51444" /></label>
+                  <label>E-mail *<input type="email" name="email" required autocomplete="email" placeholder="email@example.sk" /></label>
+                  <label>Meno a priezvisko *<input name="name" required autocomplete="name" /></label>
+                  <label>Telefón<input name="phone" autocomplete="tel" placeholder="+421 917 859 206" /></label>
+                  <label>Produkt / SKU *<input name="product" required placeholder="Názov produktu alebo SKU" /></label>
+                  <label>Dôvod reklamácie *
+                    <select name="reason" required>
+                      <option value="Produkt netlačí správne">Produkt netlačí správne</option>
+                      <option value="Tovar prišiel poškodený">Tovar prišiel poškodený</option>
+                      <option value="Nesprávny produkt">Nesprávny produkt</option>
+                      <option value="Chýbajúca položka">Chýbajúca položka</option>
+                      <option value="Iný dôvod">Iný dôvod</option>
+                    </select>
+                  </label>
+                </div>
+                <label>Popis problému *<textarea name="message" rows="6" required placeholder="Popíšte problém, kedy sa prejavil a ako sa produkt správa."></textarea></label>
+                <label>IBAN pre prípadné vrátenie peňazí<input name="iban" placeholder="SK.." autocomplete="off" /></label>
+                <label class="care-check"><input type="checkbox" required /> Potvrdzujem, že uvedené údaje sú pravdivé a súhlasím so spracovaním údajov na vybavenie reklamácie.</label>
+                <div class="care-actions">
+                  <button type="submit" class="care-primary">Odoslať reklamáciu</button>
+                  <a href="/reklamacny-formular.pdf" class="care-secondary" download>Stiahnuť PDF formulár</a>
+                </div>
+                <p class="care-result" aria-live="polite"></p>
+              </form>
+            </article>
+            <aside class="care-side">
+              <article class="notice-card"><span class="info-icon">1</span><div><b>Najskôr nám reklamáciu oznámte</b><small>Online formulár vytvorí záznam a odošle potvrdenie.</small></div></article>
+              <article class="notice-card"><span class="info-icon">2</span><div><b>Tovar neposielajte na dobierku</b><small>Dobierkové zásielky nebudú prevzaté.</small></div></article>
+              <article class="notice-card"><span class="info-icon">3</span><div><b>Kontakt</b><small>info@tonerymaxim.sk · +421917859206 · Po-Pi 9:00-15:00</small></div></article>
+            </aside>
+          </section>
+        </InfoPageShell>
+      </main>
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+    <script>
+      const form = document.querySelector('[data-care-form="claim"]');
+      const result = form?.querySelector('.care-result');
+      form?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const button = form.querySelector('button[type="submit"]');
+        button.disabled = true;
+        result.textContent = 'Odosielam reklamáciu...';
+        result.className = 'care-result';
+        try {
+          const response = await fetch('/api/customer-care/reklamacia', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.fromEntries(new FormData(form).entries())),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data.ok) throw new Error(data.error || 'Reklamáciu sa nepodarilo odoslať.');
+          result.textContent = `Reklamácia bola prijatá. Číslo: ${data.caseNumber}`;
+          result.classList.add('is-ok');
+          form.reset();
+        } catch (error) {
+          result.textContent = error.message || 'Reklamáciu sa nepodarilo odoslať.';
+          result.classList.add('is-error');
+        } finally {
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

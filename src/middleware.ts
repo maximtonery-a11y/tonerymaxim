@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { ensureEmailQueueStarted } from './lib/email-queue';
 
 const NOINDEX_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
 const ANALYTICS_TAG = '<script src="/tm-analytics.js" defer></script>';
@@ -12,6 +13,7 @@ function shouldInjectAnalytics(pathname: string): boolean {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  ensureEmailQueueStarted();
   const { url } = context;
   const noIndex = isNoIndexHost(url.hostname);
 

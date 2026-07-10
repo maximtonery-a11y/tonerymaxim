@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import nodemailer from "nodemailer";
 
 function env(name: string): string {
@@ -48,6 +50,7 @@ export async function sendMail(input: {
   text: string;
   html?: string;
   replyTo?: string;
+  attachments?: Array<{ filename: string; path: string; contentType?: string }>;
 }) {
   const transporter = getTransporter();
   return transporter.sendMail({
@@ -57,6 +60,7 @@ export async function sendMail(input: {
     text: input.text,
     html: input.html,
     replyTo: input.replyTo || env("MAIL_REPLY_TO") || env("MAIL_FROM") || env("SMTP_USER"),
+    attachments: input.attachments,
   });
 }
 
@@ -157,6 +161,37 @@ function formatMoney(value: unknown): string {
   return new Intl.NumberFormat("sk-SK", { style: "currency", currency: "EUR" }).format(toNumber(value));
 }
 
+function siteUrl(): string {
+  return (env("PUBLIC_SITE_URL") || env("SITE_URL") || "https://tonerymaxim.info").replace(/\/$/, "");
+}
+
+function legalAttachments() {
+  const files = [
+    ["obchodne-podmienky.pdf", "obchodne-podmienky.pdf"],
+    ["reklamacny-formular.pdf", "reklamacny-formular.pdf"],
+    ["odstupenie-od-zmluvy.pdf", "odstupenie-od-zmluvy.pdf"],
+  ] as const;
+  return files
+    .map(([filename, publicFile]) => ({ filename, path: join(process.cwd(), "public", publicFile), contentType: "application/pdf" }))
+    .filter((attachment) => existsSync(attachment.path));
+}
+
+function addressBlock(data: any, contact: any) {
+  const lines = [
+    [data?.firstName, data?.lastName].filter(Boolean).join(" ") || contact?.name || "",
+    data?.company || "",
+    data?.address || data?.street || "",
+    [data?.zip || data?.postcode, data?.city].filter(Boolean).join(" "),
+    data?.email || contact?.email || "",
+    data?.phone || contact?.phone || "",
+  ].filter(Boolean);
+  return lines.join("\n");
+}
+
+function addressBlockHtml(data: any, contact: any) {
+  return addressBlock(data, contact).split("\n").map((line) => escapeHtml(line)).join("<br>");
+}
+
 export async function sendOrderConfirmationEmail(input: {
   to: string;
   orderNumber: string;
@@ -167,6 +202,7 @@ export async function sendOrderConfirmationEmail(input: {
   const source = input.source || {};
   const contact = source.contact || {};
   const billing = source.billing || {};
+  const delivery = source.delivery || {};
   const firstName = String(billing.firstName || contact.name || "").trim().split(/\s+/)[0] || "zákazník";
   const items = Array.isArray(source.cart) ? source.cart : [];
 
@@ -194,7 +230,7 @@ export async function sendOrderConfirmationEmail(input: {
 
   const text = `Dobrý deň, ${firstName},\n\nďakujeme za objednávku č. ${input.orderNumber}.\n\nObjednávku sme prijali a spracujeme ju čo najskôr.\n\nProdukty:\n${rowsText}\n\nDoprava: ${input.shippingTitle}\nSpôsob platby: ${input.paymentTitle}\nCena spolu s DPH: ${formatMoney(totalGross)}
 Základ bez DPH: ${formatMoney(totalNet)}
-DPH 23 %: ${formatMoney(totalVat)}\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk`;
+DPH 23 %: ${formatMoney(totalVat)}\n\nFakturačná adresa:\n${addressBlock(billing, contact)}\n\nDodacia adresa:\n${addressBlock(delivery?.differentAddress ? delivery : billing, contact)}\n\nPrávne informácie:\n${siteUrl()}/obchodne-podmienky\n${siteUrl()}/reklamacie\n${siteUrl()}/reklamacia-online\n${siteUrl()}/odstupenie-od-zmluvy\n${siteUrl()}/ochrana-osobnych-udajov\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk\n+421917859206`;
 
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.55;color:#061735;max-width:680px;margin:0 auto;padding:24px">
@@ -221,8 +257,19 @@ DPH 23 %: ${formatMoney(totalVat)}\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk`;
         <tr><td style="padding:6px 0;color:#64748b">DPH 23 %:</td><td style="padding:6px 0;text-align:right">${formatMoney(totalVat)}</td></tr>
         <tr><td style="padding:10px 0;font-weight:800">Cena spolu s DPH:</td><td style="padding:10px 0;text-align:right;font-weight:800;font-size:18px">${formatMoney(totalGross)}</td></tr>
       </table>
+      <table style="width:100%;border-collapse:collapse;margin:18px 0">
+        <tr>
+          <td style="width:50%;vertical-align:top;padding:14px;border:1px solid #e6edf5;border-radius:12px"><strong>Fakturačná adresa</strong><br>${addressBlockHtml(billing, contact) || "-"}</td>
+          <td style="width:50%;vertical-align:top;padding:14px;border:1px solid #e6edf5;border-radius:12px"><strong>Dodacia adresa</strong><br>${addressBlockHtml(delivery?.differentAddress ? delivery : billing, contact) || "-"}</td>
+        </tr>
+      </table>
+      <div style="background:#f5faff;border:1px solid #dbe8f6;border-radius:16px;padding:16px;margin:18px 0">
+        <strong>Právne dokumenty a zákaznícka pomoc</strong>
+        <p style="margin:8px 0 0;color:#64748b">V prílohe e-mailu nájdete obchodné podmienky, reklamačný formulár a formulár na odstúpenie od zmluvy.</p>
+        <p style="margin:10px 0 0"><a href="${siteUrl()}/obchodne-podmienky">Obchodné podmienky</a> · <a href="${siteUrl()}/reklamacie">Reklamačné podmienky</a> · <a href="${siteUrl()}/reklamacia-online">Reklamácia online</a> · <a href="${siteUrl()}/odstupenie-od-zmluvy">Odstúpenie online</a> · <a href="${siteUrl()}/ochrana-osobnych-udajov">Ochrana osobných údajov</a></p>
+      </div>
       <p style="color:#64748b">O odoslaní zásielky vás budeme informovať e-mailom.</p>
-      <p>ToneryMAXIM.sk<br><a href="mailto:info@tonerymaxim.sk">info@tonerymaxim.sk</a></p>
+      <p>ToneryMAXIM.sk<br><a href="mailto:info@tonerymaxim.sk">info@tonerymaxim.sk</a><br><a href="tel:+421917859206">+421917859206</a></p>
     </div>`;
 
   return sendMail({
@@ -230,6 +277,7 @@ DPH 23 %: ${formatMoney(totalVat)}\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk`;
     subject: `Objednávka č. ${input.orderNumber} bola prijatá | ToneryMAXIM.sk`,
     text,
     html,
+    attachments: legalAttachments(),
   });
 }
 

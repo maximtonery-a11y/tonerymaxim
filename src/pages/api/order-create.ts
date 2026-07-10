@@ -99,12 +99,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       customerId: session?.id || undefined,
     };
 
-    const asyncEnabled = process.env.TM_ASYNC_WOO_ORDERS !== "0";
+    const asyncEnabled = process.env.TM_FORCE_SYNC_WOO_ORDERS !== "1";
 
     if (asyncEnabled) {
       const queued = await profiler.measure("async-order-enqueue", () => enqueueAsyncWooOrder(orderSource));
       profiler.done({ queued: true, queueId: queued.queueId, orderNumber: queued.orderNumber, cartItems: cart.length, paymentCode });
-      scheduleAsyncOrderQueue(0);
+      scheduleAsyncOrderQueue(Math.max(0, Number(process.env.TM_ASYNC_WOO_INITIAL_DELAY_MS || 500)));
 
       return new Response(JSON.stringify({
         ok: true,

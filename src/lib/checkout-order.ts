@@ -359,13 +359,22 @@ function wooPaymentMethod(source: CheckoutOrderSource) {
       return { method: "invoice_org", title: "Prevodný príkaz pre organizácie a firmy", status: "processing", paid: false };
     case "gopay":
     case "applepay":
-    case "googlepay":
+    case "googlepay": {
+      const state = String(source.paymentState || "").toUpperCase();
+      const paid = state === "PAID" || state === "AUTHORIZED";
+      return {
+        method: "gopay",
+        title: source.paymentLabel || "GoPay",
+        status: paid ? "processing" : "pending",
+        paid,
+      };
+    }
     default:
-      return { method: "gopay", title: source.paymentLabel || "GoPay", status: "processing", paid: true };
+      return { method: "gopay", title: source.paymentLabel || "GoPay", status: "pending", paid: false };
   }
 }
 
-export async function createWooOrderFromCheckout(source: CheckoutOrderSource, options: { gopayPayment?: GoPayPayment; customerNote?: string } = {}) {
+export async function createWooOrderFromCheckout(source: CheckoutOrderSource, options: { gopayPayment?: GoPayPayment; customerNote?: string; waitForEmail?: boolean } = {}) {
   const profiler = new CheckoutProfiler("woo-order", { orderNumber: source.orderNumber, paymentCode: source.paymentCode });
   const billing = addressFromOrder(source, "billing");
   const shipping = addressFromOrder(source, "shipping");
@@ -374,9 +383,12 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
   const payment = wooPaymentMethod(source);
   const paymentId = String(options.gopayPayment?.id || source.paymentId || "");
 
-  const customerEmail = String(source.contact?.email || source.billing?.email || "").trim();
-  const billingForCreate = { ...billing };
-  delete (billingForCreate as Record<string, any>).email;
+  const customerEmail = String(source.contact?.email || source.billing?.email || billing.email || "").trim();
+  const customerId = Number(source.customerId || 0);
+  const billingForCreate = {
+    ...billing,
+    email: customerEmail || billing.email || "",
+  };
 
   const lineItemsPayload = await profiler.measure("woo-line-items-resolve", () => lineItems(source));
 
@@ -390,6 +402,7 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
       payment_method: payment.method,
       payment_method_title: payment.title,
       transaction_id: paymentId || undefined,
+      customer_id: customerId > 0 ? customerId : undefined,
       customer_note: options.customerNote || "Objednávka vytvorená z pokladne ToneryMaxim.sk.",
       billing: billingForCreate,
       shipping,
@@ -399,16 +412,6 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
       meta_data: orderMeta({ ...source, paymentState: String(options.gopayPayment?.state || source.paymentState || "") }, paymentId, isCompany, payment),
     },
   }));
-
-  if (customerEmail && order?.id) {
-    await profiler.measure("woo-update-billing-email", () => wooRequest<any>(`/orders/${order.id}`, {
-      method: "PUT",
-      body: {
-        customer_id: Number(source.customerId || 0) > 0 ? Number(source.customerId) : undefined,
-        billing: { ...billing, email: customerEmail },
-      },
-    })).catch((error) => console.error("Woo billing email update error:", error?.message || error));
-  }
 
   if (Number(source.customerId || 0) > 0 && source.coupon?.ok) {
     await profiler.measure("coupon-mark-used", () => markCouponUsed(Number(source.customerId), source.coupon, order.id)).catch((error) => console.error("Coupon used meta error:", error?.message || error));
@@ -437,14 +440,20 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
   }
 
   if (customerEmail) {
-    profiler.mark("email-dispatch-started");
-    sendOrderConfirmationEmail({
+    const emailPromise = sendOrderConfirmationEmail({
       to: customerEmail,
       orderNumber: String(order.number || order.id || ""),
       source,
       paymentTitle: payment.title,
       shippingTitle: shippingLine(source).method_title,
-    }).catch((error) => console.error("ToneryMaxim order email error:", error?.message || error));
+    });
+
+    if (options.waitForEmail) {
+      await profiler.measure("order-email-send", () => emailPromise).catch((error) => console.error("ToneryMaxim order email error:", error?.message || error));
+    } else {
+      profiler.mark("email-dispatch-started");
+      emailPromise.catch((error) => console.error("ToneryMaxim order email error:", error?.message || error));
+    }
   }
 
   profiler.done({ orderId: order?.id, orderNumber: order?.number || order?.id });
@@ -474,6 +483,32 @@ export async function readPendingGoPayOrder(paymentId: string): Promise<Checkout
   }
 }
 
+async function markWooGoPayOrderPaid(source: CheckoutOrderSource, payment: GoPayPayment) {
+  const orderId = Number(source.wooOrderId || 0);
+  if (!orderId) return null;
+
+  const paymentId = String(payment?.id || source.paymentId || "");
+  const updated = await wooRequest<any>(`/orders/${orderId}`, {
+    method: "PUT",
+    body: {
+      status: "processing",
+      set_paid: true,
+      transaction_id: paymentId || undefined,
+      meta_data: [
+        { key: "gopay_payment_id", value: paymentId },
+        { key: "gopay_state", value: String(payment?.state || "PAID") },
+        { key: "tm_payment_paid_at", value: new Date().toISOString() },
+      ],
+    },
+  });
+
+  return {
+    created: false,
+    orderId: Number(updated?.id || orderId),
+    orderNumber: String(updated?.number || source.wooOrderNumber || orderId),
+  };
+}
+
 const GOPAY_PROCESS_LOCKS = new Map<string, Promise<{ created: boolean; orderId: number; orderNumber: string }>>();
 
 async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
@@ -484,7 +519,16 @@ async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
   if (!source) throw new Error(`Nenájdené uložené dáta objednávky pre GoPay platbu ${paymentId}.`);
 
   if (source.wooOrderId) {
-    return {
+    const paidUpdate = await markWooGoPayOrderPaid(source, payment);
+    const updated: CheckoutOrderSource = {
+      ...source,
+      paymentState: String(payment.state || "PAID"),
+      wooOrderId: paidUpdate?.orderId || source.wooOrderId,
+      wooOrderNumber: paidUpdate?.orderNumber || source.wooOrderNumber || String(source.wooOrderId),
+      processedAt: new Date().toISOString(),
+    };
+    await savePendingGoPayOrder(updated);
+    return paidUpdate || {
       created: false,
       orderId: source.wooOrderId,
       orderNumber: source.wooOrderNumber || String(source.wooOrderId),

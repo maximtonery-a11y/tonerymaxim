@@ -21,6 +21,26 @@ const steps = [
 <!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Reklamácie | ToneryMaxim.sk</title></head><body><div class="page"><Header /><main>
 <InfoPageShell active="/reklamacie" eyebrow="Reklamácie" title="Reklamačné podmienky" intro="Reklamovať je možné len tovar zakúpený u predávajúceho, ktorý je vlastníctvom kupujúceho.">
   <section class="notice-row">{notices.map(([icon,title,text]) => <article class="notice-card"><span class="info-icon">{icon}</span><div><b>{title}</b><small>{text}</small></div></article>)}</section>
+  <section class="care-support-panel" aria-label="Online formuláre zákazníckej podpory">
+    <h2>Online formuláre zákazníckej podpory</h2>
+    <p>Reklamáciu aj odstúpenie od zmluvy môžete vybaviť priamo na webe alebo si stiahnuť PDF formulár.</p>
+    <div class="care-support-grid">
+      <a class="care-support-card" href="/reklamacia-online">
+        <span>↺</span>
+        <strong>Vyplniť reklamáciu online</strong>
+        <small>Pre neregistrovaných zákazníkov aj rýchle podanie reklamácie mimo účtu.</small>
+      </a>
+      <a class="care-support-card" href="/odstupenie-od-zmluvy">
+        <span>↩</span>
+        <strong>Odstúpenie od zmluvy online</strong>
+        <small>Online formulár a PDF formulár na stiahnutie pre vrátenie tovaru.</small>
+      </a>
+    </div>
+  </section>
+  <section class="care-downloads">
+    <a href="/reklamacia-online" class="care-primary">Vyplniť reklamáciu online</a>
+    <a href="/reklamacny-formular.pdf" class="care-secondary" download>Stiahnuť reklamačný formulár PDF</a>
+  </section>
   <h2 class="section-title">Ako prebieha reklamácia?</h2>
   <section class="steps-grid">{steps.map(([icon,title,text], index) => <article class="step-card"><span class="step-no">{index + 1}</span><span class="info-icon">{icon}</span><h2>{title}</h2><p>{text}</p></article>)}</section>
 
