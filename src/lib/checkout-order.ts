@@ -374,7 +374,12 @@ function wooPaymentMethod(source: CheckoutOrderSource) {
   }
 }
 
-export async function createWooOrderFromCheckout(source: CheckoutOrderSource, options: { gopayPayment?: GoPayPayment; customerNote?: string; waitForEmail?: boolean } = {}) {
+export async function createWooOrderFromCheckout(source: CheckoutOrderSource, options: {
+  gopayPayment?: GoPayPayment;
+  customerNote?: string;
+  waitForEmail?: boolean;
+  sendConfirmationEmail?: boolean;
+} = {}) {
   const profiler = new CheckoutProfiler("woo-order", { orderNumber: source.orderNumber, paymentCode: source.paymentCode });
   const billing = addressFromOrder(source, "billing");
   const shipping = addressFromOrder(source, "shipping");
@@ -439,7 +444,7 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
     }
   }
 
-  if (customerEmail) {
+  if (customerEmail && options.sendConfirmationEmail !== false) {
     const emailPromise = sendOrderConfirmationEmail({
       to: customerEmail,
       orderNumber: String(order.number || order.id || ""),

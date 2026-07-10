@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile, unlink, readdir, stat } from "node:fs/promi
 import { join } from "node:path";
 import { createWooOrderFromCheckout, type CheckoutOrderSource } from "./gopay-order";
 import { CheckoutProfiler } from "./checkout-profiler";
+import { sendOrderConfirmationEmail } from "./mail";
 
 const QUEUE_ROOT = join(process.cwd(), ".tm-cache", "async-orders");
 const PENDING_DIR = join(QUEUE_ROOT, "pending");
@@ -23,6 +24,8 @@ type AsyncOrderJob = {
   lastError?: string;
   wooOrderId?: number;
   wooOrderNumber?: string;
+  emailSentAt?: string;
+  emailAttempts?: number;
 };
 
 let queueLoopRunning = false;
@@ -95,12 +98,40 @@ async function processOneJob(file: string) {
       paymentCode: job.source.paymentCode,
     });
 
-    const result = await profiler.measure("woo-create-order-total", () => createWooOrderFromCheckout(job.source, { waitForEmail: true }));
-    profiler.done({ asyncOrderId: job.id, orderId: result.orderId, orderNumber: result.orderNumber });
+    let orderId = Number(job.wooOrderId || 0);
+    let orderNumber = String(job.wooOrderNumber || "");
+
+    if (!orderId) {
+      const result = await profiler.measure("woo-create-order-total", () => createWooOrderFromCheckout(job.source, {
+        waitForEmail: false,
+        sendConfirmationEmail: false,
+      }));
+      orderId = result.orderId;
+      orderNumber = result.orderNumber;
+      job.wooOrderId = result.orderId;
+      job.wooOrderNumber = result.orderNumber;
+      await writeJob(PROCESSING_DIR, job);
+    }
+
+    if (!job.emailSentAt) {
+      const customerEmail = String(job.source.contact?.email || job.source.billing?.email || "").trim();
+      if (customerEmail) {
+        job.emailAttempts = Number(job.emailAttempts || 0) + 1;
+        await profiler.measure("order-confirmation-email", () => sendOrderConfirmationEmail({
+          to: customerEmail,
+          orderNumber: orderNumber || String(orderId),
+          source: job.source,
+          paymentTitle: job.source.paymentLabel || "Platba",
+          shippingTitle: job.source.shippingLabel || "Doprava",
+        }));
+        job.emailSentAt = new Date().toISOString();
+        await writeJob(PROCESSING_DIR, job);
+      }
+    }
+
+    profiler.done({ asyncOrderId: job.id, orderId, orderNumber, emailSentAt: job.emailSentAt || null });
 
     job.status = "done";
-    job.wooOrderId = result.orderId;
-    job.wooOrderNumber = result.orderNumber;
     job.lastError = undefined;
     await writeJob(DONE_DIR, job);
     await unlink(processingPath).catch(() => null);
