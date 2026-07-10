@@ -21,6 +21,51 @@ function extractPaymentIdFromText(text: string) {
   }
 }
 
+
+export const GET: APIRoute = async ({ url }) => {
+  const paymentId = String(url.searchParams.get("id") || url.searchParams.get("payment_id") || "").trim();
+
+  // GoPay alebo monitoring môže endpoint overovať cez GET.
+  // Bez ID iba potvrdíme dostupnosť; reálne spracovanie notifikácie ostáva v POST.
+  if (!paymentId) {
+    return new Response("GoPay notify endpoint is available.", {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
+  try {
+    const payment = await getPaymentStatus(paymentId);
+    let orderResult: any = null;
+
+    if (String(payment.state || "") === "PAID") {
+      orderResult = await processPaidGoPayOrder(payment);
+    }
+
+    console.log("GoPay notification GET", {
+      id: payment.id,
+      state: payment.state,
+      order_number: payment.order_number,
+      woo_order_id: orderResult?.orderId || null,
+      woo_order_created: orderResult?.created || false,
+    });
+
+    return new Response("OK", {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (error: any) {
+    console.error("GoPay notify GET error", error?.message || error);
+    return new Response("ERROR", { status: 500 });
+  }
+};
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     const contentType = request.headers.get("content-type") || "";

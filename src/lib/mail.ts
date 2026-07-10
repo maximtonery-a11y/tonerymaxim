@@ -289,3 +289,197 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+export type WooOrderStatusEmailPayload = {
+  event_id: string;
+  order_id: number;
+  order_number: string;
+  from_status: string;
+  to_status: string;
+  changed_at?: string;
+  customer?: {
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  payment_method_title?: string;
+  shipping_method?: string;
+  total?: string | number;
+  currency?: string;
+  tracking_number?: string;
+  tracking_url?: string;
+  line_items?: Array<{
+    name?: string;
+    sku?: string;
+    quantity?: number;
+    total?: string | number;
+  }>;
+};
+
+type StatusPresentation = {
+  title: string;
+  subject: string;
+  message: string;
+  color: string;
+  showTracking?: boolean;
+};
+
+function statusPresentation(statusRaw: string, orderNumber: string): StatusPresentation {
+  const status = String(statusRaw || "").toLowerCase().replace(/^wc-/, "");
+  const number = escapeHtml(orderNumber);
+
+  const map: Record<string, StatusPresentation> = {
+    pending: {
+      title: "Objednávka čaká na platbu",
+      subject: `Objednávka č. ${orderNumber} čaká na platbu | ToneryMAXIM.sk`,
+      message: `Objednávku č. ${number} evidujeme. Jej spracovanie začne po prijatí platby.`,
+      color: "#d97706",
+    },
+    "on-hold": {
+      title: "Objednávku sme zaevidovali",
+      subject: `Objednávka č. ${orderNumber} čaká na spracovanie | ToneryMAXIM.sk`,
+      message: `Objednávka č. ${number} je zaevidovaná a čaká na ďalšie spracovanie alebo prijatie platby.`,
+      color: "#d97706",
+    },
+    processing: {
+      title: "Objednávku spracovávame",
+      subject: `Objednávku č. ${orderNumber} spracovávame | ToneryMAXIM.sk`,
+      message: `Objednávku č. ${number} práve pripravujeme na odoslanie.`,
+      color: "#2563eb",
+    },
+    completed: {
+      title: "Objednávka bola vybavená",
+      subject: `Objednávka č. ${orderNumber} bola vybavená | ToneryMAXIM.sk`,
+      message: `Objednávka č. ${number} bola vybavená. Ďakujeme za váš nákup.`,
+      color: "#059669",
+      showTracking: true,
+    },
+    shipped: {
+      title: "Objednávku sme odoslali",
+      subject: `Objednávka č. ${orderNumber} bola odoslaná | ToneryMAXIM.sk`,
+      message: `Objednávka č. ${number} bola odovzdaná dopravcovi.`,
+      color: "#059669",
+      showTracking: true,
+    },
+    expedovana: {
+      title: "Objednávku sme odoslali",
+      subject: `Objednávka č. ${orderNumber} bola odoslaná | ToneryMAXIM.sk`,
+      message: `Objednávka č. ${number} bola odovzdaná dopravcovi.`,
+      color: "#059669",
+      showTracking: true,
+    },
+    cancelled: {
+      title: "Objednávka bola zrušená",
+      subject: `Objednávka č. ${orderNumber} bola zrušená | ToneryMAXIM.sk`,
+      message: `Objednávka č. ${number} bola zrušená. Ak ste zrušenie nežiadali, kontaktujte nás.`,
+      color: "#dc2626",
+    },
+    refunded: {
+      title: "Platba bola vrátená",
+      subject: `Refundácia objednávky č. ${orderNumber} | ToneryMAXIM.sk`,
+      message: `Pri objednávke č. ${number} sme zaevidovali vrátenie platby. Pripísanie na účet môže závisieť od banky.`,
+      color: "#7c3aed",
+    },
+    failed: {
+      title: "Platbu sa nepodarilo dokončiť",
+      subject: `Platba objednávky č. ${orderNumber} neprešla | ToneryMAXIM.sk`,
+      message: `Objednávku č. ${number} evidujeme, ale platbu sa nepodarilo dokončiť. Kontaktujte nás alebo zvoľte nový spôsob platby.`,
+      color: "#dc2626",
+    },
+  };
+
+  return map[status] || {
+    title: "Stav objednávky sa zmenil",
+    subject: `Nový stav objednávky č. ${orderNumber} | ToneryMAXIM.sk`,
+    message: `Stav objednávky č. ${number} bol aktualizovaný.`,
+    color: "#2563eb",
+  };
+}
+
+export async function sendWooOrderStatusEmail(payload: WooOrderStatusEmailPayload) {
+  const email = String(payload.customer?.email || "").trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("Objednávka nemá platný zákaznícky e-mail.");
+  }
+
+  const orderNumber = String(payload.order_number || payload.order_id || "").trim();
+  const firstName = String(payload.customer?.first_name || "").trim() || "zákazník";
+  const presentation = statusPresentation(payload.to_status, orderNumber);
+  const items = Array.isArray(payload.line_items) ? payload.line_items : [];
+  const total = formatMoney(payload.total || 0);
+  const trackingUrl = String(payload.tracking_url || "").trim();
+  const trackingNumber = String(payload.tracking_number || "").trim();
+
+  const rowsHtml = items.map((item) => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #e6edf5">
+        <strong>${escapeHtml(String(item.name || "Produkt"))}</strong>
+        ${item.sku ? `<br><span style="font-size:12px;color:#64748b">SKU: ${escapeHtml(String(item.sku))}</span>` : ""}
+      </td>
+      <td style="padding:10px 0;border-bottom:1px solid #e6edf5;text-align:center">×${escapeHtml(String(item.quantity || 1))}</td>
+      <td style="padding:10px 0;border-bottom:1px solid #e6edf5;text-align:right">${formatMoney(item.total || 0)}</td>
+    </tr>`).join("");
+
+  const trackingHtml = presentation.showTracking && (trackingUrl || trackingNumber)
+    ? `<div style="margin:22px 0;padding:18px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px">
+        <strong>Sledovanie zásielky</strong>
+        ${trackingNumber ? `<div style="margin-top:6px;color:#475569">Číslo zásielky: ${escapeHtml(trackingNumber)}</div>` : ""}
+        ${trackingUrl ? `<p style="margin:14px 0 0"><a href="${escapeHtml(trackingUrl)}" style="display:inline-block;background:#061735;color:#fff;text-decoration:none;padding:11px 17px;border-radius:999px;font-weight:700">Sledovať zásielku</a></p>` : ""}
+      </div>`
+    : "";
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.55;color:#061735;max-width:680px;margin:0 auto;padding:24px">
+      <div style="font-size:13px;color:#1d6cf2;font-weight:800;margin-bottom:8px">ToneryMAXIM.sk</div>
+      <div style="border-left:5px solid ${presentation.color};padding:4px 0 4px 16px;margin-bottom:20px">
+        <h1 style="font-size:27px;margin:0 0 7px">${escapeHtml(presentation.title)}</h1>
+        <div style="color:#64748b">Objednávka č. ${escapeHtml(orderNumber)}</div>
+      </div>
+      <p>Dobrý deň, ${escapeHtml(firstName)},</p>
+      <p>${presentation.message}</p>
+      ${trackingHtml}
+      ${items.length ? `<table style="width:100%;border-collapse:collapse;margin:22px 0">
+        <thead><tr>
+          <th style="text-align:left;border-bottom:2px solid #dbe7f4;padding-bottom:8px">Produkt</th>
+          <th style="text-align:center;border-bottom:2px solid #dbe7f4;padding-bottom:8px">Počet</th>
+          <th style="text-align:right;border-bottom:2px solid #dbe7f4;padding-bottom:8px">Cena</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>` : ""}
+      <table style="width:100%;border-collapse:collapse;margin:18px 0">
+        ${payload.shipping_method ? `<tr><td style="padding:6px 0;color:#64748b">Doprava:</td><td style="padding:6px 0;text-align:right">${escapeHtml(payload.shipping_method)}</td></tr>` : ""}
+        ${payload.payment_method_title ? `<tr><td style="padding:6px 0;color:#64748b">Platba:</td><td style="padding:6px 0;text-align:right">${escapeHtml(payload.payment_method_title)}</td></tr>` : ""}
+        <tr><td style="padding:10px 0;font-weight:800">Cena spolu:</td><td style="padding:10px 0;text-align:right;font-weight:800;font-size:18px">${total}</td></tr>
+      </table>
+      <div style="margin-top:26px;padding-top:20px;border-top:1px solid #dbe7f4;color:#64748b;font-size:14px">
+        Potrebujete pomoc? Napíšte na <a href="mailto:info@tonerymaxim.sk">info@tonerymaxim.sk</a> alebo zavolajte na <a href="tel:+421917859206">+421 917 859 206</a>.
+      </div>
+    </div>`;
+
+  const textItems = items.map((item) => `- ${item.name || "Produkt"} ×${item.quantity || 1}: ${formatMoney(item.total || 0)}`).join("\n");
+  const text = [
+    `Dobrý deň, ${firstName},`,
+    "",
+    presentation.title,
+    presentation.message.replace(/<[^>]+>/g, ""),
+    "",
+    textItems,
+    payload.shipping_method ? `Doprava: ${payload.shipping_method}` : "",
+    payload.payment_method_title ? `Platba: ${payload.payment_method_title}` : "",
+    `Cena spolu: ${total}`,
+    trackingNumber ? `Číslo zásielky: ${trackingNumber}` : "",
+    trackingUrl ? `Sledovanie: ${trackingUrl}` : "",
+    "",
+    "ToneryMAXIM.sk",
+    "info@tonerymaxim.sk",
+    "+421 917 859 206",
+  ].filter(Boolean).join("\n");
+
+  return sendMail({
+    to: email,
+    subject: presentation.subject,
+    text,
+    html,
+  });
+}
+

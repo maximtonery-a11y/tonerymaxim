@@ -697,16 +697,16 @@ function formatMoney(value) {
         <div class="cart-item-price">${formatMoney(item.price)}</div>
 
         <div class="cart-item-quantity">
+          ${isCompatibleDiscountItem(item) ? `
+            <p class="cart-quantity-discount-title"><strong>Množstevná zľava:</strong> od 2 ks 10 %, od 4 ks 25 %.</p>
+          ` : ``}
           <div class="qty-control">
             <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" aria-label="Znížiť množstvo">−</button>
             <input type="number" min="1" max="99" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" aria-label="Množstvo" />
             <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" aria-label="Zvýšiť množstvo">+</button>
           </div>
           ${isCompatibleDiscountItem(item) ? `
-            <p class="cart-quantity-discount-info">
-              <strong>Množstevná zľava:</strong> od 2 ks 10 %, od 4 ks 25 %.
-              <span>Zľava sa uplatní automaticky v košíku aj pokladni.</span>
-            </p>
+            <p class="cart-quantity-discount-note">Zľava sa uplatní automaticky v košíku aj pokladni.</p>
           ` : ``}
         </div>
 

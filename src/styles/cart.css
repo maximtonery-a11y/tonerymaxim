@@ -914,9 +914,9 @@ body.has-add-cart-drawer { overflow: hidden; }
 
 /* Informácia o množstevnej zľave iba pri kompatibilných toneroch */
 .cart-item-quantity {
-  width: 190px;
+  width: 280px;
   display: grid;
-  gap: 9px;
+  gap: 7px;
   align-self: center;
 }
 
@@ -925,27 +925,31 @@ body.has-add-cart-drawer { overflow: hidden; }
   justify-self: start;
 }
 
-.cart-quantity-discount-info {
+.cart-quantity-discount-title,
+.cart-quantity-discount-note {
   margin: 0;
-  color: #475467;
-  font-size: 11px;
+  white-space: nowrap;
   line-height: 1.35;
 }
 
-.cart-quantity-discount-info strong {
+.cart-quantity-discount-title {
   color: #0b9f55;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.cart-quantity-discount-title strong {
   font-weight: 900;
 }
 
-.cart-quantity-discount-info span {
-  display: block;
-  margin-top: 2px;
+.cart-quantity-discount-note {
   color: #667085;
+  font-size: 11px;
 }
 
 @media (min-width: 1101px) {
   .cart-item {
-    grid-template-columns: 88px minmax(0, 1fr) 120px 190px 130px;
+    grid-template-columns: 88px minmax(0, 1fr) 120px 280px 130px;
   }
 }
 
@@ -961,8 +965,9 @@ body.has-add-cart-drawer { overflow: hidden; }
     width: 100%;
   }
 
-  .cart-quantity-discount-info {
-    max-width: 310px;
+  .cart-quantity-discount-title,
+  .cart-quantity-discount-note {
+    white-space: normal;
     font-size: 11px;
   }
 }

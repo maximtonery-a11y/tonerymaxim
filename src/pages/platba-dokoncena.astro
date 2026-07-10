@@ -223,20 +223,6 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
             </div>
           </section>
 
-          <section class="tm26-details">
-            <article class="tm26-order-wide">
-              <div class="tm26-section-head"><h2>Súhrn objednávky</h2><span data-count>—</span></div>
-              <div class="tm26-order-list">
-                <div data-items></div>
-                <div class="tm26-order-summary"><div class="tm26-order-summary-inner" data-summary></div></div>
-              </div>
-            </article>
-            <article class="tm26-address-wide">
-              <div class="tm26-section-head"><h2>Fakturačné a dodacie údaje</h2><span class="tm26-address-date" data-date>—</span></div>
-              <div class="tm26-address-grid2" data-addresses></div>
-            </article>
-          </section>
-
           <section class="tm26-bank hidden" data-bank>
             <h2>Platobné údaje k prevodu</h2>
             <div class="tm26-bank-grid">
@@ -271,7 +257,7 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
     <script>
       const $=(s)=>document.querySelector(s);const p=new URLSearchParams(location.search);const paymentId=p.get("id");const directOrder=p.get("order");const directMethod=p.get("method");
       const e={pill:$('[data-status-pill]'),icon:$('[data-icon]'),status:$('[data-status]'),title:$('[data-title]'),lead:$('[data-lead]'),order:$('[data-order]'),order2:$('[data-order-2]'),dispatch:$('[data-dispatch]'),payment:$('[data-payment]'),payment2:$('[data-payment-2]'),state:$('[data-state]'),total:$('[data-total]'),sideCount:$('[data-side-count]'),sideShipping:$('[data-side-shipping]'),sidePayment:$('[data-side-payment]'),sideOrder:$('[data-side-order]'),count:$('[data-count]'),date:$('[data-date]'),items:$('[data-items]'),summary:$('[data-summary]'),shipping:$('[data-shipping]'),bank:$('[data-bank]'),vs:$('[data-vs]'),bankTotal:$('[data-bank-total]'),retry:$('[data-gopay-retry]'),reward:$('[data-reward]'),rewardText:$('[data-reward-text]'),couponCode:$('[data-coupon-code]'),couponLabel:$('[data-coupon-label]'),addresses:$('[data-addresses]')};
-      const fmtDate=new Intl.DateTimeFormat('sk-SK',{day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});e.date.textContent=fmtDate.format(new Date());
+      const fmtDate=new Intl.DateTimeFormat('sk-SK',{day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});if(e.date)e.date.textContent=fmtDate.format(new Date());
       const money=(v)=>new Intl.NumberFormat('sk-SK',{style:'currency',currency:'EUR'}).format(Number.isFinite(Number(v))?Number(v):0);const esc=(v)=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
       function preview(){try{return JSON.parse(localStorage.getItem('tm_last_order_preview')||'null')}catch{return null}}function img(i){return i?.image||i?.images?.[0]?.src||i?.imageUrl||'/images/tm-product-placeholder-box.jpg'}
       function payText(m){return m==='cod'?'Dobierka':m==='bank_prepaid'?'Platba prevodným príkazom vopred':m==='invoice_org'?'Prevod pre firmy':m==='applepay'?'Apple Pay':m==='googlepay'?'Google Pay':'Online platba GoPay'}
@@ -318,8 +304,8 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
         e.shipping&&(e.shipping.textContent=d.shipping?.label||'—');
         e.sideShipping.textContent=d.shipping?.label||'—';
         e.sideCount&&(e.sideCount.textContent=qty?`${qty} ks`:'—');
-        e.count.textContent=qty?`${qty} ks v objednávke`:'Súhrn objednávky';
-        e.items.innerHTML=d.cart.length?d.cart.map(i=>{const q=Number(i.qty||1),lt=Number(i.price||0)*q;const meta=[i.sku?`SKU: ${esc(i.sku)}`:'',q?`${q} ks`:''].filter(Boolean);return `<div class="tm26-order-product-row"><div class="tm26-order-product-image"><img src="${esc(img(i))}" alt="${esc(i.name||'Produkt')}" loading="lazy"></div><div class="tm26-order-product-info"><div class="tm26-order-product-name">${esc(i.name||'Produkt')}</div><div class="tm26-order-product-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div></div><div class="tm26-order-product-qty">${q} ks</div><div class="tm26-order-product-price">${money(lt)}</div></div>`}).join(''):`<div class="tm26-order-product-row"><div class="tm26-order-product-image"><img src="/images/tm-product-placeholder-box.jpg" alt="Produkt" loading="lazy"></div><div class="tm26-order-product-info"><div class="tm26-order-product-name">Objednávka bola prijatá</div><div class="tm26-order-product-meta"><span>Detail pošleme e-mailom.</span></div></div><div class="tm26-order-product-qty">—</div><div class="tm26-order-product-price">—</div></div>`;
+        if(e.count)e.count.textContent=qty?`${qty} ks v objednávke`:'Súhrn objednávky';
+        if(e.items)e.items.innerHTML=d.cart.length?d.cart.map(i=>{const q=Number(i.qty||1),lt=Number(i.price||0)*q;const meta=[i.sku?`SKU: ${esc(i.sku)}`:'',q?`${q} ks`:''].filter(Boolean);return `<div class="tm26-order-product-row"><div class="tm26-order-product-image"><img src="${esc(img(i))}" alt="${esc(i.name||'Produkt')}" loading="lazy"></div><div class="tm26-order-product-info"><div class="tm26-order-product-name">${esc(i.name||'Produkt')}</div><div class="tm26-order-product-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div></div><div class="tm26-order-product-qty">${q} ks</div><div class="tm26-order-product-price">${money(lt)}</div></div>`}).join(''):`<div class="tm26-order-product-row"><div class="tm26-order-product-image"><img src="/images/tm-product-placeholder-box.jpg" alt="Produkt" loading="lazy"></div><div class="tm26-order-product-info"><div class="tm26-order-product-name">Objednávka bola prijatá</div><div class="tm26-order-product-meta"><span>Detail pošleme e-mailom.</span></div></div><div class="tm26-order-product-qty">—</div><div class="tm26-order-product-price">—</div></div>`;
         const rows=[];
         if(d.itemsTotal)rows.push(`<div class="tm26-order-summary-row"><span>Produkty</span><span></span><strong>${money(d.itemsTotal)}</strong></div>`);
         if(d.qd>0)rows.push(`<div class="tm26-order-summary-row discount"><span>Množstevná / sadová zľava</span><span></span><strong>-${money(d.qd)}</strong></div>`);
@@ -328,11 +314,11 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
         rows.push(`<div class="tm26-order-summary-row"><span>Doprava</span><span></span><strong>${d.ship>0?money(d.ship):'Zdarma'}</strong></div>`);
         rows.push(`<div class="tm26-order-summary-row"><span>Platba</span><span></span><strong>${d.pp>0?money(d.pp):'Bez poplatku'}</strong></div>`);
         if(d.total){rows.push(`<div class="tm26-order-summary-row"><span>Základ bez DPH</span><span></span><strong>${money(d.net)}</strong></div>`);rows.push(`<div class="tm26-order-summary-row"><span>DPH 23 %</span><span></span><strong>${money(d.vat)}</strong></div>`);rows.push(`<div class="tm26-order-summary-row final"><span>Spolu s DPH</span><span></span><strong>${money(d.total)}</strong></div>`)}
-        e.summary.innerHTML=rows.join('');e.bankTotal.textContent=d.total?money(d.total):'—';
+        if(e.summary)e.summary.innerHTML=rows.join('');e.bankTotal.textContent=d.total?money(d.total):'—';
         const billing=normalizeAddress(pr?.billing||pr?.billingAddress||pr?.customer||pr?.customer_data,pr?.contact);
         const deliveryRaw=pr?.shipping_address||pr?.shippingAddress||pr?.delivery||pr?.shippingTo;
         const shipping=sameDelivery(deliveryRaw)?billing:normalizeAddress(deliveryRaw,pr?.contact);
-        e.addresses.innerHTML=addressCard('Fakturačná adresa',billing)+addressCard('Dodacia adresa',shipping);
+        if(e.addresses)e.addresses.innerHTML=addressCard('Fakturačná adresa',billing)+addressCard('Dodacia adresa',shipping);
         return d
       }
       function orderNo(v){return String(v||'—')}function setBase(no,method,state){e.order.textContent=orderNo(no);e.order2&&(e.order2.textContent=orderNo(no));e.sideOrder.textContent=orderNo(no);e.payment.textContent=payText(method);e.payment2&&(e.payment2.textContent=payText(method));e.sidePayment.textContent=payText(method);e.state&&(e.state.textContent=state||'Uložené');e.vs.textContent=String(no||'').replace(/^TM-/,'')||'—'}

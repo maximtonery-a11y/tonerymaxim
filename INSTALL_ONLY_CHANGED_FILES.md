@@ -1,7 +1,1 @@
-Nahraď súbor:
-
-src/pages/platba-dokoncena.astro
-
-Potom spusti:
-
-npm run build
+Nahraďte súbor `src/pages/platba-dokoncena.astro` a spustite `npm run build`.
