@@ -209,8 +209,33 @@ export async function enqueueAsyncWooOrder(source: CheckoutOrderSource) {
     updatedAt: new Date().toISOString(),
   };
   await writeJob(PENDING_DIR, job);
+
+  // Potvrdenie odošleme hneď po bezpečnom uložení do fronty. Zákazník tak
+  // nečaká na pomalé Woo API. Pri chybe zostane emailSentAt prázdne a worker
+  // odoslanie automaticky zopakuje bez vytvorenia duplicitnej objednávky.
+  const customerEmail = String(source.contact?.email || source.billing?.email || "").trim();
+  if (customerEmail) {
+    try {
+      job.emailAttempts = 1;
+      await sendOrderConfirmationEmail({
+        to: customerEmail,
+        orderNumber: source.orderNumber,
+        source,
+        paymentTitle: source.paymentLabel || "Platba",
+        shippingTitle: source.shippingLabel || "Doprava",
+      });
+      job.emailSentAt = new Date().toISOString();
+      await writeJob(PENDING_DIR, job);
+      console.log("[TM async order queue] immediate confirmation sent", { id, customerEmail });
+    } catch (error: any) {
+      job.lastError = `Potvrdenie objednávky: ${error?.message || String(error)}`;
+      await writeJob(PENDING_DIR, job);
+      console.error("[TM async order queue] immediate confirmation failed", id, job.lastError);
+    }
+  }
+
   scheduleAsyncOrderQueue(INITIAL_QUEUE_DELAY_MS);
-  return { queued: true, queueId: id, orderNumber: source.orderNumber };
+  return { queued: true, queueId: id, orderNumber: source.orderNumber, emailSent: Boolean(job.emailSentAt) };
 }
 
 export function scheduleAsyncOrderQueue(delayMs = 0) {

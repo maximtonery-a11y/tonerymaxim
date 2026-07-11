@@ -320,6 +320,8 @@ export type WooOrderStatusEmailPayload = {
   currency?: string;
   tracking_number?: string;
   tracking_url?: string;
+  subject_override?: string;
+  message_override?: string;
   line_items?: Array<{
     name?: string;
     sku?: string;
@@ -380,6 +382,37 @@ function statusPresentation(statusRaw: string, orderNumber: string): StatusPrese
       color: "#059669",
       showTracking: true,
     },
+    "tm-await-pay": {
+      title: "Objednávka čaká na úhradu",
+      subject: `Objednávka č. ${orderNumber} čaká na úhradu | ToneryMAXIM.sk`,
+      message: `Objednávku č. ${number} evidujeme. Po prijatí úhrady ju začneme pripravovať.`,
+      color: "#d97706",
+    },
+    "tm-paid": {
+      title: "Platbu sme prijali",
+      subject: `Platba objednávky č. ${orderNumber} bola prijatá | ToneryMAXIM.sk`,
+      message: `Platbu za objednávku č. ${number} sme úspešne prijali. Objednávku pripravujeme na vybavenie.`,
+      color: "#059669",
+    },
+    "tm-processing": {
+      title: "Objednávka sa vybavuje",
+      subject: `Objednávka č. ${orderNumber} sa vybavuje | ToneryMAXIM.sk`,
+      message: `Objednávku č. ${number} práve kompletizujeme a pripravujeme na expedíciu.`,
+      color: "#2563eb",
+    },
+    "tm-shipped": {
+      title: "Objednávka bola expedovaná",
+      subject: `Objednávka č. ${orderNumber} bola expedovaná | ToneryMAXIM.sk`,
+      message: `Objednávku č. ${number} sme odovzdali dopravcovi. O doručení vás bude informovať kuriér.`,
+      color: "#059669",
+      showTracking: true,
+    },
+    "tm-returned": {
+      title: "Objednávka bola vrátená",
+      subject: `Objednávka č. ${orderNumber} bola vrátená | ToneryMAXIM.sk`,
+      message: `Pri objednávke č. ${number} sme zaevidovali vrátenie. O ďalšom postupe vás budeme informovať.`,
+      color: "#7c3aed",
+    },
     cancelled: {
       title: "Objednávka bola zrušená",
       subject: `Objednávka č. ${orderNumber} bola zrušená | ToneryMAXIM.sk`,
@@ -416,7 +449,14 @@ export async function sendWooOrderStatusEmail(payload: WooOrderStatusEmailPayloa
 
   const orderNumber = String(payload.order_number || payload.order_id || "").trim();
   const firstName = String(payload.customer?.first_name || "").trim() || "zákazník";
-  const presentation = statusPresentation(payload.to_status, orderNumber);
+  const basePresentation = statusPresentation(payload.to_status, orderNumber);
+  const customSubject = String(payload.subject_override || "").trim().replaceAll("{order_number}", orderNumber);
+  const customMessage = String(payload.message_override || "").trim().replaceAll("{order_number}", orderNumber);
+  const presentation = {
+    ...basePresentation,
+    subject: customSubject || basePresentation.subject,
+    message: customMessage || basePresentation.message,
+  };
   const items = Array.isArray(payload.line_items) ? payload.line_items : [];
   const total = formatMoney(payload.total || 0);
   const trackingUrl = String(payload.tracking_url || "").trim();

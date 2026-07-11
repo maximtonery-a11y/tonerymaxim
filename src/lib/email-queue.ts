@@ -21,6 +21,11 @@ const NOTIFIABLE_STATUSES = new Set([
   'failed',
   'shipped',
   'expedovana',
+  'tm-await-pay',
+  'tm-paid',
+  'tm-processing',
+  'tm-shipped',
+  'tm-returned',
 ]);
 
 type WooMeta = { id?: number; key?: string; value?: unknown };
@@ -140,6 +145,8 @@ function toPayload(order: WooOrder, fromStatus: string, toStatus: string): WooOr
     currency: order.currency || 'EUR',
     tracking_number: trackingNumber(order),
     tracking_url: trackingUrl(order),
+    subject_override: metaValue(order, '_tm_email_subject'),
+    message_override: metaValue(order, '_tm_email_message'),
     line_items: Array.isArray(order.line_items)
       ? order.line_items.map((item) => ({
           name: item.name || 'Produkt',

@@ -190,25 +190,32 @@ async function lineItems(source: CheckoutOrderSource, taxRateId: number) {
   const lines = [];
 
   for (const item of source.cart) {
-    const gross = money(item.price * item.qty);
-    const net = netFromGross(gross);
-    const tax = money(gross - net);
+    const originalGross = money(item.price * item.qty);
+    const finalGross = discountedLineTotal(item);
+    const originalNet = netFromGross(originalGross);
+    const finalNet = netFromGross(finalGross);
+    const originalTax = money(originalGross - originalNet);
+    const finalTax = money(finalGross - finalNet);
+    const lineDiscountGross = money(originalGross - finalGross);
     const productId = numericProductId(item) || await resolveProductIdBySku(item.sku);
 
     const line: Record<string, any> = {
       name: item.name,
       quantity: item.qty,
-      subtotal: net.toFixed(2),
-      subtotal_tax: tax.toFixed(2),
-      total: net.toFixed(2),
-      total_tax: tax.toFixed(2),
+      subtotal: originalNet.toFixed(2),
+      subtotal_tax: originalTax.toFixed(2),
+      total: finalNet.toFixed(2),
+      total_tax: finalTax.toFixed(2),
       tax_status: "taxable",
-      ...(taxRateId > 0 ? { taxes: [{ id: taxRateId, subtotal: tax.toFixed(2), total: tax.toFixed(2) }] } : {}),
+      ...(taxRateId > 0 ? { taxes: [{ id: taxRateId, subtotal: originalTax.toFixed(2), total: finalTax.toFixed(2) }] } : {}),
       meta_data: [
         { key: "sku", value: item.sku || "" },
         { key: "product_type_key", value: item.product_type_key || "" },
         { key: "product_type_label", value: item.product_type_label || "" },
-        { key: "tm_gross_line_total", value: gross.toFixed(2) },
+        { key: "tm_gross_line_subtotal", value: originalGross.toFixed(2) },
+        { key: "tm_gross_line_total", value: finalGross.toFixed(2) },
+        { key: "tm_gross_line_discount", value: lineDiscountGross.toFixed(2) },
+        { key: "tm_quantity_discount_rate", value: String(discountRate(item)) },
       ],
     };
 
@@ -220,7 +227,6 @@ async function lineItems(source: CheckoutOrderSource, taxRateId: number) {
 
   return lines;
 }
-
 
 
 function pickupValue(pickup: any, keys: string[]) {
@@ -367,6 +373,38 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     );
   }
 
+  const snapshot = {
+    version: 2,
+    orderNumber: source.orderNumber,
+    currency: source.currency || "EUR",
+    originalSubtotal: money(source.originalSubtotal),
+    quantityDiscount: money(source.quantityDiscount),
+    subtotal: money(source.subtotal),
+    couponDiscount: money(source.coupon?.discount),
+    couponCode: String(source.coupon?.code || ""),
+    couponLabel: String(source.coupon?.label || "Kupónová zľava"),
+    loyaltyDiscount: money(source.loyaltyDiscount),
+    loyaltyPointsUsed: Number(source.loyaltyPointsUsed || 0),
+    shippingPrice: money(source.shippingPrice),
+    shippingLabel: source.shippingLabel || "",
+    paymentPrice: money(source.paymentPrice),
+    paymentLabel: payment.title || source.paymentLabel || "",
+    total: money(source.total),
+    billing: source.billing || {},
+    delivery: source.delivery || {},
+    contact: source.contact || {},
+    items: source.cart.map((item) => ({
+      name: item.name,
+      sku: item.sku,
+      qty: item.qty,
+      unitGross: money(item.price),
+      originalGross: money(item.price * item.qty),
+      discountRate: discountRate(item),
+      discountGross: money(item.price * item.qty - discountedLineTotal(item)),
+      totalGross: discountedLineTotal(item),
+    })),
+  };
+  meta.push({ key: "tm_order_snapshot", value: JSON.stringify(snapshot) });
   return meta.filter((item) => item.value !== undefined && item.value !== null && String(item.value).trim() !== "");
 }
 
@@ -389,9 +427,6 @@ function feeLines(source: CheckoutOrderSource, taxRateId = 0) {
     });
   };
 
-  if (money(source.quantityDiscount) > 0) {
-    addGrossFee("Množstevná / sadová zľava", -money(source.quantityDiscount));
-  }
   if (money(source.coupon?.discount) > 0) {
     addGrossFee(source.coupon?.label || `Kupón ${source.coupon?.code || ""}`.trim(), -money(source.coupon?.discount));
   }
@@ -415,10 +450,9 @@ function predictedWooGross(grossValue: number) {
 
 function roundingAdjustment(source: CheckoutOrderSource) {
   let predicted = 0;
-  for (const item of source.cart) predicted += predictedWooGross(money(item.price * item.qty));
+  for (const item of source.cart) predicted += predictedWooGross(discountedLineTotal(item));
   predicted += predictedWooGross(source.shippingPrice);
   predicted += predictedWooGross(source.paymentPrice);
-  predicted += predictedWooGross(-money(source.quantityDiscount));
   predicted += predictedWooGross(-money(source.coupon?.discount));
   predicted += predictedWooGross(-money(source.loyaltyDiscount));
   return money(source.total - predicted);
