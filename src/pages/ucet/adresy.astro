@@ -4,7 +4,7 @@ import "../../styles/footer.css";
 import "../../styles/account.css";
 import { readCustomerSession, setCustomerCookie } from "../../lib/auth-session";
 import { getWooCustomerById } from "../../lib/woo-client";
-import { customerToSession, getBilling, getShipping } from "../../lib/account-data";
+import { customerToSession, getBilling, getShipping, getCustomerMeta } from "../../lib/account-data";
 import AccountShell from "../../components/AccountShell.astro";
 
 const session = readCustomerSession(Astro.cookies);
@@ -15,6 +15,11 @@ setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 const billing = getBilling(wooCustomer);
 const shipping = getShipping(wooCustomer);
+const companyMeta = {
+  ico: getCustomerMeta(wooCustomer, "tm_ico") || getCustomerMeta(wooCustomer, "billing_ico") || "",
+  dic: getCustomerMeta(wooCustomer, "tm_dic") || getCustomerMeta(wooCustomer, "billing_dic") || "",
+  icDph: getCustomerMeta(wooCustomer, "tm_ic_dph") || getCustomerMeta(wooCustomer, "billing_ic_dph") || "",
+};
 ---
 
 <!doctype html>
@@ -23,39 +28,60 @@ const shipping = getShipping(wooCustomer);
   <body>
     <AccountShell user={customer} active="adresy" title="Adresy" subtitle="Fakturačná a dodacia adresa pre objednávky.">
       <div class="auth-alert" data-address-message hidden></div>
-      <form class="account-section-grid" data-address-form>
-        <section class="account-list-card">
-          <h3>Fakturačná adresa</h3>
-          <label class="tm-field"><span>Meno</span><input class="account-input" name="billing.first_name" value={billing.first_name || customer.first_name || ""} required /></label>
-          <label class="tm-field"><span>Priezvisko</span><input class="account-input" name="billing.last_name" value={billing.last_name || customer.last_name || ""} required /></label>
-          <label class="tm-field"><span>Firma</span><input class="account-input" name="billing.company" value={billing.company || ""} /></label>
-          <label class="tm-field"><span>Ulica a číslo</span><input class="account-input" name="billing.address_1" value={billing.address_1 || ""} required /></label>
-          <label class="tm-field"><span>Doplnenie adresy</span><input class="account-input" name="billing.address_2" value={billing.address_2 || ""} /></label>
-          <label class="tm-field"><span>PSČ</span><input class="account-input" name="billing.postcode" value={billing.postcode || ""} required /></label>
-          <label class="tm-field"><span>Mesto</span><input class="account-input" name="billing.city" value={billing.city || ""} required /></label>
-          <label class="tm-field"><span>Krajina</span><input class="account-input" name="billing.country" value={billing.country || "SK"} required /></label>
-          <label class="tm-field"><span>Telefón</span><input class="account-input" name="billing.phone" value={billing.phone || ""} /></label>
+      <form class="account-address-form" data-address-form>
+        <section class="account-list-card account-address-card account-address-card--billing">
+          <div class="account-card-heading">
+            <div><span class="account-card-kicker">Fakturačné údaje</span><h3>Fakturačná adresa a firma</h3></div>
+            <p>Údaje sa automaticky doplnia do pokladne pri ďalšej objednávke.</p>
+          </div>
+
+          <div class="account-form-grid two">
+            <label class="tm-field"><span>Meno</span><input class="account-input" name="billing.first_name" value={billing.first_name || customer.first_name || ""} required /></label>
+            <label class="tm-field"><span>Priezvisko</span><input class="account-input" name="billing.last_name" value={billing.last_name || customer.last_name || ""} required /></label>
+          </div>
+
+          <div class="account-company-panel">
+            <div class="account-company-title"><strong>Firemné údaje</strong><span>Vyplňte iba pri nákupe na firmu.</span></div>
+            <div class="account-form-grid two">
+              <label class="tm-field span-two"><span>Názov firmy</span><input class="account-input" name="billing.company" value={billing.company || ""} /></label>
+              <label class="tm-field"><span>IČO</span><input class="account-input" name="billing.ico" inputmode="numeric" value={companyMeta.ico} /></label>
+              <label class="tm-field"><span>DIČ</span><input class="account-input" name="billing.dic" value={companyMeta.dic} /></label>
+              <label class="tm-field span-two"><span>IČ DPH</span><input class="account-input" name="billing.ic_dph" value={companyMeta.icDph} /></label>
+            </div>
+          </div>
+
+          <div class="account-form-grid two">
+            <label class="tm-field span-two"><span>Ulica a číslo</span><input class="account-input" name="billing.address_1" value={billing.address_1 || ""} required /></label>
+            <label class="tm-field span-two"><span>Doplnenie adresy</span><input class="account-input" name="billing.address_2" value={billing.address_2 || ""} /></label>
+            <label class="tm-field"><span>PSČ</span><input class="account-input" name="billing.postcode" value={billing.postcode || ""} required /></label>
+            <label class="tm-field"><span>Mesto</span><input class="account-input" name="billing.city" value={billing.city || ""} required /></label>
+            <label class="tm-field"><span>Krajina</span><input class="account-input" name="billing.country" value={billing.country || "SK"} required /></label>
+            <label class="tm-field"><span>Telefón</span><input class="account-input" name="billing.phone" value={billing.phone || ""} /></label>
+          </div>
         </section>
 
-        <section class="account-list-card">
-          <h3>Dodacia adresa</h3>
-          <p class="account-muted">Ak necháte pole prázdne, použije sa fakturačná adresa.</p>
-          <label class="tm-field"><span>Meno</span><input class="account-input" name="shipping.first_name" value={shipping.first_name || ""} /></label>
-          <label class="tm-field"><span>Priezvisko</span><input class="account-input" name="shipping.last_name" value={shipping.last_name || ""} /></label>
-          <label class="tm-field"><span>Firma</span><input class="account-input" name="shipping.company" value={shipping.company || ""} /></label>
-          <label class="tm-field"><span>Ulica a číslo</span><input class="account-input" name="shipping.address_1" value={shipping.address_1 || ""} /></label>
-          <label class="tm-field"><span>Doplnenie adresy</span><input class="account-input" name="shipping.address_2" value={shipping.address_2 || ""} /></label>
-          <label class="tm-field"><span>PSČ</span><input class="account-input" name="shipping.postcode" value={shipping.postcode || ""} /></label>
-          <label class="tm-field"><span>Mesto</span><input class="account-input" name="shipping.city" value={shipping.city || ""} /></label>
-          <label class="tm-field"><span>Krajina</span><input class="account-input" name="shipping.country" value={shipping.country || "SK"} /></label>
-          <label class="tm-field"><span>Telefón</span><input class="account-input" name="shipping.phone" value={shipping.phone || ""} /></label>
+        <section class="account-list-card account-address-card">
+          <div class="account-card-heading">
+            <div><span class="account-card-kicker">Doručenie</span><h3>Dodacia adresa</h3></div>
+            <p>Ak ju necháte prázdnu, použije sa fakturačná adresa.</p>
+          </div>
+          <div class="account-form-grid two">
+            <label class="tm-field"><span>Meno</span><input class="account-input" name="shipping.first_name" value={shipping.first_name || ""} /></label>
+            <label class="tm-field"><span>Priezvisko</span><input class="account-input" name="shipping.last_name" value={shipping.last_name || ""} /></label>
+            <label class="tm-field span-two"><span>Firma</span><input class="account-input" name="shipping.company" value={shipping.company || ""} /></label>
+            <label class="tm-field span-two"><span>Ulica a číslo</span><input class="account-input" name="shipping.address_1" value={shipping.address_1 || ""} /></label>
+            <label class="tm-field span-two"><span>Doplnenie adresy</span><input class="account-input" name="shipping.address_2" value={shipping.address_2 || ""} /></label>
+            <label class="tm-field"><span>PSČ</span><input class="account-input" name="shipping.postcode" value={shipping.postcode || ""} /></label>
+            <label class="tm-field"><span>Mesto</span><input class="account-input" name="shipping.city" value={shipping.city || ""} /></label>
+            <label class="tm-field"><span>Krajina</span><input class="account-input" name="shipping.country" value={shipping.country || "SK"} /></label>
+            <label class="tm-field"><span>Telefón</span><input class="account-input" name="shipping.phone" value={shipping.phone || ""} /></label>
+          </div>
         </section>
 
-        <section class="account-list-card">
-          <h3>Uloženie</h3>
-          <p>Uložené adresy použijeme pri ďalšej objednávke.</p>
+        <div class="account-address-actions">
+          <div><strong>Uložiť všetky údaje</strong><span>Po uložení ich automaticky použijeme v pokladni.</span></div>
           <button class="tm-btn" type="submit" data-address-submit>Uložiť adresy</button>
-        </section>
+        </div>
       </form>
     </AccountShell>
 

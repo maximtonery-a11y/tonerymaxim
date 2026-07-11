@@ -144,3 +144,38 @@ export async function getGoPayPayment(paymentId: string) {
 
   return data;
 }
+
+export type VerifiedGoPayPayment = Record<string, any> & {
+  id: string | number;
+  state: string;
+  order_number: string;
+  amount: number;
+  currency: string;
+};
+
+export async function verifyGoPayPaymentAgainstOrder(paymentId: string, expected: {
+  orderNumber: string;
+  amountCents: number;
+  currency?: string;
+  requirePaid?: boolean;
+}) {
+  const payment = await getGoPayPayment(paymentId) as VerifiedGoPayPayment;
+  const errors: string[] = [];
+  const state = String(payment?.state || '').toUpperCase();
+  const currency = String(payment?.currency || '').toUpperCase();
+  const orderNumber = String(payment?.order_number || '');
+  const amount = Number(payment?.amount || 0);
+  const expectedCurrency = String(expected.currency || 'EUR').toUpperCase();
+  const configuredGoId = Number(getEnv('GOPAY_GOID') || 0);
+  const returnedGoId = Number(payment?.target?.goid || 0);
+
+  if (String(payment?.id || '') !== String(paymentId)) errors.push('payment-id-mismatch');
+  if (orderNumber !== String(expected.orderNumber || '')) errors.push('order-number-mismatch');
+  if (amount !== Math.round(Number(expected.amountCents || 0))) errors.push('amount-mismatch');
+  if (currency !== expectedCurrency) errors.push('currency-mismatch');
+  if (configuredGoId > 0 && returnedGoId > 0 && returnedGoId !== configuredGoId) errors.push('goid-mismatch');
+  if (expected.requirePaid && !['PAID', 'AUTHORIZED'].includes(state)) errors.push(`invalid-state-${state || 'UNKNOWN'}`);
+
+  if (errors.length) throw new Error(`GoPay overenie zlyhalo: ${errors.join(', ')}`);
+  return payment;
+}

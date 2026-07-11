@@ -32,8 +32,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (!session) return json({ ok: false, error: "Neprihlásený zákazník." }, 401);
 
     const body = await request.json().catch(() => ({}));
-    const billing = cleanAddress(body.billing || {}, session.email);
+    const billingInput = body.billing || {};
+    const billing = cleanAddress(billingInput, session.email);
     const shipping = cleanAddress(body.shipping || {}, session.email);
+    const ico = String(billingInput.ico || "").trim();
+    const dic = String(billingInput.dic || "").trim();
+    const icDph = String(billingInput.ic_dph || billingInput.icDph || "").trim();
 
     if (!billing.first_name || !billing.last_name) return json({ ok: false, error: "Vyplňte meno a priezvisko vo fakturačnej adrese." }, 400);
     if (!billing.address_1 || !billing.city || !billing.postcode) return json({ ok: false, error: "Vyplňte ulicu, mesto a PSČ vo fakturačnej adrese." }, 400);
@@ -54,6 +58,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       meta_data: [
         { key: "source", value: "tonerymaxim" },
         { key: "sales_channel", value: "tonerymaxim" },
+        { key: "tm_ico", value: ico },
+        { key: "tm_dic", value: dic },
+        { key: "tm_ic_dph", value: icDph },
+        { key: "billing_ico", value: ico },
+        { key: "billing_dic", value: dic },
+        { key: "billing_ic_dph", value: icDph },
       ],
     });
 

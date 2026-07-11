@@ -793,9 +793,35 @@
     return isMissingValue(value) ? "24 mesiacov" : value;
   }
 
+
+  function applyMobileParameterVisibility(root) {
+    if (!root) return;
+
+    const hiddenLabels = new Set([
+      "vyrobca tlaciarne",
+      "vyrobca tlaciarni",
+      "seria tlaciarne",
+      "seria tlaciarni",
+      "model tlaciarne",
+      "model tlaciarni",
+    ]);
+
+    const isMobile = window.matchMedia("(max-width: 820px)").matches;
+
+    root.querySelectorAll(".params-card dl > div").forEach((row) => {
+      const label = String(row.querySelector("dt")?.textContent || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      row.hidden = isMobile && hiddenLabels.has(label);
+    });
+  }
+
   function productAttributeRows(product) {
     const attrs = Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [];
-    const skip = new Set(["farba", "color", "colour", "barva", "kapacita", "vytaznost", "vyťažnosť", "pocetstran", "početstrán", "pageyield", "yield", "pages", "zaruka", "záruka", "warranty"]);
+    const skip = new Set(["farba", "color", "colour", "barva", "kapacita", "vytaznost", "vyťažnosť", "pocetstran", "početstrán", "pageyield", "yield", "pages", "zaruka", "záruka", "warranty", "vyrobcatlaciarne", "vyrobcatlaciarni", "manufacturer", "printermanufacturer", "seriatlaciarne", "seriatlaciarni", "printerseries", "series", "modeltlaciarne", "modeltlaciarni", "printermodel", "printermodels", "models"]);
     return attrs
       .map((attribute) => ({
         name: String(attribute?.name || "").trim(),
@@ -809,6 +835,79 @@
     return productAttributeRows(product)
       .map((attribute) => `<div><dt>${esc(attribute.name)}</dt><dd>${esc(attribute.value)}</dd></div>`)
       .join("");
+  }
+  function normalizedAttributeKey(value) {
+    return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+  }
+
+  function rawProductAttributes(product) {
+    return Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [];
+  }
+
+  function productAttributeValue(product, acceptedKeys) {
+    const wanted = new Set(acceptedKeys.map(normalizedAttributeKey));
+    for (const attribute of rawProductAttributes(product)) {
+      const key = normalizedAttributeKey(attribute?.slug || attribute?.name || "");
+      if (!wanted.has(key)) continue;
+      const value = String(attribute?.value || (Array.isArray(attribute?.values) ? attribute.values.join(", ") : "")).trim();
+      if (value) return value;
+    }
+    return "";
+  }
+
+  function printerManufacturer(product) {
+    const direct = productAttributeValue(product, ["Výrobca tlačiarne", "Výrobca tlačiarní", "Printer manufacturer", "Manufacturer"]);
+    if (direct) return direct.split(/[,;|]/)[0].trim();
+    const first = getPrinters(product)[0] || "";
+    const known = first.match(/^(HP|Brother|Canon|Epson|Xerox|Samsung|Lexmark|Dell|Kyocera|OKI|Ricoh|Konica Minolta|Konica|Minolta|Utax|Panasonic|Toshiba)\b/i);
+    return known ? known[0] : "";
+  }
+
+  function printerSeries(product) {
+    const direct = productAttributeValue(product, ["Séria tlačiarne", "Séria tlačiarní", "Printer series", "Series"]);
+    if (!direct) return [];
+    const seen = new Set();
+    return direct.split(/[,;|\n]/).map((value) => value.trim()).filter(Boolean).filter((value) => {
+      const key = value.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function compatibilityLink(value) {
+    return printerProductsUrl(value);
+  }
+
+  function compatibilityNavigationHtml(product) {
+    const manufacturer = printerManufacturer(product);
+    const series = printerSeries(product);
+    const printers = getPrinters(product);
+    const visiblePrinters = printers.slice(0, 8);
+
+    return `
+      <div class="compat-navigation">
+        <div class="compat-nav-group compat-nav-manufacturer">
+          <span class="compat-nav-label">Výrobca tlačiarne</span>
+          ${manufacturer ? `<a class="manufacturer-card" href="${compatibilityLink(manufacturer)}"><span class="manufacturer-mark">${esc(manufacturer.slice(0, 2).toUpperCase())}</span><span><strong>${esc(manufacturer)}</strong><small>Zobraziť všetky náplne výrobcu</small></span><b aria-hidden="true">→</b></a>` : `<p class="compat-empty">Výrobca nie je uvedený.</p>`}
+        </div>
+
+        <div class="compat-nav-group">
+          <span class="compat-nav-label">Séria tlačiarne</span>
+          <div class="series-links">
+            ${series.length ? series.map((item) => `<a href="${compatibilityLink(item)}">${esc(item)}<span aria-hidden="true">→</span></a>`).join("") : `<span class="compat-empty">Séria nie je uvedená.</span>`}
+          </div>
+        </div>
+
+        <div class="compat-nav-group compat-nav-models">
+          <div class="compat-model-head"><span class="compat-nav-label">Modely tlačiarní</span><small>${printers.length ? `${printers.length} kompatibilných modelov` : "Kompatibilita bude doplnená"}</small></div>
+          <div class="model-links">
+            ${visiblePrinters.map((printer) => `<a href="${compatibilityLink(printer)}">${esc(printer)}<span aria-hidden="true">→</span></a>`).join("")}
+            ${printers.length > visiblePrinters.length ? `<button type="button" data-show-compatible>+ Zobraziť všetkých ${printers.length} modelov</button>` : ""}
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   function normalizePrinter(value) {
@@ -1139,6 +1238,7 @@
     const printers = getPrinters(product);
 
     root.className = `tm-detail product-theme-${theme.key}`;
+    root.setAttribute("aria-busy", "false");
 
     root.innerHTML = `
       <section class="detail-hero-card">
@@ -1246,14 +1346,6 @@
         <div data-series-pack></div>
       </section>
 
-      <section class="compat-section" id="compatible-printers">
-        <div class="section-head">
-          <h2>Kompatibilné tlačiarne</h2>
-          <p>${printers.length ? `Produkt je vhodný pre ${printers.length} modelov tlačiarní.` : "Kompatibilita bude doplnená."}</p>
-        </div>
-        <div class="compat-pills">${printersInlineHtml(product)}</div>
-      </section>
-
       <section class="info-grid">
         <article class="params-card">
           <h2>Parametre produktu</h2>
@@ -1280,18 +1372,29 @@
         </article>
       </section>
 
-      <section class="related-section">
-        <div class="related-column">
-          <h2>Často kupované spolu</h2>
-          <div class="accessory-grid" data-accessories>
-            <p class="related-loading">Načítavam doplnkové produkty…</p>
+      <section class="compat-section compat-section-modern" id="compatible-printers">
+        <div class="section-head compat-section-head">
+          <div>
+            <span class="section-eyebrow">Jednoduchý výber podľa tlačiarne</span>
+            <h2>Kompatibilné tlačiarne</h2>
+          </div>
+          <p>${printers.length ? `Produkt je vhodný pre ${printers.length} modelov tlačiarní.` : "Kompatibilita bude doplnená."}</p>
+        </div>
+        ${compatibilityNavigationHtml(product)}
+      </section>
+
+      <section class="related-section related-section-stacked">
+        <div class="related-column related-column-alternatives">
+          <div class="related-title-row"><h2>Alternatívy k produktu</h2><span>Porovnajte dostupné varianty</span></div>
+          <div class="alternative-grid" data-alternatives>
+            <p class="related-loading">Načítavam skutočné alternatívy…</p>
           </div>
         </div>
 
-        <div class="related-column">
-          <h2>Alternatívy k produktu</h2>
-          <div class="alternative-grid" data-alternatives>
-            <p class="related-loading">Načítavam skutočné alternatívy…</p>
+        <div class="related-column related-column-accessories">
+          <div class="related-title-row"><h2>Často kupované spolu</h2><span>Praktické doplnky k objednávke</span></div>
+          <div class="accessory-grid" data-accessories>
+            <p class="related-loading">Načítavam doplnkové produkty…</p>
           </div>
         </div>
       </section>
@@ -1459,6 +1562,17 @@
       }
     });
 
+
+    applyMobileParameterVisibility(root);
+
+    const mobileParameterMedia = window.matchMedia("(max-width: 820px)");
+    const refreshMobileParameterVisibility = () => applyMobileParameterVisibility(root);
+    if (typeof mobileParameterMedia.addEventListener === "function") {
+      mobileParameterMedia.addEventListener("change", refreshMobileParameterVisibility, { once: true });
+    } else if (typeof mobileParameterMedia.addListener === "function") {
+      mobileParameterMedia.addListener(refreshMobileParameterVisibility);
+    }
+
     hydrateSeriesColors(product);
     hydrateSeriesPack(product);
     hydrateExtraProducts(product);
@@ -1514,6 +1628,7 @@
       if (cachedProduct) return;
 
       root.className = "product-detail-error";
+      root.setAttribute("aria-busy", "false");
       root.innerHTML = `
         <h1>Produkt sa nepodarilo načítať</h1>
         <p>${esc(error.message || "Skúste to prosím znova.")}</p>

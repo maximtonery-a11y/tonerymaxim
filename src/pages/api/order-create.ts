@@ -50,7 +50,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const shipping = SHIPPING[shippingCode] || SHIPPING.dpd_courier;
     const payment = PAYMENT[paymentCode];
+    const originalSubtotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
     const subtotal = cart.reduce((sum, item) => sum + discountedLine(item).final, 0);
+    const quantityDiscount = Math.max(0, Math.round((originalSubtotal - subtotal) * 100) / 100);
     const shippingPrice = subtotal >= 29 ? 0 : shipping.price;
     const paymentPrice = payment.price;
     let coupon = null as Awaited<ReturnType<typeof validateCheckoutCoupon>> | null;
@@ -92,6 +94,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       coupon,
       loyaltyDiscount,
       loyaltyPointsUsed: loyaltyDiscount * 100,
+      originalSubtotal: Math.round(originalSubtotal * 100) / 100,
+      quantityDiscount,
       subtotal: Math.round(subtotal * 100) / 100,
       total,
       amountCents: Math.round(total * 100),

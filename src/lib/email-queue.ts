@@ -1,9 +1,9 @@
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { join } from 'node:path';
 import { sendWooOrderStatusEmail, type WooOrderStatusEmailPayload } from './mail';
 import { wooRequest } from './woo-client';
+import { readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
 
-const STATE_PATH = resolve(process.cwd(), '.tm-cache', 'email-queue-state.json');
+const STATE_PATH = join(TM_DATA_ROOT, 'email-queue', 'state.json');
 const POLL_INTERVAL_MS = Math.max(10_000, Number(process.env.TM_EMAIL_QUEUE_INTERVAL_MS || 15_000));
 const START_DELAY_MS = Math.max(1_000, Number(process.env.TM_EMAIL_QUEUE_START_DELAY_MS || 4_000));
 const ORDERS_PER_SCAN = Math.min(100, Math.max(20, Number(process.env.TM_EMAIL_QUEUE_ORDERS_PER_SCAN || 50)));
@@ -153,12 +153,7 @@ function toPayload(order: WooOrder, fromStatus: string, toStatus: string): WooOr
 
 async function persistState(): Promise<void> {
   const snapshot = { ...state, running };
-  const task = stateLock.then(async () => {
-    await mkdir(dirname(STATE_PATH), { recursive: true });
-    const temp = `${STATE_PATH}.${process.pid}.${Date.now()}.tmp`;
-    await writeFile(temp, JSON.stringify(snapshot, null, 2), 'utf8');
-    await rename(temp, STATE_PATH);
-  });
+  const task = stateLock.then(() => writeSignedJson(STATE_PATH, snapshot));
   stateLock = task.catch(() => undefined);
   await task;
 }
@@ -276,10 +271,6 @@ export function ensureEmailQueueStarted(): void {
 }
 
 export async function readEmailQueueState(): Promise<EmailQueueState> {
-  try {
-    const parsed = JSON.parse(await readFile(STATE_PATH, 'utf8'));
-    return { ...state, ...(parsed || {}), running };
-  } catch {
-    return { ...state, running };
-  }
+  const parsed = await readSignedJson<EmailQueueState>(STATE_PATH);
+  return { ...state, ...(parsed || {}), running };
 }

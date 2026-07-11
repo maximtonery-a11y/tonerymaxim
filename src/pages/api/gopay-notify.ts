@@ -1,12 +1,8 @@
 import type { APIRoute } from "astro";
-import { processPaidGoPayOrder } from "../../lib/gopay-order";
-import { getGoPayPayment } from "../../lib/gopay-client";
+import { processPaidGoPayOrder, readPendingGoPayOrder } from "../../lib/gopay-order";
+import { verifyGoPayPaymentAgainstOrder } from "../../lib/gopay-client";
 
 export const prerender = false;
-
-async function getPaymentStatus(paymentId: string) {
-  return getGoPayPayment(paymentId);
-}
 
 function extractPaymentIdFromText(text: string) {
   const trimmed = String(text || "").trim();
@@ -38,10 +34,12 @@ export const GET: APIRoute = async ({ url }) => {
   }
 
   try {
-    const payment = await getPaymentStatus(paymentId);
+    const pending = await readPendingGoPayOrder(paymentId);
+    if (!pending) throw new Error(`Neznáma GoPay platba ${paymentId}.`);
+    const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents: pending.amountCents, currency: pending.currency, requirePaid: false });
     let orderResult: any = null;
 
-    if (String(payment.state || "") === "PAID") {
+    if (["PAID", "AUTHORIZED"].includes(String(payment.state || "").toUpperCase())) {
       orderResult = await processPaidGoPayOrder(payment);
     }
 
@@ -83,11 +81,13 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response("Missing payment id", { status: 400 });
     }
 
-    const payment = await getPaymentStatus(paymentId);
+    const pending = await readPendingGoPayOrder(paymentId);
+    if (!pending) throw new Error(`Neznáma GoPay platba ${paymentId}.`);
+    const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents: pending.amountCents, currency: pending.currency, requirePaid: false });
 
     let orderResult: any = null;
 
-    if (String(payment.state || "") === "PAID") {
+    if (["PAID", "AUTHORIZED"].includes(String(payment.state || "").toUpperCase())) {
       orderResult = await processPaidGoPayOrder(payment);
     }
 

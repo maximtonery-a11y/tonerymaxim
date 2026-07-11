@@ -7,6 +7,8 @@ import Footer from "../../components/Footer.astro";
 import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import "../../styles/footer.css";
 import mobileLogo from "../../assets/tonerymaxim-mobile-approved-logo.png";
+import SeoHead from "../../components/SeoHead.astro";
+import { breadcrumbJsonLd } from "../../lib/seo";
 
 const brandParam = String(Astro.params.brand || "");
 const brandMap: Record<string, string> = {
@@ -27,7 +29,9 @@ const brandMap: Record<string, string> = {
   dell: "Dell",
 };
 const selectedBrand = brandMap[brandParam.toLowerCase()] || brandParam;
-const title = `Náplne do tlačiarní ${selectedBrand} | ToneryMaxim.sk`;
+const title = `Tonery a náplne do tlačiarní ${selectedBrand} | ToneryMaxim.sk`;
+const description = `Vyberte model tlačiarne ${selectedBrand} a nájdite kompatibilný alebo originálny toner, atrament či optický valec.`;
+const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname);
 ---
 
 <!doctype html>
@@ -35,7 +39,7 @@ const title = `Náplne do tlačiarní ${selectedBrand} | ToneryMaxim.sk`;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <SeoHead title={title} description={description} noindex={noindex} jsonLd={breadcrumbJsonLd(Astro.url.origin, [{ name: "Domov", path: "/" }, { name: "Tlačiarne", path: "/tlaciarne" }, { name: selectedBrand, path: `/tlaciarne/${brandParam}` }])} />
   </head>
   <body class="printer-brand-page">
     <div class="page">

@@ -279,6 +279,13 @@
   gap: 0;
 }
 
+
+/* TM Update 043: prvky riadené atribútom hidden sa nesmú prepísať display pravidlami. */
+.delivery-address[hidden],
+.company-box[hidden],
+.pickup-box[hidden] {
+  display: none !important;
+}
 .checkline {
   display: flex !important;
   grid-template-columns: none !important;

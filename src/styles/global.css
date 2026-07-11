@@ -1075,3 +1075,19 @@ input {
     text-decoration: none;
   }
 }
+
+/* TM global anti-FOUC: verejné stránky sa zobrazia až po pripravení základného DOM. */
+html:not(.tm-page-ready) body > .page {
+  opacity: 0;
+  visibility: hidden;
+}
+
+html.tm-page-ready body > .page {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .12s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.tm-page-ready body > .page { transition: none; }
+}

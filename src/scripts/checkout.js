@@ -7,6 +7,19 @@
   let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") === "1";
   let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
 
+  let goPayWarmupStarted = false;
+  function warmGoPay() {
+    if (goPayWarmupStarted) return;
+    goPayWarmupStarted = true;
+    fetch("/api/gopay-warmup", {
+      method: "GET",
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      keepalive: true,
+    }).catch(() => {});
+  }
+
   async function loadLoyalty() {
     try {
       const response = await fetch("/api/account/loyalty", { credentials: "same-origin" });
@@ -147,6 +160,15 @@
     return Boolean(String(address?.address_1 || "").trim() && String(address?.city || "").trim() && String(address?.postcode || "").trim());
   }
 
+  function customerMeta(customer, keys = []) {
+    const meta = Array.isArray(customer?.meta_data) ? customer.meta_data : [];
+    for (const key of keys) {
+      const found = [...meta].reverse().find((item) => item?.key === key);
+      if (found && String(found.value ?? "").trim()) return String(found.value).trim();
+    }
+    return "";
+  }
+
   function hydrateCheckoutFromCustomer(customer) {
     if (!customer) return null;
 
@@ -164,19 +186,25 @@
 
     writeInput("first_name", billing.first_name || firstName, true);
     writeInput("last_name", billing.last_name || lastName, true);
+    const savedIco = customerMeta(customer, ["tm_ico", "billing_ico", "_billing_ico"]);
+    const savedDic = customerMeta(customer, ["tm_dic", "billing_dic", "_billing_dic"]);
+    const savedIcDph = customerMeta(customer, ["tm_ic_dph", "billing_ic_dph", "_billing_ic_dph"]);
+
     writeInput("company", billing.company || "", true);
+    writeInput("ico", savedIco, true);
+    writeInput("dic", savedDic, true);
+    writeInput("icdph", savedIcDph, true);
     writeInput("address", billing.address_1 || billing.address || "", true);
     writeInput("zip", billing.postcode || billing.zip || "", true);
     writeInput("city", billing.city || "", true);
 
     const companyEnabled = document.querySelector("#company_enabled");
-    if (companyEnabled && String(billing.company || "").trim()) companyEnabled.checked = true;
+    if (companyEnabled && [billing.company, savedIco, savedDic, savedIcDph].some((value) => String(value || "").trim())) companyEnabled.checked = true;
 
     const shippingMethod = getSelected("shipping");
     const different = document.querySelector("#different_address");
 
-    if (!needsPickupShipping(shippingMethod) && hasUsableShippingAddress(shipping) && addressDiffers(shipping, billing)) {
-      if (different) different.checked = true;
+    if (hasUsableShippingAddress(shipping)) {
       writeInput("delivery_first_name", shipping.first_name || billing.first_name || firstName, true);
       writeInput("delivery_last_name", shipping.last_name || billing.last_name || lastName, true);
       writeInput("delivery_street", shipping.address_1 || shipping.address || "", true);
@@ -184,9 +212,8 @@
       writeInput("delivery_city", shipping.city || "", true);
       writeInput("delivery_phone", normalizePhone(shipping.phone || billing.phone || ""), true);
       writeInput("delivery_email", customer.email || billing.email || "", true);
-    } else if (needsPickupShipping(shippingMethod) && different) {
-      different.checked = false;
     }
+    if (different) different.checked = false;
 
     updateVisibility();
     renderCheckoutSummary();
@@ -1720,6 +1747,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     restoreCheckoutSelection();
     restorePickupState();
+    if (["gopay", "applepay", "googlepay"].includes(getSelected("payment"))) warmGoPay();
     renderCheckoutSummary();
     loadLoyalty();
     autoLoadBestCoupon();
@@ -1732,6 +1760,7 @@
     document.querySelectorAll('input[name="shipping"], input[name="payment"], #company_enabled, #different_address').forEach((input) => {
       input.addEventListener("change", () => {
         if (input.name === "shipping" || input.name === "payment") saveCheckoutSelection();
+        if (input.name === "payment" && ["gopay", "applepay", "googlepay"].includes(input.value)) warmGoPay();
         updateVisibility();
         renderCheckoutSummary();
       });

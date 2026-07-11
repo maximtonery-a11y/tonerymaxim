@@ -7,9 +7,23 @@ import "../../styles/product-detail.css";
 import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
+import SeoHead from "../../components/SeoHead.astro";
+import { getProductsCache, stripHtml } from "../../lib/tm-products-cache";
+import { breadcrumbJsonLd, organizationJsonLd, productDescription, productJsonLd, absoluteUrl } from "../../lib/seo";
 
 const { slug } = Astro.params;
-const title = "Detail produktu | ToneryMaxim.sk";
+const cache = await getProductsCache().catch(() => null);
+const product = cache?.products?.find((item: any) => String(item.slug) === String(slug) || String(item.id) === String(slug));
+if (!product) return Astro.redirect('/produkty', 302);
+const title = `${product.name} | ToneryMaxim.sk`;
+const description = productDescription(product);
+const canonical = `${Astro.url.origin}/produkt/${encodeURIComponent(product.slug)}`;
+const image = absoluteUrl(Astro.url.origin, product.image || product.images?.[0] || '/favicon.svg');
+const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname);
+const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
+const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.price || 0));
+const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
+const plainDescription = stripHtml(product.description_html || product.short_description_html || product.description || '');
 ---
 
 <!doctype html>
@@ -17,7 +31,7 @@ const title = "Detail produktu | ToneryMaxim.sk";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <SeoHead title={title} description={description} canonical={canonical} image={image} type="product" noindex={noindex} jsonLd={[organizationJsonLd(Astro.url.origin), productJsonLd(Astro.url.origin, product), breadcrumbJsonLd(Astro.url.origin, [{ name: "Domov", path: "/" }, { name: "Produkty", path: "/produkty" }, { name: product.name, path: `/produkt/${product.slug}` }])]} />
   </head>
 
   <body class="product-detail-body">
@@ -31,7 +45,29 @@ const title = "Detail produktu | ToneryMaxim.sk";
       <main class="product-detail-page" data-product-slug={slug}>
         <div class="detail-wrap">
           <a class="back-link" href="/produkty">← Späť na produkty</a>
-          <section data-product-root class="product-detail-loading">Načítavam produkt...</section>
+          <section data-product-root class="tm-detail product-seo-initial tm-product-hydrating" aria-busy="true">
+            <div class="tm-product-loading" aria-label="Načítava sa detail produktu">
+              <div class="tm-product-loading-image"></div>
+              <div class="tm-product-loading-copy">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tm-product-loading-price"><span></span><span></span></div>
+            </div>
+            <div class="tm-product-seo-fallback">
+            <section class="detail-hero-card">
+              <div class="product-gallery"><div class="main-image"><img src={product.image} alt={product.name} width="640" height="640" loading="eager" decoding="async" /></div></div>
+              <div class="product-info">
+                <div class="badge-row"><span class="type-badge">{product.product_type_label}</span></div>
+                <h1>{product.name}</h1>
+                <p class="summary-subtitle">{description}</p>
+                {printers.length > 0 && <p><strong>Kompatibilné tlačiarne:</strong> {printers.slice(0, 8).join(', ')}</p>}
+                <div class:list={["stock-line", inStock ? "is-available" : "is-unavailable"]}><strong>{inStock ? 'Skladom' : 'Momentálne nie je skladom'}</strong></div>
+              </div>
+              <aside class="purchase-panel"><span class="vat-label">Cena s DPH</span><div class="price-row"><strong>{price}</strong><span>s DPH</span></div></aside>
+            </section>
+            {plainDescription && <section class="info-grid"><article class="params-card"><h2>Popis produktu</h2><p>{plainDescription}</p></article></section>}
+            </div>
+          </section>
         </div>
       </main>
 

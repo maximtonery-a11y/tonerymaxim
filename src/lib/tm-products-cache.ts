@@ -874,6 +874,31 @@ function searchTokens(value: unknown) {
     .filter((token) => token.length >= 2);
 }
 
+function matchesPrinterFilter(product: TmProduct, query: string) {
+  const normalizedQuery = normalize(query);
+  const compactQuery = compactKey(query);
+  if (!normalizedQuery || !compactQuery) return true;
+
+  const printers = Array.isArray(product.compatible_printers)
+    ? product.compatible_printers
+    : Array.isArray(product.printers)
+      ? product.printers
+      : [];
+
+  // Pri kliknutí na konkrétnu sériu/model musí zostať zachovaný aj znak za pomlčkou
+  // (napr. Brother DCP-L nesmie spadnúť na všeobecné Brother DCP).
+  if (printers.some((item) => compactKey(item).includes(compactQuery))) return true;
+
+  const attributeValues = (Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [])
+    .flatMap((attribute: any) => [attribute?.value, ...(Array.isArray(attribute?.values) ? attribute.values : [])])
+    .filter(Boolean);
+  if (attributeValues.some((item: unknown) => compactKey(item).includes(compactQuery))) return true;
+
+  // Fallback pre výrobcu (HP, Brother, Canon...), keď produkt nemá zoznam modelov.
+  const brandOnly = /^[a-z0-9]+$/i.test(normalizedQuery) && !/[\s-]/.test(String(query));
+  return brandOnly && compactKey(product.search_text || `${product.name || ""} ${product.sku || ""}`).includes(compactQuery);
+}
+
 function matchesLooseSearch(text: string, query: string) {
   const search = normalize(query);
   if (!search) return true;
@@ -926,7 +951,7 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
       else if (!text.includes(brand)) return false;
     }
     if (filters.category && !matchesCategory(product, filters.category)) return false;
-    if (printer && !matchesLooseSearch(text, printer)) return false;
+    if (printer && !matchesPrinterFilter(product, filters.printer || "")) return false;
     if (search && !matchesLooseSearch(text, search)) return false;
     return true;
   });

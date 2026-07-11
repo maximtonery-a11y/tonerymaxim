@@ -6,8 +6,13 @@ import "../styles/footer.css";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
+import SeoHead from "../components/SeoHead.astro";
+import { breadcrumbJsonLd } from "../lib/seo";
 
-const title = "Produkty | ToneryMaxim.sk";
+const query = String(Astro.url.searchParams.get("s") || Astro.url.searchParams.get("search") || "").trim();
+const title = query ? `${query} – tonery a náplne | ToneryMaxim.sk` : "Tonery a náplne do tlačiarní | ToneryMaxim.sk";
+const description = query ? `Výsledky pre ${query}. Porovnajte kompatibilné, originálne a renovované tonery a náplne.` : "Vyhľadajte toner alebo náplň podľa označenia, značky či modelu tlačiarne. Kompatibilné, originálne a renovované produkty na jednom mieste.";
+const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname) || Astro.url.searchParams.size > 0;
 ---
 
 <!doctype html>
@@ -15,7 +20,7 @@ const title = "Produkty | ToneryMaxim.sk";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <SeoHead title={title} description={description} noindex={noindex} canonical={`${Astro.url.origin}/produkty`} jsonLd={breadcrumbJsonLd(Astro.url.origin, [{ name: "Domov", path: "/" }, { name: "Produkty", path: "/produkty" }])} />
   </head>
 
   <body>

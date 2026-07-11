@@ -22,6 +22,7 @@ export type TMAnalyticsEvent = {
   product?: string;
   value?: number;
   meta?: Record<string, unknown>;
+  sessionId?: string;
 };
 
 const ANALYTICS_DIR = path.join(process.cwd(), '.tm-cache', 'analytics');
@@ -104,6 +105,7 @@ export async function saveAnalyticsEvent(request: Request, payload: unknown): Pr
     product: cleanText(data.product, 300),
     value: cleanNumber(data.value, 1_000_000),
     meta: typeof data.meta === 'object' && data.meta ? data.meta as Record<string, unknown> : undefined,
+    sessionId: cleanText(data.sessionId, 80),
   };
 
   await mkdir(ANALYTICS_DIR, { recursive: true });

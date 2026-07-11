@@ -131,6 +131,18 @@ body.has-add-cart-drawer { overflow: hidden; }
 </style>
 
 <script>
+  // Odstráni prebliknutie nehotového rozloženia pri prechode medzi stránkami.
+  const revealPage = () => {
+    requestAnimationFrame(() => document.documentElement.classList.add("tm-page-ready"));
+  };
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", revealPage, { once: true });
+  } else {
+    revealPage();
+  }
+  // Bezpečnostná poistka pri chybe iného skriptu.
+  window.setTimeout(() => document.documentElement.classList.add("tm-page-ready"), 1200);
+
   import "../scripts/device-layout.js";
   import "../scripts/cart.js";
   import "../scripts/smart-search.js";

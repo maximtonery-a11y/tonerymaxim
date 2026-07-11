@@ -1,4 +1,6 @@
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
+import { join } from 'node:path';
+import { atomicWriteText, readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
 
 export type SecurityEvent = {
   ts: string;
@@ -13,17 +15,32 @@ type RateRule = { limit: number; windowMs: number };
 type Bucket = { count: number; resetAt: number };
 
 const buckets = new Map<string, Bucket>();
+const RATE_STATE_PATH = join(TM_DATA_ROOT, 'security', 'rate-limit.json');
+let rateStateLoaded = false;
+let rateStateLock: Promise<void> = Promise.resolve();
 const events: SecurityEvent[] = [];
 const MAX_EVENTS = 300;
 
 const RATE_RULES: Array<{ match: RegExp; methods?: string[]; rule: RateRule }> = [
-  { match: /^\/api\/auth\/login$/, methods: ['POST'], rule: { limit: 12, windowMs: 60_000 } },
-  { match: /^\/api\/auth\/(register|forgot-password|reset-password)$/, methods: ['POST'], rule: { limit: 6, windowMs: 10 * 60_000 } },
-  { match: /^\/api\/(order-create|gopay-create)$/, methods: ['POST'], rule: { limit: 8, windowMs: 60_000 } },
-  { match: /^\/api\/contact$/, methods: ['POST'], rule: { limit: 5, windowMs: 10 * 60_000 } },
-  { match: /^\/api\/customer-care\//, methods: ['POST'], rule: { limit: 5, windowMs: 10 * 60_000 } },
-  { match: /^\/api\/analytics$/, methods: ['POST'], rule: { limit: 180, windowMs: 60_000 } },
-  { match: /^\/api\/(smart-search|products|product|printers)$/, methods: ['GET'], rule: { limit: 180, windowMs: 60_000 } },
+  // Prihlásenie: dostatočná rezerva pre reálnych zákazníkov aj firemné siete,
+  // stále však blokuje automatizované brute-force pokusy.
+  { match: /^\/api\/auth\/login$/, methods: ['POST'], rule: { limit: 30, windowMs: 60_000 } },
+
+  // Registrácia a obnova hesla: vyšší bezpečný limit, aby neblokoval legitímne opakovanie formulára.
+  { match: /^\/api\/auth\/(register|forgot-password|reset-password)$/, methods: ['POST'], rule: { limit: 15, windowMs: 10 * 60_000 } },
+
+  // Checkout a GoPay: rezerva pre dvojklik, opakovanie po chybe a viac používateľov za jednou IP.
+  { match: /^\/api\/(order-create|gopay-create)$/, methods: ['POST'], rule: { limit: 30, windowMs: 60_000 } },
+
+  // GoPay stav môže frontend krátko pollingovať po návrate z platobnej brány.
+  { match: /^\/api\/gopay-status$/, methods: ['GET'], rule: { limit: 180, windowMs: 60_000 } },
+
+  { match: /^\/api\/contact$/, methods: ['POST'], rule: { limit: 12, windowMs: 10 * 60_000 } },
+  { match: /^\/api\/customer-care\//, methods: ['POST'], rule: { limit: 12, windowMs: 10 * 60_000 } },
+
+  // Analytika a vyhľadávanie generujú viac požiadaviek pri bežnom používaní.
+  { match: /^\/api\/analytics$/, methods: ['POST'], rule: { limit: 600, windowMs: 60_000 } },
+  { match: /^\/api\/(smart-search|products|product|printers)$/, methods: ['GET'], rule: { limit: 600, windowMs: 60_000 } },
 ];
 
 const TEST_ROUTES = new Set([
@@ -35,6 +52,24 @@ const TEST_ROUTES = new Set([
 const ORIGIN_EXEMPT = new Set([
   '/api/gopay-notify',
 ]);
+
+
+async function loadPersistentBuckets(): Promise<void> {
+  if (rateStateLoaded) return;
+  const saved = await readSignedJson<Record<string, Bucket>>(RATE_STATE_PATH);
+  const now = Date.now();
+  if (saved) for (const [key, value] of Object.entries(saved)) {
+    if (Number(value?.resetAt || 0) > now && Number(value?.count || 0) > 0) buckets.set(key, value);
+  }
+  rateStateLoaded = true;
+}
+
+function persistBuckets(): void {
+  const snapshot = Object.fromEntries([...buckets.entries()].filter(([, value]) => value.resetAt > Date.now()));
+  rateStateLock = rateStateLock.then(() => writeSignedJson(RATE_STATE_PATH, snapshot)).catch((error) => {
+    console.error('[TM security] rate-limit persistence failed:', error?.message || error);
+  });
+}
 
 function env(name: string): string {
   return String(import.meta.env[name] || process.env[name] || '').trim();
@@ -68,7 +103,8 @@ export function requestId(request: Request): string {
   return incoming && /^[a-zA-Z0-9._-]{6,100}$/.test(incoming) ? incoming : randomUUID();
 }
 
-export function rateLimitFor(path: string, method: string, request: Request): { ok: true } | { ok: false; retryAfter: number } {
+export async function rateLimitFor(path: string, method: string, request: Request): Promise<{ ok: true } | { ok: false; retryAfter: number }> {
+  await loadPersistentBuckets();
   const matched = RATE_RULES.find((item) => item.match.test(path) && (!item.methods || item.methods.includes(method)));
   if (!matched) return { ok: true };
 
@@ -79,10 +115,12 @@ export function rateLimitFor(path: string, method: string, request: Request): { 
 
   if (!current || current.resetAt <= now) {
     buckets.set(key, { count: 1, resetAt: now + matched.rule.windowMs });
+    persistBuckets();
     return { ok: true };
   }
 
   current.count += 1;
+  persistBuckets();
   if (current.count <= matched.rule.limit) return { ok: true };
 
   const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
@@ -159,6 +197,8 @@ export function securityStatus(hostname: string) {
     adminProtected: adminSecret.length >= 24,
     testEndpointsBlocked: !isLocalHost(hostname) && env('TM_ALLOW_TEST_ENDPOINTS') !== '1',
     rateLimitRules: RATE_RULES.length,
+    persistentDataDir: TM_DATA_ROOT,
+    rateLimitPersistent: true,
     recentEvents: readSecurityEvents(50),
   };
 }

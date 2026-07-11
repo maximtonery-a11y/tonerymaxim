@@ -697,23 +697,50 @@ function formatMoney(value) {
         <div class="cart-item-price">${formatMoney(item.price)}</div>
 
         <div class="cart-item-quantity">
-          ${isCompatibleDiscountItem(item) ? `
-            <p class="cart-quantity-discount-title"><strong>Množstevná zľava:</strong> od 2 ks 10 %, od 4 ks 25 %.</p>
-          ` : ``}
           <div class="qty-control">
             <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" aria-label="Znížiť množstvo">−</button>
             <input type="number" min="1" max="99" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" aria-label="Množstvo" />
             <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" aria-label="Zvýšiť množstvo">+</button>
           </div>
-          ${isCompatibleDiscountItem(item) ? `
-            <p class="cart-quantity-discount-note">Zľava sa uplatní automaticky v košíku aj pokladni.</p>
-          ` : ``}
         </div>
 
         <div class="cart-item-total">
           ${itemDiscount > 0 ? `<small class="cart-line-discount">Zľava ${Math.round(itemDiscountRate * 100)} % · -${formatMoney(itemDiscount)}</small>` : ``}
           ${itemDiscount > 0 ? `<del>${formatMoney(itemTotal)}</del>` : ``}
           <strong>${formatMoney(itemFinal)}</strong>
+        </div>
+
+        <div class="cart-benefit-grid" data-cart-benefits>
+          <div class="cart-benefit-card cart-benefit-expedition">
+            <span class="cart-benefit-icon" aria-hidden="true">🚚</span>
+            <div>
+              <strong>Expedujeme najbližší pracovný deň</strong>
+              <small>Produkty skladom pripravíme na odoslanie čo najskôr.</small>
+            </div>
+          </div>
+          ${isCompatibleDiscountItem(item) ? `
+            <div class="cart-benefit-card cart-benefit-discount">
+              <span class="cart-benefit-icon" aria-hidden="true">%</span>
+              <div>
+                <strong>Množstevná zľava</strong>
+                <small>Od 2 ks 10 %, od 4 ks 25 %.</small>
+              </div>
+            </div>
+            <div class="cart-benefit-card cart-benefit-auto">
+              <span class="cart-benefit-icon" aria-hidden="true">✓</span>
+              <div>
+                <strong>Zľava automaticky</strong>
+                <small>Uplatní sa v košíku aj v pokladni.</small>
+              </div>
+            </div>
+          ` : ``}
+          <div class="cart-benefit-card cart-benefit-shipping" data-free-shipping-card>
+            <span class="cart-benefit-icon" aria-hidden="true">🎁</span>
+            <div>
+              <strong data-free-shipping-title>Doprava zdarma od 29 €</strong>
+              <small data-free-shipping-text></small>
+            </div>
+          </div>
         </div>
       `;
 
@@ -728,6 +755,21 @@ function formatMoney(value) {
     const beforeLoyaltyTotal = Math.max(0, beforeCouponTotal - couponDiscount);
     const loyaltyDiscount = loyaltyDiscountForTotal(beforeLoyaltyTotal);
     const total = Math.max(0, beforeLoyaltyTotal - loyaltyDiscount);
+    const freeShippingThreshold = 29;
+    const missingForFreeShipping = Math.max(0, freeShippingThreshold - total);
+
+    document.querySelectorAll("[data-free-shipping-card]").forEach((card) => {
+      const title = card.querySelector("[data-free-shipping-title]");
+      const text = card.querySelector("[data-free-shipping-text]");
+      const hasFreeShipping = missingForFreeShipping <= 0.001;
+      card.classList.toggle("is-free", hasFreeShipping);
+      if (title) title.textContent = hasFreeShipping ? "Dopravu máte zadarmo" : "Doprava zdarma od 29 €";
+      if (text) {
+        text.textContent = hasFreeShipping
+          ? "Pri tejto objednávke za dopravu neplatíte."
+          : `Do dopravy zadarmo vám chýba nakúpiť za ${formatMoney(missingForFreeShipping)}.`;
+      }
+    });
 
     let discountEl = document.querySelector("[data-cart-discount-line]");
     if (summary && !discountEl) {

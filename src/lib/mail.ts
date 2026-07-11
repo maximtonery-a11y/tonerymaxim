@@ -51,6 +51,7 @@ export async function sendMail(input: {
   html?: string;
   replyTo?: string;
   attachments?: Array<{ filename: string; path: string; contentType?: string }>;
+  bcc?: string;
 }) {
   const transporter = getTransporter();
   return transporter.sendMail({
@@ -61,6 +62,7 @@ export async function sendMail(input: {
     html: input.html,
     replyTo: input.replyTo || env("MAIL_REPLY_TO") || env("MAIL_FROM") || env("SMTP_USER"),
     attachments: input.attachments,
+    bcc: input.bcc,
   });
 }
 
@@ -206,20 +208,27 @@ export async function sendOrderConfirmationEmail(input: {
   const firstName = String(billing.firstName || contact.name || "").trim().split(/\s+/)[0] || "zákazník";
   const items = Array.isArray(source.cart) ? source.cart : [];
 
+  const originalSubtotalGross = toNumber(source.originalSubtotal || source.subtotal);
+  const quantityDiscountGross = toNumber(source.quantityDiscount);
   const subtotalGross = toNumber(source.subtotal);
   const shippingGross = toNumber(source.shippingPrice);
   const paymentGross = toNumber(source.paymentPrice);
+  const couponGross = toNumber(source.coupon?.discount);
   const loyaltyGross = toNumber(source.loyaltyDiscount);
   const totalGross = toNumber(source.total);
   const totalNet = netFromGross(totalGross);
   const totalVat = vatFromGross(totalGross);
 
   const rowsText = items.map((item: any) => {
-    const gross = toNumber(Number(item.price || 0) * Number(item.qty || 1));
+    const original = toNumber(Number(item.price || 0) * Number(item.qty || 1));
+    const rate = Number(item.qty || 0) >= 4 ? 0.25 : Number(item.qty || 0) >= 2 ? 0.10 : 0;
+    const gross = /kompatibil/i.test(String(item.product_type_label || item.product_type_key || item.name || "")) ? toNumber(original * (1-rate)) : original;
     return `- ${item.name} ×${item.qty}: ${formatMoney(gross)} s DPH / ${formatMoney(netFromGross(gross))} bez DPH`;
   }).join("\n");
   const rowsHtml = items.map((item: any) => {
-    const gross = toNumber(Number(item.price || 0) * Number(item.qty || 1));
+    const original = toNumber(Number(item.price || 0) * Number(item.qty || 1));
+    const rate = Number(item.qty || 0) >= 4 ? 0.25 : Number(item.qty || 0) >= 2 ? 0.10 : 0;
+    const gross = /kompatibil/i.test(String(item.product_type_label || item.product_type_key || item.name || "")) ? toNumber(original * (1-rate)) : original;
     return `
     <tr>
       <td style="padding:10px 0;border-bottom:1px solid #e6edf5"><strong>${escapeHtml(String(item.name || "Produkt"))}</strong><br><span style="color:#64748b">SKU: ${escapeHtml(String(item.sku || ""))}</span></td>
@@ -249,7 +258,9 @@ DPH 23 %: ${formatMoney(totalVat)}\n\nFakturačná adresa:\n${addressBlock(billi
         <tbody>${rowsHtml}</tbody>
       </table>
       <table style="width:100%;border-collapse:collapse;margin:18px 0">
-        <tr><td style="padding:6px 0;color:#64748b">Medzisúčet tovaru s DPH:</td><td style="padding:6px 0;text-align:right">${formatMoney(subtotalGross)}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b">Medzisúčet tovaru s DPH:</td><td style="padding:6px 0;text-align:right">${formatMoney(originalSubtotalGross)}</td></tr>
+        ${quantityDiscountGross > 0 ? `<tr><td style="padding:6px 0;color:#0f9f4a">Množstevná / sadová zľava:</td><td style="padding:6px 0;text-align:right;color:#0f9f4a">-${formatMoney(quantityDiscountGross)}</td></tr>` : ""}
+        ${couponGross > 0 ? `<tr><td style="padding:6px 0;color:#0f9f4a">${escapeHtml(String(source.coupon?.label || "Kupónová zľava"))}:</td><td style="padding:6px 0;text-align:right;color:#0f9f4a">-${formatMoney(couponGross)}</td></tr>` : ""}
         <tr><td style="padding:6px 0;color:#64748b">Doprava:</td><td style="padding:6px 0;text-align:right">${escapeHtml(input.shippingTitle)} · ${formatMoney(shippingGross)}</td></tr>
         <tr><td style="padding:6px 0;color:#64748b">Spôsob platby:</td><td style="padding:6px 0;text-align:right">${escapeHtml(input.paymentTitle)} · ${formatMoney(paymentGross)}</td></tr>
         ${loyaltyGross > 0 ? `<tr><td style="padding:6px 0;color:#0f9f4a">Vernostná zľava:</td><td style="padding:6px 0;text-align:right;color:#0f9f4a">-${formatMoney(loyaltyGross)}</td></tr>` : ""}
@@ -278,6 +289,7 @@ DPH 23 %: ${formatMoney(totalVat)}\n\nFakturačná adresa:\n${addressBlock(billi
     text,
     html,
     attachments: legalAttachments(),
+    bcc: "info@tonerymaxim.sk",
   });
 }
 

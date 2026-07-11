@@ -1,12 +1,8 @@
 import type { APIRoute } from "astro";
 import { processPaidGoPayOrder, readPendingGoPayOrder } from "../../lib/gopay-order";
-import { getGoPayPayment } from "../../lib/gopay-client";
+import { verifyGoPayPaymentAgainstOrder } from "../../lib/gopay-client";
 
 export const prerender = false;
-
-async function getPayment(paymentId: string) {
-  return getGoPayPayment(paymentId);
-}
 
 function getUiState(state: string) {
   switch (state) {
@@ -59,12 +55,13 @@ export const GET: APIRoute = async ({ url }) => {
     }
 
     const pending = await readPendingGoPayOrder(paymentId);
-    const payment = await getPayment(paymentId);
+    if (!pending) throw new Error(`Neznáma GoPay platba ${paymentId}.`);
+    const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents: pending.amountCents, currency: pending.currency, requirePaid: false });
     const state = String(payment?.state || "UNKNOWN");
 
     let orderResult: any = null;
 
-    if (state === "PAID") {
+    if (["PAID", "AUTHORIZED"].includes(state)) {
       processPaidGoPayOrder(payment)
         .then((result) => console.log("GoPay status background Woo order", {
           id: payment.id,

@@ -1,0 +1,38 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  image?: string;
+  type?: "website" | "product" | "article";
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+}
+const {
+  title,
+  description,
+  canonical = Astro.url.origin + Astro.url.pathname,
+  image = new URL('/favicon.svg', Astro.url.origin).toString(),
+  type = 'website',
+  noindex = false,
+  jsonLd,
+} = Astro.props;
+const robots = noindex ? 'noindex,nofollow,noarchive,nosnippet' : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
+const jsonItems = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+---
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="robots" content={robots} />
+<link rel="canonical" href={canonical} />
+<meta property="og:locale" content="sk_SK" />
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content="ToneryMaxim.sk" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={image} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
+{jsonItems.map((item) => <script type="application/ld+json" set:html={JSON.stringify(item)} />)}

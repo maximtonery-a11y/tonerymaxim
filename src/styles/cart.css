@@ -971,3 +971,130 @@ body.has-add-cart-drawer { overflow: hidden; }
     font-size: 11px;
   }
 }
+
+/* TM Update 041 – informačné bloky pod produktom v košíku */
+.cart-benefit-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid #e8eef6;
+}
+
+.cart-benefit-card {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 82px;
+  padding: 13px 14px;
+  border: 1px solid #dce7f3;
+  border-radius: 15px;
+  background: #f8fbff;
+}
+
+.cart-benefit-icon {
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #e8f3ff;
+  color: #0676d8;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.cart-benefit-card strong {
+  display: block;
+  margin: 1px 0 4px;
+  color: var(--navy);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.cart-benefit-card small {
+  display: block;
+  color: #667085;
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.cart-benefit-expedition {
+  background: #f4fbf7;
+  border-color: #cfeada;
+}
+
+.cart-benefit-expedition .cart-benefit-icon {
+  background: #dff5e8;
+  color: #079455;
+}
+
+.cart-benefit-discount,
+.cart-benefit-auto {
+  background: #fffaf0;
+  border-color: #f4dfb4;
+}
+
+.cart-benefit-discount .cart-benefit-icon,
+.cart-benefit-auto .cart-benefit-icon {
+  background: #fff0cb;
+  color: #b76e00;
+}
+
+.cart-benefit-shipping {
+  background: #fff8ed;
+  border-color: #f2d19e;
+}
+
+.cart-benefit-shipping .cart-benefit-icon {
+  background: #ffebc7;
+  color: #a15c00;
+}
+
+.cart-benefit-shipping.is-free {
+  background: #edf9f2;
+  border-color: #b9e2c9;
+}
+
+.cart-benefit-shipping.is-free .cart-benefit-icon {
+  background: #d7f2e2;
+  color: #078b4f;
+}
+
+.cart-benefit-shipping.is-free strong,
+.cart-benefit-shipping.is-free small {
+  color: #087443;
+}
+
+@media (max-width: 1250px) {
+  .cart-benefit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .cart-benefit-grid {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 5px;
+    padding-top: 12px;
+  }
+
+  .cart-benefit-card {
+    min-height: 0;
+    padding: 11px 12px;
+    border-radius: 14px;
+  }
+
+  .cart-benefit-card strong {
+    font-size: 12.5px;
+  }
+
+  .cart-benefit-card small {
+    font-size: 11px;
+  }
+}

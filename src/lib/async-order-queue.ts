@@ -1,10 +1,14 @@
-import { mkdir, readFile, writeFile, unlink, readdir, stat } from "node:fs/promises";
+import { mkdir, unlink, readdir, stat, rename } from "node:fs/promises";
 import { join } from "node:path";
+import { readSignedJson, writeSignedJson, quarantineFile, TM_DATA_ROOT } from "./secure-persistence";
 import { createWooOrderFromCheckout, type CheckoutOrderSource } from "./gopay-order";
 import { CheckoutProfiler } from "./checkout-profiler";
 import { sendOrderConfirmationEmail } from "./mail";
+import { wooRequest } from "./woo-client";
 
-const QUEUE_ROOT = join(process.cwd(), ".tm-cache", "async-orders");
+const QUEUE_ROOT = join(TM_DATA_ROOT, "async-orders");
+const LEGACY_QUEUE_ROOT = join(process.cwd(), ".tm-cache", "async-orders");
+const STALE_PROCESSING_MS = Math.max(60_000, Number(process.env.TM_QUEUE_STALE_PROCESSING_MS || 10 * 60_000));
 const PENDING_DIR = join(QUEUE_ROOT, "pending");
 const PROCESSING_DIR = join(QUEUE_ROOT, "processing");
 const DONE_DIR = join(QUEUE_ROOT, "done");
@@ -41,16 +45,49 @@ function jobFile(dir: string, id: string) {
   return join(dir, `${safeId(id)}.json`);
 }
 
+async function migrateLegacyQueue() {
+  for (const name of ["pending", "processing", "done", "failed"]) {
+    const legacyDir = join(LEGACY_QUEUE_ROOT, name);
+    const targetDir = join(QUEUE_ROOT, name);
+    const files = await readdir(legacyDir).catch(() => []);
+    for (const file of files.filter((item) => item.endsWith(".json"))) {
+      const legacyPath = join(legacyDir, file);
+      try {
+        const raw = JSON.parse(await (await import("node:fs/promises")).readFile(legacyPath, "utf8")) as AsyncOrderJob;
+        if (raw?.id && raw?.source) {
+          await writeSignedJson(join(targetDir, file), raw);
+          await unlink(legacyPath).catch(() => null);
+        }
+      } catch { /* legacy file stays untouched */ }
+    }
+  }
+}
+
+async function recoverStaleProcessing() {
+  const files = await readdir(PROCESSING_DIR).catch(() => []);
+  const now = Date.now();
+  for (const file of files.filter((item) => item.endsWith(".json"))) {
+    const path = join(PROCESSING_DIR, file);
+    const info = await stat(path).catch(() => null);
+    if (info && now - info.mtimeMs > STALE_PROCESSING_MS) {
+      await rename(path, join(PENDING_DIR, file)).catch(() => null);
+    }
+  }
+}
+
 async function ensureDirs() {
   await mkdir(PENDING_DIR, { recursive: true });
   await mkdir(PROCESSING_DIR, { recursive: true });
   await mkdir(DONE_DIR, { recursive: true });
   await mkdir(FAILED_DIR, { recursive: true });
+  await migrateLegacyQueue();
 }
 
 async function readJob(filePath: string): Promise<AsyncOrderJob | null> {
   try {
-    return JSON.parse(await readFile(filePath, "utf8"));
+    const job = await readSignedJson<AsyncOrderJob>(filePath);
+    if (!job) await quarantineFile(filePath, "bad-signature");
+    return job;
   } catch {
     return null;
   }
@@ -59,7 +96,7 @@ async function readJob(filePath: string): Promise<AsyncOrderJob | null> {
 async function writeJob(dir: string, job: AsyncOrderJob) {
   await ensureDirs();
   job.updatedAt = new Date().toISOString();
-  await writeFile(jobFile(dir, job.id), JSON.stringify(job, null, 2), "utf8");
+  await writeSignedJson(jobFile(dir, job.id), job);
 }
 
 async function removeOldDoneFiles() {
@@ -80,16 +117,18 @@ async function removeOldDoneFiles() {
 
 async function processOneJob(file: string) {
   const pendingPath = join(PENDING_DIR, file);
-  const job = await readJob(pendingPath);
+  const claimedPath = join(PROCESSING_DIR, file);
+  await ensureDirs();
+  try { await rename(pendingPath, claimedPath); } catch { return; }
+  const job = await readJob(claimedPath);
   if (!job) return;
 
-  const processingPath = jobFile(PROCESSING_DIR, job.id);
+  const processingPath = claimedPath;
   try {
     job.status = "processing";
     job.attempts = Number(job.attempts || 0) + 1;
     job.updatedAt = new Date().toISOString();
     await writeJob(PROCESSING_DIR, job);
-    await unlink(pendingPath).catch(() => null);
 
     const profiler = new CheckoutProfiler("async-woo-order", {
       asyncOrderId: job.id,
@@ -125,6 +164,11 @@ async function processOneJob(file: string) {
           shippingTitle: job.source.shippingLabel || "Doprava",
         }));
         job.emailSentAt = new Date().toISOString();
+        await wooRequest(`/orders/${orderId}`, { method: "PUT", body: { meta_data: [
+          { key: "tm_confirmation_email_sent", value: "1" },
+          { key: "tm_confirmation_email_sent_at", value: job.emailSentAt },
+          { key: "tm_confirmation_email_recipient", value: customerEmail },
+        ] } }).catch((error) => console.error("Woo email confirmation meta error:", error?.message || error));
         await writeJob(PROCESSING_DIR, job);
       }
     }
@@ -183,6 +227,7 @@ export async function processAsyncOrderQueue() {
   queueLoopRunning = true;
   try {
     await ensureDirs();
+    await recoverStaleProcessing();
     const files = (await readdir(PENDING_DIR)).filter((file) => file.endsWith(".json")).sort();
     for (const file of files) {
       await processOneJob(file);

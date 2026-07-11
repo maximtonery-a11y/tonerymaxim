@@ -5,6 +5,16 @@
   var endpoint = '/api/analytics';
   var startedAt = Date.now();
   var lastPath = location.pathname + location.search;
+  var sessionId = '';
+  try {
+    sessionId = sessionStorage.getItem('tm_analytics_session') || '';
+    if (!sessionId) {
+      sessionId = 'tm-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+      sessionStorage.setItem('tm_analytics_session', sessionId);
+    }
+  } catch (e) {
+    sessionId = 'tm-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+  }
 
   function device() {
     var width = window.innerWidth || 0;
@@ -23,7 +33,8 @@
         referrer: document.referrer || '',
         viewport: (window.innerWidth || 0) + 'x' + (window.innerHeight || 0),
         device: device(),
-        language: navigator.language || ''
+        language: navigator.language || '',
+        sessionId: sessionId
       }, extra || {});
 
       var body = JSON.stringify(payload);
@@ -67,6 +78,9 @@
   }
 
   trackPageview();
+  var heartbeatTimer = setInterval(function () {
+    if (document.visibilityState === 'visible') send('heartbeat');
+  }, 30000);
 
   document.addEventListener('click', function (event) {
     var target = event.target && event.target.closest ? event.target.closest('a,button,[role="button"]') : null;
@@ -119,5 +133,5 @@
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') sendDuration('page_duration');
   });
-  window.addEventListener('pagehide', function () { sendDuration('page_duration'); });
+  window.addEventListener('pagehide', function () { clearInterval(heartbeatTimer); sendDuration('page_duration'); });
 })();

@@ -13,8 +13,12 @@ import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
 import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
+import SeoHead from "../components/SeoHead.astro";
+import { organizationJsonLd } from "../lib/seo";
 
-const title = "ToneryMaxim.sk";
+const title = "Tonery a náplne do tlačiarní | ToneryMaxim.sk";
+const description = "Tonery, atramentové náplne, optické valce a komponenty pre tlačiarne HP, Canon, Brother, Epson a ďalšie. Rýchle doručenie a odborná pomoc.";
+const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname);
 ---
 
 <!doctype html>
@@ -22,7 +26,7 @@ const title = "ToneryMaxim.sk";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <SeoHead title={title} description={description} noindex={noindex} jsonLd={[organizationJsonLd(Astro.url.origin), { "@context": "https://schema.org", "@type": "WebSite", "@id": `${Astro.url.origin}/#website`, url: Astro.url.origin, name: "ToneryMaxim.sk", potentialAction: { "@type": "SearchAction", target: `${Astro.url.origin}/produkty?s={search_term_string}`, "query-input": "required name=search_term_string" } }]} />
   </head>
 
   <body class="home-page">

@@ -2215,3 +2215,18 @@
   color: #334155;
   line-height: 1.55;
 }
+
+/* TM Update 040 – prehľadnejšie fakturačné a dodacie údaje */
+.account-address-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.account-address-card{padding:26px;border-radius:24px}
+.account-address-card--billing{grid-column:1/-1}
+.account-card-heading{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #e3ebf7}
+.account-card-heading h3{margin:4px 0 0;font-size:25px;color:#071b3a}.account-card-heading p{max-width:360px;margin:0;color:#64748b;line-height:1.5}
+.account-card-kicker{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#0a86e8}
+.account-form-grid{display:grid;gap:16px}.account-form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.account-form-grid .span-two{grid-column:1/-1}
+.account-company-panel{margin:18px 0;padding:20px;border:1px solid #d9e6f7;border-radius:18px;background:#f7fbff}
+.account-company-title{display:flex;justify-content:space-between;gap:18px;margin-bottom:16px}.account-company-title strong{font-size:17px;color:#071b3a}.account-company-title span{font-size:13px;color:#64748b}
+.account-address-actions{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 24px;border:1px solid #d8e5f4;border-radius:20px;background:#fff;box-shadow:0 14px 36px rgba(7,27,58,.08)}
+.account-address-actions div{display:flex;flex-direction:column;gap:4px}.account-address-actions strong{font-size:17px;color:#071b3a}.account-address-actions span{color:#64748b;font-size:14px}
+@media(max-width:900px){.account-address-form{grid-template-columns:1fr}.account-address-card--billing{grid-column:auto}.account-card-heading{flex-direction:column;gap:8px}.account-card-heading p{max-width:none}}
+@media(max-width:620px){.account-form-grid.two{grid-template-columns:1fr}.account-form-grid .span-two{grid-column:auto}.account-address-card{padding:18px}.account-company-title,.account-address-actions{flex-direction:column;align-items:stretch}.account-address-actions .tm-btn{width:100%}}

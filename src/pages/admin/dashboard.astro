@@ -1,0 +1,229 @@
+---
+export const prerender = false;
+const adminKey = Astro.locals?.runtime?.env?.TM_ANALYTICS_ADMIN_KEY || process.env.TM_ANALYTICS_ADMIN_KEY || process.env.ADMIN_API_SECRET || '';
+const suppliedKey = Astro.url.searchParams.get('key') || '';
+const locked = Boolean(adminKey && suppliedKey !== adminKey);
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow,noarchive" />
+    <title>TM Live Dashboard</title>
+    <style>
+      :root {
+        font-family: Inter, Geist, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #0a1733;
+        background: #eef4fb;
+        color-scheme: light;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top right, #e8f2ff 0, transparent 38%), #eef4fb; }
+      button, a { font: inherit; }
+      .shell { max-width: 1500px; margin: 0 auto; padding: 24px; }
+      .topbar { display:flex; justify-content:space-between; align-items:center; gap:18px; margin-bottom:20px; }
+      .brand { display:flex; align-items:center; gap:13px; }
+      .logo { width:46px; height:46px; border-radius:15px; background:#0b5fff; color:#fff; display:grid; place-items:center; font-weight:1000; box-shadow:0 12px 30px rgba(11,95,255,.24); }
+      h1 { margin:0; font-size:clamp(28px,4vw,48px); letter-spacing:-.055em; }
+      .subtitle { margin:4px 0 0; color:#65728a; }
+      .live { display:flex; align-items:center; gap:9px; padding:9px 13px; background:#fff; border:1px solid #dce7f4; border-radius:999px; font-weight:900; box-shadow:0 8px 24px rgba(9,32,70,.07); }
+      .dot { width:9px; height:9px; border-radius:50%; background:#16a765; box-shadow:0 0 0 6px rgba(22,167,101,.12); }
+      .grid { display:grid; gap:14px; }
+      .metrics { grid-template-columns:repeat(6,minmax(0,1fr)); }
+      .two { grid-template-columns:1.25fr .75fr; margin-top:14px; }
+      .three { grid-template-columns:repeat(3,minmax(0,1fr)); margin-top:14px; }
+      .card { background:rgba(255,255,255,.96); border:1px solid #dce7f4; border-radius:22px; padding:18px; box-shadow:0 16px 42px rgba(9,32,70,.08); min-width:0; }
+      .metric small { display:block; color:#6d7890; font-size:11px; font-weight:950; letter-spacing:.07em; text-transform:uppercase; }
+      .metric strong { display:block; margin-top:8px; font-size:clamp(25px,3vw,38px); letter-spacing:-.05em; }
+      .metric em { display:block; margin-top:5px; color:#66748c; font-style:normal; font-size:13px; }
+      .headline { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:13px; }
+      h2 { margin:0; font-size:19px; letter-spacing:-.025em; }
+      .pill { padding:5px 9px; border-radius:999px; font-size:12px; font-weight:900; background:#edf4ff; color:#0b5fff; }
+      .health { display:flex; align-items:center; gap:18px; }
+      .score { width:94px; height:94px; border-radius:50%; display:grid; place-items:center; background:conic-gradient(#16a765 var(--score), #e8eef7 0); position:relative; flex:0 0 auto; }
+      .score::after { content:""; position:absolute; inset:9px; border-radius:50%; background:#fff; }
+      .score strong { z-index:1; font-size:27px; }
+      .bars { display:grid; gap:10px; }
+      .barrow { display:grid; grid-template-columns:minmax(90px,1fr) 2fr 45px; gap:10px; align-items:center; font-size:13px; }
+      .track { height:9px; background:#edf2f8; border-radius:999px; overflow:hidden; }
+      .fill { height:100%; border-radius:999px; background:linear-gradient(90deg,#0b5fff,#58a6ff); min-width:2px; }
+      .barrow b { text-align:right; }
+      .chart { height:220px; display:flex; align-items:flex-end; gap:5px; padding-top:15px; border-bottom:1px solid #e6edf6; }
+      .col { flex:1; min-width:5px; display:flex; flex-direction:column; justify-content:flex-end; gap:3px; height:100%; }
+      .pv { background:#0b5fff; border-radius:5px 5px 0 0; min-height:2px; opacity:.85; }
+      .ord { background:#16a765; border-radius:5px 5px 0 0; min-height:0; }
+      .legend { display:flex; gap:16px; margin-top:10px; color:#65728a; font-size:12px; }
+      .legend i { width:10px; height:10px; border-radius:3px; display:inline-block; margin-right:6px; }
+      table { width:100%; border-collapse:collapse; font-size:13px; }
+      th, td { padding:9px 7px; border-bottom:1px solid #edf2f8; text-align:left; vertical-align:top; }
+      th { color:#758097; font-size:10px; text-transform:uppercase; letter-spacing:.07em; }
+      td:last-child, th:last-child { text-align:right; }
+      .path { overflow-wrap:anywhere; }
+      .statusline { display:flex; flex-wrap:wrap; gap:9px; }
+      .statusitem { flex:1 1 125px; background:#f7faff; border:1px solid #e4ecf7; border-radius:16px; padding:12px; }
+      .statusitem small { color:#6d7890; display:block; }
+      .statusitem strong { font-size:22px; display:block; margin-top:4px; }
+      .ok { color:#087b43; }
+      .bad { color:#b42318; }
+      .warn { color:#a24b00; }
+      .recent { max-height:360px; overflow:auto; }
+      .event { display:grid; grid-template-columns:125px 130px 1fr; gap:10px; padding:10px 0; border-bottom:1px solid #edf2f8; font-size:13px; }
+      .event time, .muted { color:#748096; }
+      .locked { max-width:620px; margin:90px auto; text-align:center; }
+      .empty { color:#7b879b; padding:20px 0; text-align:center; }
+      .errorbox { display:none; margin-bottom:14px; background:#fff2f0; border:1px solid #ffc9c0; color:#a61b12; padding:12px 14px; border-radius:14px; font-weight:800; }
+      @media (max-width:1180px) { .metrics{grid-template-columns:repeat(3,1fr)} .three{grid-template-columns:1fr 1fr} .two{grid-template-columns:1fr} }
+      @media (max-width:760px) { .shell{padding:14px}.topbar{align-items:flex-start;flex-direction:column}.metrics,.three{grid-template-columns:1fr 1fr}.event{grid-template-columns:90px 100px 1fr}.card{padding:15px} }
+      @media (max-width:500px) { .metrics,.three{grid-template-columns:1fr}.health{align-items:flex-start}.event{grid-template-columns:1fr;gap:3px}.chart{height:170px}.barrow{grid-template-columns:95px 1fr 35px} }
+    </style>
+  </head>
+  <body>
+    {locked ? (
+      <main class="shell"><section class="card locked"><h1>TM Live Dashboard</h1><p>Dashboard je chránený. Otvor ho s platným parametrom <strong>?key=...</strong>.</p></section></main>
+    ) : (
+      <main class="shell" data-key={suppliedKey}>
+        <div class="topbar">
+          <div class="brand"><div class="logo">TM</div><div><h1>Live Dashboard</h1><p class="subtitle">Návštevnosť, objednávky, výkon, fronty a bezpečnosť v jednom prehľade.</p></div></div>
+          <div class="live"><span class="dot"></span><span id="refresh-label">Načítavam...</span></div>
+        </div>
+        <div id="error" class="errorbox"></div>
+
+        <section class="grid metrics">
+          <div class="card metric"><small>Online teraz</small><strong id="live-visitors">—</strong><em>aktívni za 90 sekúnd</em></div>
+          <div class="card metric"><small>Návštevy dnes</small><strong id="visitors">—</strong><em id="pageviews">— zobrazení</em></div>
+          <div class="card metric"><small>Pridania do košíka</small><strong id="cart-adds">—</strong><em>dnes</em></div>
+          <div class="card metric"><small>Začaté pokladne</small><strong id="checkout-starts">—</strong><em>dnes</em></div>
+          <div class="card metric"><small>Objednávky</small><strong id="orders">—</strong><em id="conversion">— konverzia</em></div>
+          <div class="card metric"><small>Priemerný checkout</small><strong id="checkout-avg">—</strong><em id="checkout-p95">—</em></div>
+        </section>
+
+        <section class="grid two">
+          <div class="card">
+            <div class="headline"><h2>Návštevnosť za 24 hodín</h2><span class="pill">LIVE</span></div>
+            <div id="hourly-chart" class="chart"></div>
+            <div class="legend"><span><i style="background:#0b5fff"></i>Zobrazenia</span><span><i style="background:#16a765"></i>Objednávky</span></div>
+          </div>
+          <div class="card">
+            <div class="headline"><h2>Business Health</h2><span id="health-label" class="pill">—</span></div>
+            <div class="health">
+              <div id="health-score-ring" class="score" style="--score:0%"><strong id="health-score">—</strong></div>
+              <div><strong id="health-title" style="font-size:22px">Načítavam</strong><p class="muted" id="health-text">Kontrolujem fronty, výkon, platby a bezpečnosť.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid three">
+          <div class="card"><div class="headline"><h2>Zdroje návštev</h2></div><div id="sources" class="bars"></div></div>
+          <div class="card"><div class="headline"><h2>Zariadenia</h2></div><div id="devices" class="bars"></div></div>
+          <div class="card"><div class="headline"><h2>Lokality</h2></div><div id="locations" class="bars"></div></div>
+        </section>
+
+        <section class="grid three">
+          <div class="card"><div class="headline"><h2>Najnavštevovanejšie stránky</h2></div><table><tbody id="pages"></tbody></table></div>
+          <div class="card"><div class="headline"><h2>Vyhľadávania</h2></div><table><tbody id="searches"></tbody></table></div>
+          <div class="card"><div class="headline"><h2>Produkty / kliky</h2></div><table><tbody id="products"></tbody></table></div>
+        </section>
+
+        <section class="grid two">
+          <div class="card">
+            <div class="headline"><h2>Stav systémov</h2></div>
+            <div class="statusline">
+              <div class="statusitem"><small>Objednávky čakajú</small><strong id="queue-pending">—</strong></div>
+              <div class="statusitem"><small>Objednávky zlyhali</small><strong id="queue-failed">—</strong></div>
+              <div class="statusitem"><small>E-maily odoslané</small><strong id="emails-sent">—</strong></div>
+              <div class="statusitem"><small>E-mailové chyby</small><strong id="emails-failed">—</strong></div>
+              <div class="statusitem"><small>GoPay úspešné</small><strong id="payments-ok">—</strong></div>
+              <div class="statusitem"><small>GoPay neúspešné</small><strong id="payments-failed">—</strong></div>
+              <div class="statusitem"><small>Blokované požiadavky</small><strong id="blocked">—</strong></div>
+              <div class="statusitem"><small>Bezpečnosť</small><strong id="security-state">—</strong></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="headline"><h2>Posledné udalosti</h2><span class="pill">automatická obnova 10 s</span></div>
+            <div id="recent" class="recent"></div>
+          </div>
+        </section>
+      </main>
+    )}
+
+    {!locked && (
+      <script is:inline>
+        (function () {
+          var root = document.querySelector('main[data-key]');
+          var key = root ? root.getAttribute('data-key') || '' : '';
+          var nf = new Intl.NumberFormat('sk-SK');
+          var dtf = new Intl.DateTimeFormat('sk-SK', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+          function id(name) { return document.getElementById(name); }
+          function num(value) { return nf.format(Number(value || 0)); }
+          function seconds(ms) { return Number(ms || 0) ? (Number(ms) / 1000).toFixed(2).replace('.', ',') + ' s' : '—'; }
+          function esc(value) { return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[c]; }); }
+          function rows(target, data) {
+            target.innerHTML = data && data.length ? data.map(function (item) { return '<tr><td class="path">' + esc(item[0]) + '</td><td><strong>' + num(item[1]) + '</strong></td></tr>'; }).join('') : '<tr><td class="empty">Zatiaľ bez dát</td><td></td></tr>';
+          }
+          function bars(target, data) {
+            var max = Math.max.apply(null, (data || []).map(function (item) { return Number(item[1] || 0); }).concat([1]));
+            target.innerHTML = data && data.length ? data.map(function (item) { var width = Math.max(2, Math.round(Number(item[1] || 0) / max * 100)); return '<div class="barrow"><span>' + esc(item[0]) + '</span><div class="track"><div class="fill" style="width:' + width + '%"></div></div><b>' + num(item[1]) + '</b></div>'; }).join('') : '<div class="empty">Zatiaľ bez dát</div>';
+          }
+          function chart(target, data) {
+            var max = Math.max.apply(null, (data || []).map(function (item) { return Number(item.pageviews || 0); }).concat([1]));
+            target.innerHTML = (data || []).map(function (item, index) {
+              var pv = Math.max(2, Math.round(Number(item.pageviews || 0) / max * 100));
+              var ord = Math.round(Number(item.orders || 0) / max * 100);
+              return '<div class="col" title="' + esc(item.label) + ': ' + num(item.pageviews) + ' zobrazení, ' + num(item.orders) + ' objednávok"><div class="pv" style="height:' + pv + '%"></div><div class="ord" style="height:' + ord + '%"></div></div>';
+            }).join('');
+          }
+          function setStatus(el, value, bad) { el.textContent = value; el.className = bad ? 'bad' : 'ok'; }
+          async function load() {
+            try {
+              var response = await fetch('/api/admin-dashboard' + (key ? '?key=' + encodeURIComponent(key) : ''), { cache:'no-store', credentials:'same-origin' });
+              if (!response.ok) throw new Error('Dashboard API: HTTP ' + response.status);
+              var data = await response.json();
+              if (!data.ok) throw new Error(data.error || 'Dashboard sa nepodarilo načítať.');
+              id('error').style.display = 'none';
+              id('live-visitors').textContent = num(data.live.visitors);
+              id('visitors').textContent = num(data.today.estimatedVisitors);
+              id('pageviews').textContent = num(data.today.pageviews) + ' zobrazení';
+              id('cart-adds').textContent = num(data.today.cartAdds);
+              id('checkout-starts').textContent = num(data.today.checkoutStarts);
+              id('orders').textContent = num(data.today.orders);
+              id('conversion').textContent = String(data.today.conversion).replace('.', ',') + ' % konverzia';
+              id('checkout-avg').textContent = seconds(data.checkout.avgMs);
+              id('checkout-p95').textContent = 'P95 ' + seconds(data.checkout.p95Ms);
+              chart(id('hourly-chart'), data.traffic.hourly);
+              bars(id('sources'), data.traffic.sources);
+              bars(id('devices'), data.traffic.devices);
+              bars(id('locations'), data.traffic.locations);
+              rows(id('pages'), data.traffic.topPages);
+              rows(id('searches'), data.traffic.searches);
+              rows(id('products'), data.traffic.products);
+              id('health-score').textContent = num(data.health.score);
+              id('health-score-ring').style.setProperty('--score', data.health.score + '%');
+              id('health-label').textContent = data.health.label;
+              id('health-title').textContent = data.health.label;
+              id('health-text').textContent = data.security.warnings && data.security.warnings.length ? data.security.warnings.join(' · ') : 'Systémy pracujú bez kritických upozornení.';
+              id('queue-pending').textContent = num(data.queues.orders.pending);
+              setStatus(id('queue-failed'), num(data.queues.orders.failed), data.queues.orders.failed > 0);
+              id('emails-sent').textContent = data.queues.emails ? num(data.queues.emails.sent) : '—';
+              setStatus(id('emails-failed'), data.queues.emails ? num(data.queues.emails.failed) : '—', data.queues.emails && data.queues.emails.failed > 0);
+              id('payments-ok').textContent = num(data.checkout.successfulPayments);
+              setStatus(id('payments-failed'), num(data.checkout.failedPayments), data.checkout.failedPayments > 0);
+              id('blocked').textContent = num(data.security.blockedToday);
+              setStatus(id('security-state'), data.security.ok ? 'OK' : 'POZOR', !data.security.ok);
+              id('recent').innerHTML = data.recent && data.recent.length ? data.recent.map(function (event) {
+                return '<div class="event"><time>' + esc(dtf.format(new Date(event.ts))) + '</time><strong>' + esc(event.type) + '</strong><span class="path">' + esc(event.path || event.product || event.search || '—') + '</span></div>';
+              }).join('') : '<div class="empty">Zatiaľ bez udalostí</div>';
+              id('refresh-label').textContent = 'Aktualizované ' + dtf.format(new Date(data.generatedAt));
+            } catch (error) {
+              id('error').textContent = error && error.message ? error.message : 'Dashboard sa nepodarilo načítať.';
+              id('error').style.display = 'block';
+              id('refresh-label').textContent = 'Chyba načítania';
+            }
+          }
+          load();
+          setInterval(load, 10000);
+        })();
+      </script>
+    )}
+  </body>
+</html>

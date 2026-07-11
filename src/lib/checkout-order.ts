@@ -1,5 +1,6 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
+import { readSignedJson, writeSignedJson, quarantineFile, TM_DATA_ROOT } from "./secure-persistence";
 import { getWooBaseUrl, getWooAuthHeader, wooRequest } from "./woo-client";
 import { sendOrderConfirmationEmail } from "./mail";
 import { reserveLoyaltyDiscount } from "./loyalty";
@@ -37,6 +38,8 @@ export type CheckoutOrderSource = {
   loyaltyDiscount?: number;
   loyaltyPointsUsed?: number;
   coupon?: CouponResult | null;
+  originalSubtotal?: number;
+  quantityDiscount?: number;
   subtotal: number;
   total: number;
   createdAt: string;
@@ -54,7 +57,8 @@ export type GoPayPayment = {
   currency?: string;
 };
 
-const STORE_DIR = join(process.cwd(), ".tm-cache", "gopay-orders");
+const STORE_DIR = join(TM_DATA_ROOT, "gopay-orders");
+const LEGACY_STORE_DIR = join(process.cwd(), ".tm-cache", "gopay-orders");
 
 function cleanKey(value: string) {
   return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80);
@@ -140,6 +144,24 @@ function addressFromOrder(source: CheckoutOrderSource, type: "billing" | "shippi
 }
 
 const PRODUCT_ID_CACHE = new Map<string, number>();
+let STANDARD_TAX_RATE_ID: number | null = null;
+
+async function resolveStandardTaxRateId() {
+  if (STANDARD_TAX_RATE_ID !== null) return STANDARD_TAX_RATE_ID;
+  try {
+    const rates = await wooRequest<any[]>("/taxes", { query: { per_page: 100 } });
+    const preferred = (Array.isArray(rates) ? rates : []).find((rate: any) =>
+      Number(rate?.rate) === 23 &&
+      (!rate?.country || String(rate.country).toUpperCase() === "SK") &&
+      (!rate?.class || String(rate.class) === "standard")
+    ) || (Array.isArray(rates) ? rates : []).find((rate: any) => Number(rate?.rate) === 23);
+    STANDARD_TAX_RATE_ID = Number(preferred?.id || 0);
+  } catch (error) {
+    console.error("Woo tax rate lookup failed:", (error as any)?.message || error);
+    STANDARD_TAX_RATE_ID = 0;
+  }
+  return STANDARD_TAX_RATE_ID;
+}
 
 function numericProductId(item: NormalizedCartItem) {
   const raw = (item as any).product_id || (item as any).productId || item.id;
@@ -164,23 +186,29 @@ async function resolveProductIdBySku(sku: string) {
   }
 }
 
-async function lineItems(source: CheckoutOrderSource) {
+async function lineItems(source: CheckoutOrderSource, taxRateId: number) {
   const lines = [];
 
   for (const item of source.cart) {
-    const total = discountedLineTotal(item);
+    const gross = money(item.price * item.qty);
+    const net = netFromGross(gross);
+    const tax = money(gross - net);
     const productId = numericProductId(item) || await resolveProductIdBySku(item.sku);
 
     const line: Record<string, any> = {
       name: item.name,
       quantity: item.qty,
-      subtotal: total.toFixed(2),
-      total: total.toFixed(2),
+      subtotal: net.toFixed(2),
+      subtotal_tax: tax.toFixed(2),
+      total: net.toFixed(2),
+      total_tax: tax.toFixed(2),
       tax_status: "taxable",
+      ...(taxRateId > 0 ? { taxes: [{ id: taxRateId, subtotal: tax.toFixed(2), total: tax.toFixed(2) }] } : {}),
       meta_data: [
         { key: "sku", value: item.sku || "" },
         { key: "product_type_key", value: item.product_type_key || "" },
         { key: "product_type_label", value: item.product_type_label || "" },
+        { key: "tm_gross_line_total", value: gross.toFixed(2) },
       ],
     };
 
@@ -192,6 +220,7 @@ async function lineItems(source: CheckoutOrderSource) {
 
   return lines;
 }
+
 
 
 function pickupValue(pickup: any, keys: string[]) {
@@ -221,7 +250,7 @@ function pickupLabel(source: CheckoutOrderSource) {
   return parts.join(", ");
 }
 
-function shippingLine(source: CheckoutOrderSource) {
+function shippingLine(source: CheckoutOrderSource, taxRateId = 0) {
   const p = selectedPickup(source);
   const carrier = source.shippingCode.startsWith("gls_") ? "gls" : source.shippingCode.startsWith("dpd_") ? "dpd" : "shipping";
   const isPickup = ["gls_pickup", "dpd_pickup", "dpd_box"].includes(source.shippingCode);
@@ -261,11 +290,20 @@ function shippingLine(source: CheckoutOrderSource) {
     );
   }
 
+  const gross = money(source.shippingPrice);
+  const net = netFromGross(gross);
+  const tax = money(gross - net);
+
   return {
     method_id: source.shippingCode || "shipping",
     method_title: title,
-    total: money(source.shippingPrice).toFixed(2),
-    meta_data: meta.filter((item) => item.value !== undefined && item.value !== null && String(item.value).trim() !== ""),
+    total: net.toFixed(2),
+    total_tax: tax.toFixed(2),
+    ...(taxRateId > 0 ? { taxes: [{ id: taxRateId, total: tax.toFixed(2) }] } : {}),
+    meta_data: [
+      ...meta,
+      { key: "tm_gross_shipping_total", value: gross.toFixed(2) },
+    ].filter((item) => item.value !== undefined && item.value !== null && String(item.value).trim() !== ""),
   };
 }
 
@@ -288,12 +326,21 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     { key: "tm_coupon_code", value: String(source.coupon?.code || "") },
     { key: "tm_coupon_type", value: String(source.coupon?.type || "") },
     { key: "tm_coupon_discount", value: money(source.coupon?.discount).toFixed(2) },
+    { key: "tm_quantity_discount", value: money(source.quantityDiscount).toFixed(2) },
+    { key: "tm_original_subtotal", value: money(source.originalSubtotal).toFixed(2) },
+    { key: "tm_order_total_gross", value: money(source.total).toFixed(2) },
     { key: "tm_shipping_code", value: source.shippingCode || "" },
     { key: "tm_shipping_title", value: source.shippingLabel || "" },
     { key: "tm_company_order", value: isCompany ? "1" : "0" },
     { key: "tm_ico", value: String(source.billing?.ico || "") },
     { key: "tm_dic", value: String(source.billing?.dic || "") },
     { key: "tm_ic_dph", value: String(source.billing?.icDph || source.billing?.ic_dph || "") },
+    { key: "billing_ico", value: String(source.billing?.ico || "") },
+    { key: "_billing_ico", value: String(source.billing?.ico || "") },
+    { key: "billing_dic", value: String(source.billing?.dic || "") },
+    { key: "_billing_dic", value: String(source.billing?.dic || "") },
+    { key: "billing_ic_dph", value: String(source.billing?.icDph || source.billing?.ic_dph || "") },
+    { key: "_billing_ic_dph", value: String(source.billing?.icDph || source.billing?.ic_dph || "") },
     { key: "tm_customer_email", value: String(source.contact?.email || source.billing?.email || "") },
     { key: "tm_shipping_pickup", value: JSON.stringify(source.delivery?.pickup || {}) },
     { key: "tm_shipping_pickup_id", value: p.id },
@@ -323,31 +370,60 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
   return meta.filter((item) => item.value !== undefined && item.value !== null && String(item.value).trim() !== "");
 }
 
-function feeLines(source: CheckoutOrderSource) {
+function feeLines(source: CheckoutOrderSource, taxRateId = 0) {
   const fees = [];
-  if (money(source.coupon?.discount) > 0) {
+
+  const addGrossFee = (name: string, grossValue: number) => {
+    const gross = money(grossValue);
+    const sign = gross < 0 ? -1 : 1;
+    const absNet = netFromGross(Math.abs(gross));
+    const net = money(absNet * sign);
+    const tax = money((Math.abs(gross) - absNet) * sign);
     fees.push({
-      name: source.coupon?.label || `Kupón ${source.coupon?.code || ""}`.trim(),
-      total: `-${money(source.coupon?.discount).toFixed(2)}`,
+      name,
+      total: net.toFixed(2),
+      total_tax: tax.toFixed(2),
       tax_status: "taxable",
+      ...(taxRateId > 0 ? { taxes: [{ id: taxRateId, total: tax.toFixed(2) }] } : {}),
+      meta_data: [{ key: "tm_gross_fee_total", value: gross.toFixed(2) }],
     });
+  };
+
+  if (money(source.quantityDiscount) > 0) {
+    addGrossFee("Množstevná / sadová zľava", -money(source.quantityDiscount));
+  }
+  if (money(source.coupon?.discount) > 0) {
+    addGrossFee(source.coupon?.label || `Kupón ${source.coupon?.code || ""}`.trim(), -money(source.coupon?.discount));
   }
   if (money(source.loyaltyDiscount) > 0) {
-    fees.push({
-      name: "Vernostná zľava",
-      total: `-${money(source.loyaltyDiscount).toFixed(2)}`,
-      tax_status: "taxable",
-    });
+    addGrossFee("Vernostná zľava", -money(source.loyaltyDiscount));
   }
   if (source.paymentPrice > 0) {
-    fees.push({
-      name: source.paymentLabel,
-      total: money(source.paymentPrice).toFixed(2),
-      tax_status: "taxable",
-    });
+    addGrossFee(source.paymentLabel, money(source.paymentPrice));
   }
   return fees;
 }
+
+
+function predictedWooGross(grossValue: number) {
+  const gross = money(grossValue);
+  const sign = gross < 0 ? -1 : 1;
+  const net = money(Math.abs(gross) / (1 + VAT_RATE));
+  const tax = money(net * VAT_RATE);
+  return money((net + tax) * sign);
+}
+
+function roundingAdjustment(source: CheckoutOrderSource) {
+  let predicted = 0;
+  for (const item of source.cart) predicted += predictedWooGross(money(item.price * item.qty));
+  predicted += predictedWooGross(source.shippingPrice);
+  predicted += predictedWooGross(source.paymentPrice);
+  predicted += predictedWooGross(-money(source.quantityDiscount));
+  predicted += predictedWooGross(-money(source.coupon?.discount));
+  predicted += predictedWooGross(-money(source.loyaltyDiscount));
+  return money(source.total - predicted);
+}
+
 
 function wooPaymentMethod(source: CheckoutOrderSource) {
   switch (source.paymentCode) {
@@ -395,25 +471,43 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
     email: customerEmail || billing.email || "",
   };
 
-  const lineItemsPayload = await profiler.measure("woo-line-items-resolve", () => lineItems(source));
+  const taxRateId = await profiler.measure("woo-tax-rate-resolve", () => resolveStandardTaxRateId());
+  const lineItemsPayload = await profiler.measure("woo-line-items-resolve", () => lineItems(source, taxRateId));
+  const shippingPayload = shippingLine(source, taxRateId);
+  const feePayload = feeLines(source, taxRateId);
+  const adjustment = roundingAdjustment(source);
+  if (Math.abs(adjustment) >= 0.01) {
+    feePayload.push({
+      name: "Zaokrúhlenie",
+      total: adjustment.toFixed(2),
+      total_tax: "0.00",
+      tax_status: "none",
+      meta_data: [{ key: "tm_rounding_adjustment", value: adjustment.toFixed(2) }],
+    } as any);
+  }
 
   const order = await profiler.measure("woo-post-order", () => wooRequest<any>("/orders", {
     method: "POST",
     body: {
       status: payment.status,
       set_paid: payment.paid,
-      prices_include_tax: true,
       currency: source.currency || String(options.gopayPayment?.currency || "EUR"),
       payment_method: payment.method,
       payment_method_title: payment.title,
       transaction_id: paymentId || undefined,
       customer_id: customerId > 0 ? customerId : undefined,
-      customer_note: options.customerNote || "Objednávka vytvorená z pokladne ToneryMaxim.sk.",
+      customer_note: options.customerNote || [
+        "Objednávka vytvorená z pokladne ToneryMaxim.sk.",
+        source.billing?.company ? `Firma: ${source.billing.company}` : "",
+        source.billing?.ico ? `IČO: ${source.billing.ico}` : "",
+        source.billing?.dic ? `DIČ: ${source.billing.dic}` : "",
+        (source.billing?.icDph || source.billing?.ic_dph) ? `IČ DPH: ${source.billing?.icDph || source.billing?.ic_dph}` : "",
+      ].filter(Boolean).join("\n"),
       billing: billingForCreate,
       shipping,
       line_items: lineItemsPayload,
-      shipping_lines: [shippingLine(source)],
-      fee_lines: feeLines(source),
+      shipping_lines: [shippingPayload],
+      fee_lines: feePayload,
       meta_data: orderMeta({ ...source, paymentState: String(options.gopayPayment?.state || source.paymentState || "") }, paymentId, isCompany, payment),
     },
   }));
@@ -450,7 +544,7 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
       orderNumber: String(order.number || order.id || ""),
       source,
       paymentTitle: payment.title,
-      shippingTitle: shippingLine(source).method_title,
+      shippingTitle: shippingPayload.method_title,
     });
 
     if (options.waitForEmail) {
@@ -474,18 +568,29 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
 export async function savePendingGoPayOrder(source: CheckoutOrderSource) {
   if (!source.paymentId) throw new Error("Chýba GoPay paymentId pre uloženie objednávky.");
   await ensureStoreDir();
-  await writeFile(storePath(source.paymentId), JSON.stringify(source, null, 2), "utf8");
+  await writeSignedJson(storePath(source.paymentId), source);
   return source;
 }
 
 export async function readPendingGoPayOrder(paymentId: string): Promise<CheckoutOrderSource | null> {
   if (!paymentId) return null;
+  const path = storePath(paymentId);
+  const value = await readSignedJson<CheckoutOrderSource>(path);
+  if (value) return value;
+
+  // Jednorazová bezpečná migrácia starších nepodpísaných dát.
+  const legacyPath = join(LEGACY_STORE_DIR, `${cleanKey(paymentId)}.json`);
   try {
-    const text = await readFile(storePath(paymentId), "utf8");
-    return JSON.parse(text) as CheckoutOrderSource;
-  } catch {
-    return null;
-  }
+    const { readFile, unlink } = await import("node:fs/promises");
+    const legacy = JSON.parse(await readFile(legacyPath, "utf8")) as CheckoutOrderSource;
+    if (String(legacy?.paymentId || "") === String(paymentId)) {
+      await writeSignedJson(path, legacy);
+      await unlink(legacyPath).catch(() => undefined);
+      return legacy;
+    }
+  } catch { /* no legacy record */ }
+
+  return null;
 }
 
 async function markWooGoPayOrderPaid(source: CheckoutOrderSource, payment: GoPayPayment) {
