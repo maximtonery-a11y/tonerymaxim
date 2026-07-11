@@ -25,8 +25,25 @@
   }
 
 
-  function couponDiscountForTotal(total) {
+  function couponDiscountForTotal(total, cart = readCart()) {
     if (!tmCoupon || !tmCoupon.ok) return 0;
+
+    const percent = Number(tmCoupon.percent || 0);
+    const scope = String(tmCoupon.scope || "all");
+    if (Number.isFinite(percent) && percent > 0) {
+      let base = Math.max(0, Number(total || 0));
+      if (scope === "compatible") {
+        base = (cart || []).reduce((sum, item) => {
+          if (!isCompatibleDiscountItem(item)) return sum;
+          const qty = cleanQty(item.qty);
+          const original = Number(item.price || 0) * qty;
+          const lineDiscount = Math.round(original * quantityDiscountRate(item) * 100) / 100;
+          return sum + Math.max(0, original - lineDiscount);
+        }, 0);
+      }
+      return Math.min(Math.round(base * (percent / 100) * 100) / 100, Math.max(0, Number(total || 0)));
+    }
+
     const discount = Number(tmCoupon.discount || 0);
     return Math.min(Number.isFinite(discount) ? discount : 0, Math.max(0, Number(total || 0)));
   }
@@ -781,6 +798,17 @@ function formatMoney(value) {
       discountEl = line;
     }
 
+    let afterQuantityEl = document.querySelector("[data-cart-after-quantity-line]");
+    if (summary && !afterQuantityEl) {
+      const line = document.createElement("div");
+      line.className = "summary-line summary-after-quantity";
+      line.dataset.cartAfterQuantityLine = "";
+      line.innerHTML = `<span>Cena po množstevnej / sadovej zľave</span><strong data-cart-after-quantity>0,00 €</strong>`;
+      const couponAnchor = summary.querySelector("[data-cart-coupon-line]") || summary.querySelector(".summary-total");
+      summary.insertBefore(line, couponAnchor);
+      afterQuantityEl = line;
+    }
+
     let couponEl = document.querySelector("[data-cart-coupon-line]");
     if (summary && !couponEl) {
       const line = document.createElement("div");
@@ -825,6 +853,9 @@ function formatMoney(value) {
       }
     }
 
+    if (afterQuantityEl) afterQuantityEl.hidden = discount <= 0;
+    const afterQuantityValue = document.querySelector("[data-cart-after-quantity]");
+    if (afterQuantityValue) afterQuantityValue.textContent = formatMoney(beforeCouponTotal);
     if (couponEl) couponEl.hidden = couponDiscount <= 0;
     const couponValueEl = document.querySelector("[data-cart-coupon]");
     if (couponValueEl) couponValueEl.textContent = `-${formatMoney(couponDiscount)}`;

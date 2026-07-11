@@ -199,7 +199,7 @@ async function processOneJob(file: string) {
 
 export async function enqueueAsyncWooOrder(source: CheckoutOrderSource) {
   await ensureDirs();
-  const id = safeId(source.orderNumber || `TM-${Date.now()}`);
+  const id = safeId(source.orderNumber || `TM-${String(Date.now()).slice(-6)}`);
   const job: AsyncOrderJob = {
     id,
     source,

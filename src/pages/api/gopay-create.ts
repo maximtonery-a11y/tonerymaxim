@@ -6,6 +6,7 @@ import { getCustomerLoyalty } from "../../lib/loyalty";
 import { validateCheckoutCoupon } from "../../lib/coupons";
 import { normalizeSecureCheckoutCart, discountRate, discountedLine } from "../../lib/secure-checkout-cart";
 import { CheckoutProfiler } from "../../lib/checkout-profiler";
+import { nextTmOrderNumber } from "../../lib/order-number";
 import { getEnv as env, getGoPayAccessToken, getGoPayHost } from "../../lib/gopay-client";
 
 export const prerender = false;
@@ -163,7 +164,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const totalCents = items.reduce((sum, item) => sum + item.amount, 0);
     const token = await profiler.measure("gopay-oauth-token", () => getGoPayAccessToken("payment-create"));
-    const orderNumber = `TM-${Date.now()}`;
+    const orderNumber = await nextTmOrderNumber();
 
     const paymentBody = {
       payer: {

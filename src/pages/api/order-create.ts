@@ -6,6 +6,7 @@ import { getCustomerLoyalty } from "../../lib/loyalty";
 import { validateCheckoutCoupon } from "../../lib/coupons";
 import { normalizeSecureCheckoutCart, discountedLine } from "../../lib/secure-checkout-cart";
 import { CheckoutProfiler } from "../../lib/checkout-profiler";
+import { nextTmOrderNumber } from "../../lib/order-number";
 
 const SHIPPING: Record<string, { label: string; price: number }> = {
   dpd_courier: { label: "DPD kuriér na adresu", price: 3.9 },
@@ -76,7 +77,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       loyaltyDiscount = Math.min(requested, loyalty.discountValue, Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount) * 100) / 100));
     }
     const total = Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount - loyaltyDiscount) * 100) / 100);
-    const orderNumber = `TM-${Date.now()}`;
+    const orderNumber = await nextTmOrderNumber();
 
     const orderSource = {
       orderNumber,

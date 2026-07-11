@@ -40,8 +40,26 @@
   }
 
 
-  function couponDiscountForTotal(total) {
+  function couponDiscountForTotal(total, cart = readCart()) {
     if (!tmCoupon || !tmCoupon.ok) return 0;
+
+    const percent = Number(tmCoupon.percent || 0);
+    const scope = String(tmCoupon.scope || "all");
+    if (Number.isFinite(percent) && percent > 0) {
+      let base = Math.max(0, Number(total || 0));
+      if (scope === "compatible") {
+        base = (cart || []).reduce((sum, item) => {
+          if (!isCompatibleDiscountItem(item)) return sum;
+          const qty = cleanQty(item.qty);
+          const original = Number(item.price || 0) * qty;
+          const rate = qty >= 4 ? 0.25 : qty >= 2 ? 0.10 : 0;
+          const lineDiscount = Math.round(original * rate * 100) / 100;
+          return sum + Math.max(0, original - lineDiscount);
+        }, 0);
+      }
+      return Math.min(Math.round(base * (percent / 100) * 100) / 100, Math.max(0, Number(total || 0)));
+    }
+
     const discount = Number(tmCoupon.discount || 0);
     return Math.min(Number.isFinite(discount) ? discount : 0, Math.max(0, Number(total || 0)));
   }
@@ -739,7 +757,16 @@
 
     renderPickupSummary();
     document.querySelector("[data-company-box]")?.toggleAttribute("hidden", !company);
-    document.querySelector("[data-delivery-address]")?.toggleAttribute("hidden", needsPickup || !document.querySelector("#different_address")?.checked);
+
+    const deliveryBox = document.querySelector("[data-delivery-address]");
+    const deliveryToggle = document.querySelector("#different_address");
+    const hideDelivery = needsPickup || !Boolean(deliveryToggle?.checked);
+    if (deliveryBox) {
+      deliveryBox.hidden = hideDelivery;
+      deliveryBox.style.display = hideDelivery ? "none" : "";
+      deliveryBox.setAttribute("aria-hidden", String(hideDelivery));
+    }
+    if (deliveryToggle) deliveryToggle.setAttribute("aria-expanded", String(!hideDelivery));
   }
 
   function renderCheckoutSummary() {
@@ -1764,6 +1791,11 @@
         updateVisibility();
         renderCheckoutSummary();
       });
+    });
+
+    const differentAddressToggle = document.querySelector("#different_address");
+    differentAddressToggle?.addEventListener("click", () => {
+      window.requestAnimationFrame(updateVisibility);
     });
 
     document.querySelectorAll("[data-checkout-form] input").forEach((input) => {
