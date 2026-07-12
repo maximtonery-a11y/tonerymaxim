@@ -91,8 +91,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const shipping = SHIPPING[shippingCode] || SHIPPING.dpd_courier;
     const payment = PAYMENT[paymentCode];
 
+    const originalSubtotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
     const subtotal = cart.reduce((sum, item) => sum + discountedLine(item).final, 0);
-    const shippingPrice = subtotal >= 29 ? 0 : shipping.price;
+    const quantityDiscount = Math.max(0, Math.round((originalSubtotal - subtotal) * 100) / 100);
     const paymentPrice = payment.price;
     let coupon = null as Awaited<ReturnType<typeof validateCheckoutCoupon>> | null;
     let couponDiscount = 0;
@@ -105,15 +106,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           headers: { "Content-Type": "application/json; charset=utf-8" },
         });
       }
-      couponDiscount = Math.min(Number(coupon.discount || 0), Math.max(0, subtotal + shippingPrice + paymentPrice));
+      couponDiscount = Math.min(Number(coupon.discount || 0), Math.max(0, subtotal));
       coupon.discount = Math.round(couponDiscount * 100) / 100;
     }
     let loyaltyDiscount = 0;
     if (session?.id && body?.loyalty?.apply) {
       const loyalty = await profiler.measure("loyalty-load", () => getCustomerLoyalty(session.id));
       const requested = Math.max(0, Math.round(Number(body?.loyalty?.discount || 0) * 10) / 10);
-      loyaltyDiscount = Math.min(requested, loyalty.discountValue, Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount) * 100) / 100));
+      loyaltyDiscount = Math.min(requested, loyalty.discountValue, Math.max(0, Math.round((subtotal - couponDiscount) * 100) / 100));
     }
+    const goodsAfterDiscounts = Math.max(0, Math.round((subtotal - couponDiscount - loyaltyDiscount) * 100) / 100);
+    const shippingPrice = goodsAfterDiscounts >= 29 ? 0 : shipping.price;
 
     const items = [
       ...cart.map((item) => {
@@ -261,6 +264,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       coupon,
       loyaltyDiscount,
       loyaltyPointsUsed: loyaltyDiscount * 100,
+      originalSubtotal: Math.round(originalSubtotal * 100) / 100,
+      quantityDiscount,
       subtotal: Math.round(subtotal * 100) / 100,
       total: Math.round((totalCents / 100) * 100) / 100,
       createdAt: new Date().toISOString(),

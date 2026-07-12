@@ -2,9 +2,10 @@ import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { readSignedJson, writeSignedJson, quarantineFile, TM_DATA_ROOT } from "./secure-persistence";
 import { getWooBaseUrl, getWooAuthHeader, wooRequest } from "./woo-client";
-import { sendOrderConfirmationEmail } from "./mail";
+import { sendOrderAdminCopyEmail, sendOrderConfirmationEmail } from "./mail";
 import { reserveLoyaltyDiscount } from "./loyalty";
-import { grantThankYouCoupon, markCouponUsed, type CouponResult } from "./coupons";
+import { grantThankYouCoupon, markCouponUsed, thankYouCouponCode, type CouponResult } from "./coupons";
+import { registerIssuedCoupon } from "./coupon-registry";
 import { CheckoutProfiler } from "./checkout-profiler";
 
 export type NormalizedCartItem = {
@@ -546,12 +547,17 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
     },
   }));
 
-  if (Number(source.customerId || 0) > 0 && source.coupon?.ok) {
-    await profiler.measure("coupon-mark-used", () => markCouponUsed(Number(source.customerId), source.coupon, order.id)).catch((error) => console.error("Coupon used meta error:", error?.message || error));
+  if (source.coupon?.ok) {
+    await profiler.measure("coupon-mark-used", () => markCouponUsed(Number(source.customerId) || undefined, source.coupon, order.id)).catch((error) => console.error("Coupon used meta error:", error?.message || error));
   }
 
-  if (Number(source.customerId || 0) > 0 && order?.id) {
-    await profiler.measure("coupon-grant-thank-you", () => grantThankYouCoupon(Number(source.customerId), order.id, order.number || order.id)).catch((error) => console.error("Thank you coupon grant error:", error?.message || error));
+  if (order?.id) {
+    const visibleOrderNumber = String(source.orderNumber || order.number || order.id);
+    const rewardCode = thankYouCouponCode(visibleOrderNumber);
+    await profiler.measure("coupon-register-thank-you", () => registerIssuedCoupon({ code: rewardCode, sourceOrderId: order.id, sourceOrderNumber: visibleOrderNumber, customerId: Number(source.customerId) || undefined })).catch((error) => console.error("Thank you coupon registry error:", error?.message || error));
+    if (Number(source.customerId || 0) > 0) {
+      await profiler.measure("coupon-grant-thank-you", () => grantThankYouCoupon(Number(source.customerId), order.id, visibleOrderNumber)).catch((error) => console.error("Thank you coupon grant error:", error?.message || error));
+    }
   }
 
   if (Number(source.customerId || 0) > 0 && money(source.loyaltyDiscount) > 0) {
@@ -575,17 +581,25 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
   if (customerEmail && options.sendConfirmationEmail !== false) {
     const emailPromise = sendOrderConfirmationEmail({
       to: customerEmail,
-      orderNumber: String(order.number || order.id || ""),
+      orderNumber: String(source.orderNumber || order.number || order.id || ""),
+      source,
+      paymentTitle: payment.title,
+      shippingTitle: shippingPayload.method_title,
+    });
+    const adminCopyPromise = sendOrderAdminCopyEmail({
+      orderNumber: String(source.orderNumber || order.number || order.id || ""),
       source,
       paymentTitle: payment.title,
       shippingTitle: shippingPayload.method_title,
     });
 
     if (options.waitForEmail) {
-      await profiler.measure("order-email-send", () => emailPromise).catch((error) => console.error("ToneryMaxim order email error:", error?.message || error));
+      await profiler.measure("order-email-send", () => emailPromise).catch((error) => console.error("ToneryMaxim customer order email error:", error?.message || error));
+      await profiler.measure("order-admin-copy-send", () => adminCopyPromise).catch((error) => console.error("ToneryMaxim admin order copy error:", error?.message || error));
     } else {
       profiler.mark("email-dispatch-started");
-      emailPromise.catch((error) => console.error("ToneryMaxim order email error:", error?.message || error));
+      emailPromise.catch((error) => console.error("ToneryMaxim customer order email error:", error?.message || error));
+      adminCopyPromise.catch((error) => console.error("ToneryMaxim admin order copy error:", error?.message || error));
     }
   }
 

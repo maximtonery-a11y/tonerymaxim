@@ -813,15 +813,15 @@
     const shipping = SHIPPING[getSelected("shipping") || "dpd_courier"] || SHIPPING.dpd_courier;
     const payment = PAYMENT[getSelected("payment") || "gopay"] || PAYMENT.gopay;
 
-    const shippingPrice = discountedSubtotal >= 29 ? 0 : shipping.price;
     const paymentPrice = payment.price;
-    const beforeCouponTotal = discountedSubtotal + shippingPrice + paymentPrice;
-    const couponDiscount = couponDiscountForTotal(beforeCouponTotal);
-    const beforeLoyaltyTotal = Math.max(0, beforeCouponTotal - couponDiscount);
-    const loyaltyDiscount = loyaltyDiscountForTotal(beforeLoyaltyTotal);
-    const total = Math.max(0, beforeLoyaltyTotal - loyaltyDiscount);
+    const couponDiscount = couponDiscountForTotal(discountedSubtotal, cart);
+    const goodsAfterCoupon = Math.max(0, discountedSubtotal - couponDiscount);
+    const loyaltyDiscount = loyaltyDiscountForTotal(goodsAfterCoupon);
+    const goodsAfterDiscounts = Math.max(0, goodsAfterCoupon - loyaltyDiscount);
+    const shippingPrice = goodsAfterDiscounts >= 29 ? 0 : shipping.price;
+    const total = Math.max(0, goodsAfterDiscounts + shippingPrice + paymentPrice);
 
-    updateShippingOptionPrices(discountedSubtotal);
+    updateShippingOptionPrices(goodsAfterDiscounts);
 
     document.querySelector("[data-summary-subtotal]").textContent = money(subtotal);
     const discountLine = document.querySelector("[data-summary-discount-line]");
@@ -878,7 +878,7 @@
     if (couponInput && document.activeElement !== couponInput) couponInput.value = tmCoupon?.code || "";
     const couponMessage = document.querySelector("[data-coupon-message]");
     if (couponMessage) {
-      if (tmCoupon?.ok) couponMessage.textContent = `${tmCoupon.label || "Kupón"}: -${money(couponDiscount)}`;
+      if (tmCoupon?.ok) { const validity = tmCoupon.expiresAt ? ` · platí do ${new Date(tmCoupon.expiresAt).toLocaleDateString("sk-SK")}` : " · jednorazový, bez časového obmedzenia"; couponMessage.textContent = `${tmCoupon.label || "Kupón"}: -${money(couponDiscount)}${validity}`; }
       else couponMessage.textContent = tmCoupon?.reason || "";
       couponMessage.className = tmCoupon?.ok ? "is-success" : "is-error";
     }
@@ -904,12 +904,12 @@
 
     const freeBox = document.querySelector("[data-free-shipping]");
     if (freeBox) {
-      if (discountedSubtotal >= 29) {
+      if (goodsAfterDiscounts >= 29) {
         freeBox.className = "free-shipping-box is-free";
         freeBox.textContent = "🎉 Dopravu máte zdarma";
       } else {
         freeBox.className = "free-shipping-box";
-        freeBox.textContent = `Do dopravy zdarma vám chýba ${money(29 - discountedSubtotal)}`;
+        freeBox.textContent = `Do dopravy zdarma vám chýba ${money(29 - goodsAfterDiscounts)}`;
       }
     }
   }
@@ -1613,7 +1613,15 @@
       },
       payment: getSelected("payment"),
       coupon: tmCoupon?.ok ? { code: tmCoupon.code, label: tmCoupon.label || "Kupónová zľava", discount: couponDiscountForTotal(cartPricing(cart).subtotal - cartPricing(cart).discount) } : null,
-      loyalty: { apply: tmLoyaltyApply, discount: loyaltyDiscountForTotal(cartPricing(cart).subtotal - cartPricing(cart).discount + ((cartPricing(cart).subtotal - cartPricing(cart).discount) >= 29 ? 0 : ((SHIPPING[getSelected("shipping")] || SHIPPING.dpd_courier).price)) + ((PAYMENT[getSelected("payment")] || PAYMENT.gopay).price)) },
+      loyalty: {
+        apply: tmLoyaltyApply,
+        discount: (() => {
+          const currentPricing = cartPricing(cart);
+          const goodsAfterQuantity = Math.max(0, currentPricing.subtotal - currentPricing.discount);
+          const currentCoupon = couponDiscountForTotal(goodsAfterQuantity, cart);
+          return loyaltyDiscountForTotal(Math.max(0, goodsAfterQuantity - currentCoupon));
+        })(),
+      },
       createdAt: new Date().toISOString(),
     };
 
@@ -1771,7 +1779,10 @@
     }
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function initCheckoutPage() {
+    if (document.documentElement.dataset.tmCheckoutReady === "1") return;
+    document.documentElement.dataset.tmCheckoutReady = "1";
+
     restoreCheckoutSelection();
     restorePickupState();
     if (["gopay", "applepay", "googlepay"].includes(getSelected("payment"))) warmGoPay();
@@ -1784,18 +1795,24 @@
     setupPickupWidgets();
     setupMobileCheckoutSteps();
 
-    document.querySelectorAll('input[name="shipping"], input[name="payment"], #company_enabled, #different_address').forEach((input) => {
-      input.addEventListener("change", () => {
-        if (input.name === "shipping" || input.name === "payment") saveCheckoutSelection();
-        if (input.name === "payment" && ["gopay", "applepay", "googlepay"].includes(input.value)) warmGoPay();
-        updateVisibility();
-        renderCheckoutSummary();
-      });
+    // Delegovaný listener funguje aj v produkčnom builde a po prípadnom nahradení DOM.
+    document.addEventListener("change", (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement)) return;
+      if (!input.matches('input[name="shipping"], input[name="payment"], #company_enabled, #different_address')) return;
+      if (input.name === "shipping" || input.name === "payment") saveCheckoutSelection();
+      if (input.name === "payment" && ["gopay", "applepay", "googlepay"].includes(input.value)) warmGoPay();
+      updateVisibility();
+      renderCheckoutSummary();
     });
 
-    const differentAddressToggle = document.querySelector("#different_address");
-    differentAddressToggle?.addEventListener("click", () => {
-      window.requestAnimationFrame(updateVisibility);
+    document.addEventListener("click", (event) => {
+      const toggle = event.target.closest("#different_address");
+      if (!toggle) return;
+      window.requestAnimationFrame(() => {
+        updateVisibility();
+        document.querySelector("[data-delivery-address]")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
     });
 
     document.querySelectorAll("[data-checkout-form] input").forEach((input) => {
@@ -1815,5 +1832,11 @@
     document.querySelector("[data-load-company]")?.addEventListener("click", loadCompanyByIco);
     document.querySelector("[data-submit-order]")?.addEventListener("click", submitOrder);
     document.querySelector("[data-mobile-submit-order]")?.addEventListener("click", submitOrder);
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCheckoutPage, { once: true });
+  } else {
+    initCheckoutPage();
+  }
 })();

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { readSignedJson, writeSignedJson, quarantineFile, TM_DATA_ROOT } from "./secure-persistence";
 import { createWooOrderFromCheckout, type CheckoutOrderSource } from "./gopay-order";
 import { CheckoutProfiler } from "./checkout-profiler";
-import { sendOrderConfirmationEmail } from "./mail";
+import { sendOrderAdminCopyEmail, sendOrderConfirmationEmail } from "./mail";
 import { wooRequest } from "./woo-client";
 
 const QUEUE_ROOT = join(TM_DATA_ROOT, "async-orders");
@@ -30,6 +30,8 @@ type AsyncOrderJob = {
   wooOrderNumber?: string;
   emailSentAt?: string;
   emailAttempts?: number;
+  adminEmailSentAt?: string;
+  adminEmailAttempts?: number;
 };
 
 let queueLoopRunning = false;
@@ -152,28 +154,45 @@ async function processOneJob(file: string) {
       await writeJob(PROCESSING_DIR, job);
     }
 
-    if (!job.emailSentAt) {
-      const customerEmail = String(job.source.contact?.email || job.source.billing?.email || "").trim();
-      if (customerEmail) {
-        job.emailAttempts = Number(job.emailAttempts || 0) + 1;
-        await profiler.measure("order-confirmation-email", () => sendOrderConfirmationEmail({
-          to: customerEmail,
-          orderNumber: orderNumber || String(orderId),
-          source: job.source,
-          paymentTitle: job.source.paymentLabel || "Platba",
-          shippingTitle: job.source.shippingLabel || "Doprava",
-        }));
-        job.emailSentAt = new Date().toISOString();
-        await wooRequest(`/orders/${orderId}`, { method: "PUT", body: { meta_data: [
-          { key: "tm_confirmation_email_sent", value: "1" },
-          { key: "tm_confirmation_email_sent_at", value: job.emailSentAt },
-          { key: "tm_confirmation_email_recipient", value: customerEmail },
-        ] } }).catch((error) => console.error("Woo email confirmation meta error:", error?.message || error));
-        await writeJob(PROCESSING_DIR, job);
-      }
+    const customerEmail = String(job.source.contact?.email || job.source.billing?.email || "").trim();
+
+    if (!job.emailSentAt && customerEmail) {
+      job.emailAttempts = Number(job.emailAttempts || 0) + 1;
+      await profiler.measure("order-confirmation-email", () => sendOrderConfirmationEmail({
+        to: customerEmail,
+        orderNumber: job.source.orderNumber,
+        source: job.source,
+        paymentTitle: job.source.paymentLabel || "Platba",
+        shippingTitle: job.source.shippingLabel || "Doprava",
+      }));
+      job.emailSentAt = new Date().toISOString();
+      await writeJob(PROCESSING_DIR, job);
     }
 
-    profiler.done({ asyncOrderId: job.id, orderId, orderNumber, emailSentAt: job.emailSentAt || null });
+    if (!job.adminEmailSentAt) {
+      job.adminEmailAttempts = Number(job.adminEmailAttempts || 0) + 1;
+      await profiler.measure("order-admin-copy-email", () => sendOrderAdminCopyEmail({
+        orderNumber: job.source.orderNumber,
+        source: job.source,
+        paymentTitle: job.source.paymentLabel || "Platba",
+        shippingTitle: job.source.shippingLabel || "Doprava",
+      }));
+      job.adminEmailSentAt = new Date().toISOString();
+      await writeJob(PROCESSING_DIR, job);
+    }
+
+    // Meta stav zapisujeme aj vtedy, keď bol e-mail odoslaný ešte pred vytvorením Woo objednávky.
+    await wooRequest(`/orders/${orderId}`, { method: "PUT", body: { meta_data: [
+      { key: "tm_order_number", value: String(job.source.orderNumber || "") },
+      { key: "tm_confirmation_email_sent", value: job.emailSentAt ? "1" : "0" },
+      { key: "tm_confirmation_email_sent_at", value: job.emailSentAt || "" },
+      { key: "tm_confirmation_email_recipient", value: customerEmail },
+      { key: "tm_confirmation_admin_copy_sent", value: job.adminEmailSentAt ? "1" : "0" },
+      { key: "tm_confirmation_admin_copy_sent_at", value: job.adminEmailSentAt || "" },
+      { key: "tm_confirmation_email_error", value: "" },
+    ] } }).catch((error) => console.error("Woo email confirmation meta error:", error?.message || error));
+
+    profiler.done({ asyncOrderId: job.id, orderId, orderNumber: job.source.orderNumber, emailSentAt: job.emailSentAt || null, adminEmailSentAt: job.adminEmailSentAt || null });
 
     job.status = "done";
     job.lastError = undefined;
@@ -187,6 +206,15 @@ async function processOneJob(file: string) {
     job.status = job.attempts >= MAX_ATTEMPTS ? "failed" : "pending";
 
     if (job.status === "failed") {
+      if (job.wooOrderId) {
+        await wooRequest(`/orders/${job.wooOrderId}`, { method: "PUT", body: { meta_data: [
+          { key: "tm_confirmation_email_sent", value: job.emailSentAt ? "1" : "0" },
+          { key: "tm_confirmation_email_sent_at", value: job.emailSentAt || "" },
+          { key: "tm_confirmation_admin_copy_sent", value: job.adminEmailSentAt ? "1" : "0" },
+          { key: "tm_confirmation_admin_copy_sent_at", value: job.adminEmailSentAt || "" },
+          { key: "tm_confirmation_email_error", value: message },
+        ] } }).catch(() => undefined);
+      }
       await writeJob(FAILED_DIR, job);
       await unlink(processingPath).catch(() => null);
     } else {
@@ -225,17 +253,32 @@ export async function enqueueAsyncWooOrder(source: CheckoutOrderSource) {
         shippingTitle: source.shippingLabel || "Doprava",
       });
       job.emailSentAt = new Date().toISOString();
-      await writeJob(PENDING_DIR, job);
-      console.log("[TM async order queue] immediate confirmation sent", { id, customerEmail });
+      console.log("[TM async order queue] immediate customer confirmation sent", { id, customerEmail });
     } catch (error: any) {
-      job.lastError = `Potvrdenie objednávky: ${error?.message || String(error)}`;
-      await writeJob(PENDING_DIR, job);
-      console.error("[TM async order queue] immediate confirmation failed", id, job.lastError);
+      job.lastError = `Potvrdenie zákazníkovi: ${error?.message || String(error)}`;
+      console.error("[TM async order queue] immediate customer confirmation failed", id, job.lastError);
     }
   }
 
+  try {
+    job.adminEmailAttempts = 1;
+    await sendOrderAdminCopyEmail({
+      orderNumber: source.orderNumber,
+      source,
+      paymentTitle: source.paymentLabel || "Platba",
+      shippingTitle: source.shippingLabel || "Doprava",
+    });
+    job.adminEmailSentAt = new Date().toISOString();
+    console.log("[TM async order queue] immediate admin copy sent", { id });
+  } catch (error: any) {
+    const message = `Kópia pre prevádzku: ${error?.message || String(error)}`;
+    job.lastError = job.lastError ? `${job.lastError}; ${message}` : message;
+    console.error("[TM async order queue] immediate admin copy failed", id, message);
+  }
+
+  await writeJob(PENDING_DIR, job);
   scheduleAsyncOrderQueue(INITIAL_QUEUE_DELAY_MS);
-  return { queued: true, queueId: id, orderNumber: source.orderNumber, emailSent: Boolean(job.emailSentAt) };
+  return { queued: true, queueId: id, orderNumber: source.orderNumber, emailSent: Boolean(job.emailSentAt), adminEmailSent: Boolean(job.adminEmailSentAt) };
 }
 
 export function scheduleAsyncOrderQueue(delayMs = 0) {

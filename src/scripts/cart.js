@@ -819,7 +819,7 @@ function formatMoney(value) {
       couponEl = line;
     }
 
-    let couponBox = document.querySelector("[data-cart-coupon-box]");
+    let couponBox = summary?.querySelector("[data-cart-coupon-box]");
     if (summary && !couponBox) {
       couponBox = document.createElement("form");
       couponBox.className = "summary-note coupon-note";
@@ -838,20 +838,22 @@ function formatMoney(value) {
       loyaltyEl = line;
     }
 
-    let loyaltyBox = document.querySelector("[data-cart-loyalty-box]");
-    if (summary && !loyaltyBox) {
-      loyaltyBox = document.createElement("div");
-      loyaltyBox.className = "summary-note loyalty-note";
-      loyaltyBox.dataset.cartLoyaltyBox = "";
-      summary.insertBefore(loyaltyBox, summary.querySelector(".summary-total"));
+    let desktopLoyaltyBox = summary?.querySelector("[data-cart-loyalty-box]");
+    if (summary && !desktopLoyaltyBox) {
+      desktopLoyaltyBox = document.createElement("div");
+      desktopLoyaltyBox.className = "summary-note loyalty-note";
+      desktopLoyaltyBox.dataset.cartLoyaltyBox = "";
+      summary.insertBefore(desktopLoyaltyBox, summary.querySelector(".summary-total"));
     }
 
-    if (loyaltyBox) {
+    document.querySelectorAll("[data-cart-loyalty-box]").forEach((loyaltyBox) => {
       loyaltyBox.hidden = !tmLoyalty.ok || tmLoyalty.discountValue <= 0;
       if (!loyaltyBox.hidden) {
-        loyaltyBox.innerHTML = `<strong>Vernostné body</strong><span>Máte ${tmLoyalty.points} bodov = zľava ${formatMoney(tmLoyalty.discountValue)}.</span><label class="checkline"><input type="checkbox" data-loyalty-toggle ${tmLoyaltyApply ? "checked" : ""}> Použiť zľavu v tejto objednávke</label>`;
+        loyaltyBox.innerHTML = `<strong>Vernostné body</strong><span>Máte ${tmLoyalty.points} bodov = zľava ${formatMoney(tmLoyalty.discountValue)}.</span><label class="checkline loyalty-toggle-line"><input type="checkbox" data-loyalty-toggle ${tmLoyaltyApply ? "checked" : ""}> <span>Použiť vernostnú zľavu v tejto objednávke</span></label>`;
+      } else {
+        loyaltyBox.innerHTML = "";
       }
-    }
+    });
 
     if (afterQuantityEl) afterQuantityEl.hidden = discount <= 0;
     const afterQuantityValue = document.querySelector("[data-cart-after-quantity]");
@@ -859,18 +861,22 @@ function formatMoney(value) {
     if (couponEl) couponEl.hidden = couponDiscount <= 0;
     const couponValueEl = document.querySelector("[data-cart-coupon]");
     if (couponValueEl) couponValueEl.textContent = `-${formatMoney(couponDiscount)}`;
-    const couponInput = document.querySelector("[data-coupon-input]");
-    if (couponInput && document.activeElement !== couponInput) couponInput.value = tmCoupon?.code || "";
-    const couponMessage = document.querySelector("[data-coupon-message]");
-    if (couponMessage) {
+    document.querySelectorAll("[data-coupon-input]").forEach((couponInput) => {
+      if (document.activeElement !== couponInput) couponInput.value = tmCoupon?.code || "";
+    });
+    document.querySelectorAll("[data-coupon-message]").forEach((couponMessage) => {
       if (tmCoupon?.ok) couponMessage.textContent = `${tmCoupon.label || "Kupón"}: -${formatMoney(couponDiscount)}`;
       else couponMessage.textContent = tmCoupon?.reason || "";
       couponMessage.className = tmCoupon?.ok ? "is-success" : "is-error";
-    }
+    });
+    document.querySelectorAll(".cart-mobile-coupon").forEach((mobileCoupon) => {
+      mobileCoupon.hidden = false;
+    });
 
     if (loyaltyEl) loyaltyEl.hidden = loyaltyDiscount <= 0;
-    const loyaltyValueEl = document.querySelector("[data-cart-loyalty]");
-    if (loyaltyValueEl) loyaltyValueEl.textContent = `-${formatMoney(loyaltyDiscount)}`;
+    document.querySelectorAll("[data-cart-loyalty]").forEach((loyaltyValueEl) => {
+      loyaltyValueEl.textContent = `-${formatMoney(loyaltyDiscount)}`;
+    });
 
     if (discountEl) discountEl.hidden = discount <= 0;
     if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);

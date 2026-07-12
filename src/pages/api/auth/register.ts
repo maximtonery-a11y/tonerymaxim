@@ -1,9 +1,15 @@
 import type { APIRoute } from "astro";
-import { addMonthsIso, createWooCustomer, findWooCustomerByEmail, TONERYMAXIM_META_DATA } from "../../../lib/woo-client";
+import { createWooCustomer, findWooCustomerByEmail, TONERYMAXIM_META_DATA } from "../../../lib/woo-client";
 import { setCustomerCookie } from "../../../lib/auth-session";
 import { sendWelcomeEmail } from "../../../lib/mail";
 
 export const prerender = false;
+
+function addDaysIso(date: Date, days: number): string {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result.toISOString();
+}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -46,7 +52,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       meta_data: [
         ...TONERYMAXIM_META_DATA,
         { key: "tm_welcome_discount_percent", value: "5" },
-        { key: "tm_welcome_discount_expires", value: addMonthsIso(new Date(), 1) },
+        { key: "tm_welcome_discount_expires", value: addDaysIso(new Date(), 30) },
         { key: "tm_welcome_discount_used", value: "no" },
         { key: "tm_loyalty_points", value: "0" },
         { key: "tm_loyalty_history", value: "[]" },

@@ -122,15 +122,24 @@ function trackingUrl(order: WooOrder): string {
   return '';
 }
 
+function orderSnapshot(order: WooOrder): any {
+  const raw = metaValue(order, "tm_order_snapshot");
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
 function toPayload(order: WooOrder, fromStatus: string, toStatus: string): WooOrderStatusEmailPayload {
-  const shippingTitle = Array.isArray(order.shipping_lines)
+  const snapshot = orderSnapshot(order);
+  const shippingTitle = String(snapshot?.shippingLabel || '') || (Array.isArray(order.shipping_lines)
     ? order.shipping_lines.map((line) => line?.method_title || line?.method_id || '').filter(Boolean).join(', ')
-    : '';
+    : '');
+
+  const tmOrderNumber = metaValue(order, "tm_order_number") || metaValue(order, "gopay_order_number") || String(order.number || order.id);
 
   return {
     event_id: `queue-${order.id}-${toStatus}-${order.date_modified || Date.now()}`,
     order_id: order.id,
-    order_number: String(order.number || order.id),
+    order_number: tmOrderNumber,
     from_status: fromStatus,
     to_status: toStatus,
     changed_at: order.date_modified || new Date().toISOString(),
@@ -139,22 +148,36 @@ function toPayload(order: WooOrder, fromStatus: string, toStatus: string): WooOr
       first_name: String(order.billing?.first_name || '').trim(),
       last_name: String(order.billing?.last_name || '').trim(),
     },
-    payment_method_title: String(order.payment_method_title || ''),
+    payment_method_title: String(snapshot?.paymentLabel || order.payment_method_title || ''),
     shipping_method: shippingTitle,
-    total: order.total || '0',
+    total: snapshot?.total ?? order.total ?? '0',
+    original_subtotal: snapshot?.originalSubtotal ?? 0,
+    quantity_discount: snapshot?.quantityDiscount ?? 0,
+    coupon_discount: snapshot?.couponDiscount ?? 0,
+    coupon_label: snapshot?.couponLabel || 'Kupónová zľava',
+    loyalty_discount: snapshot?.loyaltyDiscount ?? 0,
+    shipping_price: snapshot?.shippingPrice ?? 0,
+    payment_price: snapshot?.paymentPrice ?? 0,
     currency: order.currency || 'EUR',
     tracking_number: trackingNumber(order),
     tracking_url: trackingUrl(order),
     subject_override: metaValue(order, '_tm_email_subject'),
     message_override: metaValue(order, '_tm_email_message'),
-    line_items: Array.isArray(order.line_items)
-      ? order.line_items.map((item) => ({
+    line_items: Array.isArray(snapshot?.items)
+      ? snapshot.items.map((item: any) => ({
           name: item.name || 'Produkt',
           sku: item.sku || '',
-          quantity: Number(item.quantity || 0),
-          total: item.total || '0',
+          quantity: Number(item.qty || 0),
+          total: item.totalGross || '0',
         }))
-      : [],
+      : (Array.isArray(order.line_items)
+        ? order.line_items.map((item) => ({
+            name: item.name || 'Produkt',
+            sku: item.sku || '',
+            quantity: Number(item.quantity || 0),
+            total: item.total || '0',
+          }))
+        : []),
   };
 }
 
@@ -215,7 +238,7 @@ async function processOrder(order: WooOrder): Promise<void> {
   state.lastSuccessAt = new Date().toISOString();
   console.log('[TM Email Queue] status e-mail sent', {
     orderId: order.id,
-    orderNumber: order.number,
+    orderNumber: metaValue(order, "tm_order_number") || order.number,
     from: observedStatus,
     to: currentStatus,
   });

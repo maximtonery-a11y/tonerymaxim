@@ -25,13 +25,14 @@ async function nextValue() {
 
 /**
  * Vygeneruje najviac 6-ciferné číslo použiteľné aj ako variabilný symbol.
- * Reťazec má tvar TM-123456, samotný VS je 123456.
+ * Vráti čisto číselné, najviac 6-ciferné číslo. Rovnaká hodnota sa používa
+ * ako zákaznícke číslo objednávky aj variabilný symbol.
  */
 export async function nextTmOrderNumber() {
   const task = sequenceLock.then(nextValue, nextValue);
   sequenceLock = task.then(() => undefined, () => undefined);
   const value = await task;
-  return `TM-${value}`;
+  return String(value);
 }
 
 export function tmVariableSymbol(orderNumber: unknown) {

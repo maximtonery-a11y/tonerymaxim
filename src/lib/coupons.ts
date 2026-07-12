@@ -1,5 +1,6 @@
-import { getCustomerMeta, getWooCustomerById, updateWooCustomer, welcomeCouponCode } from "./woo-client";
+import { getCustomerMeta, getWooCustomerById, updateWooCustomer, welcomeCouponCode, wooRequest } from "./woo-client";
 import type { NormalizedCartItem } from "./checkout-order";
+import { getIssuedCoupon, markIssuedCouponUsed, registerIssuedCoupon } from "./coupon-registry";
 
 export type CouponType = "welcome5" | "thankyou7" | "marketing";
 export type CouponScope = "all" | "compatible";
@@ -188,6 +189,7 @@ export async function grantThankYouCoupon(customerId: number | undefined, orderI
 
   const updated = [coupon, ...coupons].slice(0, 100);
   await updateWooCustomer(customerId, { meta_data: [{ key: CUSTOMER_COUPONS_META, value: JSON.stringify(updated) }] });
+  await registerIssuedCoupon({ code: coupon.code, sourceOrderId: orderId, sourceOrderNumber: visibleNumber, customerId });
   return coupon;
 }
 
@@ -220,61 +222,80 @@ function guestThankYouCouponResult(code: string, cart: NormalizedCartItem[]): Co
   };
 }
 
+
+async function couponUsedInWooOrders(codeValue: unknown): Promise<boolean> {
+  const code = normalizeCouponCode(codeValue);
+  if (!code) return false;
+  try {
+    const orders = await wooRequest<any[]>("/orders", { query: { per_page: 100, orderby: "date", order: "desc" } });
+    return Array.isArray(orders) && orders.some((order) => Array.isArray(order?.meta_data) && order.meta_data.some((meta: any) => meta?.key === "tm_coupon_code" && normalizeCouponCode(meta?.value) === code));
+  } catch (error: any) {
+    console.error("Coupon usage history check failed:", error?.message || error);
+    return false;
+  }
+}
 export async function validateCheckoutCoupon(customerId: number | undefined, rawCode: unknown, cart: NormalizedCartItem[]): Promise<CouponResult> {
   const code = normalizeCouponCode(rawCode);
   if (!code) return { ok: false, code: "", reason: "Zadajte kód kupónu." };
-  if (isGuestThankYouCouponCode(code)) return guestThankYouCouponResult(code, cart);
-  if (!customerId) return { ok: false, code, reason: "Pre použitie kupónu sa prihláste alebo použite kupón z poslednej objednávky." };
 
-  const customer = await getWooCustomerById(customerId);
-  if (!customer) return { ok: false, code, reason: "Zákaznícky účet sa nenašiel." };
+  if (customerId) {
+    const customer = await getWooCustomerById(customerId);
+    if (!customer) return { ok: false, code, reason: "Zákaznícky účet sa nenašiel." };
 
-  const expectedWelcome = normalizeCouponCode(welcomeCouponCode(customerId));
-  if (code === expectedWelcome) {
-    const expiresAt = String(getCustomerMeta(customer, "tm_welcome_discount_expires") || "");
-    const used = String(getCustomerMeta(customer, "tm_welcome_discount_used") || "no").toLowerCase() === "yes";
-    const percent = Number(getCustomerMeta(customer, "tm_welcome_discount_percent") || 5) || 5;
-    if (!expiresAt || isExpired(expiresAt)) return { ok: false, code, reason: "Uvítací kupón už expiroval." };
-    if (used) return { ok: false, code, reason: "Uvítací kupón už bol použitý." };
-    const coupon = { percent, scope: "all" as CouponScope };
-    const discount = couponDiscount(coupon, cart);
-    if (discount <= 0) return { ok: false, code, reason: "Kupón nie je možné použiť na prázdny košík." };
-    return { ok: true, code, type: "welcome5", label: `Uvítacia zľava ${percent} %`, percent, scope: "all", discount, expiresAt };
+    const expectedWelcome = normalizeCouponCode(welcomeCouponCode(customerId));
+    if (code === expectedWelcome) {
+      const expiresAt = String(getCustomerMeta(customer, "tm_welcome_discount_expires") || "");
+      const used = String(getCustomerMeta(customer, "tm_welcome_discount_used") || "no").toLowerCase() === "yes";
+      const percent = Number(getCustomerMeta(customer, "tm_welcome_discount_percent") || 5) || 5;
+      if (!expiresAt || isExpired(expiresAt)) return { ok: false, code, reason: "Uvítací kupón už expiroval." };
+      if (used) return { ok: false, code, reason: "Uvítací kupón už bol použitý." };
+      const discount = couponDiscount({ percent, scope: "all" }, cart);
+      if (discount <= 0) return { ok: false, code, reason: "Kupón nie je možné použiť na prázdny košík." };
+      const validUntil = new Date(expiresAt).toLocaleDateString("sk-SK");
+      return { ok: true, code, type: "welcome5", label: `Uvítacia zľava ${percent} % · platí do ${validUntil}`, percent, scope: "all", discount, expiresAt };
+    }
+
+    const coupons = await getCustomerStoredCoupons(customerId);
+    const stored = coupons.find((item) => normalizeCouponCode(item.code) === code);
+    if (stored) {
+      if (stored.status === "used") return { ok: false, code, reason: "Kupón už bol použitý." };
+      if (await couponUsedInWooOrders(code)) {
+        await markIssuedCouponUsed(code).catch(() => undefined);
+        return { ok: false, code, reason: "Kupón už bol použitý." };
+      }
+      if (!activeStoredCoupon(stored)) return { ok: false, code, reason: "Kupón už expiroval." };
+      const discount = couponDiscount(stored, cart);
+      if (discount <= 0) return { ok: false, code, reason: stored.scope === "compatible" ? "Kupón platí iba na kompatibilné produkty." : "Kupón nie je možné použiť na prázdny košík." };
+      return { ok: true, code: stored.code, type: stored.type, label: stored.label, percent: stored.percent, scope: stored.scope, discount, expiresAt: stored.expiresAt };
+    }
   }
 
-  const coupons = await getCustomerStoredCoupons(customerId);
-  const coupon = coupons.find((item) => normalizeCouponCode(item.code) === code);
-  if (!coupon) return { ok: false, code, reason: "Neplatný alebo neznámy kupón." };
-  if (coupon.status === "used") return { ok: false, code, reason: "Kupón už bol použitý." };
-  if (!activeStoredCoupon(coupon)) return { ok: false, code, reason: "Kupón už expiroval." };
-
-  const discount = couponDiscount(coupon, cart);
-  if (discount <= 0) {
-    return {
-      ok: false,
-      code,
-      reason: coupon.scope === "compatible" ? "Kupón platí iba na kompatibilné produkty." : "Kupón nie je možné použiť na prázdny košík.",
-    };
+  if (isGuestThankYouCouponCode(code)) {
+    const issued = await getIssuedCoupon(code);
+    if (!issued) {
+      if (await couponUsedInWooOrders(code)) return { ok: false, code, reason: "Kupón už bol použitý." };
+      return { ok: false, code, reason: "Neplatný alebo neznámy kupón." };
+    }
+    if (issued.usedAt || await couponUsedInWooOrders(code)) {
+      await markIssuedCouponUsed(code).catch(() => undefined);
+      return { ok: false, code, reason: "Kupón už bol použitý." };
+    }
+    return guestThankYouCouponResult(code, cart);
   }
 
-  return {
-    ok: true,
-    code: coupon.code,
-    type: coupon.type,
-    label: coupon.label,
-    percent: coupon.percent,
-    scope: coupon.scope,
-    discount,
-    expiresAt: coupon.expiresAt,
-  };
+  if (!customerId) return { ok: false, code, reason: "Neplatný alebo neznámy kupón." };
+  return { ok: false, code, reason: "Neplatný alebo neznámy kupón." };
 }
 
 export async function markCouponUsed(customerId: number | undefined, coupon: CouponResult | undefined, orderId?: number | string) {
-  if (!customerId || !coupon?.ok || !coupon.type) return;
+  if (!coupon?.ok || !coupon.type) return;
   if (coupon.type === "welcome5") {
-    await updateWooCustomer(customerId, { meta_data: [{ key: "tm_welcome_discount_used", value: "yes" }] });
+    if (customerId) await updateWooCustomer(customerId, { meta_data: [{ key: "tm_welcome_discount_used", value: "yes" }] });
     return;
   }
+
+  await markIssuedCouponUsed(coupon.code, orderId);
+  if (!customerId) return;
 
   const customer = await getWooCustomerById(customerId);
   if (!customer) return;
@@ -282,12 +303,8 @@ export async function markCouponUsed(customerId: number | undefined, coupon: Cou
   const code = normalizeCouponCode(coupon.code);
   const updated = coupons.map((item) => {
     if (normalizeCouponCode(item.code) !== code) return item;
-    return {
-      ...item,
-      status: "used" as CouponStatus,
-      usedAt: new Date().toISOString(),
-      usedOrderId: Number(orderId) || item.usedOrderId,
-    };
+    return { ...item, status: "used" as CouponStatus, usedAt: new Date().toISOString(), usedOrderId: Number(orderId) || item.usedOrderId };
   });
   await updateWooCustomer(customerId, { meta_data: [{ key: CUSTOMER_COUPONS_META, value: JSON.stringify(updated) }] });
 }
+

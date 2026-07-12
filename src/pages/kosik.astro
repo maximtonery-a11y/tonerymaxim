@@ -37,6 +37,17 @@ const title = "Košík | ToneryMaxim.sk";
 
           <div class="cart-list" data-cart-list></div>
 
+          <form class="cart-mobile-coupon summary-note coupon-note" data-cart-coupon-box hidden>
+            <strong>Zľavový kupón</strong>
+            <div class="coupon-inline">
+              <input type="text" data-coupon-input placeholder="Zadajte kód kupónu" autocomplete="off" />
+              <button type="submit" data-coupon-apply>Použiť</button>
+            </div>
+            <small data-coupon-message></small>
+          </form>
+
+          <div class="cart-mobile-loyalty summary-note loyalty-note" data-cart-loyalty-box hidden></div>
+
           <section class="cart-trust-panel" aria-label="Výhody nákupu">
             <article>
               <span>✓</span>

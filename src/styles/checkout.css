@@ -1359,3 +1359,118 @@ body.has-gls-modal {
   font-size: 12px;
   line-height: 1.35;
 }
+
+
+/* TM Update 051 – GLS výber na mobile: scrollovateľný zoznam bez prekrytia */
+@media (max-width: 720px) {
+  body.has-gls-modal .floating-advisor,
+  body.has-gls-modal [class*="advisor"],
+  body.has-gls-modal .cookie-bubble,
+  body.has-gls-modal [data-cookie-trigger],
+  body.has-gls-modal [class*="cookie"] {
+    display: none !important;
+  }
+
+  .gls-widget-modal {
+    padding: 0 !important;
+    align-items: stretch;
+  }
+
+  .gls-widget-dialog {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .gls-widget-head {
+    position: relative;
+    z-index: 5;
+    padding: 14px 16px !important;
+    background: #fff;
+  }
+
+  .gls-widget-head button {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+  }
+
+  .gls-widget-root {
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .gls-widget-root iframe,
+  .gls-widget-root > div {
+    min-height: calc(100dvh - 92px) !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .gls-widget-root input,
+  .gls-widget-root button,
+  .gls-widget-root label {
+    min-height: 44px;
+  }
+}
+
+/* TM Update 052 – mobilná pokladňa: kupón a vernostné body vždy dostupné */
+@media (max-width: 720px) {
+  .checkout-summary .coupon-note,
+  .checkout-summary .loyalty-note {
+    display: grid !important;
+    gap: 9px;
+    margin-top: 11px;
+    padding: 14px;
+    border: 1px solid #d4e2f1;
+    border-radius: 16px;
+    background: #f5f9fe;
+  }
+
+  .checkout-summary .coupon-note .coupon-inline {
+    grid-template-columns: minmax(0,1fr) auto;
+  }
+  .checkout-summary .coupon-note input {
+    min-width: 0;
+    height: 48px;
+    font-size: 16px;
+  }
+  .checkout-summary .coupon-note button {
+    min-width: 82px;
+    height: 48px;
+  }
+
+  .checkout-summary .loyalty-note label {
+    display: grid;
+    grid-template-columns: 24px minmax(0,1fr);
+    align-items: center;
+    gap: 9px;
+    margin-top: 3px;
+    padding: 11px 12px;
+    border-radius: 13px;
+    background: #eaf4ff;
+    color: #071d41;
+    font-weight: 850;
+  }
+  .checkout-summary .loyalty-note input {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: #0b5bd3;
+  }
+
+  /* Pri otvorenom súhrne sa zobrazí kompletný desktopový rozpis cien. */
+  .checkout-summary.is-open .summary-coupon,
+  .checkout-summary.is-open .summary-loyalty,
+  .checkout-summary.is-open .summary-discount {
+    display: flex !important;
+  }
+}
