@@ -59,16 +59,56 @@ export async function sendMail(input: {
   bcc?: string;
 }) {
   const transporter = getTransporter();
-  return transporter.sendMail({
-    from: getMailFrom(),
-    to: input.to,
-    subject: input.subject,
-    text: input.text,
-    html: input.html,
-    replyTo: input.replyTo || env("MAIL_REPLY_TO") || env("MAIL_FROM") || env("SMTP_USER"),
-    attachments: input.attachments,
-    bcc: input.bcc,
-  });
+  const startedAt = Date.now();
+
+  try {
+    const result = await transporter.sendMail({
+      from: getMailFrom(),
+      to: input.to,
+      subject: input.subject,
+      text: input.text,
+      html: input.html,
+      replyTo: input.replyTo || env("MAIL_REPLY_TO") || env("MAIL_FROM") || env("SMTP_USER"),
+      attachments: input.attachments,
+      bcc: input.bcc,
+    });
+
+    const accepted = Array.isArray(result.accepted) ? result.accepted.map(String) : [];
+    const rejected = Array.isArray(result.rejected) ? result.rejected.map(String) : [];
+
+    console.log("[TM mail] SMTP accepted message", {
+      to: input.to,
+      subject: input.subject,
+      messageId: result.messageId,
+      accepted,
+      rejected,
+      durationMs: Date.now() - startedAt,
+    });
+
+    if (accepted.length === 0 && rejected.length > 0) {
+      throw new Error(`SMTP odmietlo všetkých príjemcov: ${rejected.join(", ")}`);
+    }
+
+    return result;
+  } catch (error: any) {
+    console.error("[TM mail] SMTP send failed", {
+      to: input.to,
+      subject: input.subject,
+      code: error?.code || "",
+      command: error?.command || "",
+      responseCode: error?.responseCode || "",
+      response: error?.response || "",
+      message: error?.message || String(error),
+      durationMs: Date.now() - startedAt,
+      smtpHostConfigured: Boolean(env("SMTP_HOST")),
+      smtpUserConfigured: Boolean(env("SMTP_USER")),
+      smtpPassConfigured: Boolean(env("SMTP_PASS")),
+      mailFromConfigured: Boolean(env("MAIL_FROM") || env("SMTP_USER")),
+    });
+    throw error;
+  } finally {
+    transporter.close();
+  }
 }
 
 export async function sendWelcomeEmail(input: {

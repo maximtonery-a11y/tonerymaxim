@@ -17,6 +17,8 @@ const MAX_ATTEMPTS = 5;
 const RETRY_DELAY_MS = 30_000;
 const INITIAL_QUEUE_DELAY_MS = Math.max(0, Number(process.env.TM_ASYNC_WOO_INITIAL_DELAY_MS || 500));
 const MAX_DONE_FILES = 500;
+const WORKER_INTERVAL_MS = Math.max(5_000, Number(process.env.TM_ASYNC_ORDER_WORKER_INTERVAL_MS || 15_000));
+const WORKER_GLOBAL_KEY = Symbol.for("tm.async-order-worker.started");
 
 type AsyncOrderJob = {
   id: string;
@@ -303,6 +305,30 @@ export async function processAsyncOrderQueue() {
   } finally {
     queueLoopRunning = false;
   }
+}
+
+/**
+ * Spustí obnovu objednávkovej fronty pri štarte aplikácie a následne ju
+ * pravidelne kontroluje. Vďaka tomu sa čakajúce objednávky a e-maily
+ * spracujú aj po reštarte alebo redeployi bez potreby novej objednávky.
+ */
+export function ensureAsyncOrderQueueStarted(): void {
+  const globalState = globalThis as typeof globalThis & { [WORKER_GLOBAL_KEY]?: boolean };
+  if (globalState[WORKER_GLOBAL_KEY]) return;
+  globalState[WORKER_GLOBAL_KEY] = true;
+
+  console.log("[TM async order queue] worker started", {
+    dataRoot: TM_DATA_ROOT,
+    intervalMs: WORKER_INTERVAL_MS,
+  });
+
+  scheduleAsyncOrderQueue(0);
+
+  const timer = setInterval(() => {
+    scheduleAsyncOrderQueue(0);
+  }, WORKER_INTERVAL_MS);
+
+  if (typeof timer.unref === "function") timer.unref();
 }
 
 export async function getAsyncOrderQueueStats() {

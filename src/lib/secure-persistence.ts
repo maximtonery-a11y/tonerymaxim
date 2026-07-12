@@ -5,7 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 export const TM_DATA_ROOT = resolve(process.env.TM_PERSISTENT_DATA_DIR || join(process.cwd(), '.tm-data'));
 
 function secret(): string {
-  const value = String(import.meta.env.AUTH_SECRET || process.env.AUTH_SECRET || '').trim();
+  const value = String(process.env.TM_PERSISTENCE_SECRET || process.env.AUTH_SECRET || import.meta.env.AUTH_SECRET || '').trim();
   return value || 'localhost-development-only-secret';
 }
 
