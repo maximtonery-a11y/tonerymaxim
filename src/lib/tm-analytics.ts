@@ -1,6 +1,7 @@
 import { mkdir, appendFile, readFile, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { TM_CACHE_ROOT } from './runtime-paths';
 
 export type TMAnalyticsEvent = {
   type: string;
@@ -25,7 +26,7 @@ export type TMAnalyticsEvent = {
   sessionId?: string;
 };
 
-const ANALYTICS_DIR = path.join(process.cwd(), '.tm-cache', 'analytics');
+const ANALYTICS_DIR = path.join(TM_CACHE_ROOT, 'analytics');
 const EVENTS_FILE = path.join(ANALYTICS_DIR, 'events.jsonl');
 const MAX_BODY_SIZE = 16_000;
 const MAX_READ_BYTES = 4_000_000;

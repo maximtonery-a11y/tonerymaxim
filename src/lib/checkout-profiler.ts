@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { TM_CACHE_ROOT } from './runtime-paths';
 
 export type CheckoutProfileEntry = {
   step: string;
@@ -20,7 +21,7 @@ export type CheckoutProfileRecord = {
 };
 
 const MAX_RECORDS = 200;
-const PROFILE_FILE = join(process.cwd(), '.tm-cache', 'checkout-profiler.json');
+const PROFILE_FILE = join(TM_CACHE_ROOT, 'checkout-profiler.json');
 
 function nowMs() {
   if (typeof performance !== 'undefined' && typeof performance.now === 'function') {

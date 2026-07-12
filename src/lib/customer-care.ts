@@ -1,9 +1,10 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { TM_CACHE_ROOT } from './runtime-paths';
 
 export type CustomerCareKind = "reklamacia" | "odstupenie";
 
-const STORE_DIR = join(process.cwd(), ".tm-cache", "customer-care");
+const STORE_DIR = join(TM_CACHE_ROOT, 'customer-care');
 
 function clean(value: unknown, max = 2000): string {
   return String(value ?? "").replace(/\s+/g, " ").trim().slice(0, max);

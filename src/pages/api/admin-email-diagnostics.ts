@@ -1,20 +1,14 @@
 import type { APIRoute } from 'astro';
 import { runEmailDiagnostics, sendDiagnosticEmail } from '../../lib/email-diagnostics';
+import { constantTimeEqual, getAdminAccessKey } from '../../lib/admin-access';
 
 export const prerender = false;
 
-function sameKey(left: string, right: string): boolean {
-  if (!left || !right || left.length !== right.length) return false;
-  let result = 0;
-  for (let i = 0; i < left.length; i += 1) result |= left.charCodeAt(i) ^ right.charCodeAt(i);
-  return result === 0;
-}
-
 function authorized(request: Request, url: URL, locals: any): boolean {
-  const expected = locals?.runtime?.env?.TM_ANALYTICS_ADMIN_KEY || process.env.TM_ANALYTICS_ADMIN_KEY || process.env.ADMIN_API_SECRET || '';
+  const expected = getAdminAccessKey(locals);
   if (!expected) return ['localhost', '127.0.0.1'].includes(url.hostname);
   const supplied = url.searchParams.get('key') || request.headers.get('x-admin-key') || '';
-  return sameKey(expected, supplied);
+  return constantTimeEqual(expected, supplied);
 }
 
 export const GET: APIRoute = async ({ request, url, locals }) => {

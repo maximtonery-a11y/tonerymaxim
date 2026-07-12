@@ -1,13 +1,14 @@
 import type { APIRoute } from 'astro';
 import { mkdir, appendFile } from 'node:fs/promises';
 import path from 'node:path';
+import { TM_CACHE_ROOT } from '../../lib/runtime-paths';
 import { buildAssistantAnswer } from '../../lib/aiSalesAssistant';
 
 export const prerender = false;
 
 async function logUnanswered(payload: Record<string, unknown>) {
   try {
-    const dir = path.resolve(process.cwd(), '.tm-cache');
+    const dir = TM_CACHE_ROOT;
     await mkdir(dir, { recursive: true });
     await appendFile(path.join(dir, 'ai-unanswered.jsonl'), `${JSON.stringify({ created_at: new Date().toISOString(), ...payload })}\n`, 'utf8');
   } catch {

@@ -1,5 +1,6 @@
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
+import { TM_CACHE_ROOT } from './runtime-paths';
 import { readSignedJson, writeSignedJson, quarantineFile, TM_DATA_ROOT } from "./secure-persistence";
 import { getWooBaseUrl, getWooAuthHeader, wooRequest } from "./woo-client";
 import { sendOrderAdminCopyEmail, sendOrderConfirmationEmail } from "./mail";
@@ -59,7 +60,7 @@ export type GoPayPayment = {
 };
 
 const STORE_DIR = join(TM_DATA_ROOT, "gopay-orders");
-const LEGACY_STORE_DIR = join(process.cwd(), ".tm-cache", "gopay-orders");
+const LEGACY_STORE_DIR = join(TM_CACHE_ROOT, 'gopay-orders');
 
 function cleanKey(value: string) {
   return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80);

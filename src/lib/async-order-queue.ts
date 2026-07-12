@@ -1,5 +1,6 @@
 import { mkdir, unlink, readdir, stat, rename } from "node:fs/promises";
 import { join } from "node:path";
+import { TM_CACHE_ROOT } from './runtime-paths';
 import { readSignedJson, writeSignedJson, quarantineFile, TM_DATA_ROOT } from "./secure-persistence";
 import { createWooOrderFromCheckout, type CheckoutOrderSource } from "./gopay-order";
 import { CheckoutProfiler } from "./checkout-profiler";
@@ -7,7 +8,7 @@ import { sendOrderAdminCopyEmail, sendOrderConfirmationEmail } from "./mail";
 import { wooRequest } from "./woo-client";
 
 const QUEUE_ROOT = join(TM_DATA_ROOT, "async-orders");
-const LEGACY_QUEUE_ROOT = join(process.cwd(), ".tm-cache", "async-orders");
+const LEGACY_QUEUE_ROOT = join(TM_CACHE_ROOT, 'async-orders');
 const STALE_PROCESSING_MS = Math.max(60_000, Number(process.env.TM_QUEUE_STALE_PROCESSING_MS || 10 * 60_000));
 const PENDING_DIR = join(QUEUE_ROOT, "pending");
 const PROCESSING_DIR = join(QUEUE_ROOT, "processing");
@@ -240,43 +241,48 @@ export async function enqueueAsyncWooOrder(source: CheckoutOrderSource) {
   };
   await writeJob(PENDING_DIR, job);
 
-  // Potvrdenie odošleme hneď po bezpečnom uložení do fronty. Zákazník tak
-  // nečaká na pomalé Woo API. Pri chybe zostane emailSentAt prázdne a worker
-  // odoslanie automaticky zopakuje bez vytvorenia duplicitnej objednávky.
+  // Potvrdenie zákazníkovi a kópiu prevádzke odošleme paralelne.
+  // Zachová sa okamžité odoslanie, ale checkout nečaká na dve SMTP spojenia za sebou.
   const customerEmail = String(source.contact?.email || source.billing?.email || "").trim();
-  if (customerEmail) {
+  const customerTask = customerEmail
+    ? (async () => {
+        try {
+          job.emailAttempts = 1;
+          await sendOrderConfirmationEmail({
+            to: customerEmail,
+            orderNumber: source.orderNumber,
+            source,
+            paymentTitle: source.paymentLabel || "Platba",
+            shippingTitle: source.shippingLabel || "Doprava",
+          });
+          job.emailSentAt = new Date().toISOString();
+          console.log("[TM async order queue] immediate customer confirmation sent", { id, customerEmail });
+        } catch (error: any) {
+          job.lastError = `Potvrdenie zákazníkovi: ${error?.message || String(error)}`;
+          console.error("[TM async order queue] immediate customer confirmation failed", id, job.lastError);
+        }
+      })()
+    : Promise.resolve();
+
+  const adminTask = (async () => {
     try {
-      job.emailAttempts = 1;
-      await sendOrderConfirmationEmail({
-        to: customerEmail,
+      job.adminEmailAttempts = 1;
+      await sendOrderAdminCopyEmail({
         orderNumber: source.orderNumber,
         source,
         paymentTitle: source.paymentLabel || "Platba",
         shippingTitle: source.shippingLabel || "Doprava",
       });
-      job.emailSentAt = new Date().toISOString();
-      console.log("[TM async order queue] immediate customer confirmation sent", { id, customerEmail });
+      job.adminEmailSentAt = new Date().toISOString();
+      console.log("[TM async order queue] immediate admin copy sent", { id });
     } catch (error: any) {
-      job.lastError = `Potvrdenie zákazníkovi: ${error?.message || String(error)}`;
-      console.error("[TM async order queue] immediate customer confirmation failed", id, job.lastError);
+      const message = `Kópia pre prevádzku: ${error?.message || String(error)}`;
+      job.lastError = job.lastError ? `${job.lastError}; ${message}` : message;
+      console.error("[TM async order queue] immediate admin copy failed", id, message);
     }
-  }
+  })();
 
-  try {
-    job.adminEmailAttempts = 1;
-    await sendOrderAdminCopyEmail({
-      orderNumber: source.orderNumber,
-      source,
-      paymentTitle: source.paymentLabel || "Platba",
-      shippingTitle: source.shippingLabel || "Doprava",
-    });
-    job.adminEmailSentAt = new Date().toISOString();
-    console.log("[TM async order queue] immediate admin copy sent", { id });
-  } catch (error: any) {
-    const message = `Kópia pre prevádzku: ${error?.message || String(error)}`;
-    job.lastError = job.lastError ? `${job.lastError}; ${message}` : message;
-    console.error("[TM async order queue] immediate admin copy failed", id, message);
-  }
+  await Promise.allSettled([customerTask, adminTask]);
 
   await writeJob(PENDING_DIR, job);
   scheduleAsyncOrderQueue(INITIAL_QUEUE_DELAY_MS);

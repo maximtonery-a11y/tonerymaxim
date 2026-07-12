@@ -1,5 +1,6 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TM_CACHE_ROOT } from './runtime-paths';
 
 export type TmProduct = Record<string, any>;
 
@@ -12,7 +13,7 @@ type CacheFile = {
 };
 
 const CACHE_VERSION = 3;
-const CACHE_DIR = path.join(process.cwd(), ".tm-cache");
+const CACHE_DIR = TM_CACHE_ROOT;
 const CACHE_FILE = path.join(CACHE_DIR, "products.json");
 const FALLBACK_CACHE_FILES = [
   CACHE_FILE,
