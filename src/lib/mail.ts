@@ -28,15 +28,15 @@ export function getMailFrom(): string {
 }
 
 export function getTransporter() {
-  const host = env("SMTP_HOST");
-  const user = env("SMTP_USER");
-  const pass = env("SMTP_PASS");
+  const host = env("SMTP_HOST") || env("MAIL_HOST") || env("EMAIL_HOST");
+  const user = env("SMTP_USER") || env("MAIL_USER") || env("EMAIL_USER");
+  const pass = env("SMTP_PASS") || env("SMTP_PASSWORD") || env("MAIL_PASS") || env("MAIL_PASSWORD") || env("EMAIL_PASS");
   const port = smtpPort();
   const secure = boolEnv("SMTP_SECURE", port === 465);
 
-  if (!host) throw new Error("Chýba SMTP_HOST v .env");
-  if (!user) throw new Error("Chýba SMTP_USER v .env");
-  if (!pass) throw new Error("Chýba SMTP_PASS v .env");
+  if (!host) throw new Error("Chýba SMTP_HOST v produkčnom runtime prostredí (podporované aj MAIL_HOST/EMAIL_HOST)");
+  if (!user) throw new Error("Chýba SMTP_USER v produkčnom runtime prostredí (podporované aj MAIL_USER/EMAIL_USER)");
+  if (!pass) throw new Error("Chýba SMTP_PASS v produkčnom runtime prostredí (podporované aj SMTP_PASSWORD/MAIL_PASS/MAIL_PASSWORD/EMAIL_PASS)");
 
   return nodemailer.createTransport({
     host,
@@ -59,56 +59,16 @@ export async function sendMail(input: {
   bcc?: string;
 }) {
   const transporter = getTransporter();
-  const startedAt = Date.now();
-
-  try {
-    const result = await transporter.sendMail({
-      from: getMailFrom(),
-      to: input.to,
-      subject: input.subject,
-      text: input.text,
-      html: input.html,
-      replyTo: input.replyTo || env("MAIL_REPLY_TO") || env("MAIL_FROM") || env("SMTP_USER"),
-      attachments: input.attachments,
-      bcc: input.bcc,
-    });
-
-    const accepted = Array.isArray(result.accepted) ? result.accepted.map(String) : [];
-    const rejected = Array.isArray(result.rejected) ? result.rejected.map(String) : [];
-
-    console.log("[TM mail] SMTP accepted message", {
-      to: input.to,
-      subject: input.subject,
-      messageId: result.messageId,
-      accepted,
-      rejected,
-      durationMs: Date.now() - startedAt,
-    });
-
-    if (accepted.length === 0 && rejected.length > 0) {
-      throw new Error(`SMTP odmietlo všetkých príjemcov: ${rejected.join(", ")}`);
-    }
-
-    return result;
-  } catch (error: any) {
-    console.error("[TM mail] SMTP send failed", {
-      to: input.to,
-      subject: input.subject,
-      code: error?.code || "",
-      command: error?.command || "",
-      responseCode: error?.responseCode || "",
-      response: error?.response || "",
-      message: error?.message || String(error),
-      durationMs: Date.now() - startedAt,
-      smtpHostConfigured: Boolean(env("SMTP_HOST")),
-      smtpUserConfigured: Boolean(env("SMTP_USER")),
-      smtpPassConfigured: Boolean(env("SMTP_PASS")),
-      mailFromConfigured: Boolean(env("MAIL_FROM") || env("SMTP_USER")),
-    });
-    throw error;
-  } finally {
-    transporter.close();
-  }
+  return transporter.sendMail({
+    from: getMailFrom(),
+    to: input.to,
+    subject: input.subject,
+    text: input.text,
+    html: input.html,
+    replyTo: input.replyTo || env("MAIL_REPLY_TO") || env("MAIL_FROM") || env("SMTP_USER"),
+    attachments: input.attachments,
+    bcc: input.bcc,
+  });
 }
 
 export async function sendWelcomeEmail(input: {

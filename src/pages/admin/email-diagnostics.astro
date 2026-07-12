@@ -1,0 +1,31 @@
+---
+export const prerender = false;
+const adminKey = Astro.locals?.runtime?.env?.TM_ANALYTICS_ADMIN_KEY || process.env.TM_ANALYTICS_ADMIN_KEY || process.env.ADMIN_API_SECRET || '';
+const suppliedKey = Astro.url.searchParams.get('key') || '';
+const locked = Boolean(adminKey && suppliedKey !== adminKey);
+const apiUrl = `/api/admin-email-diagnostics${suppliedKey ? `?key=${encodeURIComponent(suppliedKey)}` : ''}`;
+---
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="robots" content="noindex,nofollow" />
+  <title>TM E-mail diagnostika</title>
+  <style>
+    :root{font-family:Inter,system-ui,sans-serif;color:#071936;background:#f3f7ff}*{box-sizing:border-box}body{margin:0;padding:28px}main{max-width:1180px;margin:auto}h1{font-size:clamp(36px,6vw,64px);letter-spacing:-.05em;margin:0 0 8px}.muted{color:#64718a}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}.btn{border:0;border-radius:13px;padding:13px 18px;font-weight:800;cursor:pointer;background:#06214a;color:#fff}.btn.alt{background:#1769ff}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{background:#fff;border:1px solid #dce6f5;border-radius:20px;padding:18px;box-shadow:0 16px 40px rgba(8,26,58,.07)}.wide{grid-column:1/-1}.status{display:inline-flex;padding:6px 10px;border-radius:999px;font-weight:900}.ok{color:#087a43;background:#e9f9f0}.bad{color:#b42318;background:#fff0ef}.warn{color:#9a6700;background:#fff7db}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;border-bottom:1px solid #e8eef7;vertical-align:top}code{overflow-wrap:anywhere}.result{white-space:pre-wrap;background:#071936;color:#dce9ff;padding:16px;border-radius:14px;min-height:100px}input{padding:13px;border:1px solid #cdd9eb;border-radius:12px;min-width:280px;font-size:16px}@media(max-width:800px){body{padding:16px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}table{font-size:13px}}
+  </style>
+</head>
+<body><main>
+  {locked ? <section class="card"><h1>TM E-mail diagnostika</h1><p>Stránka je chránená. Otvor ju s parametrom <strong>?key=...</strong>.</p></section> : <>
+    <h1>TM E-mail diagnostika</h1><p class="muted">Presne overí produkčné ENV, DNS, TCP spojenie, SMTP autentifikáciu a zápis do persistentného úložiska. Heslá sa nezobrazujú.</p>
+    <div class="toolbar"><button class="btn" id="basic">Základná kontrola</button><button class="btn alt" id="verify">Overiť SMTP prihlásenie</button></div>
+    <section class="grid" id="summary"></section>
+    <section class="card wide" style="margin-top:14px"><h2>Premenné prostredia</h2><div id="vars"></div></section>
+    <section class="card wide" style="margin-top:14px"><h2>Testovací e-mail</h2><p class="muted">Odošle správu priamo z produkčného kontajnera mimo objednávkovej fronty.</p><div class="toolbar"><input id="to" type="email" placeholder="vas@email.sk"/><button class="btn alt" id="send">Odoslať test</button></div><div class="result" id="result">Zatiaľ nebol spustený žiadny test.</div></section>
+  </>}
+</main>
+<script define:vars={{ apiUrl }}>
+const summary=document.getElementById('summary'),vars=document.getElementById('vars'),result=document.getElementById('result');
+const badge=(ok,skip=false)=>`<span class="status ${skip?'warn':ok?'ok':'bad'}">${skip?'PRESKOČENÉ':ok?'OK':'CHYBA'}</span>`;
+async function load(verify=false){result.textContent='Kontrola prebieha...';const url=apiUrl+(apiUrl.includes('?')?'&':'?')+`verify=${verify?'1':'0'}`;const r=await fetch(url,{cache:'no-store'});const d=await r.json();summary.innerHTML=`<div class="card"><h3>Celkový stav</h3>${badge(d.ok)}</div><div class="card"><h3>DNS</h3>${badge(d.dns?.ok,d.dns?.skipped)}<p>${d.dns?.address||d.dns?.error||'—'}</p></div><div class="card"><h3>TCP spojenie</h3>${badge(d.tcp?.ok,d.tcp?.skipped)}<p>${d.tcp?.ms??'—'} ms ${d.tcp?.error||''}</p></div><div class="card"><h3>SMTP autentifikácia</h3>${badge(d.verify?.ok,d.verify?.skipped)}<p>${d.verify?.error||d.verify?.response||'—'}</p></div><div class="card"><h3>Persistentné dáta</h3>${badge(d.persistence?.ok)}<p><code>${d.persistence?.root||''}</code><br>${d.persistence?.error||''}</p></div><div class="card"><h3>Chýbajúce nastavenia</h3><p>${d.missing?.length?d.missing.join(', '):'Žiadne'}</p></div>`;vars.innerHTML=`<table><thead><tr><th>Premenná</th><th>Stav</th><th>Zdroj</th><th>Použitý názov</th><th>Hodnota</th></tr></thead><tbody>${Object.entries(d.variables||{}).map(([k,v])=>`<tr><td><code>${k}</code></td><td>${badge(v.present)}</td><td>${v.source}</td><td><code>${v.actualName}</code></td><td>${v.value||'—'}</td></tr>`).join('')}</tbody></table>`;result.textContent=JSON.stringify(d,null,2)}
+document.getElementById('basic')?.addEventListener('click',()=>load(false));document.getElementById('verify')?.addEventListener('click',()=>load(true));document.getElementById('send')?.addEventListener('click',async()=>{result.textContent='Odosielam testovací e-mail...';const r=await fetch(apiUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({to:document.getElementById('to').value})});result.textContent=JSON.stringify(await r.json(),null,2)});load(false);
+</script></body></html>
