@@ -1,0 +1,37 @@
+---
+export const prerender = false;
+import { getAdminAccessKey } from '../../lib/admin-access';
+const adminKey = getAdminAccessKey(Astro.locals);
+const suppliedKey = Astro.url.searchParams.get('key') || '';
+const locked = Boolean(adminKey && suppliedKey !== adminKey);
+const apiUrl = `/api/admin-production-health${suppliedKey ? `?key=${encodeURIComponent(suppliedKey)}` : ''}`;
+---
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>TM Produkčný Health Check</title>
+  <style>
+    :root{font-family:Inter,system-ui,sans-serif;color:#071936;background:#f3f7ff}*{box-sizing:border-box}body{margin:0;padding:24px}main{max-width:1280px;margin:auto}h1{font-size:clamp(34px,6vw,62px);letter-spacing:-.05em;margin:0 0 8px}.muted{color:#64718a}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}.btn{border:0;border-radius:13px;padding:13px 18px;font-weight:800;cursor:pointer;background:#06214a;color:#fff}.btn.alt{background:#1769ff}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{background:#fff;border:1px solid #dce6f5;border-radius:20px;padding:18px;box-shadow:0 16px 40px rgba(8,26,58,.07)}.wide{grid-column:1/-1}.status{display:inline-flex;padding:6px 10px;border-radius:999px;font-weight:900}.ok{color:#087a43;background:#e9f9f0}.bad{color:#b42318;background:#fff0ef}.warn{color:#9a6700;background:#fff7db}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;border-bottom:1px solid #e8eef7;vertical-align:top}code{overflow-wrap:anywhere}.small{font-size:13px}.metric{font-size:30px;font-weight:900}@media(max-width:850px){body{padding:14px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}table{font-size:12px}}
+  </style>
+</head>
+<body><main>
+{locked ? <section class="card"><h1>Produkčný Health Check</h1><p>Stránka je chránená. Otvor ju s parametrom <strong>?key=...</strong>.</p></section> : <>
+  <h1>Produkčný Health Check</h1>
+  <p class="muted">Kontrola kódu, runtime konfigurácie, SMTP, WooCommerce, GoPay, fronty, úložiska a systémových zdrojov.</p>
+  <div class="toolbar"><button class="btn" id="basic">Rýchla kontrola</button><button class="btn alt" id="deep">Hlboká kontrola vrátane SMTP</button></div>
+  <section class="grid" id="summary"></section>
+  <section class="card wide" style="margin-top:14px"><h2>Kontroly</h2><div id="checks"></div></section>
+  <section class="card wide" style="margin-top:14px"><h2>Environment Variables</h2><div id="env"></div></section>
+  <section class="card wide" style="margin-top:14px"><h2>Systém</h2><div id="system"></div></section>
+</>}
+</main>
+<script define:vars={{ apiUrl }}>
+const summary=document.getElementById('summary'),checks=document.getElementById('checks'),env=document.getElementById('env'),system=document.getElementById('system');
+const badge=(c)=>`<span class="status ${c.ok?'ok':c.warning?'warn':'bad'}">${c.ok?'OK':c.warning?'UPOZORNENIE':'CHYBA'}</span>`;
+async function load(deep=false){summary.innerHTML='<div class="card wide">Kontrola prebieha...</div>';const url=apiUrl+(apiUrl.includes('?')?'&':'?')+`deep=${deep?'1':'0'}`;let r,d;try{r=await fetch(url,{cache:'no-store',credentials:'same-origin'});d=await r.json()}catch(e){d={ok:false,error:e?.message||String(e)}}if(!r?.ok||d?.error){summary.innerHTML=`<div class="card wide"><h3>Kontrola zlyhala</h3><p class="bad status">${d?.error||`HTTP ${r?.status||'chyba'}`}</p></div>`;return}summary.innerHTML=`<div class="card"><div class="muted">Celkový stav</div><div class="metric">${d.ok?'OK':'PROBLÉM'}</div></div><div class="card"><div class="muted">Chyby</div><div class="metric">${d.summary.failures}</div></div><div class="card"><div class="muted">Upozornenia</div><div class="metric">${d.summary.warnings}</div></div>`;checks.innerHTML=`<table><thead><tr><th>Kontrola</th><th>Stav</th><th>Čas</th><th>Výsledok</th></tr></thead><tbody>${d.checks.map(c=>`<tr><td><strong>${c.label}</strong></td><td>${badge(c)}</td><td>${c.ms??'—'} ms</td><td>${c.message}</td></tr>`).join('')}</tbody></table>`;env.innerHTML=`<table><thead><tr><th>Premenná</th><th>Stav</th></tr></thead><tbody>${Object.entries(d.env).map(([k,v])=>`<tr><td><code>${k}</code></td><td><span class="status ${v?'ok':'bad'}">${v?'NASTAVENÁ':'CHÝBA'}</span></td></tr>`).join('')}</tbody></table>`;system.innerHTML=`<table><tbody><tr><th>Git commit</th><td><code>${d.app.gitCommit}</code></td></tr><tr><th>Node</th><td>${d.app.node}</td></tr><tr><th>Prostredie</th><td>${d.app.environment}</td></tr><tr><th>Uptime</th><td>${d.app.uptimeSeconds} s</td></tr><tr><th>Pracovný priečinok</th><td><code>${d.app.cwd}</code></td></tr><tr><th>RAM procesu</th><td>${d.resources.rssMB} MB</td></tr><tr><th>Heap</th><td>${d.resources.heapUsedMB} / ${d.resources.heapTotalMB} MB</td></tr><tr><th>CPU</th><td>${d.resources.cpuCount}</td></tr><tr><th>Load average</th><td>${d.resources.loadAverage.join(', ')}</td></tr></tbody></table>`}
+document.getElementById('basic')?.addEventListener('click',()=>load(false));document.getElementById('deep')?.addEventListener('click',()=>load(true));load(false);
+</script>
+</body></html>
