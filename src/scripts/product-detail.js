@@ -1,3 +1,5 @@
+import { getDispatchMessage } from "./dispatch-message.js";
+
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
   const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
@@ -240,7 +242,7 @@
   }
 
   function dispatchText(product) {
-    return product.stock_status === "instock" ? "Expedujeme dnes pri objednávke do 14:00" : "Termín dodania overíme";
+    return product.stock_status === "instock" ? getDispatchMessage() : "Termín dodania overíme";
   }
 
 

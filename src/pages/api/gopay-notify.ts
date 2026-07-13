@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { processPaidGoPayOrder, readPendingGoPayOrder } from "../../lib/gopay-order";
+import { processPaidGoPayOrder, readPendingGoPayOrder, syncWooGoPayPaymentState } from "../../lib/gopay-order";
 import { verifyGoPayPaymentAgainstOrder } from "../../lib/gopay-client";
 
 export const prerender = false;
@@ -41,6 +41,8 @@ export const GET: APIRoute = async ({ url }) => {
 
     if (["PAID", "AUTHORIZED"].includes(String(payment.state || "").toUpperCase())) {
       orderResult = await processPaidGoPayOrder(payment);
+    } else {
+      orderResult = await syncWooGoPayPaymentState(pending, payment);
     }
 
     console.log("GoPay notification GET", {
@@ -89,6 +91,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (["PAID", "AUTHORIZED"].includes(String(payment.state || "").toUpperCase())) {
       orderResult = await processPaidGoPayOrder(payment);
+    } else {
+      orderResult = await syncWooGoPayPaymentState(pending, payment);
     }
 
     console.log("GoPay notification", {

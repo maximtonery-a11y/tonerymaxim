@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { processPaidGoPayOrder, readPendingGoPayOrder } from "../../lib/gopay-order";
+import { processPaidGoPayOrder, readPendingGoPayOrder, syncWooGoPayPaymentState } from "../../lib/gopay-order";
 import { verifyGoPayPaymentAgainstOrder } from "../../lib/gopay-client";
 
 export const prerender = false;
@@ -71,6 +71,9 @@ export const GET: APIRoute = async ({ url }) => {
           woo_order_created: result?.created || false,
         }))
         .catch((error) => console.error("GoPay status background Woo order error", error?.message || error));
+    } else if (pending.wooOrderId) {
+      syncWooGoPayPaymentState(pending, payment)
+        .catch((error) => console.error("GoPay status Woo meta update error", error?.message || error));
     }
 
     console.log("GoPay status check", {

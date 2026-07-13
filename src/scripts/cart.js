@@ -1,3 +1,5 @@
+import { getDispatchMessage } from "./dispatch-message.js";
+
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
 
@@ -731,7 +733,7 @@ function formatMoney(value) {
           <div class="cart-benefit-card cart-benefit-expedition">
             <span class="cart-benefit-icon" aria-hidden="true">🚚</span>
             <div>
-              <strong>Expedujeme najbližší pracovný deň</strong>
+              <strong>${esc(getDispatchMessage())}</strong>
               <small>Produkty skladom pripravíme na odoslanie čo najskôr.</small>
             </div>
           </div>

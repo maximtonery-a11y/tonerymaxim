@@ -231,22 +231,36 @@ async function lineItems(source: CheckoutOrderSource, taxRateId: number) {
 }
 
 
+function pickupObjects(pickup: any): any[] {
+  const values: any[] = [pickup, pickup?.raw, pickup?.data];
+  for (const candidate of [pickup?.raw_result, pickup?.result]) {
+    if (!candidate) continue;
+    if (typeof candidate === "object") values.push(candidate);
+    if (typeof candidate === "string") {
+      try { values.push(JSON.parse(candidate)); } catch { /* raw string */ }
+    }
+  }
+  return values.filter(Boolean);
+}
+
 function pickupValue(pickup: any, keys: string[]) {
-  for (const key of keys) {
-    const value = pickup?.[key] ?? pickup?.raw?.[key] ?? pickup?.raw_result?.[key] ?? pickup?.data?.[key];
-    if (value !== undefined && value !== null && String(value).trim()) return String(value).trim();
+  for (const object of pickupObjects(pickup)) {
+    for (const key of keys) {
+      const value = object?.[key];
+      if (value !== undefined && value !== null && String(value).trim()) return String(value).trim();
+    }
   }
   return "";
 }
 
 function selectedPickup(source: CheckoutOrderSource) {
   const pickup = source.delivery?.pickup || {};
-  const id = pickupValue(pickup, ["id", "parcelshop_id", "parcelShopId", "parcel_shop_id", "pudo_id", "pickup_id", "depot", "code"]);
-  const name = pickupValue(pickup, ["name", "parcelshop_name", "parcelShopName", "shop_name"]);
-  const street = pickupValue(pickup, ["street", "address", "address1"]);
-  const city = pickupValue(pickup, ["city", "town"]);
-  const postcode = pickupValue(pickup, ["zip", "postalcode", "postal_code", "postcode"]);
-  const country = pickupValue(pickup, ["country", "countrycode", "country_code"]) || "SK";
+  const id = pickupValue(pickup, ["id", "parcelshop_id", "parcelShopId", "parcel_shop_id", "pudo_id", "pickup_id", "pickupPointId", "pickup_point_id", "depot", "code"]);
+  const name = pickupValue(pickup, ["name", "pickup_name", "parcelshop_name", "parcelShopName", "pickupPointName", "shop_name", "title"]);
+  const street = pickupValue(pickup, ["street", "pickup_address", "parcelshop_address", "pickupPointAddress", "address", "address1"]);
+  const city = pickupValue(pickup, ["city", "pickup_city", "town"]);
+  const postcode = pickupValue(pickup, ["zip", "pickup_zip", "postalcode", "postal_code", "postcode"]);
+  const country = pickupValue(pickup, ["country", "pickup_country", "countrycode", "country_code"]) || "SK";
   const isLocker = /box|locker|bal[ií]komat|parcelocker/i.test(`${source.shippingCode} ${pickupValue(pickup, ["type", "name", "description"])} ${pickup?.isparcelocker || ""}`);
 
   return { id, name, street, city, postcode, country, isLocker, raw: pickup };
@@ -642,24 +656,42 @@ export async function readPendingGoPayOrder(paymentId: string): Promise<Checkout
   return null;
 }
 
-async function markWooGoPayOrderPaid(source: CheckoutOrderSource, payment: GoPayPayment) {
+export async function syncWooGoPayPaymentState(source: CheckoutOrderSource, payment: GoPayPayment) {
   const orderId = Number(source.wooOrderId || 0);
   if (!orderId) return null;
 
   const paymentId = String(payment?.id || source.paymentId || "");
+  const state = String(payment?.state || source.paymentState || "UNKNOWN").toUpperCase();
+  const paid = state === "PAID" || state === "AUTHORIZED";
   const updated = await wooRequest<any>(`/orders/${orderId}`, {
     method: "PUT",
     body: {
-      status: "processing",
-      set_paid: true,
+      ...(paid ? { status: "processing", set_paid: true } : {}),
       transaction_id: paymentId || undefined,
       meta_data: [
         { key: "gopay_payment_id", value: paymentId },
-        { key: "gopay_state", value: String(payment?.state || "PAID") },
-        { key: "tm_payment_paid_at", value: new Date().toISOString() },
+        { key: "gopay_state", value: state },
+        { key: "tm_gopay_verified", value: "1" },
+        { key: "tm_gopay_verified_at", value: new Date().toISOString() },
+        { key: "tm_gopay_amount", value: String(payment?.amount ?? source.amountCents ?? "") },
+        { key: "tm_gopay_currency", value: String(payment?.currency || source.currency || "EUR") },
+        ...(paid ? [{ key: "tm_payment_paid_at", value: new Date().toISOString() }] : []),
       ],
     },
   });
+
+  return {
+    created: false,
+    orderId: Number(updated?.id || orderId),
+    orderNumber: String(updated?.number || source.wooOrderNumber || orderId),
+  };
+}
+
+async function markWooGoPayOrderPaid(source: CheckoutOrderSource, payment: GoPayPayment) {
+  const updatedResult = await syncWooGoPayPaymentState(source, payment);
+  if (!updatedResult) return null;
+  const orderId = updatedResult.orderId;
+  const updated = { id: orderId, number: updatedResult.orderNumber };
 
   return {
     created: false,

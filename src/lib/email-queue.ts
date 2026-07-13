@@ -10,6 +10,7 @@ const ORDERS_PER_SCAN = Math.min(100, Math.max(20, Number(process.env.TM_EMAIL_Q
 const OBSERVED_META = '_tm_email_queue_observed_status';
 const SENT_META = '_tm_email_queue_last_sent_status';
 const SENT_AT_META = '_tm_email_queue_last_sent_at';
+const CLAIM_META = '_tm_email_queue_claim';
 
 const NOTIFIABLE_STATUSES = new Set([
   'pending',
@@ -226,13 +227,27 @@ async function processOrder(order: WooOrder): Promise<void> {
     return;
   }
 
-  const payload = toPayload(order, observedStatus, currentStatus);
-  await sendWooOrderStatusEmail(payload);
+  // Distribuovaný claim cez Woo meta chráni pred dvojitým odoslaním počas rolling deployu,
+  // keď krátko bežia dva Astro kontajnery súčasne.
+  const claimToken = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  await updateOrderMarkers(order.id, [{ key: CLAIM_META, value: `${currentStatus}|${claimToken}` }]);
+  const claimedOrder = await wooRequest<WooOrder>(`/orders/${order.id}`);
+  if (metaValue(claimedOrder, CLAIM_META) !== `${currentStatus}|${claimToken}`) return;
+  if (normalizeStatus(metaValue(claimedOrder, SENT_META)) === currentStatus) return;
+
+  const payload = toPayload(claimedOrder, observedStatus, currentStatus);
+  try {
+    await sendWooOrderStatusEmail(payload);
+  } catch (error) {
+    await updateOrderMarkers(order.id, [{ key: CLAIM_META, value: '' }]).catch(() => undefined);
+    throw error;
+  }
 
   await updateOrderMarkers(order.id, [
     { key: OBSERVED_META, value: currentStatus },
     { key: SENT_META, value: currentStatus },
     { key: SENT_AT_META, value: new Date().toISOString() },
+    { key: CLAIM_META, value: '' },
   ]);
   state.sentEmails += 1;
   state.lastSuccessAt = new Date().toISOString();
