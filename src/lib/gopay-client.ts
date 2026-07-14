@@ -9,14 +9,19 @@ const TOKEN_CACHE = new Map<string, CachedToken>();
 const TOKEN_REQUESTS = new Map<string, Promise<string>>();
 const TOKEN_SAFETY_WINDOW_MS = 60_000;
 
-export function getGoPayHost() {
-  return import.meta.env.GOPAY_ENV === "production"
-    ? "https://gate.gopay.cz"
-    : "https://gw.sandbox.gopay.com";
+export function getEnv(name: string) {
+  return String(process.env[name] || import.meta.env[name] || "").trim();
 }
 
-export function getEnv(name: string) {
-  return String(import.meta.env[name] || process.env[name] || "").trim();
+export function getGoPayEnvironment() {
+  const value = getEnv("GOPAY_ENV").toLowerCase();
+  return ["production", "prod", "live", "ostrý", "ostry"].includes(value) ? "production" : "sandbox";
+}
+
+export function getGoPayHost() {
+  return getGoPayEnvironment() === "production"
+    ? "https://gate.gopay.cz"
+    : "https://gw.sandbox.gopay.com";
 }
 
 function basicAuth(clientId: string, clientSecret: string) {
