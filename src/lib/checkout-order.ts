@@ -735,3 +735,49 @@ export async function processPaidGoPayOrder(payment: GoPayPayment) {
     GOPAY_PROCESS_LOCKS.delete(paymentId);
   }
 }
+
+export async function syncWooGoPayPaymentState(source: CheckoutOrderSource, payment: GoPayPayment) {
+  const paymentId = String(payment?.id || source.paymentId || "");
+  const state = String(payment?.state || source.paymentState || "UNKNOWN").toUpperCase();
+  const now = new Date().toISOString();
+  const updatedSource: CheckoutOrderSource = {
+    ...source,
+    paymentId,
+    paymentState: state,
+  };
+
+  let orderId = Number(source.wooOrderId || 0);
+  let orderNumber = String(source.wooOrderNumber || source.orderNumber || orderId || "");
+
+  if (orderId > 0) {
+    const metaData: Array<{ key: string; value: string }> = [
+      { key: "gopay_payment_id", value: paymentId },
+      { key: "gopay_state", value: state },
+      { key: "tm_gopay_verified_at", value: now },
+    ];
+    if (["PAID", "AUTHORIZED"].includes(state)) {
+      metaData.push({ key: "tm_payment_paid_at", value: now });
+    }
+
+    const body: Record<string, unknown> = {
+      transaction_id: paymentId || undefined,
+      meta_data: metaData,
+    };
+    if (["PAID", "AUTHORIZED"].includes(state)) {
+      body.status = "processing";
+      body.set_paid = true;
+    } else if (["CANCELED", "TIMEOUTED", "FAILED"].includes(state)) {
+      body.status = "failed";
+      body.set_paid = false;
+    }
+
+    const woo = await wooRequest<any>(`/orders/${orderId}`, { method: "PUT", body });
+    orderId = Number(woo?.id || orderId);
+    orderNumber = String(woo?.number || orderNumber);
+    updatedSource.wooOrderId = orderId;
+    updatedSource.wooOrderNumber = orderNumber;
+  }
+
+  await savePendingGoPayOrder(updatedSource);
+  return { created: false, orderId, orderNumber, state };
+}

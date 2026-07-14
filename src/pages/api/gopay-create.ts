@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { readCustomerSession } from "../../lib/auth-session";
-import { savePendingGoPayOrder } from "../../lib/gopay-order";
+import { savePendingGoPayOrder } from "../../lib/checkout-order";
 import { enqueueAsyncWooOrder, scheduleAsyncOrderQueue } from "../../lib/async-order-queue";
 import { getCustomerLoyalty } from "../../lib/loyalty";
 import { validateCheckoutCoupon } from "../../lib/coupons";

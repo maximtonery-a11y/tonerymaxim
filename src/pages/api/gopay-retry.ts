@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { readPendingGoPayOrder, savePendingGoPayOrder } from "../../lib/gopay-order";
+import { readPendingGoPayOrder, savePendingGoPayOrder } from "../../lib/checkout-order";
 import { getEnv, getGoPayAccessToken, getGoPayHost } from "../../lib/gopay-client";
 
 export const prerender = false;

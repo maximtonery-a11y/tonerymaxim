@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { processPaidGoPayOrder, readPendingGoPayOrder, syncWooGoPayPaymentState } from "../../lib/gopay-order";
+import { processPaidGoPayOrder, readPendingGoPayOrder, syncWooGoPayPaymentState } from "../../lib/checkout-order";
 import { verifyGoPayPaymentAgainstOrder } from "../../lib/gopay-client";
 
 export const prerender = false;

@@ -2,7 +2,7 @@ import { mkdir, unlink, readdir, stat, rename } from "node:fs/promises";
 import { join } from "node:path";
 import { TM_CACHE_ROOT } from './runtime-paths';
 import { readSignedJson, writeSignedJson, quarantineFile, TM_DATA_ROOT } from "./secure-persistence";
-import { createWooOrderFromCheckout, type CheckoutOrderSource } from "./gopay-order";
+import { createWooOrderFromCheckout, type CheckoutOrderSource } from "./checkout-order";
 import { CheckoutProfiler } from "./checkout-profiler";
 import { sendOrderAdminCopyEmail, sendOrderConfirmationEmail } from "./mail";
 import { wooRequest } from "./woo-client";
