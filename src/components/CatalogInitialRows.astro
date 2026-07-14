@@ -1,0 +1,100 @@
+---
+type Product = Record<string, any>;
+
+const { products = [] } = Astro.props as { products?: Product[] };
+
+const money = (value: unknown) => new Intl.NumberFormat("sk-SK", {
+  style: "currency",
+  currency: "EUR",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format(Number(value || 0));
+
+const typeData = (product: Product) => {
+  const key = product.product_type_key || "product";
+  if (key === "original") return { key, label: "ORIGINÁL", note: "🏅 Originálna kvalita výrobcu", iconImage: "/design-icons/icon-original.png" };
+  if (key === "compatible") return { key, label: "KOMPATIBILNÝ", note: "⭐ Odporúčame, najpredávanejší model", iconImage: "/design-icons/icon-compatible.png" };
+  if (key === "renovated") return { key, label: "RENOVOVANÝ", note: "🏢 Ekologická voľba pre kancelárie", iconImage: "/design-icons/icon-renovated.png" };
+  return { key, label: product.product_type_label || "PRODUKT", note: product.product_type_note || "Spotrebný materiál", iconImage: "" };
+};
+
+const stockText = (product: Product) => {
+  if (product.stock_status === "instock") return product.stock_quantity !== null && product.stock_quantity !== undefined ? `Skladom ${product.stock_quantity} ks` : "Skladom";
+  if (product.stock_status === "outofstock") return "Nie je skladom";
+  if (product.stock_status === "onbackorder") return "Na objednávku";
+  return product.stock_status || "Dostupnosť neznáma";
+};
+
+const stockClass = (product: Product) => product.stock_status === "instock" ? "is-instock" : product.stock_status === "outofstock" ? "is-outofstock" : product.stock_status === "onbackorder" ? "is-backorder" : "is-unknown";
+const dispatchText = (product: Product) => product.stock_status === "instock" ? "Expedujeme dnes" : "Termín dodania overíme";
+const colorHex = (value: unknown) => {
+  const c = String(value || "").toLowerCase();
+  if (c.includes("žlt") || c.includes("zlt") || c.includes("yellow")) return "#facc15";
+  if (c.includes("azú") || c.includes("azur") || c.includes("cyan")) return "#06b6d4";
+  if (c.includes("purp") || c.includes("magenta")) return "#d946ef";
+  if (c.includes("čier") || c.includes("cier") || c.includes("black")) return "#111827";
+  if (c.includes("cmyk") || c.includes("multi")) return "linear-gradient(90deg,#06b6d4,#d946ef,#facc15,#111827)";
+  return "#94a3b8";
+};
+
+const printers = (product: Product) => Array.isArray(product.compatible_printers) ? product.compatible_printers.filter(Boolean) : [];
+const groupCounts = products.reduce<Record<string, number>>((acc, product) => {
+  const key = product.product_type_key || "product";
+  acc[key] = (acc[key] || 0) + 1;
+  return acc;
+}, {});
+const groupTitle = (key: string) => key === "compatible" ? `Kompatibilné tonery (${groupCounts[key] || 0})` : key === "original" ? `Originálne tonery (${groupCounts[key] || 0})` : key === "renovated" ? `Renovované tonery (${groupCounts[key] || 0})` : `Ostatné produkty (${groupCounts[key] || 0})`;
+let previousGroup = "";
+---
+{products.map((product) => {
+  const type = typeData(product);
+  const productPrinters = printers(product);
+  const showGroup = type.key !== previousGroup;
+  previousGroup = type.key;
+  const color = product.color || "Neuvedené";
+  const capacity = product.yield || product.page_yield || product.capacity || product.kapacita || "Neuvedené";
+  const inStock = product.stock_status === "instock";
+  return (
+    <>
+      {showGroup && <h2 class={`tm-mobile-product-group tm-mobile-product-group--${type.key}`}>{groupTitle(type.key)}</h2>}
+      <article class={`tm-product-row tm-product-row--${type.key}`}>
+        <div class="tm-row-accent" aria-hidden="true"></div>
+        <div class="tm-row-type">
+          <div class="tm-row-symbol" aria-hidden="true">
+            {type.iconImage ? <img src={type.iconImage} alt="" /> : <span>•</span>}
+          </div>
+          <div class="tm-row-type-copy">
+            <span class="tm-type-badge">{type.label}</span>
+            <p>{type.note}</p>
+          </div>
+        </div>
+        <a href={product.detail_url} class="tm-row-photo" aria-label="Otvoriť produkt">
+          <img src={product.image} alt={product.name} loading="lazy" class="tm-product-fit-image" />
+        </a>
+        <div class="tm-row-main">
+          <h2><a href={product.detail_url}>{product.name}</a></h2>
+          <p class="tm-row-printers">{productPrinters.length ? productPrinters.slice(0, 4).join(", ") : "Kompatibilita bude doplnená."}</p>
+          <div class="tm-row-info-line">
+            <div class="tm-row-meta">
+              <span class="tm-meta-color"><i style={`--swatch:${colorHex(color)}`}></i>{color}</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"></path><path d="M14 3v5h5M9 13h6M9 17h6"></path></svg>{capacity}</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V6z"></path><path d="m8.5 12 2.2 2.2 4.8-5"></path></svg>24 mes. záruka</span>
+            </div>
+            <div class="tm-row-compat">
+              <button type="button" data-open-printers>Vhodné pre {productPrinters.length} tlačiarní</button>
+              <span class="tm-dispatch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"></path><path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path></svg>{dispatchText(product)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="tm-row-buy">
+          <span class={`tm-stock-dot ${stockClass(product)}`}>{stockText(product)}</span>
+          <strong>{money(product.price)}</strong>
+          <small>s DPH</small>
+          <button type="button" class={inStock ? "" : "tm-availability-btn"} aria-label={inStock ? `Pridať do košíka ${product.name}` : `Overiť dostupnosť ${product.name}`}>
+            {inStock ? <><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7zM5 6 4 3H2M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"></path></svg>Do košíka</> : "Overiť dostupnosť"}
+          </button>
+        </div>
+      </article>
+    </>
+  );
+})}

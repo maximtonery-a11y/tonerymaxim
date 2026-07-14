@@ -1,4 +1,4 @@
-import { getDispatchMessage } from "./dispatch-message.js";
+import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
@@ -733,7 +733,7 @@ function formatMoney(value) {
           <div class="cart-benefit-card cart-benefit-expedition">
             <span class="cart-benefit-icon" aria-hidden="true">🚚</span>
             <div>
-              <strong>${esc(getDispatchMessage())}</strong>
+              <strong data-tm-dispatch-message>${esc(getDispatchMessage())}</strong>
               <small>Produkty skladom pripravíme na odoslanie čo najskôr.</small>
             </div>
           </div>
@@ -988,13 +988,16 @@ function formatMoney(value) {
   document.addEventListener("DOMContentLoaded", async () => {
     refreshCartCounters();
     renderCartPage();
+    refreshDispatchMessages(document);
     loadLoyalty();
     autoLoadBestCoupon();
     if (document.querySelector("[data-cart-list]")) {
       const changed = await hydrateCartProducts();
-      if (changed) renderCartPage();
+      if (changed) { renderCartPage(); refreshDispatchMessages(document); }
     }
   });
+
+  window.setInterval(() => refreshDispatchMessages(document), 60000);
 
   window.ToneryMaximCart = {
     readCart,

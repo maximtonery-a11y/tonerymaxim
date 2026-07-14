@@ -765,6 +765,13 @@
       deliveryBox.hidden = hideDelivery;
       deliveryBox.style.display = hideDelivery ? "none" : "";
       deliveryBox.setAttribute("aria-hidden", String(hideDelivery));
+      deliveryBox.querySelectorAll('input[name="delivery_zip"], input[name="delivery_city"], input[name="delivery_street"], input[name="delivery_first_name"], input[name="delivery_last_name"]').forEach((input) => {
+        input.required = !hideDelivery;
+        if (hideDelivery) {
+          input.classList.remove("is-invalid");
+          renderFieldError(input, "");
+        }
+      });
     }
     if (deliveryToggle) deliveryToggle.setAttribute("aria-expanded", String(!hideDelivery));
   }
@@ -929,16 +936,38 @@
     });
   }
 
-  function validateField(input) {
+  function fieldErrorMessage(input) {
     const value = input.value.trim();
-    let valid = true;
+    if (input.required && !value) return "Toto pole je povinné.";
+    if (input.type === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Zadajte platnú e-mailovú adresu.";
+    if (input.type === "tel" && value && value.replace(/\D/g, "").length < 9) return "Zadajte platné telefónne číslo.";
+    if ((input.name === "zip" || input.name === "delivery_zip") && value && value.replace(/\D/g, "").length !== 5) return "PSČ musí obsahovať 5 číslic.";
+    return "";
+  }
 
-    if (input.required && value.length === 0) valid = false;
-    if (input.type === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) valid = false;
-    if (input.type === "tel" && value && value.replace(/\D/g, "").length < 9) valid = false;
-    if ((input.name === "zip" || input.name === "delivery_zip") && value && value.replace(/\D/g, "").length < 5) valid = false;
+  function renderFieldError(input, message) {
+    const label = input.closest("label");
+    if (!label) return;
+    let error = label.querySelector(":scope > .checkout-field-error");
+    if (!error) {
+      error = document.createElement("span");
+      error.className = "checkout-field-error";
+      error.setAttribute("role", "alert");
+      label.appendChild(error);
+    }
+    error.id = `${input.name || input.id}-error`;
+    error.textContent = message;
+    error.hidden = !message;
+    input.setAttribute("aria-invalid", message ? "true" : "false");
+    if (message) input.setAttribute("aria-describedby", error.id);
+    else input.removeAttribute("aria-describedby");
+  }
 
+  function validateField(input) {
+    const message = fieldErrorMessage(input);
+    const valid = !message;
     input.classList.toggle("is-invalid", !valid);
+    renderFieldError(input, message);
     return valid;
   }
 
@@ -967,6 +996,21 @@
       valid = false;
     } else if (terms) {
       terms.closest(".checkline").classList.remove("is-invalid-line");
+    }
+
+    document.querySelector("[data-checkout-validation-summary]")?.remove();
+    if (!valid) {
+      const summary = document.createElement("div");
+      summary.className = "checkout-validation-summary";
+      summary.dataset.checkoutValidationSummary = "1";
+      summary.setAttribute("role", "alert");
+      summary.innerHTML = "<strong>Objednávku nie je možné odoslať.</strong><span>Skontrolujte červenou označené polia a doplňte chýbajúce údaje.</span>";
+      document.querySelector("[data-checkout-form]")?.prepend(summary);
+      const firstInvalid = document.querySelector(".is-invalid, .is-invalid-pickup, .is-invalid-line");
+      window.requestAnimationFrame(() => {
+        (firstInvalid || summary).scrollIntoView({ behavior: "smooth", block: "center" });
+        if (firstInvalid instanceof HTMLInputElement) firstInvalid.focus({ preventScroll: true });
+      });
     }
 
     return valid;
@@ -1819,6 +1863,9 @@
       input.addEventListener("blur", () => validateField(input));
       input.addEventListener("input", () => {
         if (input.classList.contains("is-invalid")) validateField(input);
+        if (!document.querySelector(".is-invalid, .is-invalid-pickup, .is-invalid-line")) {
+          document.querySelector("[data-checkout-validation-summary]")?.remove();
+        }
       });
     });
 

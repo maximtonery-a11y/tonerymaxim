@@ -1,5 +1,6 @@
 const SHIPPING_TIME_ZONE = "Europe/Bratislava";
 const SHIPPING_CUTOFF_MINUTES = 15 * 60;
+export const DISPATCH_RULE_VERSION = "2026-07-15-v2";
 
 function easterSunday(year) {
   const a = year % 19;
@@ -95,9 +96,20 @@ export function getDispatchMessage(date = new Date()) {
   const isHoliday = slovakNonWorkingHolidayKeys(parts.year).has(isoDate(parts.year, parts.month, parts.day));
   const minutes = parts.hour * 60 + parts.minute;
 
+  // Do 15:00 vrátane expedujeme dnes. Od 15:01 už najbližší pracovný deň.
   if (isWeekend || isHoliday || minutes > SHIPPING_CUTOFF_MINUTES) {
     return "Expedujeme najbližší pracovný deň";
   }
 
   return "Expedujeme dnes pri objednávke do 15:00";
+}
+
+
+export function refreshDispatchMessages(root = document) {
+  if (!root || typeof root.querySelectorAll !== "function") return;
+  const message = getDispatchMessage();
+  root.querySelectorAll("[data-tm-dispatch-message]").forEach((element) => {
+    element.textContent = message;
+    element.setAttribute("data-tm-dispatch-version", DISPATCH_RULE_VERSION);
+  });
 }

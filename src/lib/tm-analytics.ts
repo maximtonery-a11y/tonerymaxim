@@ -1,7 +1,8 @@
-import { mkdir, appendFile, readFile, stat } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
-import { TM_CACHE_ROOT } from './runtime-paths';
+import { TM_DATA_ROOT } from './secure-persistence';
 
 export type TMAnalyticsEvent = {
   type: string;
@@ -11,130 +12,192 @@ export type TMAnalyticsEvent = {
   title?: string;
   referrer?: string;
   durationMs?: number;
+  activeMs?: number;
   viewport?: string;
   device?: string;
   language?: string;
   userAgent?: string;
+  source?: string;
   country?: string;
   region?: string;
   city?: string;
-  source?: string;
   search?: string;
   product?: string;
   value?: number;
   meta?: Record<string, unknown>;
-  sessionId?: string;
+  sessionId: string;
+  visitorId?: string;
+  owner?: boolean;
+  ipHash?: string;
 };
 
-const ANALYTICS_DIR = path.join(TM_CACHE_ROOT, 'analytics');
+export type TMVisit = {
+  sessionId: string;
+  visitorId: string;
+  owner: boolean;
+  startedAt: string;
+  lastSeenAt: string;
+  durationMs: number;
+  activeMs: number;
+  pageviews: number;
+  device: string;
+  source: string;
+  referrer: string;
+  userAgent: string;
+  pages: Array<{ path: string; title: string; enteredAt: string; durationMs: number }>;
+  searches: string[];
+  products: string[];
+  events: TMAnalyticsEvent[];
+};
+
+const ANALYTICS_DIR = path.join(TM_DATA_ROOT, 'analytics');
 const EVENTS_FILE = path.join(ANALYTICS_DIR, 'events.jsonl');
 const MAX_BODY_SIZE = 16_000;
-const MAX_READ_BYTES = 4_000_000;
+const MAX_READ_BYTES = 24_000_000;
+const ONLINE_WINDOW_MS = 90_000;
+const SESSION_MAX_MS = 8 * 60 * 60 * 1000;
 
 function cleanText(value: unknown, max = 500): string {
-  return String(value ?? '')
-    .replace(/[\u0000-\u001f\u007f]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, max);
+  return String(value ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 }
-
 function cleanPath(value: unknown): string {
   const text = cleanText(value, 1000);
-  if (!text || !text.startsWith('/')) return '/';
-  return text;
+  return text.startsWith('/') ? text : '/';
 }
-
 function cleanNumber(value: unknown, max = 86_400_000): number | undefined {
-  const number = Number(value);
-  if (!Number.isFinite(number) || number < 0) return undefined;
-  return Math.min(Math.round(number), max);
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? Math.min(Math.round(n), max) : undefined;
 }
-
-function getHeader(request: Request, name: string): string {
+function cookieValue(request: Request, name: string): string {
+  const cookie = request.headers.get('cookie') || '';
+  const match = cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : '';
+}
+function detectDevice(userAgent: string, viewport = ''): string {
+  if (/ipad|tablet|android(?!.*mobile)/i.test(userAgent)) return 'tablet';
+  if (/mobi|iphone|ipod|android.*mobile/i.test(userAgent)) return 'mobile';
+  const width = Number(viewport.split('x')[0] || 0);
+  return width > 0 && width < 768 ? 'mobile' : width < 1100 && width >= 768 ? 'tablet' : 'desktop';
+}
+function detectSource(referrer: string): string {
+  const v = referrer.toLowerCase();
+  if (!v) return 'direct';
+  if (v.includes('google.')) return 'google';
+  if (v.includes('facebook.') || v.includes('fb.')) return 'facebook';
+  if (v.includes('instagram.')) return 'instagram';
+  if (v.includes('bing.')) return 'bing';
+  if (v.includes('heureka.')) return 'heureka';
+  if (v.includes('tonerymaxim.sk') || v.includes('tonerymaxim.info')) return 'internal';
+  return 'referral';
+}
+function isBot(userAgent: string): boolean {
+  return !userAgent || /bot|crawler|spider|slurp|headless|lighthouse|pagespeed|uptime|monitor|curl|wget|python|facebookexternalhit/i.test(userAgent);
+}
+function requestHeader(request: Request, name: string): string {
   return cleanText(request.headers.get(name), 120);
 }
 
-function detectDevice(userAgent: string, viewport = ''): string {
-  const ua = userAgent.toLowerCase();
-  if (/ipad|tablet|android(?!.*mobile)/i.test(userAgent)) return 'tablet';
-  if (/mobi|iphone|ipod|android.*mobile/i.test(userAgent)) return 'mobile';
-  const width = Number(String(viewport).split('x')[0] || 0);
-  if (width > 0 && width < 768) return 'mobile';
-  if (width >= 768 && width < 1100) return 'tablet';
-  return 'desktop';
+function ipHash(request: Request): string {
+  const ip = cleanText(request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip'), 80);
+  return ip ? createHash('sha256').update(ip).digest('hex').slice(0, 16) : '';
 }
 
-function detectSource(referrer: string): string {
-  const value = referrer.toLowerCase();
-  if (!value) return 'direct';
-  if (value.includes('google.')) return 'google';
-  if (value.includes('facebook.') || value.includes('fb.')) return 'facebook';
-  if (value.includes('instagram.')) return 'instagram';
-  if (value.includes('bing.')) return 'bing';
-  if (value.includes('heureka.')) return 'heureka';
-  if (value.includes('tonerymaxim.sk') || value.includes('tonerymaxim.info')) return 'internal';
-  return 'referral';
-}
-
-export async function saveAnalyticsEvent(request: Request, payload: unknown): Promise<{ ok: true }> {
+export async function saveAnalyticsEvent(request: Request, payload: unknown): Promise<{ ok: true; ignored?: boolean }> {
   const raw = JSON.stringify(payload ?? {});
   if (raw.length > MAX_BODY_SIZE) throw new Error('Payload je príliš veľký.');
-
-  const data = (payload && typeof payload === 'object') ? payload as Record<string, unknown> : {};
+  const data = payload && typeof payload === 'object' ? payload as Record<string, unknown> : {};
   const userAgent = cleanText(request.headers.get('user-agent'), 500);
+  if (isBot(userAgent)) return { ok: true, ignored: true };
+  const sessionId = cleanText(data.sessionId, 100);
+  if (!sessionId) return { ok: true, ignored: true };
   const referrer = cleanText(data.referrer || request.headers.get('referer'), 700);
   const viewport = cleanText(data.viewport, 40);
-
   const event: TMAnalyticsEvent = {
     type: cleanText(data.type || 'event', 60) || 'event',
     ts: new Date().toISOString(),
     path: cleanPath(data.path),
-    url: cleanText(data.url, 1000),
-    title: cleanText(data.title, 200),
-    referrer,
-    durationMs: cleanNumber(data.durationMs),
-    viewport,
+    url: cleanText(data.url, 1000), title: cleanText(data.title, 200), referrer,
+    durationMs: cleanNumber(data.durationMs), activeMs: cleanNumber(data.activeMs), viewport,
     device: cleanText(data.device, 40) || detectDevice(userAgent, viewport),
-    language: cleanText(data.language, 40),
-    userAgent,
-    country: getHeader(request, 'cf-ipcountry') || getHeader(request, 'x-vercel-ip-country') || getHeader(request, 'x-country-code'),
-    region: getHeader(request, 'x-vercel-ip-country-region') || getHeader(request, 'x-region'),
-    city: getHeader(request, 'x-vercel-ip-city') || getHeader(request, 'x-city'),
-    source: detectSource(referrer),
-    search: cleanText(data.search, 200),
-    product: cleanText(data.product, 300),
+    language: cleanText(data.language, 40), userAgent, source: detectSource(referrer),
+    country: requestHeader(request, 'cf-ipcountry') || requestHeader(request, 'x-vercel-ip-country') || requestHeader(request, 'x-country-code'),
+    region: requestHeader(request, 'x-vercel-ip-country-region') || requestHeader(request, 'x-region'),
+    city: requestHeader(request, 'x-vercel-ip-city') || requestHeader(request, 'x-city'),
+    search: cleanText(data.search, 200), product: cleanText(data.product, 300),
     value: cleanNumber(data.value, 1_000_000),
     meta: typeof data.meta === 'object' && data.meta ? data.meta as Record<string, unknown> : undefined,
-    sessionId: cleanText(data.sessionId, 80),
+    sessionId, visitorId: cleanText(data.visitorId, 100), owner: cookieValue(request, 'tm_analytics_owner') === '1', ipHash: ipHash(request),
   };
-
-  await mkdir(ANALYTICS_DIR, { recursive: true });
-  await appendFile(EVENTS_FILE, JSON.stringify(event) + '\n', 'utf8');
+  await mkdir(ANALYTICS_DIR, { recursive: true, mode: 0o700 });
+  await appendFile(EVENTS_FILE, JSON.stringify(event) + '\n', { encoding: 'utf8', mode: 0o600 });
   return { ok: true };
 }
 
-export async function readAnalyticsEvents(limit = 10000): Promise<TMAnalyticsEvent[]> {
+export async function readAnalyticsEvents(limit = 100000): Promise<TMAnalyticsEvent[]> {
   if (!existsSync(EVENTS_FILE)) return [];
   const fileStat = await stat(EVENTS_FILE);
   const start = Math.max(0, fileStat.size - MAX_READ_BYTES);
-  const buffer = await readFile(EVENTS_FILE, 'utf8');
-  const content = start > 0 ? buffer.slice(start) : buffer;
-  const lines = content.split('\n').filter(Boolean).slice(-limit);
-  const events: TMAnalyticsEvent[] = [];
-
-  for (const line of lines) {
-    try {
-      const parsed = JSON.parse(line) as TMAnalyticsEvent;
-      if (parsed?.type && parsed?.ts) events.push(parsed);
-    } catch {
-      // ignoruj poškodený riadok
+  const handle = await import('node:fs/promises').then((m) => m.open(EVENTS_FILE, 'r'));
+  try {
+    const length = fileStat.size - start;
+    const buffer = Buffer.alloc(length);
+    await handle.read(buffer, 0, length, start);
+    let content = buffer.toString('utf8');
+    if (start > 0) content = content.slice(content.indexOf('\n') + 1);
+    const events: TMAnalyticsEvent[] = [];
+    for (const line of content.split('\n').filter(Boolean).slice(-limit)) {
+      try { const e = JSON.parse(line); if (e?.type && e?.ts && e?.sessionId) events.push(e); } catch {}
     }
-  }
-
-  return events;
+    return events;
+  } finally { await handle.close(); }
 }
 
+export function bratislavaDate(iso: string): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Bratislava', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso));
+}
+
+export function buildVisits(events: TMAnalyticsEvent[]): TMVisit[] {
+  const groups = new Map<string, TMAnalyticsEvent[]>();
+  for (const event of events) {
+    const list = groups.get(event.sessionId) || [];
+    list.push(event); groups.set(event.sessionId, list);
+  }
+  const visits: TMVisit[] = [];
+  for (const [sessionId, list] of groups) {
+    list.sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts));
+    const pageviews = list.filter((e) => e.type === 'pageview');
+    if (!pageviews.length) continue;
+    const first = list[0], last = list[list.length - 1];
+    const rawDuration = Math.max(0, Date.parse(last.ts) - Date.parse(first.ts));
+    const activeMs = Math.min(SESSION_MAX_MS, list.reduce((sum, e) => sum + Math.min(e.activeMs || (e.type === 'heartbeat' ? 30000 : 0), 60000), 0));
+    const pages = pageviews.map((pv, i) => {
+      const next = pageviews[i + 1];
+      const durationEvent = list.find((e) => e.type === 'page_duration' && e.path === pv.path && Date.parse(e.ts) >= Date.parse(pv.ts) && (!next || Date.parse(e.ts) <= Date.parse(next.ts) + 5000));
+      const calculated = next ? Date.parse(next.ts) - Date.parse(pv.ts) : Math.max(0, Date.parse(last.ts) - Date.parse(pv.ts));
+      return { path: pv.path, title: pv.title || '', enteredAt: pv.ts, durationMs: Math.min(SESSION_MAX_MS, durationEvent?.durationMs || calculated) };
+    });
+    visits.push({
+      sessionId, visitorId: first.visitorId || '', owner: list.some((e) => e.owner), startedAt: first.ts, lastSeenAt: last.ts,
+      durationMs: Math.min(SESSION_MAX_MS, Math.max(rawDuration, activeMs)), activeMs, pageviews: pageviews.length,
+      device: first.device || 'desktop', source: first.source || 'direct', referrer: first.referrer || '', userAgent: first.userAgent || '', pages,
+      searches: [...new Set(list.filter((e) => e.search).map((e) => e.search!))], products: [...new Set(list.filter((e) => e.product).map((e) => e.product!))], events: list,
+    });
+  }
+  return visits.sort((a, b) => Date.parse(b.startedAt) - Date.parse(a.startedAt));
+}
+
+export function analyticsForDate(events: TMAnalyticsEvent[], date: string, includeOwner = true) {
+  const visits = buildVisits(events).filter((v) => bratislavaDate(v.startedAt) === date && (includeOwner || !v.owner));
+  const now = Date.now();
+  const online = buildVisits(events).filter((v) => now - Date.parse(v.lastSeenAt) <= ONLINE_WINDOW_MS && (includeOwner || !v.owner));
+  return { date, visits, totalVisits: visits.length, onlineVisits: online.length, online };
+}
+
+
+/**
+ * Kompatibilný súhrn pre existujúci Live Dashboard.
+ * Reálne návštevy sú odvodené zo sessionId, nie z odhadov podľa User-Agentu.
+ */
 export function summarizeAnalytics(events: TMAnalyticsEvent[]) {
   const now = Date.now();
   const dayAgo = now - 24 * 60 * 60 * 1000;
@@ -142,15 +205,15 @@ export function summarizeAnalytics(events: TMAnalyticsEvent[]) {
   const todayEvents = events.filter((event) => Date.parse(event.ts) >= dayAgo);
   const weekEvents = events.filter((event) => Date.parse(event.ts) >= weekAgo);
   const pageviews = weekEvents.filter((event) => event.type === 'pageview');
-  const sessions = new Set(pageviews.map((event) => [event.userAgent, event.referrer, event.language, event.device].join('|')));
+  const visits = buildVisits(weekEvents);
 
-  function top(items: string[], max = 10) {
-    const map = new Map<string, number>();
+  function top(items: string[], max = 10): Array<[string, number]> {
+    const counts = new Map<string, number>();
     for (const item of items) {
       const key = cleanText(item, 300) || 'neuvedené';
-      map.set(key, (map.get(key) || 0) + 1);
+      counts.set(key, (counts.get(key) || 0) + 1);
     }
-    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, max);
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, max);
   }
 
   const checkoutStarts = weekEvents.filter((event) => event.type === 'checkout_start').length;
@@ -161,7 +224,7 @@ export function summarizeAnalytics(events: TMAnalyticsEvent[]) {
     totalEvents: events.length,
     todayPageviews: todayEvents.filter((event) => event.type === 'pageview').length,
     weekPageviews: pageviews.length,
-    estimatedSessions: sessions.size,
+    estimatedSessions: visits.length,
     cartAdds,
     checkoutStarts,
     orderSubmits,

@@ -1474,3 +1474,46 @@ body.has-gls-modal {
     display: flex !important;
   }
 }
+
+/* TM checkout validation – desktop aj mobil */
+.checkout-field-error {
+  display: block;
+  margin-top: 7px;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+.checkout-field-error[hidden] { display: none !important; }
+.checkout-validation-summary {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 4px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid #f04438;
+  border-radius: 14px;
+  background: #fff4f2;
+  color: #912018;
+}
+.checkout-validation-summary strong { font-size: 15px; }
+.checkout-validation-summary span { font-size: 13px; }
+.pickup-box.is-invalid-pickup {
+  border-color: #d92d20 !important;
+  box-shadow: 0 0 0 4px rgba(217, 45, 32, .1) !important;
+}
+.checkline.is-invalid-line {
+  border-radius: 10px;
+  outline: 2px solid #d92d20;
+  outline-offset: 4px;
+  color: #b42318;
+}
+@media (max-width: 760px) {
+  .checkout-validation-summary {
+    position: relative;
+    z-index: 3;
+    margin: 0 0 14px;
+    padding: 13px 14px;
+  }
+  .checkout-field-error { font-size: 12px; }
+}

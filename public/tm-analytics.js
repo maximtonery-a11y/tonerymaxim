@@ -1,137 +1,38 @@
 (function () {
-  if (window.__TM_ANALYTICS_V1__) return;
-  window.__TM_ANALYTICS_V1__ = true;
-
-  var endpoint = '/api/analytics';
-  var startedAt = Date.now();
-  var lastPath = location.pathname + location.search;
-  var sessionId = '';
-  try {
-    sessionId = sessionStorage.getItem('tm_analytics_session') || '';
-    if (!sessionId) {
-      sessionId = 'tm-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-      sessionStorage.setItem('tm_analytics_session', sessionId);
-    }
-  } catch (e) {
-    sessionId = 'tm-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-  }
-
-  function device() {
-    var width = window.innerWidth || 0;
-    if (width < 768) return 'mobile';
-    if (width < 1100) return 'tablet';
-    return 'desktop';
-  }
-
+  if (window.__TM_ANALYTICS_V2__) return;
+  window.__TM_ANALYTICS_V2__ = true;
+  var endpoint = '/api/analytics', pageStartedAt = Date.now(), visibleStartedAt = document.visibilityState === 'visible' ? Date.now() : 0, activeMs = 0;
+  var lastPath = location.pathname + location.search, sessionTimeout = 30 * 60 * 1000;
+  function id(prefix) { return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12); }
+  function read(storage, key) { try { return storage.getItem(key) || ''; } catch (_) { return ''; } }
+  function write(storage, key, value) { try { storage.setItem(key, value); } catch (_) {} }
+  var visitorId = read(localStorage, 'tm_analytics_visitor') || id('v'); write(localStorage, 'tm_analytics_visitor', visitorId);
+  var sessionId = read(sessionStorage, 'tm_analytics_session'), lastActivity = Number(read(sessionStorage, 'tm_analytics_last') || 0);
+  if (!sessionId || Date.now() - lastActivity > sessionTimeout) sessionId = id('s');
+  write(sessionStorage, 'tm_analytics_session', sessionId); write(sessionStorage, 'tm_analytics_last', String(Date.now()));
+  function device() { var w = innerWidth || 0; return w < 768 ? 'mobile' : w < 1100 ? 'tablet' : 'desktop'; }
+  function collectActive() { if (visibleStartedAt) { activeMs += Math.max(0, Date.now() - visibleStartedAt); visibleStartedAt = Date.now(); } }
   function send(type, extra) {
     try {
-      var payload = Object.assign({
-        type: type,
-        path: location.pathname || '/',
-        url: location.href,
-        title: document.title || '',
-        referrer: document.referrer || '',
-        viewport: (window.innerWidth || 0) + 'x' + (window.innerHeight || 0),
-        device: device(),
-        language: navigator.language || '',
-        sessionId: sessionId
-      }, extra || {});
-
+      collectActive(); write(sessionStorage, 'tm_analytics_last', String(Date.now()));
+      var payload = Object.assign({ type:type, path:location.pathname || '/', url:location.href, title:document.title || '', referrer:document.referrer || '', viewport:(innerWidth||0)+'x'+(innerHeight||0), device:device(), language:navigator.language||'', sessionId:sessionId, visitorId:visitorId, activeMs:activeMs }, extra || {});
+      activeMs = 0;
       var body = JSON.stringify(payload);
-      if (navigator.sendBeacon) {
-        var blob = new Blob([body], { type: 'application/json' });
-        navigator.sendBeacon(endpoint, blob);
-        return;
-      }
-
-      fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: body,
-        keepalive: true,
-        credentials: 'same-origin'
-      }).catch(function () {});
-    } catch (e) {}
+      if (navigator.sendBeacon) { navigator.sendBeacon(endpoint, new Blob([body], {type:'application/json'})); return; }
+      fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:body, keepalive:true, credentials:'same-origin'}).catch(function(){});
+    } catch (_) {}
   }
-
-  function getText(element) {
-    if (!element) return '';
-    return String(element.getAttribute('aria-label') || element.getAttribute('title') || element.textContent || '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 180);
-  }
-
-  function findProductName(element) {
-    var card = element.closest('[data-product-card], .product-card, .catalog-product, .pd-main, article, li');
-    if (!card) return getText(element);
-    var title = card.querySelector('h1,h2,h3,.product-title,.catalog-title,[data-product-title]');
-    return getText(title) || getText(element);
-  }
-
-  function trackPageview() {
-    startedAt = Date.now();
-    lastPath = location.pathname + location.search;
-    send('pageview');
-    if (location.pathname.indexOf('/pokladna') === 0) send('checkout_start');
-    if (location.pathname.indexOf('/platba-dokoncena') === 0) send('payment_return');
-  }
-
-  trackPageview();
-  var heartbeatTimer = setInterval(function () {
-    if (document.visibilityState === 'visible') send('heartbeat');
-  }, 30000);
-
-  document.addEventListener('click', function (event) {
-    var target = event.target && event.target.closest ? event.target.closest('a,button,[role="button"]') : null;
-    if (!target) return;
-
-    var href = target.getAttribute('href') || '';
-    var label = getText(target);
-
-    if (href.indexOf('/produkt/') !== -1 || target.closest('[data-product-card], .catalog-product, .product-card')) {
-      send('product_click', { product: findProductName(target), meta: { href: href } });
-    }
-
-    if (href.indexOf('/kosik') !== -1) send('cart_open', { meta: { label: label } });
-    if (href.indexOf('/pokladna') !== -1) send('checkout_start', { meta: { label: label } });
-
-    var lower = label.toLowerCase();
-    if (lower.indexOf('do košíka') !== -1 || lower.indexOf('pridať') !== -1 || target.hasAttribute('data-add-to-cart')) {
-      send('add_to_cart', { product: findProductName(target) });
-    }
-
-    if (target.matches('[data-submit-order], [data-mobile-submit-order]') || lower.indexOf('objednať') !== -1) {
-      send('order_submit');
-    }
-  }, true);
-
-  document.addEventListener('submit', function (event) {
-    var form = event.target;
-    if (!form || !form.querySelector) return;
-    var input = form.querySelector('input[type="search"], input[name="search"], input[name="s"], input[name="q"], input[placeholder*="Hľadať"], input[placeholder*="hľadať"]');
-    if (input && input.value) send('search', { search: input.value });
-  }, true);
-
-  var pushState = history.pushState;
-  var replaceState = history.replaceState;
-  function onRouteChange() {
-    setTimeout(function () {
-      var current = location.pathname + location.search;
-      if (current !== lastPath) trackPageview();
-    }, 50);
-  }
-  history.pushState = function () { pushState.apply(history, arguments); onRouteChange(); };
-  history.replaceState = function () { replaceState.apply(history, arguments); onRouteChange(); };
-  window.addEventListener('popstate', onRouteChange);
-
-  function sendDuration(type) {
-    var duration = Date.now() - startedAt;
-    if (duration > 1000) send(type, { durationMs: duration });
-  }
-
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'hidden') sendDuration('page_duration');
+  function pageview() { pageStartedAt = Date.now(); activeMs = 0; visibleStartedAt = document.visibilityState === 'visible' ? Date.now() : 0; lastPath = location.pathname + location.search; send('pageview'); }
+  pageview();
+  var heartbeat = setInterval(function(){ if (document.visibilityState === 'visible') send('heartbeat', {activeMs:30000}); }, 30000);
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'hidden') { collectActive(); visibleStartedAt = 0; send('page_duration', {durationMs:Date.now()-pageStartedAt}); }
+    else visibleStartedAt = Date.now();
   });
-  window.addEventListener('pagehide', function () { clearInterval(heartbeatTimer); sendDuration('page_duration'); });
+  window.addEventListener('pagehide', function(){ clearInterval(heartbeat); send('page_duration', {durationMs:Date.now()-pageStartedAt}); });
+  var push = history.pushState, replace = history.replaceState;
+  function route(){ setTimeout(function(){ var p=location.pathname+location.search; if(p!==lastPath){ send('page_duration',{durationMs:Date.now()-pageStartedAt}); pageview(); } },50); }
+  history.pushState=function(){ push.apply(history,arguments); route(); }; history.replaceState=function(){ replace.apply(history,arguments); route(); }; addEventListener('popstate',route);
+  document.addEventListener('submit', function(e){ var f=e.target; if(!f||!f.querySelector)return; var i=f.querySelector('input[type="search"],input[name="search"],input[name="s"],input[name="q"]'); if(i&&i.value)send('search',{search:i.value}); }, true);
+  document.addEventListener('click', function(e){ var t=e.target&&e.target.closest?e.target.closest('a,button,[role="button"]'):null;if(!t)return;var text=String(t.getAttribute('aria-label')||t.textContent||'').replace(/\s+/g,' ').trim().slice(0,180),href=t.getAttribute('href')||'';if(href.indexOf('/produkt/')>=0)send('product_click',{product:text,meta:{href:href}});if(/do košíka|pridať/i.test(text))send('add_to_cart',{product:text});if(href.indexOf('/pokladna')>=0)send('checkout_start');if(/objednať/i.test(text))send('order_submit'); },true);
 })();

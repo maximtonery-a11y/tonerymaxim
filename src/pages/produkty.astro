@@ -7,12 +7,80 @@ import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 import SeoHead from "../components/SeoHead.astro";
+import CatalogInitialRows from "../components/CatalogInitialRows.astro";
 import { breadcrumbJsonLd } from "../lib/seo";
+import { filterProducts, getProductsCache } from "../lib/tm-products-cache";
 
 const query = String(Astro.url.searchParams.get("s") || Astro.url.searchParams.get("search") || "").trim();
 const title = query ? `${query} – tonery a náplne | ToneryMaxim.sk` : "Tonery a náplne do tlačiarní | ToneryMaxim.sk";
 const description = query ? `Výsledky pre ${query}. Porovnajte kompatibilné, originálne a renovované tonery a náplne.` : "Vyhľadajte toner alebo náplň podľa označenia, značky či modelu tlačiarne. Kompatibilné, originálne a renovované produkty na jednom mieste.";
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname) || Astro.url.searchParams.size > 0;
+
+const clean = (name: string) => String(Astro.url.searchParams.get(name) || "").trim();
+const initialPage = Math.max(1, Number(clean("page") || 1));
+const initialFilters = {
+  search: query,
+  printer: clean("printer"),
+  brand: clean("brand"),
+  category: clean("category"),
+  type: clean("type"),
+  color: clean("color"),
+  stock: clean("stock"),
+};
+
+let initialCatalog: any = null;
+try {
+  const cache = await getProductsCache();
+  const filtered = filterProducts(cache.products, initialFilters);
+  const start = (initialPage - 1) * 12;
+  const products = filtered.slice(start, start + 12).map((product: any) => ({
+    id: product.id,
+    sku: product.sku || "",
+    name: product.name || "",
+    slug: product.slug || "",
+    price: product.price,
+    regular_price: product.regular_price,
+    sale_price: product.sale_price,
+    stock_quantity: product.stock_quantity ?? null,
+    stock_status: product.stock_status || "",
+    image: product.image || "",
+    images: Array.isArray(product.images) ? product.images.slice(0, 1) : [],
+    detail_url: product.detail_url || (product.slug ? `/produkt/${product.slug}` : `/produkt/${product.id}`),
+    product_type_key: product.product_type_key || "product",
+    product_type_label: product.product_type_label || "PRODUKT",
+    product_type_detail_label: product.product_type_detail_label || product.product_type_label || "Spotrebný materiál",
+    product_type_note: product.product_type_note || "Spotrebný materiál",
+    product_type_icon: product.product_type_icon || "dot",
+    color: product.color || product.farba || "",
+    farba: product.farba || product.color || "",
+    capacity: product.capacity || product.kapacita || product.yield || product.page_yield || "",
+    kapacita: product.kapacita || product.capacity || product.yield || product.page_yield || "",
+    yield: product.yield || product.capacity || product.kapacita || product.page_yield || "",
+    page_yield: product.page_yield || product.yield || product.capacity || product.kapacita || "",
+    warranty: product.warranty || product.zaruka || "24 mesiacov",
+    zaruka: product.zaruka || product.warranty || "24 mesiacov",
+    compatible_printers: Array.isArray(product.compatible_printers) ? product.compatible_printers.slice(0, 80) : [],
+    printers: Array.isArray(product.printers) ? product.printers.slice(0, 80) : Array.isArray(product.compatible_printers) ? product.compatible_printers.slice(0, 80) : [],
+    categories: Array.isArray(product.categories) ? product.categories : [],
+    attributes: Array.isArray(product.attributes) ? product.attributes : [],
+    attributes_all: Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [],
+  }));
+  initialCatalog = {
+    ok: true,
+    source: "server-products-cache",
+    page: initialPage,
+    per_page: 12,
+    count: products.length,
+    total: filtered.length,
+    total_pages: Math.max(1, Math.ceil(filtered.length / 12)),
+    filters: initialFilters,
+    products,
+  };
+} catch {
+  initialCatalog = null;
+}
+
+const initialCatalogJson = JSON.stringify(initialCatalog).replace(/</g, "\u003c");
 ---
 
 <!doctype html>
@@ -109,7 +177,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
 
               <div class="catalog-toolbar">
                 <div>
-                  <div data-catalog-status>Načítavam produkty...</div>
+                  <div data-catalog-status>{initialCatalog ? `Načítané produkty: ${initialCatalog.count}` : "Načítavam produkty..."}</div>
                   <div class="catalog-active-filters" data-active-filters></div>
                 </div>
                 <div class="type-legend">
@@ -119,7 +187,9 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
                 </div>
               </div>
 
-              <div data-catalog-grid class="catalog-list"></div>
+              <div data-catalog-grid class="catalog-list">
+                {initialCatalog && <CatalogInitialRows products={initialCatalog.products} />}
+              </div>
 
               <div class="catalog-pagination">
                 <button type="button" data-prev-page>Predchádzajúce</button>
@@ -162,6 +232,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
       <FloatingAdvisor />
     </div>
 
+    <script id="tm-catalog-initial-data" type="application/json" set:html={initialCatalogJson}></script>
     <script>
       import "../scripts/catalog.js";
       import "../scripts/smart-search.js";

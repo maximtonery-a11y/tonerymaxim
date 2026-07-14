@@ -20,7 +20,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const noIndex = isNoIndexHost(url.hostname);
 
   if (url.pathname === '/robots.txt') {
-    const body = noIndex ? 'User-agent: *\nDisallow: /\n' : `User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /ucet/\nDisallow: /kosik\nDisallow: /pokladna\nDisallow: /*?*\nSitemap: ${url.origin}/sitemap.xml\n`;
+    const body = noIndex ? 'User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /ucet/\nDisallow: /kosik\nDisallow: /pokladna\n' : `User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /ucet/\nDisallow: /kosik\nDisallow: /pokladna\nDisallow: /*?*\nSitemap: ${url.origin}/sitemap.xml\n`;
     const response = new Response(body, {
       status: 200,
       headers: {

@@ -1,4 +1,4 @@
-import { getDispatchMessage } from "./dispatch-message.js";
+import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
@@ -1291,7 +1291,7 @@ import { getDispatchMessage } from "./dispatch-message.js";
 
           <div class="stock-line ${isProductInStock(product) ? "is-available" : "is-unavailable"}">
             <strong>${esc(stockText(product))}</strong>
-            <span>${esc(dispatchText(product))}</span>
+            <span data-tm-dispatch-message>${esc(dispatchText(product))}</span>
           </div>
 
           ${bulkDiscountNoticeHtml(product)}
@@ -1304,7 +1304,7 @@ import { getDispatchMessage } from "./dispatch-message.js";
 
           <div class="purchase-status ${isProductInStock(product) ? "is-available" : "is-unavailable"}">
             <strong>● ${esc(stockText(product))}</strong>
-            <span>${esc(dispatchText(product))}</span>
+            <span data-tm-dispatch-message>${esc(dispatchText(product))}</span>
           </div>
 
           <div class="delivery-box">
@@ -1642,5 +1642,8 @@ import { getDispatchMessage } from "./dispatch-message.js";
   document.addEventListener("DOMContentLoaded", () => {
     updateCartBadge();
     loadProduct();
+    refreshDispatchMessages(document);
+    window.setInterval(() => refreshDispatchMessages(document), 60000);
+    window.setTimeout(() => refreshDispatchMessages(document), 250);
   });
 })();

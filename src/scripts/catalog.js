@@ -865,7 +865,27 @@
     const bottomSearchInput = document.querySelector("[data-catalog-bottom-search-input]");
     if (bottomSearchInput && currentSearch) bottomSearchInput.value = currentSearch;
 
-    loadProducts();
+    let usedInitialCatalog = false;
+    const initialDataNode = document.getElementById("tm-catalog-initial-data");
+    if (initialDataNode?.textContent) {
+      try {
+        const initialData = JSON.parse(initialDataNode.textContent);
+        if (initialData?.ok && Array.isArray(initialData.products)) {
+          currentPage = Math.max(1, Number(initialData.page || 1));
+          totalPages = Math.max(1, Number(initialData.total_pages || 1));
+          renderProducts(initialData.products);
+          updatePagination();
+          updateMobileQuery();
+          updateFilterButtons();
+          writeCatalogCache(initialData);
+          usedInitialCatalog = true;
+        }
+      } catch {
+        // Pri neplatných počiatočných dátach zostáva pôvodné API načítanie.
+      }
+    }
+
+    if (!usedInitialCatalog) loadProducts();
 
     document.querySelector("[data-catalog-form]")?.addEventListener("submit", (event) => {
       event.preventDefault();
