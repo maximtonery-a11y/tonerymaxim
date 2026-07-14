@@ -178,12 +178,16 @@ const keyJson = JSON.stringify(suppliedKey).replace(/</g, '\\u003c');
         $('calendar').innerHTML = cells.join('');
         document.querySelectorAll('[data-date]').forEach(btn => btn.addEventListener('click', () => { selectedDate=btn.dataset.date; load(); }));
       }
+      function sourceLabel(v) {
+        const labels = { direct:'Priama návšteva', internal:'Interný prechod', google:'Google', bing:'Bing', facebook:'Facebook', instagram:'Instagram', heureka:'Heureka', referral:'Iný web' };
+        return labels[v.source] || v.source || 'Neznámy';
+      }
       function renderVisits() {
         if (!data.visits.length) { $('visits').innerHTML='<div class="empty-state">V tento deň nebola zaznamenaná žiadna návšteva.</div>'; return; }
         $('visits').innerHTML = data.visits.map((v,i) => `<button class="visit" data-index="${i}">
           <div><div class="time">${fmtTime.format(new Date(v.startedAt))}</div><div class="meta">${fmtDate.format(new Date(v.startedAt))}</div></div>
-          <div><span class="pill">${esc(v.device)}</span>${v.owner?'<span class="pill owner">MOJA</span>':''}</div>
-          <div><b>${v.pageviews} stránok</b><div class="meta">${esc(v.source)}${v.products.length?` · ${esc(v.products[0])}`:''}</div></div>
+          <div><span class="pill">${esc(v.device)}</span>${v.owner?'<span class="pill owner">MOJA</span>':''}${v.returning?'<span class="pill">VRACAJÚCI</span>':''}</div>
+          <div><b>${esc(sourceLabel(v))} → ${esc(v.landingPage || '/')}</b><div class="meta">${v.pageviews} stránok · ${v.products.length?esc(v.products[0]):'bez produktu'}${v.orderCompleted?` · objednávka ${esc(v.orderNumber)}`:''}</div></div>
           <div class="duration">${duration(v.durationMs)}</div>
         </button>`).join('');
         document.querySelectorAll('.visit').forEach(btn => btn.addEventListener('click', () => openVisit(data.visits[Number(btn.dataset.index)])));
@@ -191,15 +195,27 @@ const keyJson = JSON.stringify(suppliedKey).replace(/</g, '\\u003c');
       function openVisit(v) {
         $('dialogTitle').textContent = `Návšteva ${fmtTime.format(new Date(v.startedAt))}`;
         const timeline = v.pages.map(p => `<div class="step"><b>${esc(p.path)}</b><span>${fmtTime.format(new Date(p.enteredAt))} · ${duration(p.durationMs)}${p.title?` · ${esc(p.title)}`:''}</span></div>`).join('');
+        const campaign = v.campaign || {};
+        const campaignText = [campaign.source&&`zdroj ${campaign.source}`,campaign.medium&&`médium ${campaign.medium}`,campaign.campaign&&`kampaň ${campaign.campaign}`,campaign.term&&`výraz ${campaign.term}`,campaign.gclid&&`GCLID ${campaign.gclid}`].filter(Boolean).join(' · ');
         $('dialogBody').innerHTML = `<div class="detail-grid">
           <div class="detail-box"><small>Trvanie</small><strong>${duration(v.durationMs)}</strong></div>
           <div class="detail-box"><small>Aktívny čas</small><strong>${duration(v.activeMs)}</strong></div>
           <div class="detail-box"><small>Stránky</small><strong>${v.pageviews}</strong></div>
-          <div class="detail-box"><small>Zariadenie</small><strong>${esc(v.device)}</strong></div>
+          <div class="detail-box"><small>Zariadenie</small><strong>${esc(v.device)} · ${esc(v.browser)} · ${esc(v.os)}</strong></div>
+          <div class="detail-box"><small>Vstupná stránka</small><strong>${esc(v.landingPage || '/')}</strong></div>
+          <div class="detail-box"><small>Výstupná stránka</small><strong>${esc(v.exitPage || '/')}</strong></div>
+          <div class="detail-box"><small>Kliknutia / scroll</small><strong>${v.clicks || 0} / ${v.maxScroll || 0} %</strong></div>
+          <div class="detail-box"><small>Lokalita</small><strong>${esc([v.city,v.region,v.country].filter(Boolean).join(', ') || 'nezistená')}</strong></div>
         </div>
-        <p class="meta"><b>Zdroj:</b> ${esc(v.source)} &nbsp; <b>Referer:</b> ${esc(v.referrer || 'priamy vstup')}</p>
-        ${v.searches.length?`<p><b>Vyhľadávania:</b> ${v.searches.map(esc).join(', ')}</p>`:''}
+        <p><b>Zdroj:</b> ${esc(sourceLabel(v))}</p>
+        <p class="meta"><b>Presný referer:</b> ${esc(v.referrer || 'priamy vstup')}</p>
+        ${campaignText?`<p><b>Kampaň:</b> ${esc(campaignText)}</p>`:''}
+        ${v.googleQuery?`<p><b>Google dopyt:</b> ${esc(v.googleQuery)}</p>`:`${v.source==='google'?'<p class="meta"><b>Google dopyt:</b> Google ho neposkytol.</p>':''}`}
+        <p><b>Návštevník:</b> ${v.returning?'vracajúci sa':'nový'} · <b>Jazyk:</b> ${esc(v.language||'')} · <b>Rozlíšenie:</b> ${esc(v.viewport||'')}</p>
+        ${v.searches.length?`<p><b>Vyhľadávania na e-shope:</b> ${v.searches.map(esc).join(', ')}</p>`:''}
         ${v.products.length?`<p><b>Produkty:</b> ${v.products.map(esc).join(', ')}</p>`:''}
+        <p><b>Košík:</b> pridané ${v.cartAdds||0}, odstránené ${v.cartRemoves||0} · <b>Pokladňa:</b> ${v.checkoutStarted?'začatá':'nie'} · <b>Doprava:</b> ${esc(v.shipping||'nezistená')} · <b>Platba:</b> ${esc(v.payment||'nezistená')}</p>
+        ${v.orderCompleted?`<p><b>Objednávka:</b> ${esc(v.orderNumber||'dokončená')} ${v.orderValue?`· ${Number(v.orderValue).toFixed(2)} €`:''}</p>`:''}
         <h3>Prezerané stránky</h3><div class="timeline">${timeline || '<p>Bez stránok.</p>'}</div>`;
         $('visitDialog').showModal();
       }

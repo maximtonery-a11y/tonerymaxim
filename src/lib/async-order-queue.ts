@@ -231,6 +231,22 @@ async function processOneJob(file: string) {
 export async function enqueueAsyncWooOrder(source: CheckoutOrderSource) {
   await ensureDirs();
   const id = safeId(source.orderNumber || `TM-${String(Date.now()).slice(-6)}`);
+
+  // Rovnaké číslo objednávky sa nesmie zaradiť ani odoslať e-mailom druhýkrát.
+  for (const [dir, state] of [[PENDING_DIR, "pending"], [PROCESSING_DIR, "processing"], [DONE_DIR, "done"], [FAILED_DIR, "failed"]] as const) {
+    const existing = await readJob(jobFile(dir, id));
+    if (existing) {
+      return {
+        queued: state !== "done",
+        duplicate: true,
+        queueId: id,
+        orderNumber: existing.source.orderNumber,
+        emailSent: Boolean(existing.emailSentAt),
+        adminEmailSent: Boolean(existing.adminEmailSentAt),
+      };
+    }
+  }
+
   const job: AsyncOrderJob = {
     id,
     source,

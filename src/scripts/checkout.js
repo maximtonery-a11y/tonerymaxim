@@ -1601,7 +1601,31 @@
     renderPickupSummary();
   }
 
-  async function submitOrder() {
+  let tmOrderSubmitting = false;
+
+  function checkoutRequestId() {
+    try {
+      let value = sessionStorage.getItem("tm_checkout_request_id") || "";
+      if (!value) {
+        value = `checkout-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+        sessionStorage.setItem("tm_checkout_request_id", value);
+      }
+      return value;
+    } catch {
+      return `checkout-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+    }
+  }
+
+  function setSubmitDisabled(disabled) {
+    document.querySelectorAll("[data-submit-order], [data-mobile-submit-order]").forEach((button) => {
+      button.disabled = disabled;
+      button.setAttribute("aria-busy", disabled ? "true" : "false");
+    });
+  }
+
+  async function submitOrder(event) {
+    event?.preventDefault?.();
+    if (tmOrderSubmitting) return;
     const status = document.querySelector("[data-order-status]");
     const submitButton = document.querySelector("[data-submit-order]");
 
@@ -1667,6 +1691,7 @@
         })(),
       },
       createdAt: new Date().toISOString(),
+      requestId: checkoutRequestId(),
     };
 
     localStorage.setItem("tm_last_order_preview", JSON.stringify(orderPreview));
@@ -1675,7 +1700,8 @@
     const isOnlinePayment = onlinePayments.includes(orderPreview.payment);
 
     try {
-      submitButton.disabled = true;
+      tmOrderSubmitting = true;
+      setSubmitDisabled(true);
       status.textContent = isOnlinePayment ? "Vytváram GoPay platbu..." : "Ukladám objednávku...";
       status.className = "order-status";
 
@@ -1683,6 +1709,7 @@
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-TM-Idempotency-Key": orderPreview.requestId,
         },
         body: JSON.stringify(orderPreview),
       });
@@ -1698,6 +1725,7 @@
         localStorage.removeItem("tm_loyalty_apply");
         status.textContent = "Presmerujem vás na GoPay...";
         status.className = "order-status is-success";
+        try { sessionStorage.removeItem("tm_checkout_request_id"); } catch {}
         window.location.href = data.gwUrl;
         return;
       }
@@ -1711,11 +1739,13 @@
       localStorage.removeItem("tm_loyalty_apply");
       status.textContent = "Objednávka bola uložená. Presmerujem vás na potvrdenie...";
       status.className = "order-status is-success";
+      try { sessionStorage.removeItem("tm_checkout_request_id"); } catch {}
       window.location.href = `/platba-dokoncena?order=${encodeURIComponent(data.orderNumber || data.orderId)}&method=${encodeURIComponent(orderPreview.payment)}`;
     } catch (error) {
       status.textContent = error.message || "Nepodarilo sa dokončiť objednávku.";
       status.className = "order-status is-error";
-      submitButton.disabled = false;
+      setSubmitDisabled(false);
+      tmOrderSubmitting = false;
     }
   }
 

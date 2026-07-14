@@ -44,6 +44,28 @@ export type TMVisit = {
   source: string;
   referrer: string;
   userAgent: string;
+  browser: string;
+  os: string;
+  country: string;
+  region: string;
+  city: string;
+  language: string;
+  viewport: string;
+  landingPage: string;
+  exitPage: string;
+  returning: boolean;
+  googleQuery: string;
+  campaign: { source: string; medium: string; campaign: string; term: string; content: string; gclid: string };
+  clicks: number;
+  maxScroll: number;
+  cartAdds: number;
+  cartRemoves: number;
+  checkoutStarted: boolean;
+  orderCompleted: boolean;
+  orderNumber: string;
+  orderValue: number;
+  shipping: string;
+  payment: string;
   pages: Array<{ path: string; title: string; enteredAt: string; durationMs: number }>;
   searches: string[];
   products: string[];
@@ -90,6 +112,27 @@ function detectSource(referrer: string): string {
   if (v.includes('tonerymaxim.sk') || v.includes('tonerymaxim.info')) return 'internal';
   return 'referral';
 }
+
+function detectBrowser(ua: string): string {
+  if (/Edg\//i.test(ua)) return 'Edge';
+  if (/OPR\//i.test(ua)) return 'Opera';
+  if (/Chrome\//i.test(ua)) return 'Chrome';
+  if (/Firefox\//i.test(ua)) return 'Firefox';
+  if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) return 'Safari';
+  return 'Iný';
+}
+function detectOs(ua: string): string {
+  if (/Windows NT/i.test(ua)) return 'Windows';
+  if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS';
+  if (/Android/i.test(ua)) return 'Android';
+  if (/Mac OS X/i.test(ua)) return 'macOS';
+  if (/Linux/i.test(ua)) return 'Linux';
+  return 'Iný';
+}
+function metaText(event: TMAnalyticsEvent | undefined, key: string): string {
+  return cleanText(event?.meta?.[key], 300);
+}
+
 function isBot(userAgent: string): boolean {
   return !userAgent || /bot|crawler|spider|slurp|headless|lighthouse|pagespeed|uptime|monitor|curl|wget|python|facebookexternalhit/i.test(userAgent);
 }
@@ -176,10 +219,23 @@ export function buildVisits(events: TMAnalyticsEvent[]): TMVisit[] {
       const calculated = next ? Date.parse(next.ts) - Date.parse(pv.ts) : Math.max(0, Date.parse(last.ts) - Date.parse(pv.ts));
       return { path: pv.path, title: pv.title || '', enteredAt: pv.ts, durationMs: Math.min(SESSION_MAX_MS, durationEvent?.durationMs || calculated) };
     });
+    const firstPage = pageviews[0];
+    const lastPage = pageviews[pageviews.length - 1];
+    const campaignEvent = list.find((e) => e.meta && (e.meta.utm_source || e.meta.gclid)) || firstPage;
+    const orderEvent = [...list].reverse().find((e) => e.type === 'order_complete');
+    const shippingEvent = [...list].reverse().find((e) => e.type === 'shipping_select');
+    const paymentEvent = [...list].reverse().find((e) => e.type === 'payment_select');
     visits.push({
       sessionId, visitorId: first.visitorId || '', owner: list.some((e) => e.owner), startedAt: first.ts, lastSeenAt: last.ts,
       durationMs: Math.min(SESSION_MAX_MS, Math.max(rawDuration, activeMs)), activeMs, pageviews: pageviews.length,
-      device: first.device || 'desktop', source: first.source || 'direct', referrer: first.referrer || '', userAgent: first.userAgent || '', pages,
+      device: first.device || 'desktop', source: first.source || 'direct', referrer: first.referrer || '', userAgent: first.userAgent || '',
+      browser: detectBrowser(first.userAgent || ''), os: detectOs(first.userAgent || ''), country: first.country || '', region: first.region || '', city: first.city || '', language: first.language || '', viewport: first.viewport || '',
+      landingPage: firstPage?.path || '/', exitPage: lastPage?.path || '/', returning: metaText(firstPage, 'returning') === '1', googleQuery: metaText(firstPage, 'google_query'),
+      campaign: { source: metaText(campaignEvent, 'utm_source'), medium: metaText(campaignEvent, 'utm_medium'), campaign: metaText(campaignEvent, 'utm_campaign'), term: metaText(campaignEvent, 'utm_term'), content: metaText(campaignEvent, 'utm_content'), gclid: metaText(campaignEvent, 'gclid') },
+      clicks: list.filter((e) => e.type === 'click').length, maxScroll: Math.max(0, ...list.filter((e) => e.type === 'scroll').map((e) => Number(e.value || 0))),
+      cartAdds: list.filter((e) => e.type === 'add_to_cart').length, cartRemoves: list.filter((e) => e.type === 'remove_from_cart').length,
+      checkoutStarted: list.some((e) => e.type === 'checkout_start'), orderCompleted: Boolean(orderEvent), orderNumber: metaText(orderEvent, 'order_number'), orderValue: Number(orderEvent?.value || 0),
+      shipping: metaText(shippingEvent, 'label') || metaText(shippingEvent, 'value'), payment: metaText(paymentEvent, 'label') || metaText(paymentEvent, 'value'), pages,
       searches: [...new Set(list.filter((e) => e.search).map((e) => e.search!))], products: [...new Set(list.filter((e) => e.product).map((e) => e.product!))], events: list,
     });
   }

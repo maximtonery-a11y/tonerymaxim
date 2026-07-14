@@ -1,14 +1,14 @@
 import { join } from 'node:path';
+import { mkdir, rm, stat } from 'node:fs/promises';
 import { readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
 
-type OrderSequence = {
-  value: number;
-  updatedAt: string;
-};
+type OrderSequence = { value: number; updatedAt: string };
 
 const FILE = join(TM_DATA_ROOT, 'order-sequence.json');
+const LOCK_DIR = join(TM_DATA_ROOT, 'locks', 'order-sequence.lock');
 const FIRST_ORDER_NUMBER = 300896;
 const INITIAL_SEQUENCE_VALUE = FIRST_ORDER_NUMBER - 1;
+const LOCK_STALE_MS = 30_000;
 let sequenceLock: Promise<unknown> = Promise.resolve();
 
 function normalizeSequence(value: unknown): number {
@@ -19,35 +19,44 @@ function normalizeSequence(value: unknown): number {
   return number;
 }
 
-async function nextValue(): Promise<number> {
-  const stored = await readSignedJson<OrderSequence>(FILE);
-  const current = normalizeSequence(stored?.value);
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  if (current >= 999999) {
-    throw new Error('Číselný rad TM objednávok dosiahol limit 999999.');
+async function acquireFileLock(): Promise<() => Promise<void>> {
+  await mkdir(join(TM_DATA_ROOT, 'locks'), { recursive: true, mode: 0o700 });
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    try {
+      await mkdir(LOCK_DIR, { mode: 0o700 });
+      return async () => { await rm(LOCK_DIR, { recursive: true, force: true }); };
+    } catch {
+      const info = await stat(LOCK_DIR).catch(() => null);
+      if (info && Date.now() - info.mtimeMs > LOCK_STALE_MS) {
+        await rm(LOCK_DIR, { recursive: true, force: true }).catch(() => undefined);
+        continue;
+      }
+      await sleep(20 + Math.floor(Math.random() * 30));
+    }
   }
-
-  const next = current + 1;
-
-  // Číslo sa uloží ešte pred vytvorením Woo objednávky a pred odoslaním e-mailu.
-  // Aj keď ďalší krok zlyhá, číslo sa už nikdy znovu nepoužije.
-  await writeSignedJson(FILE, {
-    value: next,
-    updatedAt: new Date().toISOString(),
-  });
-
-  return next;
+  throw new Error('Nepodarilo sa uzamknúť číselný rad objednávok.');
 }
 
-/**
- * Vygeneruje jedinečné 6-ciferné číslo objednávky a variabilný symbol.
- * Číselný rad začína hodnotou 300896.
- */
+async function nextValue(): Promise<number> {
+  const release = await acquireFileLock();
+  try {
+    const stored = await readSignedJson<OrderSequence>(FILE);
+    const current = normalizeSequence(stored?.value);
+    if (current >= 999999) throw new Error('Číselný rad TM objednávok dosiahol limit 999999.');
+    const next = current + 1;
+    await writeSignedJson(FILE, { value: next, updatedAt: new Date().toISOString() });
+    return next;
+  } finally {
+    await release();
+  }
+}
+
 export async function nextTmOrderNumber(): Promise<string> {
   const task = sequenceLock.then(nextValue, nextValue);
   sequenceLock = task.then(() => undefined, () => undefined);
-  const value = await task;
-  return String(value);
+  return String(await task);
 }
 
 export function tmVariableSymbol(orderNumber: unknown): string {

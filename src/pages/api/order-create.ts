@@ -7,6 +7,7 @@ import { validateCheckoutCoupon } from "../../lib/coupons";
 import { normalizeSecureCheckoutCart, discountedLine } from "../../lib/secure-checkout-cart";
 import { CheckoutProfiler } from "../../lib/checkout-profiler";
 import { nextTmOrderNumber } from "../../lib/order-number";
+import { getOrCreateOrderNumber } from "../../lib/order-idempotency";
 
 const SHIPPING: Record<string, { label: string; price: number }> = {
   dpd_courier: { label: "DPD kuriér na adresu", price: 3.9 },
@@ -78,7 +79,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const goodsAfterDiscounts = Math.max(0, Math.round((subtotal - couponDiscount - loyaltyDiscount) * 100) / 100);
     const shippingPrice = goodsAfterDiscounts >= 29 ? 0 : shipping.price;
     const total = Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount - loyaltyDiscount) * 100) / 100);
-    const orderNumber = await nextTmOrderNumber();
+    const requestId = String(body?.requestId || request.headers.get("x-tm-idempotency-key") || "").trim();
+    const orderNumber = requestId
+      ? await getOrCreateOrderNumber(`order-${requestId}`, nextTmOrderNumber)
+      : await nextTmOrderNumber();
 
     const orderSource = {
       orderNumber,
