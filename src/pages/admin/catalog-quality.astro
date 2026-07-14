@@ -1,0 +1,139 @@
+---
+import { getAdminAccessKey, constantTimeEqual } from '../../lib/admin-access';
+import { filterCatalogIssues, inspectCatalog, type CatalogIssueSeverity } from '../../lib/catalog-inspector';
+
+export const prerender = false;
+
+const adminKey = getAdminAccessKey(Astro.locals);
+const suppliedKey = Astro.url.searchParams.get('key') || '';
+const locked = Boolean(adminKey && !constantTimeEqual(adminKey, suppliedKey));
+const severity = Astro.url.searchParams.get('severity') || 'all';
+const rule = Astro.url.searchParams.get('rule') || 'all';
+const query = Astro.url.searchParams.get('q') || '';
+const page = Math.max(1, Number(Astro.url.searchParams.get('page') || 1));
+const perPage = 100;
+const report = locked ? null : await inspectCatalog();
+const filtered = report ? filterCatalogIssues(report.issues, { severity, rule, query }) : [];
+const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+const safePage = Math.min(page, totalPages);
+const visible = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+const nf = new Intl.NumberFormat('sk-SK');
+const dtf = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'short', timeStyle: 'medium' });
+const severityLabels: Record<CatalogIssueSeverity, string> = { critical: 'Kritické', important: 'Dôležité', content: 'Obsahové', logical: 'Logické' };
+
+function urlWith(values: Record<string, string | number>) {
+  const params = new URLSearchParams();
+  if (suppliedKey) params.set('key', suppliedKey);
+  params.set('severity', String(values.severity ?? severity));
+  params.set('rule', String(values.rule ?? rule));
+  if (String(values.q ?? query)) params.set('q', String(values.q ?? query));
+  params.set('page', String(values.page ?? safePage));
+  return `?${params.toString()}`;
+}
+
+const exportParams = new URLSearchParams();
+if (suppliedKey) exportParams.set('key', suppliedKey);
+if (severity !== 'all') exportParams.set('severity', severity);
+if (rule !== 'all') exportParams.set('rule', rule);
+if (query) exportParams.set('q', query);
+---
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>TM Catalog Inspector</title>
+  <style>
+    :root { font-family: Inter, Geist, system-ui, sans-serif; color:#081a3a; background:#eef4fb; color-scheme:light; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px; background:radial-gradient(circle at top right,#e8f2ff 0,transparent 38%),#eef4fb; }
+    main { max-width:1540px; margin:0 auto; }
+    a { color:inherit; }
+    .top { display:flex; justify-content:space-between; align-items:flex-end; gap:18px; margin-bottom:18px; }
+    h1 { margin:0; font-size:clamp(32px,5vw,56px); letter-spacing:-.055em; }
+    h2 { margin:0 0 12px; font-size:20px; }
+    p { color:#607089; line-height:1.55; }
+    .actions { display:flex; flex-wrap:wrap; gap:9px; }
+    .button { display:inline-flex; align-items:center; justify-content:center; min-height:42px; padding:0 15px; border-radius:13px; border:1px solid #cedbef; background:#fff; font-weight:900; text-decoration:none; cursor:pointer; }
+    .button.primary { color:#fff; background:#081a3a; border-color:#081a3a; }
+    .notice { padding:13px 16px; border-radius:16px; background:#eaf8f0; border:1px solid #bde6ce; color:#087b43; font-weight:850; margin-bottom:16px; }
+    .grid { display:grid; gap:13px; }
+    .metrics { grid-template-columns:repeat(6,minmax(0,1fr)); margin-bottom:14px; }
+    .card { background:#fff; border:1px solid #d9e5f4; border-radius:20px; padding:17px; box-shadow:0 14px 38px rgba(9,32,70,.07); min-width:0; }
+    .metric small { display:block; color:#718097; text-transform:uppercase; letter-spacing:.07em; font-size:10px; font-weight:950; }
+    .metric strong { display:block; margin-top:7px; font-size:clamp(25px,3vw,35px); letter-spacing:-.05em; }
+    .critical strong,.sev-critical { color:#b42318; } .important strong,.sev-important { color:#b45309; } .content strong,.sev-content { color:#8a6400; } .logical strong,.sev-logical { color:#075fb4; }
+    .two { grid-template-columns:.8fr 1.2fr; align-items:start; margin-bottom:14px; }
+    .filters { display:grid; grid-template-columns:1fr 1fr minmax(220px,2fr) auto; gap:10px; align-items:end; }
+    label { display:grid; gap:6px; color:#53647d; font-size:12px; font-weight:850; }
+    select,input { width:100%; min-height:42px; border:1px solid #cfdced; border-radius:12px; padding:0 12px; background:#fff; color:#081a3a; font:inherit; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th,td { padding:10px 8px; border-bottom:1px solid #edf2f8; text-align:left; vertical-align:top; }
+    th { color:#738198; font-size:10px; text-transform:uppercase; letter-spacing:.07em; }
+    .count { text-align:right; white-space:nowrap; }
+    .tag { display:inline-flex; padding:5px 8px; border-radius:999px; font-size:11px; font-weight:950; background:#eef4fb; white-space:nowrap; }
+    .product { font-weight:900; text-decoration:none; } .product:hover { text-decoration:underline; }
+    .sku { color:#6e7d94; font-size:12px; margin-top:3px; }
+    .message { color:#53647d; line-height:1.45; max-width:620px; }
+    .pagination { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin-top:15px; }
+    .pagination a,.pagination span { padding:8px 11px; border:1px solid #d6e2f1; border-radius:10px; background:#fff; text-decoration:none; font-weight:850; }
+    .locked { max-width:680px; margin:90px auto; text-align:center; }
+    .empty { text-align:center; padding:35px 12px; color:#607089; }
+    .meta { color:#6f7f96; font-size:12px; }
+    @media(max-width:1100px){ .metrics{grid-template-columns:repeat(3,1fr)} .two{grid-template-columns:1fr} }
+    @media(max-width:760px){ body{padding:13px}.top{display:block}.actions{margin-top:12px}.metrics{grid-template-columns:1fr 1fr}.filters{grid-template-columns:1fr}.card{padding:14px}.table-wrap{overflow:auto}table{min-width:820px} }
+    @media(max-width:460px){ .metrics{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<main>
+  {locked ? (
+    <section class="card locked"><h1>TM Catalog Inspector</h1><p>Nástroj je chránený. Otvor ho s platným parametrom <strong>?key=...</strong>.</p></section>
+  ) : report && (
+    <>
+      <header class="top">
+        <div><h1>Catalog Inspector</h1><p>Kontrolný nástroj kvality katalógu. Produkty iba číta – nič v nich neupravuje ani nezapisuje do WooCommerce.</p></div>
+        <div class="actions"><a class="button" href={urlWith({ page:1 })}>Spustiť kontrolu znova</a><a class="button primary" href={`/api/catalog-quality.csv?${exportParams.toString()}`}>Export CSV</a></div>
+      </header>
+      <div class="notice">Režim iba na čítanie: nástroj nemení ceny, sklady, popisy, obrázky, kategórie ani kompatibility.</div>
+      <section class="grid metrics">
+        <div class="card metric"><small>Produkty</small><strong>{nf.format(report.totalProducts)}</strong></div>
+        <div class="card metric"><small>S problémom</small><strong>{nf.format(report.productsWithIssues)}</strong></div>
+        <div class="card metric critical"><small>Kritické</small><strong>{nf.format(report.counts.critical)}</strong></div>
+        <div class="card metric important"><small>Dôležité</small><strong>{nf.format(report.counts.important)}</strong></div>
+        <div class="card metric content"><small>Obsahové</small><strong>{nf.format(report.counts.content)}</strong></div>
+        <div class="card metric logical"><small>Logické</small><strong>{nf.format(report.counts.logical)}</strong></div>
+      </section>
+      <section class="grid two">
+        <div class="card">
+          <h2>Prehľad kontrol</h2>
+          <div class="table-wrap"><table><thead><tr><th>Kontrola</th><th>Závažnosť</th><th class="count">Počet</th></tr></thead><tbody>
+            {report.rules.map((item) => <tr><td><a href={urlWith({ rule:item.code, page:1 })}>{item.label}</a></td><td><span class:list={['tag',`sev-${item.severity}`]}>{severityLabels[item.severity]}</span></td><td class="count"><strong>{nf.format(item.count)}</strong></td></tr>)}
+          </tbody></table></div>
+          <p class="meta">Kontrola trvala {String(report.durationMs).replace('.', ',')} ms. Cache produktov: {report.cacheGeneratedAt ? dtf.format(new Date(report.cacheGeneratedAt)) : 'neuvedené'}.</p>
+        </div>
+        <div class="card">
+          <h2>Filtrovanie výsledkov</h2>
+          <form class="filters" method="get">
+            {suppliedKey && <input type="hidden" name="key" value={suppliedKey} />}
+            <label>Závažnosť<select name="severity"><option value="all" selected={severity==='all'}>Všetky</option><option value="critical" selected={severity==='critical'}>Kritické</option><option value="important" selected={severity==='important'}>Dôležité</option><option value="content" selected={severity==='content'}>Obsahové</option><option value="logical" selected={severity==='logical'}>Logické</option></select></label>
+            <label>Kontrola<select name="rule"><option value="all">Všetky kontroly</option>{report.rules.map((item)=><option value={item.code} selected={rule===item.code}>{item.label} ({item.count})</option>)}</select></label>
+            <label>Produkt / SKU / chyba<input name="q" value={query} placeholder="Napr. TN-2421 alebo kompatibilita" /></label>
+            <button class="button primary" type="submit">Filtrovať</button>
+          </form>
+          <p><strong>Nájdených problémov: {nf.format(filtered.length)}</strong>. Zobrazuje sa najviac 100 na stránku.</p>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Konkrétne zistenia</h2>
+        <div class="table-wrap"><table><thead><tr><th>Závažnosť</th><th>Produkt</th><th>Kontrola</th><th>Detail</th></tr></thead><tbody>
+          {visible.length ? visible.map((item) => <tr><td><span class:list={['tag',`sev-${item.severity}`]}>{severityLabels[item.severity]}</span></td><td>{item.detailUrl ? <a class="product" href={item.detailUrl} target="_blank" rel="noopener">{item.name}</a> : <span class="product">{item.name}</span>}<div class="sku">SKU: {item.sku || '—'} · ID: {item.productId || '—'}</div></td><td><strong>{item.label}</strong></td><td class="message">{item.message}</td></tr>) : <tr><td colspan="4" class="empty">Pre zvolený filter sa nenašli žiadne problémy.</td></tr>}
+        </tbody></table></div>
+        {totalPages > 1 && <nav class="pagination"><a href={urlWith({page:Math.max(1,safePage-1)})}>Predchádzajúca</a><span>Strana {safePage} / {totalPages}</span><a href={urlWith({page:Math.min(totalPages,safePage+1)})}>Ďalšia</a></nav>}
+      </section>
+    </>
+  )}
+</main>
+</body>
+</html>
