@@ -37,6 +37,15 @@ const colorHex = (value: unknown) => {
   return "#94a3b8";
 };
 
+
+const productDetailUrl = (product: Product) => {
+  const direct = String(product?.detail_url || product?.url || "").trim();
+  if (direct.startsWith("/novy/")) return direct;
+  if (direct.startsWith("/produkt/")) return `/novy${direct}`;
+  if (direct.startsWith("produkt/")) return `/novy/${direct}`;
+  const slug = String(product?.slug || product?.id || "").trim();
+  return slug ? `/novy/produkt/${encodeURIComponent(slug)}` : "/novy/produkty";
+};
 const printers = (product: Product) => Array.isArray(product.compatible_printers) ? product.compatible_printers.filter(Boolean) : [];
 const groupCounts = products.reduce<Record<string, number>>((acc, product) => {
   const key = product.product_type_key || "product";
@@ -68,11 +77,11 @@ let previousGroup = "";
             <p>{type.note}</p>
           </div>
         </div>
-        <a href={product.detail_url} class="tm-row-photo" aria-label="Otvoriť produkt">
+        <a href={productDetailUrl(product)} class="tm-row-photo" aria-label="Otvoriť produkt">
           <img src={product.image} alt={product.name} loading="lazy" class="tm-product-fit-image" />
         </a>
         <div class="tm-row-main">
-          <h2><a href={product.detail_url}>{product.name}</a></h2>
+          <h2><a href={productDetailUrl(product)}>{product.name}</a></h2>
           <p class="tm-row-printers">{productPrinters.length ? productPrinters.slice(0, 4).join(", ") : "Kompatibilita bude doplnená."}</p>
           <div class="tm-row-info-line">
             <div class="tm-row-meta">

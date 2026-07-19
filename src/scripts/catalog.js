@@ -309,8 +309,11 @@
 
   function cartProductUrl(product) {
     const direct = String(product?.url || product?.detail_url || "").trim();
+    if (direct.startsWith("/novy/")) return direct;
+    if (direct.startsWith("/produkt/")) return `/novy${direct}`;
+    if (direct.startsWith("produkt/")) return `/novy/${direct}`;
     if (direct && direct !== "#") return direct;
-    const slug = String(product?.slug || "").trim();
+    const slug = String(product?.slug || product?.id || "").trim();
     if (slug) return `/novy/produkt/${encodeURIComponent(slug)}`;
     return "/novy/produkty";
   }
@@ -715,12 +718,12 @@
           </div>
         </div>
 
-        <a href="${esc(product.detail_url)}" class="tm-row-photo" aria-label="Otvoriť produkt">
+        <a href="${esc(cartProductUrl(product))}" class="tm-row-photo" aria-label="Otvoriť produkt">
           ${`<img src="${esc(productImageSrc(product.image, product))}" alt="${esc(product.name)}" loading="lazy" class="tm-product-fit-image">`}
         </a>
 
         <div class="tm-row-main">
-          <h2><a href="${esc(product.detail_url)}">${esc(product.name)}</a></h2>
+          <h2><a href="${esc(cartProductUrl(product))}">${esc(product.name)}</a></h2>
           <p class="tm-row-printers">${esc(compatibilityPreview(product))}</p>
           <div class="tm-row-info-line">
             <div class="tm-row-meta">${productParams(product)}</div>

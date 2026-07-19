@@ -489,7 +489,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
         <div class="series-pack-items">
           ${pack.items.map((item) => `
-            <a class="series-pack-item series-pack-item--${item.colorKey}" href="${esc(item.detail_url || `/novy/produkt/${item.slug || item.id}`)}" title="${esc(item.name)}">
+            <a class="series-pack-item series-pack-item--${item.colorKey}" href="${esc(getProductUrl(item))}" title="${esc(item.name)}">
               <span aria-hidden="true"></span>
               <strong>${esc(item.code)}</strong>
               <small>${esc(colorLabelByKey(item.colorKey))}</small>
@@ -1015,7 +1015,13 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   }
 
   function getProductUrl(product) {
-    return product?.detail_url || (product?.slug ? `/novy/produkt/${product.slug}` : "#");
+    const direct = String(product?.detail_url || product?.url || "").trim();
+    if (direct.startsWith("/novy/")) return direct;
+    if (direct.startsWith("/produkt/")) return `/novy${direct}`;
+    if (direct.startsWith("produkt/")) return `/novy/${direct}`;
+    if (direct && direct !== "#") return direct;
+    const slug = String(product?.slug || product?.id || "").trim();
+    return slug ? `/novy/produkt/${encodeURIComponent(slug)}` : "#";
   }
 
   function productTypeLabel(typeKey) {
