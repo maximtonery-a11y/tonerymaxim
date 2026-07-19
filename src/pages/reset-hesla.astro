@@ -9,7 +9,7 @@ import { readCustomerSession } from "../lib/auth-session";
 import { verifyPasswordResetToken } from "../lib/password-reset";
 
 const session = readCustomerSession(Astro.cookies);
-if (session) return Astro.redirect("/ucet");
+if (session) return Astro.redirect("/novy/ucet");
 
 const token = Astro.url.searchParams.get("token") || "";
 const validToken = Boolean(verifyPasswordResetToken(token));
@@ -27,7 +27,7 @@ const validToken = Boolean(verifyPasswordResetToken(token));
       <Header />
       <main class="auth-wrap">
         <section class="auth-card">
-          <img class="auth-logo" src="/images/logo.png" alt="ToneryMaxim" />
+          <img class="auth-logo" src="/novy/images/logo.png" alt="ToneryMaxim" />
           <h1>Nastavenie nového hesla</h1>
           <p>Zadajte nové heslo k svojmu zákazníckemu účtu.</p>
 
@@ -49,10 +49,10 @@ const validToken = Boolean(verifyPasswordResetToken(token));
               <button class="tm-btn" type="submit" data-auth-submit>Zmeniť heslo</button>
             </form>
           ) : (
-            <p class="auth-switch"><a href="/zabudnute-heslo">Požiadať o nový odkaz</a></p>
+            <p class="auth-switch"><a href="/novy/zabudnute-heslo">Požiadať o nový odkaz</a></p>
           )}
 
-          <p class="auth-switch"><a href="/prihlasenie">Späť na prihlásenie</a></p>
+          <p class="auth-switch"><a href="/novy/prihlasenie">Späť na prihlásenie</a></p>
         </section>
 
         <section class="auth-benefits is-grid" aria-label="Bezpečnosť obnovy hesla">
@@ -86,7 +86,7 @@ const validToken = Boolean(verifyPasswordResetToken(token));
         message.hidden = true;
 
         try {
-          const response = await fetch("/api/auth/reset-password", {
+          const response = await fetch("/novy/api/auth/reset-password", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -96,7 +96,7 @@ const validToken = Boolean(verifyPasswordResetToken(token));
 
           showMessage(result.message || "Heslo bolo úspešne zmenené.", "success");
           setTimeout(() => {
-            window.location.href = result.redirect || "/prihlasenie?password-reset=1";
+            window.location.href = result.redirect || "/novy/prihlasenie?password-reset=1";
           }, 1200);
         } catch (error) {
           showMessage(error.message || "Heslo sa nepodarilo zmeniť.");

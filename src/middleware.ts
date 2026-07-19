@@ -2,25 +2,48 @@ import { defineMiddleware } from 'astro:middleware';
 import { ensureEmailQueueStarted } from './lib/email-queue';
 import { ensureAsyncOrderQueueStarted } from './lib/async-order-queue';
 
+const APP_BASE = '/novy';
 const NOINDEX_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
-const ANALYTICS_TAG = '<script src="/tm-analytics.js" defer></script>';
+const ANALYTICS_TAG = `<script src="${APP_BASE}/tm-analytics.js" defer></script>`;
 
 function isNoIndexHost(hostname: string): boolean {
   return NOINDEX_HOSTS.has(hostname.toLowerCase());
 }
 
+function appPath(pathname: string): string {
+  if (pathname === APP_BASE) return '/';
+  return pathname.startsWith(`${APP_BASE}/`) ? pathname.slice(APP_BASE.length) : pathname;
+}
+
 function shouldInjectAnalytics(pathname: string): boolean {
-  return !pathname.startsWith('/api/') && !pathname.startsWith('/admin/');
+  const path = appPath(pathname);
+  return !path.startsWith('/api/') && !path.startsWith('/admin/');
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
   ensureEmailQueueStarted();
   ensureAsyncOrderQueueStarted();
+
   const { url } = context;
   const noIndex = isNoIndexHost(url.hostname);
+  const path = appPath(url.pathname);
 
-  if (url.pathname === '/robots.txt') {
-    const body = noIndex ? 'User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /ucet/\nDisallow: /kosik\nDisallow: /pokladna\n' : `User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /ucet/\nDisallow: /kosik\nDisallow: /pokladna\nDisallow: /*?*\nSitemap: ${url.origin}/sitemap.xml\n`;
+  if (path === '/robots.txt') {
+    const disallow = [
+      `${APP_BASE}/admin/`,
+      `${APP_BASE}/api/`,
+      `${APP_BASE}/ucet/`,
+      `${APP_BASE}/kosik`,
+      `${APP_BASE}/pokladna`,
+    ];
+    const body = [
+      'User-agent: *',
+      `Allow: ${APP_BASE}/`,
+      ...disallow.map((value) => `Disallow: ${value}`),
+      ...(noIndex ? [] : ['Disallow: /*?*', `Sitemap: ${url.origin}${APP_BASE}/sitemap.xml`]),
+      '',
+    ].join('\n');
+
     const response = new Response(body, {
       status: 200,
       headers: {
@@ -37,13 +60,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (noIndex) headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
 
+  const location = headers.get('location');
+  if (location?.startsWith('/') && !location.startsWith(`${APP_BASE}/`) && location !== APP_BASE) {
+    headers.set('location', `${APP_BASE}${location}`);
+  }
+
   const contentType = headers.get('content-type') || '';
   if (!contentType.includes('text/html') || !shouldInjectAnalytics(url.pathname)) {
     return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
   }
 
   const html = await response.text();
-  const withAnalytics = html.includes('/tm-analytics.js')
+  const withAnalytics = html.includes(`${APP_BASE}/tm-analytics.js`)
     ? html
     : html.replace('</body>', `${ANALYTICS_TAG}\n</body>`);
 

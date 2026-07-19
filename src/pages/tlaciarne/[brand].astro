@@ -39,7 +39,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <SeoHead title={title} description={description} noindex={noindex} jsonLd={breadcrumbJsonLd(Astro.url.origin, [{ name: "Domov", path: "/" }, { name: "Tlačiarne", path: "/tlaciarne" }, { name: selectedBrand, path: `/tlaciarne/${brandParam}` }])} />
+    <SeoHead title={title} description={description} noindex={noindex} jsonLd={breadcrumbJsonLd(Astro.url.origin, [{ name: "Domov", path: "/" }, { name: "Tlačiarne", path: "/novy/tlaciarne" }, { name: selectedBrand, path: `/novy/tlaciarne/${brandParam}` }])} />
   </head>
   <body class="printer-brand-page">
     <div class="page">
@@ -50,10 +50,10 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
           <button class="tm-printer-mobile-menu-button" type="button" aria-label="Otvoriť menu" aria-expanded="false" data-tm-printer-menu-toggle>
             <span></span><span></span><span></span>
           </button>
-          <a class="tm-printer-mobile-logo-link" href="/" aria-label="ToneryMaxim domov">
+          <a class="tm-printer-mobile-logo-link" href="/novy/" aria-label="ToneryMaxim domov">
             <img src={mobileLogo.src} alt="ToneryMaxim" loading="eager" decoding="async" />
           </a>
-          <a class="tm-printer-mobile-cart-link" href="/kosik" aria-label="Košík">
+          <a class="tm-printer-mobile-cart-link" href="/novy/kosik" aria-label="Košík">
             <span aria-hidden="true">🛒</span>
             <strong data-cart-count>0</strong>
           </a>
@@ -67,34 +67,34 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
             </div>
             <section>
               <strong>Môj účet</strong>
-              <a href="/prihlasenie">Prihlásenie</a>
-              <a href="/ucet">Môj účet</a>
-              <a href="/ucet/objednavky">Moje objednávky</a>
+              <a href="/novy/prihlasenie">Prihlásenie</a>
+              <a href="/novy/ucet">Môj účet</a>
+              <a href="/novy/ucet/objednavky">Moje objednávky</a>
             </section>
             <section>
               <strong>Informácie</strong>
-              <a href="/kontakt">Kontakt</a>
-              <a href="/doprava-a-platba">Doprava a platba</a>
-              <a href="/reklamacie">Reklamácie</a>
-              <a href="/obchodne-podmienky">Obchodné podmienky</a>
-              <a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
+              <a href="/novy/kontakt">Kontakt</a>
+              <a href="/novy/doprava-a-platba">Doprava a platba</a>
+              <a href="/novy/reklamacie">Reklamácie</a>
+              <a href="/novy/obchodne-podmienky">Obchodné podmienky</a>
+              <a href="/novy/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
             </section>
             <section>
               <strong>Ponuka</strong>
-              <a href="/produkty?category=tonery&search=toner">Tonery</a>
-              <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a>
-              <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
-              <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
+              <a href="/novy/produkty?category=tonery&search=toner">Tonery</a>
+              <a href="/novy/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a>
+              <a href="/novy/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
+              <a href="/novy/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
             </section>
           </div>
         </div>
 
         <main class="tm-printer-mobile-content tm-printer-mobile-content--brand">
-          <a class="tm-printer-back" href="/tlaciarne">← Zmeniť značku</a>
+          <a class="tm-printer-back" href="/novy/tlaciarne">← Zmeniť značku</a>
 
           <div class="tm-printer-mobile-field tm-printer-mobile-field--brand">
             <span>Značka tlačiarne</span>
-            <a href="/tlaciarne">{selectedBrand}</a>
+            <a href="/novy/tlaciarne">{selectedBrand}</a>
           </div>
 
           <div class="tm-printer-mobile-field tm-printer-mobile-field--model">
@@ -120,7 +120,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
         </main>
 
         <div class="tm-printer-bottom-search tm-smart-search-wrap">
-          <form action="/produkty" method="get" data-smart-search>
+          <form action="/novy/produkty" method="get" data-smart-search>
             <span aria-hidden="true">⌕</span>
             <input type="search" name="s" data-smart-search-input placeholder="Hľadať toner alebo tlačiareň" aria-label="Hľadať toner alebo tlačiareň" />
             <button type="submit">Hľadať</button>
@@ -132,7 +132,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
         <section class="printer-finder-hero">
           <div class="wrap printer-finder-hero-inner">
             <div class="printer-finder-copy">
-              <a class="printer-back-link" href="/">← späť na úvod</a>
+              <a class="printer-back-link" href="/novy/">← späť na úvod</a>
               <p class="eyebrow">Vyhľadanie podľa tlačiarne</p>
               <h1>Farby a náplne do tlačiarne {selectedBrand}</h1>
               <p class="lead">Značku už máte vybranú. Vyberte model zo zoznamu alebo začnite písať názov tlačiarne.</p>

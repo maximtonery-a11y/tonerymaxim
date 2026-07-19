@@ -8,8 +8,8 @@ import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import { readCustomerSession } from "../lib/auth-session";
 
 const session = readCustomerSession(Astro.cookies);
-if (session) return Astro.redirect("/ucet");
-const next = Astro.url.searchParams.get("next") || "/ucet";
+if (session) return Astro.redirect("/novy/ucet");
+const next = Astro.url.searchParams.get("next") || "/novy/ucet";
 const logout = Astro.url.searchParams.get("logout") === "1";
 const resetSent = Astro.url.searchParams.get("reset") === "sent";
 ---
@@ -26,7 +26,7 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
       <Header />
       <main class="auth-wrap">
         <section class="auth-card">
-          <img class="auth-logo" src="/images/logo.png" alt="ToneryMaxim" />
+          <img class="auth-logo" src="/novy/images/logo.png" alt="ToneryMaxim" />
           <h1>Prihlásenie</h1>
           <p>Prihláste sa do svojho účtu a vybavte opakovaný nákup, reklamáciu alebo kontrolu objednávok rýchlejšie.</p>
 
@@ -45,13 +45,13 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
 
             <div class="auth-row">
               <label class="tm-check"><input type="checkbox" /> Zapamätať si ma</label>
-              <a href="/zabudnute-heslo">Zabudli ste heslo?</a>
+              <a href="/novy/zabudnute-heslo">Zabudli ste heslo?</a>
             </div>
 
             <button class="tm-btn" type="submit" data-auth-submit>Prihlásiť sa</button>
           </form>
 
-          <p class="auth-switch">Nemáte účet? <a href="/registracia">Registrovať sa</a></p>
+          <p class="auth-switch">Nemáte účet? <a href="/novy/registracia">Registrovať sa</a></p>
         </section>
 
         <section class="auth-benefits is-grid" aria-label="Výhody prihlásenia">
@@ -80,14 +80,14 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
       form?.addEventListener("submit", async (event) => {
         event.preventDefault();
         const data = Object.fromEntries(new FormData(form));
-        data.next = form.dataset.next || "/ucet";
+        data.next = form.dataset.next || "/novy/ucet";
 
         submit.disabled = true;
         submit.textContent = "Prihlasujem...";
         message.hidden = true;
 
         try {
-          const response = await fetch("/api/auth/login", {
+          const response = await fetch("/novy/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -96,7 +96,7 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
           if (!response.ok || !result.ok) throw new Error(result.error || "Prihlásenie zlyhalo.");
 
           showMessage("Prihlásenie prebehlo úspešne. Presmerovávam...", "success");
-          window.location.href = result.redirect || "/ucet";
+          window.location.href = result.redirect || "/novy/ucet";
         } catch (error) {
           showMessage(error.message || "Prihlásenie zlyhalo.");
         } finally {

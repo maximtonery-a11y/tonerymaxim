@@ -11,7 +11,7 @@ import InfoPageShell from "../components/InfoPageShell.astro";
 <html lang="sk">
   <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Kontakt | ToneryMaxim.sk</title></head>
   <body><div class="page"><Header /><main>
-    <InfoPageShell active="/kontakt" eyebrow="Kontakt" title="Kontakt" intro="Napíšte nám pri výbere tonera, objednávke alebo reklamácii. Radi vám pomôžeme.">
+    <InfoPageShell active="/novy/kontakt" eyebrow="Kontakt" title="Kontakt" intro="Napíšte nám pri výbere tonera, objednávke alebo reklamácii. Radi vám pomôžeme.">
       <section class="quick-contact-grid">
         <article class="contact-card"><span class="info-icon">✉</span><div><h2>E-mail</h2><a href="mailto:info@tonerymaxim.sk">info@tonerymaxim.sk</a><p>Odpovieme čo najskôr.</p></div></article>
         <article class="contact-card"><span class="info-icon">☎</span><div><h2>Telefón</h2><a href="tel:+421917859206">+421 917 859 206</a><p>Po–Pi 9:00–15:00</p></div></article>
@@ -22,7 +22,7 @@ import InfoPageShell from "../components/InfoPageShell.astro";
         <article class="contact-form-card">
           <span class="card-eyebrow">Kontaktný formulár</span>
           <h2>Napíšte nám správu</h2>
-          <form class="tm-contact-form" id="tm-contact-form" method="post" action="/api/contact" novalidate>
+          <form class="tm-contact-form" id="tm-contact-form" method="post" action="/novy/api/contact" novalidate>
             <div class="form-row">
               <label>Meno a priezvisko<input name="name" type="text" autocomplete="name" placeholder="Vaše meno" required /></label>
               <label>E-mail<input name="email" type="email" autocomplete="email" placeholder="vas@email.sk" required /></label>

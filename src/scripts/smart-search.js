@@ -168,7 +168,7 @@
   function productGroupTemplate(item, query) {
     const type = item.type || "product";
     return `
-      <a class="tm-smart-group tm-smart-group--${esc(type)}" href="${esc(item.url || "/produkty?s=" + encodeURIComponent(query))}" data-smart-result="productGroups">
+      <a class="tm-smart-group tm-smart-group--${esc(type)}" href="${esc(item.url || "/novy/produkty?s=" + encodeURIComponent(query))}" data-smart-result="productGroups">
         <span class="tm-smart-group-dot"></span>
         <span>
           <strong>${highlight(item.title || "", query)}</strong>
@@ -189,7 +189,7 @@
     const typeBadge = section === "products" && type ? `<em class="tm-smart-type tm-smart-type--${esc(type)}">${typeLabel(type)}</em>` : "";
 
     return `
-      <a class="tm-smart-item ${type ? `tm-smart-item--${esc(type)}` : ""}" href="${esc(item.url || "/produkty?s=" + encodeURIComponent(query))}" data-smart-result="${esc(section)}">
+      <a class="tm-smart-item ${type ? `tm-smart-item--${esc(type)}` : ""}" href="${esc(item.url || "/novy/produkty?s=" + encodeURIComponent(query))}" data-smart-result="${esc(section)}">
         ${image}
         <span class="tm-smart-copy">
           <span>${highlight(item.title || "", query)}</span>
@@ -257,7 +257,7 @@
     if (activeController) activeController.abort();
     activeController = new AbortController();
 
-    const promise = fetch(`/api/smart-search?q=${encodeURIComponent(query)}`, {
+    const promise = fetch(`/novy/api/smart-search?q=${encodeURIComponent(query)}`, {
       headers: { Accept: "application/json" },
       signal: activeController.signal,
     })
@@ -276,7 +276,7 @@
   function goToSearch(input) {
     const query = input.value.trim();
     if (!query) return;
-    window.location.href = `/produkty?s=${encodeURIComponent(query)}`;
+    window.location.href = `/novy/produkty?s=${encodeURIComponent(query)}`;
   }
 
   function installSmartSearch(form) {

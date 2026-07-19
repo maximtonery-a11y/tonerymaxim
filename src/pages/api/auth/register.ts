@@ -82,7 +82,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         first_name: customer.first_name,
         last_name: customer.last_name,
       },
-      redirect: "/ucet?registered=1",
+      redirect: "/novy/ucet?registered=1",
     });
   } catch (error: any) {
     const message = error?.message || "Registráciu sa nepodarilo dokončiť.";

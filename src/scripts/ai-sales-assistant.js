@@ -61,7 +61,7 @@
       name: product.name || 'Produkt',
       price: Number(product.price || 0),
       image: product.image || '',
-      url: product.url || `/produkty?s=${encodeURIComponent(product.sku || product.name || '')}`,
+      url: product.url || `/novy/produkty?s=${encodeURIComponent(product.sku || product.name || '')}`,
       slug: product.slug || '',
       product_type_key: product.product_type_key || 'product',
       product_type_label: product.product_type_label || 'PRODUKT',
@@ -79,7 +79,7 @@
     const sku = escapeHtml(product.sku || '');
     const type = escapeHtml(product.product_type_label || product.type || '');
     const capacity = escapeHtml(product.capacity || '');
-    const url = escapeHtml(product.url || `/produkty?s=${encodeURIComponent(product.sku || product.name || '')}`);
+    const url = escapeHtml(product.url || `/novy/produkty?s=${encodeURIComponent(product.sku || product.name || '')}`);
     const price = escapeHtml(formatPrice(product));
     const payload = escapeHtml(JSON.stringify(productPayload(product)));
 
@@ -155,7 +155,7 @@
     const startTop = messages.scrollTop;
 
     try {
-      const response = await fetch('/api/ai-sales-assistant', {
+      const response = await fetch('/novy/api/ai-sales-assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: question, page: location.pathname }),

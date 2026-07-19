@@ -14,11 +14,11 @@ import { breadcrumbJsonLd, organizationJsonLd, productDescription, productJsonLd
 const { slug } = Astro.params;
 const cache = await getProductsCache().catch(() => null);
 const product = cache?.products?.find((item: any) => String(item.slug) === String(slug) || String(item.id) === String(slug));
-if (!product) return Astro.redirect('/produkty', 302);
+if (!product) return Astro.redirect('/novy/produkty', 302);
 const title = `${product.name} | ToneryMaxim.sk`;
 const description = productDescription(product);
 const canonical = `${Astro.url.origin}/produkt/${encodeURIComponent(product.slug)}`;
-const image = absoluteUrl(Astro.url.origin, product.image || product.images?.[0] || '/favicon.svg');
+const image = absoluteUrl(Astro.url.origin, product.image || product.images?.[0] || '/novy/favicon.svg');
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname);
 const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
 const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.price || 0));
@@ -31,20 +31,20 @@ const plainDescription = stripHtml(product.description_html || product.short_des
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <SeoHead title={title} description={description} canonical={canonical} image={image} type="product" noindex={noindex} jsonLd={[organizationJsonLd(Astro.url.origin), productJsonLd(Astro.url.origin, product), breadcrumbJsonLd(Astro.url.origin, [{ name: "Domov", path: "/" }, { name: "Produkty", path: "/produkty" }, { name: product.name, path: `/produkt/${product.slug}` }])]} />
+    <SeoHead title={title} description={description} canonical={canonical} image={image} type="product" noindex={noindex} jsonLd={[organizationJsonLd(Astro.url.origin), productJsonLd(Astro.url.origin, product), breadcrumbJsonLd(Astro.url.origin, [{ name: "Domov", path: "/" }, { name: "Produkty", path: "/novy/produkty" }, { name: product.name, path: `/novy/produkt/${product.slug}` }])]} />
   </head>
 
   <body class="product-detail-body">
     <div class="page">
       <Header />
 
-      <a class="product-mobile-search-shortcut" href="/produkty" aria-label="Hľadať toner alebo tlačiareň">
+      <a class="product-mobile-search-shortcut" href="/novy/produkty" aria-label="Hľadať toner alebo tlačiareň">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
       </a>
 
       <main class="product-detail-page" data-product-slug={slug}>
         <div class="detail-wrap">
-          <a class="back-link" href="/produkty">← Späť na produkty</a>
+          <a class="back-link" href="/novy/produkty">← Späť na produkty</a>
           <section data-product-root class="tm-detail product-seo-initial tm-product-hydrating" aria-busy="true">
             <div class="tm-product-loading" aria-label="Načítava sa detail produktu">
               <div class="tm-product-loading-image"></div>

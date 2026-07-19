@@ -1,8 +1,8 @@
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 
 (() => {
-  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
-  const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
+  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/novy/images/tm-product-placeholder-box.jpg";
+  const TM_INK_PLACEHOLDER_IMAGE = "/novy/images/tm-ink-placeholder-box.jpg";
 
   const TM_GENERIC_IMAGE_PATTERNS = [
     "toner-coloriq-kompatible",
@@ -411,7 +411,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       code: productDisplayCode(product),
       label: colorLabelByKey(key),
       dot: key,
-      url: product?.detail_url || `/produkt/${product?.slug || product?.id || ""}`,
+      url: product?.detail_url || `/novy/produkt/${product?.slug || product?.id || ""}`,
     };
   }
 
@@ -489,7 +489,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
         <div class="series-pack-items">
           ${pack.items.map((item) => `
-            <a class="series-pack-item series-pack-item--${item.colorKey}" href="${esc(item.detail_url || `/produkt/${item.slug || item.id}`)}" title="${esc(item.name)}">
+            <a class="series-pack-item series-pack-item--${item.colorKey}" href="${esc(item.detail_url || `/novy/produkt/${item.slug || item.id}`)}" title="${esc(item.name)}">
               <span aria-hidden="true"></span>
               <strong>${esc(item.code)}</strong>
               <small>${esc(colorLabelByKey(item.colorKey))}</small>
@@ -515,7 +515,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       colorKey: itemColor,
       code: productDisplayCode(product),
       price: Number(product.price || 0),
-      detail_url: product.detail_url || `/produkt/${product.slug || product.id || ""}`,
+      detail_url: product.detail_url || `/novy/produkt/${product.slug || product.id || ""}`,
     };
   }
 
@@ -628,8 +628,8 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const direct = String(product?.url || product?.detail_url || "").trim();
     if (direct && direct !== "#") return direct;
     const slug = String(product?.slug || "").trim();
-    if (slug) return `/produkt/${encodeURIComponent(slug)}`;
-    return "/produkty";
+    if (slug) return `/novy/produkt/${encodeURIComponent(slug)}`;
+    return "/novy/produkty";
   }
 
   function addToCart(product, qty) {
@@ -965,7 +965,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   }
 
   function printerProductsUrl(printer) {
-    const url = new URL("/produkty", window.location.origin);
+    const url = new URL("/novy/produkty", window.location.origin);
     url.searchParams.set("printer", printer);
     return `${url.pathname}?${url.searchParams.toString()}`;
   }
@@ -1015,7 +1015,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   }
 
   function getProductUrl(product) {
-    return product?.detail_url || (product?.slug ? `/produkt/${product.slug}` : "#");
+    return product?.detail_url || (product?.slug ? `/novy/produkt/${product.slug}` : "#");
   }
 
   function productTypeLabel(typeKey) {
@@ -1095,7 +1095,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   }
 
   async function fetchProductsBySearch(search, perPage = 24) {
-    const url = new URL("/api/products", window.location.origin);
+    const url = new URL("/novy/api/products", window.location.origin);
     url.searchParams.set("s", search);
     url.searchParams.set("per_page", String(perPage));
     const response = await fetch(`${url.pathname}?${url.searchParams.toString()}`, { headers: { Accept: "application/json" } });
@@ -1540,7 +1540,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         return;
       }
       addToCart(product, qtyInput.value);
-      window.location.href = "/pokladna";
+      window.location.href = "/novy/pokladna";
     });
 
     root.querySelector("[data-show-description]")?.addEventListener("click", () => {
@@ -1614,7 +1614,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     }
 
     try {
-      const response = await fetch(`/api/product?slug=${encodeURIComponent(slug)}`, {
+      const response = await fetch(`/novy/api/product?slug=${encodeURIComponent(slug)}`, {
         headers: { Accept: "application/json" },
         cache: "default",
       });
@@ -1634,7 +1634,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       root.innerHTML = `
         <h1>Produkt sa nepodarilo načítať</h1>
         <p>${esc(error.message || "Skúste to prosím znova.")}</p>
-        <a href="/produkty">Späť na produkty</a>
+        <a href="/novy/produkty">Späť na produkty</a>
       `;
     }
   }

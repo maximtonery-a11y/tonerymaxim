@@ -16,7 +16,7 @@ export const SEO_COMPANY = {
 };
 
 export function absoluteUrl(origin: string, value: unknown): string {
-  try { return new URL(String(value || '/'), origin).toString(); } catch { return origin; }
+  try { return new URL(String(value || '/novy/'), origin).toString(); } catch { return origin; }
 }
 
 export function productDescription(product: TmProduct): string {
@@ -33,7 +33,7 @@ export function organizationJsonLd(origin: string) {
     name: SEO_COMPANY.brand,
     legalName: SEO_COMPANY.name,
     url: origin,
-    logo: absoluteUrl(origin, '/favicon.svg'),
+    logo: absoluteUrl(origin, '/novy/favicon.svg'),
     email: SEO_COMPANY.email,
     telephone: SEO_COMPANY.phone,
     vatID: SEO_COMPANY.icDph,
@@ -50,7 +50,7 @@ export function organizationJsonLd(origin: string) {
 }
 
 export function productJsonLd(origin: string, product: TmProduct) {
-  const url = absoluteUrl(origin, product.detail_url || `/produkt/${product.slug}`);
+  const url = absoluteUrl(origin, product.detail_url || `/novy/produkt/${product.slug}`);
   const image = (Array.isArray(product.images) ? product.images : [product.image]).filter(Boolean).map((v) => absoluteUrl(origin, v));
   const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
   const data: Record<string, unknown> = {

@@ -145,7 +145,7 @@ const keyJson = JSON.stringify(suppliedKey).replace(/</g, '\\u003c');
         $('error').innerHTML = '';
         const includeOwner = $('includeOwner').checked ? '1' : '0';
         try {
-          const response = await fetch(`/api/admin/analytics?key=${encodeURIComponent(ADMIN_KEY)}&date=${selectedDate}&includeOwner=${includeOwner}`, { cache:'no-store' });
+          const response = await fetch(`/novy/api/admin/analytics?key=${encodeURIComponent(ADMIN_KEY)}&date=${selectedDate}&includeOwner=${includeOwner}`, { cache:'no-store' });
           const payload = await response.json();
           if (!response.ok || !payload.ok) throw new Error(payload.error || 'Načítanie zlyhalo.');
           data = payload; render();
@@ -225,7 +225,7 @@ const keyJson = JSON.stringify(suppliedKey).replace(/</g, '\\u003c');
       $('prevMonth').addEventListener('click', () => { visibleMonth = new Date(visibleMonth.getFullYear(),visibleMonth.getMonth()-1,1); renderCalendar(); });
       $('nextMonth').addEventListener('click', () => { visibleMonth = new Date(visibleMonth.getFullYear(),visibleMonth.getMonth()+1,1); renderCalendar(); });
       $('ownerBtn').addEventListener('click', async () => {
-        const response = await fetch(`/api/admin/analytics-owner?key=${encodeURIComponent(ADMIN_KEY)}`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({enabled:true}) });
+        const response = await fetch(`/novy/api/admin/analytics-owner?key=${encodeURIComponent(ADMIN_KEY)}`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({enabled:true}) });
         const payload = await response.json();
         if (!response.ok || !payload.ok) return alert(payload.error || 'Označenie zlyhalo.');
         $('ownerBtn').textContent='Tento prehliadač je označený ako môj';

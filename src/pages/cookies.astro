@@ -14,7 +14,7 @@ const cards = [
 ];
 ---
 <!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Cookies | ToneryMaxim.sk</title></head><body><div class="page"><Header /><main>
-<InfoPageShell active="/cookies" eyebrow="Cookies" title="Cookies" intro="Zásady používania súborov cookies na webe ToneryMaxim.sk.">
+<InfoPageShell active="/novy/cookies" eyebrow="Cookies" title="Cookies" intro="Zásady používania súborov cookies na webe ToneryMaxim.sk.">
   <section class="cookie-grid">{cards.map(([icon,title,text,state,color]) => <article class="cookie-card"><span class="info-icon">{icon}</span><h2>{title}</h2><p>{text}</p>{state && <div class:list={["cookie-state", color]}>{state}</div>}</article>)}</section>
   <article class="legal-panel">
     <header class="legal-panel-head"><h2>Správa cookies</h2><p>Cookies môžete kedykoľvek zmeniť alebo zablokovať v nastaveniach vášho prehliadača. Niektoré cookies sú nevyhnutné pre správne fungovanie webu.</p></header>

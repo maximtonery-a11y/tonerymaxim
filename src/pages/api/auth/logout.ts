@@ -5,7 +5,7 @@ export const prerender = false;
 
 export const GET: APIRoute = async ({ cookies, redirect }) => {
   clearCustomerCookie(cookies);
-  return redirect("/prihlasenie?logout=1");
+  return redirect("/novy/prihlasenie?logout=1");
 };
 
 export const POST: APIRoute = async ({ cookies }) => {

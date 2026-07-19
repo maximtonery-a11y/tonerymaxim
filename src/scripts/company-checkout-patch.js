@@ -31,7 +31,7 @@ async function loadCompanyByIco() {
   status.className = "company-status";
 
   try {
-    const response = await fetch(`/api/company?ico=${encodeURIComponent(ico)}`);
+    const response = await fetch(`/novy/api/company?ico=${encodeURIComponent(ico)}`);
     const data = await response.json();
 
     if (!response.ok || !data.ok) throw new Error(data.error || "Firmu sa nepodarilo načítať.");

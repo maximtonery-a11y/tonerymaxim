@@ -169,7 +169,7 @@ function formatMoney(value: unknown): string {
 }
 
 function siteUrl(): string {
-  return (env("PUBLIC_SITE_URL") || env("SITE_URL") || "https://tonerymaxim.info").replace(/\/$/, "");
+  return (env("PUBLIC_SITE_URL") || env("SITE_URL") || "https://tonerymaxim.sk/novy").replace(/\/$/, "");
 }
 
 function legalAttachments() {

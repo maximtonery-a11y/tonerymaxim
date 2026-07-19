@@ -8,7 +8,7 @@ import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import { readCustomerSession } from "../lib/auth-session";
 
 const session = readCustomerSession(Astro.cookies);
-if (session) return Astro.redirect("/ucet");
+if (session) return Astro.redirect("/novy/ucet");
 const sent = Astro.url.searchParams.get("sent") === "1";
 ---
 
@@ -24,7 +24,7 @@ const sent = Astro.url.searchParams.get("sent") === "1";
       <Header />
       <main class="auth-wrap">
         <section class="auth-card">
-          <img class="auth-logo" src="/images/logo.png" alt="ToneryMaxim" />
+          <img class="auth-logo" src="/novy/images/logo.png" alt="ToneryMaxim" />
           <h1>Zabudnuté heslo</h1>
           <p>Zadajte e-mail, ktorý používate pri účte. Ak účet existuje, pošleme vám odkaz na obnovu hesla.</p>
 
@@ -41,7 +41,7 @@ const sent = Astro.url.searchParams.get("sent") === "1";
             <button class="tm-btn" type="submit" data-auth-submit>Odoslať odkaz na obnovu hesla</button>
           </form>
 
-          <p class="auth-switch"><a href="/prihlasenie">Späť na prihlásenie</a></p>
+          <p class="auth-switch"><a href="/novy/prihlasenie">Späť na prihlásenie</a></p>
         </section>
 
         <section class="auth-benefits is-grid" aria-label="Pomoc pri obnove hesla">
@@ -75,7 +75,7 @@ const sent = Astro.url.searchParams.get("sent") === "1";
         message.hidden = true;
 
         try {
-          const response = await fetch("/api/auth/forgot-password", {
+          const response = await fetch("/novy/api/auth/forgot-password", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),

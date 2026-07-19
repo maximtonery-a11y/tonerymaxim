@@ -49,7 +49,7 @@ function formatCount(count: number, singular: string, few: string, many: string)
 }
 
 function productUrl(product: Product) {
-  return product.detail_url || product.url || (product.slug ? `/produkt/${product.slug}` : `/produkty?s=${encodeURIComponent(product.sku || product.name || '')}`);
+  return product.detail_url || product.url || (product.slug ? `/novy/produkt/${product.slug}` : `/novy/produkty?s=${encodeURIComponent(product.sku || product.name || '')}`);
 }
 
 function asAiProduct(product: Product) {

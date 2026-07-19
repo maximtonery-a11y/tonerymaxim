@@ -16,7 +16,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const body = await request.json().catch(() => ({}));
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "");
-    const next = String(body.next || "/ucet");
+    const next = String(body.next || "/novy/ucet");
 
     if (!email || !email.includes("@")) return json({ ok: false, error: "Zadajte platný e-mail." }, 400);
     if (!password) return json({ ok: false, error: "Zadajte heslo." }, 400);
@@ -37,7 +37,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         first_name: customer.first_name,
         last_name: customer.last_name,
       },
-      redirect: next.startsWith("/") ? next : "/ucet",
+      redirect: next.startsWith("/") ? next : "/novy/ucet",
     });
   } catch (error: any) {
     return json({ ok: false, error: error?.message || "Prihlásenie sa nepodarilo." }, 500);

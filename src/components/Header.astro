@@ -3,19 +3,19 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
 ---
 
 <header class="site-header">
-  <a class="site-logo-link" href="/" aria-label="ToneryMaxim domov">
-    <img class="site-logo" src="/images/logo.png" alt="ToneryMaxim" />
+  <a class="site-logo-link" href="/novy/" aria-label="ToneryMaxim domov">
+    <img class="site-logo" src="/novy/images/logo.png" alt="ToneryMaxim" />
   </a>
 
   <nav class="site-nav" aria-label="Hlavná navigácia">
-    <a href="/produkty?category=tonery&search=toner">Tonery</a>
-    <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramenty</a>
-    <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
-    <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
+    <a href="/novy/produkty?category=tonery&search=toner">Tonery</a>
+    <a href="/novy/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramenty</a>
+    <a href="/novy/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
+    <a href="/novy/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
   </nav>
 
   <div class="header-search-area">
-    <form class="header-search" action="/produkty" method="get" data-smart-search>
+    <form class="header-search" action="/novy/produkty" method="get" data-smart-search>
       <span class="header-search-icon" aria-hidden="true">⌕</span>
       <input
         type="search"
@@ -44,9 +44,9 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
       </span>
     </a>
 
-    <a href="/prihlasenie" class="account-link" aria-label="Prihlásenie alebo účet">Účet</a>
+    <a href="/novy/prihlasenie" class="account-link" aria-label="Prihlásenie alebo účet">Účet</a>
 
-    <a href="/kosik" class="icon-btn cart-btn" aria-label="Košík">
+    <a href="/novy/kosik" class="icon-btn cart-btn" aria-label="Košík">
       🛒
       <span class="cart-dot" data-cart-count>0</span>
     </a>
@@ -60,11 +60,11 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
       <span></span>
     </button>
 
-    <a class="tm-global-mobile-logo" href="/" aria-label="ToneryMaxim domov">
+    <a class="tm-global-mobile-logo" href="/novy/" aria-label="ToneryMaxim domov">
       <img src={mobileLogo.src} alt="ToneryMaxim" />
     </a>
 
-    <a href="/kosik" class="tm-global-mobile-cart" aria-label="Košík">
+    <a href="/novy/kosik" class="tm-global-mobile-cart" aria-label="Košík">
       🛒
       <span class="cart-dot" data-cart-count>0</span>
     </a>
@@ -79,26 +79,26 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
 
       <section>
         <strong>Môj účet</strong>
-        <a href="/prihlasenie">Prihlásenie</a>
-        <a href="/ucet">Môj účet</a>
-        <a href="/ucet/objednavky">Moje objednávky</a>
+        <a href="/novy/prihlasenie">Prihlásenie</a>
+        <a href="/novy/ucet">Môj účet</a>
+        <a href="/novy/ucet/objednavky">Moje objednávky</a>
       </section>
 
       <section>
         <strong>Informácie</strong>
-        <a href="/kontakt">Kontakt</a>
-        <a href="/doprava-a-platba">Doprava a platba</a>
-        <a href="/reklamacie">Reklamácie</a>
-        <a href="/obchodne-podmienky">Obchodné podmienky</a>
-        <a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
+        <a href="/novy/kontakt">Kontakt</a>
+        <a href="/novy/doprava-a-platba">Doprava a platba</a>
+        <a href="/novy/reklamacie">Reklamácie</a>
+        <a href="/novy/obchodne-podmienky">Obchodné podmienky</a>
+        <a href="/novy/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
       </section>
 
       <section>
         <strong>Ponuka</strong>
-        <a href="/produkty?category=tonery&search=toner">Tonery</a>
-        <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a>
-        <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
-        <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
+        <a href="/novy/produkty?category=tonery&search=toner">Tonery</a>
+        <a href="/novy/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a>
+        <a href="/novy/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
+        <a href="/novy/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
       </section>
     </div>
   </div>
@@ -130,7 +130,7 @@ body.has-add-cart-drawer { overflow: hidden; }
 @media (max-width: 640px) { .add-cart-panel { top: auto; bottom: 0; width: 100%; height: auto; max-height: 88vh; border-left: 0; border-radius: 26px 26px 0 0; } }
 </style>
 
-<script src="/tm-analytics.js" defer></script>
+<script src="/novy/tm-analytics.js" defer></script>
 
 <script>
   // Odstráni prebliknutie nehotového rozloženia pri prechode medzi stránkami.
@@ -174,20 +174,20 @@ body.has-add-cart-drawer { overflow: hidden; }
     const links = document.querySelectorAll('.account-link');
     if (!links.length) return;
     try {
-      const response = await fetch('/api/auth/me', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' });
+      const response = await fetch('/novy/api/auth/me', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' });
       const data = await response.json().catch(() => ({}));
       const customer = data?.customer;
       if (!response.ok || !data?.ok || !customer) throw new Error('not logged');
       const first = String(customer.first_name || customer.billing?.first_name || customer.username || customer.email || '').trim().split(/\s+/)[0] || 'Môj účet';
       links.forEach((link) => {
-        link.setAttribute('href', '/ucet');
+        link.setAttribute('href', '/novy/ucet');
         link.textContent = `Účet: ${first}`;
         link.setAttribute('aria-label', 'Môj účet');
       });
     } catch {
       links.forEach((link) => {
-        if (link.getAttribute('href') === '/ucet') return;
-        link.setAttribute('href', '/prihlasenie');
+        if (link.getAttribute('href') === '/novy/ucet') return;
+        link.setAttribute('href', '/novy/prihlasenie');
         link.textContent = 'Účet';
       });
     }

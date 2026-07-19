@@ -86,63 +86,63 @@
   }
 
   function printerUrl(title) {
-    return `/produkty?printer=${encodeURIComponent(title)}`;
+    return `/novy/produkty?printer=${encodeURIComponent(title)}`;
   }
 
   const printerImages = {
-    [compactKey("Epson EcoTank L3251")]: "/printer-images/epson/l3251.webp",
-    [compactKey("Epson EcoTank L3151")]: "/printer-images/epson/l3151.webp",
-    [compactKey("Epson EcoTank L3110")]: "/printer-images/epson/l3110.webp",
-    [compactKey("Epson EcoTank L3101")]: "/printer-images/epson/l3101.webp",
-    [compactKey("Epson EcoTank L3260")]: "/printer-images/epson/l3260.webp",
-    [compactKey("Epson EcoTank L1210")]: "/printer-images/epson/l1210.webp",
-    [compactKey("Epson EcoTank L3250")]: "/printer-images/epson/l3250.webp",
-    [compactKey("Epson EcoTank L5190")]: "/printer-images/epson/l5190.webp",
-    [compactKey("Epson EcoTank L5290")]: "/printer-images/epson/l5290.webp",
-    [compactKey("Epson Stylus SX425W")]: "/printer-images/epson/sx425w.webp",
-    [compactKey("Epson Stylus S20")]: "/printer-images/epson/s20.webp",
-    [compactKey("Epson Stylus SX100")]: "/printer-images/epson/sx100.webp",
+    [compactKey("Epson EcoTank L3251")]: "/novy/printer-images/epson/l3251.webp",
+    [compactKey("Epson EcoTank L3151")]: "/novy/printer-images/epson/l3151.webp",
+    [compactKey("Epson EcoTank L3110")]: "/novy/printer-images/epson/l3110.webp",
+    [compactKey("Epson EcoTank L3101")]: "/novy/printer-images/epson/l3101.webp",
+    [compactKey("Epson EcoTank L3260")]: "/novy/printer-images/epson/l3260.webp",
+    [compactKey("Epson EcoTank L1210")]: "/novy/printer-images/epson/l1210.webp",
+    [compactKey("Epson EcoTank L3250")]: "/novy/printer-images/epson/l3250.webp",
+    [compactKey("Epson EcoTank L5190")]: "/novy/printer-images/epson/l5190.webp",
+    [compactKey("Epson EcoTank L5290")]: "/novy/printer-images/epson/l5290.webp",
+    [compactKey("Epson Stylus SX425W")]: "/novy/printer-images/epson/sx425w.webp",
+    [compactKey("Epson Stylus S20")]: "/novy/printer-images/epson/s20.webp",
+    [compactKey("Epson Stylus SX100")]: "/novy/printer-images/epson/sx100.webp",
 
-    [compactKey("HP LaserJet M110w")]: "/printer-images/hp/m110w.webp",
-    [compactKey("HP LaserJet Pro M404dn")]: "/printer-images/hp/m404dn.webp",
-    [compactKey("HP LaserJet Pro MFP M428fdw")]: "/printer-images/hp/m428fdw.webp",
-    [compactKey("HP LaserJet Pro MFP M140w")]: "/printer-images/hp/m140w.webp",
-    [compactKey("HP LaserJet P1102")]: "/printer-images/hp/p1102.webp",
-    [compactKey("HP LaserJet Pro M15w")]: "/printer-images/hp/m15w.webp",
-    [compactKey("HP LaserJet Pro MFP M28w")]: "/printer-images/hp/m28w.webp",
-    [compactKey("HP LaserJet Pro M203dn")]: "/printer-images/hp/m203dn.webp",
-    [compactKey("HP Color LaserJet Pro 3202DN")]: "/printer-images/hp/color-3202dn.webp",
-    [compactKey("HP Color LaserJet Pro 3202DW")]: "/printer-images/hp/color-3202dw.webp",
-    [compactKey("HP Color LaserJet Pro M254dw")]: "/printer-images/hp/m254dw.webp",
-    [compactKey("HP Color LaserJet Pro M254nw")]: "/printer-images/hp/m254nw.webp",
-    [compactKey("HP Color LaserJet Pro M255DW")]: "/printer-images/hp/m255dw.webp",
+    [compactKey("HP LaserJet M110w")]: "/novy/printer-images/hp/m110w.webp",
+    [compactKey("HP LaserJet Pro M404dn")]: "/novy/printer-images/hp/m404dn.webp",
+    [compactKey("HP LaserJet Pro MFP M428fdw")]: "/novy/printer-images/hp/m428fdw.webp",
+    [compactKey("HP LaserJet Pro MFP M140w")]: "/novy/printer-images/hp/m140w.webp",
+    [compactKey("HP LaserJet P1102")]: "/novy/printer-images/hp/p1102.webp",
+    [compactKey("HP LaserJet Pro M15w")]: "/novy/printer-images/hp/m15w.webp",
+    [compactKey("HP LaserJet Pro MFP M28w")]: "/novy/printer-images/hp/m28w.webp",
+    [compactKey("HP LaserJet Pro M203dn")]: "/novy/printer-images/hp/m203dn.webp",
+    [compactKey("HP Color LaserJet Pro 3202DN")]: "/novy/printer-images/hp/color-3202dn.webp",
+    [compactKey("HP Color LaserJet Pro 3202DW")]: "/novy/printer-images/hp/color-3202dw.webp",
+    [compactKey("HP Color LaserJet Pro M254dw")]: "/novy/printer-images/hp/m254dw.webp",
+    [compactKey("HP Color LaserJet Pro M254nw")]: "/novy/printer-images/hp/m254nw.webp",
+    [compactKey("HP Color LaserJet Pro M255DW")]: "/novy/printer-images/hp/m255dw.webp",
 
-    [compactKey("Canon i-SENSYS MF655Cdw")]: "/printer-images/canon/mf655cdw.webp",
-    [compactKey("Canon i-SENSYS LBP223dw")]: "/printer-images/canon/lbp223dw.webp",
-    [compactKey("Canon i-SENSYS MF643Cdw")]: "/printer-images/canon/mf643cdw.webp",
-    [compactKey("Canon i-SENSYS MF645Cx")]: "/printer-images/canon/mf645cx.webp",
-    [compactKey("Canon i-SENSYS MF752Cdw")]: "/printer-images/canon/mf752cdw.webp",
-    [compactKey("Canon PIXMA MG3650")]: "/printer-images/canon/mg3650.webp",
-    [compactKey("Canon PIXMA TS3350")]: "/printer-images/canon/ts3350.webp",
-    [compactKey("Canon imagePROGRAF TM-200")]: "/printer-images/canon/imageprograf.webp",
-    [compactKey("Canon PIXMA TS3150")]: "/printer-images/canon/ts3150.webp",
-    [compactKey("Canon PIXMA TS5150")]: "/printer-images/canon/ts5150.webp",
-    [compactKey("Canon PIXMA G3411")]: "/printer-images/canon/pixma-g3411.webp",
-    [compactKey("Canon PIXMA MX495")]: "/printer-images/canon/pixma-mx495.webp",
-    [compactKey("Canon imagePROGRAF iPF8300")]: "/printer-images/canon/ipf8300.webp",
+    [compactKey("Canon i-SENSYS MF655Cdw")]: "/novy/printer-images/canon/mf655cdw.webp",
+    [compactKey("Canon i-SENSYS LBP223dw")]: "/novy/printer-images/canon/lbp223dw.webp",
+    [compactKey("Canon i-SENSYS MF643Cdw")]: "/novy/printer-images/canon/mf643cdw.webp",
+    [compactKey("Canon i-SENSYS MF645Cx")]: "/novy/printer-images/canon/mf645cx.webp",
+    [compactKey("Canon i-SENSYS MF752Cdw")]: "/novy/printer-images/canon/mf752cdw.webp",
+    [compactKey("Canon PIXMA MG3650")]: "/novy/printer-images/canon/mg3650.webp",
+    [compactKey("Canon PIXMA TS3350")]: "/novy/printer-images/canon/ts3350.webp",
+    [compactKey("Canon imagePROGRAF TM-200")]: "/novy/printer-images/canon/imageprograf.webp",
+    [compactKey("Canon PIXMA TS3150")]: "/novy/printer-images/canon/ts3150.webp",
+    [compactKey("Canon PIXMA TS5150")]: "/novy/printer-images/canon/ts5150.webp",
+    [compactKey("Canon PIXMA G3411")]: "/novy/printer-images/canon/pixma-g3411.webp",
+    [compactKey("Canon PIXMA MX495")]: "/novy/printer-images/canon/pixma-mx495.webp",
+    [compactKey("Canon imagePROGRAF iPF8300")]: "/novy/printer-images/canon/ipf8300.webp",
 
-    [compactKey("Brother DCP-L2532DW")]: "/printer-images/brother/dcp-l2532dw.webp",
-    [compactKey("Brother DCP-L2512D")]: "/printer-images/brother/dcp-l2512d.webp",
-    [compactKey("Brother HL-L2372DN")]: "/printer-images/brother/hl-l2372dn.webp",
-    [compactKey("Brother MFC-L2712DN")]: "/printer-images/brother/mfc-l2712dn.webp",
-    [compactKey("Brother MFC-L2732DW")]: "/printer-images/brother/mfc-l2732dw.webp",
-    [compactKey("Brother DCP-T500W")]: "/printer-images/brother/dcp-t500w.webp",
-    [compactKey("Brother DCP-T510W")]: "/printer-images/brother/dcp-t510w.webp",
-    [compactKey("Brother DCP-J4110DW")]: "/printer-images/brother/dcp-j4110dw.webp",
-    [compactKey("Brother MFC-J4410DW")]: "/printer-images/brother/mfc-j4410dw.webp",
-    [compactKey("Brother MFC-J4510DW")]: "/printer-images/brother/mfc-j4510dw.webp",
-    [compactKey("Brother MFC-J4610DW")]: "/printer-images/brother/mfc-j4610dw.webp",
-    [compactKey("Brother MFC-J4710DW")]: "/printer-images/brother/mfc-j4710dw.webp",
+    [compactKey("Brother DCP-L2532DW")]: "/novy/printer-images/brother/dcp-l2532dw.webp",
+    [compactKey("Brother DCP-L2512D")]: "/novy/printer-images/brother/dcp-l2512d.webp",
+    [compactKey("Brother HL-L2372DN")]: "/novy/printer-images/brother/hl-l2372dn.webp",
+    [compactKey("Brother MFC-L2712DN")]: "/novy/printer-images/brother/mfc-l2712dn.webp",
+    [compactKey("Brother MFC-L2732DW")]: "/novy/printer-images/brother/mfc-l2732dw.webp",
+    [compactKey("Brother DCP-T500W")]: "/novy/printer-images/brother/dcp-t500w.webp",
+    [compactKey("Brother DCP-T510W")]: "/novy/printer-images/brother/dcp-t510w.webp",
+    [compactKey("Brother DCP-J4110DW")]: "/novy/printer-images/brother/dcp-j4110dw.webp",
+    [compactKey("Brother MFC-J4410DW")]: "/novy/printer-images/brother/mfc-j4410dw.webp",
+    [compactKey("Brother MFC-J4510DW")]: "/novy/printer-images/brother/mfc-j4510dw.webp",
+    [compactKey("Brother MFC-J4610DW")]: "/novy/printer-images/brother/mfc-j4610dw.webp",
+    [compactKey("Brother MFC-J4710DW")]: "/novy/printer-images/brother/mfc-j4710dw.webp",
   };
 
   function printerImage(title) {
@@ -260,7 +260,7 @@
 
     async function loadPrinters() {
       try {
-        const response = await fetch(`/api/printers?brand=${encodeURIComponent(brand)}&limit=5000`, { headers: { Accept: "application/json" } });
+        const response = await fetch(`/novy/api/printers?brand=${encodeURIComponent(brand)}&limit=5000`, { headers: { Accept: "application/json" } });
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error(data.error || "Nepodarilo sa načítať modely");
         printers = Array.isArray(data.printers) ? data.printers : [];

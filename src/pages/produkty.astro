@@ -45,7 +45,7 @@ try {
     stock_status: product.stock_status || "",
     image: product.image || "",
     images: Array.isArray(product.images) ? product.images.slice(0, 1) : [],
-    detail_url: product.detail_url || (product.slug ? `/produkt/${product.slug}` : `/produkt/${product.id}`),
+    detail_url: product.detail_url || (product.slug ? `/novy/produkt/${product.slug}` : `/novy/produkt/${product.id}`),
     product_type_key: product.product_type_key || "product",
     product_type_label: product.product_type_label || "PRODUKT",
     product_type_detail_label: product.product_type_detail_label || product.product_type_label || "Spotrebný materiál",
@@ -88,7 +88,7 @@ const initialCatalogJson = JSON.stringify(initialCatalog).replace(/</g, "\u003c"
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <SeoHead title={title} description={description} noindex={noindex} canonical={`${Astro.url.origin}/produkty`} jsonLd={breadcrumbJsonLd(Astro.url.origin, [{ name: "Domov", path: "/" }, { name: "Produkty", path: "/produkty" }])} />
+    <SeoHead title={title} description={description} noindex={noindex} canonical={`${Astro.url.origin}/produkty`} jsonLd={breadcrumbJsonLd(Astro.url.origin, [{ name: "Domov", path: "/" }, { name: "Produkty", path: "/novy/produkty" }])} />
   </head>
 
   <body>
@@ -222,7 +222,7 @@ const initialCatalogJson = JSON.stringify(initialCatalog).replace(/</g, "\u003c"
       <Footer showTrust={false} />
 
       <div class="catalog-mobile-bottom-search tm-smart-search-wrap" data-catalog-bottom-search>
-        <form action="/produkty" method="get" data-smart-search>
+        <form action="/novy/produkty" method="get" data-smart-search>
           <span aria-hidden="true">⌕</span>
           <input type="search" name="s" data-smart-search-input data-catalog-bottom-search-input placeholder="Hľadať toner alebo tlačiareň" aria-label="Hľadať toner alebo tlačiareň" />
           <button type="submit">Hľadať</button>

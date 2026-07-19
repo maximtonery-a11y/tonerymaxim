@@ -10,7 +10,7 @@ import { getCustomerLoyalty } from "../../lib/loyalty";
 import { couponUsageText, getCustomerActiveCoupons } from "../../lib/coupons";
 
 const customer = readCustomerSession(Astro.cookies);
-if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!customer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 
 const wooCustomer = await getWooCustomerById(customer.id);
 const reward = getWelcomeReward(wooCustomer);
@@ -19,12 +19,12 @@ const loyalty = await getCustomerLoyalty(customer.id);
 const points = loyalty.points;
 const activeCoupons = await getCustomerActiveCoupons(customer.id);
 const visibleCoupons = [
-  ...(reward.active ? [{ code: welcomeCode, label: "Uvítacia zľava 5 %", detail: `Na celý sortiment · platí do ${formatDate(reward.expires)}`, href: "/produkty" }] : []),
+  ...(reward.active ? [{ code: welcomeCode, label: "Uvítacia zľava 5 %", detail: `Na celý sortiment · platí do ${formatDate(reward.expires)}`, href: "/novy/produkty" }] : []),
   ...activeCoupons.map((coupon) => ({
     code: coupon.code,
     label: coupon.label,
     detail: `${coupon.scope === "compatible" ? "Na kompatibilné produkty" : "Na celý sortiment"} · ${couponUsageText(coupon)}`,
-    href: coupon.scope === "compatible" ? "/produkty?type=compatible" : "/produkty",
+    href: coupon.scope === "compatible" ? "/novy/produkty?type=compatible" : "/novy/produkty",
   })),
 ];
 ---

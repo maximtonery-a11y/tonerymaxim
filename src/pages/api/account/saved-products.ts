@@ -19,8 +19,8 @@ function json(data: unknown, status = 200) {
 
 function productUrl(product: any) {
   if (product?.detail_url) return product.detail_url;
-  if (product?.slug) return `/produkt/${product.slug}`;
-  return `/produkty?s=${encodeURIComponent(product?.sku || product?.name || "")}`;
+  if (product?.slug) return `/novy/produkt/${product.slug}`;
+  return `/novy/produkty?s=${encodeURIComponent(product?.sku || product?.name || "")}`;
 }
 
 function productImage(product: any) {

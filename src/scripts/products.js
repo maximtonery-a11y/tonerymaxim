@@ -1,5 +1,5 @@
 (() => {
-  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/novy/images/tm-product-placeholder-box.jpg";
 
   const TM_GENERIC_IMAGE_PATTERNS = [
     "toner-coloriq-kompatible.png",
@@ -68,8 +68,8 @@
     const direct = String(product?.url || product?.detail_url || "").trim();
     if (direct && direct !== "#") return direct;
     const slug = String(product?.slug || "").trim();
-    if (slug) return `/produkt/${encodeURIComponent(slug)}`;
-    return "/produkty";
+    if (slug) return `/novy/produkt/${encodeURIComponent(slug)}`;
+    return "/novy/produkty";
   }
 
   function addToCart(product) {
@@ -169,7 +169,7 @@
 
       if (search) params.set("search", search);
 
-      const response = await fetch(`/api/products?${params.toString()}`);
+      const response = await fetch(`/novy/api/products?${params.toString()}`);
       const data = await response.json();
 
       if (!response.ok || !data.ok) {

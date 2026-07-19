@@ -18,7 +18,7 @@ import InfoPageShell from "../components/InfoPageShell.astro";
     <div class="page">
       <Header />
       <main>
-        <InfoPageShell active="/reklamacia-online" eyebrow="Reklamácie" title="Online reklamácia" intro="Reklamáciu môžete odoslať aj bez prihlásenia. Registrovaní zákazníci môžu použiť rýchle reklamácie priamo v účte.">
+        <InfoPageShell active="/novy/reklamacia-online" eyebrow="Reklamácie" title="Online reklamácia" intro="Reklamáciu môžete odoslať aj bez prihlásenia. Registrovaní zákazníci môžu použiť rýchle reklamácie priamo v účte.">
           <section class="care-grid">
             <article class="legal-panel care-panel">
               <header class="legal-panel-head">
@@ -47,7 +47,7 @@ import InfoPageShell from "../components/InfoPageShell.astro";
                 <label class="care-check"><input type="checkbox" required /> Potvrdzujem, že uvedené údaje sú pravdivé a súhlasím so spracovaním údajov na vybavenie reklamácie.</label>
                 <div class="care-actions">
                   <button type="submit" class="care-primary">Odoslať reklamáciu</button>
-                  <a href="/reklamacny-formular.pdf" class="care-secondary" download>Stiahnuť PDF formulár</a>
+                  <a href="/novy/reklamacny-formular.pdf" class="care-secondary" download>Stiahnuť PDF formulár</a>
                 </div>
                 <p class="care-result" aria-live="polite"></p>
               </form>
@@ -73,7 +73,7 @@ import InfoPageShell from "../components/InfoPageShell.astro";
         result.textContent = 'Odosielam reklamáciu...';
         result.className = 'care-result';
         try {
-          const response = await fetch('/api/customer-care/reklamacia', {
+          const response = await fetch('/novy/api/customer-care/reklamacia', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(Object.fromEntries(new FormData(form).entries())),

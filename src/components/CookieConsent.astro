@@ -15,7 +15,7 @@
           Nevyhnutné cookies zabezpečujú fungovanie košíka, prihlásenia a objednávky.
           Analytické a marketingové cookies použijeme iba po vašom súhlase.
         </p>
-        <a href="/cookies">Viac informácií o cookies</a>
+        <a href="/novy/cookies">Viac informácií o cookies</a>
       </div>
 
       <div class="tm-cookie-options" aria-label="Výber cookies">
@@ -411,7 +411,7 @@
     document.addEventListener("click", function (event) {
       var target = event.target;
       if (!target || !target.closest) return;
-      var trigger = target.closest('[data-open-cookie-settings], a[href="/cookies#nastavenia"], a[href="#cookies"]');
+      var trigger = target.closest('[data-open-cookie-settings], a[href="/novy/cookies#nastavenia"], a[href="#cookies"]');
       if (!trigger) return;
       event.preventDefault();
       openPanel();

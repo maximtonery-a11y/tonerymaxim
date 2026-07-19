@@ -11,7 +11,7 @@
   function warmGoPay() {
     if (goPayWarmupStarted) return;
     goPayWarmupStarted = true;
-    fetch("/api/gopay-warmup", {
+    fetch("/novy/api/gopay-warmup", {
       method: "GET",
       credentials: "same-origin",
       headers: { Accept: "application/json" },
@@ -22,7 +22,7 @@
 
   async function loadLoyalty() {
     try {
-      const response = await fetch("/api/account/loyalty", { credentials: "same-origin" });
+      const response = await fetch("/novy/api/account/loyalty", { credentials: "same-origin" });
       if (!response.ok) throw new Error("not logged");
       const data = await response.json();
       tmLoyalty = { ok: true, points: Number(data.points || 0), discountValue: Number(data.discountValue || 0) };
@@ -73,7 +73,7 @@
       return;
     }
     try {
-      const response = await fetch("/api/coupon-validate", {
+      const response = await fetch("/novy/api/coupon-validate", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -244,7 +244,7 @@
         return hydrateCheckoutFromCustomer(window.__TM_CHECKOUT_CUSTOMER__);
       }
 
-      const response = await fetch("/api/auth/me", {
+      const response = await fetch("/novy/api/auth/me", {
         credentials: "same-origin",
         headers: { Accept: "application/json" },
         cache: "no-store",
@@ -310,8 +310,8 @@
     const url = String(item?.url || item?.detail_url || "").trim();
     if (url && url !== "#") return url;
     const slug = String(item?.slug || "").trim();
-    if (slug) return `/produkt/${encodeURIComponent(slug)}`;
-    return "/produkty";
+    if (slug) return `/novy/produkt/${encodeURIComponent(slug)}`;
+    return "/novy/produkty";
   }
 
   function stockText(item) {
@@ -1024,7 +1024,7 @@
     if (zip.length !== 5) return;
 
     try {
-      const response = await fetch(`/api/psc?zip=${encodeURIComponent(zip)}`);
+      const response = await fetch(`/novy/api/psc?zip=${encodeURIComponent(zip)}`);
       const data = await response.json();
 
       if (!response.ok || !data.ok) return;
@@ -1070,7 +1070,7 @@
       params.set("city", city);
       if (street) params.set("street", street);
 
-      const response = await fetch(`/api/psc?${params.toString()}`);
+      const response = await fetch(`/novy/api/psc?${params.toString()}`);
       const data = await response.json();
 
       if (!response.ok || !data.ok) return;
@@ -1159,7 +1159,7 @@
     status.className = "company-status";
 
     try {
-      const response = await fetch(`/api/company?ico=${encodeURIComponent(ico)}`);
+      const response = await fetch(`/novy/api/company?ico=${encodeURIComponent(ico)}`);
       const data = await response.json();
 
       if (!response.ok || !data.ok) {
@@ -1705,7 +1705,7 @@
       status.textContent = isOnlinePayment ? "Vytváram GoPay platbu..." : "Ukladám objednávku...";
       status.className = "order-status";
 
-      const response = await fetch(isOnlinePayment ? "/api/gopay-create" : "/api/order-create", {
+      const response = await fetch(isOnlinePayment ? "/novy/api/gopay-create" : "/novy/api/order-create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1740,7 +1740,7 @@
       status.textContent = "Objednávka bola uložená. Presmerujem vás na potvrdenie...";
       status.className = "order-status is-success";
       try { sessionStorage.removeItem("tm_checkout_request_id"); } catch {}
-      window.location.href = `/platba-dokoncena?order=${encodeURIComponent(data.orderNumber || data.orderId)}&method=${encodeURIComponent(orderPreview.payment)}`;
+      window.location.href = `/novy/platba-dokoncena?order=${encodeURIComponent(data.orderNumber || data.orderId)}&method=${encodeURIComponent(orderPreview.payment)}`;
     } catch (error) {
       status.textContent = error.message || "Nepodarilo sa dokončiť objednávku.";
       status.className = "order-status is-error";
@@ -1810,7 +1810,7 @@
         return;
       }
 
-      const response = await fetch("/api/coupon-active", {
+      const response = await fetch("/novy/api/coupon-active", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json", Accept: "application/json" },

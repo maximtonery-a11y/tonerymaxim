@@ -8,10 +8,10 @@ import { customerToSession, formatDate, formatMoney, orderNumber, orderStatusLab
 import AccountShell from "../../components/AccountShell.astro";
 
 const session = readCustomerSession(Astro.cookies);
-if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!session) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 
 const wooCustomer = await getWooCustomerById(session.id);
-if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!wooCustomer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 const orders = await getWooCustomerOrders(customer.id, 50);
@@ -57,7 +57,7 @@ function vatFromGross(value: unknown) { const gross = moneyNumber(value); return
         <section class="account-panel">
           <h2>Zatiaľ nemáte objednávky</h2>
           <p class="account-muted">Objednávky vytvorené na ToneryMAXIM.sk sa po prihlásení zobrazia tu.</p>
-          <a class="tm-btn" href="/produkty">Prejsť na produkty</a>
+          <a class="tm-btn" href="/novy/produkty">Prejsť na produkty</a>
         </section>
       )}
     </AccountShell>

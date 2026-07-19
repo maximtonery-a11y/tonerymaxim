@@ -21,15 +21,15 @@ const initials = customerInitials(user);
 const email = user?.email || "";
 
 const navItems = [
-  { id: "prehlad", href: "/ucet", icon: "⌂", label: "Prehľad" },
-  { id: "objednavky", href: "/ucet/objednavky", icon: "▣", label: "Objednávky" },
-  { id: "tlaciarne", href: "/ucet/tlaciarne", icon: "▤", label: "Moje tlačiarne" },
-  { id: "produkty", href: "/ucet/produkty", icon: "▧", label: "Moje produkty" },
-  { id: "reklamacie", href: "/ucet/reklamacie", icon: "◇", label: "Reklamácie" },
-  { id: "vernost", href: "/ucet/vernost", icon: "★", label: "Vernostný program" },
-  { id: "odmeny", href: "/ucet/odmeny", icon: "🎁", label: "Moje odmeny" },
-  { id: "adresy", href: "/ucet/adresy", icon: "⌖", label: "Adresy" },
-  { id: "profil", href: "/ucet/profil", icon: "◎", label: "Profil" },
+  { id: "prehlad", href: "/novy/ucet", icon: "⌂", label: "Prehľad" },
+  { id: "objednavky", href: "/novy/ucet/objednavky", icon: "▣", label: "Objednávky" },
+  { id: "tlaciarne", href: "/novy/ucet/tlaciarne", icon: "▤", label: "Moje tlačiarne" },
+  { id: "produkty", href: "/novy/ucet/produkty", icon: "▧", label: "Moje produkty" },
+  { id: "reklamacie", href: "/novy/ucet/reklamacie", icon: "◇", label: "Reklamácie" },
+  { id: "vernost", href: "/novy/ucet/vernost", icon: "★", label: "Vernostný program" },
+  { id: "odmeny", href: "/novy/ucet/odmeny", icon: "🎁", label: "Moje odmeny" },
+  { id: "adresy", href: "/novy/ucet/adresy", icon: "⌖", label: "Adresy" },
+  { id: "profil", href: "/novy/ucet/profil", icon: "◎", label: "Profil" },
 ];
 ---
 
@@ -60,7 +60,7 @@ const navItems = [
           ))}
         </nav>
 
-        <a class="account-logout" href="/api/auth/logout">↪ Odhlásiť sa</a>
+        <a class="account-logout" href="/novy/api/auth/logout">↪ Odhlásiť sa</a>
       </aside>
 
       <section class="account-content">

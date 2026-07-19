@@ -151,7 +151,7 @@ async function readData(customerId: number, customerEmail: string) {
   const [customer, orders, claimsResponse] = await Promise.all([
     getWooCustomerById(customerId),
     getWooCustomerOrders(customerId, 50),
-    tmClaimsRequest<{ ok: boolean; claims: any[] }>("/reklamacie", { query: { customer_id: customerId, customer_email: customerEmail } }),
+    tmClaimsRequest<{ ok: boolean; claims: any[] }>("/novy/reklamacie", { query: { customer_id: customerId, customer_email: customerEmail } }),
   ]);
 
   if (!customer) throw new Error("Zákazník neexistuje.");
@@ -224,7 +224,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
       status: "received",
     };
 
-    const created = await tmClaimsRequest<{ ok: boolean; claim: any }>("/reklamacie", {
+    const created = await tmClaimsRequest<{ ok: boolean; claim: any }>("/novy/reklamacie", {
       method: "POST",
       body: claimPayload,
     });

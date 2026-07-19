@@ -418,7 +418,7 @@ function productItem(item: IndexedProduct, relevance: number) {
     sku: product.sku || "",
     title: product.name || "Produkt",
     subtitle: [item.brand, categoryText, product.product_type_label].filter(Boolean).join(" · "),
-    url: `/produkt/${product.slug || product.id}`,
+    url: `/novy/produkt/${product.slug || product.id}`,
     image: product.image || "",
     price: Number(product.price || 0),
     type: product.product_type_key || "product",
@@ -434,9 +434,9 @@ function filteredStaticSuggestions(query: QueryInfo) {
   const brands = BRANDS.filter((brand) => {
     const normalizedBrand = normalize(brand);
     return normalizedBrand.includes(query.normalized) || compactKey(brand).includes(query.compact) || query.tokens.some((token) => fuzzyTokenScore(token, normalizedBrand) >= 10);
-  }).slice(0, 8).map((brand) => ({ title: brand, subtitle: "Značka", url: `/produkty?brand=${encodeURIComponent(brand)}` }));
+  }).slice(0, 8).map((brand) => ({ title: brand, subtitle: "Značka", url: `/novy/produkty?brand=${encodeURIComponent(brand)}` }));
 
-  const categories = CATEGORIES.filter((category) => normalize(category.label).includes(query.normalized) || normalize(category.value).includes(query.normalized) || compactKey(category.label).includes(query.compact)).slice(0, 6).map((category) => ({ title: category.label, subtitle: "Kategória", url: `/produkty?category=${encodeURIComponent(category.value)}` }));
+  const categories = CATEGORIES.filter((category) => normalize(category.label).includes(query.normalized) || normalize(category.value).includes(query.normalized) || compactKey(category.label).includes(query.compact)).slice(0, 6).map((category) => ({ title: category.label, subtitle: "Kategória", url: `/novy/produkty?category=${encodeURIComponent(category.value)}` }));
   return { brands, categories };
 }
 
@@ -455,7 +455,7 @@ function makeProductGroups(items: any[], query: string) {
     const count = items.filter((item) => item.type === type).length;
     if (!count) return null;
     const label = TYPE_LABEL[type] || "Ostatné";
-    return { title: `${label} (${count})`, subtitle: `${count} produkt${count === 1 ? "" : count < 5 ? "y" : "ov"} · zobraziť`, url: `/produkty?s=${encodeURIComponent(query)}&type=${encodeURIComponent(type)}`, type, count };
+    return { title: `${label} (${count})`, subtitle: `${count} produkt${count === 1 ? "" : count < 5 ? "y" : "ov"} · zobraziť`, url: `/novy/produkty?s=${encodeURIComponent(query)}&type=${encodeURIComponent(type)}`, type, count };
   }).filter(Boolean);
 }
 
@@ -478,7 +478,7 @@ function findPrinterSuggestions(items: IndexedProduct[], query: QueryInfo) {
   return [...bestByPrinter.values()]
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, "sk"))
     .slice(0, 8)
-    .map((item) => ({ title: item.title, subtitle: "Tlačiareň · zobraziť kompatibilné produkty", url: `/produkty?s=${encodeURIComponent(item.title)}&printer=${encodeURIComponent(item.title)}`, relevance: item.score }));
+    .map((item) => ({ title: item.title, subtitle: "Tlačiareň · zobraziť kompatibilné produkty", url: `/novy/produkty?s=${encodeURIComponent(item.title)}&printer=${encodeURIComponent(item.title)}`, relevance: item.score }));
 }
 
 function findProductSuggestions(items: IndexedProduct[], query: QueryInfo) {
@@ -512,7 +512,7 @@ export const GET: APIRoute = async ({ url }) => {
     staticResults.brands.forEach((brand) => brandMap.set(compactKey(brand.title), brand));
     products.forEach((product: any) => {
       if (!product.brand || brandMap.has(compactKey(product.brand))) return;
-      brandMap.set(compactKey(product.brand), { title: product.brand, subtitle: "Značka", url: `/produkty?brand=${encodeURIComponent(product.brand)}` });
+      brandMap.set(compactKey(product.brand), { title: product.brand, subtitle: "Značka", url: `/novy/produkty?brand=${encodeURIComponent(product.brand)}` });
     });
 
     const categoryMap = new Map<string, { title: string; subtitle: string; url: string }>();
@@ -522,7 +522,7 @@ export const GET: APIRoute = async ({ url }) => {
         const title = category.label;
         const value = category.value;
         if (!title || categoryMap.has(compactKey(title))) return;
-        categoryMap.set(compactKey(title), { title, subtitle: "Kategória", url: `/produkty?category=${encodeURIComponent(value)}` });
+        categoryMap.set(compactKey(title), { title, subtitle: "Kategória", url: `/novy/produkty?category=${encodeURIComponent(value)}` });
       });
     });
 
