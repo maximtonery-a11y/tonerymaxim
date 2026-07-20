@@ -307,8 +307,25 @@
   }
 
   function productUrl(item) {
-    const url = String(item?.url || item?.detail_url || "").trim();
-    if (url && url !== "#") return url;
+    const direct = String(item?.url || item?.detail_url || "").trim();
+
+    if (direct && direct !== "#") {
+      if (direct.startsWith("/novy/")) return direct;
+      if (direct.startsWith("/produkt/")) return `/novy${direct}`;
+      if (direct.startsWith("produkt/")) return `/novy/${direct}`;
+
+      try {
+        const parsed = new URL(direct, window.location.origin);
+        if (parsed.origin === window.location.origin && parsed.pathname.startsWith("/produkt/")) {
+          return `/novy${parsed.pathname}${parsed.search}${parsed.hash}`;
+        }
+      } catch {
+        // Neplatná URL sa nahradí cestou vytvorenou zo slugu.
+      }
+
+      return direct;
+    }
+
     const slug = String(item?.slug || "").trim();
     if (slug) return `/novy/produkt/${encodeURIComponent(slug)}`;
     return "/novy/produkty";

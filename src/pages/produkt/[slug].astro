@@ -15,9 +15,26 @@ const { slug } = Astro.params;
 const cache = await getProductsCache().catch(() => null);
 const product = cache?.products?.find((item: any) => String(item.slug) === String(slug) || String(item.id) === String(slug));
 if (!product) return Astro.redirect('/novy/produkty', 302);
-const title = `${product.name} | ToneryMaxim.sk`;
+const productTitleParts = [
+  String(product.name || '').trim(),
+  String(product.color || '').trim(),
+  String(product.sku || '').trim(),
+].filter(Boolean);
+const baseProductTitle = productTitleParts.join(' – ');
+const duplicateTitleCount = cache?.products?.filter((item: any) => {
+  const itemTitle = [
+    String(item.name || '').trim(),
+    String(item.color || '').trim(),
+    String(item.sku || '').trim(),
+  ].filter(Boolean).join(' – ');
+  return itemTitle === baseProductTitle;
+}).length || 0;
+const uniqueProductTitle = duplicateTitleCount > 1
+  ? `${baseProductTitle} – ID ${product.id}`
+  : baseProductTitle;
+const title = `${uniqueProductTitle} | ToneryMaxim.sk`;
 const description = productDescription(product);
-const canonical = `${Astro.url.origin}/produkt/${encodeURIComponent(product.slug)}`;
+const canonical = `${Astro.url.origin}/novy/produkt/${encodeURIComponent(product.slug)}`;
 const image = absoluteUrl(Astro.url.origin, product.image || product.images?.[0] || '/novy/favicon.svg');
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname);
 const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;

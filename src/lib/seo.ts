@@ -49,8 +49,38 @@ export function organizationJsonLd(origin: string) {
   };
 }
 
+function productDetailUrl(origin: string, product: TmProduct): string {
+  const raw = String(product.detail_url || '').trim();
+
+  if (!raw) {
+    return absoluteUrl(origin, `/novy/produkt/${product.slug}`);
+  }
+
+  if (raw.startsWith('/novy/')) {
+    return absoluteUrl(origin, raw);
+  }
+
+  if (raw.startsWith('/produkt/')) {
+    return absoluteUrl(origin, `/novy${raw}`);
+  }
+
+  if (raw.startsWith('produkt/')) {
+    return absoluteUrl(origin, `/novy/${raw}`);
+  }
+
+  try {
+    const parsed = new URL(raw, origin);
+    if (parsed.origin === origin && parsed.pathname.startsWith('/produkt/')) {
+      parsed.pathname = `/novy${parsed.pathname}`;
+    }
+    return parsed.toString();
+  } catch {
+    return absoluteUrl(origin, `/novy/produkt/${product.slug}`);
+  }
+}
+
 export function productJsonLd(origin: string, product: TmProduct) {
-  const url = absoluteUrl(origin, product.detail_url || `/novy/produkt/${product.slug}`);
+  const url = productDetailUrl(origin, product);
   const image = (Array.isArray(product.images) ? product.images : [product.image]).filter(Boolean).map((v) => absoluteUrl(origin, v));
   const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
   const data: Record<string, unknown> = {
