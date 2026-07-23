@@ -176,7 +176,7 @@ const locked = Boolean(adminKey && suppliedKey !== adminKey);
           function setStatus(el, value, bad) { el.textContent = value; el.className = bad ? 'bad' : 'ok'; }
           async function load() {
             try {
-              var response = await fetch('/novy/api/admin-dashboard' + (key ? '?key=' + encodeURIComponent(key) : ''), { cache:'no-store', credentials:'same-origin' });
+              var response = await fetch('/api/admin-dashboard' + (key ? '?key=' + encodeURIComponent(key) : ''), { cache:'no-store', credentials:'same-origin' });
               if (!response.ok) throw new Error('Dashboard API: HTTP ' + response.status);
               var data = await response.json();
               if (!data.ok) throw new Error(data.error || 'Dashboard sa nepodarilo načítať.');

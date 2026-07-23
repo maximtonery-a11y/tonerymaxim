@@ -48,8 +48,8 @@ const WOO_FIELDS = [
 
 const globalStore = globalThis as typeof globalThis & { __TM_PRODUCTS_FILE_CACHE__?: CacheFile };
 
-const TM_PRODUCT_PLACEHOLDER_IMAGE = "/novy/images/tm-product-placeholder-box.jpg";
-const TM_INK_PLACEHOLDER_IMAGE = "/novy/images/tm-ink-placeholder-box.jpg";
+const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
 
 const TM_TONER_GENERIC_IMAGE_PATTERNS = [
   "toner-coloriq-kompatible",
@@ -642,7 +642,7 @@ export function mapProduct(product: any): TmProduct {
     stock_status: product.stock_status || "",
     image: primaryImage,
     images: normalizedImages.length ? normalizedImages : [TM_PRODUCT_PLACEHOLDER_IMAGE],
-    detail_url: `/novy/produkt/${product.slug || product.id}`,
+    detail_url: `/produkt/${product.slug || product.id}`,
     description_html: description,
     short_description_html: shortDescription,
     description: stripHtml(shortDescription || description || ""),

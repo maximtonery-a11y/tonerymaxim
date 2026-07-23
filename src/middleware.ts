@@ -2,22 +2,16 @@ import { defineMiddleware } from 'astro:middleware';
 import { ensureEmailQueueStarted } from './lib/email-queue';
 import { ensureAsyncOrderQueueStarted } from './lib/async-order-queue';
 
-const APP_BASE = '/novy';
+const PRODUCTION_ORIGIN = 'https://www.tonerymaxim.sk';
 const NOINDEX_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
-const ANALYTICS_TAG = `<script src="${APP_BASE}/tm-analytics.js" defer></script>`;
+const ANALYTICS_TAG = '<script src="/tm-analytics.js" defer></script>';
 
 function isNoIndexHost(hostname: string): boolean {
   return NOINDEX_HOSTS.has(hostname.toLowerCase());
 }
 
-function appPath(pathname: string): string {
-  if (pathname === APP_BASE) return '/';
-  return pathname.startsWith(`${APP_BASE}/`) ? pathname.slice(APP_BASE.length) : pathname;
-}
-
 function shouldInjectAnalytics(pathname: string): boolean {
-  const path = appPath(pathname);
-  return !path.startsWith('/api/') && !path.startsWith('/admin/');
+  return !pathname.startsWith('/api/') && !pathname.startsWith('/admin/');
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -26,23 +20,26 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const { url } = context;
   const noIndex = isNoIndexHost(url.hostname);
-  const path = appPath(url.pathname);
 
-  if (path === '/robots.txt') {
-    const disallow = [
-      `${APP_BASE}/admin/`,
-      `${APP_BASE}/api/`,
-      `${APP_BASE}/ucet/`,
-      `${APP_BASE}/kosik`,
-      `${APP_BASE}/pokladna`,
-    ];
-    const body = [
-      'User-agent: *',
-      `Allow: ${APP_BASE}/`,
-      ...disallow.map((value) => `Disallow: ${value}`),
-      ...(noIndex ? [] : ['Disallow: /*?*', `Sitemap: ${url.origin}${APP_BASE}/sitemap.xml`]),
-      '',
-    ].join('\n');
+  if (url.pathname === '/robots.txt') {
+    const body = noIndex
+      ? [
+          'User-agent: *',
+          'Disallow: /',
+          '',
+        ].join('\n')
+      : [
+          'User-agent: *',
+          'Allow: /',
+          'Disallow: /admin/',
+          'Disallow: /api/',
+          'Disallow: /ucet/',
+          'Disallow: /kosik',
+          'Disallow: /pokladna',
+          'Disallow: /*?*',
+          `Sitemap: ${PRODUCTION_ORIGIN}/sitemap.xml`,
+          '',
+        ].join('\n');
 
     const response = new Response(body, {
       status: 200,
@@ -51,30 +48,38 @@ export const onRequest = defineMiddleware(async (context, next) => {
         'Cache-Control': 'public, max-age=300',
       },
     });
-    if (noIndex) response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+
+    if (noIndex) {
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+    }
     return response;
   }
 
   const response = await next();
   const headers = new Headers(response.headers);
 
-  if (noIndex) headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
-
-  const location = headers.get('location');
-  if (location?.startsWith('/') && !location.startsWith(`${APP_BASE}/`) && location !== APP_BASE) {
-    headers.set('location', `${APP_BASE}${location}`);
+  if (noIndex) {
+    headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
   }
 
   const contentType = headers.get('content-type') || '';
   if (!contentType.includes('text/html') || !shouldInjectAnalytics(url.pathname)) {
-    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
   }
 
   const html = await response.text();
-  const withAnalytics = html.includes(`${APP_BASE}/tm-analytics.js`)
+  const withAnalytics = html.includes('/tm-analytics.js')
     ? html
     : html.replace('</body>', `${ANALYTICS_TAG}\n</body>`);
 
   headers.delete('content-length');
-  return new Response(withAnalytics, { status: response.status, statusText: response.statusText, headers });
+  return new Response(withAnalytics, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 });

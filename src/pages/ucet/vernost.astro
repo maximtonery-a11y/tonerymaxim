@@ -7,7 +7,7 @@ import AccountShell from "../../components/AccountShell.astro";
 import { getCustomerLoyalty } from "../../lib/loyalty";
 
 const customer = readCustomerSession(Astro.cookies);
-if (!customer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 const loyalty = await getCustomerLoyalty(customer.id);
 const points = loyalty.points;
 const history = loyalty.history;
@@ -36,7 +36,7 @@ const discountValue = loyalty.discountValue;
         <div class="loyalty-value-card">
           <span>Hodnota zľavy</span>
           <strong>{discountValue},00 €</strong>
-          <a class="tm-btn is-green" href="/novy/produkty">Použiť pri nákupe</a>
+          <a class="tm-btn is-green" href="/produkty">Použiť pri nákupe</a>
         </div>
       </section>
 

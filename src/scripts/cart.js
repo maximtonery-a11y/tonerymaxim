@@ -1,7 +1,7 @@
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 
 (() => {
-  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/novy/images/tm-product-placeholder-box.jpg";
+  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
 
   let tmLoyalty = { ok: false, points: 0, discountValue: 0 };
   let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") === "1";
@@ -9,7 +9,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
   async function loadLoyalty() {
     try {
-      const response = await fetch("/novy/api/account/loyalty", { credentials: "same-origin" });
+      const response = await fetch("/api/account/loyalty", { credentials: "same-origin" });
       if (!response.ok) throw new Error("not logged");
       const data = await response.json();
       tmLoyalty = { ok: true, points: Number(data.points || 0), discountValue: Number(data.discountValue || 0) };
@@ -59,7 +59,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       return;
     }
     try {
-      const response = await fetch("/novy/api/coupon-validate", {
+      const response = await fetch("/api/coupon-validate", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -81,7 +81,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const cart = readCart();
     if (!cart.length) return;
     try {
-      const response = await fetch("/novy/api/coupon-active", {
+      const response = await fetch("/api/coupon-active", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
@@ -162,14 +162,14 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const direct = String(item?.url || item?.detail_url || "").trim();
 
     if (direct && direct !== "#") {
-      if (direct.startsWith("/novy/")) return direct;
-      if (direct.startsWith("/produkt/")) return `/novy${direct}`;
-      if (direct.startsWith("produkt/")) return `/novy/${direct}`;
+      if (direct.startsWith("/")) return direct;
+      if (direct.startsWith("/produkt/")) return `${direct}`;
+      if (direct.startsWith("produkt/")) return `/${direct}`;
 
       try {
         const parsed = new URL(direct, window.location.origin);
         if (parsed.origin === window.location.origin && parsed.pathname.startsWith("/produkt/")) {
-          return `/novy${parsed.pathname}${parsed.search}${parsed.hash}`;
+          return `${parsed.pathname}${parsed.search}${parsed.hash}`;
         }
       } catch {
         // Neplatná URL sa nahradí cestou vytvorenou zo slugu.
@@ -179,8 +179,8 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     }
 
     const slug = String(item?.slug || "").trim();
-    if (slug) return `/novy/produkt/${encodeURIComponent(slug)}`;
-    return "/novy/produkty";
+    if (slug) return `/produkt/${encodeURIComponent(slug)}`;
+    return "/produkty";
   }
 
   function firstFilled(...values) {
@@ -242,7 +242,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const wanted = String(sku || "").trim();
     if (!wanted) return null;
     try {
-      const response = await fetch(`/novy/api/products?search=${encodeURIComponent(wanted)}&per_page=24`, { cache: "no-store" });
+      const response = await fetch(`/api/products?search=${encodeURIComponent(wanted)}&per_page=24`, { cache: "no-store" });
       const data = await response.json();
       if (!response.ok || !data?.ok || !Array.isArray(data.products)) return null;
       return data.products.find((product) => String(product?.sku || "").trim() === wanted) || data.products[0] || null;
@@ -550,8 +550,8 @@ function formatMoney(value) {
         <div class="add-cart-product" data-add-cart-product></div>
         <div class="add-cart-summary" data-add-cart-summary></div>
         <div class="add-cart-actions">
-          <a class="btn-primary" href="/novy/pokladna">Do pokladne</a>
-          <a class="btn-secondary" href="/novy/kosik">Do košíka</a>
+          <a class="btn-primary" href="/pokladna">Do pokladne</a>
+          <a class="btn-secondary" href="/kosik">Do košíka</a>
           <button class="btn-link" type="button" data-add-cart-close>Pokračovať v nákupe</button>
         </div>
       </aside>

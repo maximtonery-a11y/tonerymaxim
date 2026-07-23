@@ -1,5 +1,5 @@
 (() => {
-  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/novy/images/tm-product-placeholder-box.jpg";
+  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
 
   const TM_GENERIC_IMAGE_PATTERNS = [
     "toner-coloriq-kompatible.png",
@@ -68,14 +68,14 @@
     const direct = String(product?.url || product?.detail_url || "").trim();
 
     if (direct && direct !== "#") {
-      if (direct.startsWith("/novy/")) return direct;
-      if (direct.startsWith("/produkt/")) return `/novy${direct}`;
-      if (direct.startsWith("produkt/")) return `/novy/${direct}`;
+      if (direct.startsWith("/")) return direct;
+      if (direct.startsWith("/produkt/")) return `${direct}`;
+      if (direct.startsWith("produkt/")) return `/${direct}`;
 
       try {
         const parsed = new URL(direct, window.location.origin);
         if (parsed.origin === window.location.origin && parsed.pathname.startsWith("/produkt/")) {
-          return `/novy${parsed.pathname}${parsed.search}${parsed.hash}`;
+          return `${parsed.pathname}${parsed.search}${parsed.hash}`;
         }
       } catch {
         // Neplatná URL sa nahradí cestou vytvorenou zo slugu.
@@ -85,8 +85,8 @@
     }
 
     const slug = String(product?.slug || "").trim();
-    if (slug) return `/novy/produkt/${encodeURIComponent(slug)}`;
-    return "/novy/produkty";
+    if (slug) return `/produkt/${encodeURIComponent(slug)}`;
+    return "/produkty";
   }
 
   function addToCart(product) {
@@ -186,7 +186,7 @@
 
       if (search) params.set("search", search);
 
-      const response = await fetch(`/novy/api/products?${params.toString()}`);
+      const response = await fetch(`/api/products?${params.toString()}`);
       const data = await response.json();
 
       if (!response.ok || !data.ok) {

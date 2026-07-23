@@ -8,9 +8,9 @@ import { customerToSession, getBilling } from "../../lib/account-data";
 import AccountShell from "../../components/AccountShell.astro";
 
 const session = readCustomerSession(Astro.cookies);
-if (!session) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 const wooCustomer = await getWooCustomerById(session.id);
-if (!wooCustomer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 const billing = getBilling(wooCustomer);
@@ -74,7 +74,7 @@ const billing = getBilling(wooCustomer);
         profileSubmit.textContent = "Ukladám...";
         profileMsg.hidden = true;
         try {
-          const result = await postJson("/novy/api/account/update-profile", Object.fromEntries(new FormData(profileForm)));
+          const result = await postJson("/api/account/update-profile", Object.fromEntries(new FormData(profileForm)));
           showMessage(profileMsg, result.message || "Profil bol uložený.", "success");
         } catch (error) {
           showMessage(profileMsg, error.message || "Profil sa nepodarilo uložiť.");
@@ -93,7 +93,7 @@ const billing = getBilling(wooCustomer);
         passwordSubmit.textContent = "Mením...";
         passwordMsg.hidden = true;
         try {
-          const result = await postJson("/novy/api/account/change-password", Object.fromEntries(new FormData(passwordForm)));
+          const result = await postJson("/api/account/change-password", Object.fromEntries(new FormData(passwordForm)));
           passwordForm.reset();
           showMessage(passwordMsg, result.message || "Heslo bolo zmenené.", "success");
         } catch (error) {

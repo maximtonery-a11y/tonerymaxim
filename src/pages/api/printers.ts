@@ -88,7 +88,7 @@ export const GET: APIRoute = async ({ url }) => {
             title,
             brand: detectedBrand || brand || "",
             product_count: 1,
-            url: `/novy/produkty?printer=${encodeURIComponent(title)}`,
+            url: `/produkty?printer=${encodeURIComponent(title)}`,
           });
         }
       }
@@ -106,7 +106,7 @@ export const GET: APIRoute = async ({ url }) => {
       brand_slug: brand ? brandSlug(brand) : "",
       query: q,
       total: printers.length,
-      brands: BRANDS.map((item) => ({ title: item, slug: brandSlug(item), url: `/novy/tlaciarne/${brandSlug(item)}` })),
+      brands: BRANDS.map((item) => ({ title: item, slug: brandSlug(item), url: `/tlaciarne/${brandSlug(item)}` })),
       printers,
     });
   } catch (error: any) {

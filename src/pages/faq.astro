@@ -25,7 +25,7 @@ const categoryCounts = faqCategories.map((category) => ({
     <div class="page">
       <Header />
       <main>
-        <InfoPageShell active="/novy/faq" eyebrow="FAQ" title="Najčastejšie otázky" intro="Rýchle odpovede k výberu tonerov, kompatibilite, problémom s tlačou, doprave a reklamáciám.">
+        <InfoPageShell active="/faq" eyebrow="FAQ" title="Najčastejšie otázky" intro="Rýchle odpovede k výberu tonerov, kompatibilite, problémom s tlačou, doprave a reklamáciám.">
           <section class="faq-hero-grid" aria-label="Kategórie FAQ">
             {categoryCounts.map((category) => (
               <a class="faq-category-card" href={`#${category.id}`}>

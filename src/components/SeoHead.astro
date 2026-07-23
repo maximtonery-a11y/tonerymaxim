@@ -8,16 +8,23 @@ interface Props {
   noindex?: boolean;
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
+
+const PRODUCTION_ORIGIN = 'https://www.tonerymaxim.sk';
+const defaultCanonical = new URL(Astro.url.pathname, PRODUCTION_ORIGIN).toString();
+
 const {
   title,
   description,
-  canonical = Astro.url.origin + Astro.url.pathname,
-  image = new URL('/novy/favicon.svg', Astro.url.origin).toString(),
+  canonical = defaultCanonical,
+  image = new URL('/favicon.svg', PRODUCTION_ORIGIN).toString(),
   type = 'website',
   noindex = false,
   jsonLd,
 } = Astro.props;
-const robots = noindex ? 'noindex,nofollow,noarchive,nosnippet' : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
+
+const robots = noindex
+  ? 'noindex,nofollow,noarchive,nosnippet'
+  : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
 const jsonItems = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 ---
 <title>{title}</title>

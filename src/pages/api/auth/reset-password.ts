@@ -50,7 +50,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json({
       ok: true,
       message: "Heslo bolo úspešne zmenené. Teraz sa môžete prihlásiť.",
-      redirect: "/novy/prihlasenie?password-reset=1",
+      redirect: "/prihlasenie?password-reset=1",
     });
   } catch (error: any) {
     return json({

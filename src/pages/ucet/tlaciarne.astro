@@ -14,7 +14,7 @@ import {
 import { formatMoney } from "../../lib/account-data";
 
 const customer = readCustomerSession(Astro.cookies);
-if (!customer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 
 const wooCustomer = await getWooCustomerById(customer.id);
 const savedPrinters = getSavedPrintersFromCustomer(wooCustomer);
@@ -34,7 +34,7 @@ const recentProducts = [...recentMap.values()].slice(0, 6);
 
 function productSearchUrl(item: RecentProduct) {
   const q = item.sku || item.name || "";
-  return `/novy/produkty?s=${encodeURIComponent(String(q))}`;
+  return `/produkty?s=${encodeURIComponent(String(q))}`;
 }
 
 function productPrice(item: RecentProduct) {
@@ -121,7 +121,7 @@ function productPrice(item: RecentProduct) {
                     <span>{[printer.brand, printer.product_count ? `${printer.product_count} kompatibilných produktov` : "Kompatibilné náplne"].filter(Boolean).join(" · ")}</span>
                   </div>
                   <div class="saved-printer-mini-actions">
-                    <a class="account-link-pill is-small" href={printer.url || `/novy/produkty?printer=${encodeURIComponent(printer.title)}`}>Zobraziť náplne</a>
+                    <a class="account-link-pill is-small" href={printer.url || `/produkty?printer=${encodeURIComponent(printer.title)}`}>Zobraziť náplne</a>
                     <button class="tm-btn is-danger-soft is-small" type="button" data-remove-saved-printer>Odstrániť</button>
                   </div>
                 </article>

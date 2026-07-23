@@ -1,8 +1,8 @@
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 
 (() => {
-  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/novy/images/tm-product-placeholder-box.jpg";
-  const TM_INK_PLACEHOLDER_IMAGE = "/novy/images/tm-ink-placeholder-box.jpg";
+  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+  const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
 
   const TM_GENERIC_IMAGE_PATTERNS = [
     "toner-coloriq-kompatible",
@@ -411,7 +411,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       code: productDisplayCode(product),
       label: colorLabelByKey(key),
       dot: key,
-      url: product?.detail_url || `/novy/produkt/${product?.slug || product?.id || ""}`,
+      url: product?.detail_url || `/produkt/${product?.slug || product?.id || ""}`,
     };
   }
 
@@ -515,7 +515,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       colorKey: itemColor,
       code: productDisplayCode(product),
       price: Number(product.price || 0),
-      detail_url: product.detail_url || `/novy/produkt/${product.slug || product.id || ""}`,
+      detail_url: product.detail_url || `/produkt/${product.slug || product.id || ""}`,
     };
   }
 
@@ -628,14 +628,14 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const direct = String(product?.url || product?.detail_url || "").trim();
 
     if (direct && direct !== "#") {
-      if (direct.startsWith("/novy/")) return direct;
-      if (direct.startsWith("/produkt/")) return `/novy${direct}`;
-      if (direct.startsWith("produkt/")) return `/novy/${direct}`;
+      if (direct.startsWith("/")) return direct;
+      if (direct.startsWith("/produkt/")) return `${direct}`;
+      if (direct.startsWith("produkt/")) return `/${direct}`;
 
       try {
         const parsed = new URL(direct, window.location.origin);
         if (parsed.origin === window.location.origin && parsed.pathname.startsWith("/produkt/")) {
-          return `/novy${parsed.pathname}${parsed.search}${parsed.hash}`;
+          return `${parsed.pathname}${parsed.search}${parsed.hash}`;
         }
       } catch {
         // Neplatná URL sa nahradí cestou vytvorenou zo slugu.
@@ -645,8 +645,8 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     }
 
     const slug = String(product?.slug || "").trim();
-    if (slug) return `/novy/produkt/${encodeURIComponent(slug)}`;
-    return "/novy/produkty";
+    if (slug) return `/produkt/${encodeURIComponent(slug)}`;
+    return "/produkty";
   }
 
   function addToCart(product, qty) {
@@ -982,7 +982,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   }
 
   function printerProductsUrl(printer) {
-    const url = new URL("/novy/produkty", window.location.origin);
+    const url = new URL("/produkty", window.location.origin);
     url.searchParams.set("printer", printer);
     return `${url.pathname}?${url.searchParams.toString()}`;
   }
@@ -1033,12 +1033,12 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
   function getProductUrl(product) {
     const direct = String(product?.detail_url || product?.url || "").trim();
-    if (direct.startsWith("/novy/")) return direct;
-    if (direct.startsWith("/produkt/")) return `/novy${direct}`;
-    if (direct.startsWith("produkt/")) return `/novy/${direct}`;
+    if (direct.startsWith("/")) return direct;
+    if (direct.startsWith("/produkt/")) return `${direct}`;
+    if (direct.startsWith("produkt/")) return `/${direct}`;
     if (direct && direct !== "#") return direct;
     const slug = String(product?.slug || product?.id || "").trim();
-    return slug ? `/novy/produkt/${encodeURIComponent(slug)}` : "#";
+    return slug ? `/produkt/${encodeURIComponent(slug)}` : "#";
   }
 
   function productTypeLabel(typeKey) {
@@ -1118,7 +1118,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   }
 
   async function fetchProductsBySearch(search, perPage = 24) {
-    const url = new URL("/novy/api/products", window.location.origin);
+    const url = new URL("/api/products", window.location.origin);
     url.searchParams.set("s", search);
     url.searchParams.set("per_page", String(perPage));
     const response = await fetch(`${url.pathname}?${url.searchParams.toString()}`, { headers: { Accept: "application/json" } });
@@ -1563,7 +1563,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         return;
       }
       addToCart(product, qtyInput.value);
-      window.location.href = "/novy/pokladna";
+      window.location.href = "/pokladna";
     });
 
     root.querySelector("[data-show-description]")?.addEventListener("click", () => {
@@ -1637,7 +1637,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     }
 
     try {
-      const response = await fetch(`/novy/api/product?slug=${encodeURIComponent(slug)}`, {
+      const response = await fetch(`/api/product?slug=${encodeURIComponent(slug)}`, {
         headers: { Accept: "application/json" },
         cache: "default",
       });
@@ -1657,7 +1657,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       root.innerHTML = `
         <h1>Produkt sa nepodarilo načítať</h1>
         <p>${esc(error.message || "Skúste to prosím znova.")}</p>
-        <a href="/novy/produkty">Späť na produkty</a>
+        <a href="/produkty">Späť na produkty</a>
       `;
     }
   }

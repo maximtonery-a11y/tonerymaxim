@@ -12,9 +12,9 @@ const money = (value: unknown) => new Intl.NumberFormat("sk-SK", {
 
 const typeData = (product: Product) => {
   const key = product.product_type_key || "product";
-  if (key === "original") return { key, label: "ORIGINÁL", note: "🏅 Originálna kvalita výrobcu", iconImage: "/novy/design-icons/icon-original.png" };
-  if (key === "compatible") return { key, label: "KOMPATIBILNÝ", note: "⭐ Odporúčame, najpredávanejší model", iconImage: "/novy/design-icons/icon-compatible.png" };
-  if (key === "renovated") return { key, label: "RENOVOVANÝ", note: "🏢 Ekologická voľba pre kancelárie", iconImage: "/novy/design-icons/icon-renovated.png" };
+  if (key === "original") return { key, label: "ORIGINÁL", note: "🏅 Originálna kvalita výrobcu", iconImage: "/design-icons/icon-original.png" };
+  if (key === "compatible") return { key, label: "KOMPATIBILNÝ", note: "⭐ Odporúčame, najpredávanejší model", iconImage: "/design-icons/icon-compatible.png" };
+  if (key === "renovated") return { key, label: "RENOVOVANÝ", note: "🏢 Ekologická voľba pre kancelárie", iconImage: "/design-icons/icon-renovated.png" };
   return { key, label: product.product_type_label || "PRODUKT", note: product.product_type_note || "Spotrebný materiál", iconImage: "" };
 };
 
@@ -40,11 +40,11 @@ const colorHex = (value: unknown) => {
 
 const productDetailUrl = (product: Product) => {
   const direct = String(product?.detail_url || product?.url || "").trim();
-  if (direct.startsWith("/novy/")) return direct;
-  if (direct.startsWith("/produkt/")) return `/novy${direct}`;
-  if (direct.startsWith("produkt/")) return `/novy/${direct}`;
+  if (direct.startsWith("/")) return direct;
+  if (direct.startsWith("/produkt/")) return `${direct}`;
+  if (direct.startsWith("produkt/")) return `/${direct}`;
   const slug = String(product?.slug || product?.id || "").trim();
-  return slug ? `/novy/produkt/${encodeURIComponent(slug)}` : "/novy/produkty";
+  return slug ? `/produkt/${encodeURIComponent(slug)}` : "/produkty";
 };
 const printers = (product: Product) => Array.isArray(product.compatible_printers) ? product.compatible_printers.filter(Boolean) : [];
 const groupCounts = products.reduce<Record<string, number>>((acc, product) => {

@@ -4,7 +4,7 @@ import { getAdminAccessKey } from '../../lib/admin-access';
 const adminKey = getAdminAccessKey(Astro.locals);
 const suppliedKey = Astro.url.searchParams.get('key') || '';
 const locked = Boolean(adminKey && suppliedKey !== adminKey);
-const apiUrl = `/novy/api/admin-production-health${suppliedKey ? `?key=${encodeURIComponent(suppliedKey)}` : ''}`;
+const apiUrl = `/api/admin-production-health${suppliedKey ? `?key=${encodeURIComponent(suppliedKey)}` : ''}`;
 ---
 <!doctype html>
 <html lang="sk">

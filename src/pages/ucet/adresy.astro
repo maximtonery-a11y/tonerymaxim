@@ -8,9 +8,9 @@ import { customerToSession, getBilling, getShipping, getCustomerMeta } from "../
 import AccountShell from "../../components/AccountShell.astro";
 
 const session = readCustomerSession(Astro.cookies);
-if (!session) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 const wooCustomer = await getWooCustomerById(session.id);
-if (!wooCustomer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 const billing = getBilling(wooCustomer);
@@ -108,7 +108,7 @@ const companyMeta = {
         submit.textContent = "Ukladám...";
         msg.hidden = true;
         try {
-          const response = await fetch("/novy/api/account/update-addresses", {
+          const response = await fetch("/api/account/update-addresses", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(nest(new FormData(form).entries())),

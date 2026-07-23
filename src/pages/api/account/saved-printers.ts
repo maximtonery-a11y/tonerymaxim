@@ -50,7 +50,7 @@ async function findPrinter(query: string): Promise<SavedPrinter | null> {
           title,
           brand: printerBrand(title),
           product_count: 1,
-          url: `/novy/produkty?printer=${encodeURIComponent(title)}`,
+          url: `/produkty?printer=${encodeURIComponent(title)}`,
         });
       }
     }

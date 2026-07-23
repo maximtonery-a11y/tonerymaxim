@@ -1,6 +1,6 @@
 (() => {
-  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/novy/images/tm-product-placeholder-box.jpg";
-  const TM_INK_PLACEHOLDER_IMAGE = "/novy/images/tm-ink-placeholder-box.jpg";
+  const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
+  const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
 
   const TM_GENERIC_IMAGE_PATTERNS = [
     "toner-coloriq-kompatible",
@@ -309,13 +309,13 @@
 
   function cartProductUrl(product) {
     const direct = String(product?.url || product?.detail_url || "").trim();
-    if (direct.startsWith("/novy/")) return direct;
-    if (direct.startsWith("/produkt/")) return `/novy${direct}`;
-    if (direct.startsWith("produkt/")) return `/novy/${direct}`;
+    if (direct.startsWith("/")) return direct;
+    if (direct.startsWith("/produkt/")) return `${direct}`;
+    if (direct.startsWith("produkt/")) return `/${direct}`;
     if (direct && direct !== "#") return direct;
     const slug = String(product?.slug || product?.id || "").trim();
-    if (slug) return `/novy/produkt/${encodeURIComponent(slug)}`;
-    return "/novy/produkty";
+    if (slug) return `/produkt/${encodeURIComponent(slug)}`;
+    return "/produkty";
   }
 
   function addToCart(product) {
@@ -501,7 +501,7 @@
         key,
         label: "ORIGINÁL",
         note: "🏅 Originálna kvalita výrobcu",
-        iconImage: "/novy/design-icons/icon-original.png",
+        iconImage: "/design-icons/icon-original.png",
       };
     }
 
@@ -510,7 +510,7 @@
         key,
         label: "KOMPATIBILNÝ",
         note: "⭐ Odporúčame, najpredávanejší model",
-        iconImage: "/novy/design-icons/icon-compatible.png",
+        iconImage: "/design-icons/icon-compatible.png",
       };
     }
 
@@ -519,7 +519,7 @@
         key,
         label: "RENOVOVANÝ",
         note: "🏢 Ekologická voľba pre kancelárie",
-        iconImage: "/novy/design-icons/icon-renovated.png",
+        iconImage: "/design-icons/icon-renovated.png",
       };
     }
 
@@ -532,7 +532,7 @@
   }
 
   function printerProductsUrl(printer) {
-    const url = new URL("/novy/produkty", window.location.origin);
+    const url = new URL("/produkty", window.location.origin);
     url.searchParams.set("printer", printer);
     return `${url.pathname}?${url.searchParams.toString()}`;
   }
@@ -819,7 +819,7 @@
       if (currentColor) params.set("color", currentColor);
       if (currentStock) params.set("stock", currentStock);
 
-      const response = await fetch(`/novy/api/products?${params.toString()}`, {
+      const response = await fetch(`/api/products?${params.toString()}`, {
         headers: { Accept: "application/json" },
       });
       const data = await response.json();

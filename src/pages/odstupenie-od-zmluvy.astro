@@ -18,7 +18,7 @@ import InfoPageShell from "../components/InfoPageShell.astro";
     <div class="page">
       <Header />
       <main>
-        <InfoPageShell active="/novy/obchodne-podmienky" eyebrow="Vrátenie tovaru" title="Odstúpenie od zmluvy" intro="Spotrebiteľ môže oznámiť odstúpenie od zmluvy online alebo stiahnuť PDF formulár.">
+        <InfoPageShell active="/obchodne-podmienky" eyebrow="Vrátenie tovaru" title="Odstúpenie od zmluvy" intro="Spotrebiteľ môže oznámiť odstúpenie od zmluvy online alebo stiahnuť PDF formulár.">
           <section class="care-grid">
             <article class="legal-panel care-panel">
               <header class="legal-panel-head">
@@ -40,7 +40,7 @@ import InfoPageShell from "../components/InfoPageShell.astro";
                 <label class="care-check"><input type="checkbox" required /> Potvrdzujem, že žiadam o odstúpenie od zmluvy pri uvedenej objednávke.</label>
                 <div class="care-actions">
                   <button type="submit" class="care-primary">Odoslať odstúpenie</button>
-                  <a href="/novy/odstupenie-od-zmluvy.pdf" class="care-secondary" download>Stiahnuť PDF formulár</a>
+                  <a href="/odstupenie-od-zmluvy.pdf" class="care-secondary" download>Stiahnuť PDF formulár</a>
                 </div>
                 <p class="care-result" aria-live="polite"></p>
               </form>
@@ -66,7 +66,7 @@ import InfoPageShell from "../components/InfoPageShell.astro";
         result.textContent = 'Odosielam odstúpenie...';
         result.className = 'care-result';
         try {
-          const response = await fetch('/novy/api/customer-care/odstupenie', {
+          const response = await fetch('/api/customer-care/odstupenie', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(Object.fromEntries(new FormData(form).entries())),

@@ -93,7 +93,7 @@ function issue(product: TmProduct, severity: CatalogIssueSeverity, code: string,
     sku: text(product?.sku),
     name: text(product?.name) || '(bez názvu)',
     slug: text(product?.slug),
-    detailUrl: text(product?.detail_url) || (product?.slug ? `/novy/produkt/${product.slug}` : ''),
+    detailUrl: text(product?.detail_url) || (product?.slug ? `/produkt/${product.slug}` : ''),
   };
 }
 

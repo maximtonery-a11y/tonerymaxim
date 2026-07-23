@@ -8,10 +8,10 @@ import { customerToSession, formatDate, formatMoney, orderNumber, orderStatusLab
 import AccountShell from "../components/AccountShell.astro";
 
 const session = readCustomerSession(Astro.cookies);
-if (!session) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 
 const wooCustomer = await getWooCustomerById(session.id);
-if (!wooCustomer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 const customerName = customerDisplayName(customer);
@@ -31,10 +31,10 @@ const billing = wooCustomer.billing || {};
   <body>
     <AccountShell user={customer} active="prehlad" title={`Dobrý deň, ${customerName}! 👋`} subtitle="Prehľad účtu, objednávok a uložených údajov.">
       <div class="account-stats">
-        <a class="account-stat" href="/novy/ucet/objednavky"><span class="account-stat-icon">▣</span><small>Objednávky</small><strong>{orders.length}</strong><span class="account-link">Zobraziť všetky</span></a>
-        <a class="account-stat" href="/novy/ucet/adresy"><span class="account-stat-icon">⌖</span><small>Adresa</small><strong>{billing.city ? "OK" : "Chýba"}</strong><span>{billing.city || "Doplniť adresu"}</span></a>
-        <a class="account-stat" href="/novy/ucet/profil"><span class="account-stat-icon">◎</span><small>Profil</small><strong>{customer.email ? "OK" : "—"}</strong><span class="account-link">Upraviť</span></a>
-        <a class="account-stat" href="/novy/ucet/objednavky"><span class="account-stat-icon">€</span><small>Celkový nákup</small><strong>{formatMoney(totalSpent)}</strong><span>spolu za objednávky</span></a>
+        <a class="account-stat" href="/ucet/objednavky"><span class="account-stat-icon">▣</span><small>Objednávky</small><strong>{orders.length}</strong><span class="account-link">Zobraziť všetky</span></a>
+        <a class="account-stat" href="/ucet/adresy"><span class="account-stat-icon">⌖</span><small>Adresa</small><strong>{billing.city ? "OK" : "Chýba"}</strong><span>{billing.city || "Doplniť adresu"}</span></a>
+        <a class="account-stat" href="/ucet/profil"><span class="account-stat-icon">◎</span><small>Profil</small><strong>{customer.email ? "OK" : "—"}</strong><span class="account-link">Upraviť</span></a>
+        <a class="account-stat" href="/ucet/objednavky"><span class="account-stat-icon">€</span><small>Celkový nákup</small><strong>{formatMoney(totalSpent)}</strong><span>spolu za objednávky</span></a>
       </div>
 
       <div class="account-grid-2">
@@ -49,14 +49,14 @@ const billing = wooCustomer.billing || {};
               ))}
               <div class="order-total"><span>Spolu</span><strong>{formatMoney(lastOrder.total, lastOrder.currency || "EUR")}</strong></div>
               <div class="account-order-actions">
-                <a class="tm-btn is-outline" href="/novy/ucet/objednavky">Zobraziť objednávky</a>
+                <a class="tm-btn is-outline" href="/ucet/objednavky">Zobraziť objednávky</a>
               </div>
             </div>
           ) : (
             <div class="account-empty-soft">
               <strong>Zatiaľ bez objednávky</strong>
               <p>Po prvej objednávke sa tu zobrazí jej stav a možnosť opakovaného nákupu.</p>
-              <a class="tm-btn" href="/novy/produkty">Prejsť na produkty</a>
+              <a class="tm-btn" href="/produkty">Prejsť na produkty</a>
             </div>
           )}
         </section>
@@ -68,16 +68,16 @@ const billing = wooCustomer.billing || {};
           <div class="account-list-row"><span>Telefón</span><strong>{safeText(billing.phone)}</strong></div>
           <div class="account-list-row"><span>Adresa</span><strong>{billing.address_1 ? `${billing.address_1}, ${billing.postcode || ""} ${billing.city || ""}` : "Chýba"}</strong></div>
           <div class="account-order-actions">
-            <a class="tm-btn" href="/novy/ucet/profil">Upraviť profil</a>
-            <a class="tm-btn is-outline" href="/novy/ucet/adresy">Upraviť adresy</a>
+            <a class="tm-btn" href="/ucet/profil">Upraviť profil</a>
+            <a class="tm-btn is-outline" href="/ucet/adresy">Upraviť adresy</a>
           </div>
         </section>
       </div>
 
       <div class="account-actions">
-        <a class="account-action" href="/novy/ucet/objednavky"><span class="account-action-icon">▣</span><span><strong>Objednávky</strong><p>Prehľad objednávok, produktov a stavu nákupu.</p></span></a>
-        <a class="account-action" href="/novy/ucet/adresy"><span class="account-action-icon">⌖</span><span><strong>Adresy</strong><p>Fakturačná a dodacia adresa pre ďalšie objednávky.</p></span></a>
-        <a class="account-action" href="/novy/ucet/profil"><span class="account-action-icon">◎</span><span><strong>Profil a heslo</strong><p>Osobné údaje, telefón a zmena hesla.</p></span></a>
+        <a class="account-action" href="/ucet/objednavky"><span class="account-action-icon">▣</span><span><strong>Objednávky</strong><p>Prehľad objednávok, produktov a stavu nákupu.</p></span></a>
+        <a class="account-action" href="/ucet/adresy"><span class="account-action-icon">⌖</span><span><strong>Adresy</strong><p>Fakturačná a dodacia adresa pre ďalšie objednávky.</p></span></a>
+        <a class="account-action" href="/ucet/profil"><span class="account-action-icon">◎</span><span><strong>Profil a heslo</strong><p>Osobné údaje, telefón a zmena hesla.</p></span></a>
       </div>
     </AccountShell>
   </body>

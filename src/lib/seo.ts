@@ -16,7 +16,7 @@ export const SEO_COMPANY = {
 };
 
 export function absoluteUrl(origin: string, value: unknown): string {
-  try { return new URL(String(value || '/novy/'), origin).toString(); } catch { return origin; }
+  try { return new URL(String(value || '/'), origin).toString(); } catch { return origin; }
 }
 
 export function productDescription(product: TmProduct): string {
@@ -33,7 +33,7 @@ export function organizationJsonLd(origin: string) {
     name: SEO_COMPANY.brand,
     legalName: SEO_COMPANY.name,
     url: origin,
-    logo: absoluteUrl(origin, '/novy/favicon.svg'),
+    logo: absoluteUrl(origin, '/favicon.svg'),
     email: SEO_COMPANY.email,
     telephone: SEO_COMPANY.phone,
     vatID: SEO_COMPANY.icDph,
@@ -51,32 +51,28 @@ export function organizationJsonLd(origin: string) {
 
 function productDetailUrl(origin: string, product: TmProduct): string {
   const raw = String(product.detail_url || '').trim();
+  const fallback = `/produkt/${encodeURIComponent(String(product.slug || product.id || ''))}`;
 
-  if (!raw) {
-    return absoluteUrl(origin, `/novy/produkt/${product.slug}`);
-  }
-
-  if (raw.startsWith('/novy/')) {
-    return absoluteUrl(origin, raw);
-  }
-
-  if (raw.startsWith('/produkt/')) {
-    return absoluteUrl(origin, `/novy${raw}`);
-  }
-
-  if (raw.startsWith('produkt/')) {
-    return absoluteUrl(origin, `/novy/${raw}`);
+  if (!raw || raw === '#') {
+    return absoluteUrl(origin, fallback);
   }
 
   try {
     const parsed = new URL(raw, origin);
-    if (parsed.origin === origin && parsed.pathname.startsWith('/produkt/')) {
-      parsed.pathname = `/novy${parsed.pathname}`;
+    const pathname = parsed.pathname.replace(/^\/novy(?=\/|$)/, '') || '/';
+
+    if (pathname.startsWith('/produkt/')) {
+      return new URL(`${pathname}${parsed.search}${parsed.hash}`, origin).toString();
     }
-    return parsed.toString();
+
+    if (!/^https?:/i.test(raw)) {
+      return new URL(`${pathname}${parsed.search}${parsed.hash}`, origin).toString();
+    }
   } catch {
-    return absoluteUrl(origin, `/novy/produkt/${product.slug}`);
+    // Neplatnú alebo starú URL nahradíme finálnou produktovou URL.
   }
+
+  return absoluteUrl(origin, fallback);
 }
 
 export function productJsonLd(origin: string, product: TmProduct) {

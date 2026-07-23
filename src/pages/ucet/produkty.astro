@@ -8,7 +8,7 @@ import { getSavedProductsFromCustomer, getWooCustomerById } from "../../lib/woo-
 import { formatMoney } from "../../lib/account-data";
 
 const customer = readCustomerSession(Astro.cookies);
-if (!customer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 
 const wooCustomer = await getWooCustomerById(customer.id);
 const savedProducts = getSavedProductsFromCustomer(wooCustomer);
@@ -81,7 +81,7 @@ function productTypeText(product: any) {
           <div class="saved-products-list" data-saved-products-list>
             {savedProducts.length > 0 ? (
               savedProducts.map((product) => (
-                <article class={`saved-product-card ${productTypeClass(product)}`.trim()} data-saved-product-card data-product-key={productKey(product)} data-product-name={product.title} data-product-sku={product.sku || product.id || ""} data-product-price={Number(product.price || 0)} data-product-url={product.url || `/novy/produkty?s=${encodeURIComponent(product.sku || product.title)}`} data-product-image={product.image || ""}>
+                <article class={`saved-product-card ${productTypeClass(product)}`.trim()} data-saved-product-card data-product-key={productKey(product)} data-product-name={product.title} data-product-sku={product.sku || product.id || ""} data-product-price={Number(product.price || 0)} data-product-url={product.url || `/produkty?s=${encodeURIComponent(product.sku || product.title)}`} data-product-image={product.image || ""}>
                   <div class="saved-product-image-wrap">
                     {product.image ? <img src={product.image} alt={product.title} loading="lazy" /> : <span>▧</span>}
                   </div>
@@ -92,7 +92,7 @@ function productTypeText(product: any) {
                     <b>{product.price ? formatMoney(product.price, "EUR") : "—"}</b>
                   </div>
                   <div class="saved-product-actions">
-                    <a class="account-link-pill is-small" href={product.url || `/novy/produkty?s=${encodeURIComponent(product.sku || product.title)}`}>Zobraziť</a>
+                    <a class="account-link-pill is-small" href={product.url || `/produkty?s=${encodeURIComponent(product.sku || product.title)}`}>Zobraziť</a>
                     <button class="tm-btn is-green is-small" type="button" data-add-saved-product-to-cart>Objednať</button>
                     <button class="tm-btn is-danger-soft is-small" type="button" data-remove-saved-product>Odstrániť</button>
                   </div>

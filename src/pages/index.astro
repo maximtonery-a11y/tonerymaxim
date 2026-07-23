@@ -16,6 +16,7 @@ import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 import SeoHead from "../components/SeoHead.astro";
 import { organizationJsonLd } from "../lib/seo";
 
+const SEO_ORIGIN = 'https://www.tonerymaxim.sk';
 const title = "Tonery a náplne do tlačiarní | ToneryMaxim.sk";
 const description = "Tonery, atramentové náplne, optické valce a komponenty pre tlačiarne HP, Canon, Brother, Epson a ďalšie. Rýchle doručenie a odborná pomoc.";
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname);
@@ -26,7 +27,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <SeoHead title={title} description={description} noindex={noindex} jsonLd={[organizationJsonLd(Astro.url.origin), { "@context": "https://schema.org", "@type": "WebSite", "@id": `${Astro.url.origin}/#website`, url: Astro.url.origin, name: "ToneryMaxim.sk", potentialAction: { "@type": "SearchAction", target: `${Astro.url.origin}/produkty?s={search_term_string}`, "query-input": "required name=search_term_string" } }]} />
+    <SeoHead title={title} description={description} noindex={noindex} jsonLd={[organizationJsonLd(SEO_ORIGIN), { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SEO_ORIGIN}/#website`, url: SEO_ORIGIN, name: "ToneryMaxim.sk", potentialAction: { "@type": "SearchAction", target: `${SEO_ORIGIN}/produkty?s={search_term_string}`, "query-input": "required name=search_term_string" } }]} />
   </head>
 
   <body class="home-page">
@@ -42,11 +43,11 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
               <span></span>
             </button>
 
-            <a class="tm-mobile-logo-link" href="/novy/" aria-label="ToneryMaxim domov">
+            <a class="tm-mobile-logo-link" href="/" aria-label="ToneryMaxim domov">
               <img src={mobileLogo.src} alt="ToneryMaxim" loading="eager" decoding="async" />
             </a>
 
-            <a class="tm-mobile-cart-link" href="/novy/kosik" aria-label="Košík">
+            <a class="tm-mobile-cart-link" href="/kosik" aria-label="Košík">
               <span aria-hidden="true">🛒</span>
               <strong data-cart-count>0</strong>
             </a>
@@ -61,32 +62,32 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
 
               <section>
                 <strong>Môj účet</strong>
-                <a href="/novy/prihlasenie">Prihlásenie</a>
-                <a href="/novy/ucet">Môj účet</a>
-                <a href="/novy/ucet/objednavky">Moje objednávky</a>
+                <a href="/prihlasenie">Prihlásenie</a>
+                <a href="/ucet">Môj účet</a>
+                <a href="/ucet/objednavky">Moje objednávky</a>
               </section>
 
               <section>
                 <strong>Informácie</strong>
-                <a href="/novy/kontakt">Kontakt</a>
-                <a href="/novy/doprava-a-platba">Doprava a platba</a>
-                <a href="/novy/reklamacie">Reklamácie</a>
-                <a href="/novy/obchodne-podmienky">Obchodné podmienky</a>
-                <a href="/novy/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
+                <a href="/kontakt">Kontakt</a>
+                <a href="/doprava-a-platba">Doprava a platba</a>
+                <a href="/reklamacie">Reklamácie</a>
+                <a href="/obchodne-podmienky">Obchodné podmienky</a>
+                <a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
               </section>
 
               <section>
                 <strong>Ponuka</strong>
-                <a href="/novy/produkty?category=tonery&search=toner">Tonery</a>
-                <a href="/novy/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a>
-                <a href="/novy/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
-                <a href="/novy/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
+                <a href="/produkty?category=tonery&search=toner">Tonery</a>
+                <a href="/produkty?category=atramentove-naplne&search=atramentov%C3%A9%20n%C3%A1plne">Atramentové náplne</a>
+                <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
+                <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
               </section>
             </div>
           </div>
 
           <div class="tm-mobile-content">
-            <form class="tm-mobile-hero-search" action="/novy/produkty" method="get" data-smart-search>
+            <form class="tm-mobile-hero-search" action="/produkty" method="get" data-smart-search>
               <span class="tm-mobile-search-icon" aria-hidden="true">⌕</span>
               <input
                 type="search"
@@ -99,15 +100,15 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
             </form>
 
             <div class="tm-mobile-search-examples" aria-label="Príklady hľadania">
-              <a href="/novy/produkty?printer=HP+LaserJet+M110w">HP M110w</a>
-              <a href="/novy/produkty?s=Brother%20DCP-L2532DW">Brother DCP-L2532DW</a>
-              <a href="/novy/produkty?s=No.305">HP 305</a>
-              <a href="/novy/produkty?s=TN-2421">TN-2421</a>
-              <a href="/novy/produkty?s=HP%20LaserJet%20M1132MFP">HP LaserJet M1132MFP</a>
-              <a href="/novy/produkty?s=W1420A">W1420A</a>
+              <a href="/produkty?printer=HP+LaserJet+M110w">HP M110w</a>
+              <a href="/produkty?s=Brother%20DCP-L2532DW">Brother DCP-L2532DW</a>
+              <a href="/produkty?s=No.305">HP 305</a>
+              <a href="/produkty?s=TN-2421">TN-2421</a>
+              <a href="/produkty?s=HP%20LaserJet%20M1132MFP">HP LaserJet M1132MFP</a>
+              <a href="/produkty?s=W1420A">W1420A</a>
             </div>
 
-            <a class="tm-mobile-printer-picker" href="/novy/tlaciarne">
+            <a class="tm-mobile-printer-picker" href="/tlaciarne">
               <span class="tm-mobile-printer-icon" aria-hidden="true">
                 <svg viewBox="0 0 64 64" fill="none">
                   <path d="M18 24V12h28v12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
@@ -152,7 +153,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
             </div>
 
             <section class="tm-mobile-help-card" aria-label="Pomoc s výberom">
-              <a class="tm-mobile-help-card-link" href="/novy/kontakt" aria-label="Kontaktujte nás">
+              <a class="tm-mobile-help-card-link" href="/kontakt" aria-label="Kontaktujte nás">
                 <img class="tm-mobile-help-card-image" src={tmHelpVisual.src} alt="Potrebujete poradiť? Sme tu pre vás. Kontaktujte nás." loading="lazy" decoding="async" />
               </a>
             </section>

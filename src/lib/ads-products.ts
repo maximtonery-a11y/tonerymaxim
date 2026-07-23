@@ -56,7 +56,7 @@ function materialType(product: TmProduct): "toner" | "ink" | null {
 }
 
 function absoluteProductUrl(origin: string, product: TmProduct) {
-  const raw = String(product.detail_url || `/novy/produkt/${product.slug || product.id}`).trim();
+  const raw = String(product.detail_url || `/produkt/${product.slug || product.id}`).trim();
   try {
     return new URL(raw, origin).toString();
   } catch {

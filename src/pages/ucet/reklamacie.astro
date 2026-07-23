@@ -6,7 +6,7 @@ import { readCustomerSession } from "../../lib/auth-session";
 import AccountShell from "../../components/AccountShell.astro";
 
 const customer = readCustomerSession(Astro.cookies);
-if (!customer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 ---
 
 <!doctype html>
@@ -209,7 +209,7 @@ if (!customer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponen
 
       async function loadClaims() {
         try {
-          const res = await fetch("/novy/api/account/claims", { headers: { Accept: "application/json" } });
+          const res = await fetch("/api/account/claims", { headers: { Accept: "application/json" } });
           const data = await res.json();
           if (!res.ok || !data.ok) throw new Error(data.error || "Reklamácie sa nepodarilo načítať.");
           orders = Array.isArray(data.orders) ? data.orders : [];
@@ -239,7 +239,7 @@ if (!customer) return Astro.redirect(`/novy/prihlasenie?next=${encodeURIComponen
         };
 
         try {
-          const res = await fetch("/novy/api/account/claims", {
+          const res = await fetch("/api/account/claims", {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
             body: JSON.stringify(payload),

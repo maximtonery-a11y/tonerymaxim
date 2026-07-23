@@ -8,7 +8,7 @@ import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import { readCustomerSession } from "../lib/auth-session";
 
 const session = readCustomerSession(Astro.cookies);
-if (session) return Astro.redirect("/novy/ucet");
+if (session) return Astro.redirect("/ucet");
 ---
 
 <!doctype html>
@@ -23,7 +23,7 @@ if (session) return Astro.redirect("/novy/ucet");
       <Header />
       <main class="auth-wrap">
         <section class="auth-card">
-          <img class="auth-logo" src="/novy/images/logo.png" alt="ToneryMaxim" />
+          <img class="auth-logo" src="/images/logo.png" alt="ToneryMaxim" />
           <h1>Registrácia</h1>
           <p>Vytvorte si účet zdarma a nakupujte tonery rýchlejšie pri každej ďalšej objednávke.</p>
 
@@ -41,7 +41,7 @@ if (session) return Astro.redirect("/novy/ucet");
             <button class="tm-btn" type="submit" data-auth-submit>Zaregistrovať sa</button>
           </form>
 
-          <p class="auth-switch">Už máte účet? <a href="/novy/prihlasenie">Prihlásiť sa</a></p>
+          <p class="auth-switch">Už máte účet? <a href="/prihlasenie">Prihlásiť sa</a></p>
         </section>
 
         <section class="auth-benefits is-grid" aria-label="Výhody registrácie">
@@ -78,7 +78,7 @@ if (session) return Astro.redirect("/novy/ucet");
         message.hidden = true;
 
         try {
-          const response = await fetch("/novy/api/auth/register", {
+          const response = await fetch("/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -87,7 +87,7 @@ if (session) return Astro.redirect("/novy/ucet");
           if (!response.ok || !result.ok) throw new Error(result.error || "Registrácia zlyhala.");
 
           showMessage("Registrácia prebehla úspešne. Presmerovávam do účtu...", "success");
-          window.location.href = result.redirect || "/novy/ucet";
+          window.location.href = result.redirect || "/ucet";
         } catch (error) {
           showMessage(error.message || "Registrácia zlyhala.");
         } finally {

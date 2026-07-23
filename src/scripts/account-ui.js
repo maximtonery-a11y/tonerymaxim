@@ -35,8 +35,8 @@
 
   function productUrl(product) {
     if (product?.detail_url) return product.detail_url;
-    if (product?.slug) return `/novy/produkt/${product.slug}`;
-    return `/novy/produkty?s=${encodeURIComponent(product?.sku || product?.name || '')}`;
+    if (product?.slug) return `/produkt/${product.slug}`;
+    return `/produkty?s=${encodeURIComponent(product?.sku || product?.name || '')}`;
   }
 
   function productImage(product) {
@@ -87,7 +87,7 @@
 
     if (config.type) params.set('type', config.type);
 
-    const response = await fetch(`/novy/api/products?${params.toString()}`, {
+    const response = await fetch(`/api/products?${params.toString()}`, {
       headers: { Accept: 'application/json' },
     });
 
@@ -169,7 +169,7 @@
     }
 
     if (button.dataset.redirectCart === 'true') {
-      window.location.href = '/novy/kosik';
+      window.location.href = '/kosik';
       return;
     }
 
@@ -186,7 +186,7 @@
     const price = Number(card?.dataset.productPrice || 0);
     if (!sku || !price) return false;
 
-    const cartProduct = { sku, name, price, qty: 1, url: `/novy/produkty?s=${encodeURIComponent(sku || name)}` };
+    const cartProduct = { sku, name, price, qty: 1, url: `/produkty?s=${encodeURIComponent(sku || name)}` };
     cartApi.addToCart(cartProduct);
     if (typeof cartApi.showAddCartDrawer === 'function') cartApi.showAddCartDrawer(cartProduct);
     return true;
@@ -220,7 +220,7 @@
     const key = card?.dataset.recentKey || '';
     if (!card || !key) return;
 
-    await fetch('/novy/api/account/hide-recent-product', {
+    await fetch('/api/account/hide-recent-product', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ key }),
@@ -316,7 +316,7 @@
         title,
         brand: item.brand || printerBrandFromTitle(title),
         product_count: Number(item.product_count || item.productCount || 0),
-        url: item.url || `/novy/produkty?printer=${encodeURIComponent(title)}`,
+        url: item.url || `/produkty?printer=${encodeURIComponent(title)}`,
       });
     }
     return [...map.values()];
@@ -330,7 +330,7 @@
       return;
     }
 
-    const response = await fetch(`/novy/api/smart-search?q=${encodeURIComponent(q)}`, {
+    const response = await fetch(`/api/smart-search?q=${encodeURIComponent(q)}`, {
       headers: { Accept: 'application/json' },
     }).catch(() => null);
 
@@ -393,7 +393,7 @@
 
     const brand = printer.brand || printerBrandFromTitle(title);
     const count = Number(printer.product_count || 0);
-    const url = printer.url || `/novy/produkty?printer=${encodeURIComponent(title)}`;
+    const url = printer.url || `/produkty?printer=${encodeURIComponent(title)}`;
 
     const article = document.createElement('article');
     article.className = 'saved-printer-mini';
@@ -421,7 +421,7 @@
     const submit = addPrinterForm.querySelector('button[type="submit"]');
     if (submit) setLoadingState(submit);
 
-    const response = await fetch('/novy/api/account/saved-printers', {
+    const response = await fetch('/api/account/saved-printers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ title }),
@@ -453,7 +453,7 @@
     if (!card || !title) return;
 
     button.disabled = true;
-    const response = await fetch('/novy/api/account/saved-printers', {
+    const response = await fetch('/api/account/saved-printers', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ title }),
@@ -652,7 +652,7 @@
         price: Number(item.price || item.regular_price || 0),
         type: item.type || item.product_type_key || '',
         typeLabel: item.typeLabel || item.type_label || item.product_type_label || '',
-        url: item.url || item.detail_url || (item.slug ? `/novy/produkt/${item.slug}` : `/novy/produkty?s=${encodeURIComponent(item.sku || title)}`),
+        url: item.url || item.detail_url || (item.slug ? `/produkt/${item.slug}` : `/produkty?s=${encodeURIComponent(item.sku || title)}`),
       });
     }
     return [...map.values()];
@@ -662,7 +662,7 @@
     const q = String(query || '').trim();
     const all = [];
 
-    const smartResponse = await fetch(`/novy/api/smart-search?q=${encodeURIComponent(q)}`, {
+    const smartResponse = await fetch(`/api/smart-search?q=${encodeURIComponent(q)}`, {
       headers: { Accept: 'application/json' },
     }).catch(() => null);
 
@@ -671,7 +671,7 @@
       if (Array.isArray(smartData.products)) all.push(...smartData.products);
     }
 
-    const productResponse = await fetch(`/novy/api/products?search=${encodeURIComponent(q)}&per_page=24`, {
+    const productResponse = await fetch(`/api/products?search=${encodeURIComponent(q)}&per_page=24`, {
       headers: { Accept: 'application/json' },
     }).catch(() => null);
 
@@ -751,7 +751,7 @@
     const typeText = productTypeText(type, typeLabel);
     const price = Number(product.price || 0);
     const image = product.image || '';
-    const url = product.url || `/novy/produkty?s=${encodeURIComponent(product.sku || title)}`;
+    const url = product.url || `/produkty?s=${encodeURIComponent(product.sku || title)}`;
 
     const empty = savedProductsList.querySelector('[data-no-saved-products-box]');
     empty?.remove();
@@ -797,7 +797,7 @@
       title: productInput?.value || '',
     };
 
-    const response = await fetch('/novy/api/account/saved-products', {
+    const response = await fetch('/api/account/saved-products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(body),
@@ -831,7 +831,7 @@
     const price = Number(card?.dataset.productPrice || 0);
     const sku = card?.dataset.productSku || card?.dataset.productKey || '';
     const name = card?.dataset.productName || 'Produkt';
-    const url = card?.dataset.productUrl || `/novy/produkty?s=${encodeURIComponent(sku || name)}`;
+    const url = card?.dataset.productUrl || `/produkty?s=${encodeURIComponent(sku || name)}`;
     const image = card?.dataset.productImage || '';
 
     if (!cartApi || typeof cartApi.addToCart !== 'function' || !sku || !price) {
@@ -855,7 +855,7 @@
     if (!card || !key) return;
 
     button.disabled = true;
-    const response = await fetch('/novy/api/account/saved-products', {
+    const response = await fetch('/api/account/saved-products', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ id: key, sku: card.dataset.productSku || '', title: card.dataset.productName || '' }),

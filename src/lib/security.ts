@@ -44,13 +44,13 @@ const RATE_RULES: Array<{ match: RegExp; methods?: string[]; rule: RateRule }> =
 ];
 
 const TEST_ROUTES = new Set([
-  '/novy/api/test-woo',
-  '/novy/api/auth/test-email',
-  '/novy/api/cache-status',
+  '/api/test-woo',
+  '/api/auth/test-email',
+  '/api/cache-status',
 ]);
 
 const ORIGIN_EXEMPT = new Set([
-  '/novy/api/gopay-notify',
+  '/api/gopay-notify',
 ]);
 
 

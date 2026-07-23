@@ -2,7 +2,7 @@
   if (window.__TM_ANALYTICS_V3__) return;
   window.__TM_ANALYTICS_V3__ = true;
 
-  var endpoint = '/novy/api/analytics';
+  var endpoint = '/api/analytics';
   var pageStartedAt = Date.now();
   var visibleStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
   var activeMs = 0;
@@ -60,7 +60,7 @@
     lastPath = location.pathname + location.search;
     send('pageview', { meta: paramsMeta() });
     write(localStorage, 'tm_analytics_seen', '1');
-    if (location.pathname.indexOf('/novy/platba-dokoncena') === 0) {
+    if (location.pathname.indexOf('/platba-dokoncena') === 0) {
       var q = new URLSearchParams(location.search);
       send('order_complete', { value: Number((document.body.textContent.match(/([0-9]+[,.][0-9]{2})\s*€/i) || [])[1]?.replace(',', '.') || 0), meta: { order_number: q.get('order') || '', payment_id: q.get('id') || '', method: q.get('method') || '' } });
     }
@@ -99,10 +99,10 @@
     var label = text(t.getAttribute('aria-label') || t.textContent || '', 180);
     var href = t.getAttribute('href') || '';
     send('click', { meta: { label: label, href: href } });
-    if (href.indexOf('/novy/produkt/') >= 0) send('product_click', { product: label, meta: { href: href } });
+    if (href.indexOf('/produkt/') >= 0) send('product_click', { product: label, meta: { href: href } });
     if (/do košíka|pridať/i.test(label)) send('add_to_cart', { product: label });
-    if (/odstrániť/i.test(label) && location.pathname.indexOf('/novy/kosik') === 0) send('remove_from_cart', { product: label });
-    if (href.indexOf('/novy/pokladna') >= 0 || /pokračovať do pokladne/i.test(label)) send('checkout_start');
+    if (/odstrániť/i.test(label) && location.pathname.indexOf('/kosik') === 0) send('remove_from_cart', { product: label });
+    if (href.indexOf('/pokladna') >= 0 || /pokračovať do pokladne/i.test(label)) send('checkout_start');
     if (/objednať s povinnosťou platby/i.test(label)) send('order_submit');
   }, true);
 

@@ -94,7 +94,7 @@ if (query) exportParams.set('q', query);
     <>
       <header class="top">
         <div><h1>Catalog Inspector</h1><p>Kontrolný nástroj kvality katalógu. Produkty iba číta – nič v nich neupravuje ani nezapisuje do WooCommerce.</p></div>
-        <div class="actions"><a class="button" href={urlWith({ page:1 })}>Spustiť kontrolu znova</a><a class="button primary" href={`/novy/api/catalog-quality.csv?${exportParams.toString()}`}>Export CSV</a></div>
+        <div class="actions"><a class="button" href={urlWith({ page:1 })}>Spustiť kontrolu znova</a><a class="button primary" href={`/api/catalog-quality.csv?${exportParams.toString()}`}>Export CSV</a></div>
       </header>
       <div class="notice">Režim iba na čítanie: nástroj nemení ceny, sklady, popisy, obrázky, kategórie ani kompatibility.</div>
       <section class="grid metrics">

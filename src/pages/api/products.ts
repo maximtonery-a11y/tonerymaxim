@@ -67,7 +67,7 @@ function slimProduct(product: TmProduct) {
     stock_status: product.stock_status || "",
     image: product.image || "",
     images: Array.isArray(product.images) ? product.images.slice(0, 1) : [],
-    detail_url: product.detail_url || (product.slug ? `/novy/produkt/${product.slug}` : `/novy/produkt/${product.id}`),
+    detail_url: product.detail_url || (product.slug ? `/produkt/${product.slug}` : `/produkt/${product.id}`),
     product_type_key: product.product_type_key || "product",
     product_type_label: product.product_type_label || "PRODUKT",
     product_type_detail_label: product.product_type_detail_label || product.product_type_label || "Spotrebný materiál",
