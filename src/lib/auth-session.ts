@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { authSecret } from "./runtime-secret";
 import type { WooCustomer } from "./woo-client";
 
 const COOKIE_NAME = "tm_customer_session";
@@ -13,7 +14,7 @@ type SessionPayload = {
 };
 
 function secret(): string {
-  return import.meta.env.AUTH_SECRET || import.meta.env.SESSION_SECRET || import.meta.env.WOO_CONSUMER_SECRET || "tonerymaxim-dev-session-secret";
+  return authSecret();
 }
 
 function base64url(input: string): string {

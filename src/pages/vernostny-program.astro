@@ -1,0 +1,201 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
+import { breadcrumbJsonLd } from "../lib/seo";
+
+const SEO_ORIGIN = "https://www.tonerymaxim.sk";
+const canonical = `${SEO_ORIGIN}/vernostny-program`;
+const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname.toLowerCase());
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <SeoHead
+      title="Vernostný program | ToneryMaxim.sk"
+      description="Zbierajte body za objednávky a využite ich ako zľavu pri ďalšom nákupe v e-shope ToneryMaxim.sk."
+      canonical={canonical}
+      noindex={noindex}
+      jsonLd={breadcrumbJsonLd(SEO_ORIGIN, [
+        { name: "Domov", path: "/" },
+        { name: "Vernostný program", path: "/vernostny-program" },
+      ])}
+    />
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+      <main>
+        <InfoPageShell
+          active="/vernostny-program"
+          eyebrow="Vernostný program"
+          title="Odmeňujeme vaše nákupy"
+          intro="Za vybavené objednávky získavate body, ktoré môžete použiť ako zľavu pri ďalšom nákupe."
+        >
+          <section class="loyalty-public-grid">
+            <article class="loyalty-public-card">
+              <span>1</span>
+              <h2>Vytvorte si účet</h2>
+              <p>Po prihlásení sa body pripisujú k vášmu zákazníckemu účtu.</p>
+            </article>
+            <article class="loyalty-public-card">
+              <span>2</span>
+              <h2>Nakupujte a získavajte body</h2>
+              <p>Za každé 1 € z vybavenej objednávky získate 1 bod.</p>
+            </article>
+            <article class="loyalty-public-card">
+              <span>3</span>
+              <h2>Premeňte body na zľavu</h2>
+              <p>100 bodov má hodnotu 1 € pri ďalšej objednávke.</p>
+            </article>
+          </section>
+
+          <section class="loyalty-public-panel">
+            <div>
+              <span class="card-eyebrow">Odmeny</span>
+              <h2>Body môžete použiť dvoma spôsobmi</h2>
+              <p>V zákazníckom účte uvidíte aktuálny počet bodov, ich hodnotu aj históriu pripísania a použitia.</p>
+            </div>
+            <div class="loyalty-public-rewards">
+              <div><strong>100 bodov = 1 €</strong><span>Zľava pri ďalšom nákupe</span></div>
+              <div><strong>500 bodov</strong><span>1× kancelársky papier, 500 listov</span></div>
+              <div><strong>750 bodov</strong><span>2× kancelársky papier, 1000 listov</span></div>
+              <div><strong>1000 bodov</strong><span>3× kancelársky papier, 1500 listov</span></div>
+            </div>
+          </section>
+
+          <section class="loyalty-public-actions">
+            <div>
+              <h2>Skontrolujte si svoje body</h2>
+              <p>Po prihlásení otvoríte stav bodov, históriu aj dostupné odmeny.</p>
+            </div>
+            <div>
+              <a class="primary-pill" href="/prihlasenie?next=%2Fucet%2Fvernost">Prihlásiť sa</a>
+              <a class="loyalty-secondary-link" href="/registracia">Vytvoriť účet</a>
+            </div>
+          </section>
+        </InfoPageShell>
+      </main>
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+  </body>
+</html>
+
+<style>
+  .loyalty-public-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .loyalty-public-card,
+  .loyalty-public-panel,
+  .loyalty-public-actions {
+    border: 1px solid #dbe5e8;
+    border-radius: 16px;
+    background: #fff;
+  }
+  .loyalty-public-card {
+    padding: 1.35rem;
+  }
+  .loyalty-public-card > span {
+    display: grid;
+    width: 2.4rem;
+    height: 2.4rem;
+    place-items: center;
+    border-radius: 999px;
+    background: #0f766e;
+    color: #fff;
+    font-weight: 900;
+  }
+  .loyalty-public-card h2 {
+    margin: 1rem 0 0.5rem;
+    font-size: 1.2rem;
+  }
+  .loyalty-public-card p,
+  .loyalty-public-panel p,
+  .loyalty-public-actions p {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.65;
+  }
+  .loyalty-public-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 1.5rem;
+    margin-top: 1rem;
+    padding: 1.5rem;
+  }
+  .loyalty-public-panel h2,
+  .loyalty-public-actions h2 {
+    margin: 0.4rem 0 0.7rem;
+  }
+  .loyalty-public-rewards {
+    display: grid;
+    gap: 0.7rem;
+  }
+  .loyalty-public-rewards div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    background: #f4f8f7;
+  }
+  .loyalty-public-rewards span {
+    color: #64748b;
+    text-align: right;
+  }
+  .loyalty-public-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    margin-top: 1rem;
+    padding: 1.5rem;
+  }
+  .loyalty-public-actions > div:last-child {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .loyalty-secondary-link {
+    color: #0f766e;
+    font-weight: 800;
+    text-decoration: none;
+  }
+  @media (max-width: 760px) {
+    .loyalty-public-grid,
+    .loyalty-public-panel {
+      grid-template-columns: 1fr;
+    }
+    .loyalty-public-actions {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .loyalty-public-actions > div:last-child {
+      align-items: stretch;
+      flex-direction: column;
+      width: 100%;
+    }
+    .loyalty-public-actions a {
+      justify-content: center;
+      text-align: center;
+    }
+    .loyalty-public-rewards div {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .loyalty-public-rewards span {
+      text-align: left;
+    }
+  }
+</style>

@@ -3,21 +3,22 @@ import { isLocalHost, securityStatus } from '../../lib/security';
 
 export const prerender = false;
 
-const adminKey = process.env.ADMIN_API_SECRET || process.env.TM_ANALYTICS_ADMIN_KEY || '';
+import { getAdminAccessKey, isAdminLocked } from '../../lib/admin-access';
+const adminKey = getAdminAccessKey(Astro.locals);
 const suppliedKey = Astro.url.searchParams.get('key') || '';
 const local = isLocalHost(Astro.url.hostname);
-const locked = !local && Boolean(adminKey && suppliedKey !== adminKey);
+const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostname, allowLocal: true });
 const status = securityStatus(Astro.url.hostname);
 const checks = [
   { label: 'Bezpečnostné HTTP hlavičky', ok: true, note: 'Aktívne cez Astro middleware.' },
   { label: 'Persistentný rate limit', ok: status.rateLimitPersistent, note: `${status.rateLimitRules} pravidiel; stav sa podpisuje a ukladá do ${status.persistentDataDir}.` },
   { label: 'Kontrola pôvodu POST požiadaviek', ok: true, note: 'Cudzie weby nemôžu odosielať bežné formuláre do API.' },
   { label: 'Produkčné test endpointy', ok: status.local || status.testEndpointsBlocked, note: status.local ? 'Na localhoste sú dostupné na testovanie.' : 'V produkcii sú skryté.' },
-  { label: 'Samostatný AUTH_SECRET', ok: status.dedicatedAuthSecret, note: status.dedicatedAuthSecret ? 'Nastavený a dostatočne dlhý.' : 'Aplikácia funguje, ale odporúča sa aspoň 32 znakov.' },
+  { label: 'Samostatný AUTH_SECRET', ok: status.dedicatedAuthSecret, note: status.dedicatedAuthSecret ? 'Nastavený a dostatočne dlhý.' : 'V produkcii je povinný a musí mať aspoň 32 znakov.' },
   { label: 'SYNC_SECRET', ok: status.syncProtected, note: status.syncProtected ? 'Synchronizácia je chránená.' : 'Na localhoste môže byť bez tokenu; v produkcii odporúčame aspoň 24 znakov.' },
   { label: 'Chránené objednávkové fronty', ok: true, note: 'Súbory fronty a GoPay objednávok sú HMAC podpísané, zapisované atomicky a poškodené dáta idú do karantény.' },
   { label: 'Presné GoPay overovanie', ok: true, note: 'Pred spracovaním sa cez GoPay API porovná ID, číslo objednávky, suma, mena, GoID a stav platby.' },
-  { label: 'Admin prehľady', ok: status.local || status.adminProtected, note: status.local ? 'Na localhoste sú dostupné bez kľúča.' : (status.adminProtected ? 'Chránené kľúčom.' : 'Odporúča sa ADMIN_API_SECRET alebo TM_ANALYTICS_ADMIN_KEY.') },
+  { label: 'Admin prehľady', ok: status.local || status.adminProtected, note: status.local ? 'Na localhoste sú dostupné bez kľúča.' : (status.adminProtected ? 'Chránené kľúčom.' : 'V produkcii je povinný ADMIN_API_SECRET alebo TM_ANALYTICS_ADMIN_KEY.') },
 ];
 const fmt = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'short', timeStyle: 'medium' });
 ---

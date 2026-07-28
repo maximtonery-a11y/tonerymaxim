@@ -19,3 +19,16 @@ export function constantTimeEqual(left: string, right: string): boolean {
   }
   return result === 0;
 }
+
+export function isAdminLocked(options: {
+  adminKey: string;
+  suppliedKey: string;
+  allowLocal?: boolean;
+  hostname?: string;
+}): boolean {
+  const hostname = String(options.hostname || '').toLowerCase();
+  const local = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  if (options.allowLocal && local) return false;
+  if (!options.adminKey) return true;
+  return !constantTimeEqual(options.adminKey, options.suppliedKey);
+}

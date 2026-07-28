@@ -3,9 +3,10 @@ import { readEmailQueueState } from '../../lib/email-queue';
 
 export const prerender = false;
 
-const adminKey = Astro.locals?.runtime?.env?.TM_ANALYTICS_ADMIN_KEY || process.env.TM_ANALYTICS_ADMIN_KEY || process.env.ADMIN_API_SECRET || '';
+import { getAdminAccessKey, isAdminLocked } from '../../lib/admin-access';
+const adminKey = getAdminAccessKey(Astro.locals);
 const suppliedKey = Astro.url.searchParams.get('key') || '';
-const locked = Boolean(adminKey && suppliedKey !== adminKey);
+const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostname });
 const state = locked ? null : await readEmailQueueState();
 const fmt = new Intl.NumberFormat('sk-SK');
 const dt = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'short', timeStyle: 'medium' });

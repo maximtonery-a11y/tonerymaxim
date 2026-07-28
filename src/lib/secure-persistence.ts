@@ -4,13 +4,33 @@ import { dirname, join, resolve } from 'node:path';
 
 export const TM_DATA_ROOT = resolve(process.env.TM_PERSISTENT_DATA_DIR || join(process.cwd(), '.tm-data'));
 
-function secret(): string {
-  const value = String(process.env.TM_PERSISTENCE_SECRET || process.env.AUTH_SECRET || import.meta.env.AUTH_SECRET || '').trim();
-  return value || 'localhost-development-only-secret';
+function isProduction(): boolean {
+  return Boolean(import.meta.env.PROD || process.env.NODE_ENV === 'production');
+}
+
+function readSecret(): string {
+  return String(
+    process.env.TM_PERSISTENCE_SECRET ||
+    import.meta.env.TM_PERSISTENCE_SECRET ||
+    process.env.AUTH_SECRET ||
+    import.meta.env.AUTH_SECRET ||
+    ''
+  ).trim();
+}
+
+export function persistenceSecret(): string {
+  const value = readSecret();
+  if (value.length >= 32) return value;
+
+  if (isProduction()) {
+    throw new Error('TM_PERSISTENCE_SECRET alebo AUTH_SECRET musí mať v produkcii aspoň 32 znakov.');
+  }
+
+  return 'tonerymaxim-local-persistence-secret-change-me';
 }
 
 function signature(payload: string): string {
-  return createHmac('sha256', secret()).update(payload).digest('hex');
+  return createHmac('sha256', persistenceSecret()).update(payload).digest('hex');
 }
 
 export async function ensurePrivateDir(path: string): Promise<void> {

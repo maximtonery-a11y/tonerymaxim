@@ -1,12 +1,12 @@
 ---
-import { getAdminAccessKey, constantTimeEqual } from '../../lib/admin-access';
+import { getAdminAccessKey, isAdminLocked } from '../../lib/admin-access';
 import { filterCatalogIssues, inspectCatalog, type CatalogIssueSeverity } from '../../lib/catalog-inspector';
 
 export const prerender = false;
 
 const adminKey = getAdminAccessKey(Astro.locals);
 const suppliedKey = Astro.url.searchParams.get('key') || '';
-const locked = Boolean(adminKey && !constantTimeEqual(adminKey, suppliedKey));
+const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostname });
 const severity = Astro.url.searchParams.get('severity') || 'all';
 const rule = Astro.url.searchParams.get('rule') || 'all';
 const query = Astro.url.searchParams.get('q') || '';

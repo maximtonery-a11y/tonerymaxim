@@ -1,0 +1,367 @@
+---
+export const prerender = false;
+
+import "../styles/global.css";
+import "../styles/products-catalog.css";
+import "../styles/footer.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import SeoHead from "../components/SeoHead.astro";
+import CatalogInitialRows from "../components/CatalogInitialRows.astro";
+import { absoluteUrl, breadcrumbJsonLd, organizationJsonLd } from "../lib/seo";
+import { parseLegacyPath } from "../lib/legacy/parser";
+import { resolveLegacyRedirect } from "../lib/legacy/redirects";
+import { findLegacyProduct } from "../lib/legacy/product-lookup";
+import { findLegacyPrinter } from "../lib/legacy/printer-lookup";
+import { findLegacyCollection, resolveLegacyRecovery } from "../lib/legacy/recovery";
+
+const SEO_ORIGIN = "https://www.tonerymaxim.sk";
+const TEST_HOSTS = new Set(["tonerymaxim.info", "www.tonerymaxim.info"]);
+const route = parseLegacyPath(Astro.url.pathname);
+
+const directRedirect = resolveLegacyRedirect(route);
+if (directRedirect) return Astro.redirect(directRedirect.location, directRedirect.status);
+
+if (route.kind === "product" && route.productSlug) {
+  const productMatch = await findLegacyProduct(route.productSlug).catch(() => null);
+  if (productMatch) return Astro.redirect(productMatch.location, 301);
+}
+
+const printerMatch = route.kind === "brand-tree"
+  ? await findLegacyPrinter(route).catch(() => null)
+  : null;
+const collectionMatch = !printerMatch
+  ? await findLegacyCollection(route).catch(() => null)
+  : null;
+const catalogMatch = printerMatch || collectionMatch;
+
+let recovery: Awaited<ReturnType<typeof resolveLegacyRecovery>> | null = null;
+if (!catalogMatch) recovery = await resolveLegacyRecovery(route).catch(() => null);
+if (recovery?.action === "redirect") {
+  return Astro.redirect(recovery.location, recovery.status);
+}
+
+const gone = recovery?.action === "gone";
+const goneTitle = recovery?.action === "gone" ? recovery.title : "Stránka bola odstránená";
+const goneDescription = recovery?.action === "gone" ? recovery.description : "Táto stará stránka už nie je dostupná.";
+const notFound = !catalogMatch && !gone;
+if (gone) {
+  Astro.response.status = 410;
+  Astro.response.statusText = "Gone";
+  Astro.response.headers.set("Cache-Control", "public, max-age=300, s-maxage=3600");
+  Astro.response.headers.set("X-Robots-Tag", "noindex, follow, noarchive");
+} else if (notFound) {
+  Astro.response.status = 404;
+  Astro.response.statusText = "Not Found";
+  Astro.response.headers.set("Cache-Control", "no-store");
+  Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive, nosnippet");
+} else {
+  Astro.response.headers.set("Cache-Control", "public, max-age=300, s-maxage=1800, stale-while-revalidate=86400");
+}
+
+const canonicalPath = route.normalizedPath === "/" ? "/" : `${route.normalizedPath}/`;
+const canonical = absoluteUrl(SEO_ORIGIN, canonicalPath);
+const noindex = TEST_HOSTS.has(Astro.url.hostname.toLowerCase()) || gone || notFound;
+const catalogHeading = printerMatch
+  ? `Tonery a náplne pre ${printerMatch.title}`
+  : collectionMatch?.title || "";
+const title = catalogMatch
+  ? `${catalogHeading} | ToneryMaxim.sk`
+  : gone
+    ? `${goneTitle} | ToneryMaxim.sk`
+    : "Stránka sa nenašla | ToneryMaxim.sk";
+const description = catalogMatch
+  ? (printerMatch
+      ? `Vyberte kompatibilný, originálny alebo renovovaný toner či náplň pre tlačiareň ${printerMatch.title}. Cena s DPH a aktuálna dostupnosť.`
+      : collectionMatch?.description || "Vyberte toner alebo náplň v novom e-shope ToneryMaxim.")
+  : gone
+    ? goneDescription
+    : "Požadovaná stránka sa nenašla. Pokračujte na zoznam tonerov a náplní alebo vyhľadajte model tlačiarne.";
+const brandSlug = route.brandSlug || "";
+const brandName = printerMatch?.brand || collectionMatch?.brand || route.brandName || "";
+const products = catalogMatch?.products.slice(0, 120) || [];
+const totalProducts = catalogMatch?.totalProducts || 0;
+const searchQuery = printerMatch?.title || collectionMatch?.brand || collectionMatch?.title || "";
+const fullCatalogUrl = searchQuery
+  ? `/produkty?s=${encodeURIComponent(searchQuery)}`
+  : "/produkty";
+const itemListJsonLd = catalogMatch ? {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "@id": `${canonical}#collection`,
+  name: title,
+  description,
+  url: canonical,
+  isPartOf: { "@id": `${SEO_ORIGIN}/#organization` },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: totalProducts,
+    itemListElement: products.slice(0, 50).map((product: any, index: number) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: absoluteUrl(SEO_ORIGIN, product.detail_url || `/produkt/${product.slug || product.id}`),
+      name: product.name,
+    })),
+  },
+} : null;
+const breadcrumbItems = catalogMatch
+  ? [
+      { name: "Domov", path: "/" },
+      { name: "Tlačiarne a náplne", path: "/tlaciarne" },
+      ...(brandSlug ? [{ name: brandName || route.brandName || "Značka", path: `/tlaciarne/${brandSlug}` }] : []),
+      { name: catalogHeading, path: canonicalPath },
+    ]
+  : [
+      { name: "Domov", path: "/" },
+      { name: gone ? "Stránka bola odstránená" : "Stránka sa nenašla", path: canonicalPath },
+    ];
+const breadcrumb = breadcrumbJsonLd(SEO_ORIGIN, breadcrumbItems);
+const jsonLd = catalogMatch
+  ? [organizationJsonLd(SEO_ORIGIN), breadcrumb, itemListJsonLd!]
+  : [organizationJsonLd(SEO_ORIGIN), breadcrumb];
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <SeoHead
+      title={title}
+      description={description}
+      canonical={canonical}
+      noindex={noindex}
+      jsonLd={jsonLd}
+    />
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+
+      {catalogMatch ? (
+        <main class="catalog-page legacy-printer-page">
+          <section class="catalog-hero">
+            <div class="wrap legacy-printer-hero">
+              <nav class="legacy-breadcrumb" aria-label="Drobečková navigácia">
+                <a href="/">Domov</a>
+                <span>›</span>
+                <a href="/tlaciarne">Tlačiarne</a>
+                {brandSlug && (
+                  <>
+                    <span>›</span>
+                    <a href={`/tlaciarne/${brandSlug}`}>{brandName || route.brandName}</a>
+                  </>
+                )}
+                <span>›</span>
+                <strong>{catalogHeading}</strong>
+              </nav>
+              <p class="eyebrow">{printerMatch ? "Náplne podľa modelu tlačiarne" : "Produkty zo starého e-shopu"}</p>
+              <h1>{catalogHeading}</h1>
+              <p class="lead">Našli sme {totalProducts} relevantných produktov v novom e-shope.</p>
+              <div class="legacy-printer-actions">
+                <a class="legacy-primary-link" href={fullCatalogUrl}>Filtrovať a porovnať produkty</a>
+                <a href={brandSlug ? `/tlaciarne/${brandSlug}` : "/tlaciarne"}>Vybrať podľa tlačiarne</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="catalog-content legacy-products-section">
+            <div class="wrap">
+              <div class="catalog-main legacy-catalog-main">
+                <div class="catalog-toolbar legacy-toolbar">
+                  <div>
+                    <strong>{totalProducts} relevantných produktov</strong>
+                    <p>Kompatibilné produkty sú zoradené pred originálnymi a renovovanými.</p>
+                  </div>
+                  <a href={fullCatalogUrl}>Otvoriť plný katalóg</a>
+                </div>
+
+                <div class="catalog-list" data-legacy-product-list>
+                  <CatalogInitialRows products={products} />
+                </div>
+
+                {totalProducts > products.length && (
+                  <div class="legacy-more-products">
+                    <p>Zobrazených je prvých {products.length} produktov.</p>
+                    <a class="legacy-primary-link" href={fullCatalogUrl}>Zobraziť všetky produkty</a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        </main>
+      ) : (
+        <main class="legacy-not-found">
+          <div class="wrap legacy-not-found-card">
+            <p class="eyebrow">{gone ? "Stránka odstránená – 410" : "Chyba 404"}</p>
+            <h1>{gone ? goneTitle : "Táto stránka už nie je dostupná"}</h1>
+            <p>{gone ? goneDescription : "Skúste vyhľadať toner podľa označenia produktu alebo podľa modelu tlačiarne."}</p>
+            <div class="legacy-not-found-actions">
+              <a class="legacy-primary-link" href="/produkty">Prejsť na produkty</a>
+              <a href="/tlaciarne">Vybrať tlačiareň</a>
+            </div>
+          </div>
+        </main>
+      )}
+
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+
+    <script>
+      import "../scripts/smart-search.js";
+
+      document.querySelectorAll("[data-legacy-product-list] .tm-product-row").forEach((row) => {
+        const productLink = row.querySelector(".tm-row-main h2 a, .tm-row-photo");
+        const target = productLink?.getAttribute("href");
+        if (!target) return;
+
+        row.querySelectorAll(".tm-row-buy button, [data-open-printers]").forEach((button) => {
+          button.addEventListener("click", () => { window.location.href = target; });
+        });
+      });
+
+      window.tmInitSmartSearch?.();
+      document.addEventListener("DOMContentLoaded", () => window.tmInitSmartSearch?.());
+    </script>
+  </body>
+</html>
+
+<style>
+  .legacy-printer-hero {
+    padding-top: 2rem;
+    padding-bottom: 2.25rem;
+  }
+
+  .legacy-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-bottom: 1.3rem;
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+
+  .legacy-breadcrumb a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .legacy-breadcrumb a:hover {
+    color: #0f766e;
+  }
+
+  .legacy-breadcrumb strong {
+    color: #334155;
+  }
+
+  .legacy-printer-actions,
+  .legacy-not-found-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem;
+    margin-top: 1.4rem;
+  }
+
+  .legacy-printer-actions a,
+  .legacy-not-found-actions a,
+  .legacy-toolbar a,
+  .legacy-more-products a {
+    font-weight: 800;
+    color: #0f766e;
+    text-decoration: none;
+  }
+
+  .legacy-primary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
+    background: #0f766e;
+    color: #fff !important;
+  }
+
+  .legacy-products-section {
+    padding-top: 1.5rem;
+  }
+
+  .legacy-catalog-main {
+    min-width: 0;
+  }
+
+  .legacy-toolbar {
+    margin-bottom: 1rem;
+  }
+
+  .legacy-toolbar p {
+    margin: 0.3rem 0 0;
+    color: #64748b;
+  }
+
+  .legacy-more-products {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem 0 0.5rem;
+  }
+
+  .legacy-more-products p {
+    margin: 0;
+    color: #64748b;
+  }
+
+  .legacy-not-found {
+    min-height: 58vh;
+    padding: 4rem 0;
+    background: #f8fafc;
+  }
+
+  .legacy-not-found-card {
+    max-width: 760px;
+    padding: 2.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  }
+
+  .legacy-not-found-card h1 {
+    margin: 0.35rem 0 0.8rem;
+  }
+
+  .legacy-not-found-card p:not(.eyebrow) {
+    color: #64748b;
+    font-size: 1.05rem;
+  }
+
+  @media (max-width: 760px) {
+    .legacy-printer-hero {
+      padding-top: 1.25rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .legacy-printer-hero h1 {
+      font-size: clamp(1.65rem, 8vw, 2.25rem);
+    }
+
+    .legacy-toolbar {
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .legacy-not-found {
+      padding: 2rem 0;
+    }
+
+    .legacy-not-found-card {
+      padding: 1.5rem;
+    }
+  }
+</style>

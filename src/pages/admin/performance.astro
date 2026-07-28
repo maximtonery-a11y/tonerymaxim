@@ -3,9 +3,10 @@ import { readCheckoutProfiles, summarizeCheckoutProfiles } from '../../lib/check
 
 export const prerender = false;
 
-const adminKey = Astro.locals?.runtime?.env?.TM_ANALYTICS_ADMIN_KEY || process.env.TM_ANALYTICS_ADMIN_KEY || process.env.ADMIN_API_SECRET || '';
+import { getAdminAccessKey, isAdminLocked } from '../../lib/admin-access';
+const adminKey = getAdminAccessKey(Astro.locals);
 const suppliedKey = Astro.url.searchParams.get('key') || '';
-const locked = Boolean(adminKey && suppliedKey !== adminKey);
+const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostname });
 const records = locked ? [] : await readCheckoutProfiles(150);
 const summary = summarizeCheckoutProfiles(records);
 

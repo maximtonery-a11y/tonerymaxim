@@ -21,3 +21,8 @@ yarn-error.log*
 pnpm-debug.log*
 
 .tm-data/
+
+!.env.production.example
+
+migration/reports/*
+!migration/reports/.gitkeep

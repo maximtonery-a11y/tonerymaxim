@@ -1,9 +1,9 @@
 ---
 export const prerender = false;
-import { getAdminAccessKey } from '../../lib/admin-access';
+import { getAdminAccessKey, isAdminLocked } from '../../lib/admin-access';
 const adminKey = getAdminAccessKey(Astro.locals);
 const suppliedKey = Astro.url.searchParams.get('key') || '';
-const locked = Boolean(adminKey && suppliedKey !== adminKey);
+const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostname });
 const apiUrl = `/api/admin-email-diagnostics${suppliedKey ? `?key=${encodeURIComponent(suppliedKey)}` : ''}`;
 ---
 <!doctype html>

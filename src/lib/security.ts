@@ -38,6 +38,12 @@ const RATE_RULES: Array<{ match: RegExp; methods?: string[]; rule: RateRule }> =
   { match: /^\/api\/contact$/, methods: ['POST'], rule: { limit: 12, windowMs: 10 * 60_000 } },
   { match: /^\/api\/customer-care\//, methods: ['POST'], rule: { limit: 12, windowMs: 10 * 60_000 } },
 
+  // Citlivé účtové a platobné operácie.
+  { match: /^\/api\/account\/change-password$/, methods: ['POST'], rule: { limit: 10, windowMs: 10 * 60_000 } },
+  { match: /^\/api\/auth\/logout$/, methods: ['POST'], rule: { limit: 60, windowMs: 60_000 } },
+  { match: /^\/api\/gopay-retry$/, methods: ['POST'], rule: { limit: 10, windowMs: 10 * 60_000 } },
+  { match: /^\/api\/sync-products$/, methods: ['GET', 'POST'], rule: { limit: 6, windowMs: 10 * 60_000 } },
+
   // Analytika a vyhľadávanie generujú viac požiadaviek pri bežnom používaní.
   { match: /^\/api\/analytics$/, methods: ['POST'], rule: { limit: 600, windowMs: 60_000 } },
   { match: /^\/api\/(smart-search|products|product|printers)$/, methods: ['GET'], rule: { limit: 600, windowMs: 60_000 } },

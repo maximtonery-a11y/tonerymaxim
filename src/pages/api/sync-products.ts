@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { jsonResponse, syncProductsCache } from "../../lib/tm-products-cache";
+import { safeEqual } from "../../lib/security";
 
 export const prerender = false;
 
@@ -27,18 +28,24 @@ export const GET: APIRoute = async ({ url, request }) => {
     const token = url.searchParams.get("token") || request.headers.get("x-sync-token") || "";
     const localRequest = isLocalRequest(url, request);
 
-    // Lokálne ručné spustenie cez http://localhost:4321 povoľujeme bez tokenu.
-    // Na ostrej doméne zostáva token povinný, ak je SYNC_SECRET nastavený v .env.
-    if (secret && !localRequest && token !== secret) {
-      return jsonResponse(
-        { ok: false, error: "Neplatný alebo chýbajúci sync token." },
-        401,
-        "no-store"
-      );
+    if (!localRequest) {
+      if (secret.length < 24) {
+        return jsonResponse(
+          { ok: false, error: "SYNC_SECRET nie je v produkcii správne nastavený." },
+          503,
+          "no-store"
+        );
+      }
+      if (!safeEqual(secret, token)) {
+        return jsonResponse(
+          { ok: false, error: "Neplatný alebo chýbajúci sync token." },
+          401,
+          "no-store"
+        );
+      }
     }
 
-    // Ak je token zadaný aj lokálne, musí sedieť. Chráni to pred preklepom v URL.
-    if (secret && localRequest && token && token !== secret) {
+    if (localRequest && secret && token && !safeEqual(secret, token)) {
       return jsonResponse(
         { ok: false, error: "Zadaný sync token je nesprávny." },
         401,

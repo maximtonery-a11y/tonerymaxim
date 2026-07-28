@@ -13,7 +13,7 @@ const cards = [
   ["◎", "Marketingové cookies", "Používajú sa na zobrazovanie relevantnej reklamy na našom webe aj mimo neho.", "Voliteľné", "red"],
 ];
 ---
-<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Cookies | ToneryMaxim.sk</title></head><body><div class="page"><Header /><main>
+<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Cookies | ToneryMaxim.sk</title><link rel="canonical" href="https://www.tonerymaxim.sk/cookies" /></head><body><div class="page"><Header /><main>
 <InfoPageShell active="/cookies" eyebrow="Cookies" title="Cookies" intro="Zásady používania súborov cookies na webe ToneryMaxim.sk.">
   <section class="cookie-grid">{cards.map(([icon,title,text,state,color]) => <article class="cookie-card"><span class="info-icon">{icon}</span><h2>{title}</h2><p>{text}</p>{state && <div class:list={["cookie-state", color]}>{state}</div>}</article>)}</section>
   <article class="legal-panel">

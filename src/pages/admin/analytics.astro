@@ -1,17 +1,11 @@
 ---
+import { getAdminAccessKey, isAdminLocked } from '../../lib/admin-access';
+
 export const prerender = false;
 
-function env(name: string): string {
-  return String(
-    process.env[name] ??
-      (import.meta.env as Record<string, string | undefined>)[name] ??
-      '',
-  ).trim();
-}
-
-const configuredKey = env('TM_ANALYTICS_ADMIN_KEY') || env('ADMIN_API_SECRET');
+const configuredKey = getAdminAccessKey(Astro.locals);
 const suppliedKey = Astro.url.searchParams.get('key') || '';
-const authorized = Boolean(configuredKey && suppliedKey && configuredKey === suppliedKey);
+const authorized = !isAdminLocked({ adminKey: configuredKey, suppliedKey, hostname: Astro.url.hostname });
 if (!authorized) Astro.response.status = 401;
 const keyJson = JSON.stringify(suppliedKey).replace(/</g, '\\u003c');
 ---

@@ -3,6 +3,7 @@ interface Props {
   title: string;
   description: string;
   canonical?: string;
+  socialUrl?: string;
   image?: string;
   type?: "website" | "product" | "article";
   noindex?: boolean;
@@ -10,21 +11,30 @@ interface Props {
 }
 
 const PRODUCTION_ORIGIN = 'https://www.tonerymaxim.sk';
+const PREVIEW_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
+const requestHostname = Astro.url.hostname.toLowerCase();
+const socialOrigin = PREVIEW_HOSTS.has(requestHostname)
+  ? `https://${requestHostname}`
+  : PRODUCTION_ORIGIN;
 const defaultCanonical = new URL(Astro.url.pathname, PRODUCTION_ORIGIN).toString();
+const defaultSocialUrl = new URL(Astro.url.pathname, socialOrigin).toString();
+const defaultImage = new URL('/images/tonerymaxim-social-preview.jpg', socialOrigin).toString();
 
 const {
   title,
   description,
   canonical = defaultCanonical,
-  image = new URL('/favicon.svg', PRODUCTION_ORIGIN).toString(),
+  socialUrl = defaultSocialUrl,
+  image = defaultImage,
   type = 'website',
   noindex = false,
   jsonLd,
 } = Astro.props;
 
 const robots = noindex
-  ? 'noindex,nofollow,noarchive,nosnippet'
+  ? 'noindex,follow,max-image-preview:large'
   : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
+const isDefaultImage = image === defaultImage;
 const jsonItems = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 ---
 <title>{title}</title>
@@ -36,10 +46,16 @@ const jsonItems = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 <meta property="og:site_name" content="ToneryMaxim.sk" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:url" content={canonical} />
+<meta property="og:url" content={socialUrl} />
 <meta property="og:image" content={image} />
+<meta property="og:image:secure_url" content={image} />
+{isDefaultImage && <meta property="og:image:type" content="image/jpeg" />}
+{isDefaultImage && <meta property="og:image:width" content="1200" />}
+{isDefaultImage && <meta property="og:image:height" content="627" />}
+<meta property="og:image:alt" content={title} />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={image} />
+<meta name="twitter:image:alt" content={title} />
 {jsonItems.map((item) => <script type="application/ld+json" set:html={JSON.stringify(item)} />)}

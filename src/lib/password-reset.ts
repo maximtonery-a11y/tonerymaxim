@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { authSecret } from "./runtime-secret";
 
 const TOKEN_MAX_AGE_SECONDS = 60 * 60;
 
@@ -9,7 +10,7 @@ type ResetPayload = {
 };
 
 function secret(): string {
-  return import.meta.env.AUTH_SECRET || import.meta.env.SESSION_SECRET || import.meta.env.WOO_CONSUMER_SECRET || "tonerymaxim-dev-reset-secret";
+  return authSecret();
 }
 
 function sign(payload: string): string {
