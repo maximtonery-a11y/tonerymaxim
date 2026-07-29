@@ -1,46 +1,52 @@
-# Astro Starter Kit: Basics
+# ToneryMAXIM
+
+Serverová Astro aplikácia pre e-shop ToneryMAXIM.
+
+## Lokálne spustenie
+
+Vyžaduje Node.js 22.12 alebo novší.
 
 ```sh
-npm create astro@latest -- --template basics
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Ak je port 4321 obsadený:
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+```sh
+npm run dev -- --port 4323
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## Kontrola projektu
 
-## 🧞 Commands
+```sh
+npm test
+npm run build
+```
 
-All commands are run from the root of the project, from a terminal:
+## Produkčné spustenie
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+```sh
+npm install
+npm run build
+npm start
+```
 
-## 👀 Want to learn more?
+Skopírujte hodnoty z `.env.production.example` do bezpečných premenných
+produkčného prostredia. Súbor `.env` ani reálne API kľúče nepatria do GitHubu.
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Vyhľadávanie a AI Tomáš
+
+Vyhľadávanie rozlišuje označenie náplne od podobného čísla modelu tlačiarne.
+Katalóg, výsledková stránka aj Tomáš používajú rovnakú presnú identifikáciu
+produktov.
+
+Tomáš odpovedá v tomto poradí:
+
+1. overené dáta katalógu,
+2. lokálna schválená znalostná databáza,
+3. voliteľná OpenAI odpoveď obmedzená iba na schválené informácie,
+4. otázka na upresnenie alebo kontakt na podporu.
+
+Produkčné nastavenie a testovacie scenáre sú v
+`docs/updates/TM_SEARCH_TOMAS_V1_README.md`.

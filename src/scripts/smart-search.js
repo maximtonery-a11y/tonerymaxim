@@ -5,7 +5,7 @@
   }
   window.__TM_SMART_SEARCH_MODULE_READY__ = true;
 
-  const CACHE_KEY = "tm_smart_search_v3";
+  const CACHE_KEY = "tm_smart_search_v4";
   const CACHE_TTL = 20 * 60 * 1000;
   const MIN_QUERY_LENGTH = 2;
   const DEBOUNCE_MS = 180;

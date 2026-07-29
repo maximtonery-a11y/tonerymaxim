@@ -1,5 +1,7 @@
 import { compactKey, getProductsCache, normalize } from './tm-products-cache';
-import { AI_CONTACT_FALLBACK, aiKnowledge, type AiKnowledgeItem } from '../data/ai-knowledge';
+import { aiKnowledge, type AiKnowledgeItem } from '../data/ai-knowledge';
+import { findExactProductIdentityMatches } from './catalog-query';
+import { answerWithOpenAi } from './openai-sales-assistant';
 
 export type AiIntent = 'product_search' | 'shipping' | 'payment' | 'claim' | 'order' | 'diagnostic' | 'compatibility' | 'support' | 'account' | 'legal' | 'contact' | 'fallback' | 'empty';
 
@@ -141,6 +143,18 @@ function productSearchValue(product: Product) {
 
 function relevantProducts(products: Product[], message: string) {
   const raw = message.trim();
+  const exactIdentityMatches = findExactProductIdentityMatches(products, raw);
+  if (exactIdentityMatches.length) {
+    return exactIdentityMatches
+      .map((match) => match.product)
+      .sort((a, b) => (
+        (TYPE_ORDER[a.product_type_key] || 9) - (TYPE_ORDER[b.product_type_key] || 9)
+        || Number(a.price || 0) - Number(b.price || 0)
+        || String(a.name || '').localeCompare(String(b.name || ''), 'sk')
+      ))
+      .slice(0, 60);
+  }
+
   const cleaned = cleanQuestion(raw) || raw;
   const qCompact = compactKey(cleaned);
   const qWords = uniq(words(cleaned));
@@ -238,7 +252,7 @@ function shouldTryProductFirst(message: string, intent: AiIntent) {
   return hasProductCodeOrModel(message);
 }
 
-export async function buildAssistantAnswer(message: string) {
+export async function buildAssistantAnswer(message: string, page = '') {
   const originalMessage = String(message || '').trim();
   if (!originalMessage) return { answer: ['Napíšte model tlačiarne, označenie toneru alebo otázku.'], products: [], groups: [], intent: 'empty' };
 
@@ -288,5 +302,45 @@ export async function buildAssistantAnswer(message: string) {
     }
   }
 
-  return { answer: AI_CONTACT_FALLBACK, products: [], groups: [], intent: 'fallback', confidence: 0.2, unanswered: true };
+  if (hasProductCodeOrModel(originalMessage)) {
+    return {
+      answer: [
+        'Pri tomto označení si nechcem tipnúť nesprávny produkt.',
+        'Upresnite prosím značku a celé označenie náplne, napríklad „HP 652XL“, alebo napíšte presný model tlačiarne zo štítku.',
+      ],
+      products: [],
+      groups: [],
+      intent: 'fallback',
+      confidence: 0.35,
+      unanswered: true,
+      clarification: true,
+    };
+  }
+
+  const aiResult = await answerWithOpenAi(originalMessage, page);
+  if (aiResult) {
+    return {
+      answer: aiResult.answer,
+      products: [],
+      groups: [],
+      intent: aiResult.status === 'answer' ? 'support' : 'fallback',
+      confidence: aiResult.confidence,
+      unanswered: aiResult.status !== 'answer',
+      clarification: aiResult.status === 'clarify',
+      source: 'openai-grounded-knowledge',
+    };
+  }
+
+  return {
+    answer: [
+      'Nechcem vám dať nepresnú odpoveď.',
+      'Upresnite prosím otázku, prípadne napíšte presný model tlačiarne alebo celé označenie náplne. Ak problém pretrváva, kontaktujte nás na info@tonerymaxim.sk alebo +421 917 859 206.',
+    ],
+    products: [],
+    groups: [],
+    intent: 'fallback',
+    confidence: 0.2,
+    unanswered: true,
+    clarification: true,
+  };
 }

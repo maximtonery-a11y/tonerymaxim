@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { compactKey, getProductsCache, jsonResponse, normalize, sortProducts } from "../../lib/tm-products-cache";
+import { analyzeCatalogQuery, findExactProductIdentityMatches } from "../../lib/catalog-query";
 
 export const prerender = false;
 
@@ -97,8 +98,13 @@ function uniqueWords(value: unknown) {
 }
 
 function queryInfo(query: string): QueryInfo {
-  const tokens = uniqueWords(query);
-  const brandTokens = BRANDS.map((brand) => normalize(brand)).filter((brand) => tokens.includes(brand));
+  const analysis = analyzeCatalogQuery(query);
+  const tokens = uniqueWords([
+    query,
+    ...analysis.brands,
+    ...analysis.referenceTokens,
+  ].join(" "));
+  const brandTokens = analysis.brands.map((brand) => normalize(brand));
   return {
     raw: query,
     normalized: normalize(query),
@@ -499,14 +505,20 @@ export const GET: APIRoute = async ({ url }) => {
     const cache = await getProductsCache();
     const index = getSearchIndex(cache);
     const query = queryInfo(q);
+    const exactIdentityMatches = findExactProductIdentityMatches(index.items.map((item) => item.product), q);
     const resultKey = cachedResultKey(index.generatedAt, q);
     const cached = getCachedResult(resultKey);
     if (cached) return jsonResponse({ ...cached, source: "smart-search-result-cache" }, 200, "private, max-age=60");
 
-    const candidateItems = getCandidateItems(index, query);
+    const exactProducts = new Set(exactIdentityMatches.map((match) => match.product));
+    const candidateItems = exactProducts.size
+      ? index.items.filter((item) => exactProducts.has(item.product))
+      : getCandidateItems(index, query);
     const products = findProductSuggestions(candidateItems, query);
     const staticResults = filteredStaticSuggestions(query);
-    const printerItems = findPrinterSuggestions(candidateItems, query);
+    // Ak názov/SKU presne obsahuje hľadané označenie náplne, modely tlačiarní
+    // s podobným číslom (6520, M652...) nesmú prekryť správne produkty.
+    const printerItems = exactProducts.size ? [] : findPrinterSuggestions(candidateItems, query);
 
     const brandMap = new Map<string, { title: string; subtitle: string; url: string }>();
     staticResults.brands.forEach((brand) => brandMap.set(compactKey(brand.title), brand));
@@ -528,7 +540,9 @@ export const GET: APIRoute = async ({ url }) => {
 
     const data: SmartSearchResponse = {
       ok: true,
-      source: "local-products-cache-ram-prefix-fuzzy",
+      source: exactProducts.size
+        ? "local-products-cache-exact-product-identity"
+        : "local-products-cache-ram-prefix-fuzzy",
       cache_generated_at: cache.generated_at,
       api_cache_ttl_ms: RESULT_CACHE_TTL_MS,
       query: q,

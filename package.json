@@ -10,6 +10,8 @@
     "build": "astro build",
     "start": "node ./dist/server/entry.mjs",
     "preview": "astro preview --host 0.0.0.0 --port 3000",
+    "test": "npm run test:search",
+    "test:search": "node --experimental-strip-types --test scripts/search-quality.test.ts",
     "astro": "astro"
   },
   "dependencies": {

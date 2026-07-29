@@ -47,6 +47,10 @@ const RATE_RULES: Array<{ match: RegExp; methods?: string[]; rule: RateRule }> =
   // Analytika a vyhľadávanie generujú viac požiadaviek pri bežnom používaní.
   { match: /^\/api\/analytics$/, methods: ['POST'], rule: { limit: 600, windowMs: 60_000 } },
   { match: /^\/api\/(smart-search|products|product|printers)$/, methods: ['GET'], rule: { limit: 600, windowMs: 60_000 } },
+
+  // AI odpovede môžu využívať platené API. Limit chráni náklady, no ponecháva
+  // dostatočnú rezervu pre normálny rozhovor zákazníka s Tomášom.
+  { match: /^\/api\/ai-sales-assistant$/, methods: ['POST'], rule: { limit: 30, windowMs: 10 * 60_000 } },
 ];
 
 const TEST_ROUTES = new Set([

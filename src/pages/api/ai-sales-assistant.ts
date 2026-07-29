@@ -21,7 +21,7 @@ export const POST: APIRoute = async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     const message = String(body?.message || '').slice(0, 500).trim();
     const page = String(body?.page || '').slice(0, 300);
-    const result = await buildAssistantAnswer(message);
+    const result = await buildAssistantAnswer(message, page);
 
     if ((result as any).unanswered || result.intent === 'fallback') {
       await logUnanswered({ message, page, intent: result.intent, confidence: (result as any).confidence || 0 });
@@ -44,7 +44,8 @@ export const POST: APIRoute = async ({ request }) => {
       products: [],
       groups: [],
       intent: 'fallback',
-      error: error?.message || 'AI assistant failed',
+      confidence: 0,
+      unanswered: true,
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },

@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TM_CACHE_ROOT } from './runtime-paths';
+import { findExactProductIdentityMatches } from './catalog-query';
 
 export type TmProduct = Record<string, any>;
 
@@ -930,6 +931,9 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
   const printer = normalize(filters.printer || "");
   const color = normalize(filters.color || "");
   const stock = normalize(filters.stock || "");
+  const exactSearchProducts = search
+    ? new Set(findExactProductIdentityMatches(products, filters.search || "").map((match) => match.product))
+    : new Set<TmProduct>();
 
   return products.filter((product) => {
     const text = product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`);
@@ -953,7 +957,10 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     }
     if (filters.category && !matchesCategory(product, filters.category)) return false;
     if (printer && !matchesPrinterFilter(product, filters.printer || "")) return false;
-    if (search && !matchesLooseSearch(text, search)) return false;
+    if (search) {
+      if (exactSearchProducts.size && !exactSearchProducts.has(product)) return false;
+      if (!exactSearchProducts.size && !matchesLooseSearch(text, search)) return false;
+    }
     return true;
   });
 }
