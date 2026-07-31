@@ -1,0 +1,91 @@
+---
+export const prerender = false;
+
+import SeoCatalogPage from "../../components/SeoCatalogPage.astro";
+import { getProductsCache } from "../../lib/tm-products-cache";
+import {
+  catalogStats,
+  findOemEntity,
+  printerLinksFromNames,
+  topBrandLinks,
+  topOemLinks,
+} from "../../lib/seo-catalog";
+
+const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
+const oem = findOemEntity(cache.products, Astro.params.code);
+const notFound = !oem;
+const products = oem?.products || [];
+const stats = catalogStats(products);
+
+if (notFound) {
+  Astro.response.status = 404;
+  Astro.response.statusText = "Not Found";
+  Astro.response.headers.set("X-Robots-Tag", "noindex, follow");
+}
+
+const code = oem?.code || String(Astro.params.code || "").toUpperCase();
+const canonicalPath = oem ? `/oem/${oem.slug}` : Astro.url.pathname;
+const printerFacts = oem?.printers.slice(0, 6) || [];
+const printerLinks = oem ? printerLinksFromNames(cache.products, oem.printers, 16) : [];
+const relatedOemLinks = oem
+  ? topOemLinks(products, 16).filter((link) => link.href !== canonicalPath).slice(0, 8)
+  : [];
+---
+
+<SeoCatalogPage
+  title={notFound ? "OEM označenie sa nenašlo | ToneryMaxim.sk" : `${code} toner alebo náplň | ToneryMaxim.sk`}
+  description={notFound
+    ? "Požadované OEM označenie sa v katalógu nenašlo."
+    : `Produkty s označením ${code}: kompatibilné, originálne a renovované možnosti, cena s DPH, dostupnosť a podporované tlačiarne.`}
+  canonicalPath={canonicalPath}
+  eyebrow={notFound ? "Neznáme označenie" : "Vyhľadanie podľa OEM kódu"}
+  heading={notFound ? "OEM označenie sa nenašlo" : `${code} toner alebo náplň`}
+  intro={notFound
+    ? "Skontrolujte označenie kazety alebo použite hlavné vyhľadávanie."
+    : `Táto stránka zobrazuje produkty, pri ktorých sa v názve alebo SKU nachádza presné OEM označenie ${code}. Pred objednaním skontrolujte model tlačiarne.`}
+  products={products}
+  answer={notFound
+    ? ""
+    : `Pre OEM označenie ${code} evidujeme ${stats.total} produktov s platnou cenou, z toho ${stats.inStock} je skladom. Medzi nimi je ${stats.compatible} kompatibilných, ${stats.original} originálnych a ${stats.renovated} renovovaných možností. Rovnaký základ kódu ešte nemusí znamenať rovnakú farbu alebo kapacitu.`}
+  generatedAt={cache.generated_at}
+  breadcrumbs={[
+    { name: "OEM označenia", path: "/tonery" },
+    { name: code, path: canonicalPath },
+  ]}
+  entityFacts={notFound ? [] : [
+    `OEM kód ${code}`,
+    `${oem?.products.length || 0} produktov`,
+    ...(printerFacts.length ? [`Pre modely: ${printerFacts.join(", ")}`] : []),
+  ]}
+  relatedLinks={[
+    { href: "/tonery", label: "Všetky tonery" },
+    { href: "/kompatibilne-tonery", label: "Kompatibilné tonery" },
+    { href: "/originalne-tonery", label: "Originálne tonery" },
+    { href: "/tlaciarne", label: "Vybrať podľa tlačiarne" },
+  ]}
+  faq={notFound ? [] : [
+    { question: `Čo znamená označenie ${code}?`, answer: `${code} je OEM označenie produktovej rodiny tonera alebo náplne. Pri nákupe je zároveň potrebné overiť presný model tlačiarne.` },
+    { question: `Sú všetky produkty ${code} navzájom rovnaké?`, answer: "Nie. Produkty sa môžu líšiť farbou, kapacitou, typom balenia alebo tým, či ide o originálnu, kompatibilnú alebo renovovanú verziu." },
+  ]}
+  contentSections={notFound ? [] : [
+    {
+      heading: `Ako správne porovnať produkty ${code}`,
+      paragraphs: [`OEM označenie ${code} zúži výber na relevantnú produktovú rodinu. Pred objednaním ešte porovnajte celý názov kazety, farbu, prípadnú koncovku XL a presný model tlačiarne.`],
+      bullets: ["Kód porovnajte znak po znaku.", "Pri multipacku skontrolujte počet a farby kaziet.", "Kompatibilitu potvrďte v detaile konkrétneho produktu."],
+    },
+    {
+      heading: "Čo znamenajú typy produktov v ponuke",
+      paragraphs: ["Originálny produkt pochádza od výrobcu tlačiarne. Kompatibilná alternatíva je nový produkt iného výrobcu. Renovovaný produkt používa odborne obnovené telo kazety. Aktuálne zastúpenie typov je vypočítané z produktov zobrazených vyššie."],
+    },
+  ]}
+  linkGroups={notFound ? [] : [
+    { heading: `Tlačiarne podporujúce ${code}`, intro: "Zoznam vzniká z kompatibilných tlačiarní uvedených pri produktoch v katalógu.", links: printerLinks },
+    { heading: "Súvisiace značky tlačiarní", intro: "Pokračujte na ponuku podľa značky zariadenia.", links: topBrandLinks(products, 8) },
+    { heading: "Súvisiace OEM označenia", intro: "Niektoré produkty obsahujú viac relevantných označení alebo variantov.", links: relatedOemLinks },
+  ]}
+  schemaEntities={notFound ? [] : [
+    { name: `OEM ${code}`, url: canonicalPath },
+    ...printerLinks.slice(0, 8).map((link) => ({ name: link.label, url: link.href })),
+  ]}
+  notFound={notFound}
+/>

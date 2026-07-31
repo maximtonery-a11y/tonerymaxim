@@ -1,6 +1,7 @@
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
-import { atomicWriteText, readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
+import { readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
+import { isStrongSecret } from './secret-validation';
 
 export type SecurityEvent = {
   ts: string;
@@ -57,6 +58,10 @@ const TEST_ROUTES = new Set([
   '/api/test-woo',
   '/api/auth/test-email',
   '/api/cache-status',
+  '/test-produkt',
+  '/design/icons-test',
+  '/design/product-detail',
+  '/design/product-list',
 ]);
 
 const ORIGIN_EXEMPT = new Set([
@@ -82,7 +87,7 @@ function persistBuckets(): void {
 }
 
 function env(name: string): string {
-  return String(import.meta.env[name] || process.env[name] || '').trim();
+  return String(process.env[name] || import.meta.env[name] || '').trim();
 }
 
 export function isLocalHost(hostname: string): boolean {
@@ -199,12 +204,19 @@ export function securityStatus(hostname: string) {
   const authSecret = env('AUTH_SECRET');
   const syncSecret = env('SYNC_SECRET');
   const adminSecret = env('ADMIN_API_SECRET') || env('TM_ANALYTICS_ADMIN_KEY');
+  const warnings = [
+    !isStrongSecret(authSecret, 32) ? 'AUTH_SECRET chýba alebo je slabý.' : '',
+    !isStrongSecret(syncSecret, 24) ? 'SYNC_SECRET chýba alebo je slabý.' : '',
+    !isStrongSecret(adminSecret, 24) ? 'Administrátorský kľúč chýba alebo je slabý.' : '',
+  ].filter(Boolean);
   return {
+    ok: warnings.length === 0,
+    warnings,
     hostname,
     local: isLocalHost(hostname),
-    dedicatedAuthSecret: authSecret.length >= 32,
-    syncProtected: syncSecret.length >= 24,
-    adminProtected: adminSecret.length >= 24,
+    dedicatedAuthSecret: isStrongSecret(authSecret, 32),
+    syncProtected: isStrongSecret(syncSecret, 24),
+    adminProtected: isStrongSecret(adminSecret, 24),
     testEndpointsBlocked: !isLocalHost(hostname) && env('TM_ALLOW_TEST_ENDPOINTS') !== '1',
     rateLimitRules: RATE_RULES.length,
     persistentDataDir: TM_DATA_ROOT,

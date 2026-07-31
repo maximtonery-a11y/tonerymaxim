@@ -317,7 +317,7 @@ export async function sendOrderAdminCopyEmail(input: {
 }) {
   const content = buildOrderConfirmationContent(input);
   return sendMail({
-    to: "info@tonerymaxim.sk",
+    to: env("ADMIN_EMAIL") || "info@tonerymaxim.sk",
     subject: `[NOVÁ OBJEDNÁVKA] ${content.subject}`,
     text: `Kópia objednávky pre prevádzku.\n\n${content.text}`,
     html: `<div style="max-width:680px;margin:0 auto;padding:14px 24px;background:#fff7ed;border:1px solid #fed7aa;font-family:Arial,sans-serif"><strong>Kópia novej objednávky pre prevádzku ToneryMAXIM.sk</strong></div>${content.html}`,
@@ -592,4 +592,3 @@ export async function sendWooOrderStatusEmail(payload: WooOrderStatusEmailPayloa
     html,
   });
 }
-

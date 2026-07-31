@@ -168,7 +168,7 @@ const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostna
           }
           function chart(target, data) {
             var max = Math.max.apply(null, (data || []).map(function (item) { return Number(item.pageviews || 0); }).concat([1]));
-            target.innerHTML = (data || []).map(function (item, index) {
+            target.innerHTML = (data || []).map(function (item) {
               var pv = Math.max(2, Math.round(Number(item.pageviews || 0) / max * 100));
               var ord = Math.round(Number(item.orders || 0) / max * 100);
               return '<div class="col" title="' + esc(item.label) + ': ' + num(item.pageviews) + ' zobrazení, ' + num(item.orders) + ' objednávok"><div class="pv" style="height:' + pv + '%"></div><div class="ord" style="height:' + ord + '%"></div></div>';

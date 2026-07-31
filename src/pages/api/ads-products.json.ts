@@ -3,12 +3,13 @@ import { buildAdsProducts } from "../../lib/ads-products";
 import { getProductsCache } from "../../lib/tm-products-cache";
 
 export const prerender = false;
+const PRODUCTION_ORIGIN = "https://www.tonerymaxim.sk";
 
 export const GET: APIRoute = async ({ url }) => {
   try {
     const cache = await getProductsCache();
     const includeOutOfStock = url.searchParams.get("include_out_of_stock") === "1";
-    const products = buildAdsProducts(cache.products, url.origin, !includeOutOfStock);
+    const products = buildAdsProducts(cache.products, PRODUCTION_ORIGIN, !includeOutOfStock);
 
     return new Response(JSON.stringify({
       ok: true,

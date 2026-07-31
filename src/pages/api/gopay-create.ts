@@ -9,6 +9,7 @@ import { CheckoutProfiler } from "../../lib/checkout-profiler";
 import { nextTmOrderNumber } from "../../lib/order-number";
 import { getOrCreateOrderNumber } from "../../lib/order-idempotency";
 import { getEnv as env, getGoPayAccessToken, getGoPayHost } from "../../lib/gopay-client";
+import { validateCheckoutRequest } from "../../lib/checkout-validation";
 
 export const prerender = false;
 
@@ -30,6 +31,14 @@ const PAYMENT: Record<string, { label: string; price: number; gopayInstrument?: 
 };
 
 const VAT_RATE_PERCENT = 23;
+
+type GoPayItem = {
+  type?: "DISCOUNT";
+  name: string;
+  amount: number;
+  count: number;
+  vat_rate: number;
+};
 
 function toCents(value: unknown) {
   const number = typeof value === "number" ? value : Number(String(value ?? "").replace(/\s/g, "").replace("€", "").replace(",", "."));
@@ -56,6 +65,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const session = readCustomerSession(cookies);
     profiler.mark("session");
     const body = await profiler.measure("request.json", () => request.json().catch(() => ({})));
+    const checkout = validateCheckoutRequest(body, new Set(Object.keys(PAYMENT)));
     const cart = await profiler.measure("normalize-cart", () => normalizeSecureCheckoutCart(body.cart));
 
     if (cart.length === 0) {
@@ -68,28 +78,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    const shippingCode = String(
-      typeof body.shipping === "string"
-        ? body.shipping
-        : body.shipping?.method || "courier"
-    );
-    const paymentCode = String(
-      typeof body.payment === "string"
-        ? body.payment
-        : body.payment?.method || "gopay"
-    );
-
-    if (!PAYMENT[paymentCode]) {
-      return new Response(JSON.stringify({
-        ok: false,
-        error: "Táto platobná metóda sa neposiela do GoPay.",
-      }), {
-        status: 400,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-      });
-    }
-
-    const shipping = SHIPPING[shippingCode] || SHIPPING.dpd_courier;
+    const { shippingCode, paymentCode } = checkout;
+    const shipping = SHIPPING[shippingCode];
     const payment = PAYMENT[paymentCode];
 
     const originalSubtotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
@@ -119,7 +109,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const goodsAfterDiscounts = Math.max(0, Math.round((subtotal - couponDiscount - loyaltyDiscount) * 100) / 100);
     const shippingPrice = goodsAfterDiscounts >= 29 ? 0 : shipping.price;
 
-    const items = [
+    const items: GoPayItem[] = [
       ...cart.map((item) => {
         const line = discountedLine(item);
         const rate = discountRate(item);
@@ -178,13 +168,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         default_payment_instrument: payment.gopayInstrument || "PAYMENT_CARD",
         allowed_payment_instruments: [payment.gopayInstrument || "PAYMENT_CARD"],
         contact: {
-          first_name: String(body?.billing?.firstName || ""),
-          last_name: String(body?.billing?.lastName || ""),
-          email: String(body?.contact?.email || ""),
-          phone_number: String(body?.contact?.phone || ""),
-          city: String(body?.billing?.city || ""),
-          street: String(body?.billing?.address || ""),
-          postal_code: String(body?.billing?.zip || ""),
+          first_name: String(checkout.billing.firstName || ""),
+          last_name: String(checkout.billing.lastName || ""),
+          email: checkout.contact.email,
+          phone_number: checkout.contact.phone,
+          city: String(checkout.billing.city || ""),
+          street: String(checkout.billing.address || ""),
+          postal_code: String(checkout.billing.zip || ""),
           country_code: "SVK",
         },
       },
@@ -227,10 +217,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (!paymentResponse.ok || !paymentData.gw_url) {
       console.error("GoPay vytvorenie platby chyba:", {
-        paymentUrl,
         status: paymentResponse.status,
-        request: paymentBody,
-        response: paymentData,
+        orderNumber,
+        errorCode: paymentData?.errors?.[0]?.error_code || paymentData?.error_code || null,
       });
 
       const message =
@@ -241,8 +230,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
       return new Response(JSON.stringify({
         ok: false,
-        error: String(message),
-        gopay: paymentData,
+        error: String(message).slice(0, 300),
       }), {
         status: 502,
         headers: { "Content-Type": "application/json; charset=utf-8" },
@@ -256,9 +244,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       amountCents: totalCents,
       currency: "EUR",
       cart,
-      billing: body.billing || {},
-      delivery: { ...(body.delivery || {}), pickup: body.shipping?.pickup || body.delivery?.pickup || null },
-      contact: body.contact || {},
+      billing: checkout.billing,
+      delivery: checkout.delivery,
+      contact: checkout.contact,
       shippingCode,
       shippingLabel: shipping.label,
       shippingPrice,
@@ -273,6 +261,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       subtotal: Math.round(subtotal * 100) / 100,
       total: Math.round((totalCents / 100) * 100) / 100,
       createdAt: new Date().toISOString(),
+      termsAcceptedAt: checkout.termsAcceptedAt,
       customerId: session?.id || undefined,
     };
 
@@ -300,12 +289,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   } catch (error: any) {
     profiler.fail(error);
     console.error("GoPay create fatal error:", error?.message || error);
+    const status = Number(error?.status || 500);
 
     return new Response(JSON.stringify({
       ok: false,
-      error: error?.message || "Nepodarilo sa vytvoriť GoPay platbu.",
+      error: status < 500 ? error?.message : "Nepodarilo sa vytvoriť GoPay platbu. Skúste to znova alebo nás kontaktujte.",
+      validationErrors: status === 400 ? error?.validationErrors || undefined : undefined,
     }), {
-      status: 500,
+      status,
       headers: { "Content-Type": "application/json; charset=utf-8" },
     });
   }

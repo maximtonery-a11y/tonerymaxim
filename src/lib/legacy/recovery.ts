@@ -25,13 +25,18 @@ export type LegacyRecoveryResult =
   | {
       action: "redirect";
       location: string;
-      status: 301 | 302;
-      reason: "exact-product" | "product-search" | "printer-search" | "brand-page" | "article-help" | "static-help";
+      status: 301;
+      reason: "exact-product";
     }
   | {
       action: "gone";
       status: 410;
-      reason: "obsolete-non-toner" | "invalid-legacy";
+      reason:
+        | "obsolete-non-toner"
+        | "discontinued-print-product"
+        | "obsolete-printer-model"
+        | "obsolete-article"
+        | "invalid-legacy";
       title: string;
       description: string;
     }
@@ -63,14 +68,6 @@ const COLOR_MARKERS: Record<string, string[]> = {
   yellow: ["yellow", "zlta", "zlty", "y"],
   color: ["color", "colour", "farebna", "farebny", "tri-color", "tricolor"],
 };
-
-const PRODUCT_NOISE = new Set([
-  "toner", "napln", "atramentova", "atramentovy", "cartridge", "kazeta", "valec", "opticky", "drum",
-  "alternativny", "alternativna", "alternativne", "kompatibilny", "kompatibilna", "kompatibilne",
-  "originalny", "originalna", "original", "renovovany", "renovovana", "renovovane", "repasovany",
-  "s", "cipom", "pre", "do", "tlaciarne", "farba", "black", "cierna", "cierny", "cyan", "magenta",
-  "yellow", "zlta", "zlty", "color", "colour", "farebna", "farebny", "multipack", "balenie",
-]);
 
 const NON_TONER_HINTS = new Set([
   "diar", "kalendar", "taska", "vrecko", "sviecka", "obrusok", "pohladnica", "blahozelanie", "zositos",
@@ -263,45 +260,17 @@ function correctLegacyTypos(value: string): string {
     .replace(/(?:^|-)espon(?:-|$)/g, (match) => match.replace("espon", "epson"))
     .replace(/(?:^|-)cannon(?:-|$)/g, (match) => match.replace("cannon", "canon"));
 }
-function meaningfulProductQuery(slug: string, preferredCode = ""): string {
-  const correctedSlug = correctLegacyTypos(slug);
-  const brand = findLegacyBrand(correctedSlug)?.name || "";
-  const code = preferredCode || oldProductCodes(correctedSlug)[0] || "";
-  const color = detectColor(slug);
-  if (code) return [brand, code, color && color !== "color" ? color : ""].filter(Boolean).join(" ");
-
-  const tokens = normalize(legacySlugToText(correctedSlug))
-    .replace(/[^a-z0-9]+/g, " ")
-    .split(/\s+/)
-    .filter(Boolean)
-    .filter((token) => !PRODUCT_NOISE.has(token))
-    .filter((token) => !/^\d{6,}$/.test(token))
-    .slice(0, 6);
-
-  return [brand, ...tokens.filter((token) => normalize(brand) !== token)].filter(Boolean).join(" ").trim();
-}
-
 function looksLikePrintProduct(slug: string, hasKnownCode = false): boolean {
   const normalized = normalize(slug);
+  const segments = normalized.split(/[^a-z0-9]+/).filter(Boolean);
+  if (segments.some((segment) => NON_TONER_HINTS.has(segment))) return false;
   if (/\b(toner|tonery|napln|naplne|cartridge|atrament|valec|valce|drum|fuser|zobrazovacia|odpadov|kazeta|kazety)\b/.test(normalized.replace(/-/g, " "))) return true;
   if (hasKnownCode || findLegacyBrand(slug)) return true;
-  const segments = normalized.split(/[^a-z0-9]+/).filter(Boolean);
-  return !segments.some((segment) => NON_TONER_HINTS.has(segment)) && false;
+  return false;
 }
 
-function searchUrl(query: string, extra: Record<string, string> = {}): string {
-  const params = new URLSearchParams();
-  if (query) params.set("s", query);
-  for (const [key, value] of Object.entries(extra)) if (value) params.set(key, value);
-  const text = params.toString();
-  return text ? `/produkty?${text}` : "/produkty";
-}
-
-function printerQuery(route: ParsedLegacyRoute): string {
-  const last = legacySlugToText(route.segments.at(-1) || "");
-  const brand = route.brandName || "";
-  const lastNormalized = normalize(last);
-  return lastNormalized.startsWith(normalize(brand)) ? last : `${brand} ${last}`.trim();
+export function isLegacyPrintProductSlug(slug: string): boolean {
+  return looksLikePrintProduct(correctLegacyTypos(slug), oldProductCodes(slug).length > 0);
 }
 
 function isModelLike(route: ParsedLegacyRoute): boolean {
@@ -385,73 +354,46 @@ export async function resolveLegacyRecovery(route: ParsedLegacyRoute): Promise<L
       };
     }
 
-    const knownCodes = oldProductCodes(route.productSlug).filter((code) => index.byCode.has(code));
-    const query = meaningfulProductQuery(route.productSlug, knownCodes[0] || "");
-    if (query && looksLikePrintProduct(route.productSlug, knownCodes.length > 0)) {
-      return {
-        action: "redirect",
-        location: searchUrl(query),
-        status: 302,
-        reason: "product-search",
-      };
-
-    }
-
     return {
       action: "gone",
       status: 410,
-      reason: "obsolete-non-toner",
+      reason: looksLikePrintProduct(route.productSlug)
+        ? "discontinued-print-product"
+        : "obsolete-non-toner",
       title: "Tento produkt už nie je v ponuke",
-      description: "Pôvodný e-shop obsahoval aj kancelársky a darčekový sortiment. Nový ToneryMaxim sa špecializuje na tonery, náplne a spotrebný materiál do tlačiarní.",
+      description: looksLikePrintProduct(route.productSlug)
+        ? "Pre tento starý produkt sa nenašla jednoznačná aktuálna náhrada. Z dôvodu bezpečnosti zákazníka ho nepresmerujeme na iný toner."
+        : "Pôvodný e-shop obsahoval aj kancelársky a darčekový sortiment. Nový ToneryMaxim sa špecializuje na tonery, náplne a spotrebný materiál do tlačiarní.",
     };
   }
 
   if (route.kind === "brand-tree") {
-    const query = printerQuery(route);
-    if (query) {
-      return {
-        action: "redirect",
-        location: searchUrl(query),
-        status: 302,
-        reason: "printer-search",
-      };
-    }
-
-    if (route.brandSlug) {
-      return {
-        action: "redirect",
-        location: `/tlaciarne/${route.brandSlug}`,
-        status: 302,
-        reason: "brand-page",
-      };
-    }
+    return {
+      action: "gone",
+      status: 410,
+      reason: "obsolete-printer-model",
+      title: "Tento model tlačiarne už nemá aktuálnu ponuku",
+      description: "V aktuálnom katalógu sa pre tento starý model nenašli produkty. URL preto nepresmerujeme na inú tlačiareň ani na všeobecné vyhľadávanie.",
+    };
   }
 
   if (route.kind === "manufacturer") {
-    if (route.brandSlug && route.legacySlug === route.brandSlug) {
-      return {
-        action: "redirect",
-        location: `/tlaciarne/${route.brandSlug}`,
-        status: 301,
-        reason: "brand-page",
-      };
-    }
-
-    const query = legacySlugToText(route.legacySlug || "");
     return {
-      action: "redirect",
-      location: searchUrl(query),
-      status: 302,
-      reason: "product-search",
+      action: "gone",
+      status: 410,
+      reason: "invalid-legacy",
+      title: "Táto stará stránka výrobcu bola odstránená",
+      description: "Stránka nemá jednoznačný aktuálny obsahový ekvivalent. Nebude presmerovaná na nesúvisiacu značku ani na prázdne vyhľadávanie.",
     };
   }
 
   if (route.kind === "article") {
     return {
-      action: "redirect",
-      location: "/faq",
-      status: 302,
-      reason: "article-help",
+      action: "gone",
+      status: 410,
+      reason: "obsolete-article",
+      title: "Tento článok zatiaľ nebol prenesený",
+      description: "Pôvodný článok nemá v novom e-shope rovnaký obsahový ekvivalent. Preto ho nepresmerujeme na nesúvisiacu stránku.",
     };
   }
 
@@ -476,15 +418,11 @@ export async function resolveLegacyRecovery(route: ParsedLegacyRoute): Promise<L
   }
 
   if (route.kind === "static") {
-    if (route.normalizedPath === "/zlavovy-kupon-napoveda" || route.normalizedPath === "/nase-clanky") {
-      return {
-        action: "redirect",
-        location: "/faq",
-        status: 302,
-        reason: "static-help",
-      };
-    }
-    if (route.normalizedPath === "/koleso-zliav") {
+    if (
+      route.normalizedPath === "/zlavovy-kupon-napoveda"
+      || route.normalizedPath === "/nase-clanky"
+      || route.normalizedPath === "/koleso-zliav"
+    ) {
       return {
         action: "gone",
         status: 410,

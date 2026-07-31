@@ -104,7 +104,7 @@ const navItems = [
       accountLinks.slice(0, 4).forEach((link) => prefetchAccountPage(link.href));
     }, { timeout: 2500 });
   } else {
-    window.setTimeout(() => {
+    globalThis.setTimeout(() => {
       accountLinks.slice(0, 4).forEach((link) => prefetchAccountPage(link.href));
     }, 1000);
   }

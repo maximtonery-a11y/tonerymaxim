@@ -8,6 +8,7 @@ import { normalizeSecureCheckoutCart, discountedLine } from "../../lib/secure-ch
 import { CheckoutProfiler } from "../../lib/checkout-profiler";
 import { nextTmOrderNumber } from "../../lib/order-number";
 import { getOrCreateOrderNumber } from "../../lib/order-idempotency";
+import { validateCheckoutRequest } from "../../lib/checkout-validation";
 
 const SHIPPING: Record<string, { label: string; price: number }> = {
   dpd_courier: { label: "DPD kuriér na adresu", price: 3.9 },
@@ -31,6 +32,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const session = readCustomerSession(cookies);
     profiler.mark("session");
     const body = await profiler.measure("request.json", () => request.json().catch(() => ({})));
+    const checkout = validateCheckoutRequest(body, new Set(Object.keys(PAYMENT)));
     const cart = await profiler.measure("normalize-cart", () => normalizeSecureCheckoutCart(body.cart));
 
     if (cart.length === 0) {
@@ -40,17 +42,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    const shippingCode = String(typeof body.shipping === "string" ? body.shipping : body.shipping?.method || "dpd_courier");
-    const paymentCode = String(typeof body.payment === "string" ? body.payment : body.payment?.method || "cod");
-
-    if (!PAYMENT[paymentCode]) {
-      return new Response(JSON.stringify({ ok: false, error: "Neplatná platobná metóda pre uloženie objednávky." }), {
-        status: 400,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-      });
-    }
-
-    const shipping = SHIPPING[shippingCode] || SHIPPING.dpd_courier;
+    const { shippingCode, paymentCode } = checkout;
+    const shipping = SHIPPING[shippingCode];
     const payment = PAYMENT[paymentCode];
     const originalSubtotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
     const subtotal = cart.reduce((sum, item) => sum + discountedLine(item).final, 0);
@@ -88,9 +81,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       orderNumber,
       currency: "EUR",
       cart,
-      billing: body.billing || {},
-      delivery: { ...(body.delivery || {}), pickup: body.shipping?.pickup || body.delivery?.pickup || null },
-      contact: body.contact || {},
+      billing: checkout.billing,
+      delivery: checkout.delivery,
+      contact: checkout.contact,
       shippingCode,
       shippingLabel: shipping.label,
       shippingPrice,
@@ -106,6 +99,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       total,
       amountCents: Math.round(total * 100),
       createdAt: new Date().toISOString(),
+      termsAcceptedAt: checkout.termsAcceptedAt,
       customerId: session?.id || undefined,
     };
 
@@ -142,13 +136,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   } catch (error: any) {
     profiler.fail(error);
-    console.error("Order create error:", error?.message || error, error?.details || "");
+    const status = Number(error?.status || 500);
+    console.error("Order create error:", error?.message || error);
     return new Response(JSON.stringify({
       ok: false,
-      error: error?.message || "Nepodarilo sa vytvoriť objednávku vo WooCommerce.",
-      details: error?.details || null,
+      error: status < 500 ? error?.message : "Nepodarilo sa vytvoriť objednávku. Skúste to znova alebo nás kontaktujte.",
+      validationErrors: status === 400 ? error?.validationErrors || undefined : undefined,
     }), {
-      status: 500,
+      status,
       headers: { "Content-Type": "application/json; charset=utf-8" },
     });
   }

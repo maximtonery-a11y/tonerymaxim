@@ -394,7 +394,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     return "";
   }
 
-  function sameSeries(product, candidate, key) {
+  function sameSeries(candidate, key) {
     const cleanKey = normalizeSeriesCode(key);
     if (!cleanKey) return false;
     const candidateCodes = extractProductCodes(candidate).map(normalizeSeriesCode);
@@ -448,7 +448,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       products
         .filter((item) => String(item?.id || item?.sku || item?.slug || "") !== currentId)
         .filter((item) => !sameType || item.product_type_key === sameType)
-        .filter((item) => sameSeries(product, item, key))
+        .filter((item) => sameSeries(item, key))
         .forEach((item) => {
           const itemColor = productColorKey(item);
           if (!itemColor || itemColor === currentColor || pickedByColor.has(itemColor)) return;
@@ -530,7 +530,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
     const sorted = [...candidates]
       .filter((item) => !sameType || item.product_type_key === sameType)
-      .filter((item) => sameSeries(product, item, key))
+      .filter((item) => sameSeries(item, key))
       .filter(isSetColorAvailable)
       .sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
 
@@ -995,14 +995,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     return rest > 0 ? `${shown} a ďalších ${rest} modelov` : shown;
   }
 
-  function printersInlineHtml(product) {
-    const printers = getPrinters(product);
-    if (!printers.length) return `<p>Kompatibilita bude doplnená.</p>`;
-    const visible = printers.slice(0, 6).map((printer) => `<a href="${printerProductsUrl(printer)}">${esc(printer)}</a>`).join("");
-    const rest = Math.max(0, printers.length - 6);
-    return `${visible}${rest ? `<button type="button" data-show-compatible>+ Zobraziť všetky (${printers.length})</button>` : ""}`;
-  }
-
   function printersListHtml(product) {
     const printers = getPrinters(product);
     if (!printers.length) return `<p>Kompatibilita bude doplnená.</p>`;
@@ -1063,14 +1055,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         <button type="button" data-related-add aria-label="Pridať do košíka">🛒</button>
       </article>
     `;
-  }
-
-  function accessoryIcon(title) {
-    const text = String(title || "").toLowerCase();
-    if (text.includes("papier")) return "📄";
-    if (text.includes("šanón") || text.includes("sanon")) return "📁";
-    if (text.includes("roller") || text.includes("pero") || text.includes("pilot")) return "✒️";
-    return "TM";
   }
 
   function accessoryDisplayTitle(product) {
@@ -1592,11 +1576,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
     const mobileParameterMedia = window.matchMedia("(max-width: 820px)");
     const refreshMobileParameterVisibility = () => applyMobileParameterVisibility(root);
-    if (typeof mobileParameterMedia.addEventListener === "function") {
-      mobileParameterMedia.addEventListener("change", refreshMobileParameterVisibility, { once: true });
-    } else if (typeof mobileParameterMedia.addListener === "function") {
-      mobileParameterMedia.addListener(refreshMobileParameterVisibility);
-    }
+    mobileParameterMedia.addEventListener("change", refreshMobileParameterVisibility, { once: true });
 
     hydrateSeriesColors(product);
     hydrateSeriesPack(product);

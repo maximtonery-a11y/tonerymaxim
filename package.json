@@ -10,15 +10,32 @@
     "build": "astro build",
     "start": "node ./dist/server/entry.mjs",
     "preview": "astro preview --host 0.0.0.0 --port 3000",
-    "test": "npm run test:search",
+    "check": "astro check",
+    "test": "npm run test:search && npm run test:woo && npm run test:seo && npm run test:migration && npm run test:security && npm run test:production",
     "test:search": "node --experimental-strip-types --test scripts/search-quality.test.ts",
+    "test:woo": "node --experimental-strip-types --test scripts/woocommerce-catalog.test.ts",
+    "test:seo": "node --experimental-strip-types --test scripts/seo-foundation.test.ts",
+    "test:migration": "node --experimental-strip-types --test scripts/legacy-migration.test.ts && node scripts/migration-gate.test.mjs",
+    "test:security": "node --experimental-strip-types --test scripts/security-config.test.ts",
+    "test:production": "node --experimental-strip-types --test scripts/production-readiness.test.ts",
+    "release:check": "npm run check && npm test && npm run build && npm audit --omit=dev",
+    "release:verify:local": "node scripts/verify-local-catalog.mjs",
+    "release:verify:info": "node scripts/verify-deployment.mjs --base-url https://www.tonerymaxim.info",
+    "release:verify:sk": "node scripts/verify-deployment.mjs --base-url https://www.tonerymaxim.sk",
+    "migration:gate": "node scripts/run-migration-gate.mjs",
+    "migration:gate:remote": "node scripts/migration-gate.mjs",
+    "migration:gate:dry-run": "node scripts/migration-gate.mjs --dry-run --no-fail",
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/node": "^10.1.3",
-    "@woocommerce/woocommerce-rest-api": "^1.0.2",
-    "astro": "^6.4.4",
-    "gopay-nodejs": "^1.2.2",
+    "@astrojs/node": "11.0.3",
+    "astro": "7.1.6",
     "nodemailer": "^9.0.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@types/node": "26.1.2",
+    "@types/nodemailer": "8.0.1",
+    "typescript": "6.0.3"
   }
 }

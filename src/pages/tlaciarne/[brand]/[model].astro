@@ -1,0 +1,95 @@
+---
+export const prerender = false;
+
+import SeoCatalogPage from "../../../components/SeoCatalogPage.astro";
+import { getProductsCache } from "../../../lib/tm-products-cache";
+import {
+  brandProducts,
+  catalogStats,
+  findPrinterEntity,
+  topOemLinks,
+  topPrinterLinks,
+} from "../../../lib/seo-catalog";
+
+const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
+const printer = findPrinterEntity(cache.products, Astro.params.brand, Astro.params.model);
+const notFound = !printer;
+const products = printer?.products || [];
+const stats = catalogStats(products);
+
+if (notFound) {
+  Astro.response.status = 404;
+  Astro.response.statusText = "Not Found";
+  Astro.response.headers.set("X-Robots-Tag", "noindex, follow");
+}
+
+const printerName = printer?.name || "Neznámy model tlačiarne";
+const brandName = printer?.brand.name || "Tlačiareň";
+const canonicalPath = printer
+  ? `/tlaciarne/${printer.brand.slug}/${printer.slug}`
+  : Astro.url.pathname;
+const relatedPrinterLinks = printer
+  ? topPrinterLinks(brandProducts(cache.products, printer.brand), 24)
+      .filter((link) => link.href !== canonicalPath)
+      .slice(0, 12)
+  : [];
+---
+
+<SeoCatalogPage
+  title={notFound ? "Model tlačiarne sa nenašiel | ToneryMaxim.sk" : `Tonery pre ${printerName} | ToneryMaxim.sk`}
+  description={notFound
+    ? "Požadovaný model tlačiarne sa v katalógu nenašiel."
+    : `Kompatibilné a originálne tonery alebo náplne pre ${printerName}. Aktuálna cena, dostupnosť, farba a výťažnosť.`}
+  canonicalPath={canonicalPath}
+  eyebrow={notFound ? "Neznámy model" : "Náplne podľa modelu tlačiarne"}
+  heading={notFound ? "Model tlačiarne sa nenašiel" : `Tonery a náplne pre ${printerName}`}
+  intro={notFound
+    ? "Skontrolujte označenie modelu alebo sa vráťte na výber tlačiarne."
+    : `Zobrazené produkty majú model ${printerName} uvedený medzi kompatibilnými tlačiarňami. Pred objednaním odporúčame porovnať aj OEM označenie kazety.`}
+  products={products}
+  answer={notFound
+    ? ""
+    : `Pre tlačiareň ${printerName} evidujeme ${stats.total} vhodných produktov s platnou cenou, z ktorých je ${stats.inStock} skladom. Ponuka obsahuje ${stats.compatible} kompatibilných, ${stats.original} originálnych a ${stats.renovated} renovovaných možností. Pred nákupom porovnajte OEM kód a farbu kazety.`}
+  generatedAt={cache.generated_at}
+  breadcrumbs={[
+    { name: "Tlačiarne", path: "/tlaciarne" },
+    { name: brandName, path: printer ? `/tlaciarne/${printer.brand.slug}` : "/tlaciarne" },
+    { name: printerName, path: canonicalPath },
+  ]}
+  entityFacts={notFound ? [] : [
+    `Značka ${brandName}`,
+    `${printer?.products.length || 0} kompatibilných produktov`,
+    "Cena s DPH a aktuálny sklad",
+  ]}
+  relatedLinks={[
+    { href: printer ? `/znacky/${printer.brand.slug}` : "/tlaciarne", label: `Všetky produkty ${brandName}` },
+    { href: "/kompatibilne-tonery", label: "Kompatibilné tonery" },
+    { href: "/originalne-tonery", label: "Originálne tonery" },
+    { href: "/tlaciarne", label: "Zmeniť tlačiareň" },
+  ]}
+  faq={notFound ? [] : [
+    { question: `Ktorý toner je vhodný pre ${printerName}?`, answer: `Vyberte niektorý z produktov uvedených na tejto stránke a v detaile ešte skontrolujte model ${printerName} a OEM označenie kazety.` },
+    { question: "Môžem použiť kompatibilný toner namiesto originálneho?", answer: "Áno, ak je konkrétny kompatibilný produkt určený pre tento model tlačiarne. Typ produktu je viditeľne označený pri každej položke." },
+  ]}
+  contentSections={notFound ? [] : [
+    {
+      heading: `Výber tonera alebo náplne pre ${printerName}`,
+      paragraphs: [`Produkty na tejto stránke majú model ${printerName} uvedený v zozname kompatibilných tlačiarní. Rozhodujúci je celý názov modelu, pretože podobne pomenované zariadenia ${brandName} nemusia používať rovnakú kazetu.`],
+      bullets: ["Porovnajte presný model zo štítku zariadenia.", "Skontrolujte OEM kód pôvodnej kazety.", "Vyberte správnu farbu a požadovanú kapacitu."],
+    },
+    {
+      heading: "Ako čítať aktuálnu ponuku",
+      paragraphs: ["Každá produktová karta uvádza typ produktu, cenu s DPH a dostupnosť. Detail produktu dopĺňa výťažnosť, farbu a ďalšie kompatibilné tlačiarne, ak sú tieto údaje v katalógu dostupné."],
+    },
+  ]}
+  linkGroups={notFound ? [] : [
+    { heading: `OEM označenia pre ${printerName}`, intro: "Otvorte OEM stránku a porovnajte dostupné originálne a alternatívne varianty.", links: topOemLinks(products, 12) },
+    { heading: `Ďalšie modely ${brandName}`, intro: "Súvisiace modely značky s reálnymi produktmi v katalógu.", links: relatedPrinterLinks },
+  ]}
+  schemaEntities={notFound ? [] : [
+    { name: printerName, url: canonicalPath },
+    { name: brandName, url: printer ? `/znacky/${printer.brand.slug}` : undefined },
+    { name: `Tonery pre ${printerName}` },
+  ]}
+  notFound={notFound}
+/>

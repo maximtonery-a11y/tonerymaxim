@@ -5,7 +5,6 @@ import Header from "../components/Header.astro";
 import "../styles/footer.css";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
-import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 import SeoHead from "../components/SeoHead.astro";
 import CatalogInitialRows from "../components/CatalogInitialRows.astro";
 import { breadcrumbJsonLd } from "../lib/seo";
@@ -81,7 +80,12 @@ try {
   initialCatalog = null;
 }
 
-const initialCatalogJson = JSON.stringify(initialCatalog).replace(/</g, "\u003c");
+const initialCatalogJson = JSON.stringify(initialCatalog)
+  .replace(/</g, "\\u003c")
+  .replace(/>/g, "\\u003e")
+  .replace(/&/g, "\\u0026")
+  .replace(/\u2028/g, "\\u2028")
+  .replace(/\u2029/g, "\\u2029");
 ---
 
 <!doctype html>
@@ -233,13 +237,13 @@ const initialCatalogJson = JSON.stringify(initialCatalog).replace(/</g, "\u003c"
       <FloatingAdvisor />
     </div>
 
-    <script id="tm-catalog-initial-data" type="application/json" set:html={initialCatalogJson}></script>
+    <script is:inline id="tm-catalog-initial-data" type="application/json" set:html={initialCatalogJson}></script>
     <script>
       import "../scripts/catalog.js";
       import "../scripts/smart-search.js";
     </script>
     <script>
-      const bottomSearchInput = document.querySelector('[data-catalog-bottom-search-input]');
+      const bottomSearchInput = document.querySelector<HTMLInputElement>('[data-catalog-bottom-search-input]');
       if (bottomSearchInput) {
         const params = new URLSearchParams(window.location.search);
         bottomSearchInput.value = params.get('s') || params.get('search') || params.get('q') || '';

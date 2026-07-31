@@ -29,7 +29,6 @@ function getDeviceState() {
   // Preto iPhone/Android po otočení na šírku nespadne do desktopu.
   const isPhone = (isCoarsePointer && shortestSide <= 600) || (!isFinePointer && width < 760);
   const isTablet = !isPhone && ((isCoarsePointer && shortestSide > 600) || (width >= 760 && width < 1180));
-  const isDesktop = !isPhone && !isTablet;
 
   if (isPhone) {
     return isLandscape ? 'mobile-landscape' : 'mobile-portrait';

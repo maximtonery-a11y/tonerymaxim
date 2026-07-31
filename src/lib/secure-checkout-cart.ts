@@ -1,5 +1,6 @@
 import type { NormalizedCartItem } from "./checkout-order";
 import { getProductsCache, compactKey, type TmProduct } from "./tm-products-cache";
+import { wooRequest } from "./woo-client";
 
 type RawCartItem = {
   id?: string | number;
@@ -95,23 +96,42 @@ export function discountedLine(item: NormalizedCartItem) {
 export async function normalizeSecureCheckoutCart(rawCart: unknown): Promise<NormalizedCartItem[]> {
   const input = Array.isArray(rawCart) ? rawCart : [];
   if (!input.length) return [];
+  if (input.length > 30) throw new Error("Košík obsahuje príliš veľa rôznych položiek.");
 
   const cache = await getProductsCache();
   const products = Array.isArray(cache?.products) ? cache.products : [];
   const index = indexProducts(products);
-  const result: NormalizedCartItem[] = [];
-
-  for (const raw of input) {
+  const resolved = input.map((raw) => {
     const item = (raw || {}) as RawCartItem;
     const product = resolveProduct(item, index);
     const requested = skuFromItem(item) || productIdFromItem(item) || "neznámy produkt";
+    if (!product) throw new Error(`Produkt sa nenašiel alebo už nie je dostupný: ${requested}`);
+    return { item, cached: product, requested };
+  });
+  const ids = [...new Set(resolved.map(({ cached }) => Number(cached.id)).filter((id) => Number.isInteger(id) && id > 0))];
+  if (ids.length !== new Set(resolved.map(({ cached }) => String(cached.id))).size) {
+    throw new Error("Niektorý produkt nemá platné ID a nemožno overiť jeho dostupnosť.");
+  }
+  const liveProducts = await wooRequest<any[]>("/products", {
+    query: { include: ids.join(","), per_page: Math.min(100, ids.length), status: "publish" },
+  });
+  const liveById = new Map((Array.isArray(liveProducts) ? liveProducts : []).map((product) => [String(product.id), product]));
+  const requestedById = new Map<string, number>();
+  const result: NormalizedCartItem[] = [];
 
-    if (!product) {
-      throw new Error(`Produkt sa nenašiel alebo už nie je dostupný: ${requested}`);
-    }
-
+  for (const { item, cached, requested } of resolved) {
+    const live = liveById.get(String(cached.id));
+    if (!live) throw new Error(`Produkt už nie je publikovaný alebo dostupný: ${cached.name || requested}`);
+    const product = { ...cached, ...live };
     if (!isPurchasable(product)) {
       throw new Error(`Produkt nie je dostupný na objednanie: ${product.name || requested}`);
+    }
+    const qty = normalizeQty(item.qty ?? item.quantity ?? 1);
+    const totalRequested = (requestedById.get(String(product.id)) || 0) + qty;
+    requestedById.set(String(product.id), totalRequested);
+    const stockQuantity = Number(product.stock_quantity);
+    if (product.manage_stock === true && Number.isFinite(stockQuantity) && stockQuantity >= 0 && totalRequested > stockQuantity) {
+      throw new Error(`Na sklade nie je požadované množstvo produktu ${product.name || requested}. Dostupné množstvo: ${stockQuantity} ks.`);
     }
 
     result.push({
@@ -121,7 +141,7 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown): Promise<Nor
       sku: String(product.sku || ""),
       name: String(product.name || product.sku || product.id || "Produkt").slice(0, 160),
       price: money(product.price),
-      qty: normalizeQty(item.qty ?? item.quantity ?? 1),
+      qty,
       product_type_key: String(product.product_type_key || ""),
       product_type_label: String(product.product_type_label || ""),
     });

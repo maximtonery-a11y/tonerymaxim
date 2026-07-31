@@ -1,0 +1,214 @@
+---
+import { getAdminAccessKey, isAdminLocked } from "../../lib/admin-access";
+import {
+  filterSeoOpportunities,
+  getSeoOpportunityReport,
+  type SeoOpportunityImpact,
+  type SeoOpportunityKind,
+  type SeoOpportunityStatus,
+} from "../../lib/seo-opportunities";
+
+export const prerender = false;
+
+const adminKey = getAdminAccessKey(Astro.locals);
+const suppliedKey = Astro.url.searchParams.get("key") || "";
+const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostname });
+const kind = Astro.url.searchParams.get("kind") || "all";
+const status = Astro.url.searchParams.get("status") || "all";
+const impact = Astro.url.searchParams.get("impact") || "all";
+const query = Astro.url.searchParams.get("q") || "";
+const report = locked ? null : await getSeoOpportunityReport();
+const opportunities = report ? filterSeoOpportunities(report.opportunities, { kind, status, impact, query }) : [];
+const nf = new Intl.NumberFormat("sk-SK");
+const dtf = new Intl.DateTimeFormat("sk-SK", { dateStyle: "short", timeStyle: "short" });
+
+const kindLabels: Record<SeoOpportunityKind, string> = {
+  landing: "Kategória",
+  brand: "Značka",
+  printer: "Tlačiareň",
+  oem: "OEM kód",
+  product: "Produkt",
+};
+const statusLabels: Record<SeoOpportunityStatus, string> = {
+  ready: "Pripravené",
+  improve: "Vylepšiť",
+  blocked: "Blokované",
+};
+const impactLabels: Record<SeoOpportunityImpact, string> = {
+  high: "Vysoký",
+  medium: "Stredný",
+  low: "Nízky",
+};
+
+function filterUrl(values: Record<string, string>) {
+  const params = new URLSearchParams();
+  if (suppliedKey) params.set("key", suppliedKey);
+  const next = { kind, status, impact, q: query, ...values };
+  if (next.kind !== "all") params.set("kind", next.kind);
+  if (next.status !== "all") params.set("status", next.status);
+  if (next.impact !== "all") params.set("impact", next.impact);
+  if (next.q) params.set("q", next.q);
+  return `?${params.toString()}`;
+}
+
+const exportParams = new URLSearchParams();
+if (suppliedKey) exportParams.set("key", suppliedKey);
+if (kind !== "all") exportParams.set("kind", kind);
+if (status !== "all") exportParams.set("status", status);
+if (impact !== "all") exportParams.set("impact", impact);
+if (query) exportParams.set("q", query);
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow,noarchive" />
+    <title>TM SEO Dominator</title>
+    <style>
+      :root { font-family:Inter,Geist,system-ui,sans-serif; color:#071a3a; background:#eef4fb; color-scheme:light; }
+      * { box-sizing:border-box; }
+      body { margin:0; padding:24px; background:radial-gradient(circle at 85% 0,#e3efff 0,transparent 36%),#eef4fb; }
+      main { max-width:1480px; margin:0 auto; }
+      a { color:inherit; }
+      h1 { margin:0; font-size:clamp(34px,5vw,58px); line-height:.98; letter-spacing:-.055em; }
+      h2 { margin:0; font-size:21px; letter-spacing:-.025em; }
+      p { color:#607089; line-height:1.55; }
+      .top { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:18px; }
+      .top p { max-width:750px; margin:10px 0 0; }
+      .actions { display:flex; flex-wrap:wrap; gap:9px; }
+      .button { display:inline-flex; min-height:43px; align-items:center; justify-content:center; padding:0 15px; border:1px solid #cfdbeb; border-radius:13px; background:#fff; text-decoration:none; font-weight:900; cursor:pointer; }
+      .button.primary { color:#fff; background:#082452; border-color:#082452; }
+      .notice { margin-bottom:15px; padding:13px 16px; border:1px solid #bde5cf; border-radius:15px; color:#087943; background:#eaf8f0; font-weight:850; }
+      .grid { display:grid; gap:13px; }
+      .metrics { grid-template-columns:repeat(6,minmax(0,1fr)); margin-bottom:14px; }
+      .card { min-width:0; padding:17px; border:1px solid #d7e3f2; border-radius:20px; background:#fff; box-shadow:0 14px 38px rgba(8,30,67,.07); }
+      .metric small { display:block; color:#718097; text-transform:uppercase; letter-spacing:.07em; font-size:10px; font-weight:950; }
+      .metric strong { display:block; margin-top:7px; font-size:clamp(26px,3vw,36px); letter-spacing:-.05em; }
+      .filters { display:grid; grid-template-columns:repeat(3,minmax(130px,1fr)) minmax(230px,2fr) auto; gap:10px; align-items:end; margin-bottom:14px; }
+      label { display:grid; gap:6px; color:#586980; font-size:12px; font-weight:900; }
+      select,input { width:100%; min-height:43px; padding:0 12px; border:1px solid #cad8ea; border-radius:12px; background:#fff; color:#071a3a; font:inherit; }
+      .summary { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:12px; }
+      .summary p { margin:0; }
+      .list { display:grid; gap:12px; }
+      .opportunity { display:grid; grid-template-columns:78px minmax(230px,.8fr) minmax(300px,1.2fr) minmax(280px,1fr); gap:16px; align-items:start; }
+      .rank { text-align:center; border-radius:16px; padding:12px 7px; background:#eef4fb; }
+      .rank strong { display:block; font-size:27px; line-height:1; }
+      .rank small { display:block; margin-top:5px; color:#6c7d94; font-size:10px; font-weight:900; text-transform:uppercase; }
+      .labels { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:9px; }
+      .tag { display:inline-flex; padding:5px 8px; border-radius:999px; background:#eef4fb; font-size:10px; font-weight:950; text-transform:uppercase; letter-spacing:.035em; }
+      .tag.ready { color:#087943; background:#e9f8ef; }
+      .tag.improve { color:#9a5b00; background:#fff5db; }
+      .tag.blocked { color:#b42318; background:#fff0ee; }
+      .tag.high { color:#075fb4; background:#eaf3ff; }
+      .name { display:block; margin:0 0 6px; font-size:18px; line-height:1.25; font-weight:950; text-decoration:none; }
+      .name:hover { text-decoration:underline; }
+      .url { display:block; color:#6c7d94; font-size:11px; overflow-wrap:anywhere; }
+      .counts { margin-top:11px; color:#53647d; font-size:12px; font-weight:800; }
+      .copy { display:grid; gap:8px; }
+      .copy div { padding:10px 11px; border-radius:12px; background:#f7f9fc; color:#40536e; font-size:12px; line-height:1.45; }
+      .copy b { display:block; margin-bottom:3px; color:#071a3a; }
+      ul { margin:7px 0 0; padding-left:18px; color:#4d6079; font-size:12px; line-height:1.5; }
+      .empty { padding:40px 15px; text-align:center; color:#607089; }
+      .locked { max-width:700px; margin:100px auto; text-align:center; }
+      .meta { margin-top:15px; color:#6f7f96; font-size:11px; }
+      @media(max-width:1150px){ .metrics{grid-template-columns:repeat(3,1fr)} .filters{grid-template-columns:repeat(2,1fr)} .opportunity{grid-template-columns:68px 1fr 1fr}.next{grid-column:2/-1} }
+      @media(max-width:760px){ body{padding:13px}.top{display:block}.actions{margin-top:12px}.metrics{grid-template-columns:1fr 1fr}.filters{grid-template-columns:1fr}.opportunity{grid-template-columns:58px 1fr}.copy,.next{grid-column:1/-1}.card{padding:14px} }
+      @media(max-width:440px){ .metrics{grid-template-columns:1fr}.opportunity{grid-template-columns:1fr}.rank{text-align:left}.summary{display:block} }
+    </style>
+  </head>
+  <body>
+    <main>
+      {locked ? (
+        <section class="card locked">
+          <h1>TM SEO Dominator</h1>
+          <p>Nástroj je chránený. Otvorte ho s platným parametrom <strong>?key=...</strong>.</p>
+        </section>
+      ) : report && (
+        <>
+          <header class="top">
+            <div>
+              <h1>SEO Dominator</h1>
+              <p>Prioritný zoznam stránok vytvorený výhradne z aktuálneho katalógu. Skóre príležitosti je interný potenciál, nie odhad objemu vyhľadávania.</p>
+            </div>
+            <div class="actions">
+              <a class="button" href={`/admin/catalog-quality?${suppliedKey ? `key=${encodeURIComponent(suppliedKey)}` : ""}`}>Catalog Inspector</a>
+              <a class="button primary" href={`/api/seo-opportunities.csv?${exportParams.toString()}`}>Export CSV</a>
+            </div>
+          </header>
+          <div class="notice">Nástroj nič automaticky nepublikuje a nemení produkty. Denne používa rovnakú overenú cache ako e-shop, sitemap a Merchant feed.</div>
+
+          <section class="grid metrics">
+            <div class="card metric"><small>Produkty</small><strong>{nf.format(report.sourceProducts)}</strong></div>
+            <div class="card metric"><small>Kandidáti</small><strong>{nf.format(report.candidatePages)}</strong></div>
+            <div class="card metric"><small>TOP príležitostí</small><strong>{nf.format(report.opportunities.length)}</strong></div>
+            <div class="card metric"><small>Vysoký dopad</small><strong>{nf.format(report.counts.highImpact)}</strong></div>
+            <div class="card metric"><small>Pripravené</small><strong>{nf.format(report.counts.ready)}</strong></div>
+            <div class="card metric"><small>Vyžadujú opravu</small><strong>{nf.format(report.counts.improve + report.counts.blocked)}</strong></div>
+          </section>
+
+          <section class="card">
+            <form class="filters" method="get">
+              {suppliedKey && <input type="hidden" name="key" value={suppliedKey} />}
+              <label>Typ stránky
+                <select name="kind">
+                  <option value="all" selected={kind === "all"}>Všetky</option>
+                  {Object.entries(kindLabels).map(([value, label]) => <option value={value} selected={kind === value}>{label}</option>)}
+                </select>
+              </label>
+              <label>Stav
+                <select name="status">
+                  <option value="all" selected={status === "all"}>Všetky</option>
+                  {Object.entries(statusLabels).map(([value, label]) => <option value={value} selected={status === value}>{label}</option>)}
+                </select>
+              </label>
+              <label>Dopad
+                <select name="impact">
+                  <option value="all" selected={impact === "all"}>Všetky</option>
+                  {Object.entries(impactLabels).map(([value, label]) => <option value={value} selected={impact === value}>{label}</option>)}
+                </select>
+              </label>
+              <label>Názov, URL alebo úloha
+                <input type="search" name="q" value={query} placeholder="Napr. HP 652 alebo Brother" />
+              </label>
+              <button class="button primary" type="submit">Filtrovať</button>
+            </form>
+            <div class="summary">
+              <p><strong>Nájdených: {nf.format(opportunities.length)}</strong></p>
+              {(kind !== "all" || status !== "all" || impact !== "all" || query) && <a href={filterUrl({ kind:"all", status:"all", impact:"all", q:"" })}>Zrušiť filtre</a>}
+            </div>
+          </section>
+
+          <section class="list" style="margin-top:14px">
+            {opportunities.length ? opportunities.map((item, index) => (
+              <article class="card opportunity">
+                <div class="rank"><strong>{item.opportunityScore}</strong><small>potenciál</small><small>SEO {item.seoScore}</small></div>
+                <div>
+                  <div class="labels">
+                    <span class="tag">{kindLabels[item.kind]}</span>
+                    <span class:list={["tag", item.status]}>{statusLabels[item.status]}</span>
+                    <span class:list={["tag", item.impact]}>{impactLabels[item.impact]} dopad</span>
+                  </div>
+                  <a class="name" href={item.url} target="_blank" rel="noopener">{index + 1}. {item.label}</a>
+                  <span class="url">{item.url}</span>
+                  <div class="counts">{nf.format(item.productCount)} produktov · {nf.format(item.inStockCount)} skladom</div>
+                  <ul>{item.reasons.map((reason) => <li>{reason}</li>)}</ul>
+                </div>
+                <div class="copy">
+                  <div><b>Odporúčaný title</b>{item.suggestedTitle}</div>
+                  <div><b>Meta description</b>{item.suggestedDescription}</div>
+                  <div><b>Priama GEO odpoveď</b>{item.directAnswer}</div>
+                </div>
+                <div class="next">
+                  <h2>Ďalšie kroky</h2>
+                  <ul>{item.actions.map((action) => <li>{action}</li>)}</ul>
+                </div>
+              </article>
+            )) : <div class="card empty">Pre zvolený filter sa nenašli žiadne príležitosti.</div>}
+          </section>
+          <p class="meta">Report: {dtf.format(new Date(report.generatedAt))} · Produktová cache: {report.sourceGeneratedAt ? dtf.format(new Date(report.sourceGeneratedAt)) : "neuvedené"} · Limit: {report.limit}</p>
+        </>
+      )}
+    </main>
+  </body>
+</html>

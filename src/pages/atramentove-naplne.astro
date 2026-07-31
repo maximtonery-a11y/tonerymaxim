@@ -1,0 +1,50 @@
+---
+import SeoCatalogPage from "../components/SeoCatalogPage.astro";
+import { getProductsCache } from "../lib/tm-products-cache";
+import { catalogStats, landingProducts, topBrandLinks, topOemLinks, topPrinterLinks } from "../lib/seo-catalog";
+
+const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
+const products = landingProducts(cache.products, "ink");
+const stats = catalogStats(products);
+---
+
+<SeoCatalogPage
+  title="Atramentové náplne do tlačiarní | ToneryMaxim.sk"
+  description="Atramentové náplne pre HP, Canon, Epson, Brother a ďalšie tlačiarne. Originálne, kompatibilné aj renovované kazety s aktuálnou cenou a dostupnosťou."
+  canonicalPath="/atramentove-naplne"
+  eyebrow="Náplne do atramentových tlačiarní"
+  heading="Atramentové náplne"
+  intro="Nájdite atramentovú kazetu podľa čísla náplne alebo presného modelu tlačiarne. Pri každom produkte zobrazujeme farbu, kapacitu, kompatibilitu a aktuálnu dostupnosť."
+  products={products}
+  answer={`V katalógu je ${stats.total} atramentových náplní s platnou cenou, z ktorých je ${stats.inStock} skladom. Pri výbere porovnajte číslo kazety, farbu a presný model tlačiarne; čierna a farebná náplň rovnakej série nie sú zameniteľné.`}
+  generatedAt={cache.generated_at}
+  breadcrumbs={[{ name: "Atramentové náplne", path: "/atramentove-naplne" }]}
+  entityFacts={["Čierne aj farebné náplne", "Cena s DPH", "Aktuálna dostupnosť"]}
+  relatedLinks={[
+    { href: "/tonery", label: "Tonery" },
+    { href: "/kompatibilne-tonery", label: "Kompatibilné produkty" },
+    { href: "/originalne-tonery", label: "Originálne produkty" },
+    { href: "/tlaciarne", label: "Vybrať podľa tlačiarne" },
+  ]}
+  faq={[
+    { question: "Ako zistím číslo atramentovej náplne?", answer: "Označenie nájdete na používanej kazete alebo v dokumentácii tlačiarne. Alternatívne vyhľadajte presný model tlačiarne." },
+    { question: "Môžem kombinovať originálne a kompatibilné náplne?", answer: "Z technického hľadiska to pri mnohých tlačiarňach možné je, vždy však použite iba kazety určené pre presný model zariadenia." },
+  ]}
+  contentSections={[
+    {
+      heading: "Číslo kazety je dôležitejšie než vzhľad",
+      paragraphs: ["Atramentové kazety môžu vyzerať podobne, ale líšia sa kontaktmi, čipom, farbou alebo objemom. Rozhodujúce je celé označenie kazety a zoznam kompatibilných tlačiarní."],
+      bullets: ["Overte číslo čiernej aj farebnej kazety.", "XL označuje inú kapacitu, nie vždy inú kompatibilitu.", "Pri multipacku skontrolujte všetky obsiahnuté farby."],
+    },
+    {
+      heading: "Výber podľa tlačiarne",
+      paragraphs: ["Ak číslo náplne nepoznáte, použite presný model zariadenia. Modelové landing pages zobrazujú iba produkty, ktoré majú danú tlačiareň uvedenú v kompatibilite."],
+    },
+  ]}
+  linkGroups={[
+    { heading: "Atramenty podľa značky", intro: "Vyberte značku atramentovej tlačiarne.", links: topBrandLinks(products, 8) },
+    { heading: "Populárne atramentové tlačiarne", intro: "Modely zoradené podľa počtu reálne dostupných náplní.", links: topPrinterLinks(products, 8) },
+    { heading: "Časté označenia náplní", intro: "Porovnajte dostupné varianty podľa presného kódu.", links: topOemLinks(products, 8) },
+  ]}
+  schemaEntities={[{ name: "Atramentová náplň" }, { name: "Atramentová tlačiareň" }]}
+/>

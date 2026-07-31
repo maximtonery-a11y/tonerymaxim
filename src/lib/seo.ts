@@ -1,4 +1,5 @@
-import { stripHtml, type TmProduct } from './tm-products-cache';
+import { compactKey, stripHtml, type TmProduct } from './tm-products-cache';
+import { cleanGtin, cleanMpn, cleanProductBrand, gtinSchemaProperty } from './product-identifiers';
 
 export const SEO_SITE_NAME = 'ToneryMaxim.sk';
 export const SEO_COMPANY = {
@@ -49,6 +50,26 @@ export function organizationJsonLd(origin: string) {
   };
 }
 
+export function websiteJsonLd(origin: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${origin}/#website`,
+    name: SEO_SITE_NAME,
+    url: origin,
+    publisher: { '@id': `${origin}/#organization` },
+    inLanguage: 'sk-SK',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${origin}/produkty?s={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+}
+
 function productDetailUrl(origin: string, product: TmProduct): string {
   const raw = String(product.detail_url || '').trim();
   const fallback = `/produkt/${encodeURIComponent(String(product.slug || product.id || ''))}`;
@@ -75,10 +96,44 @@ function productDetailUrl(origin: string, product: TmProduct): string {
   return absoluteUrl(origin, fallback);
 }
 
+function productBrandName(product: TmProduct): string | undefined {
+  const taxonomyBrand = Array.isArray(product.brands)
+    ? product.brands.find((brand: any) => brand?.name)?.name
+    : '';
+  const direct = product.product_brand || product.manufacturer_brand || taxonomyBrand;
+  const cleanDirect = cleanProductBrand(direct);
+  if (cleanDirect) return cleanDirect;
+
+  const attributes = Array.isArray(product.attributes_all)
+    ? product.attributes_all
+    : Array.isArray(product.attributes)
+      ? product.attributes
+      : [];
+  const brandAttribute = attributes.find((attribute: any) => {
+    const name = compactKey(attribute?.name || attribute?.slug || '');
+    return [
+      'znackaproduktu',
+      'vyrobcaproduktu',
+      'productbrand',
+      'productmanufacturer',
+    ].includes(name);
+  });
+  const value = brandAttribute?.value
+    || brandAttribute?.option
+    || (Array.isArray(brandAttribute?.values) ? brandAttribute.values[0] : '')
+    || (Array.isArray(brandAttribute?.options) ? brandAttribute.options[0] : '');
+  return cleanProductBrand(value) || undefined;
+}
+
 export function productJsonLd(origin: string, product: TmProduct) {
   const url = productDetailUrl(origin, product);
   const image = (Array.isArray(product.images) ? product.images : [product.image]).filter(Boolean).map((v) => absoluteUrl(origin, v));
   const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
+  const price = Number(product.price || 0);
+  const brand = productBrandName(product);
+  const gtin = cleanGtin(product.gtin);
+  const gtinProperty = gtinSchemaProperty(gtin);
+  const mpn = cleanMpn(product.mpn);
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -88,35 +143,19 @@ export function productJsonLd(origin: string, product: TmProduct) {
     sku: product.sku || undefined,
     image,
     url,
-    brand: { '@type': 'Brand', name: String(product.name || '').split(/\s+/)[0] || 'ToneryMaxim' },
+    brand: brand ? { '@type': 'Brand', name: brand } : undefined,
+    ...(gtinProperty ? { [gtinProperty]: gtin } : {}),
+    mpn: mpn || undefined,
     category: Array.isArray(product.categories) ? product.categories.map((c: any) => c.name).filter(Boolean).join(' > ') : undefined,
-    offers: {
+    offers: price > 0 ? {
       '@type': 'Offer',
       url,
       priceCurrency: 'EUR',
-      price: Number(product.price || 0).toFixed(2),
+      price: price.toFixed(2),
       availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       itemCondition: 'https://schema.org/NewCondition',
       seller: { '@id': `${origin}/#organization` },
-      shippingDetails: {
-        '@type': 'OfferShippingDetails',
-        shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'SK' },
-        shippingRate: { '@type': 'MonetaryAmount', value: '2.90', currency: 'EUR' },
-        deliveryTime: {
-          '@type': 'ShippingDeliveryTime',
-          handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
-          transitTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' },
-        },
-      },
-      hasMerchantReturnPolicy: {
-        '@type': 'MerchantReturnPolicy',
-        applicableCountry: 'SK',
-        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-        merchantReturnDays: 14,
-        returnMethod: 'https://schema.org/ReturnByMail',
-        returnFees: 'https://schema.org/FreeReturn',
-      },
-    },
+    } : undefined,
   };
   return data;
 }

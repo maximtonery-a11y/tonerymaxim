@@ -1,8 +1,12 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { chmod, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
+import { isStrongSecret } from './secret-validation';
+import { portableStoragePath } from './runtime-paths';
 
-export const TM_DATA_ROOT = resolve(process.env.TM_PERSISTENT_DATA_DIR || join(process.cwd(), '.tm-data'));
+export const TM_DATA_ROOT = resolve(
+  portableStoragePath(process.env.TM_PERSISTENT_DATA_DIR) || join(process.cwd(), '.tm-data')
+);
 
 function isProduction(): boolean {
   return Boolean(import.meta.env.PROD || process.env.NODE_ENV === 'production');
@@ -20,10 +24,10 @@ function readSecret(): string {
 
 export function persistenceSecret(): string {
   const value = readSecret();
-  if (value.length >= 32) return value;
+  if (isStrongSecret(value, 32)) return value;
 
   if (isProduction()) {
-    throw new Error('TM_PERSISTENCE_SECRET alebo AUTH_SECRET musí mať v produkcii aspoň 32 znakov.');
+    throw new Error('TM_PERSISTENCE_SECRET alebo AUTH_SECRET musí byť jedinečný, nesmie byť ukážkový a musí mať aspoň 32 znakov.');
   }
 
   return 'tonerymaxim-local-persistence-secret-change-me';

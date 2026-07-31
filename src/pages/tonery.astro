@@ -1,0 +1,54 @@
+---
+import SeoCatalogPage from "../components/SeoCatalogPage.astro";
+import { getProductsCache } from "../lib/tm-products-cache";
+import { catalogStats, landingProducts, topBrandLinks, topOemLinks, topPrinterLinks } from "../lib/seo-catalog";
+
+const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
+const products = landingProducts(cache.products, "toners");
+const stats = catalogStats(products);
+---
+
+<SeoCatalogPage
+  title="Tonery do tlačiarní – kompatibilné aj originálne | ToneryMaxim.sk"
+  description="Tonery do laserových tlačiarní HP, Brother, Canon, Epson, Xerox a ďalších značiek. Kompatibilné, originálne aj renovované tonery s aktuálnou cenou a dostupnosťou."
+  canonicalPath="/tonery"
+  eyebrow="Tonery do laserových tlačiarní"
+  heading="Tonery do tlačiarní"
+  intro="Vyberte toner podľa označenia kazety alebo modelu tlačiarne. Produkty sú zoradené tak, aby ste najskôr videli cenovo výhodné kompatibilné možnosti a následne originálne a renovované tonery."
+  products={products}
+  answer={`Aktuálny katalóg obsahuje ${stats.total} tonerov, z ktorých je ${stats.inStock} skladom. Nájdete tu ${stats.compatible} kompatibilných, ${stats.original} originálnych a ${stats.renovated} renovovaných produktov. Správny toner vyberajte podľa OEM označenia alebo presného modelu tlačiarne.`}
+  generatedAt={cache.generated_at}
+  breadcrumbs={[{ name: "Tonery", path: "/tonery" }]}
+  entityFacts={["Cena s DPH", "Aktuálna dostupnosť", "Overená kompatibilita"]}
+  relatedLinks={[
+    { href: "/kompatibilne-tonery", label: "Kompatibilné tonery" },
+    { href: "/originalne-tonery", label: "Originálne tonery" },
+    { href: "/renovovane-tonery", label: "Renovované tonery" },
+    { href: "/atramentove-naplne", label: "Atramentové náplne" },
+  ]}
+  faq={[
+    { question: "Ako nájdem správny toner?", answer: "Najistejšie je vyhľadať presný model tlačiarne alebo OEM označenie pôvodného tonera. Pred objednaním skontrolujte zoznam kompatibilných tlačiarní v detaile produktu." },
+    { question: "Aký je rozdiel medzi kompatibilným a originálnym tonerom?", answer: "Originálny toner vyrába výrobca tlačiarne. Kompatibilný toner vyrába iný výrobca ako cenovo výhodnú náhradu pre rovnaký model tlačiarne." },
+  ]}
+  contentSections={[
+    {
+      heading: "Ako vybrať toner bez rizika zámeny",
+      paragraphs: ["Najspoľahlivejšie je kombinovať dve informácie: OEM kód kazety a presný model tlačiarne. Podobné čísla nemusia znamenať rovnaký produkt, preto vždy otvorte detail a skontrolujte zoznam kompatibilných zariadení."],
+      bullets: ["Porovnajte celé OEM označenie vrátane XL alebo farebnej koncovky.", "Skontrolujte presný názov modelu na štítku tlačiarne.", "Overte farbu a deklarovanú výťažnosť kazety."],
+    },
+    {
+      heading: "Kompatibilný, originálny alebo renovovaný",
+      paragraphs: ["Kompatibilný toner je cenovo výhodná alternatíva od iného výrobcu. Originálny toner dodáva značka tlačiarne. Renovovaný toner používa odborne obnovené telo kazety. Typ je pri každom produkte viditeľne označený."],
+    },
+  ]}
+  linkGroups={[
+    { heading: "Najhľadanejšie značky", intro: "Prejdite na ponuku tonerov podľa značky tlačiarne.", links: topBrandLinks(products, 8) },
+    { heading: "Populárne modely tlačiarní", intro: "Stránky vznikajú iba pre modely, ku ktorým máme v katalógu reálne produkty.", links: topPrinterLinks(products, 8) },
+    { heading: "Časté OEM označenia", intro: "OEM kód umožňuje porovnať kompatibilné, originálne a renovované možnosti.", links: topOemLinks(products, 8) },
+  ]}
+  schemaEntities={[
+    { name: "Toner" },
+    { name: "Laserová tlačiareň" },
+    { name: "OEM označenie tonera" },
+  ]}
+/>

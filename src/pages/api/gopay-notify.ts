@@ -36,7 +36,9 @@ export const GET: APIRoute = async ({ url }) => {
   try {
     const pending = await readPendingGoPayOrder(paymentId);
     if (!pending) throw new Error(`Neznáma GoPay platba ${paymentId}.`);
-    const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents: pending.amountCents, currency: pending.currency, requirePaid: false });
+    const amountCents = Number(pending.amountCents);
+    if (!Number.isFinite(amountCents) || amountCents <= 0) throw new Error(`GoPay platba ${paymentId} nemá platnú očakávanú sumu.`);
+    const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents, currency: pending.currency, requirePaid: false });
     let orderResult: any = null;
 
     if (["PAID", "AUTHORIZED"].includes(String(payment.state || "").toUpperCase())) {
@@ -85,7 +87,9 @@ export const POST: APIRoute = async ({ request }) => {
 
     const pending = await readPendingGoPayOrder(paymentId);
     if (!pending) throw new Error(`Neznáma GoPay platba ${paymentId}.`);
-    const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents: pending.amountCents, currency: pending.currency, requirePaid: false });
+    const amountCents = Number(pending.amountCents);
+    if (!Number.isFinite(amountCents) || amountCents <= 0) throw new Error(`GoPay platba ${paymentId} nemá platnú očakávanú sumu.`);
+    const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents, currency: pending.currency, requirePaid: false });
 
     let orderResult: any = null;
 

@@ -1,0 +1,14 @@
+---
+interface PrinterLink {
+  slug: string;
+  name: string;
+}
+
+const { printers = [] } = Astro.props as { printers?: PrinterLink[] };
+---
+<nav>
+<h3>Súvisiace tlačiarne</h3>
+<ul>
+{printers.map((p)=> <li><a href={`/tlaciarne/${p.slug}`}>{p.name}</a></li>)}
+</ul>
+</nav>

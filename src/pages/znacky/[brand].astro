@@ -1,0 +1,82 @@
+---
+export const prerender = false;
+
+import SeoCatalogPage from "../../components/SeoCatalogPage.astro";
+import { getProductsCache } from "../../lib/tm-products-cache";
+import {
+  brandProducts,
+  catalogStats,
+  findBrand,
+  topOemLinks,
+  topPrinterLinks,
+} from "../../lib/seo-catalog";
+
+const brand = findBrand(Astro.params.brand);
+const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
+const products = brand ? brandProducts(cache.products, brand) : [];
+const notFound = !brand || products.length === 0;
+const stats = catalogStats(products);
+
+if (notFound) {
+  Astro.response.status = 404;
+  Astro.response.statusText = "Not Found";
+  Astro.response.headers.set("X-Robots-Tag", "noindex, follow");
+}
+
+const brandName = brand?.name || "Neznáma značka";
+const canonicalPath = brand ? `/znacky/${brand.slug}` : Astro.url.pathname;
+---
+
+<SeoCatalogPage
+  title={notFound ? "Značka sa nenašla | ToneryMaxim.sk" : `${brandName} tonery a náplne | ToneryMaxim.sk`}
+  description={notFound
+    ? "Požadovaná značka sa v katalógu nenašla."
+    : `Kompatibilné, originálne a renovované tonery a náplne pre tlačiarne ${brandName}. Aktuálne ceny, sklad a overené modely tlačiarní.`}
+  canonicalPath={canonicalPath}
+  eyebrow={notFound ? "Neznáma značka" : "Produkty podľa značky tlačiarne"}
+  heading={notFound ? "Značka sa nenašla" : `${brandName} tonery a náplne`}
+  intro={notFound
+    ? "Skontrolujte názov značky alebo pokračujte na výber tlačiarne."
+    : `Na jednom mieste nájdete spotrebný materiál pre tlačiarne ${brandName}. Pri výbere použite označenie tonera alebo presný model tlačiarne.`}
+  products={products}
+  answer={notFound
+    ? ""
+    : `Pre tlačiarne ${brandName} evidujeme ${stats.total} produktov s platnou cenou, z ktorých je ${stats.inStock} skladom. Ponuka obsahuje ${stats.compatible} kompatibilných, ${stats.original} originálnych a ${stats.renovated} renovovaných produktov. Výber potvrďte podľa presného modelu tlačiarne alebo OEM kódu kazety.`}
+  generatedAt={cache.generated_at}
+  breadcrumbs={[
+    { name: "Značky", path: "/tlaciarne" },
+    { name: brandName, path: canonicalPath },
+  ]}
+  entityFacts={notFound ? [] : ["Kompatibilné aj originálne produkty", "Cena s DPH", "Aktuálna dostupnosť"]}
+  relatedLinks={[
+    { href: brand ? `/tlaciarne/${brand.slug}` : "/tlaciarne", label: `Vybrať tlačiareň ${brandName}` },
+    { href: "/kompatibilne-tonery", label: "Kompatibilné tonery" },
+    { href: "/originalne-tonery", label: "Originálne tonery" },
+    { href: "/tonery", label: "Všetky tonery" },
+  ]}
+  faq={notFound ? [] : [
+    { question: `Ako nájdem správny toner pre tlačiareň ${brandName}?`, answer: "Vyhľadajte presný model tlačiarne alebo OEM označenie uvedené na pôvodnej kazete. Kompatibilitu vždy skontrolujte v detaile produktu." },
+    { question: `Ponúkate originálne aj kompatibilné produkty ${brandName}?`, answer: `Ponuka môže obsahovať originálne, kompatibilné aj renovované produkty. Dostupné typy sú označené priamo pri každom produkte.` },
+  ]}
+  contentSections={notFound ? [] : [
+    {
+      heading: `Ako vybrať náplň pre tlačiareň ${brandName}`,
+      paragraphs: [`Označenie značky nestačí, pretože jednotlivé modelové rady ${brandName} používajú rozdielne kazety. Najskôr zistite presný model tlačiarne a potom ho porovnajte so zoznamom kompatibilných zariadení v detaile produktu.`],
+      bullets: ["Skontrolujte celý názov modelu vrátane písmen a koncoviek.", "Porovnajte OEM kód uvedený na pôvodnej kazete.", "Overte farbu, kapacitu a typ produktu pred vložením do košíka."],
+    },
+    {
+      heading: `Originálne a alternatívne produkty ${brandName}`,
+      paragraphs: [`Na tejto stránke sa typ produktu preberá priamo z katalógu. Originálny produkt dodáva výrobca, kompatibilný produkt je nová alternatíva od iného výrobcu a renovovaný produkt používa odborne obnovené telo kazety.`],
+    },
+  ]}
+  linkGroups={notFound ? [] : [
+    { heading: `Populárne modely ${brandName}`, intro: "Každý odkaz vedie na model, ku ktorému sú v katalógu priradené reálne produkty.", links: topPrinterLinks(products, 12) },
+    { heading: `Časté OEM označenia pre ${brandName}`, intro: "OEM stránka porovná dostupné typy, ceny a podporované tlačiarne pre rovnaké označenie.", links: topOemLinks(products, 12) },
+  ]}
+  schemaEntities={notFound ? [] : [
+    { name: brandName, url: canonicalPath },
+    { name: `Tonery ${brandName}` },
+    { name: `Náplne do tlačiarní ${brandName}` },
+  ]}
+  notFound={notFound}
+/>

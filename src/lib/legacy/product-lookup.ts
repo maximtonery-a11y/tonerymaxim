@@ -1,11 +1,10 @@
 import { compactKey, getProductsCache, type TmProduct } from "../tm-products-cache";
-import { LEGACY_PRODUCT_REDIRECTS } from "./product-redirect-map";
 
 export interface LegacyProductMatch {
   product: TmProduct;
   location: string;
   confidence: number;
-  matchedBy: "migration-map" | "exact-slug" | "exact-key";
+  matchedBy: "exact-slug" | "exact-key";
 }
 
 function detailUrl(product: TmProduct): string {
@@ -26,19 +25,6 @@ export async function findLegacyProduct(legacySlugValue: unknown): Promise<Legac
   if (!legacySlug) return null;
 
   const cache = await getProductsCache();
-  const mappedSlug = LEGACY_PRODUCT_REDIRECTS[legacySlug];
-
-  if (mappedSlug) {
-    const mapped = cache.products.find((product) => String(product.slug || "") === mappedSlug);
-    if (mapped) {
-      return {
-        product: mapped,
-        location: detailUrl(mapped),
-        confidence: 1,
-        matchedBy: "migration-map",
-      };
-    }
-  }
 
   const exact = cache.products.find(
     (product) => String(product.slug || "").toLowerCase() === legacySlug

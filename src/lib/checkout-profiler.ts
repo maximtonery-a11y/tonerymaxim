@@ -31,7 +31,7 @@ function nowMs() {
 }
 
 function isEnabled() {
-  const value = String(import.meta.env.CHECKOUT_PROFILER || process.env.CHECKOUT_PROFILER || '1').toLowerCase();
+  const value = String(process.env.CHECKOUT_PROFILER || import.meta.env.CHECKOUT_PROFILER || '1').toLowerCase();
   return value !== '0' && value !== 'false' && value !== 'off';
 }
 

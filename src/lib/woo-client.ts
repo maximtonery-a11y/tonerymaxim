@@ -1,7 +1,7 @@
 import { createHmac } from "node:crypto";
 
-const WOO_ACCOUNT_CACHE_TTL_MS = Number(import.meta.env.ACCOUNT_CACHE_TTL_MS || 60_000);
-const WOO_ACCOUNT_ORDERS_CACHE_TTL_MS = Number(import.meta.env.ACCOUNT_ORDERS_CACHE_TTL_MS || 60_000);
+const WOO_ACCOUNT_CACHE_TTL_MS = Number(process.env.ACCOUNT_CACHE_TTL_MS || import.meta.env.ACCOUNT_CACHE_TTL_MS || 60_000);
+const WOO_ACCOUNT_ORDERS_CACHE_TTL_MS = Number(process.env.ACCOUNT_ORDERS_CACHE_TTL_MS || import.meta.env.ACCOUNT_ORDERS_CACHE_TTL_MS || 60_000);
 
 type CacheEntry<T> = { value: T; expiresAt: number };
 const wooCustomerCache = new Map<number, CacheEntry<WooCustomer | null>>();
@@ -53,7 +53,7 @@ type WooRequestOptions = {
 };
 
 function env(name: string): string {
-  const value = import.meta.env[name];
+  const value = process.env[name] || import.meta.env[name];
   return typeof value === "string" ? value.trim() : "";
 }
 

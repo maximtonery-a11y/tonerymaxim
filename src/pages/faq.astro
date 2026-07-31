@@ -91,9 +91,9 @@ const categoryCounts = faqCategories.map((category) => ({
     </div>
 
     <script>
-      const search = document.querySelector('[data-faq-search]');
-      const items = Array.from(document.querySelectorAll('[data-faq-item]'));
-      const sections = Array.from(document.querySelectorAll('[data-faq-section]'));
+      const search = document.querySelector<HTMLInputElement>('[data-faq-search]');
+      const items = Array.from(document.querySelectorAll<HTMLDetailsElement>('[data-faq-item]'));
+      const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-faq-section]'));
 
       search?.addEventListener('input', () => {
         const query = search.value.trim().toLowerCase();
@@ -105,7 +105,7 @@ const categoryCounts = faqCategories.map((category) => ({
           if (!query) item.open = false;
         });
         sections.forEach((section) => {
-          const hasVisible = Array.from(section.querySelectorAll('[data-faq-item]')).some((item) => !item.hidden);
+          const hasVisible = Array.from(section.querySelectorAll<HTMLDetailsElement>('[data-faq-item]')).some((item) => !item.hidden);
           section.hidden = !hasVisible;
         });
       });

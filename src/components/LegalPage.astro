@@ -1,4 +1,10 @@
 ---
+interface Props {
+  title: string;
+  intro: string;
+  body: string;
+}
+
 const { title, intro, body } = Astro.props;
 
 const blocks = String(body || "")
@@ -6,13 +12,13 @@ const blocks = String(body || "")
   .map((block) => block.trim())
   .filter(Boolean);
 
-function isHeading(block) {
+function isHeading(block: string) {
   const clean = block.trim();
   if (clean.length > 90) return false;
   return /^(Článok\s+[IVXLCDM]+\.?|\d+\.|[A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ][^\n]{2,80})$/.test(clean);
 }
 
-function isListBlock(block) {
+function isListBlock(block: string) {
   const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
   return lines.length > 1 && lines.every((line) => /^([a-z]\)|\d+\.|[·•-])\s+/.test(line) || line.length < 180);
 }

@@ -67,11 +67,11 @@ const validToken = Boolean(verifyPasswordResetToken(token));
     </div>
 
     <script>
-      const form = document.querySelector("[data-reset-form]");
-      const message = document.querySelector("[data-auth-message]");
-      const submit = document.querySelector("[data-auth-submit]");
+      const form = document.querySelector<HTMLFormElement>("[data-reset-form]")!;
+      const message = document.querySelector<HTMLElement>("[data-auth-message]")!;
+      const submit = document.querySelector<HTMLButtonElement>("[data-auth-submit]")!;
 
-      function showMessage(text, type = "error") {
+      function showMessage(text: string, type = "error") {
         message.hidden = false;
         message.textContent = text;
         message.className = `auth-alert is-${type}`;
@@ -99,7 +99,7 @@ const validToken = Boolean(verifyPasswordResetToken(token));
             window.location.href = result.redirect || "/prihlasenie?password-reset=1";
           }, 1200);
         } catch (error) {
-          showMessage(error.message || "Heslo sa nepodarilo zmeniť.");
+          showMessage(error instanceof Error ? error.message : "Heslo sa nepodarilo zmeniť.");
         } finally {
           submit.disabled = false;
           submit.textContent = "Zmeniť heslo";

@@ -1,0 +1,25 @@
+# ToneryMaxim.sk
+
+ToneryMaxim je slovenský internetový obchod s tonermi, atramentovými náplňami a spotrebným materiálom do tlačiarní.
+
+## Hlavné verejné zdroje
+
+- https://www.tonerymaxim.sk/tonery
+- https://www.tonerymaxim.sk/kompatibilne-tonery
+- https://www.tonerymaxim.sk/originalne-tonery
+- https://www.tonerymaxim.sk/renovovane-tonery
+- https://www.tonerymaxim.sk/atramentove-naplne
+- https://www.tonerymaxim.sk/tlaciarne
+- https://www.tonerymaxim.sk/faq
+- https://www.tonerymaxim.sk/doprava-a-platba
+- https://www.tonerymaxim.sk/reklamacie
+- https://www.tonerymaxim.sk/kontakt
+
+## Produktové údaje
+
+Produktové stránky uvádzajú cenu s DPH, skladovú dostupnosť, typ produktu, farbu, výťažnosť a kompatibilné modely tlačiarní. Pred nákupom je potrebné overiť presný model tlačiarne a OEM označenie kazety.
+
+## Kontakt
+
+- E-mail: info@tonerymaxim.sk
+- Telefón: +421 917 859 206

@@ -1,7 +1,8 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { TM_CACHE_ROOT } from './runtime-paths';
-import { findExactProductIdentityMatches } from './catalog-query';
+import { TM_CACHE_ROOT } from './runtime-paths.ts';
+import { findExactProductIdentityMatches } from './catalog-query.ts';
+import { normalizedCompletenessRatio, requiredProductCount } from './product-cache-policy.ts';
 
 export type TmProduct = Record<string, any>;
 
@@ -10,7 +11,15 @@ type CacheFile = {
   version: number;
   generated_at: string;
   total: number;
+  woo_reported_total?: number;
   products: TmProduct[];
+};
+
+type ProductsSyncResult = {
+  cache: CacheFile;
+  refreshed: boolean;
+  warning?: string;
+  sync?: Awaited<ReturnType<typeof fetchAllWooProducts>>;
 };
 
 const CACHE_VERSION = 3;
@@ -24,10 +33,15 @@ const FALLBACK_CACHE_FILES = [
   path.join(process.cwd(), "data", "products-cache.json"),
 ];
 const MIN_SAFE_PRODUCTS = Number(env("WOO_SYNC_MIN_PRODUCTS") || 100);
+// Pevný počet produktov nesmie zablokovať prvé načítanie katalógu.
+// Ak WooCommerce pošle X-WP-Total, úplnosť kontrolujeme voči tomuto
+// reálnemu počtu. Voliteľné minimum sa dá nastaviť v Coolify.
+const EXPECTED_MIN_PRODUCTS = Math.max(0, Number(env("WOO_SYNC_EXPECTED_MIN_PRODUCTS") || 0));
+const COMPLETENESS_RATIO = normalizedCompletenessRatio(env("WOO_SYNC_COMPLETENESS_RATIO") || 0.99);
 const WOO_SYNC_PER_PAGE = Math.min(100, Math.max(10, Number(env("WOO_SYNC_PER_PAGE") || 100)));
 const WOO_SYNC_TIMEOUT_MS = Math.min(60000, Math.max(8000, Number(env("WOO_SYNC_TIMEOUT_MS") || 25000)));
 const WOO_SYNC_MAX_PAGES = Math.min(1000, Math.max(1, Number(env("WOO_SYNC_MAX_PAGES") || 500)));
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const CACHE_TTL_MS = Math.max(5 * 60_000, Number(env("WOO_CACHE_TTL_MS") || 60 * 60_000));
 const WOO_FIELDS = [
   "id",
   "sku",
@@ -38,6 +52,10 @@ const WOO_FIELDS = [
   "sale_price",
   "stock_quantity",
   "stock_status",
+  "date_modified",
+  "date_modified_gmt",
+  "global_unique_id",
+  "brands",
   "images",
   "description",
   "short_description",
@@ -47,7 +65,12 @@ const WOO_FIELDS = [
   "meta_data",
 ].join(",");
 
-const globalStore = globalThis as typeof globalThis & { __TM_PRODUCTS_FILE_CACHE__?: CacheFile };
+const globalStore = globalThis as typeof globalThis & {
+  __TM_PRODUCTS_FILE_CACHE__?: CacheFile;
+  __TM_PRODUCTS_SYNC_PROMISE__?: Promise<ProductsSyncResult>;
+  __TM_PRODUCTS_WARM_PROMISE__?: Promise<void>;
+  __TM_PRODUCTS_WARM_STARTED_AT__?: number;
+};
 
 const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
 const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
@@ -151,7 +174,8 @@ function normalizeProductImages(images: unknown, product?: any) {
 
 
 function env(name: string) {
-  return String(import.meta.env[name] || process.env[name] || "").trim();
+  const buildEnv = (import.meta as ImportMeta & { env?: Record<string, unknown> }).env;
+  return String(process.env[name] || buildEnv?.[name] || "").trim();
 }
 
 function getAuthHeader() {
@@ -240,7 +264,16 @@ function normalizeAttributeValues(value: unknown): string[] {
 }
 
 function extractWooAttributes(product: any) {
-  const out: Array<{ id?: number; name: string; slug: string; values: string[]; value: string; visible?: boolean; variation?: boolean }> = [];
+  const out: Array<{
+    id?: number;
+    name: string;
+    slug: string;
+    values: string[];
+    value: string;
+    options?: string[];
+    visible?: boolean;
+    variation?: boolean;
+  }> = [];
   const seen = new Set<string>();
   const attributes = Array.isArray(product?.attributes) ? product.attributes : [];
 
@@ -259,6 +292,7 @@ function extractWooAttributes(product: any) {
       slug,
       values,
       value: values.join(", "),
+      options: values,
       visible: attribute?.visible,
       variation: attribute?.variation,
     });
@@ -279,6 +313,22 @@ function attributeNameMatches(attribute: { name: string; slug: string }, aliases
 function getWooAttributeValue(attributes: ReturnType<typeof extractWooAttributes>, aliases: string[]) {
   const found = attributes.find((attribute) => attributeNameMatches(attribute, aliases));
   return found?.value || "";
+}
+
+function getExactWooAttributeValue(attributes: ReturnType<typeof extractWooAttributes>, aliases: string[]) {
+  const keys = new Set(aliases.map(compactKey));
+  const found = attributes.find((attribute) => (
+    keys.has(normalizeWooAttributeName(attribute.name))
+    || keys.has(normalizeWooAttributeName(attribute.slug))
+  ));
+  return found?.value || "";
+}
+
+function getWooMetaValue(product: any, aliases: string[]) {
+  const keys = new Set(aliases.map(compactKey));
+  const meta = Array.isArray(product?.meta_data) ? product.meta_data : [];
+  const found = meta.find((item: any) => keys.has(compactKey(item?.key || "")));
+  return cleanAttributeValue(found?.value);
 }
 
 function normalizeWooColor(value: string) {
@@ -332,6 +382,7 @@ function ensureDefaultWarrantyAttribute(attributes: ReturnType<typeof extractWoo
     id: 0,
     name: "Záruka",
     slug: "zaruka",
+    values: [DEFAULT_WARRANTY],
     value: DEFAULT_WARRANTY,
     options: [DEFAULT_WARRANTY],
   });
@@ -431,12 +482,6 @@ function detectColor(product: any) {
   return "";
 }
 
-function detectYield(product: any) {
-  const text = `${product.name || ""} ${stripHtml(product.short_description || product.description || "")}`;
-  const match = text.match(/(\d[\d\s]{2,})\s*(strán|stran|pages|page)/i);
-  return match ? `${match[1].replace(/\s+/g, " ").trim()} strán` : "";
-}
-
 function isMissingAttribute(value: unknown) {
   const text = normalize(value);
   return !text || text === "neuvedene" || text === "neuvedena" || text === "n/a" || text === "nezname" || text === "neznamy";
@@ -465,7 +510,7 @@ function extractStrictOemKeys(value: unknown) {
 
   // Iba reálne OEM kódy, nie názvy tlačiarní/modely typu HL-L8360CDW.
   const patterns = [
-    /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CRG|CF|CE|W|Q|TK|MLT|CLT|T)[\s-]*\d{2,6}(?:[\s-]*(?:K|C|M|Y|BK|BLACK|CYAN|MAGENTA|YELLOW|CIERNA|AZUROVA|PURPUROVA|ZLTA|XL|XXL))?\b/g,
+    /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CRG|CF|CE|W|Q|TK|MLT|CLT|T)[\s-]*\d{2,6}(?:[\s-]*(?:[A-Z]{1,3}|BLACK|CYAN|MAGENTA|YELLOW|CIERNA|AZUROVA|PURPUROVA|ZLTA))?\b/g,
     /\b(?:C13T|C13S)\d{4,12}\b/g,
   ];
 
@@ -631,6 +676,37 @@ export function mapProduct(product: any): TmProduct {
   const searchableText = normalize(`${product.name || ""} ${product.sku || ""} ${categoryText} ${tagText} ${wooAttributeText(wooAttributes)} ${plainText} ${compatiblePrinters.join(" ")}`);
   const normalizedImages = normalizeProductImages(product.images, product);
   const primaryImage = normalizedImages[0] || TM_PRODUCT_PLACEHOLDER_IMAGE;
+  const taxonomyBrand = Array.isArray(product.brands)
+    ? cleanAttributeValue(product.brands.find((brand: any) => brand?.name)?.name)
+    : "";
+  const productBrand = taxonomyBrand
+    || getExactWooAttributeValue(wooAttributes, [
+      "Značka produktu",
+      "Znacka produktu",
+      "Výrobca produktu",
+      "Vyrobca produktu",
+      "Product brand",
+      "Product manufacturer",
+    ])
+    || getWooMetaValue(product, ["product_brand", "_product_brand", "manufacturer_brand"]);
+  const gtin = cleanAttributeValue(product.global_unique_id)
+    || getExactWooAttributeValue(wooAttributes, ["GTIN", "EAN", "UPC"])
+    || getWooMetaValue(product, [
+      "gtin",
+      "_gtin",
+      "ean",
+      "_ean",
+      "_alg_ean",
+      "_wpm_gtin_code",
+      "_wc_gla_gtin",
+      "_global_unique_id",
+    ]);
+  const mpn = getExactWooAttributeValue(wooAttributes, [
+    "MPN",
+    "Manufacturer Part Number",
+    "Kód výrobcu produktu",
+    "Kod vyrobcu produktu",
+  ]) || getWooMetaValue(product, ["mpn", "_mpn", "manufacturer_part_number"]);
   return {
     id: product.id,
     sku: product.sku || "",
@@ -641,6 +717,11 @@ export function mapProduct(product: any): TmProduct {
     sale_price: cleanPrice(product.sale_price),
     stock_quantity: product.stock_quantity ?? null,
     stock_status: product.stock_status || "",
+    date_modified: product.date_modified || "",
+    date_modified_gmt: product.date_modified_gmt || "",
+    gtin,
+    mpn,
+    product_brand: productBrand,
     image: primaryImage,
     images: normalizedImages.length ? normalizedImages : [TM_PRODUCT_PLACEHOLDER_IMAGE],
     detail_url: `/produkt/${product.slug || product.id}`,
@@ -677,7 +758,13 @@ function isFresh(cache: CacheFile) {
 function parseCacheFile(text: string): CacheFile | null {
   try {
     const data = JSON.parse(text) as CacheFile;
-    if (!data || data.version !== CACHE_VERSION || !Array.isArray(data.products)) return null;
+    if (
+      !data
+      || data.version !== CACHE_VERSION
+      || !Array.isArray(data.products)
+      || data.products.length < 1
+      || Number(data.total || 0) !== data.products.length
+    ) return null;
     return data;
   } catch {
     return null;
@@ -732,6 +819,52 @@ async function fetchWithTimeout(url: string, headers: Record<string, string>) {
   }
 }
 
+export function normalizeWooSiteUrl(value: unknown) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new Error("WOO_URL nie je platná absolútna URL.");
+  }
+
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("WOO_URL musí začínať http:// alebo https://.");
+  }
+
+  parsed.search = "";
+  parsed.hash = "";
+  parsed.pathname = parsed.pathname
+    .replace(/\/wp-json\/wc\/v3\/products\/?$/i, "")
+    .replace(/\/wp-json\/wc\/v3\/?$/i, "")
+    .replace(/\/wp-json\/?$/i, "")
+    .replace(/\/+$/, "");
+
+  return parsed.toString().replace(/\/+$/, "");
+}
+
+function retryDelayMs(response: Response | null, attempt: number) {
+  const retryAfter = Number(response?.headers.get("retry-after") || 0);
+  if (Number.isFinite(retryAfter) && retryAfter > 0) {
+    return Math.min(30_000, retryAfter * 1000);
+  }
+  return Math.min(12_000, 750 * (2 ** Math.max(0, attempt - 1)));
+}
+
+function retryableWooStatus(status: number) {
+  return status === 408 || status === 425 || status === 429 || status >= 500;
+}
+
+function safeWooErrorPayload(text: string) {
+  try {
+    return JSON.stringify(JSON.parse(text)).slice(0, 300);
+  } catch {
+    return text.replace(/\s+/g, " ").trim().slice(0, 300);
+  }
+}
+
 async function fetchWooProductsPage(wooUrl: string, page: number) {
   const params = new URLSearchParams({
     per_page: String(WOO_SYNC_PER_PAGE),
@@ -742,7 +875,7 @@ async function fetchWooProductsPage(wooUrl: string, page: number) {
     _fields: WOO_FIELDS,
   });
 
-  const url = `${wooUrl}/wp-json/wc/v3/products?${params.toString()}`;
+  const url = `${normalizeWooSiteUrl(wooUrl)}/wp-json/wc/v3/products?${params.toString()}`;
   const headers = {
     Authorization: getAuthHeader(),
     Accept: "application/json",
@@ -751,16 +884,21 @@ async function fetchWooProductsPage(wooUrl: string, page: number) {
 
   let lastError: any;
 
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
+  for (let attempt = 1; attempt <= 7; attempt += 1) {
+    let response: Response | null = null;
     try {
-      const response = await fetchWithTimeout(url, headers);
+      response = await fetchWithTimeout(url, headers);
       const text = await response.text();
-      const data = parseWooPayload(text);
 
       if (!response.ok) {
-        throw new Error(`WooCommerce API chyba ${response.status} na strane ${page}: ${JSON.stringify(data).slice(0, 300)}`);
+        const error = new Error(
+          `WooCommerce API chyba ${response.status} na strane ${page}: ${safeWooErrorPayload(text)}`
+        ) as Error & { retryable?: boolean };
+        error.retryable = retryableWooStatus(response.status);
+        throw error;
       }
 
+      const data = parseWooPayload(text);
       if (!Array.isArray(data)) {
         throw new Error(`WooCommerce nevrátil pole produktov na strane ${page}: ${JSON.stringify(data).slice(0, 300)}`);
       }
@@ -773,9 +911,11 @@ async function fetchWooProductsPage(wooUrl: string, page: number) {
     } catch (error: any) {
       lastError = error;
       const message = String(error?.message || "");
-      const retryable = /503|502|504|429|timeout|AbortError/i.test(message);
-      if (!retryable || attempt === 3) break;
-      await new Promise((resolve) => setTimeout(resolve, 750 * attempt));
+      const retryable = error?.retryable === true
+        || error?.name === "AbortError"
+        || /fetch failed|socket|ECONNRESET|ETIMEDOUT|timeout/i.test(message);
+      if (!retryable || attempt === 7) break;
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs(response, attempt)));
     }
   }
 
@@ -783,7 +923,7 @@ async function fetchWooProductsPage(wooUrl: string, page: number) {
 }
 
 async function fetchAllWooProducts() {
-  const wooUrl = env("WOO_URL").replace(/\/$/, "");
+  const wooUrl = normalizeWooSiteUrl(env("WOO_URL"));
   const key = env("WOO_CONSUMER_KEY");
   const secret = env("WOO_CONSUMER_SECRET");
   if (!wooUrl || !key || !secret) throw new Error("Chýba WOO_URL, WOO_CONSUMER_KEY alebo WOO_CONSUMER_SECRET v .env");
@@ -808,10 +948,20 @@ async function fetchAllWooProducts() {
     await new Promise((resolve) => setTimeout(resolve, 120));
   }
 
-  return { products: all, pages: page, reportedTotalPages, reportedTotal };
+  if (reportedTotalPages > WOO_SYNC_MAX_PAGES) {
+    throw new Error(
+      `WooCommerce hlási ${reportedTotalPages} strán produktov, ale WOO_SYNC_MAX_PAGES povoľuje iba ${WOO_SYNC_MAX_PAGES}.`
+    );
+  }
+
+  const deduplicated = [...new Map(
+    all.map((product) => [String(product?.id || product?.sku || product?.slug || ""), product])
+  ).values()].filter((product) => product && (product.id || product.sku || product.slug));
+
+  return { products: deduplicated, pages: page, reportedTotalPages, reportedTotal };
 }
 
-export async function syncProductsCache(options: { force?: boolean } = {}) {
+async function syncProductsCacheInternal(options: { force?: boolean } = {}): Promise<ProductsSyncResult> {
   const current = await readProductsCache();
   if (!options.force && current && isFresh(current)) return { cache: current, refreshed: false };
 
@@ -829,14 +979,27 @@ export async function syncProductsCache(options: { force?: boolean } = {}) {
     throw error;
   }
 
-  if (raw.products.length < MIN_SAFE_PRODUCTS) {
-    const message = `Woo sync vrátil iba ${raw.products.length} produktov. Očakávam minimálne ${MIN_SAFE_PRODUCTS}. Cache sa neprepísala.`;
+  const requiredProducts = requiredProductCount({
+    reportedTotal: raw.reportedTotal,
+    configuredMinimum: EXPECTED_MIN_PRODUCTS,
+    safeMinimum: MIN_SAFE_PRODUCTS,
+    completenessRatio: COMPLETENESS_RATIO,
+  });
+  if (raw.products.length < requiredProducts) {
+    const message = `Woo sync vrátil iba ${raw.products.length} produktov z ${raw.reportedTotal || "nezisteného počtu"}. Očakávam minimálne ${requiredProducts}. Cache sa neprepísala.`;
     if (current?.products?.length) return { cache: current, refreshed: false, warning: message };
     throw new Error(message);
   }
 
   const products = sortProducts(enrichProductsFromRelated(raw.products.map(mapProduct)));
-  const next: CacheFile = { ok: true, version: CACHE_VERSION, generated_at: new Date().toISOString(), total: products.length, products };
+  const next: CacheFile = {
+    ok: true,
+    version: CACHE_VERSION,
+    generated_at: new Date().toISOString(),
+    total: products.length,
+    woo_reported_total: raw.reportedTotal || products.length,
+    products,
+  };
 
   await mkdir(CACHE_DIR, { recursive: true });
   const tmp = `${CACHE_FILE}.${Date.now()}.tmp`;
@@ -852,10 +1015,48 @@ export async function syncProductsCache(options: { force?: boolean } = {}) {
   return { cache: next, refreshed: true, sync: raw };
 }
 
+export async function syncProductsCache(options: { force?: boolean } = {}): Promise<ProductsSyncResult> {
+  const activeSync = globalStore.__TM_PRODUCTS_SYNC_PROMISE__;
+  if (activeSync) return activeSync;
+
+  const operation = syncProductsCacheInternal(options);
+  globalStore.__TM_PRODUCTS_SYNC_PROMISE__ = operation;
+
+  try {
+    return await operation;
+  } finally {
+    if (globalStore.__TM_PRODUCTS_SYNC_PROMISE__ === operation) {
+      delete globalStore.__TM_PRODUCTS_SYNC_PROMISE__;
+    }
+  }
+}
+
 export async function getProductsCache() {
   const current = await readProductsCache();
   if (current) return current;
   return (await syncProductsCache({ force: true })).cache;
+}
+
+export function ensureProductsCacheWarmStarted(): void {
+  const now = Date.now();
+  const lastStarted = globalStore.__TM_PRODUCTS_WARM_STARTED_AT__ || 0;
+  if (globalStore.__TM_PRODUCTS_WARM_PROMISE__ || now - lastStarted < 5 * 60_000) return;
+
+  globalStore.__TM_PRODUCTS_WARM_STARTED_AT__ = now;
+  const operation = syncProductsCache()
+    .then((result) => {
+      if (result.warning) console.warn(`[TM product cache] ${result.warning}`);
+    })
+    .catch((error) => {
+      console.error('[TM product cache] Background warmup failed:', error?.message || error);
+    })
+    .finally(() => {
+      if (globalStore.__TM_PRODUCTS_WARM_PROMISE__ === operation) {
+        delete globalStore.__TM_PRODUCTS_WARM_PROMISE__;
+      }
+    });
+
+  globalStore.__TM_PRODUCTS_WARM_PROMISE__ = operation;
 }
 
 function matchesCategory(product: TmProduct, category: string) {

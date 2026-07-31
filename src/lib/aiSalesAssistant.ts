@@ -237,7 +237,7 @@ function buildProductAnswer(message: string, products: Product[]) {
 
   const parts = [`Pre „${query}“ máme v ponuke ${formatCount(total, 'produkt', 'produkty', 'produktov')}: ${groupText}.`];
 
-  if (compatible?.recommended) parts.push(`Ako prvú voľbu odporúčam kompatibilnú možnosť ${compatible.recommended.name}. Má najlepší pomer cena/výkon pre bežnú domácu aj kancelársku tlač.`);
+  if (compatible?.recommended) parts.push(`Z kompatibilných možností je cenovo najvýhodnejšia ${compatible.recommended.name}. Vhodnosť vždy overte podľa presného modelu tlačiarne.`);
   if (original?.recommended) parts.push(`Ak chcete originálnu kvalitu výrobcu tlačiarne, vyberte originálnu možnosť ${original.recommended.name}. Je drahšia, ale je to najistejšia originálna voľba.`);
   if (renovated?.recommended) parts.push(`Renovovaná možnosť je vhodná ako ekologickejšia alternatíva: ${renovated.recommended.name}.`);
 

@@ -13,7 +13,7 @@ type HeurekaReview = {
 
 type HeurekaStats = {
   ok: boolean;
-  source: "heureka" | "fallback";
+  source: "heureka" | "unavailable";
   recommendationPercent: number;
   averageRating: number;
   reviewCount: number;
@@ -21,49 +21,14 @@ type HeurekaStats = {
   updatedAt: string;
 };
 
-const FALLBACK: HeurekaStats = {
-  ok: true,
-  source: "fallback",
-  recommendationPercent: 100,
-  averageRating: 4.9,
-  reviewCount: 1323,
-  reviews: [
-    {
-      summary: "Spokojnosť, rýchlo vybavená objednávka, výborná kvalita obchodu",
-      pros: "Rýchle doručenie",
-      cons: "",
-      rating: 5,
-      recommends: true,
-      createdAt: "",
-    },
-    {
-      summary: "Rýchlosť a spoľahlivosť",
-      pros: "Balenie objednávky",
-      cons: "",
-      rating: 5,
-      recommends: true,
-      createdAt: "",
-    },
-    {
-      summary: "Rýchle doručenie",
-      pros: "Široký výber sortimentu",
-      cons: "",
-      rating: 5,
-      recommends: true,
-      createdAt: "",
-    },
-  ],
-  updatedAt: new Date().toISOString(),
-};
-
 let memoryCache: { expires: number; data: HeurekaStats } | null = null;
 
 function env(name: string) {
-  return String(import.meta.env[name] || "").trim();
+  return String(process.env[name] || import.meta.env[name] || "").trim();
 }
 
 function getHeurekaKey() {
-  return env("HEUREKA_SECRET_KEY") || "669a543dae41dd685d3c9f4b9124311b";
+  return env("HEUREKA_SECRET_KEY");
 }
 
 function decodeXml(value: string) {
@@ -156,7 +121,9 @@ async function fetchText(url: string) {
 async function loadHeureka(): Promise<HeurekaStats> {
   const key = getHeurekaKey();
   const [xmlResult, htmlResult] = await Promise.allSettled([
-    fetchText(`https://www.heureka.sk/direct/dotaznik/export-review.php?key=${encodeURIComponent(key)}`),
+    key
+      ? fetchText(`https://www.heureka.sk/direct/dotaznik/export-review.php?key=${encodeURIComponent(key)}`)
+      : Promise.resolve(""),
     fetchText("https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left"),
   ]);
 
@@ -173,14 +140,20 @@ async function loadHeureka(): Promise<HeurekaStats> {
   const ratingFromXml = reviews.length
     ? Math.round((reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length) * 10) / 10
     : 0;
+  const recommendationPercent = publicStats.recommendation || recommendationFromXml;
+  const averageRating = publicStats.rating || ratingFromXml;
+  const reviewCount = publicStats.count;
+  if (!recommendationPercent && !averageRating && !reviewCount && !reviews.length) {
+    throw new Error("Heureka neposkytla overiteľné údaje.");
+  }
 
   return {
     ok: true,
     source: "heureka",
-    recommendationPercent: publicStats.recommendation || recommendationFromXml || FALLBACK.recommendationPercent,
-    averageRating: publicStats.rating || ratingFromXml || FALLBACK.averageRating,
-    reviewCount: publicStats.count || FALLBACK.reviewCount,
-    reviews: reviews.length ? reviews : FALLBACK.reviews,
+    recommendationPercent,
+    averageRating,
+    reviewCount,
+    reviews,
     updatedAt: new Date().toISOString(),
   };
 }
@@ -208,18 +181,22 @@ export const GET: APIRoute = async () => {
       },
     });
   } catch (error: any) {
-    const fallback = {
-      ...FALLBACK,
-      source: "fallback" as const,
+    const unavailable: HeurekaStats & { error: string } = {
+      ok: false,
+      source: "unavailable",
+      recommendationPercent: 0,
+      averageRating: 0,
+      reviewCount: 0,
+      reviews: [],
       error: error?.message || "Heureka údaje sa nepodarilo načítať.",
       updatedAt: new Date().toISOString(),
     };
 
-    return new Response(JSON.stringify(fallback), {
-      status: 200,
+    return new Response(JSON.stringify(unavailable), {
+      status: 503,
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "public, max-age=300, s-maxage=300, stale-while-revalidate=3600",
+        "Cache-Control": "public, max-age=300, s-maxage=300",
       },
     });
   }

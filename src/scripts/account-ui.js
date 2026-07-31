@@ -554,7 +554,7 @@
     return 'Produkty';
   }
 
-  function productGroupSubtitle(slug, count) {
+  function productGroupSubtitle(count) {
     const label = count === 1 ? 'produkt' : count > 1 && count < 5 ? 'produkty' : 'produktov';
     return `${count} ${label} · zobraziť`;
   }
@@ -593,7 +593,7 @@
           <span class="tm-smart-group-dot"></span>
           <span>
             <strong>${escapeHtml(productGroupLabel(slug))} (${items.length})</strong>
-            <small>${escapeHtml(productGroupSubtitle(slug, items.length))}</small>
+            <small>${escapeHtml(productGroupSubtitle(items.length))}</small>
           </span>
           <b>Vybrať</b>
         </button>

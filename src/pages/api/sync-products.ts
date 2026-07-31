@@ -1,11 +1,12 @@
 import type { APIRoute } from "astro";
 import { jsonResponse, syncProductsCache } from "../../lib/tm-products-cache";
 import { safeEqual } from "../../lib/security";
+import { isStrongSecret } from "../../lib/secret-validation";
 
 export const prerender = false;
 
 function env(name: string) {
-  return String(import.meta.env[name] || process.env[name] || "").trim();
+  return String(process.env[name] || import.meta.env[name] || "").trim();
 }
 
 function isLocalRequest(url: URL, request: Request) {
@@ -29,7 +30,7 @@ export const GET: APIRoute = async ({ url, request }) => {
     const localRequest = isLocalRequest(url, request);
 
     if (!localRequest) {
-      if (secret.length < 24) {
+      if (!isStrongSecret(secret, 24)) {
         return jsonResponse(
           { ok: false, error: "SYNC_SECRET nie je v produkcii správne nastavený." },
           503,

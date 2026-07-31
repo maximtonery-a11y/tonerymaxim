@@ -1,0 +1,287 @@
+---
+import "../styles/global.css";
+import "../styles/products-catalog.css";
+import "../styles/footer.css";
+import "../styles/seo-catalog.css";
+import Header from "./Header.astro";
+import Footer from "./Footer.astro";
+import FloatingAdvisor from "./FloatingAdvisor.astro";
+import SeoHead from "./SeoHead.astro";
+import CatalogInitialRows from "./CatalogInitialRows.astro";
+import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
+import { catalogStats, collectionJsonLd, type EntityLink, type TmProduct } from "../lib/seo-catalog";
+
+type Link = { href: string; label: string };
+type Faq = { question: string; answer: string };
+type ContentSection = { heading: string; paragraphs: string[]; bullets?: string[] };
+type LinkGroup = { heading: string; intro?: string; links: EntityLink[] };
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  eyebrow: string;
+  heading: string;
+  intro: string;
+  products: TmProduct[];
+  breadcrumbs?: Array<{ name: string; path: string }>;
+  relatedLinks?: Link[];
+  faq?: Faq[];
+  entityFacts?: string[];
+  answer?: string;
+  answerTitle?: string;
+  contentSections?: ContentSection[];
+  linkGroups?: LinkGroup[];
+  generatedAt?: string;
+  schemaEntities?: Array<{ name: string; url?: string }>;
+  notFound?: boolean;
+}
+
+const {
+  title,
+  description,
+  canonicalPath,
+  eyebrow,
+  heading,
+  intro,
+  products = [],
+  breadcrumbs = [],
+  relatedLinks = [],
+  faq = [],
+  entityFacts = [],
+  answer = "",
+  answerTitle = "Rýchla odpoveď",
+  contentSections = [],
+  linkGroups = [],
+  generatedAt = "",
+  schemaEntities = [],
+  notFound = false,
+} = Astro.props;
+
+const SEO_ORIGIN = "https://www.tonerymaxim.sk";
+const previewHost = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname.toLowerCase());
+const canonical = new URL(canonicalPath, SEO_ORIGIN).toString();
+const noindex = previewHost || notFound || products.length === 0;
+const shownProducts = products.slice(0, 80);
+const breadcrumbItems = [{ name: "Domov", path: "/" }, ...breadcrumbs];
+const stats = catalogStats(products);
+const money = (value: number) => new Intl.NumberFormat("sk-SK", {
+  style: "currency",
+  currency: "EUR",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format(value);
+const generatedDate = generatedAt && !Number.isNaN(new Date(generatedAt).getTime())
+  ? new Intl.DateTimeFormat("sk-SK", { dateStyle: "medium" }).format(new Date(generatedAt))
+  : "";
+const statCards = [
+  { label: "Produktov", value: String(stats.total) },
+  { label: "Skladom", value: String(stats.inStock) },
+  ...(stats.compatible ? [{ label: "Kompatibilných", value: String(stats.compatible) }] : []),
+  ...(stats.original ? [{ label: "Originálnych", value: String(stats.original) }] : []),
+  ...(stats.renovated ? [{ label: "Renovovaných", value: String(stats.renovated) }] : []),
+  ...(stats.minPrice > 0 ? [{
+    label: stats.minPrice === stats.maxPrice ? "Cena" : "Ceny od",
+    value: money(stats.minPrice),
+  }] : []),
+];
+const faqJsonLd = faq.length ? {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  })),
+} : null;
+const jsonLd = [
+  organizationJsonLd(SEO_ORIGIN),
+  websiteJsonLd(SEO_ORIGIN),
+  breadcrumbJsonLd(SEO_ORIGIN, breadcrumbItems),
+  collectionJsonLd(SEO_ORIGIN, canonicalPath, heading, description, products, {
+    generatedAt,
+    about: schemaEntities,
+  }),
+  ...(faqJsonLd ? [faqJsonLd] : []),
+];
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <SeoHead
+      title={title}
+      description={description}
+      canonical={canonical}
+      noindex={noindex}
+      jsonLd={jsonLd}
+    />
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+
+      <main class="seo-catalog-page">
+        <section class="seo-catalog-hero">
+          <div class="wrap">
+            <nav class="seo-breadcrumbs" aria-label="Drobečková navigácia">
+              {breadcrumbItems.map((item, index) => (
+                <>
+                  {index > 0 && <span aria-hidden="true">›</span>}
+                  {index === breadcrumbItems.length - 1
+                    ? <strong>{item.name}</strong>
+                    : <a href={item.path}>{item.name}</a>}
+                </>
+              ))}
+            </nav>
+            <p class="eyebrow">{eyebrow}</p>
+            <h1>{heading}</h1>
+            <p class="seo-catalog-lead">{intro}</p>
+
+            {entityFacts.length > 0 && (
+              <ul class="seo-fact-list" aria-label="Dôležité informácie">
+                {entityFacts.map((fact) => <li>{fact}</li>)}
+              </ul>
+            )}
+
+            {relatedLinks.length > 0 && (
+              <nav class="seo-related-links" aria-label="Súvisiace kategórie">
+                {relatedLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+              </nav>
+            )}
+          </div>
+        </section>
+
+        {!notFound && answer && (
+          <section class="seo-answer-section" aria-labelledby="seo-direct-answer">
+            <div class="wrap seo-answer-grid">
+              <article class="seo-answer-card">
+                <div class="seo-answer-label"><span aria-hidden="true">✓</span> Údaje z aktuálneho katalógu</div>
+                <h2 id="seo-direct-answer">{answerTitle}</h2>
+                <p>{answer}</p>
+                {generatedDate && <small>Produktové údaje aktualizované: {generatedDate}</small>}
+              </article>
+
+              <dl class="seo-stat-grid" aria-label="Súhrn ponuky">
+                {statCards.slice(0, 6).map((item) => (
+                  <div>
+                    <dt>{item.label}</dt>
+                    <dd>{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </section>
+        )}
+
+        <section class="seo-catalog-products">
+          <div class="wrap">
+            <div class="seo-section-heading">
+              <div>
+                <p class="eyebrow">Aktuálna ponuka</p>
+                <h2>{notFound ? "Stránka sa nenašla" : `${products.length} produktov v ponuke`}</h2>
+              </div>
+              {!notFound && products.length > shownProducts.length && (
+                <a href={`/produkty?s=${encodeURIComponent(heading)}`}>Zobraziť celý katalóg</a>
+              )}
+            </div>
+
+            {shownProducts.length > 0 ? (
+              <div class="catalog-list seo-catalog-list">
+                <CatalogInitialRows products={shownProducts} />
+              </div>
+            ) : (
+              <div class="seo-empty-state">
+                <h2>{notFound ? "Táto stránka neexistuje" : "Produkty pripravujeme"}</h2>
+                <p>Vyhľadajte toner podľa označenia alebo modelu tlačiarne.</p>
+                <div>
+                  <a class="seo-primary-action" href="/produkty">Prejsť na produkty</a>
+                  <a href="/tlaciarne">Vybrať tlačiareň</a>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {contentSections.length > 0 && (
+          <section class="seo-content-section">
+            <div class="wrap seo-content-grid">
+              {contentSections.map((section) => (
+                <article>
+                  <h2>{section.heading}</h2>
+                  {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+                  {section.bullets && section.bullets.length > 0 && (
+                    <ul>{section.bullets.map((bullet) => <li>{bullet}</li>)}</ul>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {linkGroups.some((group) => group.links.length > 0) && (
+          <section class="seo-entity-section">
+            <div class="wrap">
+              {linkGroups.filter((group) => group.links.length > 0).map((group) => (
+                <div class="seo-entity-group">
+                  <div class="seo-entity-heading">
+                    <h2>{group.heading}</h2>
+                    {group.intro && <p>{group.intro}</p>}
+                  </div>
+                  <div class="seo-entity-links">
+                    {group.links.map((link) => (
+                      <a href={link.href}>
+                        <strong>{link.label}</strong>
+                        {link.description && <span>{link.description}</span>}
+                        {typeof link.count === "number" && <small>{link.count} produktov</small>}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {faq.length > 0 && (
+          <section class="seo-faq-section">
+            <div class="wrap seo-faq-wrap">
+              <div>
+                <p class="eyebrow">Overené odpovede</p>
+                <h2>Najčastejšie otázky</h2>
+              </div>
+              <div class="seo-faq-list">
+                {faq.map((item) => (
+                  <details>
+                    <summary>{item.question}</summary>
+                    <p>{item.answer}</p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+      </main>
+
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+
+    <script>
+      import "../scripts/smart-search.js";
+
+      document.querySelectorAll(".seo-catalog-list .tm-product-row").forEach((row) => {
+        const target = row.querySelector(".tm-row-main h2 a, .tm-row-photo")?.getAttribute("href");
+        if (!target) return;
+        row.querySelectorAll(".tm-row-buy button, [data-open-printers]").forEach((button) => {
+          button.addEventListener("click", () => { window.location.href = target; });
+        });
+      });
+
+      window.tmInitSmartSearch?.();
+      document.addEventListener("DOMContentLoaded", () => window.tmInitSmartSearch?.());
+    </script>
+  </body>
+</html>

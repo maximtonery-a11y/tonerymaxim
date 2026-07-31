@@ -1,5 +1,19 @@
 (function () {
-  if (window.__TM_ANALYTICS_V3__) return;
+  var started = false;
+  var consentKey = 'tm_cookie_consent_v10';
+
+  function analyticsAllowed() {
+    try {
+      var consent = JSON.parse(window.localStorage.getItem(consentKey) || 'null');
+      return !!(consent && consent.analytics);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function startAnalytics() {
+  if (started || window.__TM_ANALYTICS_V3__) return;
+  started = true;
   window.__TM_ANALYTICS_V3__ = true;
 
   var endpoint = '/api/analytics';
@@ -112,4 +126,10 @@
     var percent = Math.min(100, Math.round((scrollY / max) * 100));
     [25, 50, 75, 100].forEach(function (mark) { if (percent >= mark && !sentScroll[mark]) { sentScroll[mark] = true; send('scroll', { value: mark }); } });
   }, { passive: true });
+  }
+
+  if (analyticsAllowed()) startAnalytics();
+  window.addEventListener('tm:cookies', function (event) {
+    if (event && event.detail && event.detail.analytics) startAnalytics();
+  });
 })();

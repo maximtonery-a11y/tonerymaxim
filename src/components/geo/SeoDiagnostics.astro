@@ -1,0 +1,7 @@
+---
+const { score = 0, checks = [] } = Astro.props as { score?: number; checks?: string[] };
+---
+<details>
+<summary>SEO diagnostika ({score}/100)</summary>
+<ul>{checks.map(c=><li>{c}</li>)}</ul>
+</details>

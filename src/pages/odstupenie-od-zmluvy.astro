@@ -57,11 +57,11 @@ import InfoPageShell from "../components/InfoPageShell.astro";
       <FloatingAdvisor />
     </div>
     <script>
-      const form = document.querySelector('[data-care-form="withdrawal"]');
-      const result = form?.querySelector('.care-result');
-      form?.addEventListener('submit', async (event) => {
+      const form = document.querySelector<HTMLFormElement>('[data-care-form="withdrawal"]')!;
+      const result = form.querySelector<HTMLElement>('.care-result')!;
+      form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const button = form.querySelector('button[type="submit"]');
+        const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
         button.disabled = true;
         result.textContent = 'Odosielam odstúpenie...';
         result.className = 'care-result';
@@ -77,7 +77,7 @@ import InfoPageShell from "../components/InfoPageShell.astro";
           result.classList.add('is-ok');
           form.reset();
         } catch (error) {
-          result.textContent = error.message || 'Odstúpenie sa nepodarilo odoslať.';
+          result.textContent = error instanceof Error ? error.message : 'Odstúpenie sa nepodarilo odoslať.';
           result.classList.add('is-error');
         } finally {
           button.disabled = false;

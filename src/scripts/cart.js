@@ -349,12 +349,6 @@ function formatMoney(value) {
     return cart.reduce((sum, item) => sum + cleanQty(item.qty), 0);
   }
 
-  function cartTotal(cart = readCart()) {
-    return cart.reduce((sum, item) => {
-      return sum + Number(item.price || 0) * cleanQty(item.qty);
-    }, 0);
-  }
-
   function isCompatibleDiscountItem(item) {
     const type = String(item?.product_type_key || item?.productTypeKey || "").toLowerCase();
     const label = String(item?.product_type_label || item?.productTypeLabel || item?.name || "").toLowerCase();
@@ -602,7 +596,6 @@ function formatMoney(value) {
     const total = Math.max(0, pricing.subtotal - pricing.discount);
     const missingFreeShipping = Math.max(0, 29 - total);
     const itemGross = Number(item.price || 0);
-    const itemNet = netFromGross(itemGross);
     const count = cartCount(cart);
 
     const statusEl = drawer.querySelector('[data-add-cart-status]');

@@ -125,7 +125,7 @@ const brands = [
       const menuToggle = document.querySelector('[data-tm-printer-menu-toggle]');
       const menu = document.querySelector('[data-tm-printer-menu]');
       const menuClose = document.querySelector('[data-tm-printer-menu-close]');
-      function setMenu(open) {
+      function setMenu(open: boolean) {
         if (!menu || !menuToggle) return;
         menu.classList.toggle('is-open', open);
         menu.setAttribute('aria-hidden', String(!open));

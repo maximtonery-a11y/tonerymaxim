@@ -49,11 +49,6 @@
     document.head.appendChild(style);
   }
 
-  function isMissingValue(value) {
-    const text = String(value || "").trim().toLowerCase();
-    return !text || text === "neuvedené" || text === "neuvedene" || text === "n/a" || text === "-";
-  }
-
   function isInkProduct(product) {
     const attrs = Array.isArray(product?.attributes_all) ? product.attributes_all : Array.isArray(product?.attributes) ? product.attributes : [];
     const attrText = attrs.map((attr) => `${attr?.name || ""} ${attr?.slug || ""} ${attr?.value || ""}`).join(" ");

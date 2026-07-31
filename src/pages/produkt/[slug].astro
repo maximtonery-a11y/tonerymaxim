@@ -9,12 +9,43 @@ import Footer from "../../components/Footer.astro";
 import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import SeoHead from "../../components/SeoHead.astro";
 import { getProductsCache, stripHtml } from "../../lib/tm-products-cache";
-import { breadcrumbJsonLd, organizationJsonLd, productDescription, productJsonLd, absoluteUrl } from "../../lib/seo";
+import { breadcrumbJsonLd, organizationJsonLd, productDescription, productJsonLd, absoluteUrl, websiteJsonLd } from "../../lib/seo";
+import {
+  printerBrandForName,
+  printerLinksFromNames,
+  productOemCodes,
+  validIndexableProduct,
+} from "../../lib/seo-catalog";
 
 const { slug } = Astro.params;
 const cache = await getProductsCache().catch(() => null);
 const product = cache?.products?.find((item: any) => String(item.slug) === String(slug) || String(item.id) === String(slug));
-if (!product) return Astro.redirect('/produkty', 302);
+if (!product) {
+  return new Response(`<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Produkt sa nenašiel | ToneryMaxim.sk</title>
+    <style>
+      body{margin:0;background:#f4f8fc;color:#071b3a;font-family:Arial,sans-serif}
+      main{max-width:720px;margin:12vh auto;padding:40px;background:#fff;border-radius:24px;box-shadow:0 18px 60px rgba(7,27,58,.12)}
+      h1{font-size:clamp(30px,5vw,52px);margin:0 0 16px}
+      p{font-size:18px;line-height:1.6;color:#526172}
+      a{display:inline-block;margin-top:12px;padding:14px 22px;border-radius:999px;background:#071b3a;color:#fff;text-decoration:none;font-weight:800}
+    </style>
+  </head>
+  <body><main><h1>Produkt sa nenašiel</h1><p>Produkt už nie je dostupný alebo bola adresa zadaná nesprávne. Vyhľadajte náplň podľa označenia alebo modelu tlačiarne.</p><a href="/produkty">Prejsť na vyhľadávanie produktov</a></main></body>
+</html>`, {
+    status: 404,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'X-Robots-Tag': 'noindex, nofollow',
+    },
+  });
+}
 const productTitleParts = [
   String(product.name || '').trim(),
   String(product.color || '').trim(),
@@ -37,11 +68,26 @@ const title = `${uniqueProductTitle} | ToneryMaxim.sk`;
 const description = productDescription(product);
 const canonical = `${SEO_ORIGIN}/produkt/${encodeURIComponent(product.slug)}`;
 const image = absoluteUrl(SEO_ORIGIN, product.image || product.images?.[0] || '/favicon.svg');
-const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname);
+const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname)
+  || !validIndexableProduct(product);
 const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
 const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.price || 0));
 const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
 const plainDescription = stripHtml(product.description_html || product.short_description_html || product.description || '');
+const printerEntityLinks = printerLinksFromNames(cache?.products || [], printers, 16);
+const oemEntityLinks = productOemCodes(product).map((code) => ({
+  href: `/oem/${code.toLowerCase()}`,
+  label: code,
+}));
+const brandEntityLinks = [...new Map(
+  printers
+    .map((printer: string) => printerBrandForName(printer))
+    .filter(Boolean)
+    .map((brand: any) => [brand.slug, {
+      href: `/znacky/${brand.slug}`,
+      label: `Produkty pre ${brand.name}`,
+    }]),
+).values()];
 ---
 
 <!doctype html>
@@ -49,7 +95,7 @@ const plainDescription = stripHtml(product.description_html || product.short_des
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <SeoHead title={title} description={description} canonical={canonical} image={image} type="product" noindex={noindex} jsonLd={[organizationJsonLd(SEO_ORIGIN), productJsonLd(SEO_ORIGIN, product), breadcrumbJsonLd(SEO_ORIGIN, [{ name: "Domov", path: "/" }, { name: "Produkty", path: "/produkty" }, { name: product.name, path: `/produkt/${product.slug}` }])]} />
+    <SeoHead title={title} description={description} canonical={canonical} image={image} type="product" noindex={noindex} jsonLd={[organizationJsonLd(SEO_ORIGIN), websiteJsonLd(SEO_ORIGIN), productJsonLd(SEO_ORIGIN, product), breadcrumbJsonLd(SEO_ORIGIN, [{ name: "Domov", path: "/" }, { name: "Produkty", path: "/produkty" }, { name: product.name, path: `/produkt/${product.slug}` }])]} />
   </head>
 
   <body class="product-detail-body">
@@ -88,6 +134,45 @@ const plainDescription = stripHtml(product.description_html || product.short_des
           </section>
         </div>
       </main>
+
+      {(oemEntityLinks.length > 0 || printerEntityLinks.length > 0 || brandEntityLinks.length > 0) && (
+        <section class="product-seo-relations" aria-labelledby="product-related-navigation">
+          <div class="product-seo-relations-inner">
+            <div class="product-seo-relations-heading">
+              <p>Súvisiace overené údaje</p>
+              <h2 id="product-related-navigation">Nájdite ďalšie vhodné produkty</h2>
+              <span>Odkazy vznikajú z OEM označenia a kompatibilných tlačiarní uvedených pri tomto produkte.</span>
+            </div>
+
+            <div class="product-seo-relation-groups">
+              {oemEntityLinks.length > 0 && (
+                <article>
+                  <h3>Podľa OEM označenia</h3>
+                  <nav aria-label="OEM označenia produktu">
+                    {oemEntityLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+                  </nav>
+                </article>
+              )}
+              {printerEntityLinks.length > 0 && (
+                <article>
+                  <h3>Podľa modelu tlačiarne</h3>
+                  <nav aria-label="Kompatibilné modely tlačiarní">
+                    {printerEntityLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+                  </nav>
+                </article>
+              )}
+              {brandEntityLinks.length > 0 && (
+                <article>
+                  <h3>Podľa značky</h3>
+                  <nav aria-label="Značky kompatibilných tlačiarní">
+                    {brandEntityLinks.map((link: any) => <a href={link.href}>{link.label}</a>)}
+                  </nav>
+                </article>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section class="product-mobile-help-area" aria-label="Pomoc s výberom správnej náplne">
         <div class="product-mobile-help-card" aria-label="Radi vám pomôžeme">

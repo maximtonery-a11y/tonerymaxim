@@ -13,7 +13,8 @@ function json(data: unknown, status = 200) {
 }
 
 function siteUrl(request: Request): string {
-  const configured = import.meta.env.SITE_URL || import.meta.env.PUBLIC_SITE_URL;
+  const configured = process.env.SITE_URL || process.env.PUBLIC_SITE_URL
+    || import.meta.env.SITE_URL || import.meta.env.PUBLIC_SITE_URL;
   if (configured) return String(configured).replace(/\/$/, "");
   const url = new URL(request.url);
   return `${url.protocol}//${url.host}`;

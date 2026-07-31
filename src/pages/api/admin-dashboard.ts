@@ -4,15 +4,9 @@ import { readCheckoutProfiles, summarizeCheckoutProfiles } from '../../lib/check
 import { readEmailQueueState } from '../../lib/email-queue';
 import { getAsyncOrderQueueStats } from '../../lib/async-order-queue';
 import { readSecurityEvents, securityStatus } from '../../lib/security';
+import { getAdminAccessKey, constantTimeEqual } from '../../lib/admin-access';
 
 export const prerender = false;
-
-function sameKey(left: string, right: string): boolean {
-  if (!left || !right || left.length !== right.length) return false;
-  let result = 0;
-  for (let i = 0; i < left.length; i += 1) result |= left.charCodeAt(i) ^ right.charCodeAt(i);
-  return result === 0;
-}
 
 function countBy<T>(items: T[], key: (item: T) => string, limit = 8) {
   const map = new Map<string, number>();
@@ -58,9 +52,9 @@ function buildHourly(events: TMAnalyticsEvent[], now: number) {
 }
 
 export const GET: APIRoute = async ({ request, url, locals }) => {
-  const expected = locals?.runtime?.env?.TM_ANALYTICS_ADMIN_KEY || process.env.TM_ANALYTICS_ADMIN_KEY || process.env.ADMIN_API_SECRET || '';
+  const expected = getAdminAccessKey(locals);
   const supplied = url.searchParams.get('key') || request.headers.get('x-admin-key') || '';
-  if (expected && !sameKey(expected, supplied)) {
+  if (!expected || !constantTimeEqual(expected, supplied)) {
     return new Response(JSON.stringify({ ok: false, error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },

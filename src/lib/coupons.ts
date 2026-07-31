@@ -40,12 +40,6 @@ function money(value: unknown) {
   return Number.isFinite(number) ? Math.round(number * 100) / 100 : 0;
 }
 
-function addDaysIso(days: number) {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  return date.toISOString();
-}
-
 function isExpired(expiresAt: unknown) {
   if (!expiresAt) return false;
   const time = new Date(String(expiresAt || "")).getTime();
@@ -307,4 +301,3 @@ export async function markCouponUsed(customerId: number | undefined, coupon: Cou
   });
   await updateWooCustomer(customerId, { meta_data: [{ key: CUSTOMER_COUPONS_META, value: JSON.stringify(updated) }] });
 }
-

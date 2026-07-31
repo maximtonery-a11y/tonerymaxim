@@ -67,11 +67,11 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
     </div>
 
     <script>
-      const form = document.querySelector("[data-login-form]");
-      const message = document.querySelector("[data-auth-message]");
-      const submit = document.querySelector("[data-auth-submit]");
+      const form = document.querySelector<HTMLFormElement>("[data-login-form]")!;
+      const message = document.querySelector<HTMLElement>("[data-auth-message]")!;
+      const submit = document.querySelector<HTMLButtonElement>("[data-auth-submit]")!;
 
-      function showMessage(text, type = "error") {
+      function showMessage(text: string, type = "error") {
         message.hidden = false;
         message.textContent = text;
         message.className = `auth-alert is-${type}`;
@@ -79,7 +79,7 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
 
       form?.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const data = Object.fromEntries(new FormData(form));
+        const data: Record<string, unknown> = Object.fromEntries(new FormData(form));
         data.next = form.dataset.next || "/ucet";
 
         submit.disabled = true;
@@ -98,7 +98,7 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
           showMessage("Prihlásenie prebehlo úspešne. Presmerovávam...", "success");
           window.location.href = result.redirect || "/ucet";
         } catch (error) {
-          showMessage(error.message || "Prihlásenie zlyhalo.");
+          showMessage(error instanceof Error ? error.message : "Prihlásenie zlyhalo.");
         } finally {
           submit.disabled = false;
           submit.textContent = "Prihlásiť sa";

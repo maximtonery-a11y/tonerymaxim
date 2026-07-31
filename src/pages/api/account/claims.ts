@@ -48,7 +48,10 @@ function clean(value: unknown): string {
 }
 
 function wooBaseUrl(): string {
-  const raw = clean(import.meta.env.WOO_URL || import.meta.env.WP_URL || import.meta.env.WORDPRESS_URL);
+  const raw = clean(
+    process.env.WOO_URL || process.env.WP_URL || process.env.WORDPRESS_URL
+      || import.meta.env.WOO_URL || import.meta.env.WP_URL || import.meta.env.WORDPRESS_URL,
+  );
   if (!raw) throw new Error("Chýba WOO_URL v .env");
   return raw.replace(/\/$/, "");
 }
@@ -231,7 +234,10 @@ export const POST: APIRoute = async ({ cookies, request }) => {
     const claim = claimToPublic(created?.claim || claimPayload);
 
     const subject = `Nová reklamácia ${claim.id} | ToneryMAXIM.sk`;
-    const adminEmail = clean(import.meta.env.MAIL_TO || import.meta.env.MAIL_FROM || import.meta.env.SMTP_USER);
+    const adminEmail = clean(
+      process.env.MAIL_TO || process.env.MAIL_FROM || process.env.SMTP_USER
+        || import.meta.env.MAIL_TO || import.meta.env.MAIL_FROM || import.meta.env.SMTP_USER,
+    );
     const text = `Nová reklamácia\n\nČíslo: ${claim.id}\nZákazník: ${session.email}\nObjednávka: ${claim.order_number}\nProdukt: ${claim.product_name}\nSKU: ${claim.product_sku || "-"}\nDôvod: ${claim.reason}\n\nPopis:\n${claim.message}`;
 
     await Promise.allSettled([

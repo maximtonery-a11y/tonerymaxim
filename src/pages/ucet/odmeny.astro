@@ -112,7 +112,9 @@ const visibleCoupons = [
     </AccountShell>
     <script>
       document.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-reveal-reward]");
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const button = target.closest<HTMLButtonElement>("[data-reveal-reward]");
         if (!button) return;
         const card = button.closest("[data-scratch-card]");
         card?.querySelector("[data-scratch-cover]")?.setAttribute("hidden", "");

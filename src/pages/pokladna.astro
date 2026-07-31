@@ -13,6 +13,12 @@ export const prerender = false;
 
 const session = readCustomerSession(Astro.cookies);
 const checkoutCustomer = session ? await getWooCustomerById(session.id).catch(() => null) : null;
+const checkoutCustomerJson = JSON.stringify(checkoutCustomer ?? null)
+  .replace(/</g, "\\u003c")
+  .replace(/>/g, "\\u003e")
+  .replace(/&/g, "\\u0026")
+  .replace(/\u2028/g, "\\u2028")
+  .replace(/\u2029/g, "\\u2029");
 
 const title = "Pokladňa | ToneryMaxim.sk";
 ---
@@ -247,7 +253,7 @@ const title = "Pokladňa | ToneryMaxim.sk";
       <FloatingAdvisor />
     </div>
 
-    <script is:inline set:html={`window.__TM_CHECKOUT_CUSTOMER__ = ${JSON.stringify(checkoutCustomer ?? null)};`}></script>
+    <script is:inline set:html={`window.__TM_CHECKOUT_CUSTOMER__ = ${checkoutCustomerJson};`}></script>
 
     <script>
       import "../scripts/checkout.js";

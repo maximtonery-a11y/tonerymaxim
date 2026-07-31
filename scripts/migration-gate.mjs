@@ -338,12 +338,12 @@ function expectedForRow(row) {
 
 const ISSUE_PRIORITY = [
   "SIEŤOVÁ CHYBA", "REDIRECT LOOP", "PRÍLIŠ VEĽA REDIRECTOV", "500", "404",
-  "NESPRÁVNY HTTP STAV", "NESPRÁVNY REDIRECT", "REDIRECT CHAIN", "SOFT 404",
+  "NESPRÁVNY HTTP STAV", "NESPRÁVNY REDIRECT", "DOČASNÝ REDIRECT", "REDIRECT CHAIN", "SOFT 404",
   "PRÁZDNA STRÁNKA", "CHÝBA CANONICAL", "NESPRÁVNY CANONICAL", "NOINDEX",
-  "CHÝBA H1", "CHYBA V HTML", "MANUÁLNE OVERIŤ",
+  "CHÝBA H1", "CHYBA V HTML", "MANUÁLNE OVERIŤ", "NEOVERENÉ HTTP",
 ];
 
-const ACCEPTABLE_VERDICTS = new Set(["PASS", "FALLBACK OK", "410 OK"]);
+const ACCEPTABLE_VERDICTS = new Set(["PASS", "410 OK"]);
 
 function primaryVerdict(issues) {
   for (const issue of ISSUE_PRIORITY) if (issues.includes(issue)) return issue;
@@ -372,6 +372,22 @@ function recoveryDestinationAllowed(value) {
   }
 }
 
+const UTILITY_NOINDEX_PATHS = new Set([
+  "/registracia",
+  "/prihlasenie",
+  "/ucet",
+  "/kosik",
+  "/pokladna",
+]);
+
+function validationOptions(options, publicUrl) {
+  const pathname = normalizePathname(publicUrl);
+  return {
+    ...options,
+    allowNoindex: options.allowNoindex || UTILITY_NOINDEX_PATHS.has(pathname),
+  };
+}
+
 function validateIndexableHtml(observed, expectedCanonical, issues, notes, options) {
   const htmlResponse = /text\/html|application\/xhtml\+xml/i.test(observed.contentType || "");
   if (observed.finalStatus !== 200 || !htmlResponse) return;
@@ -397,6 +413,8 @@ function evaluate(row, observed, options) {
   if (expected.manual) issues.push("MANUÁLNE OVERIŤ");
 
   if (options.dryRun) {
+    issues.push("NEOVERENÉ HTTP");
+    notes.push("Dry-run kontroluje iba CSV. Pred zmenou DNS je povinný úplný HTTP test produkčného buildu.");
     return { expected, issues, notes, verdict: primaryVerdict(issues) };
   }
 
@@ -424,7 +442,13 @@ function evaluate(row, observed, options) {
       notes.push(`očakávané ${expected.target}, získané ${observed.finalPublicUrl}`);
     }
     if (observed.finalStatus !== 200) issues.push("NESPRÁVNY HTTP STAV");
-    validateIndexableHtml(observed, expected.target || observed.finalPublicUrl, issues, notes, options);
+    validateIndexableHtml(
+      observed,
+      expected.target || observed.finalPublicUrl,
+      issues,
+      notes,
+      validationOptions(options, observed.finalPublicUrl),
+    );
   } else if (expected.mode === "preserve") {
     if (observed.initialStatus !== 200 || observed.finalStatus !== 200 || observed.chain.length) {
       issues.push(observed.finalStatus === 404 ? "404" : "NESPRÁVNY HTTP STAV");
@@ -440,9 +464,9 @@ function evaluate(row, observed, options) {
     } else if ([301, 308].includes(observed.initialStatus) && observed.finalStatus === 200 && observed.chain.length <= maxRecoveryRedirects) {
       if (!recoveryDestinationAllowed(observed.finalPublicUrl)) issues.push("NESPRÁVNY REDIRECT");
       else validateIndexableHtml(observed, observed.finalPublicUrl, issues, notes, options);
-    } else if ([302, 307].includes(observed.initialStatus) && observed.finalStatus === 200 && observed.chain.length <= maxRecoveryRedirects) {
-      if (!recoveryDestinationAllowed(observed.finalPublicUrl)) issues.push("NESPRÁVNY REDIRECT");
-      else specialVerdict = "FALLBACK OK";
+    } else if ([302, 307].includes(observed.initialStatus)) {
+      issues.push("DOČASNÝ REDIRECT");
+      notes.push("Finálna SEO migrácia povoľuje iba presný trvalý redirect alebo skutočný stav 410.");
     } else {
       if (observed.finalStatus === 404) issues.push("404");
       else issues.push("NESPRÁVNY HTTP STAV");
@@ -527,9 +551,9 @@ function htmlReport(summary, rows) {
 
   return `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ToneryMaxim Migration Gate</title><style>
-:root{font-family:Inter,system-ui,sans-serif;color:#172033;background:#f4f7f8}body{margin:0}.wrap{max-width:1800px;margin:auto;padding:24px}.hero{background:#0f766e;color:white;padding:26px;border-radius:18px}.hero h1{margin:0 0 8px}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}.kpi{background:white;border:1px solid #dbe5e8;border-radius:14px;padding:16px}.kpi b{display:block;font-size:28px}.bad{color:#b42318}.good{color:#067647}.filters{display:flex;gap:10px;flex-wrap:wrap;background:white;padding:14px;border-radius:14px;margin-bottom:14px;position:sticky;top:0;z-index:2;border:1px solid #dbe5e8}.filters input,.filters select{padding:10px;border:1px solid #cbd5e1;border-radius:8px;min-width:180px}table{border-collapse:collapse;width:100%;background:white;font-size:12px}th{position:sticky;top:70px;background:#172033;color:white;text-align:left}th,td{padding:8px;border:1px solid #e2e8f0;vertical-align:top;max-width:340px;overflow-wrap:anywhere}tr[data-verdict="PASS"] .verdict,tr[data-verdict="FALLBACK OK"] .verdict,tr[data-verdict="410 OK"] .verdict{color:#067647;font-weight:800}tr:not([data-verdict="PASS"]):not([data-verdict="FALLBACK OK"]):not([data-verdict="410 OK"]) .verdict{color:#b42318;font-weight:800}a{color:#0f766e}.hidden{display:none}</style></head><body><div class="wrap">
-<section class="hero"><h1>ToneryMaxim Migration Gate</h1><div>Vytvorené ${escapeHtml(summary.generatedAt)} · Testovaný server ${escapeHtml(summary.baseUrl)}</div></section>
-<section class="kpis"><div class="kpi"><span>URL celkom</span><b>${summary.total}</b></div><div class="kpi"><span>Bez blokera</span><b class="good">${summary.pass}</b></div><div class="kpi"><span>Blokujúce</span><b class="bad">${summary.blocking}</b></div><div class="kpi"><span>Nevyriešené mapovanie</span><b class="bad">${summary.unresolved}</b></div><div class="kpi"><span>Pripravené na DNS</span><b class="${summary.readyForDns ? "good" : "bad"}">${summary.readyForDns ? "ÁNO" : "NIE"}</b></div></section>
+:root{font-family:Inter,system-ui,sans-serif;color:#172033;background:#f4f7f8}body{margin:0}.wrap{max-width:1800px;margin:auto;padding:24px}.hero{background:#0f766e;color:white;padding:26px;border-radius:18px}.hero h1{margin:0 0 8px}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}.kpi{background:white;border:1px solid #dbe5e8;border-radius:14px;padding:16px}.kpi b{display:block;font-size:28px}.bad{color:#b42318}.good{color:#067647}.filters{display:flex;gap:10px;flex-wrap:wrap;background:white;padding:14px;border-radius:14px;margin-bottom:14px;position:sticky;top:0;z-index:2;border:1px solid #dbe5e8}.filters input,.filters select{padding:10px;border:1px solid #cbd5e1;border-radius:8px;min-width:180px}table{border-collapse:collapse;width:100%;background:white;font-size:12px}th{position:sticky;top:70px;background:#172033;color:white;text-align:left}th,td{padding:8px;border:1px solid #e2e8f0;vertical-align:top;max-width:340px;overflow-wrap:anywhere}tr[data-verdict="PASS"] .verdict,tr[data-verdict="410 OK"] .verdict{color:#067647;font-weight:800}tr:not([data-verdict="PASS"]):not([data-verdict="410 OK"]) .verdict{color:#b42318;font-weight:800}a{color:#0f766e}.hidden{display:none}</style></head><body><div class="wrap">
+<section class="hero"><h1>ToneryMaxim Migration Gate</h1><div>Vytvorené ${escapeHtml(summary.generatedAt)} · Testovaný server ${escapeHtml(summary.baseUrl)}</div>${summary.dryRun ? "<p><strong>DRY-RUN:</strong> HTTP odpovede neboli testované. Tento report nemôže schváliť zmenu DNS.</p>" : ""}${summary.partialSelection ? "<p><strong>ČIASTKOVÝ TEST:</strong> Nebola otestovaná celá URL mapa. Tento report nemôže schváliť zmenu DNS.</p>" : ""}</section>
+<section class="kpis"><div class="kpi"><span>URL v celej mape</span><b>${summary.mappingTotal}</b></div><div class="kpi"><span>URL vo výbere</span><b>${summary.total}</b></div><div class="kpi"><span>HTTP otestované</span><b>${summary.httpTested}</b></div><div class="kpi"><span>Bez blokera</span><b class="good">${summary.pass}</b></div><div class="kpi"><span>Blokujúce</span><b class="bad">${summary.blocking}</b></div><div class="kpi"><span>Prehodnotené pravidlami V69</span><b class="good">${summary.reclassifiedByV69}</b></div><div class="kpi"><span>Nevyriešené po teste</span><b class="bad">${summary.unresolved}</b></div><div class="kpi"><span>Pripravené na DNS</span><b class="${summary.readyForDns ? "good" : "bad"}">${summary.readyForDns ? "ÁNO" : "NIE"}</b></div></section>
 <div class="filters"><input id="q" placeholder="Hľadať URL, H1, problém..."><select id="verdict"><option value="">Všetky verdikty</option>${verdictOptions}</select><select id="type"><option value="">Všetky typy</option>${typeOptions}</select><span id="shown"></span></div>
 <div style="overflow:auto;max-height:75vh"><table><thead><tr><th>Riadok</th><th>Verdikt</th><th>Typ</th><th>Stará URL</th><th>Prvý stav</th><th>Konečný stav</th><th>Redirecty</th><th>Konečná URL</th><th>Canonical</th><th>Noindex</th><th>H1</th><th>Problémy</th><th>Poznámka</th></tr></thead><tbody>${tableRows}</tbody></table></div>
 </div><script>const rows=[...document.querySelectorAll('tbody tr')],q=document.querySelector('#q'),v=document.querySelector('#verdict'),t=document.querySelector('#type'),shown=document.querySelector('#shown');function f(){let n=0;for(const r of rows){const ok=(!q.value||r.textContent.toLowerCase().includes(q.value.toLowerCase()))&&(!v.value||r.dataset.verdict===v.value)&&(!t.value||r.dataset.type===t.value);r.classList.toggle('hidden',!ok);if(ok)n++}shown.textContent='Zobrazené: '+n}q.oninput=v.onchange=t.onchange=f;f()</script></body></html>`;
@@ -546,9 +570,11 @@ async function main() {
   const headers = Object.keys(rows[0] || {});
   for (const name of required) if (!headers.includes(name)) throw new Error(`V CSV chýba stĺpec: ${name}`);
 
+  const mappingTotal = rows.length;
   if (options.types.length) rows = rows.filter((row) => options.types.includes(row["Typ"]));
   if (options.limit > 0) rows = rows.slice(0, options.limit);
   if (!rows.length) throw new Error("Po filtrovaní nezostal žiadny riadok na testovanie.");
+  const partialSelection = options.types.length > 0 || options.limit > 0 || rows.length !== mappingTotal;
 
   const duplicateCounts = new Map();
   for (const row of rows) {
@@ -581,19 +607,29 @@ async function main() {
   const byType = countBy(resultRows, "Typ");
   const pass = resultRows.filter((row) => ACCEPTABLE_VERDICTS.has(row["Verdikt"])).length;
   const unresolved = resultRows.filter((row) => /(?:^| \| )MANUÁLNE OVERIŤ(?: \| |$)/.test(row["Problémy"] || "")).length;
+  const reclassifiedByV69 = rows.filter((row) => /^(?:MANUÁLNE|OVERIŤ PRED 301)/i.test(String(row["Akcia"] || "").trim())).length;
   const blocking = resultRows.length - pass;
+  const readyForDns = !options.dryRun
+    && !partialSelection
+    && blocking === 0
+    && unresolved === 0
+    && duplicates.length === 0;
   const summary = {
     generatedAt: new Date().toISOString(),
     baseUrl: options.baseUrl,
     mapping: path.resolve(options.mapping),
     dryRun: options.dryRun,
     allowNoindex: options.allowNoindex,
+    mappingTotal,
+    partialSelection,
     total: resultRows.length,
+    httpTested: options.dryRun ? 0 : resultRows.length,
     pass,
     blocking,
     unresolved,
+    reclassifiedByV69,
     duplicates: duplicates.length,
-    readyForDns: blocking === 0 && unresolved === 0 && duplicates.length === 0,
+    readyForDns,
     durationSeconds: Math.round((Date.now() - started) / 1000),
     byVerdict,
     byType,
@@ -620,7 +656,10 @@ async function main() {
   ]);
 
   console.log(`PASS: ${pass}/${resultRows.length}`);
+  console.log(`Rozsah: ${resultRows.length}/${mappingTotal}${partialSelection ? " (čiastkový test)" : " (celá mapa)"}`);
+  console.log(`HTTP otestované: ${summary.httpTested}/${resultRows.length}`);
   console.log(`Blokujúce: ${blocking}`);
+  console.log(`Staré ručné rozhodnutia prehodnotené pravidlami V69: ${reclassifiedByV69}`);
   console.log(`Pripravené na DNS: ${summary.readyForDns ? "ÁNO" : "NIE"}`);
   console.log(`HTML report: ${path.resolve(files.latestHtml)}`);
   console.log(`CSV report:  ${path.resolve(files.latestCsv)}`);

@@ -58,11 +58,11 @@ if (session) return Astro.redirect("/ucet");
     </div>
 
     <script>
-      const form = document.querySelector("[data-register-form]");
-      const message = document.querySelector("[data-auth-message]");
-      const submit = document.querySelector("[data-auth-submit]");
+      const form = document.querySelector<HTMLFormElement>("[data-register-form]")!;
+      const message = document.querySelector<HTMLElement>("[data-auth-message]")!;
+      const submit = document.querySelector<HTMLButtonElement>("[data-auth-submit]")!;
 
-      function showMessage(text, type = "error") {
+      function showMessage(text: string, type = "error") {
         message.hidden = false;
         message.textContent = text;
         message.className = `auth-alert is-${type}`;
@@ -70,8 +70,8 @@ if (session) return Astro.redirect("/ucet");
 
       form?.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const data = Object.fromEntries(new FormData(form));
-        data.consent = Boolean(form.querySelector('input[name="consent"]')?.checked);
+        const data: Record<string, unknown> = Object.fromEntries(new FormData(form));
+        data.consent = Boolean(form.querySelector<HTMLInputElement>('input[name="consent"]')?.checked);
 
         submit.disabled = true;
         submit.textContent = "Registrujem...";
@@ -89,7 +89,7 @@ if (session) return Astro.redirect("/ucet");
           showMessage("Registrácia prebehla úspešne. Presmerovávam do účtu...", "success");
           window.location.href = result.redirect || "/ucet";
         } catch (error) {
-          showMessage(error.message || "Registrácia zlyhala.");
+          showMessage(error instanceof Error ? error.message : "Registrácia zlyhala.");
         } finally {
           submit.disabled = false;
           submit.textContent = "Zaregistrovať sa";

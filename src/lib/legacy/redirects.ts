@@ -21,25 +21,13 @@ const STATIC_REDIRECTS: Record<string, string> = {
   "/ochrana-osobnych-udajov-gdpr": "/ochrana-osobnych-udajov",
   "/gdpr": "/ochrana-osobnych-udajov",
   "/mapa-stranek": "/sitemap.xml",
+  "/sitemap-index.xml": "/sitemap.xml",
+  "/sitemap_index.xml": "/sitemap.xml",
+  "/wp-sitemap.xml": "/sitemap.xml",
   "/sklad": "/produkty?stock=instock",
   "/vyhladavanie": "/produkty",
   "/hladat": "/produkty",
 };
-
-const MANUFACTURER_REDIRECT_BRANDS = new Set([
-  "brother",
-  "canon",
-  "dell",
-  "epson",
-  "konica-minolta",
-  "lexmark",
-  "oki",
-  "panasonic",
-  "samsung",
-  "toshiba",
-  "utax",
-  "xerox",
-]);
 
 const PRINTER_FINDER_BRANDS = new Set([
   "hp",
@@ -77,7 +65,7 @@ export function resolveLegacyRedirect(route: ParsedLegacyRoute): LegacyRedirect 
     route.kind === "manufacturer"
     && route.brandSlug
     && route.legacySlug === route.brandSlug
-    && MANUFACTURER_REDIRECT_BRANDS.has(route.brandSlug)
+    && PRINTER_FINDER_BRANDS.has(route.brandSlug)
   ) {
     return {
       location: `/tlaciarne/${route.brandSlug}`,

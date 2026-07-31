@@ -1,8 +1,8 @@
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { TM_CACHE_ROOT } from './runtime-paths';
-import { readSignedJson, writeSignedJson, quarantineFile, TM_DATA_ROOT } from "./secure-persistence";
-import { getWooBaseUrl, getWooAuthHeader, wooRequest } from "./woo-client";
+import { readSignedJson, writeSignedJson, TM_DATA_ROOT } from "./secure-persistence";
+import { wooRequest } from "./woo-client";
 import { sendOrderAdminCopyEmail, sendOrderConfirmationEmail } from "./mail";
 import { reserveLoyaltyDiscount } from "./loyalty";
 import { grantThankYouCoupon, markCouponUsed, thankYouCouponCode, type CouponResult } from "./coupons";
@@ -45,6 +45,7 @@ export type CheckoutOrderSource = {
   subtotal: number;
   total: number;
   createdAt: string;
+  termsAcceptedAt?: string;
   customerId?: number;
   wooOrderId?: number;
   wooOrderNumber?: string;
@@ -83,10 +84,6 @@ const VAT_RATE = 0.23;
 
 function netFromGross(value: unknown) {
   return money(money(value) / (1 + VAT_RATE));
-}
-
-function vatFromGross(value: unknown) {
-  return money(money(value) - netFromGross(value));
 }
 
 function digits(value: unknown) {
@@ -350,6 +347,8 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     { key: "billing_ic_dph", value: String(source.billing?.icDph || source.billing?.ic_dph || "") },
     { key: "_billing_ic_dph", value: String(source.billing?.icDph || source.billing?.ic_dph || "") },
     { key: "tm_customer_email", value: String(source.contact?.email || source.billing?.email || "") },
+    { key: "tm_terms_accepted", value: source.termsAcceptedAt ? "1" : "0" },
+    { key: "tm_terms_accepted_at", value: String(source.termsAcceptedAt || "") },
     { key: "tm_shipping_pickup", value: JSON.stringify(source.delivery?.pickup || {}) },
     { key: "tm_shipping_pickup_id", value: p.id },
     { key: "tm_shipping_pickup_text", value: pickupText },
@@ -411,7 +410,14 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
 }
 
 function feeLines(source: CheckoutOrderSource, taxRateId = 0) {
-  const fees = [];
+  const fees: Array<{
+    name: string;
+    total: string;
+    total_tax: string;
+    tax_status: string;
+    taxes?: Array<{ id: number; total: string }>;
+    meta_data: Array<{ key: string; value: string }>;
+  }> = [];
 
   const addGrossFee = (name: string, grossValue: number) => {
     const gross = money(grossValue);
@@ -549,7 +555,7 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
   }));
 
   if (source.coupon?.ok) {
-    await profiler.measure("coupon-mark-used", () => markCouponUsed(Number(source.customerId) || undefined, source.coupon, order.id)).catch((error) => console.error("Coupon used meta error:", error?.message || error));
+    await profiler.measure("coupon-mark-used", () => markCouponUsed(Number(source.customerId) || undefined, source.coupon || undefined, order.id)).catch((error) => console.error("Coupon used meta error:", error?.message || error));
   }
 
   if (order?.id) {

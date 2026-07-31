@@ -143,15 +143,12 @@ async function processOneJob(file: string) {
     });
 
     let orderId = Number(job.wooOrderId || 0);
-    let orderNumber = String(job.wooOrderNumber || "");
-
     if (!orderId) {
       const result = await profiler.measure("woo-create-order-total", () => createWooOrderFromCheckout(job.source, {
         waitForEmail: false,
         sendConfirmationEmail: false,
       }));
       orderId = result.orderId;
-      orderNumber = result.orderNumber;
       job.wooOrderId = result.orderId;
       job.wooOrderNumber = result.orderNumber;
       await writeJob(PROCESSING_DIR, job);
@@ -257,52 +254,11 @@ export async function enqueueAsyncWooOrder(source: CheckoutOrderSource) {
   };
   await writeJob(PENDING_DIR, job);
 
-  // Potvrdenie zákazníkovi a kópiu prevádzke odošleme paralelne.
-  // Zachová sa okamžité odoslanie, ale checkout nečaká na dve SMTP spojenia za sebou.
-  const customerEmail = String(source.contact?.email || source.billing?.email || "").trim();
-  const customerTask = customerEmail
-    ? (async () => {
-        try {
-          job.emailAttempts = 1;
-          await sendOrderConfirmationEmail({
-            to: customerEmail,
-            orderNumber: source.orderNumber,
-            source,
-            paymentTitle: source.paymentLabel || "Platba",
-            shippingTitle: source.shippingLabel || "Doprava",
-          });
-          job.emailSentAt = new Date().toISOString();
-          console.log("[TM async order queue] immediate customer confirmation sent", { id, customerEmail });
-        } catch (error: any) {
-          job.lastError = `Potvrdenie zákazníkovi: ${error?.message || String(error)}`;
-          console.error("[TM async order queue] immediate customer confirmation failed", id, job.lastError);
-        }
-      })()
-    : Promise.resolve();
-
-  const adminTask = (async () => {
-    try {
-      job.adminEmailAttempts = 1;
-      await sendOrderAdminCopyEmail({
-        orderNumber: source.orderNumber,
-        source,
-        paymentTitle: source.paymentLabel || "Platba",
-        shippingTitle: source.shippingLabel || "Doprava",
-      });
-      job.adminEmailSentAt = new Date().toISOString();
-      console.log("[TM async order queue] immediate admin copy sent", { id });
-    } catch (error: any) {
-      const message = `Kópia pre prevádzku: ${error?.message || String(error)}`;
-      job.lastError = job.lastError ? `${job.lastError}; ${message}` : message;
-      console.error("[TM async order queue] immediate admin copy failed", id, message);
-    }
-  })();
-
-  await Promise.allSettled([customerTask, adminTask]);
-
-  await writeJob(PENDING_DIR, job);
+  // E-maily sa odošlú až po úspešnom vytvorení WooCommerce objednávky
+  // v processOneJob(). Zákazník tak nikdy nedostane potvrdenie objednávky,
+  // ktorá v hlavnom objednávkovom systéme nevznikla.
   scheduleAsyncOrderQueue(INITIAL_QUEUE_DELAY_MS);
-  return { queued: true, queueId: id, orderNumber: source.orderNumber, emailSent: Boolean(job.emailSentAt), adminEmailSent: Boolean(job.adminEmailSentAt) };
+  return { queued: true, queueId: id, orderNumber: source.orderNumber, emailSent: false, adminEmailSent: false };
 }
 
 export function scheduleAsyncOrderQueue(delayMs = 0) {

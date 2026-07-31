@@ -4,8 +4,11 @@ import { wooRequest } from './woo-client';
 import { readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
 
 const STATE_PATH = join(TM_DATA_ROOT, 'email-queue', 'state.json');
-const POLL_INTERVAL_MS = Math.max(10_000, Number(process.env.TM_EMAIL_QUEUE_INTERVAL_MS || 15_000));
-const START_DELAY_MS = Math.max(1_000, Number(process.env.TM_EMAIL_QUEUE_START_DELAY_MS || 4_000));
+// Pri štarte má prednosť prvé kompletné načítanie produktového katalógu.
+// Okamžitý scan objednávok v minulosti súťažil s desiatkami strán produktov
+// o WooCommerce rate limit a mohol zablokovať prázdnu lokálnu cache.
+const POLL_INTERVAL_MS = Math.max(30_000, Number(process.env.TM_EMAIL_QUEUE_INTERVAL_MS || 60_000));
+const START_DELAY_MS = Math.max(10_000, Number(process.env.TM_EMAIL_QUEUE_START_DELAY_MS || 90_000));
 const ORDERS_PER_SCAN = Math.min(100, Math.max(20, Number(process.env.TM_EMAIL_QUEUE_ORDERS_PER_SCAN || 50)));
 const OBSERVED_META = '_tm_email_queue_observed_status';
 const SENT_META = '_tm_email_queue_last_sent_status';

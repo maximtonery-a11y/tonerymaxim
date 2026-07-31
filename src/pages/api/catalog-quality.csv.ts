@@ -12,7 +12,7 @@ function csv(value: unknown) {
 export const GET: APIRoute = async ({ url, locals }) => {
   const adminKey = getAdminAccessKey(locals);
   const suppliedKey = url.searchParams.get('key') || '';
-  if (adminKey && !constantTimeEqual(adminKey, suppliedKey)) {
+  if (!adminKey || !constantTimeEqual(adminKey, suppliedKey)) {
     return new Response('Forbidden', { status: 403, headers: { 'X-Robots-Tag': 'noindex, nofollow' } });
   }
 

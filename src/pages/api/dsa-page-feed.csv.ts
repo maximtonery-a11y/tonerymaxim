@@ -3,11 +3,12 @@ import { buildAdsProducts, csvCell } from "../../lib/ads-products";
 import { getProductsCache } from "../../lib/tm-products-cache";
 
 export const prerender = false;
+const PRODUCTION_ORIGIN = "https://www.tonerymaxim.sk";
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async () => {
   try {
     const cache = await getProductsCache();
-    const products = buildAdsProducts(cache.products, url.origin, true);
+    const products = buildAdsProducts(cache.products, PRODUCTION_ORIGIN, true);
     const rows = [
       ["Page URL", "Custom label"].map(csvCell).join(","),
       ...products.map((product) => [product.url, product.dsa_labels.join(";")].map(csvCell).join(",")),

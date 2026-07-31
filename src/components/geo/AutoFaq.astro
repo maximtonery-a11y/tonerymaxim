@@ -1,0 +1,17 @@
+---
+interface FaqItem {
+  q: string;
+  a: string;
+}
+
+const { faq = [] } = Astro.props as { faq?: FaqItem[] };
+---
+<section>
+<h2>Najčastejšie otázky</h2>
+{faq.map(item=>(
+<div>
+<h3>{item.q}</h3>
+<p>{item.a}</p>
+</div>
+))}
+</section>

@@ -61,8 +61,8 @@ const shippingLogos = [
 
     <nav class="footer-col" aria-label="Sortiment">
       <h3>Sortiment</h3>
-      <a href="/produkty?category=tonery&search=toner">Tonery</a>
-      <a href="/produkty?category=atramentove-naplne&search=atrament">Atramentové náplne</a>
+      <a href="/tonery">Tonery</a>
+      <a href="/atramentove-naplne">Atramentové náplne</a>
       <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Optické valce</a>
       <a href="/produkty?category=ostatne-komponenty&search=komponent">Ostatné komponenty</a>
     </nav>
@@ -82,9 +82,9 @@ const shippingLogos = [
       <p>Po–Pi 9:00–15:00</p>
       <p class="footer-company-data">Roman Babčan INkarus<br />Tajov 265, 976 34 Tajov<br />IČO: 37 328 344 · DIČ: 1020059920 · IČ DPH: SK1020059920</p>
       <a class="footer-contact-rating" href={heurekaUrl} target="_blank" rel="noopener noreferrer" aria-label="Otvoriť recenzie ToneryMaxim na Heureke">
-        <span data-heureka-stars>★★★★★</span>
-        <strong><span data-heureka-rating>5,0</span> / 5</strong>
-        <small><b data-heureka-count>1 323</b> recenzií</small>
+        <span data-heureka-stars>★</span>
+        <strong><span data-heureka-rating>Heureka</span></strong>
+        <small><b data-heureka-count>Overené recenzie</b></small>
       </a>
     </div>
   </div>
@@ -129,27 +129,29 @@ const shippingLogos = [
 <CookieConsent />
 
 <script>
-  function formatSkNumber(value) {
+  function formatSkNumber(value: unknown) {
     const number = Number(value || 0);
-    if (!Number.isFinite(number) || number <= 0) return "1 323";
+    if (!Number.isFinite(number) || number <= 0) return "";
     return new Intl.NumberFormat("sk-SK").format(number);
   }
 
-  function formatSkRating(value) {
+  function formatSkRating(value: unknown) {
     const number = Number(value || 0);
-    if (!Number.isFinite(number) || number <= 0) return "5,0";
+    if (!Number.isFinite(number) || number <= 0) return "";
     return number.toLocaleString("sk-SK", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   }
 
-  function renderStars(rating) {
+  function renderStars(rating: unknown) {
     const value = Number(rating || 0);
     const rounded = Math.max(0, Math.min(5, Math.round(value)));
     return "★".repeat(rounded || 5) + "☆".repeat(Math.max(0, 5 - (rounded || 5)));
   }
 
-  function updateFooterHeureka(data) {
-    const rating = Number(data?.averageRating || 5);
-    const reviewCount = Number(data?.reviewCount || 1323);
+  function updateFooterHeureka(data: any) {
+    if (data?.ok !== true) return;
+    const rating = Number(data?.averageRating || 0);
+    const reviewCount = Number(data?.reviewCount || 0);
+    if (rating <= 0 || reviewCount <= 0) return;
     const ratingText = formatSkRating(rating);
     const countText = formatSkNumber(reviewCount);
     const stars = renderStars(rating);
@@ -157,14 +159,22 @@ const shippingLogos = [
     document.querySelectorAll("[data-heureka-count], [data-heureka-bottom-count]").forEach((node) => {
       node.textContent = countText;
     });
+    document.querySelectorAll("[data-heureka-mini-count]").forEach((node) => {
+      node.textContent = `${countText} recenzií`;
+    });
 
     document.querySelectorAll("[data-heureka-rating], [data-heureka-mini-score]").forEach((node) => {
-      node.textContent = ratingText;
+      node.textContent = node.hasAttribute("data-heureka-mini-score") ? `${ratingText}/5` : ratingText;
     });
 
     document.querySelectorAll("[data-heureka-stars]").forEach((node) => {
       node.textContent = stars;
     });
+    if (Number(data?.recommendationPercent || 0) > 0) {
+      document.querySelectorAll("[data-heureka-recommendation]").forEach((node) => {
+        node.textContent = `${Math.round(Number(data.recommendationPercent))} %`;
+      });
+    }
   }
 
   async function loadFooterHeurekaStats() {

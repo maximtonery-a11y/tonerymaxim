@@ -2,11 +2,14 @@ import type { APIRoute } from "astro";
 
 export const GET: APIRoute = async () => {
   try {
+    const wooUrl = process.env.WOO_URL || import.meta.env.WOO_URL;
+    const wooKey = process.env.WOO_CONSUMER_KEY || import.meta.env.WOO_CONSUMER_KEY;
+    const wooSecret = process.env.WOO_CONSUMER_SECRET || import.meta.env.WOO_CONSUMER_SECRET;
     const url =
-      `${import.meta.env.WOO_URL}/wp-json/wc/v3/products?per_page=5`;
+      `${wooUrl}/wp-json/wc/v3/products?per_page=5`;
 
     const auth = Buffer.from(
-      `${import.meta.env.WOO_CONSUMER_KEY}:${import.meta.env.WOO_CONSUMER_SECRET}`
+      `${wooKey}:${wooSecret}`
     ).toString("base64");
 
     const response = await fetch(url, {

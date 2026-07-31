@@ -48,13 +48,13 @@ const billing = getBilling(wooCustomer);
     </AccountShell>
 
     <script>
-      function showMessage(el, text, type = "error") {
+      function showMessage(el: HTMLElement, text: string, type = "error") {
         el.hidden = false;
         el.textContent = text;
         el.className = `auth-alert is-${type}`;
       }
 
-      async function postJson(url, data) {
+      async function postJson(url: string, data: Record<string, FormDataEntryValue>) {
         const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -65,10 +65,10 @@ const billing = getBilling(wooCustomer);
         return result;
       }
 
-      const profileForm = document.querySelector("[data-profile-form]");
-      const profileMsg = document.querySelector("[data-profile-message]");
-      const profileSubmit = document.querySelector("[data-profile-submit]");
-      profileForm?.addEventListener("submit", async (event) => {
+      const profileForm = document.querySelector<HTMLFormElement>("[data-profile-form]")!;
+      const profileMsg = document.querySelector<HTMLElement>("[data-profile-message]")!;
+      const profileSubmit = document.querySelector<HTMLButtonElement>("[data-profile-submit]")!;
+      profileForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         profileSubmit.disabled = true;
         profileSubmit.textContent = "Ukladám...";
@@ -77,17 +77,17 @@ const billing = getBilling(wooCustomer);
           const result = await postJson("/api/account/update-profile", Object.fromEntries(new FormData(profileForm)));
           showMessage(profileMsg, result.message || "Profil bol uložený.", "success");
         } catch (error) {
-          showMessage(profileMsg, error.message || "Profil sa nepodarilo uložiť.");
+          showMessage(profileMsg, error instanceof Error ? error.message : "Profil sa nepodarilo uložiť.");
         } finally {
           profileSubmit.disabled = false;
           profileSubmit.textContent = "Uložiť profil";
         }
       });
 
-      const passwordForm = document.querySelector("[data-password-form]");
-      const passwordMsg = document.querySelector("[data-password-message]");
-      const passwordSubmit = document.querySelector("[data-password-submit]");
-      passwordForm?.addEventListener("submit", async (event) => {
+      const passwordForm = document.querySelector<HTMLFormElement>("[data-password-form]")!;
+      const passwordMsg = document.querySelector<HTMLElement>("[data-password-message]")!;
+      const passwordSubmit = document.querySelector<HTMLButtonElement>("[data-password-submit]")!;
+      passwordForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         passwordSubmit.disabled = true;
         passwordSubmit.textContent = "Mením...";
@@ -97,7 +97,7 @@ const billing = getBilling(wooCustomer);
           passwordForm.reset();
           showMessage(passwordMsg, result.message || "Heslo bolo zmenené.", "success");
         } catch (error) {
-          showMessage(passwordMsg, error.message || "Heslo sa nepodarilo zmeniť.");
+          showMessage(passwordMsg, error instanceof Error ? error.message : "Heslo sa nepodarilo zmeniť.");
         } finally {
           passwordSubmit.disabled = false;
           passwordSubmit.textContent = "Zmeniť heslo";

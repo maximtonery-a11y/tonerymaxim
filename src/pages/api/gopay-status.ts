@@ -56,7 +56,9 @@ export const GET: APIRoute = async ({ url }) => {
 
     const pending = await readPendingGoPayOrder(paymentId);
     if (!pending) throw new Error(`Neznáma GoPay platba ${paymentId}.`);
-    const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents: pending.amountCents, currency: pending.currency, requirePaid: false });
+    const amountCents = Number(pending.amountCents);
+    if (!Number.isFinite(amountCents) || amountCents <= 0) throw new Error(`GoPay platba ${paymentId} nemá platnú očakávanú sumu.`);
+    const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents, currency: pending.currency, requirePaid: false });
     const state = String(payment?.state || "UNKNOWN");
 
     let orderResult: any = null;

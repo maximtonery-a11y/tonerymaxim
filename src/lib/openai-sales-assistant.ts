@@ -9,7 +9,7 @@ type OpenAiAssistantResult = {
 const OPENAI_ENDPOINT = "https://api.openai.com/v1/responses";
 
 function env(name: string) {
-  return String(import.meta.env[name] || process.env[name] || "").trim();
+  return String(process.env[name] || import.meta.env[name] || "").trim();
 }
 
 function numberEnv(name: string, fallback: number, minimum: number, maximum: number) {
@@ -95,7 +95,7 @@ export async function answerWithOpenAi(message: string, page = "") {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: env("OPENAI_MODEL") || "gpt-5.6",
+        model: env("OPENAI_MODEL") || "gpt-5.6-sol",
         store: false,
         reasoning: { effort: env("OPENAI_REASONING_EFFORT") || "low" },
         text: {

@@ -91,7 +91,6 @@
   }
 
   const DPD_WIDGET_KEY = "iwzhr18lr8fiwp8xz68oicw1jv6vpow5";
-  const DPD_WIDGET_LIBRARY_URL = "https://pus-maps.dpd.sk/lib/library.js";
 
   // Verejný GLS Map Widget API key z implementačnej príručky GLS.
   // Po dodaní vlastného kľúča od GLS stačí vymeniť túto hodnotu.
@@ -107,8 +106,6 @@
 
   let selectedDpdPickup = null;
   let selectedGlsPickup = null;
-  let dpdWidgetLoading = null;
-  let dpdWidgetInstance = null;
   let glsWidgetLoading = null;
 
   const PAYMENT = {
@@ -169,11 +166,6 @@
     return text;
   }
 
-  function addressDiffers(a = {}, b = {}) {
-    const keys = ["address_1", "city", "postcode", "first_name", "last_name"];
-    return keys.some((key) => String(a?.[key] || "").trim() && String(a?.[key] || "").trim() !== String(b?.[key] || "").trim());
-  }
-
   function hasUsableShippingAddress(address = {}) {
     return Boolean(String(address?.address_1 || "").trim() && String(address?.city || "").trim() && String(address?.postcode || "").trim());
   }
@@ -219,7 +211,6 @@
     const companyEnabled = document.querySelector("#company_enabled");
     if (companyEnabled && [billing.company, savedIco, savedDic, savedIcDph].some((value) => String(value || "").trim())) companyEnabled.checked = true;
 
-    const shippingMethod = getSelected("shipping");
     const different = document.querySelector("#different_address");
 
     if (hasUsableShippingAddress(shipping)) {
@@ -447,10 +438,6 @@
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(Number(value || 0));
-  }
-
-  function cartTotal(cart) {
-    return cart.reduce((sum, item) => sum + Number(item.price || 0) * cleanQty(item.qty), 0);
   }
 
   function isCompatibleDiscountItem(item) {
@@ -742,8 +729,6 @@
   function updateVisibility() {
     const shipping = getSelected("shipping");
     const company = document.querySelector("#company_enabled")?.checked;
-    const differentAddress = document.querySelector("#different_address")?.checked;
-
     const needsPickup = needsPickupShipping(shipping);
     const pickupBox = document.querySelector("[data-pickup-box]");
 
@@ -1286,7 +1271,6 @@
   }
 
   function normalizeGlsPickup(point) {
-    const selectedShipping = getSelected("shipping");
     const isLocker = Boolean(point?.isparcellocker);
 
     return {
@@ -1413,30 +1397,6 @@
     if (isGlsPickupShipping(shipping)) {
       openGlsWidget();
     }
-  }
-
-  function loadDpdWidgetScript() {
-    if (window.DpdPudo?.Widget) return Promise.resolve();
-    if (dpdWidgetLoading) return dpdWidgetLoading;
-
-    dpdWidgetLoading = new Promise((resolve, reject) => {
-      const existing = document.querySelector("script[data-dpd-sk-widget-script]");
-      if (existing) {
-        existing.addEventListener("load", () => resolve(), { once: true });
-        existing.addEventListener("error", reject, { once: true });
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.async = true;
-      script.dataset.dpdSkWidgetScript = "true";
-      script.src = DPD_WIDGET_LIBRARY_URL;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error("DPD widget sa nepodarilo načítať."));
-      document.head.appendChild(script);
-    });
-
-    return dpdWidgetLoading;
   }
 
   function getWidgetZip() {
@@ -1644,8 +1604,6 @@
     event?.preventDefault?.();
     if (tmOrderSubmitting) return;
     const status = document.querySelector("[data-order-status]");
-    const submitButton = document.querySelector("[data-submit-order]");
-
     renderCheckoutSummary();
 
     const cart = readCart();
@@ -1707,6 +1665,7 @@
           return loyaltyDiscountForTotal(Math.max(0, goodsAfterQuantity - currentCoupon));
         })(),
       },
+      termsAccepted: document.querySelector("#terms")?.checked === true,
       createdAt: new Date().toISOString(),
       requestId: checkoutRequestId(),
     };

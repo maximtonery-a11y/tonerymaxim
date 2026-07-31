@@ -1,6 +1,8 @@
+import { isStrongSecret } from './secret-validation';
+
 export function getAdminAccessKey(locals?: any): string {
   const runtime = locals?.runtime?.env || {};
-  return String(
+  const value = String(
     runtime.TM_ANALYTICS_ADMIN_KEY ||
     runtime.ADMIN_API_SECRET ||
     process.env.TM_ANALYTICS_ADMIN_KEY ||
@@ -9,6 +11,7 @@ export function getAdminAccessKey(locals?: any): string {
     import.meta.env.ADMIN_API_SECRET ||
     ''
   ).trim();
+  return isStrongSecret(value, 24) ? value : '';
 }
 
 export function constantTimeEqual(left: string, right: string): boolean {

@@ -1,0 +1,15 @@
+---
+const graph = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "ToneryMaxim",
+  url: "https://www.tonerymaxim.sk",
+};
+const graphJson = JSON.stringify(graph)
+  .replace(/</g, "\\u003c")
+  .replace(/>/g, "\\u003e")
+  .replace(/&/g, "\\u0026")
+  .replace(/\u2028/g, "\\u2028")
+  .replace(/\u2029/g, "\\u2029");
+---
+<script is:inline type="application/ld+json" set:html={graphJson} />

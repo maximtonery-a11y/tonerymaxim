@@ -16,7 +16,8 @@ function json(data: unknown, status = 200) {
 }
 
 function siteUrlFromRequest(request: Request): string {
-  const configured = import.meta.env.PUBLIC_SITE_URL || import.meta.env.SITE_URL || import.meta.env.TM_SITE_URL;
+  const configured = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || process.env.TM_SITE_URL
+    || import.meta.env.PUBLIC_SITE_URL || import.meta.env.SITE_URL || import.meta.env.TM_SITE_URL;
   if (typeof configured === "string" && configured.trim()) return configured.trim().replace(/\/$/, "");
   return new URL(request.url).origin;
 }

@@ -69,29 +69,59 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
     </AccountShell>
 
     <script>
-      const app = document.querySelector("[data-claims-app]");
-      const listEl = document.querySelector("[data-claims-list]");
-      const form = document.querySelector("[data-claim-form]");
-      const orderSelect = document.querySelector("[data-claim-order]");
-      const productSelect = document.querySelector("[data-claim-product]");
-      const messageEl = document.querySelector("[data-claim-message]");
-      const submitBtn = document.querySelector("[data-claim-submit]");
+      type AccountOrderItem = {
+        product_id?: number;
+        variation_id?: number;
+        name: string;
+        sku?: string;
+        quantity: number;
+      };
+      type AccountOrder = {
+        id: number;
+        number: string;
+        date_created?: string;
+        total?: string;
+        items: AccountOrderItem[];
+      };
+      type AccountClaim = {
+        id: string;
+        product_name: string;
+        order_number: string;
+        created_at?: string;
+        status?: string;
+        decision?: string;
+        status_label?: string;
+        reason?: string;
+        product_sku?: string;
+        message?: string;
+        admin_comment?: string;
+      };
 
-      let orders = [];
-      let claims = [];
+      const listEl = document.querySelector<HTMLElement>("[data-claims-list]")!;
+      const form = document.querySelector<HTMLFormElement>("[data-claim-form]")!;
+      const orderSelect = document.querySelector<HTMLSelectElement>("[data-claim-order]")!;
+      const productSelect = document.querySelector<HTMLSelectElement>("[data-claim-product]")!;
+      const messageEl = document.querySelector<HTMLElement>("[data-claim-message]")!;
+      const submitBtn = document.querySelector<HTMLButtonElement>("[data-claim-submit]")!;
+      const reasonSelect = form.querySelector<HTMLSelectElement>('[name="reason"]')!;
+      const claimMessage = form.querySelector<HTMLTextAreaElement>('[name="message"]')!;
 
-      function escapeHtml(value) {
-        return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" }[char]));
+      let orders: AccountOrder[] = [];
+      let claims: AccountClaim[] = [];
+
+      function escapeHtml(value: unknown) {
+        const entities: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" };
+        return String(value ?? "").replace(/[&<>'"]/g, (char) => entities[char] || char);
       }
 
-      function formatDate(value) {
+      function formatDate(value: unknown) {
         if (!value) return "";
-        const date = new Date(value);
+        const date = new Date(String(value));
         if (Number.isNaN(date.getTime())) return "";
         return new Intl.DateTimeFormat("sk-SK", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
       }
 
-      function claimStepState(claim, key) {
+      function claimStepState(claim: AccountClaim, key: string) {
         const status = claim?.status || "received";
         const decision = claim?.decision || (status === "approved" || status === "rejected" ? status : "");
 
@@ -108,10 +138,12 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
         return "";
       }
 
-      function claimStepsFor(claim) {
+      function claimStepsFor(claim: AccountClaim): Array<[string, string]> {
         const status = claim?.status || "received";
         const decision = claim?.decision || (status === "approved" || status === "rejected" ? status : "");
-        const decisionStep = decision === "rejected" ? ["rejected", "Neschválená"] : ["approved", "Schválená"];
+        const decisionStep: [string, string] = decision === "rejected"
+          ? ["rejected", "Neschválená"]
+          : ["approved", "Schválená"];
 
         if (status === "received" || status === "checking") {
           return [
@@ -132,7 +164,6 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
       }
 
       function renderClaims() {
-        if (!listEl) return;
         if (!claims.length) {
           listEl.innerHTML = `
             <article class="account-panel claim-empty">
@@ -170,11 +201,10 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
       }
 
       function renderOrders() {
-        if (!orderSelect || !productSelect) return;
         if (!orders.length) {
           orderSelect.innerHTML = `<option value="">Nemáte objednávku vhodnú na reklamáciu</option>`;
           productSelect.innerHTML = `<option value="">Najprv musí existovať objednávka</option>`;
-          submitBtn && (submitBtn.disabled = true);
+          submitBtn.disabled = true;
           return;
         }
 
@@ -182,12 +212,11 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
           const label = `#${order.number} · ${formatDate(order.date_created)} · ${order.total || ""} €`;
           return `<option value="${order.id}">${escapeHtml(label)}</option>`;
         }).join("");
-        submitBtn && (submitBtn.disabled = false);
+        submitBtn.disabled = false;
         renderProducts();
       }
 
       function renderProducts() {
-        if (!orderSelect || !productSelect) return;
         const order = orders.find((item) => Number(item.id) === Number(orderSelect.value));
         if (!order) {
           productSelect.innerHTML = `<option value="">Najprv vyberte objednávku</option>`;
@@ -200,8 +229,7 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
         }).join("");
       }
 
-      function setMessage(text, type = "") {
-        if (!messageEl) return;
+      function setMessage(text: string, type = "") {
         messageEl.hidden = !text;
         messageEl.textContent = text || "";
         messageEl.className = `claim-form-message ${type}`;
@@ -217,8 +245,9 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
           renderClaims();
           renderOrders();
         } catch (error) {
-          if (listEl) listEl.innerHTML = `<article class="account-panel claim-empty is-error"><strong>Reklamácie sa nepodarilo načítať.</strong><p>${escapeHtml(error.message || "Skúste stránku obnoviť.")}</p></article>`;
-          setMessage(error.message || "Reklamácie sa nepodarilo načítať.", "is-error");
+          const errorMessage = error instanceof Error ? error.message : "Skúste stránku obnoviť.";
+          listEl.innerHTML = `<article class="account-panel claim-empty is-error"><strong>Reklamácie sa nepodarilo načítať.</strong><p>${escapeHtml(errorMessage)}</p></article>`;
+          setMessage(errorMessage, "is-error");
         }
       }
 
@@ -232,10 +261,10 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
         submitBtn.textContent = "Odosielam…";
 
         const payload = {
-          order_id: Number(orderSelect?.value || 0),
-          product_id: Number(productSelect?.value || 0),
-          reason: form.reason?.value || "",
-          message: form.message?.value || "",
+          order_id: Number(orderSelect.value || 0),
+          product_id: Number(productSelect.value || 0),
+          reason: reasonSelect.value || "",
+          message: claimMessage.value || "",
         };
 
         try {
@@ -252,7 +281,7 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
           renderClaims();
           setMessage("Reklamáciu sme prijali. Potvrdenie sme poslali na e-mail.", "is-success");
         } catch (error) {
-          setMessage(error.message || "Reklamáciu sa nepodarilo odoslať.", "is-error");
+          setMessage(error instanceof Error ? error.message : "Reklamáciu sa nepodarilo odoslať.", "is-error");
         } finally {
           submitBtn.disabled = false;
           submitBtn.textContent = "Odoslať reklamáciu";

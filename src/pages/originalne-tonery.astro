@@ -1,0 +1,50 @@
+---
+import SeoCatalogPage from "../components/SeoCatalogPage.astro";
+import { getProductsCache } from "../lib/tm-products-cache";
+import { catalogStats, landingProducts, topBrandLinks, topOemLinks, topPrinterLinks } from "../lib/seo-catalog";
+
+const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
+const products = landingProducts(cache.products, "original");
+const stats = catalogStats(products);
+---
+
+<SeoCatalogPage
+  title="Originálne tonery HP, Brother, Canon a ďalšie | ToneryMaxim.sk"
+  description="Originálne tonery a náplne priamo od výrobcov tlačiarní. Vyhľadanie podľa OEM označenia alebo modelu tlačiarne, cena s DPH a aktuálny sklad."
+  canonicalPath="/originalne-tonery"
+  eyebrow="Produkty výrobcov tlačiarní"
+  heading="Originálne tonery"
+  intro="Originálne tonery vyrába priamo značka tlačiarne. Sú vhodné pre zákazníkov, ktorí požadujú originálny spotrebný materiál výrobcu a presne deklarovanú kompatibilitu."
+  products={products}
+  answer={`V katalógu je ${stats.total} originálnych produktov, z ktorých je ${stats.inStock} skladom. Originálny toner identifikujte podľa značky tlačiarne a celého OEM označenia vrátane farebnej alebo kapacitnej koncovky.`}
+  generatedAt={cache.generated_at}
+  breadcrumbs={[{ name: "Originálne tonery", path: "/originalne-tonery" }]}
+  entityFacts={["Originálny produkt výrobcu", "Cena s DPH", "Aktuálny sklad"]}
+  relatedLinks={[
+    { href: "/tonery", label: "Všetky tonery" },
+    { href: "/kompatibilne-tonery", label: "Kompatibilné tonery" },
+    { href: "/renovovane-tonery", label: "Renovované tonery" },
+    { href: "/tlaciarne", label: "Vybrať podľa tlačiarne" },
+  ]}
+  faq={[
+    { question: "Čo znamená originálny toner?", answer: "Originálny toner je kazeta dodaná pod značkou výrobcu tlačiarne, napríklad HP, Brother alebo Canon." },
+    { question: "Ako overím správne OEM označenie?", answer: "OEM kód nájdete na pôvodnej kazete alebo v návode tlačiarne. Môžete tiež vyhľadať presný model tlačiarne v našom vyhľadávaní." },
+  ]}
+  contentSections={[
+    {
+      heading: "Ako spoznať správny originálny toner",
+      paragraphs: ["Originálny produkt nesie značku výrobcu tlačiarne a konkrétne OEM označenie. Jedna tlačiareň môže používať samostatnú čiernu a viac farebných kaziet alebo štandardnú a XL kapacitu."],
+      bullets: ["Porovnajte značku a celý OEM kód.", "Pri farebných zariadeniach overte konkrétnu farbu.", "Skontrolujte, či ide o toner, atrament alebo optický valec."],
+    },
+    {
+      heading: "Údaje, ktoré musia sedieť",
+      paragraphs: ["Názov, cena, dostupnosť a kompatibilné modely na landing page pochádzajú z rovnakého katalógu ako produktový detail. Zákazník tak môže prejsť od značky cez model alebo OEM kód až ku konkrétnemu produktu bez zmeny významu."],
+    },
+  ]}
+  linkGroups={[
+    { heading: "Originálne produkty podľa značky", intro: "Vyberte výrobcu tlačiarne a následne konkrétnu produktovú rodinu.", links: topBrandLinks(products, 8) },
+    { heading: "Modely s originálnymi náplňami", intro: "Zobrazené modely majú v katalógu aspoň jeden originálny produkt.", links: topPrinterLinks(products, 8) },
+    { heading: "OEM označenia originálnych produktov", intro: "OEM stránky spájajú produkty s rovnakým presným označením.", links: topOemLinks(products, 8) },
+  ]}
+  schemaEntities={[{ name: "Originálny toner" }, { name: "OEM toner" }]}
+/>

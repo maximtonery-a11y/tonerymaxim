@@ -14,9 +14,9 @@ const CATEGORIES = [
 const TYPE_ORDER: Record<string, number> = { compatible: 1, original: 2, renovated: 3, product: 4 };
 const TYPE_LABEL: Record<string, string> = { compatible: "Kompatibilné", original: "Originálne", renovated: "Renovované", product: "Ostatné" };
 
-const RESULT_CACHE_TTL_MS = Number(import.meta.env.SMART_SEARCH_CACHE_TTL_MS || process.env.SMART_SEARCH_CACHE_TTL_MS || 90_000);
-const RESULT_CACHE_MAX_ITEMS = Number(import.meta.env.SMART_SEARCH_CACHE_MAX_ITEMS || process.env.SMART_SEARCH_CACHE_MAX_ITEMS || 300);
-const MAX_PREFIX_BUCKET = Number(import.meta.env.SMART_SEARCH_MAX_PREFIX_BUCKET || process.env.SMART_SEARCH_MAX_PREFIX_BUCKET || 1200);
+const RESULT_CACHE_TTL_MS = Number(process.env.SMART_SEARCH_CACHE_TTL_MS || import.meta.env.SMART_SEARCH_CACHE_TTL_MS || 90_000);
+const RESULT_CACHE_MAX_ITEMS = Number(process.env.SMART_SEARCH_CACHE_MAX_ITEMS || import.meta.env.SMART_SEARCH_CACHE_MAX_ITEMS || 300);
+const MAX_PREFIX_BUCKET = Number(process.env.SMART_SEARCH_MAX_PREFIX_BUCKET || import.meta.env.SMART_SEARCH_MAX_PREFIX_BUCKET || 1200);
 
 const globalStore = globalThis as typeof globalThis & {
   __TM_SMART_SEARCH_INDEX__?: SearchIndexCache;
@@ -249,13 +249,15 @@ function buildPrefixMap(items: IndexedProduct[]) {
 }
 
 function getSearchIndex(cache: any): SearchIndexCache {
-  if (globalStore.__TM_SMART_SEARCH_INDEX__?.generatedAt === cache.generated_at) return globalStore.__TM_SMART_SEARCH_INDEX__;
+  const currentIndex = globalStore.__TM_SMART_SEARCH_INDEX__;
+  if (currentIndex && currentIndex.generatedAt === cache.generated_at) return currentIndex;
 
   const items = sortProducts(cache.products).map((product, index) => makeIndexedProduct(product, index));
   const prefixMap = buildPrefixMap(items);
-  globalStore.__TM_SMART_SEARCH_INDEX__ = { generatedAt: cache.generated_at, items, prefixMap };
+  const nextIndex: SearchIndexCache = { generatedAt: cache.generated_at, items, prefixMap };
+  globalStore.__TM_SMART_SEARCH_INDEX__ = nextIndex;
   resultCache.clear();
-  return globalStore.__TM_SMART_SEARCH_INDEX__;
+  return nextIndex;
 }
 
 function cachedResultKey(generatedAt: string, query: string) {

@@ -10,11 +10,16 @@ import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import SeoHead from "../components/SeoHead.astro";
 import CatalogInitialRows from "../components/CatalogInitialRows.astro";
 import { absoluteUrl, breadcrumbJsonLd, organizationJsonLd } from "../lib/seo";
+import { entitySlug } from "../lib/seo-catalog";
 import { parseLegacyPath } from "../lib/legacy/parser";
-import { resolveLegacyRedirect } from "../lib/legacy/redirects";
+import { resolveLegacyBrandFallback, resolveLegacyRedirect } from "../lib/legacy/redirects";
 import { findLegacyProduct } from "../lib/legacy/product-lookup";
 import { findLegacyPrinter } from "../lib/legacy/printer-lookup";
-import { findLegacyCollection, resolveLegacyRecovery } from "../lib/legacy/recovery";
+import {
+  findLegacyCollection,
+  isLegacyPrintProductSlug,
+  resolveLegacyRecovery,
+} from "../lib/legacy/recovery";
 
 const SEO_ORIGIN = "https://www.tonerymaxim.sk";
 const TEST_HOSTS = new Set(["tonerymaxim.info", "www.tonerymaxim.info"]);
@@ -23,7 +28,11 @@ const route = parseLegacyPath(Astro.url.pathname);
 const directRedirect = resolveLegacyRedirect(route);
 if (directRedirect) return Astro.redirect(directRedirect.location, directRedirect.status);
 
-if (route.kind === "product" && route.productSlug) {
+if (
+  route.kind === "product"
+  && route.productSlug
+  && isLegacyPrintProductSlug(route.productSlug)
+) {
   const productMatch = await findLegacyProduct(route.productSlug).catch(() => null);
   if (productMatch) return Astro.redirect(productMatch.location, 301);
 }
@@ -31,6 +40,14 @@ if (route.kind === "product" && route.productSlug) {
 const printerMatch = route.kind === "brand-tree"
   ? await findLegacyPrinter(route).catch(() => null)
   : null;
+if (printerMatch && route.brandSlug) {
+  const modelSlug = entitySlug(printerMatch.title);
+  if (modelSlug) return Astro.redirect(`/tlaciarne/${route.brandSlug}/${modelSlug}`, 301);
+}
+
+const brandFallback = resolveLegacyBrandFallback(route);
+if (brandFallback) return Astro.redirect(brandFallback.location, brandFallback.status);
+
 const collectionMatch = !printerMatch
   ? await findLegacyCollection(route).catch(() => null)
   : null;
