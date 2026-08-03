@@ -355,13 +355,27 @@
     bottom: calc(98px + env(safe-area-inset-bottom, 0px));
   }
 
-  body:has(.catalog-mobile-bottom-search) .tm-ai-assistant:not(.is-open) .tm-ai-assistant__launcher {
+  body:has(.tm-printer-bottom-search) .tm-ai-assistant:not(.is-open) {
+    right: 16px;
+    bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.product-detail-body:has(.product-mobile-sticky-cart.is-visible) .tm-ai-assistant:not(.is-open) {
+    right: 16px;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body:has(.catalog-mobile-bottom-search) .tm-ai-assistant:not(.is-open) .tm-ai-assistant__launcher,
+  body:has(.tm-printer-bottom-search) .tm-ai-assistant:not(.is-open) .tm-ai-assistant__launcher,
+  body.product-detail-body:has(.product-mobile-sticky-cart.is-visible) .tm-ai-assistant:not(.is-open) .tm-ai-assistant__launcher {
     width: 44px;
     height: 44px;
     min-height: 44px;
   }
 
-  body:has(.catalog-mobile-bottom-search) .tm-ai-assistant:not(.is-open) .tm-ai-assistant__icon {
+  body:has(.catalog-mobile-bottom-search) .tm-ai-assistant:not(.is-open) .tm-ai-assistant__icon,
+  body:has(.tm-printer-bottom-search) .tm-ai-assistant:not(.is-open) .tm-ai-assistant__icon,
+  body.product-detail-body:has(.product-mobile-sticky-cart.is-visible) .tm-ai-assistant:not(.is-open) .tm-ai-assistant__icon {
     width: 29px;
     height: 29px;
     font-size: 11px;
@@ -472,6 +486,12 @@
   html.tm-menu-open .tm-ai-assistant,
   body:has(.tm-cookie-consent.tm-cookie-is-open) .tm-ai-assistant,
   body:has(.catalog-mobile-bottom-search:focus-within) .tm-ai-assistant,
+  body:has(.tm-printer-bottom-search:focus-within) .tm-ai-assistant,
+  body:has(.tm-printer-mobile-drawer.is-open) .tm-ai-assistant,
+  body:has(.tm-mobile-drawer.is-open) .tm-ai-assistant,
+  body:has(.tm-global-mobile-drawer.is-open) .tm-ai-assistant,
+  body:has(dialog[open]) .tm-ai-assistant,
+  body.image-zoom-open .tm-ai-assistant,
   body.has-add-cart-drawer .tm-ai-assistant,
   body:has(.checkout-page) .tm-ai-assistant,
   body:has(.cart-page) .tm-ai-assistant {

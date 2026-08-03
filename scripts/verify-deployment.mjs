@@ -52,6 +52,24 @@ function requireCondition(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function productionHealthDiagnostic(response, data) {
+  if (response.status === 401) {
+    return 'HTTP 401: TM_VERIFY_ADMIN_KEY sa nezhoduje s TM_ANALYTICS_ADMIN_KEY nastaveným v Coolify.';
+  }
+
+  if (data?.error) return `HTTP ${response.status}: ${String(data.error)}`;
+
+  const checks = Array.isArray(data?.checks) ? data.checks : [];
+  const failed = checks.filter((check) => check?.ok !== true && check?.warning !== true);
+  if (failed.length) {
+    return failed
+      .map((check) => `${String(check?.label || check?.id || 'Kontrola')}: ${String(check?.message || 'bez podrobností')}`)
+      .join(' | ');
+  }
+
+  return `HTTP ${response.status}; server nevrátil podrobnosti o zlyhanej kontrole.`;
+}
+
 function runMigrationGate(baseUrl) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [
@@ -113,7 +131,16 @@ async function main() {
     timeout: 60_000,
   });
   const productionHealthJson = JSON.parse(productionHealth.body);
-  requireCondition(productionHealth.response.ok && productionHealthJson?.ok === true, 'Hlboká kontrola WooCommerce, SMTP, GoPay alebo úložiska zlyhala.');
+  if (productionHealth.response.ok && Array.isArray(productionHealthJson?.checks)) {
+    productionHealthJson.checks.forEach((check) => {
+      const state = check?.ok === true ? 'OK' : check?.warning === true ? 'UPOZORNENIE' : 'CHYBA';
+      console.log(`  - ${state}: ${String(check?.label || check?.id || 'Kontrola')} — ${String(check?.message || 'bez podrobností')}`);
+    });
+  }
+  requireCondition(
+    productionHealth.response.ok && productionHealthJson?.ok === true,
+    `Hlboká produkčná kontrola zlyhala. ${productionHealthDiagnostic(productionHealth.response, productionHealthJson)}`,
+  );
 
   console.log('[6/9] Robots a indexácia domény');
   const home = await request(baseUrl, '/', { accept: 'text/html' });

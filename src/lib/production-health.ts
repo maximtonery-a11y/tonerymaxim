@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import { getTransporter } from './mail';
 import { wooRequest } from './woo-client';
 import { getGoPayAccessToken, getGoPayHost } from './gopay-client';
+import { readSignedJson } from './secure-persistence';
 
 const execFileAsync = promisify(execFile);
 
@@ -115,12 +116,34 @@ async function queueCheck(): Promise<Check> {
 async function sequenceCheck(): Promise<Check> {
   const file = join(persistentRoot(), 'order-sequence.json');
   try {
-    const raw = await fs.readFile(file, 'utf8');
-    const data = JSON.parse(raw);
+    await fs.stat(file);
+    const data = await readSignedJson<{ value?: number; last?: number; sequence?: number }>(file);
+    if (!data) {
+      return {
+        id: 'sequence',
+        label: 'Číslovanie objednávok',
+        ok: false,
+        message: 'Súbor existuje, ale jeho podpis alebo obsah nie je platný.',
+        details: { file },
+      };
+    }
     const value = Number(data?.last ?? data?.value ?? data?.sequence ?? 0);
-    return { id: 'sequence', label: 'Číslovanie objednávok', ok: Number.isFinite(value) && value >= 300895, message: `Posledná hodnota: ${value || 'nezistená'}`, details: { file } };
+    return {
+      id: 'sequence',
+      label: 'Číslovanie objednávok',
+      ok: Number.isInteger(value) && value >= 300895,
+      message: `Posledná hodnota: ${value || 'nezistená'}`,
+      details: { file },
+    };
   } catch (error: any) {
-    return { id: 'sequence', label: 'Číslovanie objednávok', ok: false, warning: true, message: `Súbor nie je dostupný: ${error?.message || error}`, details: { file } };
+    return {
+      id: 'sequence',
+      label: 'Číslovanie objednávok',
+      ok: false,
+      warning: true,
+      message: `Súbor zatiaľ nie je dostupný: ${error?.message || error}`,
+      details: { file },
+    };
   }
 }
 
