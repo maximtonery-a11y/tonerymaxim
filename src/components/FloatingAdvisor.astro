@@ -3,7 +3,14 @@ import '../styles/ai-sales-assistant.css';
 ---
 
 <section class="tm-ai-assistant" data-ai-sales-assistant aria-live="polite">
-  <button class="tm-ai-assistant__launcher" type="button" data-ai-toggle aria-label="Otvoriť AI poradcu Tomáša z ToneryMaxim">
+  <button
+    class="tm-ai-assistant__launcher"
+    type="button"
+    data-ai-toggle
+    aria-label="Otvoriť AI poradcu Tomáša z ToneryMaxim"
+    aria-controls="tm-ai-assistant-panel"
+    aria-expanded="false"
+  >
     <span class="tm-ai-assistant__pulse"></span>
     <span class="tm-ai-assistant__icon" aria-hidden="true">AI</span>
     <span class="tm-ai-assistant__label tm-ai-assistant__label--desktop">AI poradca Tomáš</span>
@@ -12,11 +19,19 @@ import '../styles/ai-sales-assistant.css';
 
 
 
-  <div class="tm-ai-assistant__panel" data-ai-panel hidden>
+  <div
+    class="tm-ai-assistant__panel"
+    id="tm-ai-assistant-panel"
+    data-ai-panel
+    role="dialog"
+    aria-modal="true"
+    aria-label="AI poradca Tomáš"
+    hidden
+  >
     <header class="tm-ai-assistant__head">
       <div class="tm-ai-assistant__identity">
         <strong>AI poradca Tomáš</strong>
-        <span class="tm-ai-assistant__description">Virtuálny poradca ToneryMaxim pre výber, dopravu, platbu, reklamácie a problémy pri tlači.</span>
+        <span class="tm-ai-assistant__description">Pomoc s výberom náplne, objednávkou a tlačiarňou.</span>
         <span class="tm-ai-assistant__disclosure">
           <b>Upozornenie</b>
           Komunikujete so systémom umelej inteligencie (AI). Odpovede môžu obsahovať nepresnosti.
@@ -37,9 +52,8 @@ import '../styles/ai-sales-assistant.css';
 
     <div class="tm-ai-assistant__messages" data-ai-messages>
       <article class="tm-ai-msg tm-ai-msg--bot">
-        <p><b>Som AI poradca Tomáš.</b> Pomôžem vám nájsť správnu náplň alebo odpovedať na otázku k objednávke.</p>
-        <p>Napíšte označenie toneru, model tlačiarne alebo otázku k objednávke. Napríklad <b>CF283A</b>, <b>HP 135A</b>, <b>Brother DCP-9020CDW</b>.</p>
-        <p>Alebo sa opýtajte: <b>koľko stojí doprava</b>, <b>kedy pošlete objednávku</b>, <b>tlačí pásy</b>, <b>toner nepasuje</b>.</p>
+        <p><b>Som AI poradca Tomáš.</b> Napíšte model tlačiarne, označenie toneru alebo otázku k objednávke.</p>
+        <p class="tm-ai-msg__example">Napríklad: <b>HP 135A</b>, <b>Brother DCP-9020CDW</b> alebo <b>koľko stojí doprava</b>.</p>
       </article>
     </div>
 

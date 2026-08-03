@@ -253,32 +253,9 @@ const legacyShopUrl = "https://www.tonerymaxim.info";
     stroke-linejoin: round;
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 760px), (hover: none) and (pointer: coarse) {
     .tm-legacy-shop {
-      top: auto;
-      bottom: calc(86px + env(safe-area-inset-bottom));
-    }
-
-    .tm-legacy-shop__panel {
-      width: min(286px, calc(100vw - 54px));
-      min-height: 160px;
-      transform: translate(-100%, 0);
-    }
-
-    .tm-legacy-shop.is-open .tm-legacy-shop__panel {
-      transform: translate(0, 0);
-    }
-
-    .tm-legacy-shop__tab {
-      top: auto;
-      bottom: 0;
-      height: 172px;
-      transform: none;
-    }
-
-    .tm-legacy-shop__content {
-      min-height: 160px;
-      padding: 22px;
+      display: none;
     }
   }
 

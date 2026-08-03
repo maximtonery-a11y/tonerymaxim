@@ -1001,6 +1001,13 @@ input {
     font-weight: 900;
     text-decoration: none;
   }
+
+  body:not(.home-page) .tm-global-mobile-drawer .tm-global-mobile-legacy-link {
+    justify-content: space-between;
+    border: 1px solid #cfe2f3;
+    background: linear-gradient(135deg, #eef8ff, #ffffff);
+    color: #0878b7;
+  }
 }
 
 /* Mobile drawer: zjednotený s úvodnou stránkou */
@@ -1094,6 +1101,13 @@ input {
     font-size: 15px;
     font-weight: 850;
     text-decoration: none;
+  }
+
+  body:not(.home-page) .tm-global-mobile-drawer .tm-global-mobile-legacy-link {
+    justify-content: space-between;
+    border: 1px solid #cfe2f3;
+    background: linear-gradient(135deg, #eef8ff, #ffffff);
+    color: #0878b7;
   }
 }
 

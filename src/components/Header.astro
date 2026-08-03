@@ -89,6 +89,7 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
         <a href="/reklamacie">Reklamácie</a>
         <a href="/obchodne-podmienky">Obchodné podmienky</a>
         <a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
+        <a href="/cookies#nastavenia" data-open-cookie-settings>Nastavenia cookies</a>
       </section>
 
       <section>
@@ -97,6 +98,11 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
         <a href="/atramentove-naplne">Atramentové náplne</a>
         <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
         <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
+      </section>
+
+      <section>
+        <strong>Ďalšie</strong>
+        <a class="tm-global-mobile-legacy-link" href="https://www.tonerymaxim.info" target="_blank" rel="noopener noreferrer">Pôvodný e-shop <span aria-hidden="true">↗</span></a>
       </section>
     </div>
   </div>
@@ -163,6 +169,7 @@ body.has-add-cart-drawer { overflow: hidden; }
   globalMenuClose?.addEventListener("click", () => setGlobalMenu(false));
   globalMenu?.addEventListener("click", (event) => {
     if (event.target === globalMenu) setGlobalMenu(false);
+    if (event.target instanceof Element && event.target.closest("a")) setGlobalMenu(false);
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") setGlobalMenu(false);

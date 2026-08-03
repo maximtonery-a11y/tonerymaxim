@@ -296,10 +296,7 @@
     }
 
     #tm-cookie-floating {
-      right: 12px !important;
-      bottom: 86px !important;
-      min-height: 42px !important;
-      padding: 0 12px !important;
+      display: none !important;
     }
   }
 </style>
@@ -352,6 +349,7 @@
     if (!r) return;
     r.classList.remove("tm-cookie-is-hidden");
     r.classList.add("tm-cookie-is-open");
+    try { window.dispatchEvent(new CustomEvent("tm:cookie-panel", { detail: { open: true } })); } catch (error) {}
   }
 
   function closePanel() {
@@ -359,6 +357,7 @@
     if (!r) return;
     r.classList.remove("tm-cookie-is-open");
     r.classList.add("tm-cookie-is-hidden");
+    try { window.dispatchEvent(new CustomEvent("tm:cookie-panel", { detail: { open: false } })); } catch (error) {}
   }
 
   function saveConsent(analyticsValue, marketingValue) {

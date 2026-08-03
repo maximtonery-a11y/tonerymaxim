@@ -12,16 +12,32 @@
   const quick = root.querySelector('[data-ai-quick]');
 
   const state = { busy: false };
+  const mobileQuery = window.matchMedia('(max-width: 760px), (hover: none) and (pointer: coarse)');
 
   function openPanel() {
+    if (document.querySelector('.tm-cookie-consent.tm-cookie-is-open')) return;
     panel.hidden = false;
     toggle.hidden = true;
-    setTimeout(() => input.focus(), 80);
+    toggle.setAttribute('aria-expanded', 'true');
+    root.classList.add('is-open');
+    document.documentElement.classList.add('tm-ai-open');
   }
 
-  function closePanel() {
+  function closePanel(options = {}) {
+    input.blur();
     panel.hidden = true;
     toggle.hidden = false;
+    toggle.setAttribute('aria-expanded', 'false');
+    root.classList.remove('is-open', 'has-keyboard');
+    document.documentElement.classList.remove('tm-ai-open');
+    if (options.restoreFocus) toggle.focus({ preventScroll: true });
+  }
+
+  function updateViewportState() {
+    if (!window.visualViewport) return;
+    const viewportHeight = Math.round(window.visualViewport.height);
+    root.style.setProperty('--tm-ai-visual-height', `${viewportHeight}px`);
+    root.classList.toggle('has-keyboard', mobileQuery.matches && window.innerHeight - viewportHeight > 150);
   }
 
   function escapeHtml(value) {
@@ -174,7 +190,23 @@
   }
 
   toggle.addEventListener('click', openPanel);
-  close.addEventListener('click', closePanel);
+  close.addEventListener('click', () => closePanel({ restoreFocus: true }));
+
+  root.addEventListener('click', (event) => {
+    if (mobileQuery.matches && event.target === root && !panel.hidden) closePanel();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !panel.hidden) closePanel({ restoreFocus: true });
+  });
+
+  window.addEventListener('tm:cookie-panel', (event) => {
+    if (event.detail?.open && !panel.hidden) closePanel();
+  });
+
+  window.visualViewport?.addEventListener('resize', updateViewportState);
+  window.visualViewport?.addEventListener('scroll', updateViewportState);
+  updateViewportState();
 
 
   quick.addEventListener('click', (event) => {
