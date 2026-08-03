@@ -312,7 +312,7 @@ input {
   }
 
   .header-heureka {
-    display: none !important;
+    display: inline-flex !important;
   }
 
   .header-actions {
@@ -727,17 +727,17 @@ input {
   }
 }
 
-/* Heureka mini badge vo vrchnej sticky lište */
+/* Jednotný Heureka blok vo vrchnej lište */
 .header-heureka {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  min-height: 38px;
-  padding: 6px 12px;
+  gap: 10px;
+  min-height: 44px;
+  padding: 7px 13px;
   border: 1px solid #dce8f5;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .78);
-  box-shadow: 0 10px 26px rgba(7, 27, 58, .06);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(7, 27, 58, .06);
   color: var(--navy);
   text-decoration: none;
   transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
@@ -751,33 +751,29 @@ input {
   outline: none;
 }
 
-.header-heureka-badge {
-  width: 27px;
-  height: 27px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: #eaf8ff;
+.header-heureka-stars {
   color: #009ee3;
-  font-size: 16px;
-  line-height: 1;
-}
-
-.header-heureka-text {
-  display: grid;
-  gap: 1px;
-  line-height: 1.05;
-}
-
-.header-heureka-text strong {
-  color: var(--navy);
   font-size: 13px;
+  line-height: 1;
+  letter-spacing: 1px;
   font-weight: 950;
+  white-space: nowrap;
 }
 
-.header-heureka-text small {
+.header-heureka-score {
+  color: var(--navy);
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.header-heureka-count {
+  padding-left: 10px;
+  border-left: 1px solid #e4ecf5;
   color: #64748b;
   font-size: 11px;
+  line-height: 1;
   font-weight: 800;
   white-space: nowrap;
 }
@@ -785,6 +781,31 @@ input {
 @media (max-width: 1320px) {
   .header-heureka {
     display: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .header-heureka {
+    display: inline-flex !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-heureka {
+    min-width: 62px;
+    min-height: 36px;
+    justify-content: center;
+    padding: 0 10px;
+    border-radius: 999px;
+  }
+
+  .header-heureka-stars,
+  .header-heureka-count {
+    display: none;
+  }
+
+  .header-heureka-score {
+    font-size: 13px;
   }
 }
 

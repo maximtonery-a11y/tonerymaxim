@@ -1,9 +1,10 @@
 ---
 import CookieConsent from "./CookieConsent.astro";
+import LegacyShopPanel from "./LegacyShopPanel.astro";
 
 const { showTrust = true } = Astro.props;
 
-const heurekaUrl = "https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left";
+const heurekaUrl = "https://obchody.heureka.sk/tonerymaxim-sk/recenze/";
 
 const paymentLogos = [
   { src: "/images/footer-logos/gopay-banner-colorfull.png", alt: "GoPay" },
@@ -82,9 +83,12 @@ const shippingLogos = [
       <p>Po–Pi 9:00–15:00</p>
       <p class="footer-company-data">Roman Babčan INkarus<br />Tajov 265, 976 34 Tajov<br />IČO: 37 328 344 · DIČ: 1020059920 · IČ DPH: SK1020059920</p>
       <a class="footer-contact-rating" href={heurekaUrl} target="_blank" rel="noopener noreferrer" aria-label="Otvoriť recenzie ToneryMaxim na Heureke">
-        <span data-heureka-stars>★</span>
-        <strong><span data-heureka-rating>Heureka</span></strong>
-        <small><b data-heureka-count>Overené recenzie</b></small>
+        <span class="footer-heureka-stars" data-heureka-stars aria-hidden="true">★★★★★</span>
+        <span class="footer-heureka-details">
+          <strong><span data-heureka-rating>4,9</span>/5</strong>
+          <small><b data-heureka-count>1 326</b> recenzií</small>
+          <small><b data-heureka-recommendation>100 %</b> odporúča</small>
+        </span>
       </a>
     </div>
   </div>
@@ -127,6 +131,7 @@ const shippingLogos = [
 </footer>
 
 <CookieConsent />
+<LegacyShopPanel />
 
 <script>
   function formatSkNumber(value: unknown) {
@@ -149,6 +154,20 @@ const shippingLogos = [
 
   function updateFooterHeureka(data: any) {
     if (data?.ok !== true) return;
+
+    const reviews = Array.isArray(data?.reviews) ? data.reviews : [];
+    const reviewCards = Array.from(document.querySelectorAll<HTMLElement>("[data-heureka-review-card]"));
+
+    reviews.slice(0, reviewCards.length).forEach((review: any, index: number) => {
+      const card = reviewCards[index];
+      const textNode = card?.querySelector<HTMLElement>("[data-heureka-review-text]");
+      const authorNode = card?.querySelector<HTMLElement>("[data-heureka-review-author]");
+      const reviewText = String(review?.summary || review?.pros || "").trim();
+      const author = String(review?.author || "").trim();
+      if (textNode && reviewText) textNode.textContent = `„${reviewText}“`;
+      if (authorNode && author) authorNode.textContent = author;
+    });
+
     const rating = Number(data?.averageRating || 0);
     const reviewCount = Number(data?.reviewCount || 0);
     if (rating <= 0 || reviewCount <= 0) return;
@@ -186,7 +205,7 @@ const shippingLogos = [
       const data = await response.json();
       updateFooterHeureka(data);
     } catch (error) {
-      // Fallback hodnoty ostanú v HTML.
+      // Zostanú zobrazené posledné overené hodnoty a recenzie uložené v HTML.
     }
   }
 

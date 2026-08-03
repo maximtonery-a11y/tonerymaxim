@@ -97,7 +97,7 @@ function canonicalProductionRedirect(request: Request, url: URL): Response | nul
 
   const target = new URL(`${url.pathname}${url.search}`, PRODUCTION_ORIGIN);
   return new Response(null, {
-    status: 308,
+    status: 301,
     headers: {
       Location: target.toString(),
       'Cache-Control': 'public, max-age=300',

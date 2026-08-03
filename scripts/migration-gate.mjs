@@ -221,13 +221,16 @@ async function fetchStep(url, timeoutMs) {
 }
 
 async function fetchStepWithRetry(url, timeoutMs) {
-  try {
-    return await fetchStep(url, timeoutMs);
-  } catch (error) {
-    if (error?.name !== "AbortError") throw error;
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    return fetchStep(url, timeoutMs);
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await fetchStep(url, timeoutMs);
+    } catch (error) {
+      lastError = error;
+      if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+    }
   }
+  throw lastError;
 }
 
 function rewriteRedirectLocation(location, currentUrl, baseUrl) {

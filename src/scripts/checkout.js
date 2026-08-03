@@ -22,15 +22,32 @@
 
   async function loadLoyalty() {
     try {
-      const response = await fetch("/api/account/loyalty", { credentials: "same-origin" });
-      if (!response.ok) throw new Error("not logged");
+      const response = await fetch("/api/account/loyalty", {
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+
+      if (response.status === 401) {
+        tmLoyalty = { ok: false, points: 0, discountValue: 0 };
+        tmLoyaltyApply = false;
+        renderCheckoutSummary();
+        return;
+      }
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
       const data = await response.json();
-      tmLoyalty = { ok: true, points: Number(data.points || 0), discountValue: Number(data.discountValue || 0) };
+      tmLoyalty = {
+        ok: true,
+        points: Number(data.points || 0),
+        discountValue: Number(data.discountValue || 0),
+      };
       if (tmLoyalty.discountValue <= 0) tmLoyaltyApply = false;
       renderCheckoutSummary();
     } catch {
       tmLoyalty = { ok: false, points: 0, discountValue: 0 };
       tmLoyaltyApply = false;
+      renderCheckoutSummary();
     }
   }
 

@@ -133,26 +133,55 @@
   border: 1px solid rgba(255, 255, 255, .12);
   border-radius: 16px;
   background: rgba(255, 255, 255, .055);
-  padding: 11px 13px;
+  padding: 14px 15px;
   color: #ffffff;
-  display: grid;
-  grid-template-columns: auto auto;
-  column-gap: 10px;
-  row-gap: 3px;
+  display: flex;
   align-items: center;
+  gap: 13px;
   text-decoration: none;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease;
 }
 
-.footer-contact-rating span {
-  color: #19a8e5;
-  font-size: 16px;
+.footer-contact-rating:hover,
+.footer-contact-rating:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, .24);
+  background: rgba(255, 255, 255, .09);
+}
+
+.footer-contact-rating .footer-heureka-stars {
+  color: #009ee3;
+  font-size: 17px;
   line-height: 1;
-  letter-spacing: .8px;
+  letter-spacing: 1.2px;
   white-space: nowrap;
 }
 
-.footer-contact-rating strong { color: #ffffff; font-size: 13px; line-height: 1; }
-.footer-contact-rating small { grid-column: 1 / -1; color: #b7c4d7; font-size: 12px; }
+.footer-heureka-details {
+  padding-left: 13px;
+  border-left: 1px solid rgba(255, 255, 255, .14);
+  display: grid;
+  gap: 4px;
+}
+
+.footer-contact-rating .footer-heureka-details strong {
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.footer-contact-rating .footer-heureka-details small {
+  color: #b7c4d7;
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.footer-contact-rating .footer-heureka-details small b {
+  color: #ffffff;
+  font-weight: 900;
+}
 
 .footer-trust-row {
   border-top: 1px solid rgba(255, 255, 255, .12);

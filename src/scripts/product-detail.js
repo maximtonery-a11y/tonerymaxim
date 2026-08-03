@@ -1320,7 +1320,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
             <span>${esc(deliveryMissing(product))}</span>
           </div>
 
-          <a class="heureka-mini" href="https://obchody.heureka.sk/tonerymaxim-sk/recenze/?e=reviews&p=left" target="_blank" rel="noopener noreferrer">
+          <a class="heureka-mini" href="https://obchody.heureka.sk/tonerymaxim-sk/recenze/" target="_blank" rel="noopener noreferrer">
             <span>★★★★★</span>
             <strong>5,0/5</strong>
             <small>1 323 recenzií</small>

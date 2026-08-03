@@ -1,0 +1,328 @@
+---
+const legacyShopUrl = "https://www.tonerymaxim.info";
+---
+
+<aside class="tm-legacy-shop" data-legacy-shop>
+  <div class="tm-legacy-shop__panel" id="tm-legacy-shop-panel">
+    <button
+      class="tm-legacy-shop__tab"
+      type="button"
+      aria-controls="tm-legacy-shop-panel"
+      aria-expanded="false"
+      aria-label="Otvoriť pôvodný eshop"
+      data-legacy-shop-toggle
+    >
+      <span class="tm-legacy-shop__tab-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 10.5h16v8.25A1.25 1.25 0 0 1 18.75 20H5.25A1.25 1.25 0 0 1 4 18.75V10.5Z" />
+          <path d="M3 10.5 5.25 4h13.5L21 10.5" />
+          <path d="M8.5 20v-5.25h4.25V20M3 10.5c0 1.3 1.05 2.35 2.35 2.35S7.7 11.8 7.7 10.5c0 1.3 1.05 2.35 2.35 2.35s2.35-1.05 2.35-2.35c0 1.3 1.05 2.35 2.35 2.35s2.35-1.05 2.35-2.35c0 1.3 1.05 2.35 2.35 2.35s2.35-1.05 2.35-2.35" />
+        </svg>
+      </span>
+      <span class="tm-legacy-shop__tab-label">Pôvodný eshop</span>
+      <span class="tm-legacy-shop__tab-arrow" aria-hidden="true">›</span>
+    </button>
+
+    <div class="tm-legacy-shop__content">
+      <button
+        class="tm-legacy-shop__close"
+        type="button"
+        aria-label="Zavrieť panel pôvodného eshopu"
+        data-legacy-shop-close
+      >
+        ×
+      </button>
+
+      <span class="tm-legacy-shop__eyebrow">ToneryMaxim</span>
+      <strong>Pôvodný eshop</strong>
+      <p>Otvorte predchádzajúcu verziu obchodu v novom okne.</p>
+
+      <a href={legacyShopUrl} target="_blank" rel="noopener noreferrer">
+        <span>Pokračovať na pôvodný eshop</span>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 12h14M14 7l5 5-5 5" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<style is:inline>
+  .tm-legacy-shop,
+  .tm-legacy-shop *,
+  .tm-legacy-shop *::before,
+  .tm-legacy-shop *::after {
+    box-sizing: border-box;
+  }
+
+  .tm-legacy-shop {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    z-index: 9997;
+    width: 0;
+    height: 0;
+    font-family: inherit;
+  }
+
+  .tm-legacy-shop__panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 304px;
+    min-height: 174px;
+    border: 1px solid #cfe1ef;
+    border-left: 0;
+    border-radius: 0 18px 18px 0;
+    background: #ffffff;
+    box-shadow: 0 18px 48px rgba(5, 28, 58, .18);
+    transform: translate(-100%, -50%);
+    transition: transform 220ms cubic-bezier(.2, .72, .3, 1);
+  }
+
+  .tm-legacy-shop.is-open .tm-legacy-shop__panel {
+    transform: translate(0, -50%);
+  }
+
+  .tm-legacy-shop__tab {
+    position: absolute;
+    top: 50%;
+    right: -46px;
+    width: 46px;
+    height: 194px;
+    padding: 8px 0;
+    border: 0;
+    border-radius: 0 12px 12px 0;
+    background: linear-gradient(180deg, #0b91cf 0%, #0878b7 100%);
+    box-shadow: 8px 12px 26px rgba(4, 57, 94, .22);
+    color: #ffffff;
+    transform: translateY(-50%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    gap: 9px;
+    transition: background 160ms ease, box-shadow 160ms ease;
+  }
+
+  .tm-legacy-shop__tab:hover {
+    background: linear-gradient(180deg, #087fbe 0%, #066da9 100%);
+    box-shadow: 10px 14px 30px rgba(4, 57, 94, .28);
+  }
+
+  .tm-legacy-shop__tab:focus-visible,
+  .tm-legacy-shop__close:focus-visible,
+  .tm-legacy-shop__content a:focus-visible {
+    outline: 3px solid #ffd100;
+    outline-offset: 3px;
+  }
+
+  .tm-legacy-shop__tab-icon {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .16);
+    place-items: center;
+  }
+
+  .tm-legacy-shop__tab-icon svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .tm-legacy-shop__tab-label {
+    display: block;
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: .015em;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
+  .tm-legacy-shop__tab-arrow {
+    font-size: 23px;
+    line-height: 1;
+    transition: transform 220ms ease;
+  }
+
+  .tm-legacy-shop.is-open .tm-legacy-shop__tab-arrow {
+    transform: rotate(180deg);
+  }
+
+  .tm-legacy-shop__content {
+    position: relative;
+    min-height: 174px;
+    padding: 25px 25px 24px;
+    color: #071b3a;
+  }
+
+  .tm-legacy-shop__content::before {
+    position: absolute;
+    top: 0;
+    right: 24px;
+    left: 24px;
+    height: 3px;
+    border-radius: 0 0 999px 999px;
+    background: linear-gradient(90deg, #009ee3, #0878b7);
+    content: "";
+  }
+
+  .tm-legacy-shop__close {
+    position: absolute;
+    top: 13px;
+    right: 13px;
+    display: grid;
+    width: 31px;
+    height: 31px;
+    padding: 0 0 2px;
+    border: 1px solid #d9e5ef;
+    border-radius: 50%;
+    background: #f5f8fb;
+    color: #52637a;
+    font-size: 21px;
+    line-height: 1;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .tm-legacy-shop__eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: #0878b7;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .tm-legacy-shop__content > strong {
+    display: block;
+    padding-right: 30px;
+    color: #071b3a;
+    font-size: 21px;
+    line-height: 1.15;
+    font-weight: 950;
+    letter-spacing: -.03em;
+  }
+
+  .tm-legacy-shop__content p {
+    margin: 7px 0 17px;
+    color: #617086;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .tm-legacy-shop__content a {
+    display: flex;
+    min-height: 45px;
+    padding: 0 15px;
+    border-radius: 12px;
+    background: #071b3a;
+    color: #ffffff;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    line-height: 1.2;
+    font-weight: 900;
+    text-decoration: none;
+    transition: background 160ms ease, transform 160ms ease;
+  }
+
+  .tm-legacy-shop__content a:hover {
+    background: #0c3266;
+    transform: translateY(-1px);
+  }
+
+  .tm-legacy-shop__content a svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  @media (max-width: 640px) {
+    .tm-legacy-shop {
+      top: auto;
+      bottom: calc(86px + env(safe-area-inset-bottom));
+    }
+
+    .tm-legacy-shop__panel {
+      width: min(286px, calc(100vw - 54px));
+      min-height: 160px;
+      transform: translate(-100%, 0);
+    }
+
+    .tm-legacy-shop.is-open .tm-legacy-shop__panel {
+      transform: translate(0, 0);
+    }
+
+    .tm-legacy-shop__tab {
+      top: auto;
+      bottom: 0;
+      height: 172px;
+      transform: none;
+    }
+
+    .tm-legacy-shop__content {
+      min-height: 160px;
+      padding: 22px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tm-legacy-shop__panel,
+    .tm-legacy-shop__tab-arrow,
+    .tm-legacy-shop__content a {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const legacyShop = document.querySelector<HTMLElement>("[data-legacy-shop]");
+
+  if (legacyShop && legacyShop.dataset.initialized !== "true") {
+    legacyShop.dataset.initialized = "true";
+
+    const toggle = legacyShop.querySelector<HTMLButtonElement>("[data-legacy-shop-toggle]");
+    const close = legacyShop.querySelector<HTMLButtonElement>("[data-legacy-shop-close]");
+
+    const setOpen = (open: boolean) => {
+      legacyShop.classList.toggle("is-open", open);
+      toggle?.setAttribute("aria-expanded", String(open));
+      toggle?.setAttribute("aria-label", open ? "Zavrieť pôvodný eshop" : "Otvoriť pôvodný eshop");
+    };
+
+    toggle?.addEventListener("click", () => setOpen(!legacyShop.classList.contains("is-open")));
+    close?.addEventListener("click", () => {
+      setOpen(false);
+      toggle?.focus();
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      if (legacyShop.classList.contains("is-open") && !legacyShop.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && legacyShop.classList.contains("is-open")) {
+        setOpen(false);
+        toggle?.focus();
+      }
+    });
+  }
+</script>

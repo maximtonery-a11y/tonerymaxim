@@ -7,6 +7,7 @@ import {
   resolveLegacyBrandFallback,
   resolveLegacyRedirect,
 } from "../src/lib/legacy/redirects.ts";
+import { LEGACY_PRODUCT_REDIRECTS } from "../src/lib/legacy/product-redirect-map.ts";
 
 const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
@@ -63,14 +64,17 @@ test("lokálny Migration Gate vypína workery a pred testom pripraví jednu cach
   assert.match(cache, /if \(activeSync\) return activeSync/);
 });
 
-test("finálna migrácia nepoužíva nepresné produktové mapy ani 302 fallback", () => {
+test("finálna migrácia používa overenú produktovú mapu bez 302 fallbacku", () => {
   const page = read("src/pages/[...legacy].astro");
   const lookup = read("src/lib/legacy/product-lookup.ts");
   const recovery = read("src/lib/legacy/recovery.ts");
   const gate = read("scripts/migration-gate.mjs");
 
-  assert.match(page, /isLegacyPrintProductSlug/);
-  assert.doesNotMatch(lookup, /LEGACY_PRODUCT_REDIRECTS/);
+  assert.equal(Object.keys(LEGACY_PRODUCT_REDIRECTS).length, 1492);
+  assert.match(page, /route\.kind === "product"[\s\S]*findLegacyProduct\(route\.productSlug\)/);
+  assert.doesNotMatch(page, /isLegacyPrintProductSlug/);
+  assert.match(lookup, /LEGACY_PRODUCT_REDIRECTS\[legacySlug\]/);
+  assert.match(lookup, /matchedBy: "verified-redirect-map"/);
   assert.doesNotMatch(recovery, /status:\s*302/);
   assert.doesNotMatch(recovery, /product-search|printer-search|article-help|static-help/);
   assert.match(recovery, /discontinued-print-product/);

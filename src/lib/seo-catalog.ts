@@ -93,16 +93,15 @@ export function productSearchText(product: TmProduct): string {
 }
 
 export function validIndexableProduct(product: TmProduct): boolean {
-  const description = stripHtml(product.description || product.description_html || product.short_description_html || "");
-  const stockStatus = String(product.stock_status || "").toLowerCase();
-  const stockQuantity = product.stock_quantity;
+  // Dočasne vypredaný produkt zostáva hodnotnou existujúcou stránkou a musí
+  // zostať indexovateľný. Dostupnosť sa uvádza v obsahu a Product JSON-LD.
+  // Ak vo WooCommerce chýba popis, produktová stránka vytvorí z názvu, typu a
+  // SKU bezpečný unikátny SEO popis. Trvalo odstránené produkty rieši legacy
+  // router samostatným stavom 410.
   return Boolean(
     String(product.slug || "").trim()
     && String(product.name || "").trim()
     && Number(product.price || 0) > 0
-    && description.length >= 40
-    && stockStatus === "instock"
-    && (stockQuantity === null || stockQuantity === undefined || Number(stockQuantity) > 0),
   );
 }
 

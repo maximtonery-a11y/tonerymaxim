@@ -3,17 +3,21 @@ import '../styles/ai-sales-assistant.css';
 ---
 
 <section class="tm-ai-assistant" data-ai-sales-assistant aria-live="polite">
-  <button class="tm-ai-assistant__launcher" type="button" data-ai-toggle aria-label="Otvoriť AI poradcu">
+  <button class="tm-ai-assistant__launcher" type="button" data-ai-toggle aria-label="Otvoriť AI poradcu Tomáša z ToneryMaxim">
     <span class="tm-ai-assistant__pulse"></span>
-    <span class="tm-ai-assistant__icon">AI</span>
-    <span class="tm-ai-assistant__label">Poradiť s tonerom</span>
+    <span class="tm-ai-assistant__icon" aria-hidden="true">AI</span>
+    <span class="tm-ai-assistant__label">AI poradca Tomáš</span>
   </button>
 
   <div class="tm-ai-assistant__panel" data-ai-panel hidden>
     <header class="tm-ai-assistant__head">
-      <div>
-        <strong>AI poradca ToneryMaxim</strong>
-        <span>Nájde toner, poradí s tlačiarňou a pomôže s výberom.</span>
+      <div class="tm-ai-assistant__identity">
+        <strong>AI poradca Tomáš</strong>
+        <span class="tm-ai-assistant__description">Virtuálny poradca ToneryMaxim pre výber toneru a pomoc s tlačiarňou.</span>
+        <span class="tm-ai-assistant__disclosure">
+          <b>Upozornenie</b>
+          Komunikujete so systémom umelej inteligencie (AI). Odpovede môžu obsahovať nepresnosti.
+        </span>
       </div>
       <button type="button" data-ai-close aria-label="Zavrieť AI poradcu">×</button>
     </header>
@@ -26,6 +30,7 @@ import '../styles/ai-sales-assistant.css';
 
     <div class="tm-ai-assistant__messages" data-ai-messages>
       <article class="tm-ai-msg tm-ai-msg--bot">
+        <p><b>Som AI poradca Tomáš.</b> Pomôžem vám nájsť správnu náplň.</p>
         <p>Napíšte model tlačiarne alebo toneru. Napríklad: <b>HP 135A</b>, <b>Canon MF655Cdw</b>, <b>Brother DCP-L2532DW</b>.</p>
       </article>
     </div>

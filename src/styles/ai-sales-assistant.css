@@ -83,12 +83,40 @@
   line-height: 1.15;
 }
 
-.tm-ai-assistant__head span {
+.tm-ai-assistant__description {
   display: block;
   margin-top: 5px;
   color: rgba(255,255,255,.78);
   font-size: 13px;
   line-height: 1.35;
+}
+
+.tm-ai-assistant__identity {
+  min-width: 0;
+}
+
+.tm-ai-assistant__disclosure {
+  display: block;
+  max-width: 350px;
+  margin-top: 12px;
+  border: 1px solid rgba(248, 189, 0, .52);
+  border-radius: 12px;
+  padding: 9px 11px;
+  background: rgba(248, 189, 0, .12);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.42;
+}
+
+.tm-ai-assistant__disclosure b {
+  display: block;
+  margin-bottom: 2px;
+  color: #ffd85c;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 .tm-ai-assistant__head button {
@@ -327,6 +355,16 @@
     height: min(78dvh, 680px);
     max-height: calc(100dvh - 20px - env(safe-area-inset-bottom, 0px));
     border-radius: 22px;
+  }
+
+  .tm-ai-assistant__head {
+    padding: 15px;
+  }
+
+  .tm-ai-assistant__disclosure {
+    margin-top: 9px;
+    padding: 8px 10px;
+    font-size: 11px;
   }
 
   .tm-ai-msg { max-width: 96%; }

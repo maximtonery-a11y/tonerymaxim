@@ -17,7 +17,6 @@ import { findLegacyProduct } from "../lib/legacy/product-lookup";
 import { findLegacyPrinter } from "../lib/legacy/printer-lookup";
 import {
   findLegacyCollection,
-  isLegacyPrintProductSlug,
   resolveLegacyRecovery,
 } from "../lib/legacy/recovery";
 
@@ -31,7 +30,6 @@ if (directRedirect) return Astro.redirect(directRedirect.location, directRedirec
 if (
   route.kind === "product"
   && route.productSlug
-  && isLegacyPrintProductSlug(route.productSlug)
 ) {
   const productMatch = await findLegacyProduct(route.productSlug).catch(() => null);
   if (productMatch) return Astro.redirect(productMatch.location, 301);
