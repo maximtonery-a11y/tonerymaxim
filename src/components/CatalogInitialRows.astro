@@ -26,7 +26,9 @@ const stockText = (product: Product) => {
 };
 
 const stockClass = (product: Product) => product.stock_status === "instock" ? "is-instock" : product.stock_status === "outofstock" ? "is-outofstock" : product.stock_status === "onbackorder" ? "is-backorder" : "is-unknown";
-const dispatchText = (product: Product) => product.stock_status === "instock" ? "Expedujeme dnes" : "Termín dodania overíme";
+// Serverový text je bezpečný fallback. Po načítaní stránky ho spoločný klientsky
+// modul nahradí rovnakou časovou správou, akú používa detail produktu a košík.
+const dispatchText = (product: Product) => product.stock_status === "instock" ? "Expedujeme najbližší pracovný deň" : "Termín dodania overíme";
 const colorHex = (value: unknown) => {
   const c = String(value || "").toLowerCase();
   if (c.includes("žlt") || c.includes("zlt") || c.includes("yellow")) return "#facc15";
@@ -91,7 +93,7 @@ let previousGroup = "";
             </div>
             <div class="tm-row-compat">
               <button type="button" data-open-printers>Vhodné pre {productPrinters.length} tlačiarní</button>
-              <span class="tm-dispatch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"></path><path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path></svg>{dispatchText(product)}</span>
+              <span class="tm-dispatch" data-tm-dispatch-message={inStock ? "" : undefined}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"></path><path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path></svg>{dispatchText(product)}</span>
             </div>
           </div>
         </div>

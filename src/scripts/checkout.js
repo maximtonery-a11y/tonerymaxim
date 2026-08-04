@@ -1026,9 +1026,23 @@
       summary.innerHTML = "<strong>Objednávku nie je možné odoslať.</strong><span>Skontrolujte červenou označené polia a doplňte chýbajúce údaje.</span>";
       document.querySelector("[data-checkout-form]")?.prepend(summary);
       const firstInvalid = document.querySelector(".is-invalid, .is-invalid-pickup, .is-invalid-line");
+      if (isCheckoutMobileLayout()) {
+        const owningStep = firstInvalid?.closest?.("[data-checkout-step]");
+        if (owningStep?.dataset.checkoutStep) {
+          openCheckoutStep(owningStep.dataset.checkoutStep, false);
+        } else if (firstInvalid?.closest?.(".checkout-summary")) {
+          openCheckoutStep("summary", false);
+        }
+      }
       window.requestAnimationFrame(() => {
-        (firstInvalid || summary).scrollIntoView({ behavior: "smooth", block: "center" });
-        if (firstInvalid instanceof HTMLInputElement) firstInvalid.focus({ preventScroll: true });
+        window.requestAnimationFrame(() => {
+          if (isCheckoutMobileLayout()) {
+            scrollToCheckoutElement(firstInvalid || summary);
+          } else {
+            (firstInvalid || summary).scrollIntoView({ behavior: "smooth", block: "center" });
+            if (firstInvalid instanceof HTMLInputElement) firstInvalid.focus({ preventScroll: true });
+          }
+        });
       });
     }
 
@@ -1617,6 +1631,16 @@
     });
   }
 
+  function setSubmitProgress(visible, message = "Prosím, chvíľu počkajte a nezatvárajte túto stránku.") {
+    const overlay = document.querySelector("[data-checkout-submit-overlay]");
+    const messageNode = document.querySelector("[data-checkout-submit-message]");
+    const checkout = document.querySelector("[data-checkout-form]");
+    if (messageNode) messageNode.textContent = message;
+    if (overlay) overlay.hidden = !visible;
+    checkout?.setAttribute("aria-busy", visible ? "true" : "false");
+    document.body.classList.toggle("has-checkout-submit-overlay", visible);
+  }
+
   async function submitOrder(event) {
     event?.preventDefault?.();
     if (tmOrderSubmitting) return;
@@ -1697,6 +1721,9 @@
       setSubmitDisabled(true);
       status.textContent = isOnlinePayment ? "Vytváram GoPay platbu..." : "Ukladám objednávku...";
       status.className = "order-status";
+      setSubmitProgress(true, isOnlinePayment
+        ? "Pripravujeme bezpečnú platbu GoPay. Prosím, nezatvárajte túto stránku."
+        : "Objednávku bezpečne ukladáme. Prosím, nezatvárajte túto stránku.");
 
       const response = await fetch(isOnlinePayment ? "/api/gopay-create" : "/api/order-create", {
         method: "POST",
@@ -1718,6 +1745,7 @@
         localStorage.removeItem("tm_loyalty_apply");
         status.textContent = "Presmerujem vás na GoPay...";
         status.className = "order-status is-success";
+        setSubmitProgress(true, "Objednávka je pripravená. Presmerujeme vás na bezpečnú platbu GoPay.");
         try { sessionStorage.removeItem("tm_checkout_request_id"); } catch {}
         window.location.href = data.gwUrl;
         return;
@@ -1732,13 +1760,18 @@
       localStorage.removeItem("tm_loyalty_apply");
       status.textContent = "Objednávka bola uložená. Presmerujem vás na potvrdenie...";
       status.className = "order-status is-success";
+      setSubmitProgress(true, "Objednávka bola úspešne uložená. Otvárame potvrdenie objednávky.");
       try { sessionStorage.removeItem("tm_checkout_request_id"); } catch {}
       window.location.href = `/platba-dokoncena?order=${encodeURIComponent(data.orderNumber || data.orderId)}&method=${encodeURIComponent(orderPreview.payment)}`;
     } catch (error) {
       status.textContent = error.message || "Nepodarilo sa dokončiť objednávku.";
       status.className = "order-status is-error";
       setSubmitDisabled(false);
+      setSubmitProgress(false);
       tmOrderSubmitting = false;
+      if (isCheckoutMobileLayout()) {
+        openCheckoutStep("summary", true);
+      }
     }
   }
 
@@ -1746,6 +1779,36 @@
 
   function isCheckoutMobileLayout() {
     return window.matchMedia("(max-width: 920px), (hover: none) and (pointer: coarse)").matches;
+  }
+
+  function checkoutScrollOffset() {
+    const header = document.querySelector(".checkout-page .site-header");
+    return Math.max(16, Math.round(header?.getBoundingClientRect().height || 0) + 12);
+  }
+
+  function scrollToCheckoutElement(element, behavior = "smooth") {
+    if (!(element instanceof Element)) return;
+    const top = Math.max(0, window.scrollY + element.getBoundingClientRect().top - checkoutScrollOffset());
+    window.scrollTo({ top, behavior });
+  }
+
+  function updateMobileCheckoutGuide(stepName) {
+    const guide = document.querySelector("[data-checkout-mobile-guide]");
+    if (!guide) return;
+    const details = {
+      contact: { index: 1, title: "Kontakt" },
+      delivery: { index: 2, title: "Doprava a platba" },
+      billing: { index: 3, title: "Fakturačné údaje" },
+      summary: { index: 3, title: "Kontrola objednávky" },
+    };
+    const current = details[stepName] || details.contact;
+    const label = guide.querySelector("[data-checkout-mobile-step-label]");
+    const title = guide.querySelector("[data-checkout-mobile-step-title]");
+    const progress = guide.querySelector("[data-checkout-mobile-progress]");
+    if (label) label.textContent = stepName === "summary" ? "Posledná kontrola" : `Krok ${current.index} z 3`;
+    if (title) title.textContent = current.title;
+    if (progress) progress.style.width = `${stepName === "summary" ? 100 : (current.index / 3) * 100}%`;
+    document.querySelector("[data-checkout-mobile-sticky]")?.classList.toggle("is-checkout-final", stepName === "summary");
   }
 
   function openCheckoutStep(stepName, shouldScroll = true) {
@@ -1760,11 +1823,17 @@
       const toggle = document.querySelector("[data-mobile-summary-toggle]");
       summary?.classList.add("is-open");
       toggle?.setAttribute("aria-expanded", "true");
-      if (shouldScroll) summary?.scrollIntoView({ behavior: "smooth", block: "start" });
+      updateMobileCheckoutGuide("summary");
+      if (shouldScroll) window.requestAnimationFrame(() => scrollToCheckoutElement(summary));
       return;
     }
 
-    if (shouldScroll) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    updateMobileCheckoutGuide(stepName);
+    if (shouldScroll) {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => scrollToCheckoutElement(target));
+      });
+    }
   }
 
   function setupMobileCheckoutSteps() {
@@ -1780,17 +1849,45 @@
         if (!isCheckoutMobileLayout()) return;
         const step = head.closest("[data-checkout-step]");
         if (!step) return;
-        openCheckoutStep(step.dataset.checkoutStep, false);
+        openCheckoutStep(step.dataset.checkoutStep, true);
       });
     });
 
     document.querySelectorAll("[data-checkout-next]").forEach((button) => {
       button.addEventListener("click", () => {
         if (!isCheckoutMobileLayout()) return;
+        const currentStep = button.closest("[data-checkout-step]");
+        if (currentStep && !validateMobileCheckoutStep(currentStep)) return;
         openCheckoutStep(button.dataset.checkoutNext || "contact", true);
       });
     });
 
+    const active = steps.find((step) => step.classList.contains("is-active")) || steps[0];
+    updateMobileCheckoutGuide(active.dataset.checkoutStep || "contact");
+
+  }
+
+  function validateMobileCheckoutStep(step) {
+    let valid = true;
+    step.querySelectorAll("input[required]").forEach((input) => {
+      if (!validateField(input)) valid = false;
+    });
+
+    if (step.dataset.checkoutStep === "delivery") {
+      const shippingType = getSelected("shipping");
+      const missingPickup = (isDpdPickupShipping(shippingType) && !selectedDpdPickup)
+        || (isGlsPickupShipping(shippingType) && !selectedGlsPickup);
+      const pickupBox = document.querySelector("[data-pickup-box]");
+      pickupBox?.classList.toggle("is-invalid-pickup", missingPickup);
+      if (missingPickup) valid = false;
+    }
+
+    if (!valid) {
+      const firstInvalid = step.querySelector(".is-invalid, .is-invalid-pickup");
+      window.requestAnimationFrame(() => scrollToCheckoutElement(firstInvalid || step));
+    }
+
+    return valid;
   }
 
   async function autoLoadBestCoupon() {
@@ -1897,6 +1994,9 @@
       const open = !summary?.classList.contains("is-open");
       summary?.classList.toggle("is-open", open);
       event.currentTarget.setAttribute("aria-expanded", String(open));
+      if (isCheckoutMobileLayout()) {
+        updateMobileCheckoutGuide(open ? "summary" : (document.querySelector("[data-checkout-step].is-active")?.dataset.checkoutStep || "billing"));
+      }
     });
 
     document.querySelector("[data-load-company]")?.addEventListener("click", loadCompanyByIco);

@@ -1,3 +1,5 @@
+import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
+
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
   const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
@@ -162,7 +164,7 @@
       },
       type: { compatible: "Kompatibilné", original: "Originálne", renovated: "Renovované" },
       color: { cierna: "Čierna", cyan: "Cyan", purpurova: "Purpurová", yellow: "Yellow", multipack: "Multipack" },
-      stock: { instock: "Skladom", "expedujeme-dnes": "Expedujeme dnes", "10plus": "Viac ako 10 ks" },
+      stock: { instock: "Skladom", "expedujeme-dnes": "Skladom", "10plus": "Viac ako 10 ks" },
     };
     return labels[kind]?.[value] || value || "";
   }
@@ -399,7 +401,7 @@
   }
 
   function dispatchText(product) {
-    return product.stock_status === "instock" ? "Expedujeme dnes" : "Termín dodania overíme";
+    return product.stock_status === "instock" ? getDispatchMessage() : "Termín dodania overíme";
   }
 
   function normalizePrinter(value) {
@@ -724,7 +726,7 @@
             <div class="tm-row-meta">${productParams(product)}</div>
             <div class="tm-row-compat">
               <button type="button" data-open-printers>Vhodné pre ${printers.length || 0} tlačiarní</button>
-              <span class="tm-dispatch">
+              <span class="tm-dispatch" ${product.stock_status === "instock" ? "data-tm-dispatch-message" : ""}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
                 ${esc(dispatchText(product))}
               </span>
@@ -769,6 +771,8 @@
 
       list.appendChild(row);
     });
+
+    refreshDispatchMessages(list);
   }
 
   function updatePagination() {
@@ -841,6 +845,8 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     updateCartBadge();
+    refreshDispatchMessages(document);
+    window.setInterval(() => refreshDispatchMessages(document), 60000);
 
     const url = new URL(window.location.href);
     currentSearch = (url.searchParams.get("s") || url.searchParams.get("search") || url.searchParams.get("q") || "").trim();
