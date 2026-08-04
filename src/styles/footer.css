@@ -355,6 +355,15 @@
   .footer-logo-tile--shipping img { max-width: 94px; }
 }
 
+/* Mobil má vlastné kompaktné navigačné a kontaktné prvky. Plný footer by
+   zbytočne predlžoval každú stránku a kolidoval so spodnými sticky prvkami. */
+@media (max-width: 760px) {
+  .footer-support-strip,
+  .site-footer {
+    display: none !important;
+  }
+}
+
 /* Floating advisor - musí zostať štýlovaný aj po úprave footeru */
 .floating-advisor {
   position: fixed;

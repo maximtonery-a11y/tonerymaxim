@@ -484,6 +484,7 @@
   }
 
   html.tm-menu-open .tm-ai-assistant,
+  body.tm-modal-open .tm-ai-assistant,
   body:has(.tm-cookie-consent.tm-cookie-is-open) .tm-ai-assistant,
   body:has(.catalog-mobile-bottom-search:focus-within) .tm-ai-assistant,
   body:has(.tm-printer-bottom-search:focus-within) .tm-ai-assistant,

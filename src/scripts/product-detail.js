@@ -1410,8 +1410,10 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
       <div class="compat-modal" data-compat-modal hidden>
         <div class="compat-modal-card">
-          <button type="button" class="modal-close" data-close-compatible>×</button>
-          <h2>Všetky kompatibilné modely tlačiarní</h2>
+          <div class="compat-modal-head">
+            <h2>Všetky kompatibilné modely tlačiarní</h2>
+            <button type="button" class="modal-close" data-close-compatible aria-label="Zavrieť zoznam kompatibilných tlačiarní">×</button>
+          </div>
           <p>Kliknutím na model otvoríte výpis produktov pre danú tlačiareň.</p>
           ${printersListHtml(product)}
         </div>

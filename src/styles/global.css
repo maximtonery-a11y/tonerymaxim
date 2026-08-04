@@ -1015,7 +1015,7 @@ input {
   body:not(.home-page) .tm-global-mobile-drawer {
     position: fixed;
     inset: 0;
-    z-index: 3000;
+    z-index: 2147483645;
     display: none;
     background: rgba(7, 27, 58, .38);
     backdrop-filter: blur(10px);
@@ -1036,7 +1036,7 @@ input {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     touch-action: pan-y;
-    padding: max(18px, env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom));
+    padding: max(18px, env(safe-area-inset-top)) 18px calc(48px + env(safe-area-inset-bottom));
     background: #fff;
     box-shadow: 24px 0 60px rgba(7, 27, 58, .20);
   }
@@ -1108,6 +1108,24 @@ input {
     border: 1px solid #cfe2f3;
     background: linear-gradient(135deg, #eef8ff, #ffffff);
     color: #0878b7;
+  }
+
+  html.tm-menu-open,
+  html.tm-menu-open body {
+    overflow: hidden !important;
+  }
+
+  html.tm-menu-open .catalog-mobile-bottom-search,
+  html.tm-menu-open .product-mobile-sticky-cart,
+  html.tm-menu-open .product-mobile-search-shortcut,
+  html.tm-menu-open .cart-mobile-sticky,
+  html.tm-menu-open .checkout-mobile-sticky,
+  html.tm-menu-open .tm-printer-bottom-search,
+  html.tm-menu-open .tm-legacy-shop,
+  html.tm-menu-open [data-mobile-sticky-cart] {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 }
 
