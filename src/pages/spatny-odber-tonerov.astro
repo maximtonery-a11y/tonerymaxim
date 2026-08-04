@@ -1,0 +1,176 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
+import { breadcrumbJsonLd } from "../lib/seo";
+
+const SEO_ORIGIN = "https://www.tonerymaxim.sk";
+const canonical = `${SEO_ORIGIN}/spatny-odber-tonerov`;
+const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname.toLowerCase());
+const faq = [
+  { q: "Môže si bezplatný zvoz objednať neregistrovaný zákazník?", a: "Nie. Bezplatný spätný odber je dostupný iba registrovaným zákazníkom s oprávneným počtom dokončených nákupov za posledných 12 mesiacov." },
+  { q: "Ktorý kuriér použitý toner vyzdvihne?", a: "Podľa adresy a dostupnosti zvolíme DPD alebo GLS. Presné pokyny dostanete po schválení zvozu." },
+  { q: "Môžem odovzdať toner, ktorý som nekúpil v ToneryMaxim?", a: "Zvoz je určený prednostne na prázdne tonery a atramentové náplne z nákupov v ToneryMaxim. Iné kazety prijmeme iba po individuálnom odsúhlasení." },
+  { q: "Musí byť toner zabalený?", a: "Áno. Každá náplň musí byť uzavretá vo vrecku alebo pôvodnom obale a všetky kusy musia byť uložené v pevnej uzavretej krabici." },
+];
+const jsonLd = [
+  breadcrumbJsonLd(SEO_ORIGIN, [
+    { name: "Domov", path: "/" },
+    { name: "Spätný odber tonerov", path: "/spatny-odber-tonerov" },
+  ]),
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((item) => ({ "@type": "Question", name: item.q, acceptedAnswer: { "@type": "Answer", text: item.a } })),
+  },
+];
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <SeoHead
+      title="Spätný odber použitých tonerov | ToneryMaxim.sk"
+      description="Presné pravidlá bezplatného zvozu použitých tonerov a atramentových náplní cez DPD alebo GLS, nárok podľa nákupov a návod na bezpečné balenie."
+      canonical={canonical}
+      noindex={noindex}
+      jsonLd={jsonLd}
+    />
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+      <main>
+        <InfoPageShell
+          active="/spatny-odber-tonerov"
+          eyebrow="Ekologické odovzdanie prázdnych kaziet"
+          title="Spätný odber použitých tonerov"
+          intro="Prázdne tonery a pravidelne odoberané atramentové náplne odovzdáme odbornému odpadovému alebo renovačnému partnerovi. Bezplatný zvoz poskytujeme podľa nákupov za posledných 12 mesiacov."
+        >
+          <section class="return-intro">
+            <article><i>♻</i><div><strong>Odborné spracovanie</strong><p>Použiteľné kazety môžu smerovať na renováciu, ostatné na odborné zhodnotenie.</p></div></article>
+            <article><i>▣</i><div><strong>Jedna spoločná krabica</strong><p>Viac prázdnych náplní zabalíte spolu, čím sa zníži počet jázd kuriéra.</p></div></article>
+            <article><i>↗</i><div><strong>DPD alebo GLS</strong><p>Dopravcu určíme podľa adresy a aktuálnych možností zvozu.</p></div></article>
+          </section>
+
+          <section class="return-panel">
+            <div class="return-panel-head"><span>Presné pravidlá</span><h2>Kto má nárok na bezplatný zvoz</h2><p>Počítajú sa dokončené nákupy na registrovanom účte za priebežných posledných 12 mesiacov.</p></div>
+            <div class="return-table-wrap">
+              <table class="return-table">
+                <thead><tr><th>Typ zákazníka a odber</th><th>Nárok</th><th>Frekvencia</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Neregistrovaný zákazník</strong><span>Bez histórie nákupov v účte</span></td><td><b class="no">Bez bezplatného zvozu</b></td><td>—</td></tr>
+                  <tr><td><strong>1–5 laserových tonerov</strong><span>Napríklad jeden toner ročne</span></td><td><b class="no">Bez samostatného zvozu</b></td><td>—</td></tr>
+                  <tr><td><strong>6–11 laserových tonerov</strong><span>Pravidelnejšia spotreba</span></td><td><b class="yes">Bezplatný zvoz</b></td><td>1× za 12 mesiacov</td></tr>
+                  <tr><td><strong>12 a viac laserových tonerov</strong><span>Približne jeden toner mesačne alebo viac</span></td><td><b class="yes">Bezplatný zvoz</b></td><td>2× za 12 mesiacov</td></tr>
+                  <tr><td><strong>1–5 atramentových náplní</strong><span>Občasný nákup</span></td><td><b class="no">Bez samostatného zvozu</b></td><td>—</td></tr>
+                  <tr><td><strong>6 a viac atramentových náplní</strong><span>Pravidelný nákup</span></td><td><b class="yes">Bezplatný zvoz</b></td><td>1× za 12 mesiacov</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="return-small-note">Do počtu sa započítavajú kusy, nie počet objednávok. Zrušené, vrátené a neuhradené objednávky sa nezapočítavajú.</p>
+          </section>
+
+          <section class="return-panel">
+            <div class="return-panel-head"><span>Postup</span><h2>Ako zvoz funguje</h2></div>
+            <div class="return-steps">
+              <article><i>1</i><h3>Skontrolujeme nárok</h3><p>Prihlásený zákazník nás kontaktuje z e-mailu svojho účtu. Overíme nákupy za posledných 12 mesiacov.</p></article>
+              <article><i>2</i><h3>Potvrdíme prijateľné kusy</h3><p>Oznámite približný počet a typ prázdnych náplní. V prípade nejasnosti si vyžiadame fotografiu.</p></article>
+              <article><i>3</i><h3>Bezpečne ich zabalíte</h3><p>Náplne uzavriete do vreciek alebo pôvodných obalov a vložíte do pevnej krabice.</p></article>
+              <article><i>4</i><h3>Objednáme kuriéra</h3><p>Pošleme termín a pokyny pre DPD alebo GLS. Zásielku odovzdáte podľa potvrdených pokynov.</p></article>
+              <article><i>5</i><h3>Partner ich spracuje</h3><p>Kazety prevezme odpadový alebo renovačný partner podľa ich stavu a ďalšej použiteľnosti.</p></article>
+            </div>
+          </section>
+
+          <section class="return-two-columns">
+            <article class="return-panel">
+              <div class="return-panel-head"><span>Balenie</span><h2>Ako toner pripraviť</h2></div>
+              <ul class="return-list is-ok">
+                <li>prázdny toner vložte do nepriepustného vrecka,</li>
+                <li>atramentovú náplň uzavrite, aby nevytiekla,</li>
+                <li>použite pevnú a nepoškodenú kartónovú krabicu,</li>
+                <li>voľný priestor vyplňte papierom alebo inou výplňou,</li>
+                <li>krabicu dôkladne zalepte.</li>
+              </ul>
+            </article>
+            <article class="return-panel is-warning">
+              <div class="return-panel-head"><span>Nepreberáme</span><h2>Čo do zásielky nepatrí</h2></div>
+              <ul class="return-list is-no">
+                <li>voľne vysypaný tonerový prášok,</li>
+                <li>vytekajúce alebo nezabalené kazety,</li>
+                <li>batérie, elektroniku a iný kancelársky odpad,</li>
+                <li>znečistené obaly a komunálny odpad,</li>
+                <li>zásielky bez predchádzajúceho schválenia.</li>
+              </ul>
+            </article>
+          </section>
+
+          <section class="return-contact">
+            <div><span>Chcete objednať zvoz?</span><h2>Najprv si pripravte počet a typ náplní</h2><p>Kontaktujte nás z e-mailovej adresy registrovanej vo vašom účte. Nárok overíme a pošleme ďalší postup.</p></div>
+            <div><a class="primary-pill" href="mailto:info@tonerymaxim.sk?subject=Sp%C3%A4tn%C3%BD%20odber%20pou%C5%BEit%C3%BDch%20tonerov">Požiadať o zvoz</a><a href="/kontakt">Kontaktné údaje</a></div>
+          </section>
+
+          <section class="return-faq">
+            <div class="return-panel-head"><span>Otázky a odpovede</span><h2>Najčastejšie otázky</h2></div>
+            {faq.map((item) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
+          </section>
+        </InfoPageShell>
+      </main>
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+  </body>
+</html>
+
+<style>
+  .return-intro { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+  .return-intro article, .return-panel, .return-contact, .return-faq { border:1px solid #dbe8f6; border-radius:22px; background:#fff; box-shadow:0 18px 54px rgba(6,23,53,.07); }
+  .return-intro article { display:flex; gap:14px; padding:20px; }
+  .return-intro i { display:grid; flex:0 0 auto; width:44px; height:44px; place-items:center; border-radius:14px; background:#effaf3; color:#16a34a; font-style:normal; font-size:20px; font-weight:950; }
+  .return-intro strong { color:#061735; font-size:16px; }
+  .return-intro p, .return-panel-head p, .return-steps p, .return-contact p, .return-faq p { margin:5px 0 0; color:#64748b; font-size:13px; line-height:1.5; }
+  .return-panel { padding:25px; margin-bottom:16px; }
+  .return-panel-head > span, .return-contact span { color:#16a34a; font-size:12px; font-weight:950; letter-spacing:.08em; text-transform:uppercase; }
+  .return-panel-head h2, .return-contact h2, .return-faq h2 { margin:5px 0 0; color:#061735; font-size:25px; line-height:1.15; letter-spacing:-.025em; }
+  .return-table-wrap { margin-top:20px; overflow-x:auto; border:1px solid #dbe8f6; border-radius:17px; }
+  .return-table { width:100%; min-width:690px; border-collapse:collapse; }
+  .return-table th { padding:13px 15px; background:#f4f8fd; color:#52637d; font-size:12px; text-align:left; }
+  .return-table td { padding:14px 15px; border-top:1px solid #e5edf7; color:#344968; font-size:13px; vertical-align:middle; }
+  .return-table td strong, .return-table td span { display:block; }
+  .return-table td strong { color:#061735; font-size:14px; }
+  .return-table td span { margin-top:3px; color:#64748b; font-size:12px; }
+  .return-table b { display:inline-flex; border-radius:999px; padding:6px 9px; font-size:11px; }
+  .return-table b.yes { background:#eaf8ef; color:#087a38; }
+  .return-table b.no { background:#f1f5f9; color:#64748b; }
+  .return-small-note { margin:13px 0 0; color:#64748b; font-size:12px; line-height:1.5; }
+  .return-steps { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-top:20px; }
+  .return-steps article { padding:16px; border:1px solid #e1ebf6; border-radius:17px; background:#f8fbff; }
+  .return-steps i { display:grid; width:30px; height:30px; place-items:center; border-radius:50%; background:#061735; color:#fff; font-style:normal; font-weight:950; }
+  .return-steps h3 { margin:13px 0 6px; color:#061735; font-size:14px; }
+  .return-two-columns { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .return-panel.is-warning { border-color:#f0dfbd; background:linear-gradient(145deg,#fffaf0,#fff); }
+  .return-list { display:grid; gap:9px; margin:18px 0 0; padding:0; list-style:none; }
+  .return-list li { position:relative; padding-left:25px; color:#344968; font-size:14px; line-height:1.5; }
+  .return-list li::before { position:absolute; left:0; font-weight:950; }
+  .return-list.is-ok li::before { content:"✓"; color:#16a34a; }
+  .return-list.is-no li::before { content:"×"; color:#dc6a18; }
+  .return-contact { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:25px; margin-bottom:16px; background:linear-gradient(135deg,#effaf3,#fff); border-color:#c9ecd6; }
+  .return-contact > div:last-child { display:flex; align-items:center; gap:14px; }
+  .return-contact > div:last-child > a:last-child { color:#087a38; font-weight:900; text-decoration:none; }
+  .return-contact .primary-pill { background:#087a38; box-shadow:none; }
+  .return-faq { padding:25px; }
+  .return-faq details { border-top:1px solid #e1ebf6; }
+  .return-faq details:first-of-type { margin-top:18px; }
+  .return-faq summary { padding:16px 0; color:#061735; font-weight:900; cursor:pointer; }
+  .return-faq details p { padding:0 0 16px; }
+  @media(max-width:1000px){.return-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.return-steps article:last-child{grid-column:1/-1}}
+  @media(max-width:760px){.return-intro,.return-two-columns{grid-template-columns:1fr}.return-contact{align-items:flex-start;flex-direction:column}.return-contact>div:last-child{align-items:flex-start;flex-direction:column}}
+  @media(max-width:560px){.return-steps{grid-template-columns:1fr}.return-steps article:last-child{grid-column:auto}.return-panel,.return-contact,.return-faq{padding:20px}}
+</style>

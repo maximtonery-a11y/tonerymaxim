@@ -405,10 +405,31 @@
         <strong>${escapeHtml(title)}</strong>
         <span>${escapeHtml([brand, count > 0 ? `${count} kompatibilných produktov` : 'Kompatibilné náplne'].filter(Boolean).join(' · '))}</span>
       </div>
+      <div class="toner-care-status">
+        <i aria-hidden="true"></i>
+        <div><strong>Strážca je vypnutý</strong><span>Upozornenie je vždy 21 dní vopred</span></div>
+      </div>
       <div class="saved-printer-mini-actions">
         <a class="account-link-pill is-small" href="${escapeHtml(url)}">Zobraziť náplne</a>
+        <button class="tm-btn is-outline is-small" type="button" data-toggle-toner-care aria-expanded="false">Nastaviť strážcu</button>
         <button class="tm-btn is-danger-soft is-small" type="button" data-remove-saved-printer>Odstrániť</button>
       </div>
+      <form class="toner-care-form" data-toner-care-form hidden>
+        <input type="hidden" name="title" value="${escapeHtml(title)}" />
+        <label class="toner-care-switch">
+          <input type="checkbox" name="care_enabled" />
+          <span aria-hidden="true"></span>
+          <strong>Zapnúť pripomienku výmeny</strong>
+        </label>
+        <div class="toner-care-fields">
+          <label><span>Dátum vloženia náplne</span><input class="account-input" type="date" name="installed_at" max="${new Date().toISOString().slice(0, 10)}" /></label>
+          <label><span>Predpokladaná výdrž</span><select class="account-input" name="expected_months"><option value="1">1 mesiac</option><option value="2">2 mesiace</option><option value="3" selected>3 mesiace</option><option value="4">4 mesiace</option><option value="6">6 mesiacov</option><option value="9">9 mesiacov</option><option value="12">12 mesiacov</option><option value="18">18 mesiacov</option><option value="24">24 mesiacov</option></select></label>
+          <label><span>Preferovaný typ</span><select class="account-input" name="preferred_type"><option value="any">Najvhodnejšia možnosť</option><option value="compatible">Kompatibilný</option><option value="original">Originálny</option><option value="renovated">Renovovaný</option></select></label>
+        </div>
+        <div class="toner-care-form-note">E-mail pošleme približne 21 dní pred odhadovanou výmenou vám aj pracovníkovi ToneryMaxim.</div>
+        <div class="toner-care-form-actions"><button class="tm-btn" type="submit">Uložiť plán</button><button class="tm-btn is-outline" type="button" data-toner-replaced-today>Toner som vymenil dnes</button></div>
+        <div class="account-form-message" data-toner-care-message hidden></div>
+      </form>
     `;
     savedPrintersList.prepend(article);
   }
@@ -441,6 +462,83 @@
     if (selectedPrinterInput) selectedPrinterInput.value = '';
     renderSuggestions([]);
     showPrinterMessage('Tlačiareň bola uložená.', 'success');
+  });
+
+  document.addEventListener('click', (event) => {
+    const toggle = event.target.closest('[data-toggle-toner-care]');
+    if (!toggle) return;
+    const card = toggle.closest('[data-saved-printer-card]');
+    const form = card?.querySelector('[data-toner-care-form]');
+    if (!form) return;
+    const open = form.hidden;
+    form.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.textContent = open ? 'Zavrieť nastavenie' : 'Nastaviť strážcu';
+  });
+
+  document.addEventListener('click', (event) => {
+    const replaced = event.target.closest('[data-toner-replaced-today]');
+    if (!replaced) return;
+    const form = replaced.closest('[data-toner-care-form]');
+    if (!form) return;
+    const dateInput = form.querySelector('[name="installed_at"]');
+    const enabledInput = form.querySelector('[name="care_enabled"]');
+    if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
+    if (enabledInput) enabledInput.checked = true;
+    form.requestSubmit();
+  });
+
+  document.addEventListener('submit', async (event) => {
+    const form = event.target.closest?.('[data-toner-care-form]');
+    if (!form) return;
+    event.preventDefault();
+
+    const submit = form.querySelector('button[type="submit"]');
+    const message = form.querySelector('[data-toner-care-message]');
+    const card = form.closest('[data-saved-printer-card]');
+    const fields = new FormData(form);
+    const payload = {
+      title: String(fields.get('title') || ''),
+      care_enabled: Boolean(form.querySelector('[name="care_enabled"]')?.checked),
+      installed_at: String(fields.get('installed_at') || ''),
+      expected_months: Number(fields.get('expected_months') || 3),
+      preferred_type: String(fields.get('preferred_type') || 'any'),
+    };
+
+    if (message) message.hidden = true;
+    if (submit) setLoadingState(submit);
+    const response = await fetch('/api/account/saved-printers', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(() => null);
+    const data = await response?.json().catch(() => ({}));
+    if (submit) clearLoadingState(submit);
+
+    if (!response?.ok || !data?.ok) {
+      if (message) {
+        message.hidden = false;
+        message.dataset.type = 'error';
+        message.textContent = data?.error || 'Plán sa nepodarilo uložiť.';
+      }
+      return;
+    }
+
+    const printer = data.printer || {};
+    card?.classList.toggle('is-care-active', Boolean(printer.care_enabled));
+    const status = card?.querySelector('.toner-care-status');
+    if (status) {
+      const due = printer.expected_replacement_at
+        ? new Intl.DateTimeFormat('sk-SK', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(`${printer.expected_replacement_at}T12:00:00`))
+        : '';
+      status.querySelector('strong').textContent = printer.care_enabled ? 'Strážca je aktívny' : 'Strážca je vypnutý';
+      status.querySelector('span').textContent = printer.care_enabled && due ? `Predpokladaný termín: ${due}` : 'Upozornenie je vždy 21 dní vopred';
+    }
+    if (message) {
+      message.hidden = false;
+      message.dataset.type = 'success';
+      message.textContent = 'Plán výmeny bol uložený.';
+    }
   });
 
   document.addEventListener('click', async (event) => {

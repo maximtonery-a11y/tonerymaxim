@@ -4,6 +4,7 @@ import { ensureAsyncOrderQueueStarted } from './lib/async-order-queue';
 import { authSecret } from './lib/runtime-secret';
 import { persistenceSecret } from './lib/secure-persistence';
 import { ensureProductsCacheWarmStarted } from './lib/tm-products-cache';
+import { ensureTonerCareWorkerStarted } from './lib/toner-care';
 import {
   bodyTooLarge,
   rateLimitFor,
@@ -111,6 +112,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     ensureEmailQueueStarted();
     ensureAsyncOrderQueueStarted();
     ensureProductsCacheWarmStarted();
+    ensureTonerCareWorkerStarted();
   }
 
   const { request, url } = context;

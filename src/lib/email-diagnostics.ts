@@ -6,6 +6,7 @@ import { constants } from 'node:fs';
 import { join } from 'node:path';
 import nodemailer from 'nodemailer';
 import { TM_DATA_ROOT } from './secure-persistence';
+import { getMailFrom } from './mail';
 
 function runtime(name: string): string {
   const value = typeof process !== 'undefined' ? process.env?.[name] : undefined;
@@ -96,6 +97,14 @@ export async function runEmailDiagnostics(options: { verifySmtp?: boolean } = {}
     !(c.from.value || c.user.value) && 'MAIL_FROM alebo SMTP_USER',
   ].filter(Boolean) as string[];
 
+  let senderPolicy: { ok: boolean; from?: string; error?: string };
+  try {
+    senderPolicy = { ok: true, from: getMailFrom() };
+  } catch (error: any) {
+    senderPolicy = { ok: false, error: error?.message || String(error) };
+    missing.push('MAIL_FROM na doméne @tonerymaxim.sk');
+  }
+
   let dns: any = { ok: false, skipped: true };
   let tcp: any = { ok: false, skipped: true };
   let verify: any = { ok: false, skipped: true };
@@ -137,7 +146,7 @@ export async function runEmailDiagnostics(options: { verifySmtp?: boolean } = {}
   }
 
   return {
-    ok: missing.length === 0 && dns.ok && tcp.ok && (!options.verifySmtp || verify.ok),
+    ok: missing.length === 0 && senderPolicy.ok && dns.ok && tcp.ok && (!options.verifySmtp || verify.ok),
     generatedAt: new Date().toISOString(),
     nodeEnv: runtime('NODE_ENV') || 'neuvedené',
     hostname: runtime('HOSTNAME') || 'neuvedené',
@@ -156,6 +165,7 @@ export async function runEmailDiagnostics(options: { verifySmtp?: boolean } = {}
     dns,
     tcp,
     verify,
+    senderPolicy,
     persistence: await persistenceProbe(),
   };
 }
@@ -175,7 +185,7 @@ export async function sendDiagnosticEmail(to: string) {
     socketTimeout: 30_000,
   });
   const result = await transporter.sendMail({
-    from: `"${(c.name.value || 'ToneryMAXIM.sk').replace(/"/g, "'")}" <${c.from.value || c.user.value}>`,
+    from: getMailFrom(),
     to,
     subject: `TM SMTP diagnostika ${new Date().toISOString()}`,
     text: 'Tento e-mail potvrdzuje, že produkčný Astro server sa úspešne pripojil k SMTP a odoslal správu.',

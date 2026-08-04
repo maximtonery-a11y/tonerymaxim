@@ -1,0 +1,163 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
+import { breadcrumbJsonLd } from "../lib/seo";
+
+const SEO_ORIGIN = "https://www.tonerymaxim.sk";
+const canonical = `${SEO_ORIGIN}/toner-bez-starosti`;
+const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname.toLowerCase());
+const faq = [
+  { q: "Pošlete mi toner automaticky?", a: "Nie. Služba odošle pripomienku a zobrazí vhodné náplne. Objednávku musí zákazník vždy potvrdiť." },
+  { q: "Kedy dostanem upozornenie?", a: "Približne 21 dní pred dátumom výmeny vypočítaným z dátumu vloženia a predpokladanej výdrže." },
+  { q: "Čo ak toner vydrží dlhšie?", a: "V zákazníckom účte môžete plán kedykoľvek posunúť, vypnúť alebo nastaviť nový dátum po výmene." },
+  { q: "Je služba spoplatnená?", a: "Nie. Toner bez starostí je bezplatná funkcia pre registrovaných zákazníkov ToneryMaxim." },
+];
+const jsonLd = [
+  breadcrumbJsonLd(SEO_ORIGIN, [
+    { name: "Domov", path: "/" },
+    { name: "Toner bez starostí", path: "/toner-bez-starosti" },
+  ]),
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  },
+];
+---
+
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <SeoHead
+      title="Toner bez starostí – pripomienka výmeny | ToneryMaxim.sk"
+      description="Nastavte dátum vloženia tonera a jeho predpokladanú výdrž. Približne 21 dní pred výmenou vás upozorníme a ukážeme vhodné náplne."
+      canonical={canonical}
+      noindex={noindex}
+      jsonLd={jsonLd}
+    />
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+      <main>
+        <InfoPageShell
+          active="/toner-bez-starosti"
+          eyebrow="Bezplatná služba pre registrovaných"
+          title="Toner bez starostí"
+          intro="Jednoduchá pripomienka, vďaka ktorej viete o blížiacej sa výmene vopred. Bez QR kódov, bez pripojenia tlačiarne a bez automatického posielania tovaru."
+        >
+          <section class="care-highlight-grid">
+            <article><span>21 dní</span><strong>Upozornenie vopred</strong><p>Čas pripraviť objednávku bez stresu.</p></article>
+            <article><span>0 €</span><strong>Bez poplatku</strong><p>Služba je súčasťou zákazníckeho účtu.</p></article>
+            <article><span>100 %</span><strong>Pod vašou kontrolou</strong><p>Bez potvrdenia nič automaticky neposielame.</p></article>
+          </section>
+
+          <section class="care-panel">
+            <div class="care-panel-head">
+              <span>Ako to funguje</span>
+              <h2>Štyri jednoduché kroky</h2>
+            </div>
+            <div class="care-steps">
+              <article><i>1</i><h3>Uložíte tlačiareň</h3><p>V účte otvoríte „Moje tlačiarne“ a vyberiete svoj model z existujúceho vyhľadávača.</p></article>
+              <article><i>2</i><h3>Zadáte dátum</h3><p>Nastavíte deň vloženia náplne, očakávanú výdrž a preferovaný typ produktu.</p></article>
+              <article><i>3</i><h3>Dostanete pripomienku</h3><p>Približne 21 dní pred odhadovaným termínom vám príde e-mail a upozornenie dostane aj ToneryMaxim.</p></article>
+              <article><i>4</i><h3>Rozhodnete sa</h3><p>Zobrazíte vhodné náplne, objednáte ich alebo plán upravíte, ak toner ešte nepotrebujete.</p></article>
+            </div>
+          </section>
+
+          <section class="care-two-columns">
+            <article class="care-panel">
+              <div class="care-panel-head"><span>Nastavenie</span><h2>Čo zadávate v účte</h2></div>
+              <ul class="care-check-list">
+                <li>model používanej tlačiarne,</li>
+                <li>dátum vloženia aktuálnej náplne,</li>
+                <li>predpokladanú výdrž od 1 do 24 mesiacov,</li>
+                <li>preferenciu: kompatibilný, originálny alebo renovovaný produkt,</li>
+                <li>zapnutie alebo vypnutie pripomienky pre konkrétnu tlačiareň.</li>
+              </ul>
+            </article>
+            <article class="care-panel is-green">
+              <div class="care-panel-head"><span>Dôležité</span><h2>Nejde o automatickú objednávku</h2></div>
+              <p>Výpočet je orientačný a vychádza výhradne z údajov, ktoré zadáte. Skutočná spotreba závisí od počtu vytlačených strán a pokrytia.</p>
+              <p><strong>Toner vám neposielame bez potvrdenia.</strong> Pripomienka vám iba pomôže objednať náplň včas.</p>
+            </article>
+          </section>
+
+          <section class="care-panel care-notification">
+            <div>
+              <span class="care-mail-icon" aria-hidden="true">✉</span>
+              <div><span>Približne 3 týždne pred výmenou</span><h2>Čo bude obsahovať upozornenie</h2></div>
+            </div>
+            <ul>
+              <li>model vašej tlačiarne,</li>
+              <li>predpokladaný dátum výmeny,</li>
+              <li>odkaz na vhodné náplne,</li>
+              <li>možnosť upraviť plán alebo označiť, že ste toner už vymenili.</li>
+            </ul>
+          </section>
+
+          <section class="care-action">
+            <div><span>Máte účet?</span><h2>Nastavte si prvú pripomienku</h2><p>Celé nastavenie zaberie približne jednu minútu.</p></div>
+            <div><a class="primary-pill" href="/prihlasenie?next=%2Fucet%2Ftlaciarne">Otvoriť Moje tlačiarne</a><a href="/registracia">Vytvoriť účet</a></div>
+          </section>
+
+          <section class="care-faq">
+            <div class="care-panel-head"><span>Otázky a odpovede</span><h2>Najčastejšie otázky</h2></div>
+            {faq.map((item) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}
+          </section>
+        </InfoPageShell>
+      </main>
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+  </body>
+</html>
+
+<style>
+  .care-highlight-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+  .care-highlight-grid article, .care-panel, .care-action, .care-faq { border:1px solid #dbe8f6; border-radius:22px; background:#fff; box-shadow:0 18px 54px rgba(6,23,53,.07); }
+  .care-highlight-grid article { padding:22px; }
+  .care-highlight-grid span, .care-panel-head > span, .care-action span, .care-notification > div > div > span { color:#0588e8; font-size:12px; font-weight:950; letter-spacing:.07em; text-transform:uppercase; }
+  .care-highlight-grid strong { display:block; margin-top:7px; color:#061735; font-size:18px; }
+  .care-highlight-grid p { margin:5px 0 0; color:#64748b; font-size:13px; line-height:1.5; }
+  .care-panel { padding:25px; margin-bottom:16px; }
+  .care-panel-head h2, .care-notification h2, .care-action h2, .care-faq h2 { margin:5px 0 0; color:#061735; font-size:25px; line-height:1.15; letter-spacing:-.025em; }
+  .care-steps { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:13px; margin-top:20px; }
+  .care-steps article { padding:17px; border:1px solid #e1ebf6; border-radius:17px; background:#f8fbff; }
+  .care-steps i { display:grid; width:30px; height:30px; place-items:center; border-radius:50%; background:#061735; color:#fff; font-style:normal; font-weight:950; }
+  .care-steps h3 { margin:13px 0 6px; color:#061735; font-size:15px; }
+  .care-steps p, .care-panel p, .care-action p, .care-faq p { margin:0; color:#64748b; font-size:13px; line-height:1.55; }
+  .care-two-columns { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .care-panel.is-green { background:linear-gradient(145deg,#f2fff7,#fff); border-color:#c8ecd5; }
+  .care-panel.is-green p + p { margin-top:12px; }
+  .care-check-list { display:grid; gap:9px; margin:18px 0 0; padding:0; list-style:none; }
+  .care-check-list li { position:relative; padding-left:25px; color:#344968; font-size:14px; line-height:1.5; }
+  .care-check-list li::before { content:"✓"; position:absolute; left:0; color:#16a34a; font-weight:950; }
+  .care-notification > div { display:flex; align-items:center; gap:14px; }
+  .care-mail-icon { display:grid; width:48px; height:48px; place-items:center; border-radius:15px; background:#eef7ff; color:#0588e8; font-size:20px; }
+  .care-notification ul { display:grid; grid-template-columns:1fr 1fr; gap:10px 25px; margin:20px 0 0; color:#344968; font-size:14px; }
+  .care-action { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:25px; margin-bottom:16px; background:linear-gradient(135deg,#061735,#0c2d5d); }
+  .care-action h2, .care-action p { color:#fff; }
+  .care-action > div:last-child { display:flex; align-items:center; gap:14px; }
+  .care-action > div:last-child > a:last-child { color:#fff; font-weight:900; text-decoration:none; }
+  .care-action .primary-pill { background:#fff; color:#061735; box-shadow:none; }
+  .care-faq { padding:25px; }
+  .care-faq details { border-top:1px solid #e1ebf6; }
+  .care-faq details:first-of-type { margin-top:18px; }
+  .care-faq summary { padding:16px 0; color:#061735; font-weight:900; cursor:pointer; }
+  .care-faq details p { padding:0 0 16px; }
+  @media(max-width:900px){.care-steps{grid-template-columns:1fr 1fr}.care-action{align-items:flex-start;flex-direction:column}}
+  @media(max-width:650px){.care-highlight-grid,.care-steps,.care-two-columns{grid-template-columns:1fr}.care-notification ul{grid-template-columns:1fr;padding-left:20px}.care-action>div:last-child{align-items:flex-start;flex-direction:column}.care-panel,.care-action,.care-faq{padding:20px}}
+</style>

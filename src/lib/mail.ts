@@ -20,10 +20,27 @@ function smtpPort(): number {
   return Number.isFinite(raw) ? raw : 465;
 }
 
+const REQUIRED_SENDER_DOMAIN = "tonerymaxim.sk";
+
+function extractEmailAddress(value: string): string {
+  const clean = String(value || "").trim();
+  const angleMatch = clean.match(/<\s*([^<>\s]+@[^<>\s]+)\s*>/);
+  return String(angleMatch?.[1] || clean).trim().toLowerCase();
+}
+
+export function getMailFromAddress(): string {
+  const configured = env("MAIL_FROM") || env("SMTP_USER");
+  const address = extractEmailAddress(configured);
+  if (!address) throw new Error("Chýba MAIL_FROM alebo SMTP_USER v .env");
+  if (!address.endsWith(`@${REQUIRED_SENDER_DOMAIN}`)) {
+    throw new Error(`MAIL_FROM musí byť adresa na doméne @${REQUIRED_SENDER_DOMAIN}. Aktuálne je nastavené: ${address}`);
+  }
+  return address;
+}
+
 export function getMailFrom(): string {
-  const fromEmail = env("MAIL_FROM") || env("SMTP_USER");
+  const fromEmail = getMailFromAddress();
   const fromName = env("MAIL_NAME") || "ToneryMAXIM.sk";
-  if (!fromEmail) throw new Error("Chýba MAIL_FROM alebo SMTP_USER v .env");
   return `"${fromName.replace(/"/g, "'")}" <${fromEmail}>`;
 }
 

@@ -39,6 +39,8 @@ export const INDEXABLE_STATIC_PATHS = [
   "/ochrana-osobnych-udajov",
   "/cookies",
   "/vernostny-program",
+  "/toner-bez-starosti",
+  "/spatny-odber-tonerov",
 ];
 
 function xml(value: unknown): string {

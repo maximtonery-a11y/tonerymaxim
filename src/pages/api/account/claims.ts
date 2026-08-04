@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { readCustomerSession } from "../../../lib/auth-session";
-import { getWooCustomerById, getWooCustomerOrders, getWooAuthHeader } from "../../../lib/woo-client";
+import { getWooCustomerById, getWooCustomerOrders, getWooAuthHeader, getToneryMaximWordPressHeaders } from "../../../lib/woo-client";
 import { sendMail } from "../../../lib/mail";
 
 export const prerender = false;
@@ -62,12 +62,14 @@ async function tmClaimsRequest<T = any>(endpoint: string, options: { method?: st
     if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
   }
 
+  const method = String(options.method || "GET").toUpperCase();
   const response = await fetch(url, {
-    method: options.method || "GET",
+    method,
     headers: {
       Authorization: getWooAuthHeader(),
       "Content-Type": "application/json",
       Accept: "application/json",
+      ...getToneryMaximWordPressHeaders(method),
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
   });

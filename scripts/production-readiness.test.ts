@@ -100,3 +100,21 @@ test("produkčné premenné z Coolify majú prednosť pred hodnotami vloženými
     );
   }
 });
+
+test("e-mailová politika blokuje WordPress správy pre ToneryMAXIM a vyžaduje odosielateľa @tonerymaxim.sk", async () => {
+  const mail = await readFile(new URL("../src/lib/mail.ts", import.meta.url), "utf8");
+  const woo = await readFile(new URL("../src/lib/woo-client.ts", import.meta.url), "utf8");
+  const health = await readFile(new URL("../src/lib/production-health.ts", import.meta.url), "utf8");
+  const plugin = await readFile(new URL("../wordpress-plugin/tonerymaxim-email-policy/tonerymaxim-email-policy.php", import.meta.url), "utf8");
+
+  assert.match(mail, /REQUIRED_SENDER_DOMAIN\s*=\s*["']tonerymaxim\.sk["']/);
+  assert.match(woo, /X-ToneryMaxim-Suppress-Emails/);
+  assert.match(woo, /verifyWordPressEmailPolicy/);
+  assert.match(health, /wordpressEmailPolicyCheck/);
+  assert.match(plugin, /pre_wp_mail/);
+  assert.match(plugin, /woocommerce_email_enabled_/);
+  assert.match(plugin, /customer_processing_order/);
+  assert.match(plugin, /send_password_change_email/);
+  assert.match(plugin, /send_retrieve_password_email/);
+  assert.match(plugin, /register_rest_route\('tonerymaxim\/v1',\s*'\/email-policy'/);
+});

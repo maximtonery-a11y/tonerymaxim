@@ -3,8 +3,8 @@ import { promises as fs } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { getTransporter } from './mail';
-import { wooRequest } from './woo-client';
+import { getMailFrom, getTransporter } from './mail';
+import { verifyWordPressEmailPolicy, wooRequest } from './woo-client';
 import { getGoPayAccessToken, getGoPayHost } from './gopay-client';
 import { readSignedJson } from './secure-persistence';
 
@@ -73,14 +73,29 @@ async function smtpCheck(verify: boolean): Promise<Check> {
   const required = ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'];
   const missing = required.filter((name) => !runtimeEnv(name));
   if (missing.length) return { id: 'smtp', label: 'SMTP', ok: false, message: `Chýba: ${missing.join(', ')}` };
-  if (!verify) return { id: 'smtp', label: 'SMTP', ok: true, warning: true, message: 'Premenné sú nastavené. Hlboký test nebol spustený.' };
+  let from = '';
+  try { from = getMailFrom(); } catch (error: any) {
+    return { id: 'smtp', label: 'SMTP a odosielateľ', ok: false, message: error?.message || String(error) };
+  }
+  if (!verify) return { id: 'smtp', label: 'SMTP a odosielateľ', ok: true, warning: true, message: `Odosielateľ: ${from}. Hlboký test nebol spustený.` };
   const result = await timed(async () => getTransporter().verify());
-  return { id: 'smtp', label: 'SMTP', ok: !result.error, ms: result.ms, message: result.error?.message || 'SMTP prihlásenie je funkčné.' };
+  return { id: 'smtp', label: 'SMTP a odosielateľ', ok: !result.error, ms: result.ms, message: result.error?.message || `SMTP funguje, odosielateľ: ${from}.` };
 }
 
 async function wooCheck(): Promise<Check> {
   const result = await timed(async () => wooRequest('/system_status'));
   return { id: 'woo', label: 'WooCommerce API', ok: !result.error, ms: result.ms, message: result.error?.message || 'WooCommerce API odpovedá.' };
+}
+
+async function wordpressEmailPolicyCheck(): Promise<Check> {
+  const result = await timed(async () => verifyWordPressEmailPolicy());
+  return {
+    id: 'wordpress-email-policy',
+    label: 'Ochrana pred WordPress e-mailmi',
+    ok: !result.error && result.value?.ok === true,
+    ms: result.ms,
+    message: result.error?.message || `Aktívna politika ${result.value?.version || ''}: e-maily ToneryMAXIM neposiela WordPress.`,
+  };
 }
 
 async function gopayCheck(): Promise<Check> {
@@ -148,8 +163,8 @@ async function sequenceCheck(): Promise<Check> {
 }
 
 export async function runProductionHealth(options: { deep?: boolean } = {}) {
-  const [commit, storage, smtp, woo, gopay, queue, sequence] = await Promise.all([
-    resolveGitCommit(), storageCheck(), smtpCheck(Boolean(options.deep)), wooCheck(), gopayCheck(), queueCheck(), sequenceCheck(),
+  const [commit, storage, smtp, woo, wordpressEmailPolicy, gopay, queue, sequence] = await Promise.all([
+    resolveGitCommit(), storageCheck(), smtpCheck(Boolean(options.deep)), wooCheck(), wordpressEmailPolicyCheck(), gopayCheck(), queueCheck(), sequenceCheck(),
   ]);
 
   const envNames = [
@@ -159,7 +174,7 @@ export async function runProductionHealth(options: { deep?: boolean } = {}) {
     'GOPAY_ENV','GOPAY_GOID','GOPAY_CLIENT_ID','GOPAY_CLIENT_SECRET','GOPAY_RETURN_URL','GOPAY_NOTIFY_URL',
   ];
   const env = Object.fromEntries(envNames.map((name) => [name, Boolean(runtimeEnv(name))]));
-  const checks = [storage, smtp, woo, gopay, queue, sequence];
+  const checks = [storage, smtp, woo, wordpressEmailPolicy, gopay, queue, sequence];
   const failures = checks.filter((check) => !check.ok && !check.warning).length;
   const warnings = checks.filter((check) => check.warning).length;
   const memory = process.memoryUsage();

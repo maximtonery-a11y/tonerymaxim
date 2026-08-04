@@ -17,6 +17,19 @@ function json(data: unknown, status = 200) {
   });
 }
 
+function isoDate(value: unknown): string {
+  const raw = String(value || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return "";
+  const date = new Date(`${raw}T12:00:00.000Z`);
+  return Number.isNaN(date.getTime()) ? "" : raw;
+}
+
+function replacementDate(installedAt: string, months: number): string {
+  const date = new Date(`${installedAt}T12:00:00.000Z`);
+  date.setUTCMonth(date.getUTCMonth() + months);
+  return date.toISOString().slice(0, 10);
+}
+
 function printerBrand(printer: string) {
   const brands = ["HP", "Canon", "Brother", "Epson", "Xerox", "Samsung", "Lexmark", "Kyocera", "OKI", "Ricoh", "Konica Minolta"];
   const text = normalize(printer);
@@ -102,6 +115,57 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   await saveWooCustomerPrinters(customer.id, printers);
 
   return json({ ok: true, printer, printers });
+};
+
+export const PUT: APIRoute = async ({ request, cookies }) => {
+  const customer = await requireCustomer(cookies);
+  if (!customer) return json({ ok: false, error: "Nie ste prihlásený." }, 401);
+
+  const body = await request.json().catch(() => ({}));
+  const title = String(body.title || "").trim();
+  if (!title) return json({ ok: false, error: "Chýba model tlačiarne." }, 400);
+
+  const installedAt = isoDate(body.installed_at);
+  const expectedMonths = Math.min(24, Math.max(1, Math.trunc(Number(body.expected_months || 3))));
+  const preferredType = ["compatible", "original", "renovated", "any"].includes(String(body.preferred_type || ""))
+    ? String(body.preferred_type)
+    : "any";
+  const careEnabled = body.care_enabled === true;
+
+  if (careEnabled && !installedAt) {
+    return json({ ok: false, error: "Pri aktívnom strážcovi zadajte dátum vloženia náplne." }, 400);
+  }
+
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  if (installedAt && new Date(`${installedAt}T12:00:00.000Z`).getTime() > today.getTime()) {
+    return json({ ok: false, error: "Dátum vloženia nemôže byť v budúcnosti." }, 400);
+  }
+
+  const existing = getSavedPrintersFromCustomer(customer);
+  const index = existing.findIndex((item) => compactKey(item.title) === compactKey(title));
+  if (index < 0) return json({ ok: false, error: "Uložená tlačiareň nebola nájdená." }, 404);
+
+  const previous = existing[index];
+  const cycleChanged = previous.installed_at !== installedAt || Number(previous.expected_months || 3) !== expectedMonths;
+  const updated = {
+    ...previous,
+    care_enabled: careEnabled,
+    installed_at: installedAt,
+    expected_months: expectedMonths,
+    expected_replacement_at: installedAt ? replacementDate(installedAt, expectedMonths) : "",
+    reminder_days: 21,
+    preferred_type: preferredType as "compatible" | "original" | "renovated" | "any",
+    ...(cycleChanged ? {
+      customer_reminder_sent_for: "",
+      admin_reminder_sent_for: "",
+      last_reminder_at: "",
+    } : {}),
+  };
+
+  existing[index] = updated;
+  await saveWooCustomerPrinters(customer.id, existing);
+  return json({ ok: true, printer: updated, printers: existing });
 };
 
 export const DELETE: APIRoute = async ({ request, cookies }) => {
