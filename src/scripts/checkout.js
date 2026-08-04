@@ -1663,7 +1663,7 @@
         renderPoints(points);
       } catch {
         if (currentRequest !== requestId) return;
-        renderStatus("Zoznam sa nepodarilo načítať. Použite mapu alebo skúste hľadanie znova.", true);
+        renderStatus("Zoznam sa nepodarilo načítať. Skontrolujte pripojenie alebo skúste hľadanie znova.", true);
       }
     };
 
@@ -1690,11 +1690,27 @@
     document.body.classList.add("has-gls-modal");
     root.innerHTML = `<div class="gls-widget-loading">Načítavam GLS mapu...</div>`;
 
+    const isMobileGlsWidget = Boolean(
+      window.matchMedia && window.matchMedia("(max-width: 720px)").matches,
+    );
+    const zip = getWidgetZip();
+
     if (subtitle) {
-      subtitle.textContent = window.matchMedia?.("(max-width: 720px)").matches
-        ? "Mapa hore, rolovateľný zoznam výdajných miest dole"
+      subtitle.textContent = isMobileGlsWidget
+        ? "Vyhľadajte PSČ alebo mesto a vyberte výdajné miesto"
         : "Vyberte GLS ParcelShop alebo Balíkomat na Slovensku";
     }
+
+    // Na mobile používame iba vlastný prehľadný zoznam. Oficiálny GLS widget
+    // by zobrazil druhé vyhľadávanie aj druhý zoznam nad naším výberom.
+    if (isMobileGlsWidget) {
+      root.innerHTML = "";
+      root.classList.add("is-mobile-list-only");
+      mountGlsMobilePickupList(root, zip);
+      return;
+    }
+
+    root.classList.remove("is-mobile-list-only");
 
     try {
       await loadGlsWidgetScript();
@@ -1705,24 +1721,13 @@
 
       root.innerHTML = "";
 
-      const zip = getWidgetZip();
-      const isMobileGlsWidget = window.matchMedia && window.matchMedia("(max-width: 720px)").matches;
       const options = {
         lang: "sk",
         renderTo: "#gls-widget-root",
         find: 1,
-        noHeader: isMobileGlsWidget ? 1 : 0,
+        noHeader: 0,
         ctrCode: "SK",
       };
-
-      // GLS na mobiloch štandardne zobrazuje ešte samostatný výber typu
-      // výdajného miesta. Ten zaberá veľkú časť dostupnej výšky a necháva
-      // zoznam ParcelShopov/Balíkomatov iba v úzkom páse. Obidva typy už
-      // povoľujeme vo voľbe dopravy, preto je tento duplicitný filter na
-      // mobile skrytý cez oficiálnu voľbu widgetu.
-      if (isMobileGlsWidget) {
-        options.ptFilter = 0;
-      }
 
       if (zip) {
         options.location = zip;
@@ -1746,7 +1751,6 @@
         closeGlsWidget();
       }, options);
 
-      mountGlsMobilePickupList(root, zip);
     } catch (error) {
       root.innerHTML = `
         <div class="gls-widget-error">
@@ -1770,7 +1774,10 @@
     }
 
     if (modal) modal.hidden = true;
-    if (root) root.innerHTML = "";
+    if (root) {
+      root.innerHTML = "";
+      root.classList.remove("is-mobile-list-only");
+    }
     document.body.classList.remove("has-gls-modal");
   }
 

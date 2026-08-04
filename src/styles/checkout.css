@@ -1599,39 +1599,31 @@ body.has-checkout-submit-overlay {
     overflow: hidden !important;
   }
 
+  .gls-widget-root.is-mobile-list-only > :not(.gls-mobile-results) {
+    display: none !important;
+  }
+
   .gls-mobile-results {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    position: relative;
     z-index: 6;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
     width: 100%;
-    height: min(52dvh, 470px);
-    min-height: 320px;
+    height: 100%;
+    min-height: 0;
     overflow: hidden;
-    border: 1px solid #d9e3ef;
-    border-bottom: 0;
-    border-radius: 24px 24px 0 0;
+    border: 0;
+    border-radius: 0;
     background: #fff;
-    box-shadow: 0 -14px 34px rgba(7, 29, 58, .2);
+    box-shadow: none;
   }
 
   .gls-mobile-results::before {
-    position: absolute;
-    top: 7px;
-    left: 50%;
-    width: 42px;
-    height: 4px;
-    border-radius: 999px;
-    background: #cad5e3;
-    content: "";
-    transform: translateX(-50%);
+    display: none;
   }
 
   .gls-mobile-results-search {
-    padding: 18px 14px 10px;
+    padding: 14px;
     border-bottom: 1px solid #e4ebf3;
     background: #f8fbff;
   }
