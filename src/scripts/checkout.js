@@ -716,6 +716,7 @@
         zipInput.classList.remove("is-invalid");
         cityInput.classList.remove("is-invalid");
         removePostalPicker(group);
+        refreshCheckoutProgress();
       });
 
       picker.appendChild(button);
@@ -1084,6 +1085,7 @@
           cityInput.classList.remove("is-invalid");
         }
       }
+      refreshCheckoutProgress();
     } catch {
       // Pomocná funkcia, checkout nesmie spadnúť.
     }
@@ -1130,6 +1132,7 @@
           zipInput.classList.remove("is-invalid");
         }
       }
+      refreshCheckoutProgress();
     } catch {
       // Pomocná funkcia, checkout nesmie spadnúť.
     }
@@ -1217,6 +1220,7 @@
 
       status.textContent = company.name ? "Firma bola načítaná." : "";
       status.className = "company-status is-success";
+      refreshCheckoutProgress();
     } catch (error) {
       status.textContent = error.message || "Nepodarilo sa načítať firmu.";
       status.className = "company-status is-error";
@@ -1539,6 +1543,7 @@
         if (input) input.value = normalized.raw_result || normalized.pickup_id;
         savePickupState();
         renderPickupSummary();
+        refreshCheckoutProgress();
 
         if (window.GlsWidget && typeof window.GlsWidget.close === "function") {
           window.GlsWidget.close();
@@ -1603,6 +1608,7 @@
       if (input) input.value = normalized.raw_result || normalized.pickup_id;
       savePickupState();
       renderPickupSummary();
+      refreshCheckoutProgress();
       closeDpdWidget();
     }, false);
 
@@ -1783,7 +1789,8 @@
 
   function checkoutScrollOffset() {
     const header = document.querySelector(".checkout-page .site-header");
-    return Math.max(16, Math.round(header?.getBoundingClientRect().height || 0) + 12);
+    const guide = isCheckoutMobileLayout() ? document.querySelector("[data-checkout-mobile-guide]") : null;
+    return Math.max(16, Math.round((header?.getBoundingClientRect().height || 0) + (guide?.getBoundingClientRect().height || 0) + 12));
   }
 
   function scrollToCheckoutElement(element, behavior = "smooth") {
@@ -1805,10 +1812,55 @@
     const label = guide.querySelector("[data-checkout-mobile-step-label]");
     const title = guide.querySelector("[data-checkout-mobile-step-title]");
     const progress = guide.querySelector("[data-checkout-mobile-progress]");
+    const progressTrack = guide.querySelector("[data-checkout-mobile-progress-track]");
+    const completedSteps = getCompletedCheckoutSteps();
     if (label) label.textContent = stepName === "summary" ? "Posledná kontrola" : `Krok ${current.index} z 3`;
     if (title) title.textContent = current.title;
-    if (progress) progress.style.width = `${stepName === "summary" ? 100 : (current.index / 3) * 100}%`;
+    if (progress) progress.style.width = `${(completedSteps / 3) * 100}%`;
+    if (progressTrack) {
+      progressTrack.setAttribute("aria-valuenow", String(completedSteps));
+      progressTrack.setAttribute("aria-valuetext", `${completedSteps} z 3 krokov je dokončených`);
+    }
     document.querySelector("[data-checkout-mobile-sticky]")?.classList.toggle("is-checkout-final", stepName === "summary");
+  }
+
+  let tmDeliveryStepConfirmed = false;
+
+  function checkoutFieldsAreComplete(stepName) {
+    const step = document.querySelector(`[data-checkout-step="${stepName}"]`);
+    if (!step) return false;
+    return Array.from(step.querySelectorAll("input[required]")).every((input) => !fieldErrorMessage(input));
+  }
+
+  function deliverySelectionIsComplete() {
+    if (!tmDeliveryStepConfirmed || !getSelected("shipping") || !getSelected("payment")) return false;
+    const shippingType = getSelected("shipping");
+    if (isDpdPickupShipping(shippingType)) return Boolean(selectedDpdPickup);
+    if (isGlsPickupShipping(shippingType)) return Boolean(selectedGlsPickup);
+    return true;
+  }
+
+  function getCompletedCheckoutSteps() {
+    let completed = 0;
+    if (!checkoutFieldsAreComplete("contact")) return completed;
+    completed = 1;
+    if (!deliverySelectionIsComplete()) return completed;
+    completed = 2;
+    if (!checkoutFieldsAreComplete("billing")) return completed;
+    return 3;
+  }
+
+  function refreshCheckoutProgress() {
+    const activeStep = document.querySelector("[data-checkout-step].is-active")?.dataset.checkoutStep || "contact";
+    const summaryOpen = document.querySelector(".checkout-summary")?.classList.contains("is-open");
+    updateMobileCheckoutGuide(summaryOpen ? "summary" : activeStep);
+  }
+
+  function syncMobileCheckoutGuidePosition() {
+    const guide = document.querySelector("[data-checkout-mobile-guide]");
+    const header = document.querySelector(".checkout-page .site-header");
+    if (!guide || !header) return;
+    guide.style.setProperty("--checkout-mobile-guide-top", `${Math.max(0, Math.round(header.getBoundingClientRect().height))}px`);
   }
 
   function openCheckoutStep(stepName, shouldScroll = true) {
@@ -1858,12 +1910,21 @@
         if (!isCheckoutMobileLayout()) return;
         const currentStep = button.closest("[data-checkout-step]");
         if (currentStep && !validateMobileCheckoutStep(currentStep)) return;
+        if (currentStep?.dataset.checkoutStep === "delivery") tmDeliveryStepConfirmed = true;
+        refreshCheckoutProgress();
         openCheckoutStep(button.dataset.checkoutNext || "contact", true);
       });
     });
 
     const active = steps.find((step) => step.classList.contains("is-active")) || steps[0];
     updateMobileCheckoutGuide(active.dataset.checkoutStep || "contact");
+
+    syncMobileCheckoutGuidePosition();
+    window.addEventListener("resize", syncMobileCheckoutGuidePosition, { passive: true });
+    if ("ResizeObserver" in window) {
+      const header = document.querySelector(".checkout-page .site-header");
+      if (header) new ResizeObserver(syncMobileCheckoutGuidePosition).observe(header);
+    }
 
   }
 
@@ -1954,7 +2015,6 @@
     loadLoyalty();
     autoLoadBestCoupon();
     updateVisibility();
-    loadLoggedInCustomerToCheckout();
     setupPostalAutofill();
     setupPickupWidgets();
     setupMobileCheckoutSteps();
@@ -1965,9 +2025,11 @@
       if (!(input instanceof HTMLInputElement)) return;
       if (!input.matches('input[name="shipping"], input[name="payment"], #company_enabled, #different_address')) return;
       if (input.name === "shipping" || input.name === "payment") saveCheckoutSelection();
+      if (input.name === "shipping" || input.name === "payment") tmDeliveryStepConfirmed = true;
       if (input.name === "payment" && ["gopay", "applepay", "googlepay"].includes(input.value)) warmGoPay();
       updateVisibility();
       renderCheckoutSummary();
+      refreshCheckoutProgress();
     });
 
     document.addEventListener("click", (event) => {
@@ -1980,13 +2042,22 @@
     });
 
     document.querySelectorAll("[data-checkout-form] input").forEach((input) => {
-      input.addEventListener("blur", () => validateField(input));
+      input.addEventListener("blur", () => {
+        validateField(input);
+        refreshCheckoutProgress();
+      });
       input.addEventListener("input", () => {
         if (input.classList.contains("is-invalid")) validateField(input);
         if (!document.querySelector(".is-invalid, .is-invalid-pickup, .is-invalid-line")) {
           document.querySelector("[data-checkout-validation-summary]")?.remove();
         }
+        refreshCheckoutProgress();
       });
+    });
+
+    loadLoggedInCustomerToCheckout().finally(() => {
+      refreshCheckoutProgress();
+      syncMobileCheckoutGuidePosition();
     });
 
     document.querySelector("[data-mobile-summary-toggle]")?.addEventListener("click", (event) => {

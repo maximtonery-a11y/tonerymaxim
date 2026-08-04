@@ -883,15 +883,19 @@ body.has-gls-modal {
   }
 
   .checkout-mobile-guide {
+    position: sticky;
+    top: var(--checkout-mobile-guide-top, 88px);
+    z-index: 8950;
     display: grid;
-    gap: 9px;
-    margin: 0 0 12px;
-    padding: 15px 16px;
+    width: calc(100% + 24px);
+    gap: 8px;
+    margin: 0 -12px 12px;
+    padding: 12px 16px 13px;
     border: 1px solid rgba(11, 35, 68, 0.13);
-    border-radius: 20px;
+    border-radius: 0 0 18px 18px;
     background: linear-gradient(135deg, #071d3a 0%, #123f70 100%);
     color: #fff;
-    box-shadow: 0 12px 28px rgba(7, 29, 58, 0.13);
+    box-shadow: 0 12px 28px rgba(7, 29, 58, 0.18);
   }
 
   .checkout-mobile-guide > div:first-child {
@@ -919,10 +923,7 @@ body.has-gls-modal {
   }
 
   .checkout-mobile-guide small {
-    color: rgba(255, 255, 255, .78);
-    font-size: 13px;
-    line-height: 1.35;
-    font-weight: 700;
+    display: none;
   }
 
   .checkout-mobile-guide-track {
@@ -934,7 +935,7 @@ body.has-gls-modal {
 
   .checkout-mobile-guide-track i {
     display: block;
-    width: 33.333%;
+    width: 0;
     height: 100%;
     border-radius: inherit;
     background: #ffc400;
