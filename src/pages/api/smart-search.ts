@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { compactKey, getProductsCache, jsonResponse, normalize, sortProducts } from "../../lib/tm-products-cache";
-import { analyzeCatalogQuery, findExactProductIdentityMatches } from "../../lib/catalog-query";
+import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIdentityMatches } from "../../lib/catalog-query";
 
 export const prerender = false;
 
@@ -432,7 +432,10 @@ function productItem(item: IndexedProduct, relevance: number) {
     type: product.product_type_key || "product",
     typeLabel: product.product_type_label || "PRODUKT",
     relevance,
-    printers: Array.isArray(product.printers) ? product.printers.slice(0, 12) : [],
+    printers: [...new Set([
+      ...(Array.isArray(product.printers) ? product.printers : []),
+      ...(Array.isArray(product.compatible_printers) ? product.compatible_printers : []),
+    ])].slice(0, 80),
     brand: item.brand,
     categories: Array.isArray(product.categories) ? product.categories.map((cat: any) => ({ label: cat.name || cat.slug || "", value: cat.slug || cat.name || "" })).filter((cat: any) => cat.label) : [],
   };
@@ -458,18 +461,19 @@ function sortSuggestionProducts(items: any[]) {
   });
 }
 
-function makeProductGroups(items: any[], query: string) {
+function makeProductGroups(items: any[], query: string, exactPrinterQuery = false) {
   return ["compatible", "original", "renovated", "product"].map((type) => {
     const count = items.filter((item) => item.type === type).length;
     if (!count) return null;
     const label = TYPE_LABEL[type] || "Ostatné";
-    return { title: `${label} (${count})`, subtitle: `${count} produkt${count === 1 ? "" : count < 5 ? "y" : "ov"} · zobraziť`, url: `/produkty?s=${encodeURIComponent(query)}&type=${encodeURIComponent(type)}`, type, count };
+    const queryParameter = exactPrinterQuery ? "printer" : "s";
+    return { title: `${label} (${count})`, subtitle: `${count} produkt${count === 1 ? "" : count < 5 ? "y" : "ov"} · zobraziť`, url: `/produkty?${queryParameter}=${encodeURIComponent(query)}&type=${encodeURIComponent(type)}`, type, count };
   }).filter(Boolean);
 }
 
 function findPrinterSuggestions(items: IndexedProduct[], query: QueryInfo) {
   const bestByPrinter = new Map<string, { title: string; score: number }>();
-  const candidateItems = items.filter((item) => isLikelyCandidate(item, query)).slice(0, 450);
+  const candidateItems = items.filter((item) => isLikelyCandidate(item, query));
 
   for (const item of candidateItems) {
     for (const printer of item.printers) {
@@ -490,12 +494,12 @@ function findPrinterSuggestions(items: IndexedProduct[], query: QueryInfo) {
 }
 
 function findProductSuggestions(items: IndexedProduct[], query: QueryInfo) {
-  const candidates = items.filter((item) => isLikelyCandidate(item, query)).slice(0, 550);
+  const candidates = items.filter((item) => isLikelyCandidate(item, query));
   return sortSuggestionProducts(
     candidates
       .map((item) => productItem(item, relevanceScore(item, query)))
       .filter((item) => item.relevance >= 65),
-  ).slice(0, 60);
+  );
 }
 
 export const GET: APIRoute = async ({ url }) => {
@@ -507,20 +511,28 @@ export const GET: APIRoute = async ({ url }) => {
     const cache = await getProductsCache();
     const index = getSearchIndex(cache);
     const query = queryInfo(q);
-    const exactIdentityMatches = findExactProductIdentityMatches(index.items.map((item) => item.product), q);
+    const indexedProducts = index.items.map((item) => item.product);
+    const exactIdentityMatches = findExactProductIdentityMatches(indexedProducts, q);
+    const exactPrinterMatches = findExactPrinterModelMatches(indexedProducts, q);
     const resultKey = cachedResultKey(index.generatedAt, q);
     const cached = getCachedResult(resultKey);
     if (cached) return jsonResponse({ ...cached, source: "smart-search-result-cache" }, 200, "private, max-age=60");
 
     const exactProducts = new Set(exactIdentityMatches.map((match) => match.product));
-    const candidateItems = exactProducts.size
-      ? index.items.filter((item) => exactProducts.has(item.product))
+    const exactPrinterProducts = new Set(exactPrinterMatches.map((match) => match.product));
+    const hasStructuredMatches = exactProducts.size > 0 || exactPrinterProducts.size > 0;
+    const candidateItems = hasStructuredMatches
+      ? index.items.filter((item) => exactProducts.has(item.product) || exactPrinterProducts.has(item.product))
       : getCandidateItems(index, query);
     const products = findProductSuggestions(candidateItems, query);
     const staticResults = filteredStaticSuggestions(query);
     // Ak názov/SKU presne obsahuje hľadané označenie náplne, modely tlačiarní
     // s podobným číslom (6520, M652...) nesmú prekryť správne produkty.
-    const printerItems = exactProducts.size ? [] : findPrinterSuggestions(candidateItems, query);
+    const printerItems = exactPrinterProducts.size
+      ? findPrinterSuggestions(candidateItems, query)
+      : exactProducts.size
+        ? []
+        : findPrinterSuggestions(candidateItems, query);
 
     const brandMap = new Map<string, { title: string; subtitle: string; url: string }>();
     staticResults.brands.forEach((brand) => brandMap.set(compactKey(brand.title), brand));
@@ -543,13 +555,17 @@ export const GET: APIRoute = async ({ url }) => {
     const data: SmartSearchResponse = {
       ok: true,
       source: exactProducts.size
-        ? "local-products-cache-exact-product-identity"
+        ? exactPrinterProducts.size
+          ? "local-products-cache-product-and-printer-identity"
+          : "local-products-cache-exact-product-identity"
+        : exactPrinterProducts.size
+          ? "local-products-cache-exact-printer-model"
         : "local-products-cache-ram-prefix-fuzzy",
       cache_generated_at: cache.generated_at,
       api_cache_ttl_ms: RESULT_CACHE_TTL_MS,
       query: q,
       printers: printerItems,
-      productGroups: makeProductGroups(products, q),
+      productGroups: makeProductGroups(products, q, exactPrinterProducts.size > 0),
       products: products.slice(0, 12),
       brands: [...brandMap.values()].slice(0, 8),
       categories: [...categoryMap.values()].slice(0, 8),

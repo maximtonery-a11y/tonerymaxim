@@ -71,7 +71,7 @@
 
   const CART_KEY = "tm_cart_v1";
 
-  const CATALOG_CACHE_VERSION = "tm_catalog_v3";
+  const CATALOG_CACHE_VERSION = "tm_catalog_v4";
   const CATALOG_CACHE_TTL = 10 * 60 * 1000;
 
   let currentPage = 1;

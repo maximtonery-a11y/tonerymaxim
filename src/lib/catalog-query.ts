@@ -45,6 +45,12 @@ export type ExactCatalogMatch = {
   matchedReferences: string[];
 };
 
+export type ExactPrinterCatalogMatch = {
+  product: CatalogProduct;
+  score: number;
+  matchedPrinters: string[];
+};
+
 const QUERY_FILLER_WORDS = new Set([
   "aky",
   "aka",
@@ -240,4 +246,82 @@ export function printerReferenceMatches(value: unknown, analysis: CatalogQueryAn
   if (!analysis.hasReference) return false;
   const aliases = referenceAliases(value);
   return analysis.referenceTokens.some((reference) => referenceMatchStrength(reference, aliases) > 0);
+}
+
+function uniqueValues(values: unknown[]) {
+  const result = new Map<string, string>();
+  values.forEach((value) => {
+    const text = String(value || "").replace(/\s+/g, " ").trim();
+    const key = compactKey(text);
+    if (text && key && !result.has(key)) result.set(key, text);
+  });
+  return [...result.values()];
+}
+
+/**
+ * Vráti všetky štruktúrované modely tlačiarní priradené k produktu.
+ * Search text zámerne nepoužívame: obsahuje názov, popisy aj OEM kódy a
+ * pri krátkych modeloch by vytváral falošné zhody.
+ */
+export function productPrinterValues(product: CatalogProduct) {
+  const values: unknown[] = [
+    ...(Array.isArray(product.compatible_printers) ? product.compatible_printers : []),
+    ...(Array.isArray(product.printers) ? product.printers : []),
+  ];
+
+  const attributes = Array.isArray(product.attributes_all)
+    ? product.attributes_all
+    : Array.isArray(product.attributes)
+      ? product.attributes
+      : [];
+
+  attributes.forEach((attribute: any) => {
+    const name = normalize(`${attribute?.name || ""} ${attribute?.slug || ""}`);
+    if (!/kompat|compat|tlaciar|printer|model|zariaden/.test(name)) return;
+    values.push(attribute?.value);
+    if (Array.isArray(attribute?.values)) values.push(...attribute.values);
+    if (Array.isArray(attribute?.options)) values.push(...attribute.options);
+  });
+
+  return uniqueValues(values.flatMap((value) => Array.isArray(value) ? value : [value]));
+}
+
+/**
+ * Presná zhoda modelu používa celé alfanumerické označenie. Preto C301
+ * zodpovedá C301, ale nie C301dn/C3010 a dotaz HP 652 sa nezamení za M652.
+ * Medzery a pomlčky sa ignorujú (DCP L2532DW = DCP-L2532DW).
+ */
+export function exactPrinterModelMatch(value: unknown, analysis: CatalogQueryAnalysis) {
+  if (!analysis.hasReference) return false;
+
+  const printerBrands = detectBrands(value);
+  if (analysis.brands.length && printerBrands.length) {
+    const hasSameBrand = analysis.brands.some((queryBrand) => printerBrands.some((printerBrand) => compactKey(queryBrand) === compactKey(printerBrand)));
+    if (!hasSameBrand) return false;
+  }
+
+  // Bez rozkladania M652 na všeobecné číslo 652. To je kľúčové, aby sa
+  // produktové rodiny a modely tlačiarní navzájom nemiešali.
+  const aliases = referenceAliases(value, false);
+  return analysis.referenceTokens.some((reference) => aliases.has(reference));
+}
+
+export function findExactPrinterModelMatches(products: CatalogProduct[], query: string): ExactPrinterCatalogMatch[] {
+  const analysis = analyzeCatalogQuery(query);
+  if (!analysis.hasReference) return [];
+
+  return products
+    .map((product) => {
+      const matchedPrinters = productPrinterValues(product).filter((printer) => exactPrinterModelMatch(printer, analysis));
+      if (!matchedPrinters.length) return null;
+      const exactPhrase = matchedPrinters.some((printer) => compactKey(printer) === analysis.compact);
+      return {
+        product,
+        matchedPrinters,
+        score: (exactPhrase ? 400 : 340) + (product.stock_status === "instock" ? 8 : 0),
+      };
+    })
+    .filter(Boolean)
+    .sort((left: any, right: any) => Number(right.score || 0) - Number(left.score || 0)
+      || String(left.product?.name || "").localeCompare(String(right.product?.name || ""), "sk")) as ExactPrinterCatalogMatch[];
 }

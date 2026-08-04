@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { compactKey, getProductsCache, jsonResponse, normalize } from "../../lib/tm-products-cache";
+import { productPrinterValues } from "../../lib/catalog-query";
 
 export const prerender = false;
 
@@ -62,7 +63,7 @@ export const GET: APIRoute = async ({ url }) => {
   try {
     const brand = cleanBrand(url.searchParams.get("brand") || "");
     const q = String(url.searchParams.get("q") || url.searchParams.get("search") || "").trim();
-    const limit = Math.min(2000, Math.max(1, Number(url.searchParams.get("limit") || 1000)));
+    const limit = Math.min(10_000, Math.max(1, Number(url.searchParams.get("limit") || 1000)));
     const normalizedQ = normalize(q);
     const compactQ = compactKey(q);
 
@@ -70,7 +71,7 @@ export const GET: APIRoute = async ({ url }) => {
     const map = new Map<string, { title: string; brand: string; product_count: number; url: string }>();
 
     for (const product of cache.products) {
-      const printers = Array.isArray(product.printers) ? product.printers : Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
+      const printers = productPrinterValues(product);
       for (const printer of printers) {
         const title = String(printer || "").replace(/\s+/g, " ").trim();
         if (!title) continue;

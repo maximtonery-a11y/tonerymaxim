@@ -2,9 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   analyzeCatalogQuery,
+  findExactPrinterModelMatches,
   findExactProductIdentityMatches,
   printerReferenceMatches,
 } from "../src/lib/catalog-query.ts";
+import { filterProducts, mapProduct } from "../src/lib/tm-products-cache.ts";
 import { validateGroundedOpenAiResult } from "../src/lib/openai-sales-assistant.ts";
 
 const products = [
@@ -68,6 +70,73 @@ const products = [
   },
 ];
 
+const okiPrinters = [
+  "OKI C301",
+  "OKI C301dn",
+  "OKI C321",
+  "OKI C321dn",
+  "OKI C331",
+  "OKI C331dn",
+  "OKI C511",
+  "OKI C511dn",
+  "OKI C530",
+  "OKI C531",
+  "OKI C531dn",
+  "OKI MC352",
+  "OKI MC352dn",
+  "OKI MC362",
+  "OKI MC362dn",
+  "OKI MC562dn",
+];
+
+const okiProducts = [
+  {
+    id: 101,
+    name: "OKI 44973533 žltý kompatibilný toner",
+    sku: "44973533",
+    slug: "oki-44973533-zlty-kompatibilny-toner",
+    product_type_key: "compatible",
+    stock_status: "instock",
+    categories: [{ name: "OKI", slug: "oki" }],
+    compatible_printers: okiPrinters,
+    printers: okiPrinters,
+    search_text: `oki 44973533 kompatibilny toner ${okiPrinters.join(" ").toLowerCase()}`,
+  },
+  {
+    id: 102,
+    name: "OKI 44973536 originálny toner",
+    sku: "44973536",
+    slug: "oki-44973536-originalny-toner",
+    product_type_key: "original",
+    stock_status: "instock",
+    categories: [{ name: "OKI", slug: "oki" }],
+    compatible_printers: ["OKI C301"],
+    search_text: "oki 44973536 originalny toner oki c301",
+  },
+  {
+    id: 103,
+    name: "Renovovaný toner HATONA pre OKI C301/321 Black",
+    sku: "HAT-C301-BK",
+    slug: "renovovany-toner-hatona-pre-oki-c301-321-black",
+    product_type_key: "renovated",
+    stock_status: "instock",
+    categories: [{ name: "OKI", slug: "oki" }],
+    compatible_printers: [],
+    search_text: "renovovany toner hatona pre oki c301 321 black",
+  },
+  {
+    id: 104,
+    name: "Toner pre inú tlačiareň",
+    sku: "OTHER-C301DN",
+    slug: "toner-pre-oki-c301dn",
+    product_type_key: "compatible",
+    stock_status: "instock",
+    categories: [{ name: "OKI", slug: "oki" }],
+    compatible_printers: ["OKI C301dn"],
+    search_text: "toner pre inu tlaciaren oki c301dn",
+  },
+];
+
 test("HP 652 nájde iba produktovú rodinu 652 a 652XL", () => {
   const matches = findExactProductIdentityMatches(products, "HP 652");
   assert.deepEqual(matches.map((match) => match.product.id), [1, 2]);
@@ -97,6 +166,56 @@ test("HP M652 zostáva modelom tlačiarne, nie náplňou HP 652", () => {
 test("HP 652 sa nezhoduje s tlačiarňou HP DeskJet 6520", () => {
   const analysis = analyzeCatalogQuery("HP 652");
   assert.equal(printerReferenceMatches("HP DeskJet 6520", analysis), false);
+});
+
+test("OKI C301 nájde produkty podľa priradeného modelu, nielen podľa názvu", () => {
+  assert.deepEqual(
+    findExactPrinterModelMatches(okiProducts, "OKI C301").map((match) => match.product.id),
+    [101, 102],
+  );
+
+  assert.deepEqual(
+    filterProducts(okiProducts, { search: "OKI C301" }).map((product) => product.id),
+    [101, 102, 103],
+  );
+});
+
+test("každý zo 16 priradených modelov dohľadá produkt", () => {
+  for (const printer of okiPrinters) {
+    const matches = findExactPrinterModelMatches(okiProducts, printer).map((match) => match.product.id);
+    assert.ok(matches.includes(101), `${printer} musí nájsť produkt 101`);
+  }
+});
+
+test("import z WooCommerce zachová všetkých 16 priradených modelov", () => {
+  const mapped = mapProduct({
+    id: 201,
+    name: "OKI 44973533 žltý kompatibilný toner",
+    sku: "44973533",
+    slug: "oki-44973533-zlty-kompatibilny-toner",
+    price: "12.36",
+    stock_status: "instock",
+    categories: [{ id: 1, name: "Tonery", slug: "tonery" }],
+    tags: [],
+    images: [],
+    description: "",
+    short_description: "",
+    attributes: [{
+      id: 10,
+      name: "Kompatibilné tlačiarne",
+      slug: "kompatibilne-tlaciarne",
+      options: okiPrinters,
+    }],
+    meta_data: [],
+  });
+
+  assert.equal(mapped.compatible_printers.length, 16);
+  assert.deepEqual(mapped.compatible_printers, okiPrinters);
+});
+
+test("presný model C301 sa nemieša s C301dn ani C3010", () => {
+  assert.equal(findExactPrinterModelMatches(okiProducts, "OKI C301").some((match) => match.product.id === 104), false);
+  assert.equal(findExactPrinterModelMatches(okiProducts, "OKI C301dn").some((match) => match.product.id === 104), true);
 });
 
 test("OpenAI odpoveď musí mať povolený stav, odseky a istotu", () => {

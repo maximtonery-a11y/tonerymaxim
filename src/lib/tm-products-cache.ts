@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TM_CACHE_ROOT } from './runtime-paths.ts';
-import { findExactProductIdentityMatches } from './catalog-query.ts';
+import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, productPrinterValues } from './catalog-query.ts';
 import { normalizedCompletenessRatio, requiredProductCount } from './product-cache-policy.ts';
 
 export type TmProduct = Record<string, any>;
@@ -1082,11 +1082,10 @@ function matchesPrinterFilter(product: TmProduct, query: string) {
   const compactQuery = compactKey(query);
   if (!normalizedQuery || !compactQuery) return true;
 
-  const printers = Array.isArray(product.compatible_printers)
-    ? product.compatible_printers
-    : Array.isArray(product.printers)
-      ? product.printers
-      : [];
+  const printers = productPrinterValues(product);
+
+  const analysis = analyzeCatalogQuery(query);
+  if (analysis.hasReference) return printers.some((item) => exactPrinterModelMatch(item, analysis));
 
   // Pri kliknutí na konkrétnu sériu/model musí zostať zachovaný aj znak za pomlčkou
   // (napr. Brother DCP-L nesmie spadnúť na všeobecné Brother DCP).
@@ -1135,6 +1134,9 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
   const exactSearchProducts = search
     ? new Set(findExactProductIdentityMatches(products, filters.search || "").map((match) => match.product))
     : new Set<TmProduct>();
+  const exactPrinterProducts = search
+    ? new Set(findExactPrinterModelMatches(products, filters.search || "").map((match) => match.product))
+    : new Set<TmProduct>();
 
   return products.filter((product) => {
     const text = product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`);
@@ -1159,8 +1161,9 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     if (filters.category && !matchesCategory(product, filters.category)) return false;
     if (printer && !matchesPrinterFilter(product, filters.printer || "")) return false;
     if (search) {
-      if (exactSearchProducts.size && !exactSearchProducts.has(product)) return false;
-      if (!exactSearchProducts.size && !matchesLooseSearch(text, search)) return false;
+      const hasStructuredMatches = exactSearchProducts.size > 0 || exactPrinterProducts.size > 0;
+      if (hasStructuredMatches && !exactSearchProducts.has(product) && !exactPrinterProducts.has(product)) return false;
+      if (!hasStructuredMatches && !matchesLooseSearch(text, search)) return false;
     }
     return true;
   });
