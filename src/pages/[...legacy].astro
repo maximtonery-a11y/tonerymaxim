@@ -10,7 +10,8 @@ import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import SeoHead from "../components/SeoHead.astro";
 import CatalogInitialRows from "../components/CatalogInitialRows.astro";
 import { absoluteUrl, breadcrumbJsonLd, organizationJsonLd } from "../lib/seo";
-import { entitySlug } from "../lib/seo-catalog";
+import { entitySlug, findPrinterEntity } from "../lib/seo-catalog";
+import { getProductsCache } from "../lib/tm-products-cache";
 import { parseLegacyPath } from "../lib/legacy/parser";
 import { resolveLegacyBrandFallback, resolveLegacyRedirect } from "../lib/legacy/redirects";
 import { findLegacyProduct } from "../lib/legacy/product-lookup";
@@ -40,7 +41,13 @@ const printerMatch = route.kind === "brand-tree"
   : null;
 if (printerMatch && route.brandSlug) {
   const modelSlug = entitySlug(printerMatch.title);
-  if (modelSlug) return Astro.redirect(`/tlaciarne/${route.brandSlug}/${modelSlug}`, 301);
+  if (modelSlug) {
+    const cache = await getProductsCache().catch(() => ({ products: [] as any[] }));
+    const canonicalPrinter = findPrinterEntity(cache.products, route.brandSlug, modelSlug);
+    if (canonicalPrinter) {
+      return Astro.redirect(`/tlaciarne/${canonicalPrinter.brand.slug}/${canonicalPrinter.slug}`, 301);
+    }
+  }
 }
 
 const brandFallback = resolveLegacyBrandFallback(route);

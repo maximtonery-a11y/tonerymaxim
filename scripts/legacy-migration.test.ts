@@ -33,10 +33,11 @@ test("stará kategória značky smeruje na značku, model sa nesmie zovšeobecni
   assert.equal(model, null);
 });
 
-test("presný starý model sa presmeruje na kanonickú dvojúrovňovú routu", () => {
+test("starý model sa presmeruje iba na existujúcu kanonickú dvojúrovňovú routu", () => {
   const source = read("src/pages/[...legacy].astro");
   assert.match(source, /entitySlug\(printerMatch\.title\)/);
-  assert.match(source, /Astro\.redirect\(`\/tlaciarne\/\$\{route\.brandSlug\}\/\$\{modelSlug\}`, 301\)/);
+  assert.match(source, /findPrinterEntity\(cache\.products, route\.brandSlug, modelSlug\)/);
+  assert.match(source, /if \(canonicalPrinter\)[\s\S]*Astro\.redirect\(`\/tlaciarne\/\$\{canonicalPrinter\.brand\.slug\}\/\$\{canonicalPrinter\.slug\}`, 301\)/);
   assert.ok(source.indexOf("resolveLegacyBrandFallback(route)") < source.indexOf("findLegacyCollection(route)"));
 });
 
