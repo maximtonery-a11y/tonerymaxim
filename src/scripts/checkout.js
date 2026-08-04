@@ -1492,6 +1492,189 @@
     return glsWidgetLoading;
   }
 
+  async function fetchGlsPickupPoints(query) {
+    const search = String(query || "").trim();
+    if (search.length < 2) return [];
+
+    const body = new URLSearchParams({
+      _request: "App\\Requests\\Frontend\\PickupPlugin\\GetPickupPoints",
+      act: "itemsubmit",
+      class: "mainclass",
+      iid: "1",
+      lng: "default",
+      tset: "default",
+      tname: "default",
+      itemclickparam: "filter",
+      fulltext: search,
+      ctrcode: "SK",
+    });
+
+    const response = await fetch(
+      `https://plugin.gls-slovakia.sk/?api=${encodeURIComponent(GLS_WIDGET_KEY)}&lang=sk&find=1&noHeader=1&ctrCode=SK&ptFilter=0`,
+      {
+        method: "POST",
+        mode: "cors",
+        credentials: "omit",
+        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+        body: body.toString(),
+      },
+    );
+
+    if (!response.ok) throw new Error("GLS výdajné miesta sa nepodarilo načítať.");
+    const payload = await response.json();
+    return Array.isArray(payload?.points) ? payload.points : [];
+  }
+
+  function mountGlsMobilePickupList(root, initialQuery) {
+    if (!window.matchMedia?.("(max-width: 720px)").matches) return;
+
+    root.querySelector("[data-gls-mobile-results]")?.remove();
+
+    const panel = document.createElement("section");
+    panel.className = "gls-mobile-results";
+    panel.dataset.glsMobileResults = "true";
+    panel.setAttribute("aria-label", "Rolovateľný zoznam GLS výdajných miest");
+
+    const searchForm = document.createElement("form");
+    searchForm.className = "gls-mobile-results-search";
+    searchForm.setAttribute("role", "search");
+
+    const searchLabel = document.createElement("label");
+    searchLabel.className = "gls-mobile-results-label";
+    searchLabel.textContent = "Výdajné miesta v okolí";
+
+    const searchRow = document.createElement("span");
+    searchRow.className = "gls-mobile-results-search-row";
+
+    const searchInput = document.createElement("input");
+    searchInput.type = "search";
+    searchInput.inputMode = "search";
+    searchInput.autocomplete = "postal-code";
+    searchInput.placeholder = "PSČ alebo mesto";
+    searchInput.value = String(initialQuery || "");
+    searchInput.setAttribute("aria-label", "PSČ alebo mesto pre GLS výdajné miesto");
+
+    const searchButton = document.createElement("button");
+    searchButton.type = "submit";
+    searchButton.textContent = "Hľadať";
+
+    searchRow.append(searchInput, searchButton);
+    searchLabel.append(searchRow);
+    searchForm.append(searchLabel);
+
+    const list = document.createElement("div");
+    list.className = "gls-mobile-results-list";
+    list.setAttribute("role", "listbox");
+    list.setAttribute("aria-live", "polite");
+
+    panel.append(searchForm, list);
+    root.append(panel);
+
+    let requestId = 0;
+
+    const renderStatus = (message, isError = false) => {
+      list.replaceChildren();
+      const status = document.createElement("p");
+      status.className = `gls-mobile-results-status${isError ? " is-error" : ""}`;
+      status.textContent = message;
+      list.append(status);
+    };
+
+    const selectPoint = (point) => {
+      const normalized = normalizeGlsPickup({
+        ...point,
+        isparcellocker: Boolean(point?.isParcelLocker),
+      });
+      if (!normalized.pickup_id) return;
+
+      normalized.pickup_lat = String(point?.lat || "");
+      normalized.pickup_lng = String(point?.lng || "");
+      normalized.cod_allowed = typeof point?.isCodHandler === "boolean" ? point.isCodHandler : null;
+
+      selectedGlsPickup = normalized;
+      const input = document.querySelector("#GLSPickupPointResult");
+      if (input) input.value = normalized.raw_result || normalized.pickup_id;
+      savePickupState();
+      renderPickupSummary();
+      refreshCheckoutProgress();
+      closeGlsWidget();
+    };
+
+    const renderPoints = (points) => {
+      list.replaceChildren();
+
+      if (!points.length) {
+        renderStatus("Pre zadané miesto sme nenašli GLS ParcelShop ani Balíkomat.", true);
+        return;
+      }
+
+      points.forEach((point) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "gls-mobile-result";
+        item.setAttribute("role", "option");
+
+        const icon = document.createElement("span");
+        icon.className = `gls-mobile-result-icon${point?.isParcelLocker ? " is-locker" : " is-shop"}`;
+        icon.textContent = point?.isParcelLocker ? "▦" : "⌂";
+        icon.setAttribute("aria-hidden", "true");
+
+        const content = document.createElement("span");
+        content.className = "gls-mobile-result-content";
+
+        const title = document.createElement("strong");
+        title.textContent = String(point?.title || "GLS výdajné miesto");
+
+        const address = document.createElement("small");
+        address.textContent = String(point?.address || "Adresa bude uvedená po výbere");
+
+        const meta = document.createElement("span");
+        meta.className = "gls-mobile-result-meta";
+        const type = point?.isParcelLocker ? "Balíkomat" : "ParcelShop";
+        const distance = String(point?.distance || "").trim();
+        meta.textContent = distance && distance !== "0,0" ? `${type} · ${distance} km` : type;
+
+        const arrow = document.createElement("span");
+        arrow.className = "gls-mobile-result-arrow";
+        arrow.textContent = "›";
+        arrow.setAttribute("aria-hidden", "true");
+
+        content.append(title, address, meta);
+        item.append(icon, content, arrow);
+        item.addEventListener("click", () => selectPoint(point));
+        list.append(item);
+      });
+    };
+
+    const loadPoints = async (query) => {
+      const currentRequest = ++requestId;
+      const search = String(query || "").trim();
+
+      if (search.length < 2) {
+        renderStatus("Zadajte PSČ alebo mesto a zobrazíme najbližšie výdajné miesta.");
+        return;
+      }
+
+      renderStatus("Načítavam najbližšie GLS výdajné miesta...");
+
+      try {
+        const points = await fetchGlsPickupPoints(search);
+        if (currentRequest !== requestId) return;
+        renderPoints(points);
+      } catch {
+        if (currentRequest !== requestId) return;
+        renderStatus("Zoznam sa nepodarilo načítať. Použite mapu alebo skúste hľadanie znova.", true);
+      }
+    };
+
+    searchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      loadPoints(searchInput.value);
+    });
+
+    loadPoints(searchInput.value);
+  }
+
   async function openGlsWidget() {
     const shipping = getSelected("shipping");
 
@@ -1508,7 +1691,9 @@
     root.innerHTML = `<div class="gls-widget-loading">Načítavam GLS mapu...</div>`;
 
     if (subtitle) {
-      subtitle.textContent = "Vyberte GLS ParcelShop alebo Balíkomat na Slovensku";
+      subtitle.textContent = window.matchMedia?.("(max-width: 720px)").matches
+        ? "Mapa hore, rolovateľný zoznam výdajných miest dole"
+        : "Vyberte GLS ParcelShop alebo Balíkomat na Slovensku";
     }
 
     try {
@@ -1529,6 +1714,15 @@
         noHeader: isMobileGlsWidget ? 1 : 0,
         ctrCode: "SK",
       };
+
+      // GLS na mobiloch štandardne zobrazuje ešte samostatný výber typu
+      // výdajného miesta. Ten zaberá veľkú časť dostupnej výšky a necháva
+      // zoznam ParcelShopov/Balíkomatov iba v úzkom páse. Obidva typy už
+      // povoľujeme vo voľbe dopravy, preto je tento duplicitný filter na
+      // mobile skrytý cez oficiálnu voľbu widgetu.
+      if (isMobileGlsWidget) {
+        options.ptFilter = 0;
+      }
 
       if (zip) {
         options.location = zip;
@@ -1551,6 +1745,8 @@
 
         closeGlsWidget();
       }, options);
+
+      mountGlsMobilePickupList(root, zip);
     } catch (error) {
       root.innerHTML = `
         <div class="gls-widget-error">
@@ -1861,6 +2057,7 @@
     const header = document.querySelector(".checkout-page .site-header");
     if (!guide || !header) return;
     guide.style.setProperty("--checkout-mobile-guide-top", `${Math.max(0, Math.round(header.getBoundingClientRect().height))}px`);
+    document.documentElement.style.setProperty("--checkout-mobile-guide-height", `${Math.max(0, Math.ceil(guide.getBoundingClientRect().height))}px`);
   }
 
   function openCheckoutStep(stepName, shouldScroll = true) {
@@ -1923,7 +2120,10 @@
     window.addEventListener("resize", syncMobileCheckoutGuidePosition, { passive: true });
     if ("ResizeObserver" in window) {
       const header = document.querySelector(".checkout-page .site-header");
-      if (header) new ResizeObserver(syncMobileCheckoutGuidePosition).observe(header);
+      const observer = new ResizeObserver(syncMobileCheckoutGuidePosition);
+      if (header) observer.observe(header);
+      const guide = document.querySelector("[data-checkout-mobile-guide]");
+      if (guide) observer.observe(guide);
     }
 
   }

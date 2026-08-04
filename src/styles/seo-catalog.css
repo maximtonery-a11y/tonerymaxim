@@ -146,15 +146,8 @@
   background: #daf7e6;
 }
 
-.seo-answer-card h2 {
-  margin: 0.65rem 0 0.55rem;
-  font-size: clamp(1.5rem, 3vw, 2.15rem);
-  line-height: 1.08;
-  letter-spacing: -0.035em;
-}
-
 .seo-answer-card p {
-  margin: 0;
+  margin: 0.75rem 0 0;
   color: #465b74;
   font-size: 1.02rem;
   line-height: 1.7;

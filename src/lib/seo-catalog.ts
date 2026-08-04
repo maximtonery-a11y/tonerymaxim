@@ -119,9 +119,12 @@ export function landingProducts(products: TmProduct[], kind: CatalogLandingKind)
   const filtered = products
     .filter(validIndexableProduct)
     .filter((product) => {
-      if (kind === "compatible") return product.product_type_key === "compatible";
-      if (kind === "original") return product.product_type_key === "original";
-      if (kind === "renovated") return product.product_type_key === "renovated";
+      // Typové landing stránky sú podstránkami sekcie Tonery. Preto musia
+      // vychádzať z rovnakého laserového sortimentu ako /tonery a nesmú do
+      // štatistík primiešať atramenty, valce ani ostatné komponenty.
+      if (kind === "compatible") return product.product_type_key === "compatible" && isTonerProduct(product);
+      if (kind === "original") return product.product_type_key === "original" && isTonerProduct(product);
+      if (kind === "renovated") return product.product_type_key === "renovated" && isTonerProduct(product);
       if (kind === "ink") return isInkProduct(product);
       return isTonerProduct(product);
     });

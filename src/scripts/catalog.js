@@ -385,19 +385,11 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     return "is-unknown";
   }
 
-  function mobileGroupInfo(key, count) {
-    if (key === "compatible") return { title: `Kompatibilné tonery (${count})`, key };
-    if (key === "original") return { title: `Originálne tonery (${count})`, key };
-    if (key === "renovated") return { title: `Renovované tonery (${count})`, key };
-    return { title: `Ostatné produkty (${count})`, key: "product" };
-  }
-
-  function mobileGroupCounts(products) {
-    return products.reduce((acc, product) => {
-      const key = product?.product_type_key || "product";
-      acc[key] = (acc[key] || 0) + 1;
-      return acc;
-    }, {});
+  function mobileGroupInfo(key) {
+    if (key === "compatible") return { title: "Kompatibilný", key };
+    if (key === "original") return { title: "Originál", key };
+    if (key === "renovated") return { title: "Renovovaný", key };
+    return { title: "Produkt", key: "product" };
   }
 
   function dispatchText(product) {
@@ -682,7 +674,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const sortedProducts = sortProducts(products);
     status.textContent = `Načítané produkty: ${sortedProducts.length}`;
 
-    const groupCounts = mobileGroupCounts(sortedProducts);
     let previousMobileGroup = "";
 
     sortedProducts.forEach((product) => {
@@ -691,7 +682,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
       if (mobileGroupKey !== previousMobileGroup) {
         previousMobileGroup = mobileGroupKey;
-        const group = mobileGroupInfo(mobileGroupKey, groupCounts[mobileGroupKey] || 0);
+        const group = mobileGroupInfo(mobileGroupKey);
         const heading = document.createElement("h2");
         heading.className = `tm-mobile-product-group tm-mobile-product-group--${group.key}`;
         heading.textContent = group.title;

@@ -29,7 +29,6 @@ interface Props {
   faq?: Faq[];
   entityFacts?: string[];
   answer?: string;
-  answerTitle?: string;
   contentSections?: ContentSection[];
   linkGroups?: LinkGroup[];
   generatedAt?: string;
@@ -50,7 +49,6 @@ const {
   faq = [],
   entityFacts = [],
   answer = "",
-  answerTitle = "Rýchla odpoveď",
   contentSections = [],
   linkGroups = [],
   generatedAt = "",
@@ -155,11 +153,10 @@ const jsonLd = [
         </section>
 
         {!notFound && answer && (
-          <section class="seo-answer-section" aria-labelledby="seo-direct-answer">
+          <section class="seo-answer-section" aria-label="Aktuálne údaje z katalógu">
             <div class="wrap seo-answer-grid">
               <article class="seo-answer-card">
                 <div class="seo-answer-label"><span aria-hidden="true">✓</span> Údaje z aktuálneho katalógu</div>
-                <h2 id="seo-direct-answer">{answerTitle}</h2>
                 <p>{answer}</p>
                 {generatedDate && <small>Produktové údaje aktualizované: {generatedDate}</small>}
               </article>
