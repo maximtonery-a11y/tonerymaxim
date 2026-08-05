@@ -1,6 +1,8 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import nodemailer from "nodemailer";
+import { BANK_TRANSFER_DETAILS, bankTransferVariableSymbol, isBankPrepaidPayment } from "./bank-details";
+import { isAwaitingBankPaymentStatus } from "./order-statuses";
 
 function env(name: string): string {
   const runtimeValue = typeof process !== "undefined" ? process.env?.[name] : undefined;
@@ -185,6 +187,32 @@ function formatMoney(value: unknown): string {
   return new Intl.NumberFormat("sk-SK", { style: "currency", currency: "EUR" }).format(toNumber(value));
 }
 
+function bankPaymentText(orderNumber: unknown, total: unknown): string {
+  return [
+    "Platobné údaje k prevodu:",
+    `Majiteľ účtu: ${BANK_TRANSFER_DETAILS.accountHolder}`,
+    `Banka: ${BANK_TRANSFER_DETAILS.bank}`,
+    `IBAN: ${BANK_TRANSFER_DETAILS.ibanFormatted}`,
+    `Variabilný symbol: ${bankTransferVariableSymbol(orderNumber)}`,
+    `Suma na úhradu: ${formatMoney(total)}`,
+  ].join("\n");
+}
+
+function bankPaymentHtml(orderNumber: unknown, total: unknown): string {
+  const rows = [
+    ["Majiteľ účtu", BANK_TRANSFER_DETAILS.accountHolder],
+    ["Banka", BANK_TRANSFER_DETAILS.bank],
+    ["IBAN", BANK_TRANSFER_DETAILS.ibanFormatted],
+    ["Variabilný symbol", bankTransferVariableSymbol(orderNumber)],
+    ["Suma na úhradu", formatMoney(total)],
+  ];
+  return `<div style="margin:22px 0;padding:18px;background:#fff8e6;border:1px solid #f3c94d;border-radius:16px">
+    <strong style="display:block;font-size:18px;margin-bottom:10px">Platobné údaje k prevodu</strong>
+    <table style="width:100%;border-collapse:collapse">${rows.map(([label, value]) => `<tr><td style="padding:5px 12px 5px 0;color:#64748b">${escapeHtml(label)}:</td><td style="padding:5px 0;text-align:right;font-weight:700">${escapeHtml(value)}</td></tr>`).join("")}</table>
+    <p style="margin:12px 0 0;color:#64748b;font-size:13px">Ako variabilný symbol uveďte číslo objednávky bez znaku #.</p>
+  </div>`;
+}
+
 function siteUrl(): string {
   return (env("PUBLIC_SITE_URL") || env("SITE_URL") || "https://tonerymaxim.sk").replace(/\/$/, "");
 }
@@ -253,6 +281,9 @@ function buildOrderConfirmationContent(input: {
   const totalGross = toNumber(source.total);
   const totalNet = netFromGross(totalGross);
   const totalVat = vatFromGross(totalGross);
+  const includeBankPayment = isBankPrepaidPayment(source.paymentCode, input.paymentTitle);
+  const bankText = includeBankPayment ? `\n\n${bankPaymentText(orderNumber, totalGross)}` : "";
+  const bankHtml = includeBankPayment ? bankPaymentHtml(orderNumber, totalGross) : "";
 
   const rowsText = items.map((item: any) => {
     const original = toNumber(Number(item.price || 0) * Number(item.qty || 1));
@@ -272,7 +303,7 @@ function buildOrderConfirmationContent(input: {
     </tr>`;
   }).join("");
 
-  const text = `Dobrý deň, ${firstName},\n\nďakujeme za objednávku č. ${orderNumber}.\n\nObjednávku sme prijali a spracujeme ju čo najskôr.\n\nProdukty:\n${rowsText}\n\nMedzisúčet tovaru s DPH: ${formatMoney(originalSubtotalGross)}\n${quantityDiscountGross > 0 ? `Množstevná / sadová zľava: -${formatMoney(quantityDiscountGross)}\nCena po množstevnej zľave: ${formatMoney(subtotalGross)}\n` : ""}${couponGross > 0 ? `${source.coupon?.label || "Kupónová zľava"}: -${formatMoney(couponGross)}\n` : ""}${loyaltyGross > 0 ? `Vernostná zľava: -${formatMoney(loyaltyGross)}\n` : ""}Doprava: ${input.shippingTitle} · ${formatMoney(shippingGross)}\nSpôsob platby: ${input.paymentTitle} · ${formatMoney(paymentGross)}\nCena spolu s DPH: ${formatMoney(totalGross)}\nZáklad bez DPH: ${formatMoney(totalNet)}\nDPH 23 %: ${formatMoney(totalVat)}\n\nFakturačná adresa:\n${addressBlock(billing, contact)}\n\nDodacia adresa:\n${addressBlock(delivery?.differentAddress ? delivery : billing, contact)}\n\nPrávne informácie:\n${siteUrl()}/obchodne-podmienky\n${siteUrl()}/reklamacie\n${siteUrl()}/reklamacia-online\n${siteUrl()}/odstupenie-od-zmluvy\n${siteUrl()}/ochrana-osobnych-udajov\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk\n+421917859206`;
+  const text = `Dobrý deň, ${firstName},\n\nďakujeme za objednávku č. ${orderNumber}.\n\nObjednávku sme prijali a spracujeme ju čo najskôr.\n\nProdukty:\n${rowsText}\n\nMedzisúčet tovaru s DPH: ${formatMoney(originalSubtotalGross)}\n${quantityDiscountGross > 0 ? `Množstevná / sadová zľava: -${formatMoney(quantityDiscountGross)}\nCena po množstevnej zľave: ${formatMoney(subtotalGross)}\n` : ""}${couponGross > 0 ? `${source.coupon?.label || "Kupónová zľava"}: -${formatMoney(couponGross)}\n` : ""}${loyaltyGross > 0 ? `Vernostná zľava: -${formatMoney(loyaltyGross)}\n` : ""}Doprava: ${input.shippingTitle} · ${formatMoney(shippingGross)}\nSpôsob platby: ${input.paymentTitle} · ${formatMoney(paymentGross)}\nCena spolu s DPH: ${formatMoney(totalGross)}\nZáklad bez DPH: ${formatMoney(totalNet)}\nDPH 23 %: ${formatMoney(totalVat)}${bankText}\n\nFakturačná adresa:\n${addressBlock(billing, contact)}\n\nDodacia adresa:\n${addressBlock(delivery?.differentAddress ? delivery : billing, contact)}\n\nPrávne informácie:\n${siteUrl()}/obchodne-podmienky\n${siteUrl()}/reklamacie\n${siteUrl()}/reklamacia-online\n${siteUrl()}/odstupenie-od-zmluvy\n${siteUrl()}/ochrana-osobnych-udajov\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk\n+421917859206`;
 
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.55;color:#061735;max-width:680px;margin:0 auto;padding:24px">
@@ -295,6 +326,7 @@ function buildOrderConfirmationContent(input: {
         <tr><td style="padding:6px 0;color:#64748b">DPH 23 %:</td><td style="padding:6px 0;text-align:right">${formatMoney(totalVat)}</td></tr>
         <tr><td style="padding:10px 0;font-weight:800">Cena spolu s DPH:</td><td style="padding:10px 0;text-align:right;font-weight:800;font-size:18px">${formatMoney(totalGross)}</td></tr>
       </table>
+      ${bankHtml}
       <table style="width:100%;border-collapse:collapse;margin:18px 0"><tr><td style="width:50%;vertical-align:top;padding:14px;border:1px solid #e6edf5"><strong>Fakturačná adresa</strong><br>${addressBlockHtml(billing, contact) || "-"}</td><td style="width:50%;vertical-align:top;padding:14px;border:1px solid #e6edf5"><strong>Dodacia adresa</strong><br>${addressBlockHtml(delivery?.differentAddress ? delivery : billing, contact) || "-"}</td></tr></table>
       <div style="background:#f5faff;border:1px solid #dbe8f6;border-radius:16px;padding:16px;margin:18px 0"><strong>Právne dokumenty a zákaznícka pomoc</strong><p style="margin:8px 0 0;color:#64748b">V prílohe e-mailu nájdete obchodné podmienky, reklamačný formulár a formulár na odstúpenie od zmluvy.</p><p style="margin:10px 0 0"><a href="${siteUrl()}/obchodne-podmienky">Obchodné podmienky</a> · <a href="${siteUrl()}/reklamacie">Reklamačné podmienky</a> · <a href="${siteUrl()}/reklamacia-online">Reklamácia online</a> · <a href="${siteUrl()}/odstupenie-od-zmluvy">Odstúpenie online</a> · <a href="${siteUrl()}/ochrana-osobnych-udajov">Ochrana osobných údajov</a></p></div>
       <p style="color:#64748b">O ďalšom stave objednávky a odoslaní zásielky vás budeme informovať e-mailom.</p>
@@ -363,6 +395,7 @@ export type WooOrderStatusEmailPayload = {
     first_name?: string;
     last_name?: string;
   };
+  payment_method?: string;
   payment_method_title?: string;
   shipping_method?: string;
   total?: string | number;
@@ -523,6 +556,10 @@ export async function sendWooOrderStatusEmail(payload: WooOrderStatusEmailPayloa
   const paymentPrice = toNumber(payload.payment_price);
   const trackingUrl = String(payload.tracking_url || "").trim();
   const trackingNumber = String(payload.tracking_number || "").trim();
+  const includeBankPayment = isBankPrepaidPayment(payload.payment_method, payload.payment_method_title)
+    && isAwaitingBankPaymentStatus(payload.to_status);
+  const bankText = includeBankPayment ? bankPaymentText(orderNumber, payload.total || 0) : "";
+  const bankHtml = includeBankPayment ? bankPaymentHtml(orderNumber, payload.total || 0) : "";
 
   const rowsHtml = items.map((item) => `
     <tr>
@@ -569,6 +606,7 @@ export async function sendWooOrderStatusEmail(payload: WooOrderStatusEmailPayloa
         ${payload.payment_method_title ? `<tr><td style="padding:6px 0;color:#64748b">Platba:</td><td style="padding:6px 0;text-align:right">${escapeHtml(payload.payment_method_title)}${paymentPrice ? ` · ${formatMoney(paymentPrice)}` : ""}</td></tr>` : ""}
         <tr><td style="padding:10px 0;font-weight:800">Cena spolu s DPH:</td><td style="padding:10px 0;text-align:right;font-weight:800;font-size:18px">${total}</td></tr>
       </table>
+      ${bankHtml}
       <div style="margin:22px 0;padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;color:#475569;font-size:14px">
         Toto je automatické potvrdenie zmeny stavu objednávky. Aktuálne údaje o objednávke nájdete aj vo svojom zákazníckom účte. Doklad si, prosím, uschovajte.
       </div>
@@ -594,6 +632,7 @@ export async function sendWooOrderStatusEmail(payload: WooOrderStatusEmailPayloa
     payload.shipping_method ? `Doprava: ${payload.shipping_method}${shippingPrice ? ` · ${formatMoney(shippingPrice)}` : " · zdarma"}` : "",
     payload.payment_method_title ? `Platba: ${payload.payment_method_title}${paymentPrice ? ` · ${formatMoney(paymentPrice)}` : ""}` : "",
     `Cena spolu s DPH: ${total}`,
+    bankText,
     trackingNumber ? `Číslo zásielky: ${trackingNumber}` : "",
     trackingUrl ? `Sledovanie: ${trackingUrl}` : "",
     "",

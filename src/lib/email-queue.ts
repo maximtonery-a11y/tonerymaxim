@@ -2,6 +2,8 @@ import { join } from 'node:path';
 import { sendWooOrderStatusEmail, type WooOrderStatusEmailPayload } from './mail';
 import { wooRequest } from './woo-client';
 import { readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
+import { syncCustomerLoyaltyPoints } from './loyalty';
+import { isLoyaltyCreditStatus, normalizeOrderStatus } from './order-statuses';
 
 const STATE_PATH = join(TM_DATA_ROOT, 'email-queue', 'state.json');
 // Pri štarte má prednosť prvé kompletné načítanie produktového katalógu.
@@ -42,6 +44,8 @@ type WooOrder = {
   total?: string;
   currency?: string;
   payment_method_title?: string;
+  payment_method?: string;
+  customer_id?: number;
   billing?: Record<string, any>;
   shipping?: Record<string, any>;
   line_items?: Array<{ name?: string; sku?: string; quantity?: number; total?: string }>;
@@ -79,10 +83,6 @@ let started = false;
 let running = false;
 let timer: NodeJS.Timeout | null = null;
 let stateLock: Promise<void> = Promise.resolve();
-
-function normalizeStatus(value: unknown): string {
-  return String(value || '').trim().toLowerCase().replace(/^wc-/, '');
-}
 
 function metaValue(order: WooOrder, key: string): string {
   const item = (Array.isArray(order.meta_data) ? order.meta_data : []).find((entry) => entry?.key === key);
@@ -152,6 +152,7 @@ function toPayload(order: WooOrder, fromStatus: string, toStatus: string): WooOr
       first_name: String(order.billing?.first_name || '').trim(),
       last_name: String(order.billing?.last_name || '').trim(),
     },
+    payment_method: String(snapshot?.paymentCode || metaValue(order, 'tm_payment_code') || order.payment_method || ''),
     payment_method_title: String(snapshot?.paymentLabel || order.payment_method_title || ''),
     shipping_method: shippingTitle,
     total: snapshot?.total ?? order.total ?? '0',
@@ -203,11 +204,19 @@ async function processOrder(order: WooOrder): Promise<void> {
   if (!order?.id || !isToneryMaximOrder(order)) return;
   state.tonerymaximOrders += 1;
 
-  const currentStatus = normalizeStatus(order.status);
+  const currentStatus = normalizeOrderStatus(order.status);
   if (!currentStatus) return;
 
-  const observedStatus = normalizeStatus(metaValue(order, OBSERVED_META));
-  const lastSentStatus = normalizeStatus(metaValue(order, SENT_META));
+  const observedStatus = normalizeOrderStatus(metaValue(order, OBSERVED_META));
+  const lastSentStatus = normalizeOrderStatus(metaValue(order, SENT_META));
+
+  // Vernostné body sa pripíšu už pri expedovaní. Synchronizácia používa zoznam
+  // už pripísaných objednávok, preto je bezpečná aj pri opakovanom skene fronty.
+  if (isLoyaltyCreditStatus(currentStatus) && Number(order.customer_id || 0) > 0) {
+    await syncCustomerLoyaltyPoints(Number(order.customer_id)).catch((error) => {
+      console.error('[TM Email Queue] loyalty sync failed', order.id, error);
+    });
+  }
 
   // Prvé nájdenie objednávky iba vytvorí východiskový stav. Tým sa neposielajú staré ani duplicitné e-maily.
   if (!observedStatus) {
@@ -236,7 +245,7 @@ async function processOrder(order: WooOrder): Promise<void> {
   await updateOrderMarkers(order.id, [{ key: CLAIM_META, value: `${currentStatus}|${claimToken}` }]);
   const claimedOrder = await wooRequest<WooOrder>(`/orders/${order.id}`);
   if (metaValue(claimedOrder, CLAIM_META) !== `${currentStatus}|${claimToken}`) return;
-  if (normalizeStatus(metaValue(claimedOrder, SENT_META)) === currentStatus) return;
+  if (normalizeOrderStatus(metaValue(claimedOrder, SENT_META)) === currentStatus) return;
 
   const payload = toPayload(claimedOrder, observedStatus, currentStatus);
   try {

@@ -1,5 +1,6 @@
 import type { WooCustomer, WooOrder } from "./woo-client";
 import type { CustomerSession } from "./auth-session";
+import { getOrderStatusLabel } from "./order-statuses";
 
 export function customerToSession(customer: WooCustomer): CustomerSession {
   return {
@@ -31,17 +32,7 @@ export function formatDate(value?: string): string {
 }
 
 export function orderStatusLabel(status?: string): string {
-  const map: Record<string, string> = {
-    pending: "Čaká na platbu",
-    processing: "Spracováva sa",
-    "on-hold": "Čaká na úhradu",
-    completed: "Dokončená",
-    cancelled: "Zrušená",
-    refunded: "Vrátená",
-    failed: "Neúspešná",
-    trash: "Kôš",
-  };
-  return map[String(status || "")] || status || "—";
+  return getOrderStatusLabel(status);
 }
 
 export function orderNumber(order: WooOrder): string {

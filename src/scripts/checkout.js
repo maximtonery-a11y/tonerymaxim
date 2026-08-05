@@ -86,6 +86,7 @@
     if (!clean) {
       tmCoupon = null;
       localStorage.removeItem("tm_coupon_v1");
+      setCouponBoxesExpanded(false);
       renderCheckoutSummary();
       return;
     }
@@ -99,12 +100,86 @@
       const data = await response.json().catch(() => ({}));
       tmCoupon = data;
       localStorage.setItem("tm_coupon_v1", JSON.stringify(data));
+      setCouponBoxesExpanded(!data?.ok);
       renderCheckoutSummary();
     } catch {
       tmCoupon = { ok: false, code: clean, reason: "Kupón sa nepodarilo overiť." };
       localStorage.setItem("tm_coupon_v1", JSON.stringify(tmCoupon));
+      setCouponBoxesExpanded(true);
       renderCheckoutSummary();
     }
+  }
+
+  function couponFormMarkup() {
+    return `
+      <button class="coupon-toggle" type="button" data-coupon-toggle aria-expanded="false">
+        <span data-coupon-toggle-label>Máte zľavový kupón?</span>
+        <span class="coupon-toggle-icon" aria-hidden="true">+</span>
+      </button>
+      <div class="coupon-fields" data-coupon-fields hidden>
+        <div class="coupon-inline">
+          <input type="text" data-coupon-input placeholder="Zadajte kód kupónu" autocomplete="off">
+          <button type="submit">Použiť</button>
+        </div>
+        <small data-coupon-message></small>
+      </div>
+    `;
+  }
+
+  function setCouponBoxExpanded(box, expanded) {
+    if (!box) return;
+    box.dataset.couponExpanded = expanded ? "true" : "false";
+    box.classList.toggle("is-open", expanded);
+    const toggle = box.querySelector("[data-coupon-toggle]");
+    const fields = box.querySelector("[data-coupon-fields]");
+    const icon = box.querySelector(".coupon-toggle-icon");
+    if (toggle) toggle.setAttribute("aria-expanded", String(expanded));
+    if (fields) fields.hidden = !expanded;
+    if (icon) icon.textContent = expanded ? "−" : "+";
+  }
+
+  function setCouponBoxesExpanded(expanded) {
+    document.querySelectorAll("[data-summary-coupon-box]").forEach((box) => {
+      if (!box.querySelector("[data-coupon-toggle]")) box.innerHTML = couponFormMarkup();
+      setCouponBoxExpanded(box, expanded);
+    });
+  }
+
+  function syncCouponBoxes(couponDiscount) {
+    const couponApplied = Boolean(tmCoupon?.ok && couponDiscount > 0);
+    const couponError = Boolean(tmCoupon && !tmCoupon.ok && tmCoupon.reason);
+
+    document.querySelectorAll("[data-summary-coupon-box]").forEach((box) => {
+      if (!box.querySelector("[data-coupon-toggle]")) box.innerHTML = couponFormMarkup();
+      box.hidden = false;
+      box.classList.toggle("has-active-coupon", couponApplied);
+
+      const label = box.querySelector("[data-coupon-toggle-label]");
+      if (label) {
+        label.textContent = couponApplied
+          ? `Kupón ${tmCoupon?.code || ""} je uplatnený`.trim()
+          : "Máte zľavový kupón?";
+      }
+
+      const input = box.querySelector("[data-coupon-input]");
+      if (input && document.activeElement !== input) input.value = tmCoupon?.code || "";
+
+      const message = box.querySelector("[data-coupon-message]");
+      if (message) {
+        if (couponApplied) {
+          const validity = tmCoupon?.expiresAt
+            ? ` · platí do ${new Date(tmCoupon.expiresAt).toLocaleDateString("sk-SK")}`
+            : " · jednorazový, bez časového obmedzenia";
+          message.textContent = `${tmCoupon.label || "Kupón"}: -${money(couponDiscount)}${validity}`;
+        } else {
+          message.textContent = tmCoupon?.reason || "";
+        }
+        message.className = couponApplied ? "is-success" : (couponError ? "is-error" : "");
+      }
+
+      const expanded = box.dataset.couponExpanded === "true" || couponError;
+      setCouponBoxExpanded(box, expanded);
+    });
   }
 
   const DPD_WIDGET_KEY = "iwzhr18lr8fiwp8xz68oicw1jv6vpow5";
@@ -854,7 +929,7 @@
     const discountLine = document.querySelector("[data-summary-discount-line]");
     if (discountLine) discountLine.hidden = discount <= 0;
     const discountValue = document.querySelector("[data-summary-discount]");
-    if (discountValue) discountValue.textContent = `-${money(discount)}`;
+    if (discountValue) discountValue.textContent = discount > 0 ? `-${money(discount)}` : "";
     document.querySelector("[data-summary-shipping-label]").textContent = shipping.label;
     document.querySelector("[data-summary-shipping]").textContent = shippingPrice === 0 ? "Zdarma" : money(shippingPrice);
     document.querySelector("[data-summary-payment-label]").textContent = payment.label;
@@ -873,7 +948,7 @@
       couponBox = document.createElement("form");
       couponBox.className = "summary-note coupon-note";
       couponBox.dataset.summaryCouponBox = "";
-      couponBox.innerHTML = `<strong>Zľavový kupón</strong><div class="coupon-inline"><input type="text" data-coupon-input placeholder="Zadajte kód kupónu"><button type="submit">Použiť</button></div><small data-coupon-message></small>`;
+      couponBox.innerHTML = couponFormMarkup();
       sticky.insertBefore(couponBox, document.querySelector(".summary-total"));
     }
 
@@ -896,23 +971,18 @@
       loyaltyBox.hidden = !tmLoyalty.ok || tmLoyalty.discountValue <= 0;
       if (!loyaltyBox.hidden) {
         loyaltyBox.innerHTML = `<strong>Vernostné body</strong><span>Máte ${tmLoyalty.points} bodov = zľava ${money(tmLoyalty.discountValue)}.</span><label class="checkline"><input type="checkbox" data-loyalty-toggle ${tmLoyaltyApply ? "checked" : ""}> Použiť zľavu</label>`;
+      } else {
+        loyaltyBox.innerHTML = "";
       }
     }
     if (couponLine) couponLine.hidden = couponDiscount <= 0;
     const couponValue = document.querySelector("[data-summary-coupon]");
-    if (couponValue) couponValue.textContent = `-${money(couponDiscount)}`;
-    const couponInput = document.querySelector("[data-coupon-input]");
-    if (couponInput && document.activeElement !== couponInput) couponInput.value = tmCoupon?.code || "";
-    const couponMessage = document.querySelector("[data-coupon-message]");
-    if (couponMessage) {
-      if (tmCoupon?.ok) { const validity = tmCoupon.expiresAt ? ` · platí do ${new Date(tmCoupon.expiresAt).toLocaleDateString("sk-SK")}` : " · jednorazový, bez časového obmedzenia"; couponMessage.textContent = `${tmCoupon.label || "Kupón"}: -${money(couponDiscount)}${validity}`; }
-      else couponMessage.textContent = tmCoupon?.reason || "";
-      couponMessage.className = tmCoupon?.ok ? "is-success" : "is-error";
-    }
+    if (couponValue) couponValue.textContent = couponDiscount > 0 ? `-${money(couponDiscount)}` : "";
+    syncCouponBoxes(couponDiscount);
 
     if (loyaltyLine) loyaltyLine.hidden = loyaltyDiscount <= 0;
     const loyaltyValue = document.querySelector("[data-summary-loyalty]");
-    if (loyaltyValue) loyaltyValue.textContent = `-${money(loyaltyDiscount)}`;
+    if (loyaltyValue) loyaltyValue.textContent = loyaltyDiscount > 0 ? `-${money(loyaltyDiscount)}` : "";
 
     const summaryNet = document.querySelector("[data-summary-net]");
     if (summaryNet) summaryNet.textContent = money(netFromGross(total));
@@ -2200,6 +2270,13 @@
     if (!form) return;
     event.preventDefault();
     validateCouponCode(form.querySelector("[data-coupon-input]")?.value || "");
+  });
+
+  document.addEventListener("click", (event) => {
+    const couponToggle = event.target.closest("[data-coupon-toggle]");
+    if (!couponToggle) return;
+    const box = couponToggle.closest("[data-summary-coupon-box]");
+    if (box) setCouponBoxExpanded(box, box.dataset.couponExpanded !== "true");
   });
 
   document.addEventListener("change", (event) => {

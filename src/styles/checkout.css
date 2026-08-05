@@ -1868,3 +1868,81 @@ body.has-checkout-submit-overlay {
   }
   .checkout-field-error { font-size: 12px; }
 }
+
+/* TM Update 053 – nulové zľavy sú skryté, kupón sa rozbalí až na požiadanie */
+.checkout-summary .summary-line[hidden],
+.checkout-summary .summary-note[hidden],
+.checkout-summary .coupon-fields[hidden],
+.checkout-summary.is-open .summary-line[hidden],
+.checkout-summary.is-open .summary-note[hidden] {
+  display: none !important;
+}
+
+.coupon-toggle {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid #d7e4f2;
+  border-radius: 12px;
+  background: #fff;
+  color: #24415f;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+}
+
+.coupon-toggle:hover,
+.coupon-toggle:focus-visible {
+  border-color: #8eb8df;
+  background: #f7fbff;
+  outline: none;
+}
+
+.coupon-toggle-icon {
+  flex: 0 0 auto;
+  color: #0b5bd3;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.coupon-fields {
+  display: grid;
+  gap: 8px;
+}
+
+.checkout-summary .coupon-note:not(.is-open) {
+  margin: 8px 0 0;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.checkout-summary .coupon-note.has-active-coupon .coupon-toggle {
+  border-color: #9ed9b6;
+  background: #edf9f1;
+  color: #08742f;
+}
+
+@media (max-width: 720px) {
+  .checkout-summary .coupon-note .coupon-toggle {
+    min-width: 0;
+    min-height: 48px;
+    height: auto;
+  }
+
+  .checkout-summary .coupon-note:not(.is-open) {
+    display: block !important;
+  }
+
+  .checkout-summary .coupon-fields .coupon-inline button {
+    min-width: 82px;
+    height: 48px;
+  }
+}

@@ -389,6 +389,7 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     shippingPrice: money(source.shippingPrice),
     shippingLabel: source.shippingLabel || "",
     paymentPrice: money(source.paymentPrice),
+    paymentCode: source.paymentCode || "",
     paymentLabel: payment.title || source.paymentLabel || "",
     total: money(source.total),
     billing: source.billing || {},

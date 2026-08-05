@@ -1,4 +1,5 @@
-import { getCustomerMeta, getWooCustomerById, getWooCustomerOrders, parseJsonMeta, updateWooCustomer, type WooOrder } from "./woo-client";
+import { getCustomerMeta, getWooCustomerById, getWooCustomerOrders, parseJsonMeta, updateWooCustomer } from "./woo-client";
+import { isLoyaltyCreditStatus } from "./order-statuses";
 
 export const LOYALTY_META_POINTS = "tm_loyalty_points";
 export const LOYALTY_META_HISTORY = "tm_loyalty_history";
@@ -19,11 +20,6 @@ function todaySk() {
 function moneyNumber(value: unknown) {
   const number = Number(String(value ?? "0").replace(/\s/g, "").replace("€", "").replace(",", "."));
   return Number.isFinite(number) ? Math.round(number * 100) / 100 : 0;
-}
-
-function completedOrder(order: WooOrder) {
-  const status = String(order.status || "").toLowerCase();
-  return status === "completed" || status === "wc-completed" || status === "dokončena" || status === "dokoncena";
 }
 
 export function pointsFromGross(total: unknown) {
@@ -51,7 +47,7 @@ export async function syncCustomerLoyaltyPoints(customerId: number) {
 
   for (const order of orders) {
     const id = String(order.id || "");
-    if (!id || creditedSet.has(id) || !completedOrder(order)) continue;
+    if (!id || creditedSet.has(id) || !isLoyaltyCreditStatus(order.status)) continue;
     const add = pointsFromGross(order.total);
     if (add <= 0) continue;
     points += add;

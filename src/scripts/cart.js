@@ -72,6 +72,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     if (!clean) {
       tmCoupon = null;
       localStorage.removeItem("tm_coupon_v1");
+      setCouponBoxesExpanded(false);
       renderCartPage();
       return;
     }
@@ -85,12 +86,80 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       const data = await response.json().catch(() => ({}));
       tmCoupon = data;
       localStorage.setItem("tm_coupon_v1", JSON.stringify(data));
+      setCouponBoxesExpanded(!data?.ok);
       renderCartPage();
     } catch {
       tmCoupon = { ok: false, code: clean, reason: "Kupón sa nepodarilo overiť." };
       localStorage.setItem("tm_coupon_v1", JSON.stringify(tmCoupon));
+      setCouponBoxesExpanded(true);
       renderCartPage();
     }
+  }
+
+  function couponFormMarkup() {
+    return `
+      <button class="coupon-toggle" type="button" data-coupon-toggle aria-expanded="false">
+        <span data-coupon-toggle-label>Máte zľavový kupón?</span>
+        <span class="coupon-toggle-icon" aria-hidden="true">+</span>
+      </button>
+      <div class="coupon-fields" data-coupon-fields hidden>
+        <div class="coupon-inline">
+          <input type="text" data-coupon-input placeholder="Zadajte kód kupónu" autocomplete="off">
+          <button type="submit" data-coupon-apply>Použiť</button>
+        </div>
+        <small data-coupon-message></small>
+      </div>
+    `;
+  }
+
+  function setCouponBoxExpanded(box, expanded) {
+    if (!box) return;
+    box.dataset.couponExpanded = expanded ? "true" : "false";
+    box.classList.toggle("is-open", expanded);
+    const toggle = box.querySelector("[data-coupon-toggle]");
+    const fields = box.querySelector("[data-coupon-fields]");
+    const icon = box.querySelector(".coupon-toggle-icon");
+    if (toggle) toggle.setAttribute("aria-expanded", String(expanded));
+    if (fields) fields.hidden = !expanded;
+    if (icon) icon.textContent = expanded ? "−" : "+";
+  }
+
+  function setCouponBoxesExpanded(expanded) {
+    document.querySelectorAll("[data-cart-coupon-box]").forEach((box) => {
+      if (!box.querySelector("[data-coupon-toggle]")) box.innerHTML = couponFormMarkup();
+      setCouponBoxExpanded(box, expanded);
+    });
+  }
+
+  function syncCouponBoxes(couponDiscount) {
+    const couponApplied = Boolean(tmCoupon?.ok && couponDiscount > 0);
+    const couponError = Boolean(tmCoupon && !tmCoupon.ok && tmCoupon.reason);
+
+    document.querySelectorAll("[data-cart-coupon-box]").forEach((box) => {
+      if (!box.querySelector("[data-coupon-toggle]")) box.innerHTML = couponFormMarkup();
+      box.hidden = false;
+      box.classList.toggle("has-active-coupon", couponApplied);
+
+      const label = box.querySelector("[data-coupon-toggle-label]");
+      if (label) {
+        label.textContent = couponApplied
+          ? `Kupón ${tmCoupon?.code || ""} je uplatnený`.trim()
+          : "Máte zľavový kupón?";
+      }
+
+      const input = box.querySelector("[data-coupon-input]");
+      if (input && document.activeElement !== input) input.value = tmCoupon?.code || "";
+
+      const message = box.querySelector("[data-coupon-message]");
+      if (message) {
+        if (couponApplied) message.textContent = `${tmCoupon.label || "Kupón"}: -${formatMoney(couponDiscount)}`;
+        else message.textContent = tmCoupon?.reason || "";
+        message.className = couponApplied ? "is-success" : (couponError ? "is-error" : "");
+      }
+
+      const expanded = box.dataset.couponExpanded === "true" || couponError;
+      setCouponBoxExpanded(box, expanded);
+    });
   }
 
 
@@ -853,7 +922,7 @@ function formatMoney(value) {
       couponBox = document.createElement("form");
       couponBox.className = "summary-note coupon-note";
       couponBox.dataset.cartCouponBox = "";
-      couponBox.innerHTML = `<strong>Zľavový kupón</strong><div class="coupon-inline"><input type="text" data-coupon-input placeholder="Zadajte kód kupónu"><button type="submit" data-coupon-apply>Použiť</button></div><small data-coupon-message></small>`;
+      couponBox.innerHTML = couponFormMarkup();
       summary.insertBefore(couponBox, summary.querySelector(".summary-total"));
     }
 
@@ -889,28 +958,18 @@ function formatMoney(value) {
     if (afterQuantityValue) afterQuantityValue.textContent = formatMoney(beforeCouponTotal);
     if (couponEl) couponEl.hidden = couponDiscount <= 0;
     const couponValueEl = document.querySelector("[data-cart-coupon]");
-    if (couponValueEl) couponValueEl.textContent = `-${formatMoney(couponDiscount)}`;
-    document.querySelectorAll("[data-coupon-input]").forEach((couponInput) => {
-      if (document.activeElement !== couponInput) couponInput.value = tmCoupon?.code || "";
-    });
-    document.querySelectorAll("[data-coupon-message]").forEach((couponMessage) => {
-      if (tmCoupon?.ok) couponMessage.textContent = `${tmCoupon.label || "Kupón"}: -${formatMoney(couponDiscount)}`;
-      else couponMessage.textContent = tmCoupon?.reason || "";
-      couponMessage.className = tmCoupon?.ok ? "is-success" : "is-error";
-    });
-    document.querySelectorAll(".cart-mobile-coupon").forEach((mobileCoupon) => {
-      mobileCoupon.hidden = false;
-    });
+    if (couponValueEl) couponValueEl.textContent = couponDiscount > 0 ? `-${formatMoney(couponDiscount)}` : "";
+    syncCouponBoxes(couponDiscount);
 
     if (loyaltyEl) loyaltyEl.hidden = loyaltyDiscount <= 0;
     document.querySelectorAll("[data-cart-loyalty]").forEach((loyaltyValueEl) => {
-      loyaltyValueEl.textContent = `-${formatMoney(loyaltyDiscount)}`;
+      loyaltyValueEl.textContent = loyaltyDiscount > 0 ? `-${formatMoney(loyaltyDiscount)}` : "";
     });
 
     if (discountEl) discountEl.hidden = discount <= 0;
     if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);
     const discountValueEl = document.querySelector("[data-cart-discount]");
-    if (discountValueEl) discountValueEl.textContent = `-${formatMoney(discount)}`;
+    if (discountValueEl) discountValueEl.textContent = discount > 0 ? `-${formatMoney(discount)}` : "";
     if (netEl) netEl.textContent = formatMoney(netFromGross(total));
     if (vatEl) vatEl.textContent = formatMoney(vatFromGross(total));
     if (totalEl) totalEl.textContent = formatMoney(total);
@@ -937,6 +996,13 @@ function formatMoney(value) {
   });
 
   document.addEventListener("click", (event) => {
+    const couponToggle = event.target.closest("[data-coupon-toggle]");
+    if (couponToggle) {
+      const box = couponToggle.closest("[data-cart-coupon-box]");
+      if (box) setCouponBoxExpanded(box, box.dataset.couponExpanded !== "true");
+      return;
+    }
+
     const addButton = event.target.closest("[data-add-to-cart]");
     if (addButton) {
       const product = {
