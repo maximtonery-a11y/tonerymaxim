@@ -73,7 +73,7 @@ import { getDispatchParts } from "./dispatch-message.js";
 
   const CART_KEY = "tm_cart_v1";
 
-  const CATALOG_CACHE_VERSION = "tm_catalog_v3";
+  const CATALOG_CACHE_VERSION = "tm_catalog_v4";
   const CATALOG_CACHE_TTL = 10 * 60 * 1000;
 
   let currentPage = 1;
@@ -164,7 +164,7 @@ import { getDispatchParts } from "./dispatch-message.js";
       },
       type: { compatible: "Kompatibilné", original: "Originálne", renovated: "Renovované" },
       color: { cierna: "Čierna", cyan: "Cyan", purpurova: "Purpurová", yellow: "Yellow", multipack: "Multipack" },
-      stock: { instock: "Skladom", "expedujeme-dnes": "Expedujeme dnes", "10plus": "Viac ako 10 ks" },
+      stock: { instock: "Skladom", "expedujeme-dnes": "Skladom", "10plus": "Viac ako 10 ks" },
     };
     return labels[kind]?.[value] || value || "";
   }
@@ -385,19 +385,11 @@ import { getDispatchParts } from "./dispatch-message.js";
     return "is-unknown";
   }
 
-  function mobileGroupInfo(key, count) {
-    if (key === "compatible") return { title: `Kompatibilné tonery (${count})`, key };
-    if (key === "original") return { title: `Originálne tonery (${count})`, key };
-    if (key === "renovated") return { title: `Renovované tonery (${count})`, key };
-    return { title: `Ostatné produkty (${count})`, key: "product" };
-  }
-
-  function mobileGroupCounts(products) {
-    return products.reduce((acc, product) => {
-      const key = product?.product_type_key || "product";
-      acc[key] = (acc[key] || 0) + 1;
-      return acc;
-    }, {});
+  function mobileGroupInfo(key) {
+    if (key === "compatible") return { title: "Kompatibilný", key };
+    if (key === "original") return { title: "Originál", key };
+    if (key === "renovated") return { title: "Renovovaný", key };
+    return { title: "Produkt", key: "product" };
   }
 
   function dispatchInfo(product) {
@@ -686,7 +678,6 @@ import { getDispatchParts } from "./dispatch-message.js";
     const sortedProducts = sortProducts(products);
     status.textContent = `Načítané produkty: ${sortedProducts.length}`;
 
-    const groupCounts = mobileGroupCounts(sortedProducts);
     let previousMobileGroup = "";
 
     sortedProducts.forEach((product) => {
@@ -695,7 +686,7 @@ import { getDispatchParts } from "./dispatch-message.js";
 
       if (mobileGroupKey !== previousMobileGroup) {
         previousMobileGroup = mobileGroupKey;
-        const group = mobileGroupInfo(mobileGroupKey, groupCounts[mobileGroupKey] || 0);
+        const group = mobileGroupInfo(mobileGroupKey);
         const heading = document.createElement("h2");
         heading.className = `tm-mobile-product-group tm-mobile-product-group--${group.key}`;
         heading.textContent = group.title;

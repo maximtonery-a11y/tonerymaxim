@@ -118,3 +118,21 @@ test("e-mailová politika blokuje WordPress správy pre ToneryMAXIM a vyžaduje 
   assert.match(plugin, /send_retrieve_password_email/);
   assert.match(plugin, /register_rest_route\('tonerymaxim\/v1',\s*'\/email-policy'/);
 });
+
+test("mobilné a zákaznícke funkcie sa nesmú pri ďalšom nasadení vrátiť na starú verziu", async () => {
+  const legalCss = await readFile(new URL("../src/styles/legal.css", import.meta.url), "utf8");
+  const footer = await readFile(new URL("../src/components/Footer.astro", import.meta.url), "utf8");
+  const checkout = await readFile(new URL("../src/pages/pokladna.astro", import.meta.url), "utf8");
+  const productDetail = await readFile(new URL("../src/scripts/product-detail.js", import.meta.url), "utf8");
+  const accountCss = await readFile(new URL("../src/styles/account.css", import.meta.url), "utf8");
+
+  assert.match(legalCss, /@media\s*\(max-width:\s*760px\)[\s\S]*?\.info-sidebar\s*\{\s*display:\s*none\s*!important/);
+  assert.match(footer, /href="\/toner-bez-starosti"/);
+  assert.match(footer, /href="\/spatny-odber-tonerov"/);
+  assert.match(footer, /href="\/vernostny-program"/);
+  assert.match(checkout, /data-checkout-mobile-guide/);
+  assert.match(checkout, /data-checkout-submit-overlay/);
+  assert.match(productDetail, /class="compat-modal-head"/);
+  assert.match(accountCss, /\.toner-care-intro/);
+  assert.match(accountCss, /\.saved-address-list/);
+});

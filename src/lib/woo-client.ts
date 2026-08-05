@@ -52,6 +52,9 @@ type WooRequestOptions = {
   query?: Record<string, string | number | boolean | undefined | null>;
 };
 
+const TONERYMAXIM_WP_ORIGIN_HEADER = "X-ToneryMaxim-Origin";
+const TONERYMAXIM_WP_SUPPRESS_EMAILS_HEADER = "X-ToneryMaxim-Suppress-Emails";
+
 function env(name: string): string {
   const value = process.env[name] || import.meta.env[name];
   return typeof value === "string" ? value.trim() : "";
@@ -74,11 +77,12 @@ export function getWooAuthHeader(): string {
  * Jednotné hlavičky pre vlastné WordPress REST endpointy ToneryMaxim.
  * Používajú rovnaké overenie ako WooCommerce API, ktoré WordPress pozná.
  */
-export function getToneryMaximWordPressHeaders(): Record<string, string> {
+export function getToneryMaximWordPressHeaders(method = "GET"): Record<string, string> {
+  const normalizedMethod = String(method || "GET").toUpperCase();
+  if (["GET", "HEAD", "OPTIONS"].includes(normalizedMethod)) return {};
   return {
-    Authorization: getWooAuthHeader(),
-    "Content-Type": "application/json",
-    Accept: "application/json",
+    [TONERYMAXIM_WP_ORIGIN_HEADER]: "astro",
+    [TONERYMAXIM_WP_SUPPRESS_EMAILS_HEADER]: "1",
   };
 }
 
@@ -91,12 +95,14 @@ export async function wooRequest<T = any>(endpoint: string, options: WooRequestO
     if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
   }
 
+  const method = String(options.method || "GET").toUpperCase();
   const response = await fetch(url, {
-    method: options.method || "GET",
+    method,
     headers: {
       Authorization: getWooAuthHeader(),
       "Content-Type": "application/json",
       Accept: "application/json",
+      ...getToneryMaximWordPressHeaders(method),
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
@@ -119,6 +125,26 @@ export async function wooRequest<T = any>(endpoint: string, options: WooRequestO
   }
 
   return data as T;
+}
+
+export async function verifyWordPressEmailPolicy(): Promise<{ ok: boolean; version?: string; mode?: string }> {
+  const base = getWooBaseUrl();
+  const response = await fetch(`${base}/wp-json/tonerymaxim/v1/email-policy`, {
+    method: "GET",
+    headers: {
+      Authorization: getWooAuthHeader(),
+      Accept: "application/json",
+      "User-Agent": "ToneryMaxim-Astro/1.0",
+    },
+    signal: AbortSignal.timeout(15_000),
+  });
+  const text = await response.text();
+  let data: any = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  if (!response.ok || data?.ok !== true) {
+    throw new Error("WordPress doplnok ToneryMAXIM Email Policy nie je nainštalovaný alebo aktívny.");
+  }
+  return data;
 }
 
 export async function findWooCustomerByEmail(email: string): Promise<WooCustomer | null> {
@@ -289,6 +315,15 @@ export type SavedPrinter = {
   url?: string;
   product_count?: number;
   added_at?: string;
+  care_enabled?: boolean;
+  installed_at?: string;
+  expected_months?: number;
+  expected_replacement_at?: string;
+  reminder_days?: number;
+  preferred_type?: "compatible" | "original" | "renovated" | "any";
+  customer_reminder_sent_for?: string;
+  admin_reminder_sent_for?: string;
+  last_reminder_at?: string;
 };
 
 export function getSavedPrintersFromCustomer(customer: WooCustomer | null | undefined): SavedPrinter[] {
@@ -303,8 +338,32 @@ export function getSavedPrintersFromCustomer(customer: WooCustomer | null | unde
           url: String(printer.url || "").trim(),
           product_count: Number(printer.product_count || 0),
           added_at: String(printer.added_at || "").trim(),
+          care_enabled: printer.care_enabled === true,
+          installed_at: String(printer.installed_at || "").trim(),
+          expected_months: Math.min(24, Math.max(1, Number(printer.expected_months || 3))),
+          expected_replacement_at: String(printer.expected_replacement_at || "").trim(),
+          reminder_days: 21,
+          preferred_type: ["compatible", "original", "renovated", "any"].includes(String(printer.preferred_type || ""))
+            ? printer.preferred_type
+            : "any",
+          customer_reminder_sent_for: String(printer.customer_reminder_sent_for || "").trim(),
+          admin_reminder_sent_for: String(printer.admin_reminder_sent_for || "").trim(),
+          last_reminder_at: String(printer.last_reminder_at || "").trim(),
         }))
     : [];
+}
+
+export async function getWooCustomersPage(page = 1, perPage = 100): Promise<WooCustomer[]> {
+  const customers = await wooRequest<WooCustomer[]>("/customers", {
+    query: {
+      page: Math.max(1, Math.trunc(page)),
+      per_page: Math.min(100, Math.max(1, Math.trunc(perPage))),
+      orderby: "id",
+      order: "asc",
+      role: "customer",
+    },
+  });
+  return Array.isArray(customers) ? customers : [];
 }
 
 export async function saveWooCustomerPrinters(customerId: number, printers: SavedPrinter[]): Promise<WooCustomer> {
@@ -378,31 +437,6 @@ export async function verifyWordPressLogin(email: string, password: string): Pro
   return body.includes("wp-admin") && !body.includes("login_error");
 }
 
-export async function requestWordPressPasswordReset(email: string): Promise<void> {
-  const base = getWooBaseUrl();
-  const cleanEmail = String(email || "").trim().toLowerCase();
-  if (!cleanEmail || !cleanEmail.includes("@")) throw new Error("Zadajte platný e-mail.");
-
-  const form = new URLSearchParams();
-  form.set("user_login", cleanEmail);
-  form.set("redirect_to", `${base}/wp-login.php?checkemail=confirm`);
-  form.set("wp-submit", "Získať nové heslo");
-
-  const response = await fetch(`${base}/wp-login.php?action=lostpassword`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "ToneryMaxim-Astro/1.0",
-    },
-    body: form.toString(),
-    redirect: "manual",
-  });
-
-  if (response.status >= 200 && response.status < 400) return;
-
-  throw new Error(`WordPress odmietol požiadavku na obnovu hesla (${response.status}).`);
-}
-
 export type SavedProduct = {
   id?: number;
   sku?: string;
@@ -444,11 +478,4 @@ export async function saveWooCustomerSavedProducts(customerId: number, products:
       { key: "tm_saved_products", value: JSON.stringify(products) },
     ],
   });
-}
-
-
-export async function verifyWordPressEmailPolicy(): Promise<{ok:boolean;version:string}> {
-  // Compatibility stub. The previous implementation was removed during merge.
-  // Build-time production health only needs an exported function.
-  return { ok: true, version: "compat" };
 }

@@ -865,7 +865,7 @@
 .compat-modal {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: 2147483000;
   display: grid;
   place-items: center;
   padding: 28px;
@@ -878,21 +878,36 @@
 .compat-modal-card {
   position: relative;
   width: min(860px, 100%);
-  max-height: min(760px, calc(100vh - 56px));
+  max-height: min(760px, calc(100dvh - 56px));
   overflow: auto;
+  overscroll-behavior: contain;
   border-radius: 24px;
   background: #fff;
   padding: 30px;
   box-shadow: 0 28px 70px rgba(7, 27, 58, .22);
 }
 
+.compat-modal-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  align-items: start;
+  gap: 16px;
+}
+
 .compat-modal-card h2 {
   margin: 0 0 8px;
+  min-width: 0;
   color: #071b3a;
   font-size: 28px;
   line-height: 1.08;
   letter-spacing: -.04em;
   font-weight: 950;
+}
+
+.compat-modal-head .modal-close {
+  position: static;
+  flex: 0 0 auto;
+  border-radius: 999px;
 }
 
 .compat-modal-card p {
@@ -1120,10 +1135,32 @@
 .alternative-grid .mini-product.renovated { order: 3; }
 
 @media (max-width: 880px) {
-  .description-modal,
-  .compat-modal { padding: 16px; }
+  .description-modal { padding: 16px; }
+  .compat-modal {
+    place-items: center;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  }
   .description-modal-card,
   .compat-modal-card { padding: 24px 18px; }
+
+  .compat-modal-card {
+    max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+
+  .compat-modal-head {
+    grid-template-columns: minmax(0, 1fr) 42px;
+    gap: 12px;
+  }
+
+  .compat-modal-head .modal-close {
+    width: 42px;
+    height: 42px;
+  }
+
+  .compat-modal-card h2 {
+    font-size: clamp(25px, 7vw, 30px);
+    overflow-wrap: anywhere;
+  }
 }
 
 /* Final related products cleanup – compact, unified cards */

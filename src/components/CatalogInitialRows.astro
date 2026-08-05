@@ -51,12 +51,7 @@ const productDetailUrl = (product: Product) => {
   return slug ? `/produkt/${encodeURIComponent(slug)}` : "/produkty";
 };
 const printers = (product: Product) => Array.isArray(product.compatible_printers) ? product.compatible_printers.filter(Boolean) : [];
-const groupCounts = products.reduce<Record<string, number>>((acc, product) => {
-  const key = product.product_type_key || "product";
-  acc[key] = (acc[key] || 0) + 1;
-  return acc;
-}, {});
-const groupTitle = (key: string) => key === "compatible" ? `Kompatibilné tonery (${groupCounts[key] || 0})` : key === "original" ? `Originálne tonery (${groupCounts[key] || 0})` : key === "renovated" ? `Renovované tonery (${groupCounts[key] || 0})` : `Ostatné produkty (${groupCounts[key] || 0})`;
+const groupTitle = (key: string) => key === "compatible" ? "Kompatibilný" : key === "original" ? "Originál" : key === "renovated" ? "Renovovaný" : "Produkt";
 let previousGroup = "";
 ---
 {products.map((product) => {

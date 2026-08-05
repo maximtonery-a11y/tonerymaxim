@@ -176,6 +176,7 @@ body.has-add-cart-drawer { overflow: hidden; }
   globalMenuClose?.addEventListener("click", () => setGlobalMenu(false));
   globalMenu?.addEventListener("click", (event) => {
     if (event.target === globalMenu) setGlobalMenu(false);
+    if (event.target instanceof Element && event.target.closest("a")) setGlobalMenu(false);
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") setGlobalMenu(false);

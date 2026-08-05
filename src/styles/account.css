@@ -550,6 +550,150 @@
   .auth-scratch-floating { left: 16px; right: 16px; bottom: 16px; width: auto; }
 }
 
+/* Toner bez starostí */
+.toner-care-intro {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 20px 22px;
+  border: 1px solid rgba(5, 136, 232, .2);
+  border-radius: 22px;
+  background: linear-gradient(135deg, #f2f9ff 0%, #fff 54%, #f4fff8 100%);
+  box-shadow: 0 16px 42px rgba(6, 31, 67, .07);
+}
+.toner-care-intro-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--tm-navy);
+  color: #fff;
+  font-size: 25px;
+  font-weight: 950;
+}
+.toner-care-intro span {
+  color: var(--tm-blue);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.toner-care-intro h2 { margin: 4px 0 5px; color: var(--tm-navy); font-size: 21px; line-height: 1.2; }
+.toner-care-intro p { margin: 0; color: var(--tm-muted); font-size: 13px; line-height: 1.5; }
+.toner-care-intro > a {
+  border: 1px solid rgba(5, 136, 232, .22);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tm-blue);
+  padding: 11px 15px;
+  font-size: 13px;
+  font-weight: 950;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.toner-care-printers-panel { min-width: 0; }
+.saved-printer-mini.toner-care-card { grid-template-columns: 44px minmax(0, 1fr); overflow: hidden; }
+.toner-care-card.is-care-active { border-color: rgba(18, 163, 84, .28); box-shadow: 0 14px 34px rgba(18, 163, 84, .08); }
+.toner-care-status {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid rgba(4, 31, 68, .08);
+  border-radius: 14px;
+  background: rgba(4, 31, 68, .035);
+}
+.toner-care-status i {
+  display: block;
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #94a3b8;
+  box-shadow: 0 0 0 5px rgba(148, 163, 184, .13);
+}
+.toner-care-card.is-care-active .toner-care-status { border-color: rgba(18, 163, 84, .16); background: rgba(18, 163, 84, .06); }
+.toner-care-card.is-care-active .toner-care-status i { background: #12a354; box-shadow: 0 0 0 5px rgba(18, 163, 84, .13); }
+.toner-care-status strong { display: block; color: var(--tm-navy); font-size: 13px; }
+.toner-care-status span { margin-top: 2px; color: var(--tm-muted); font-size: 12px; }
+.toner-care-form {
+  grid-column: 1 / -1;
+  margin: 2px -14px -14px;
+  padding: 17px 14px 15px;
+  border-top: 1px solid rgba(4, 31, 68, .1);
+  background: #fff;
+}
+.toner-care-form[hidden] { display: none !important; }
+.toner-care-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--tm-navy);
+}
+.toner-care-switch input { position: absolute; opacity: 0; pointer-events: none; }
+.toner-care-switch > span {
+  position: relative;
+  display: block;
+  width: 42px;
+  height: 24px;
+  margin: 0;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: .18s ease;
+}
+.toner-care-switch > span::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(4,31,68,.22);
+  transition: .18s ease;
+}
+.toner-care-switch input:checked + span { background: #12a354; }
+.toner-care-switch input:checked + span::after { transform: translateX(18px); }
+.toner-care-switch input:focus-visible + span { outline: 3px solid rgba(5, 136, 232, .25); outline-offset: 2px; }
+.toner-care-switch strong { font-size: 14px; }
+.toner-care-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 15px; }
+.toner-care-fields label { display: grid; gap: 6px; }
+.toner-care-fields label > span { color: var(--tm-muted); font-size: 11px; font-weight: 850; }
+.toner-care-fields .account-input { min-width: 0; padding: 10px; font-size: 13px; }
+.toner-care-form-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  background: #f3f8fd;
+  color: var(--tm-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.toner-care-form-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.toner-care-form .account-form-message { margin-bottom: 0; }
+
+@media (max-width: 900px) {
+  .toner-care-intro { grid-template-columns: 48px minmax(0, 1fr); }
+  .toner-care-intro-icon { width: 48px; height: 48px; }
+  .toner-care-intro > a { grid-column: 2; justify-self: start; }
+  .toner-care-fields { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+  .toner-care-intro { grid-template-columns: 1fr; gap: 12px; padding: 17px; }
+  .toner-care-intro-icon { width: 44px; height: 44px; border-radius: 14px; }
+  .toner-care-intro h2 { font-size: 18px; }
+  .toner-care-intro > a { grid-column: auto; }
+  .toner-care-form-actions { display: grid; }
+  .toner-care-form-actions .tm-btn { width: 100%; }
+}
+
 
 /* STEP 2: Moje tlačiarne + rýchly nákup */
 .account-printers-summary {
@@ -2237,3 +2381,20 @@
 .account-address-actions div{display:flex;flex-direction:column;gap:4px}.account-address-actions strong{font-size:17px;color:#071b3a}.account-address-actions span{color:#64748b;font-size:14px}
 @media(max-width:900px){.account-address-form{grid-template-columns:1fr}.account-address-card--billing{grid-column:auto}.account-card-heading{flex-direction:column;gap:8px}.account-card-heading p{max-width:none}}
 @media(max-width:620px){.account-form-grid.two{grid-template-columns:1fr}.account-form-grid .span-two{grid-column:auto}.account-address-card{padding:18px}.account-company-title,.account-address-actions{flex-direction:column;align-items:stretch}.account-address-actions .tm-btn{width:100%}}
+
+/* Viac dodacích adries zákazníka */
+.account-address-card--shipping{grid-column:1/-1}
+.account-card-heading--addresses{align-items:center}
+.account-card-heading--addresses > div > p{margin-top:8px}
+.tm-btn--secondary{background:#eef6ff!important;color:#075fc5!important;border:1px solid #cbdff5!important;box-shadow:none!important;white-space:nowrap}
+.saved-address-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.saved-address-card{padding:20px;border:1px solid #d8e5f4;border-radius:20px;background:#fbfdff;box-shadow:0 8px 24px rgba(7,27,58,.04)}
+.saved-address-card.is-default{border-color:#77b7ef;box-shadow:0 0 0 3px rgba(10,134,232,.08)}
+.saved-address-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #e2ebf6}
+.saved-address-card__head>div:first-child{display:grid;gap:3px}.saved-address-card__head span{color:#0a86e8;font-size:11px;font-weight:950;letter-spacing:.07em;text-transform:uppercase}.saved-address-card__head strong{color:#071b3a;font-size:18px}
+.saved-address-card__actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+.saved-address-default{display:flex;align-items:center;gap:7px;color:#24415f;font-size:12px;font-weight:850;cursor:pointer}.saved-address-default input{width:17px;height:17px;accent-color:#0a86e8}
+.saved-address-remove{padding:6px 9px;border:0;border-radius:9px;background:#fff0f0;color:#b42318;font:inherit;font-size:12px;font-weight:850;cursor:pointer}
+.saved-address-empty{display:grid;gap:5px;padding:24px;border:1px dashed #b9cce1;border-radius:18px;text-align:center;color:#64748b}.saved-address-empty strong{color:#071b3a}
+@media(max-width:1050px){.saved-address-list{grid-template-columns:1fr}}
+@media(max-width:620px){.account-card-heading--addresses{align-items:stretch}.saved-address-card{padding:16px}.saved-address-card__head{flex-direction:column}.saved-address-card__actions{width:100%;justify-content:space-between}.tm-btn--secondary{width:100%}}
