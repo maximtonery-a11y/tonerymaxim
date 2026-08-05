@@ -74,6 +74,13 @@ const inStock = product.stock_status === 'instock' && Number(product.stock_quant
 const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.price || 0));
 const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
 const plainDescription = stripHtml(product.description_html || product.short_description_html || product.description || '');
+const productSafetyRows = [
+  ['Výrobca produktu', product.manufacturer_name],
+  ['Poštová adresa výrobcu', product.manufacturer_address],
+  ['Elektronický kontakt výrobcu', product.manufacturer_contact],
+  ['Zodpovedný hospodársky subjekt v EÚ', product.eu_responsible_person],
+  ['Bezpečnostné informácie a upozornenia', product.safety_information],
+].filter(([, value]) => String(value || '').trim());
 const printerEntityLinks = printerLinksFromNames(cache?.products || [], printers, 16);
 const oemEntityLinks = productOemCodes(product).map((code) => ({
   href: `/oem/${code.toLowerCase()}`,
@@ -130,6 +137,12 @@ const brandEntityLinks = [...new Map(
               <aside class="purchase-panel"><span class="vat-label">Cena s DPH</span><div class="price-row"><strong>{price}</strong><span>s DPH</span></div></aside>
             </section>
             {plainDescription && <section class="info-grid"><article class="params-card"><h2>Popis produktu</h2><p>{plainDescription}</p></article></section>}
+            {productSafetyRows.length > 0 && (
+              <section class="product-safety-card" aria-labelledby="product-safety-fallback-title">
+                <div><span class="section-eyebrow">Bezpečnosť výrobku</span><h2 id="product-safety-fallback-title">Výrobca a bezpečnostné informácie</h2></div>
+                <dl>{productSafetyRows.map(([label, value]) => <div><dt>{label}</dt><dd>{String(value)}</dd></div>)}</dl>
+              </section>
+            )}
             </div>
           </section>
         </div>

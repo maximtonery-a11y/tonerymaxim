@@ -29,6 +29,7 @@ export const INDEXABLE_STATIC_PATHS = [
   "/renovovane-tonery",
   "/atramentove-naplne",
   "/tlaciarne",
+  "/o-nas",
   "/kontakt",
   "/doprava-a-platba",
   "/faq",
@@ -37,10 +38,11 @@ export const INDEXABLE_STATIC_PATHS = [
   "/odstupenie-od-zmluvy",
   "/obchodne-podmienky",
   "/ochrana-osobnych-udajov",
+  "/partneri-a-tretie-strany",
   "/cookies",
-  "/vernostny-program",
   "/toner-bez-starosti",
   "/spatny-odber-tonerov",
+  "/vernostny-program",
 ];
 
 function xml(value: unknown): string {

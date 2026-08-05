@@ -38,7 +38,7 @@ export const POST: APIRoute = async ({ request }) => {
         console.error("ToneryMAXIM customer meta update failed:", error);
       });
 
-      const token = makePasswordResetToken(customer.id, email);
+      const token = await makePasswordResetToken(customer.id, email);
       const resetUrl = `${siteUrlFromRequest(request)}/reset-hesla?token=${encodeURIComponent(token)}`;
       await sendPasswordResetEmail({ email, resetUrl });
     }

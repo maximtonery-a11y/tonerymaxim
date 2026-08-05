@@ -15,7 +15,7 @@ const checks = [
   { label: 'Produkčné test endpointy', ok: status.local || status.testEndpointsBlocked, note: status.local ? 'Na localhoste sú dostupné na testovanie.' : 'V produkcii sú skryté.' },
   { label: 'Samostatný AUTH_SECRET', ok: status.dedicatedAuthSecret, note: status.dedicatedAuthSecret ? 'Nastavený a dostatočne dlhý.' : 'V produkcii je povinný a musí mať aspoň 32 znakov.' },
   { label: 'SYNC_SECRET', ok: status.syncProtected, note: status.syncProtected ? 'Synchronizácia je chránená.' : 'Na localhoste môže byť bez tokenu; v produkcii odporúčame aspoň 24 znakov.' },
-  { label: 'Chránené objednávkové fronty', ok: true, note: 'Súbory fronty a GoPay objednávok sú HMAC podpísané, zapisované atomicky a poškodené dáta idú do karantény.' },
+  { label: 'Chránené objednávkové fronty', ok: true, note: 'Citlivé súbory sú šifrované, autentizované, zapisované atomicky a poškodené dáta idú do karantény.' },
   { label: 'Presné GoPay overovanie', ok: true, note: 'Pred spracovaním sa cez GoPay API porovná ID, číslo objednávky, suma, mena, GoID a stav platby.' },
   { label: 'Admin prehľady', ok: status.local || status.adminProtected, note: status.local ? 'Na localhoste sú dostupné bez kľúča.' : (status.adminProtected ? 'Chránené kľúčom.' : 'V produkcii je povinný ADMIN_API_SECRET alebo TM_ANALYTICS_ADMIN_KEY.') },
 ];

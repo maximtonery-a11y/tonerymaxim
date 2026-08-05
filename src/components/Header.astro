@@ -84,6 +84,7 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
 
       <section>
         <strong>Informácie a pomoc</strong>
+        <a href="/o-nas">O nás</a>
         <a href="/kontakt">Kontakt</a>
         <a href="/faq">FAQ – časté otázky</a>
         <a href="/doprava-a-platba">Doprava a platba</a>
@@ -95,6 +96,7 @@ import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
         <a href="/odstupenie-od-zmluvy">Odstúpenie od zmluvy</a>
         <a href="/obchodne-podmienky">Obchodné podmienky</a>
         <a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
+        <a href="/partneri-a-tretie-strany">Partneri a tretie strany</a>
         <a href="/cookies">Informácie o cookies</a>
         <a href="/cookies#nastavenia" data-open-cookie-settings>Upraviť nastavenia cookies</a>
       </section>
@@ -141,8 +143,6 @@ body.has-add-cart-drawer { overflow: hidden; }
 @media (max-width: 640px) { .add-cart-panel { top: auto; bottom: 0; width: 100%; height: auto; max-height: 88vh; border-left: 0; border-radius: 26px 26px 0 0; } }
 </style>
 
-<script is:inline src="/tm-analytics.js" defer></script>
-
 <script>
   // Odstráni prebliknutie nehotového rozloženia pri prechode medzi stránkami.
   const revealPage = () => {
@@ -176,7 +176,6 @@ body.has-add-cart-drawer { overflow: hidden; }
   globalMenuClose?.addEventListener("click", () => setGlobalMenu(false));
   globalMenu?.addEventListener("click", (event) => {
     if (event.target === globalMenu) setGlobalMenu(false);
-    if (event.target instanceof Element && event.target.closest("a")) setGlobalMenu(false);
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") setGlobalMenu(false);

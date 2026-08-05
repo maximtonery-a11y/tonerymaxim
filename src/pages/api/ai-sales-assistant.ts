@@ -1,26 +1,38 @@
 import type { APIRoute } from 'astro';
-import { mkdir, appendFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
-import { TM_CACHE_ROOT } from '../../lib/runtime-paths';
+import { TM_DATA_ROOT, writeSignedJson } from '../../lib/secure-persistence';
 import { buildAssistantAnswer } from '../../lib/aiSalesAssistant';
 
 export const prerender = false;
 
 async function logUnanswered(payload: Record<string, unknown>) {
   try {
-    const dir = TM_CACHE_ROOT;
-    await mkdir(dir, { recursive: true });
-    await appendFile(path.join(dir, 'ai-unanswered.jsonl'), `${JSON.stringify({ created_at: new Date().toISOString(), ...payload })}\n`, 'utf8');
+    await writeSignedJson(path.join(TM_DATA_ROOT, 'ai', 'unanswered', `${Date.now()}-${randomUUID()}.json`), {
+      created_at: new Date().toISOString(),
+      ...payload,
+    });
   } catch {
     // Logovanie nesmie zhodiť odpoveď asistenta.
   }
 }
 
+function redactAiInput(value: unknown, max: number): string {
+  return String(value || '')
+    .replace(/[A-Z]{2}\d{2}(?:[\s-]?\d{4}){3,7}/gi, '[IBAN odstránený]')
+    .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[e-mail odstránený]')
+    .replace(/(?:\+?421|0)[\s-]?\d{3}[\s-]?\d{3}[\s-]?\d{3}/g, '[telefón odstránený]')
+    .replace(/\b(?:objednávka|objednavka|order)\s*(?:č\.?|#|:)?\s*\d{5,}\b/gi, 'objednávka [číslo odstránené]')
+    .slice(0, max)
+    .trim();
+}
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json().catch(() => ({}));
-    const message = String(body?.message || '').slice(0, 500).trim();
-    const page = String(body?.page || '').slice(0, 300);
+    const message = redactAiInput(body?.message, 500);
+    let page = '/';
+    try { page = new URL(String(body?.page || '/'), 'https://www.tonerymaxim.sk').pathname.slice(0, 300); } catch {}
     const result = await buildAssistantAnswer(message, page);
 
     if ((result as any).unanswered || result.intent === 'fallback') {

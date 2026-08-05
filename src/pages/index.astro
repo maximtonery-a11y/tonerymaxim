@@ -68,20 +68,12 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
               </section>
 
               <section>
-                <strong>Informácie a pomoc</strong>
+                <strong>Informácie</strong>
                 <a href="/kontakt">Kontakt</a>
-                <a href="/faq">FAQ – časté otázky</a>
                 <a href="/doprava-a-platba">Doprava a platba</a>
-                <a href="/toner-bez-starosti">Toner bez starostí</a>
-                <a href="/spatny-odber-tonerov">Spätný odber tonerov</a>
-                <a href="/vernostny-program">Vernostný program</a>
                 <a href="/reklamacie">Reklamácie</a>
-                <a href="/reklamacia-online">Reklamácia online</a>
-                <a href="/odstupenie-od-zmluvy">Odstúpenie od zmluvy</a>
                 <a href="/obchodne-podmienky">Obchodné podmienky</a>
                 <a href="/ochrana-osobnych-udajov">Ochrana osobných údajov</a>
-                <a href="/cookies">Informácie o cookies</a>
-                <a href="/cookies#nastavenia" data-open-cookie-settings>Upraviť nastavenia cookies</a>
               </section>
 
               <section>
@@ -90,11 +82,6 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
                 <a href="/atramentove-naplne">Atramentové náplne</a>
                 <a href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Valce</a>
                 <a href="/produkty?category=ostatne-komponenty&search=ostatn%C3%A9%20komponenty">Komponenty</a>
-              </section>
-
-              <section>
-                <strong>Ďalšie</strong>
-                <a class="tm-mobile-legacy-link" href="https://www.tonerymaxim.info" target="_blank" rel="noopener noreferrer">Pôvodný e-shop <span aria-hidden="true">↗</span></a>
               </section>
             </div>
           </div>
@@ -115,7 +102,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
             <div class="tm-mobile-search-examples" aria-label="Príklady hľadania">
               <a href="/produkty?printer=HP+LaserJet+M110w">HP M110w</a>
               <a href="/produkty?s=Brother%20DCP-L2532DW">Brother DCP-L2532DW</a>
-              <a href="/produkty?category=atramentove-naplne&amp;s=HP%20305">HP 305</a>
+              <a href="/produkty?s=No.305">HP 305</a>
               <a href="/produkty?s=TN-2421">TN-2421</a>
               <a href="/produkty?s=HP%20LaserJet%20M1132MFP">HP LaserJet M1132MFP</a>
               <a href="/produkty?s=W1420A">W1420A</a>
@@ -153,22 +140,16 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
                 <span class="tm-trust-icon tm-yellow" aria-hidden="true">
                   <svg viewBox="0 0 48 48" fill="none"><path d="M6 15h24v18H6V15Z" stroke="currentColor" stroke-linejoin="round"/><path d="M30 22h7l5 6v5H30V22Z" stroke="currentColor" stroke-linejoin="round"/><path d="M14 38a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM36 38a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor"/></svg>
                 </span>
-                <strong>Doručenie</strong>
-                <small>do 24h</small>
+                <strong>Expedícia</strong>
+                <small>do 15:00</small>
               </article>
-              <a
-                class="tm-mobile-trust-link"
-                href="https://obchody.heureka.sk/tonerymaxim-sk/recenze/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Otvoriť overené recenzie ToneryMaxim na Heureke"
-              >
+              <article>
                 <span class="tm-trust-icon tm-green" aria-hidden="true">
                   <svg viewBox="0 0 48 48" fill="none"><path d="m24 5 5.5 11.2 12.4 1.8-9 8.8 2.1 12.4L24 33.4l-11 5.8 2.1-12.4-9-8.8 12.4-1.8L24 5Z" stroke="currentColor" stroke-linejoin="round"/></svg>
                 </span>
                 <strong>Heureka</strong>
-                <small><span data-heureka-rating>4,9</span>/5</small>
-              </a>
+                <small>4,9/5</small>
+              </article>
             </div>
 
             <section class="tm-mobile-help-card" aria-label="Pomoc s výberom">
@@ -178,11 +159,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
             </section>
 
             <div class="tm-mobile-footer-lock" aria-label="Copyright">
-              <span>© 2026 ToneryMaxim.sk</span>
-              <nav aria-label="Ďalšie odkazy">
-                <a href="/cookies#nastavenia" data-open-cookie-settings>Cookies</a>
-                <a href="https://www.tonerymaxim.info" target="_blank" rel="noopener noreferrer">Pôvodný e-shop ↗</a>
-              </nav>
+              © 2026 ToneryMaxim.sk
             </div>
           </div>
         </section>
@@ -213,7 +190,6 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
       menuClose?.addEventListener('click', () => setMenu(false));
       menu?.addEventListener('click', (event) => {
         if (event.target === menu) setMenu(false);
-        if (event.target instanceof Element && event.target.closest('a')) setMenu(false);
       });
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') setMenu(false);

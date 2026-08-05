@@ -17,7 +17,7 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     id: 'expedicia-kedy-posleme', intent: 'order', title: 'Kedy odošleme objednávku', priority: 120,
     triggers: ['kedy mi poslete objednavku', 'kedy odoslete objednavku', 'kedy bude odoslana objednavka', 'kedy posielate balik', 'kedy expedujete', 'objednavka odoslanie', 'odoslanie objednavky', 'kedy mi pride objednavka', 'kedy mi pride balik', 'dorucenie objednavky'],
     answer: [
-      'Objednávky vybavujeme počas pracovných dní čo najrýchlejšie. Produkty skladom zvyčajne pripravujeme na odoslanie v pracovný deň po prijatí objednávky a platby, prípadne podľa zvoleného spôsobu platby.',
+      'Tovar označený „Skladom“ objednaný v pracovný deň do 15:00 spravidla expedujeme v ten istý pracovný deň. Po 15:00, cez víkend alebo sviatok ho spravidla expedujeme najbližší pracovný deň. Pri platbe prevodom začína príprava po pripísaní úhrady.',
       'Doručenie kuriérom alebo do výdajného miesta býva spravidla 1–2 pracovné dni od odoslania zásielky.',
       'Ak potrebujete overiť konkrétnu objednávku, napíšte číslo objednávky alebo nás kontaktujte na info@tonerymaxim.sk.',
     ],
@@ -28,7 +28,7 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     answer: [
       'Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.',
       'GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.',
-      'Pri objednávke od 29 € s DPH je doprava zdarma.',
+      'Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.',
     ],
   },
   {

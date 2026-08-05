@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TM_CACHE_ROOT } from './runtime-paths.ts';
-import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, productPrinterValues } from './catalog-query.ts';
+import { findExactProductIdentityMatches } from './catalog-query.ts';
 import { normalizedCompletenessRatio, requiredProductCount } from './product-cache-policy.ts';
 
 export type TmProduct = Record<string, any>;
@@ -707,6 +707,60 @@ export function mapProduct(product: any): TmProduct {
     "Kód výrobcu produktu",
     "Kod vyrobcu produktu",
   ]) || getWooMetaValue(product, ["mpn", "_mpn", "manufacturer_part_number"]);
+  // GPSR údaje musia pochádzať z katalógu. Neodvodzujeme ich zo značky
+  // tlačiarne ani ich nenahrádzame všeobecným textom výrobcu tonerov.
+  const manufacturerName = getExactWooAttributeValue(wooAttributes, [
+    "Výrobca produktu",
+    "Product manufacturer",
+    "GPSR výrobca",
+    "GPSR manufacturer",
+  ]) || getWooMetaValue(product, [
+    "gpsr_manufacturer_name",
+    "product_manufacturer_name",
+    "manufacturer_name",
+  ]);
+  const manufacturerAddress = getExactWooAttributeValue(wooAttributes, [
+    "Adresa výrobcu",
+    "Manufacturer address",
+    "GPSR adresa výrobcu",
+  ]) || getWooMetaValue(product, [
+    "gpsr_manufacturer_address",
+    "product_manufacturer_address",
+    "manufacturer_address",
+  ]);
+  const manufacturerContact = getExactWooAttributeValue(wooAttributes, [
+    "Kontakt výrobcu",
+    "E-mail výrobcu",
+    "Manufacturer contact",
+    "Manufacturer email",
+  ]) || getWooMetaValue(product, [
+    "gpsr_manufacturer_contact",
+    "gpsr_manufacturer_email",
+    "manufacturer_contact",
+    "manufacturer_email",
+  ]);
+  const euResponsiblePerson = getExactWooAttributeValue(wooAttributes, [
+    "Zodpovedná osoba EÚ",
+    "Zodpovedný hospodársky subjekt EÚ",
+    "EU responsible person",
+    "EU responsible economic operator",
+  ]) || getWooMetaValue(product, [
+    "gpsr_eu_responsible_person",
+    "eu_responsible_person",
+    "responsible_person_eu",
+  ]);
+  const safetyInformation = getExactWooAttributeValue(wooAttributes, [
+    "Bezpečnostné informácie",
+    "Bezpečnostné upozornenie",
+    "Safety information",
+    "Safety warning",
+    "Upozornenie",
+  ]) || getWooMetaValue(product, [
+    "gpsr_safety_information",
+    "product_safety_information",
+    "safety_information",
+    "safety_warning",
+  ]);
   return {
     id: product.id,
     sku: product.sku || "",
@@ -722,6 +776,11 @@ export function mapProduct(product: any): TmProduct {
     gtin,
     mpn,
     product_brand: productBrand,
+    manufacturer_name: manufacturerName,
+    manufacturer_address: manufacturerAddress,
+    manufacturer_contact: manufacturerContact,
+    eu_responsible_person: euResponsiblePerson,
+    safety_information: safetyInformation,
     image: primaryImage,
     images: normalizedImages.length ? normalizedImages : [TM_PRODUCT_PLACEHOLDER_IMAGE],
     detail_url: `/produkt/${product.slug || product.id}`,
@@ -1082,10 +1141,11 @@ function matchesPrinterFilter(product: TmProduct, query: string) {
   const compactQuery = compactKey(query);
   if (!normalizedQuery || !compactQuery) return true;
 
-  const printers = productPrinterValues(product);
-
-  const analysis = analyzeCatalogQuery(query);
-  if (analysis.hasReference) return printers.some((item) => exactPrinterModelMatch(item, analysis));
+  const printers = Array.isArray(product.compatible_printers)
+    ? product.compatible_printers
+    : Array.isArray(product.printers)
+      ? product.printers
+      : [];
 
   // Pri kliknutí na konkrétnu sériu/model musí zostať zachovaný aj znak za pomlčkou
   // (napr. Brother DCP-L nesmie spadnúť na všeobecné Brother DCP).
@@ -1134,9 +1194,6 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
   const exactSearchProducts = search
     ? new Set(findExactProductIdentityMatches(products, filters.search || "").map((match) => match.product))
     : new Set<TmProduct>();
-  const exactPrinterProducts = search
-    ? new Set(findExactPrinterModelMatches(products, filters.search || "").map((match) => match.product))
-    : new Set<TmProduct>();
 
   return products.filter((product) => {
     const text = product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`);
@@ -1161,9 +1218,8 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     if (filters.category && !matchesCategory(product, filters.category)) return false;
     if (printer && !matchesPrinterFilter(product, filters.printer || "")) return false;
     if (search) {
-      const hasStructuredMatches = exactSearchProducts.size > 0 || exactPrinterProducts.size > 0;
-      if (hasStructuredMatches && !exactSearchProducts.has(product) && !exactPrinterProducts.has(product)) return false;
-      if (!hasStructuredMatches && !matchesLooseSearch(text, search)) return false;
+      if (exactSearchProducts.size && !exactSearchProducts.has(product)) return false;
+      if (!exactSearchProducts.size && !matchesLooseSearch(text, search)) return false;
     }
     return true;
   });

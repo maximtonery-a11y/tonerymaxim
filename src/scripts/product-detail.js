@@ -855,6 +855,29 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       .map((attribute) => `<div><dt>${esc(attribute.name)}</dt><dd>${esc(attribute.value)}</dd></div>`)
       .join("");
   }
+
+  function productSafetyHtml(product) {
+    const rows = [
+      ["Výrobca produktu", product?.manufacturer_name],
+      ["Poštová adresa výrobcu", product?.manufacturer_address],
+      ["Elektronický kontakt výrobcu", product?.manufacturer_contact],
+      ["Zodpovedný hospodársky subjekt v EÚ", product?.eu_responsible_person],
+      ["Bezpečnostné informácie a upozornenia", product?.safety_information],
+    ].filter(([, value]) => String(value || "").trim());
+
+    if (!rows.length) return "";
+    return `
+      <section class="product-safety-card" aria-labelledby="product-safety-title">
+        <div>
+          <span class="section-eyebrow">Bezpečnosť výrobku</span>
+          <h2 id="product-safety-title">Výrobca a bezpečnostné informácie</h2>
+        </div>
+        <dl>
+          ${rows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}
+        </dl>
+      </section>
+    `;
+  }
   function normalizedAttributeKey(value) {
     return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
   }
@@ -1381,6 +1404,8 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         </article>
       </section>
 
+      ${productSafetyHtml(product)}
+
       <section class="compat-section compat-section-modern" id="compatible-printers">
         <div class="section-head compat-section-head">
           <div>
@@ -1410,10 +1435,8 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
       <div class="compat-modal" data-compat-modal hidden>
         <div class="compat-modal-card">
-          <div class="compat-modal-head">
-            <h2>Všetky kompatibilné modely tlačiarní</h2>
-            <button type="button" class="modal-close" data-close-compatible aria-label="Zavrieť zoznam kompatibilných tlačiarní">×</button>
-          </div>
+          <button type="button" class="modal-close" data-close-compatible>×</button>
+          <h2>Všetky kompatibilné modely tlačiarní</h2>
           <p>Kliknutím na model otvoríte výpis produktov pre danú tlačiareň.</p>
           ${printersListHtml(product)}
         </div>

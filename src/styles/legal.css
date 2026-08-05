@@ -253,9 +253,6 @@
   .op-toc { position: static; }
   .quick-contact-grid, .shipping-highlights, .company-grid, .notice-row, .steps-grid, .gdpr-grid, .cookie-grid, .trust-row { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
-@media (max-width: 760px) {
-  .info-sidebar { display: none !important; }
-}
 @media (max-width: 700px) {
   .info-page-section { padding: 24px 0 60px; }
   .info-sidebar nav, .quick-contact-grid, .shipping-highlights, .company-grid, .notice-row, .steps-grid, .gdpr-grid, .cookie-grid, .trust-row, .form-row { grid-template-columns: 1fr; }
@@ -353,6 +350,13 @@
 .care-primary { background: var(--info-navy); color: #fff; }
 .care-secondary { background: #f2f7fd; color: var(--info-navy); border-color: var(--info-line); }
 button.care-primary:disabled { opacity: .65; cursor: progress; }
+
+.legal-table-wrap { overflow-x: auto; margin: 16px 0; border: 1px solid #dbe5f1; border-radius: 16px; }
+.legal-table { width: 100%; min-width: 720px; border-collapse: collapse; background: #fff; }
+.legal-table th, .legal-table td { padding: 13px 15px; border-bottom: 1px solid #e8eef6; text-align: left; vertical-align: top; }
+.legal-table th { color: #071b3a; background: #f3f7fc; font-size: 13px; }
+.legal-table td { color: #526172; font-size: 14px; line-height: 1.5; }
+.legal-table tr:last-child td { border-bottom: 0; }
 .care-side { display: grid; gap: 12px; position: sticky; top: 104px; }
 .care-result { margin: 0; min-height: 24px; color: var(--info-muted); font-weight: 800; }
 .care-result.is-ok { color: var(--info-green); }

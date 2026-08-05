@@ -37,10 +37,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (!firstName) return json({ ok: false, error: "Vyplňte meno." }, 400);
     if (!lastName) return json({ ok: false, error: "Vyplňte priezvisko." }, 400);
-    if (!email || !email.includes("@")) return json({ ok: false, error: "Zadajte platný e-mail." }, 400);
-    if (password.length < 8) return json({ ok: false, error: "Heslo musí mať aspoň 8 znakov." }, 400);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return json({ ok: false, error: "Zadajte platný e-mail." }, 400);
+    if (password.length < 12 || password.length > 128) return json({ ok: false, error: "Heslo musí mať 12 až 128 znakov." }, 400);
     if (password !== password2) return json({ ok: false, error: "Heslá sa nezhodujú." }, 400);
-    if (!consent) return json({ ok: false, error: "Pre registráciu je potrebný súhlas so spracovaním osobných údajov." }, 400);
+    if (!consent) return json({ ok: false, error: "Pred registráciou potvrďte oboznámenie so zásadami ochrany osobných údajov." }, 400);
 
     const existing = await findWooCustomerByEmail(email);
     if (existing) return json({ ok: false, error: "Účet s týmto e-mailom už existuje. Prihláste sa." }, 409);

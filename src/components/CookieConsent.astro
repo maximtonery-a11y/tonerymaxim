@@ -296,7 +296,7 @@
     }
 
     #tm-cookie-consent.tm-cookie-is-hidden #tm-cookie-floating,
-    #tm-cookie-consent.tm-cookie-is-open #tm-cookie-floating {
+    #tm-cookie-consent #tm-cookie-floating {
       display: none !important;
     }
   }
@@ -345,12 +345,20 @@
     try { window.dispatchEvent(new CustomEvent("tm:cookies", { detail: consent })); } catch (error) {}
   }
 
+  function writeAnalyticsConsent(enabled) {
+    var secure = window.location.protocol === "https:" ? "; Secure" : "";
+    if (enabled) {
+      document.cookie = "tm_analytics_consent=1; Path=/; Max-Age=15552000; SameSite=Lax" + secure;
+    } else {
+      document.cookie = "tm_analytics_consent=; Path=/; Max-Age=0; SameSite=Lax" + secure;
+    }
+  }
+
   function openPanel() {
     var r = root();
     if (!r) return;
     r.classList.remove("tm-cookie-is-hidden");
     r.classList.add("tm-cookie-is-open");
-    try { window.dispatchEvent(new CustomEvent("tm:cookie-panel", { detail: { open: true } })); } catch (error) {}
   }
 
   function closePanel() {
@@ -358,7 +366,6 @@
     if (!r) return;
     r.classList.remove("tm-cookie-is-open");
     r.classList.add("tm-cookie-is-hidden");
-    try { window.dispatchEvent(new CustomEvent("tm:cookie-panel", { detail: { open: false } })); } catch (error) {}
   }
 
   function saveConsent(analyticsValue, marketingValue) {
@@ -373,6 +380,8 @@
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(consent));
       cleanOldKeys();
     } catch (error) {}
+
+    writeAnalyticsConsent(consent.analytics);
 
     setChecks(consent);
     emit(consent);
@@ -392,6 +401,7 @@
       cleanOldKeys();
     } catch (error) {}
     setChecks({ analytics: false, marketing: false });
+    writeAnalyticsConsent(false);
     openPanel();
   }
 
@@ -421,6 +431,7 @@
   function init() {
     var consent = readConsent();
     if (consent) {
+      writeAnalyticsConsent(!!consent.analytics);
       setChecks(consent);
       emit(consent);
       closePanel();

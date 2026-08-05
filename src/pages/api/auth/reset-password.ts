@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { markWooCustomerAsToneryMaxim, updateWooCustomerPassword, getWooCustomerById } from "../../../lib/woo-client";
-import { verifyPasswordResetToken } from "../../../lib/password-reset";
+import { consumePasswordResetToken } from "../../../lib/password-reset";
 import { sendPasswordChangedEmail } from "../../../lib/mail";
 
 export const prerender = false;
@@ -31,16 +31,15 @@ export const POST: APIRoute = async ({ request }) => {
     const password2 = String(body.password2 || "");
 
     if (!token) return json({ ok: false, error: "Odkaz na obnovu hesla je neplatný." }, 400);
-    if (password.length < 8) return json({ ok: false, error: "Heslo musí mať aspoň 8 znakov." }, 400);
+    if (password.length < 12 || password.length > 128) return json({ ok: false, error: "Heslo musí mať 12 až 128 znakov." }, 400);
     if (password !== password2) return json({ ok: false, error: "Heslá sa nezhodujú." }, 400);
 
-    const payload = verifyPasswordResetToken(token);
-    if (!payload) return json({ ok: false, error: "Odkaz na obnovu hesla je neplatný alebo expiroval." }, 400);
-
-    await markWooCustomerAsToneryMaxim(payload.customerId).catch(() => null);
-    await updateWooCustomerPassword(payload.customerId, password);
-
-    const customer = await getWooCustomerById(payload.customerId);
+    const customer = await consumePasswordResetToken(token, async (payload) => {
+      await markWooCustomerAsToneryMaxim(payload.customerId).catch(() => null);
+      await updateWooCustomerPassword(payload.customerId, password);
+      return getWooCustomerById(payload.customerId);
+    });
+    if (!customer) return json({ ok: false, error: "Odkaz na obnovu hesla je neplatný, použitý alebo expiroval." }, 400);
     if (customer?.email) {
       await sendPasswordChangedEmail({
         email: customer.email,

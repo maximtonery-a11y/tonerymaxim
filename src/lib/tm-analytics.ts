@@ -2,7 +2,7 @@ import { appendFile, mkdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
-import { TM_DATA_ROOT } from './secure-persistence';
+import { decryptPrivateLine, encryptPrivateLine, persistenceSecret, TM_DATA_ROOT } from './secure-persistence';
 
 export type TMAnalyticsEvent = {
   type: string;
@@ -84,7 +84,8 @@ function cleanText(value: unknown, max = 500): string {
 }
 function cleanPath(value: unknown): string {
   const text = cleanText(value, 1000);
-  return text.startsWith('/') ? text : '/';
+  if (!text.startsWith('/')) return '/';
+  try { return new URL(text, 'https://www.tonerymaxim.sk').pathname; } catch { return '/'; }
 }
 function cleanNumber(value: unknown, max = 86_400_000): number | undefined {
   const n = Number(value);
@@ -142,13 +143,31 @@ function requestHeader(request: Request, name: string): string {
 
 function ipHash(request: Request): string {
   const ip = cleanText(request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip'), 80);
-  return ip ? createHash('sha256').update(ip).digest('hex').slice(0, 16) : '';
+  return ip ? createHash('sha256').update(`${ip}|${persistenceSecret()}|analytics`).digest('hex').slice(0, 16) : '';
+}
+
+function hasAnalyticsConsent(request: Request): boolean {
+  return cookieValue(request, 'tm_analytics_consent') === '1'
+    && request.headers.get('x-tm-analytics-consent') === '1';
+}
+
+function isSensitivePath(value: unknown): boolean {
+  const pathname = cleanPath(value);
+  return pathname === '/kosik'
+    || pathname === '/pokladna'
+    || pathname === '/platba-dokoncena'
+    || pathname === '/prihlasenie'
+    || pathname === '/registracia'
+    || pathname === '/zabudnute-heslo'
+    || pathname === '/reset-hesla'
+    || pathname.startsWith('/ucet');
 }
 
 export async function saveAnalyticsEvent(request: Request, payload: unknown): Promise<{ ok: true; ignored?: boolean }> {
   const raw = JSON.stringify(payload ?? {});
   if (raw.length > MAX_BODY_SIZE) throw new Error('Payload je príliš veľký.');
   const data = payload && typeof payload === 'object' ? payload as Record<string, unknown> : {};
+  if (!hasAnalyticsConsent(request) || isSensitivePath(data.path)) return { ok: true, ignored: true };
   const userAgent = cleanText(request.headers.get('user-agent'), 500);
   if (isBot(userAgent)) return { ok: true, ignored: true };
   const sessionId = cleanText(data.sessionId, 100);
@@ -159,7 +178,9 @@ export async function saveAnalyticsEvent(request: Request, payload: unknown): Pr
     type: cleanText(data.type || 'event', 60) || 'event',
     ts: new Date().toISOString(),
     path: cleanPath(data.path),
-    url: cleanText(data.url, 1000), title: cleanText(data.title, 200), referrer,
+    // Ukladáme iba cestu bez query parametrov. Tie môžu obsahovať e-mail,
+    // resetovací token, číslo objednávky alebo identifikátor platby.
+    url: cleanPath(data.url || data.path), title: cleanText(data.title, 200), referrer,
     durationMs: cleanNumber(data.durationMs), activeMs: cleanNumber(data.activeMs), viewport,
     device: cleanText(data.device, 40) || detectDevice(userAgent, viewport),
     language: cleanText(data.language, 40), userAgent, source: detectSource(referrer),
@@ -172,7 +193,7 @@ export async function saveAnalyticsEvent(request: Request, payload: unknown): Pr
     sessionId, visitorId: cleanText(data.visitorId, 100), owner: cookieValue(request, 'tm_analytics_owner') === '1', ipHash: ipHash(request),
   };
   await mkdir(ANALYTICS_DIR, { recursive: true, mode: 0o700 });
-  await appendFile(EVENTS_FILE, JSON.stringify(event) + '\n', { encoding: 'utf8', mode: 0o600 });
+  await appendFile(EVENTS_FILE, encryptPrivateLine(JSON.stringify(event)) + '\n', { encoding: 'utf8', mode: 0o600 });
   return { ok: true };
 }
 
@@ -189,7 +210,12 @@ export async function readAnalyticsEvents(limit = 100000): Promise<TMAnalyticsEv
     if (start > 0) content = content.slice(content.indexOf('\n') + 1);
     const events: TMAnalyticsEvent[] = [];
     for (const line of content.split('\n').filter(Boolean).slice(-limit)) {
-      try { const e = JSON.parse(line); if (e?.type && e?.ts && e?.sessionId) events.push(e); } catch {}
+      try {
+        const decrypted = decryptPrivateLine(line);
+        if (!decrypted) continue;
+        const e = JSON.parse(decrypted);
+        if (e?.type && e?.ts && e?.sessionId) events.push(e);
+      } catch {}
     }
     return events;
   } finally { await handle.close(); }

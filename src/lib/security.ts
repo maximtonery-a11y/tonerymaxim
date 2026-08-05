@@ -1,6 +1,6 @@
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
-import { readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
+import { persistenceSecret, readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
 import { isStrongSecret } from './secret-validation';
 
 export type SecurityEvent = {
@@ -101,7 +101,7 @@ export function clientIp(request: Request): string {
 }
 
 export function hashIp(ip: string): string {
-  return createHash('sha256').update(`${ip}|tm-security`).digest('hex').slice(0, 12);
+  return createHash('sha256').update(`${ip}|${persistenceSecret()}|tm-security`).digest('hex').slice(0, 12);
 }
 
 function logEvent(event: Omit<SecurityEvent, 'ts'>): void {
@@ -154,7 +154,17 @@ export function validateOrigin(request: Request, url: URL): boolean {
 
   const origin = request.headers.get('origin');
   const referer = request.headers.get('referer');
-  if (!origin && !referer) return true; // server-to-server/forms without browser Origin
+  if (!origin && !referer) {
+    const fetchSite = String(request.headers.get('sec-fetch-site') || '').toLowerCase();
+    if (fetchSite === 'same-origin' || fetchSite === 'same-site') return true;
+
+    // Synchronizácia katalógu je server-to-server volanie chránené vlastným
+    // tajomstvom. Ostatné mutácie bez preukázateľného pôvodu odmietneme.
+    if (url.pathname === '/api/sync-products') {
+      return Boolean(request.headers.get('authorization') || request.headers.get('x-sync-secret'));
+    }
+    return false;
+  }
 
   try {
     const source = new URL(origin || referer || '');
@@ -182,12 +192,29 @@ export function registerBlock(type: SecurityEvent['type'], request: Request, url
 }
 
 export function securityHeaders(url: URL, requestIdValue: string): Record<string, string> {
+  const csp = [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'self'",
+    "form-action 'self' https://gate.gopay.cz https://gw.sandbox.gopay.com",
+    "script-src 'self' 'unsafe-inline' https://plugin.gls-slovakia.sk https://www.googletagmanager.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com",
+    "font-src 'self' data: https://fonts.cdnfonts.com",
+    "img-src 'self' data: blob: https:",
+    "connect-src 'self' https:",
+    "frame-src 'self' https://api.dpd.cz https://plugin.gls-slovakia.sk https://gate.gopay.cz https://gw.sandbox.gopay.com",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+  ].join('; ');
   const headers: Record<string, string> = {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'SAMEORIGIN',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(self)',
     'Cross-Origin-Resource-Policy': 'same-site',
+    'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+    'Content-Security-Policy': csp,
     'X-Request-Id': requestIdValue,
   };
   if (url.protocol === 'https:') headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';

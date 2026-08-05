@@ -39,8 +39,8 @@ const billing = getBilling(wooCustomer);
           <div class="auth-alert" data-password-message hidden></div>
           <form class="account-add-printer-form" data-password-form>
             <label class="tm-field"><span>Aktuálne heslo</span><input class="account-input" name="current_password" type="password" autocomplete="current-password" required /></label>
-            <label class="tm-field"><span>Nové heslo</span><input class="account-input" name="password" type="password" autocomplete="new-password" minlength="8" required /></label>
-            <label class="tm-field"><span>Potvrdenie nového hesla</span><input class="account-input" name="password2" type="password" autocomplete="new-password" minlength="8" required /></label>
+            <label class="tm-field"><span>Nové heslo</span><input class="account-input" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
+            <label class="tm-field"><span>Potvrdenie nového hesla</span><input class="account-input" name="password2" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
             <button class="tm-btn" type="submit" data-password-submit>Zmeniť heslo</button>
           </form>
         </section>

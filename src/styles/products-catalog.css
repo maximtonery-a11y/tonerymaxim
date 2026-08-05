@@ -301,7 +301,7 @@
 }
 
 .tm-row-main h2 {
-  max-width: calc(100% - 290px);
+  max-width: calc(100% - 300px);
   margin: 0 0 8px;
   color: #071b3a;
   font-size: 24px;
@@ -320,7 +320,7 @@
 }
 
 .tm-row-printers {
-  max-width: calc(100% - 290px);
+  max-width: calc(100% - 300px);
   margin: 0 0 24px;
   color: #334155;
   font-size: 16px;
@@ -383,16 +383,17 @@
   position: absolute;
   right: 18px;
   top: 18px;
+  width: 270px;
   display: grid;
   gap: 8px;
-  justify-items: start;
+  justify-items: stretch;
   align-self: start;
 }
 
 .tm-row-compat button {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
   height: auto;
   padding: 0;
@@ -412,21 +413,47 @@
 }
 
 .tm-dispatch {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
   align-items: center;
   gap: 9px;
-  padding: 8px 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 7px 12px;
   border-radius: 9px;
   background: #f3faf6;
   color: #0f9f57;
-  font-size: 15px;
-  font-weight: 950;
-  white-space: nowrap;
+  line-height: 1.15;
 }
 
 .tm-dispatch svg {
   width: 20px;
   height: 20px;
+}
+
+.tm-dispatch-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.tm-dispatch-copy strong,
+.tm-dispatch-copy small {
+  display: block;
+  margin: 0;
+  color: inherit;
+  white-space: normal;
+}
+
+.tm-dispatch-copy strong {
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.tm-dispatch-copy small {
+  font-size: 12px;
+  line-height: 1.15;
+  font-weight: 800;
 }
 
 .tm-row-buy {
@@ -609,6 +636,7 @@
 
   .tm-row-compat {
     position: static;
+    width: min(100%, 270px);
     margin-top: 12px;
   }
 
@@ -1327,12 +1355,12 @@ button.catalog-filter-chip:hover {
 
   .tm-row-compat {
     position: static;
+    width: 100%;
     margin-top: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    display: grid;
+    align-items: stretch;
+    justify-content: stretch;
     gap: 8px;
-    flex-wrap: wrap;
   }
 
   .tm-row-compat button {
@@ -1342,9 +1370,19 @@ button.catalog-filter-chip:hover {
   }
 
   .tm-dispatch {
+    grid-template-columns: 16px minmax(0, 1fr);
+    width: min(100%, 250px);
+    min-height: 42px;
     padding: 6px 9px;
-    border-radius: 999px;
+    border-radius: 12px;
+  }
+
+  .tm-dispatch-copy strong {
     font-size: 12px;
+  }
+
+  .tm-dispatch-copy small {
+    font-size: 11px;
   }
 
   .tm-row-buy {

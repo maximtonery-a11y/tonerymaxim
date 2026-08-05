@@ -104,6 +104,22 @@ export function getDispatchMessage(date = new Date()) {
   return "Expedujeme dnes pri objednávke do 15:00";
 }
 
+export function getDispatchParts(date = new Date()) {
+  const message = getDispatchMessage(date);
+
+  if (message === "Expedujeme dnes pri objednávke do 15:00") {
+    return {
+      title: "Expedujeme dnes",
+      detail: "pri objednávke do 15:00",
+    };
+  }
+
+  return {
+    title: "Expedujeme",
+    detail: "najbližší pracovný deň",
+  };
+}
+
 
 export function refreshDispatchMessages(root = document) {
   if (!root || typeof root.querySelectorAll !== "function") return;

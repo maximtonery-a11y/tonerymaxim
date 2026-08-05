@@ -1,10 +1,9 @@
-import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { TM_CACHE_ROOT } from './runtime-paths';
+import { TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
 
 export type CustomerCareKind = "reklamacia" | "odstupenie";
 
-const STORE_DIR = join(TM_CACHE_ROOT, 'customer-care');
+const STORE_DIR = join(TM_DATA_ROOT, 'customer-care');
 
 function clean(value: unknown, max = 2000): string {
   return String(value ?? "").replace(/\s+/g, " ").trim().slice(0, max);
@@ -38,7 +37,6 @@ export function validateCustomerCarePayload(kind: CustomerCareKind, payload: Ret
   }
 
   if (kind === "odstupenie") {
-    if (!payload.iban) return "Vyplňte IBAN pre vrátenie peňazí.";
     if (!payload.address) return "Vyplňte adresu kupujúceho.";
     if (!payload.products) return "Vyplňte produkty, ktorých sa odstúpenie týka.";
   }
@@ -55,7 +53,6 @@ export function createCaseNumber(kind: CustomerCareKind) {
 }
 
 export async function saveCustomerCareCase(kind: CustomerCareKind, payload: ReturnType<typeof sanitizeCustomerCarePayload>, requestMeta: Record<string, string> = {}) {
-  await mkdir(STORE_DIR, { recursive: true });
   const caseNumber = createCaseNumber(kind);
   const record = {
     kind,
@@ -65,7 +62,7 @@ export async function saveCustomerCareCase(kind: CustomerCareKind, payload: Retu
     payload,
     requestMeta,
   };
-  await writeFile(join(STORE_DIR, `${caseNumber}.json`), JSON.stringify(record, null, 2), "utf8");
+  await writeSignedJson(join(STORE_DIR, `${caseNumber}.json`), record);
   return record;
 }
 

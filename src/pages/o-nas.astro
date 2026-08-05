@@ -1,0 +1,100 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>O nás | ToneryMaxim.sk</title>
+    <meta name="description" content="ToneryMaxim je slovenský špecialista na tonery, atramentové náplne a komponenty pre tlačiarne s viac ako 17-ročnými skúsenosťami." />
+    <link rel="canonical" href="https://www.tonerymaxim.sk/o-nas" />
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+      <main>
+        <InfoPageShell
+          active="/o-nas"
+          eyebrow="Slovenský internetový obchod"
+          title="O ToneryMaxim"
+          intro="Viac ako 17 rokov pomáhame domácnostiam, živnostníkom a firmám nájsť správnu náplň pre ich tlačiareň."
+        >
+          <section class="about-highlights" aria-label="ToneryMaxim v číslach">
+            <article><span>17+</span><strong>rokov skúseností</strong><p>S predajom tonerov a náplní.</p></article>
+            <article><span>30 000+</span><strong>vybavených objednávok</strong><p>Pre domácnosti aj firmy.</p></article>
+            <article><span>SK</span><strong>slovenský obchod</strong><p>S osobnou zákazníckou podporou.</p></article>
+          </section>
+
+          <section class="about-panel">
+            <div class="about-main">
+              <span class="card-eyebrow">Kto sme</span>
+              <h2>Tlač bez starostí a bez nesprávneho výberu</h2>
+              <p>ToneryMaxim sa špecializuje na tonery, atramentové náplne, optické valce a ďalšie komponenty pre tlačiarne. Ponúkame kompatibilné, originálne aj renovované produkty, aby si zákazník mohol vybrať podľa ceny, požadovanej kvality a spôsobu používania tlačiarne.</p>
+              <p>Najdôležitejšia je pre nás správna kompatibilita. Produkty preto prepájame s konkrétnymi modelmi tlačiarní a pri neistote zákazníkovi poradíme podľa modelu zariadenia alebo označenia pôvodnej kazety.</p>
+            </div>
+            <aside class="about-values" aria-label="Naše priority">
+              <h2>Na čom si zakladáme</h2>
+              <ul>
+                <li><b>Správny výber</b><span>Overenie náplne podľa konkrétnej tlačiarne.</span></li>
+                <li><b>Jasné informácie</b><span>Cena, dostupnosť, výťažnosť a záruka na jednom mieste.</span></li>
+                <li><b>Osobná pomoc</b><span>Telefonické a e-mailové poradenstvo pred nákupom aj po ňom.</span></li>
+                <li><b>Zodpovednejšia tlač</b><span>Renovované riešenia a spätný odber použitých kaziet.</span></li>
+              </ul>
+            </aside>
+          </section>
+
+          <section class="about-contact">
+            <div><span>Potrebujete poradiť?</span><h2>Sme tu pre vás</h2><p>Napíšte nám model tlačiarne alebo označenie náplne a pomôžeme vám s výberom.</p></div>
+            <div><a class="primary-pill" href="/kontakt">Kontaktovať nás</a><a href="tel:+421917859206">+421 917 859 206</a></div>
+          </section>
+
+          <section class="about-company">
+            <span class="card-eyebrow">Prevádzkovateľ e-shopu</span>
+            <strong>Roman Babčan INkarus</strong>
+            <p>Tajov 265, 976 34 Tajov · IČO: 37 328 344 · DIČ: 1020059920 · IČ DPH: SK1020059920</p>
+          </section>
+        </InfoPageShell>
+      </main>
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+  </body>
+</html>
+
+<style>
+  .about-highlights { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+  .about-highlights article, .about-panel, .about-contact, .about-company { border:1px solid #dbe8f6; border-radius:22px; background:#fff; box-shadow:0 18px 54px rgba(6,23,53,.07); }
+  .about-highlights article { padding:22px; }
+  .about-highlights span { display:block; color:#0588e8; font-size:28px; line-height:1; font-weight:950; letter-spacing:-.04em; }
+  .about-highlights strong { display:block; margin-top:9px; color:#061735; font-size:17px; }
+  .about-highlights p, .about-main p, .about-contact p, .about-company p { margin:5px 0 0; color:#64748b; font-size:13px; line-height:1.55; }
+  .about-panel { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr); gap:0; overflow:hidden; margin-bottom:16px; }
+  .about-main { padding:30px; }
+  .about-main h2, .about-values h2, .about-contact h2 { margin:5px 0 14px; color:#061735; font-size:25px; line-height:1.15; letter-spacing:-.025em; }
+  .about-main p { color:#344968; font-size:14px; }
+  .about-main p + p { margin-top:13px; }
+  .about-values { padding:30px; background:linear-gradient(145deg,#eef7ff,#fff); border-left:1px solid #dbe8f6; }
+  .about-values ul { display:grid; gap:13px; margin:0; padding:0; list-style:none; }
+  .about-values li { position:relative; padding-left:26px; }
+  .about-values li::before { content:'✓'; position:absolute; left:0; top:1px; color:#16a34a; font-weight:950; }
+  .about-values b, .about-values span { display:block; }
+  .about-values b { color:#061735; font-size:14px; }
+  .about-values span { margin-top:2px; color:#64748b; font-size:12px; line-height:1.45; }
+  .about-contact { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:25px 28px; margin-bottom:16px; background:linear-gradient(135deg,#061735,#0c2d5d); }
+  .about-contact > div:first-child > span { color:#70c8ff; font-size:12px; font-weight:950; text-transform:uppercase; letter-spacing:.08em; }
+  .about-contact h2, .about-contact p { color:#fff; }
+  .about-contact > div:last-child { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .about-contact .primary-pill { background:#fff; color:#061735; box-shadow:none; }
+  .about-contact > div:last-child > a:last-child { color:#fff; font-weight:900; text-decoration:none; white-space:nowrap; }
+  .about-company { padding:20px 24px; }
+  .about-company strong { color:#061735; font-size:17px; }
+  @media(max-width:900px){.about-panel{grid-template-columns:1fr}.about-values{border-left:0;border-top:1px solid #dbe8f6}.about-contact{align-items:flex-start;flex-direction:column}}
+  @media(max-width:650px){.about-highlights{grid-template-columns:1fr}.about-main,.about-values{padding:22px}.about-contact{padding:22px}.about-contact>div:last-child{align-items:flex-start;flex-direction:column}}
+</style>

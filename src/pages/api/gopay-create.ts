@@ -10,6 +10,7 @@ import { nextTmOrderNumber } from "../../lib/order-number";
 import { getOrCreateOrderNumber } from "../../lib/order-idempotency";
 import { getEnv as env, getGoPayAccessToken, getGoPayHost } from "../../lib/gopay-client";
 import { validateCheckoutRequest } from "../../lib/checkout-validation";
+import { makePaymentAccessToken, paymentReturnUrl } from "../../lib/payment-access";
 
 export const prerender = false;
 
@@ -162,6 +163,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const orderNumber = requestId
       ? await getOrCreateOrderNumber(`gopay-${requestId}`, nextTmOrderNumber)
       : await nextTmOrderNumber();
+    const accessToken = makePaymentAccessToken(orderNumber);
 
     const paymentBody = {
       payer: {
@@ -188,7 +190,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       order_description: `Objednávka ${orderNumber} - ToneryMaxim.sk`,
       items,
       callback: {
-        return_url: returnUrl,
+        return_url: paymentReturnUrl(returnUrl, accessToken),
         notification_url: notifyUrl,
       },
       lang: "SK",
@@ -263,9 +265,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       createdAt: new Date().toISOString(),
       termsAcceptedAt: checkout.termsAcceptedAt,
       customerId: session?.id || undefined,
+      paymentAccessRequired: true,
     };
 
     await profiler.measure("save-pending-gopay-order", () => savePendingGoPayOrder(pendingSource));
+    cookies.set('tm_gopay_access', accessToken, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: import.meta.env.PROD,
+      maxAge: 24 * 60 * 60,
+    });
 
     // GoPay objednávku zapisujeme do Woo hneď po vytvorení platby aj vtedy,
     // keď zákazník platbu následne zruší alebo sa ju nepodarí dokončiť.
@@ -282,6 +292,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       gwUrl: paymentData.gw_url,
       amount: totalCents,
       currency: "EUR",
+      accessToken,
     }), {
       status: 200,
       headers: { "Content-Type": "application/json; charset=utf-8" },

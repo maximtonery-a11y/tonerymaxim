@@ -4,7 +4,6 @@ import { ensureAsyncOrderQueueStarted } from './lib/async-order-queue';
 import { authSecret } from './lib/runtime-secret';
 import { persistenceSecret } from './lib/secure-persistence';
 import { ensureProductsCacheWarmStarted } from './lib/tm-products-cache';
-import { ensureTonerCareWorkerStarted } from './lib/toner-care';
 import {
   bodyTooLarge,
   rateLimitFor,
@@ -35,7 +34,9 @@ function isNoIndexHost(hostname: string): boolean {
 }
 
 function shouldInjectAnalytics(pathname: string): boolean {
-  return !pathname.startsWith('/api/') && !pathname.startsWith('/admin/');
+  return !pathname.startsWith('/api/')
+    && !pathname.startsWith('/admin/')
+    && !isPrivateNoIndexPath(pathname);
 }
 
 function optionalGoogleTag(): string {
@@ -112,7 +113,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     ensureEmailQueueStarted();
     ensureAsyncOrderQueueStarted();
     ensureProductsCacheWarmStarted();
-    ensureTonerCareWorkerStarted();
   }
 
   const { request, url } = context;

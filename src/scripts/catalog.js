@@ -1,4 +1,4 @@
-import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
+import { getDispatchParts } from "./dispatch-message.js";
 
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
@@ -73,7 +73,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
   const CART_KEY = "tm_cart_v1";
 
-  const CATALOG_CACHE_VERSION = "tm_catalog_v4";
+  const CATALOG_CACHE_VERSION = "tm_catalog_v3";
   const CATALOG_CACHE_TTL = 10 * 60 * 1000;
 
   let currentPage = 1;
@@ -164,7 +164,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       },
       type: { compatible: "Kompatibilné", original: "Originálne", renovated: "Renovované" },
       color: { cierna: "Čierna", cyan: "Cyan", purpurova: "Purpurová", yellow: "Yellow", multipack: "Multipack" },
-      stock: { instock: "Skladom", "expedujeme-dnes": "Skladom", "10plus": "Viac ako 10 ks" },
+      stock: { instock: "Skladom", "expedujeme-dnes": "Expedujeme dnes", "10plus": "Viac ako 10 ks" },
     };
     return labels[kind]?.[value] || value || "";
   }
@@ -385,15 +385,27 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     return "is-unknown";
   }
 
-  function mobileGroupInfo(key) {
-    if (key === "compatible") return { title: "Kompatibilný", key };
-    if (key === "original") return { title: "Originál", key };
-    if (key === "renovated") return { title: "Renovovaný", key };
-    return { title: "Produkt", key: "product" };
+  function mobileGroupInfo(key, count) {
+    if (key === "compatible") return { title: `Kompatibilné tonery (${count})`, key };
+    if (key === "original") return { title: `Originálne tonery (${count})`, key };
+    if (key === "renovated") return { title: `Renovované tonery (${count})`, key };
+    return { title: `Ostatné produkty (${count})`, key: "product" };
   }
 
-  function dispatchText(product) {
-    return product.stock_status === "instock" ? getDispatchMessage() : "Termín dodania overíme";
+  function mobileGroupCounts(products) {
+    return products.reduce((acc, product) => {
+      const key = product?.product_type_key || "product";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+  }
+
+  function dispatchInfo(product) {
+    if (product.stock_status === "instock") return getDispatchParts();
+    return {
+      title: "Termín dodania",
+      detail: "overíme individuálne",
+    };
   }
 
   function normalizePrinter(value) {
@@ -674,6 +686,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const sortedProducts = sortProducts(products);
     status.textContent = `Načítané produkty: ${sortedProducts.length}`;
 
+    const groupCounts = mobileGroupCounts(sortedProducts);
     let previousMobileGroup = "";
 
     sortedProducts.forEach((product) => {
@@ -682,7 +695,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
       if (mobileGroupKey !== previousMobileGroup) {
         previousMobileGroup = mobileGroupKey;
-        const group = mobileGroupInfo(mobileGroupKey);
+        const group = mobileGroupInfo(mobileGroupKey, groupCounts[mobileGroupKey] || 0);
         const heading = document.createElement("h2");
         heading.className = `tm-mobile-product-group tm-mobile-product-group--${group.key}`;
         heading.textContent = group.title;
@@ -690,6 +703,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       }
 
       const printers = getPrinters(product);
+      const dispatch = dispatchInfo(product);
       const row = document.createElement("article");
       row.className = `tm-product-row tm-product-row--${type.key}`;
 
@@ -717,9 +731,12 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
             <div class="tm-row-meta">${productParams(product)}</div>
             <div class="tm-row-compat">
               <button type="button" data-open-printers>Vhodné pre ${printers.length || 0} tlačiarní</button>
-              <span class="tm-dispatch" ${product.stock_status === "instock" ? "data-tm-dispatch-message" : ""}>
+              <span class="tm-dispatch">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
-                ${esc(dispatchText(product))}
+                <span class="tm-dispatch-copy">
+                  <strong>${esc(dispatch.title)}</strong>
+                  <small>${esc(dispatch.detail)}</small>
+                </span>
               </span>
             </div>
           </div>
@@ -762,8 +779,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
       list.appendChild(row);
     });
-
-    refreshDispatchMessages(list);
   }
 
   function updatePagination() {
@@ -836,8 +851,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
   document.addEventListener("DOMContentLoaded", () => {
     updateCartBadge();
-    refreshDispatchMessages(document);
-    window.setInterval(() => refreshDispatchMessages(document), 60000);
 
     const url = new URL(window.location.href);
     currentSearch = (url.searchParams.get("s") || url.searchParams.get("search") || url.searchParams.get("q") || "").trim();

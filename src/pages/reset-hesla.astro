@@ -12,7 +12,7 @@ const session = readCustomerSession(Astro.cookies);
 if (session) return Astro.redirect("/ucet");
 
 const token = Astro.url.searchParams.get("token") || "";
-const validToken = Boolean(verifyPasswordResetToken(token));
+const validToken = Boolean(await verifyPasswordResetToken(token));
 ---
 
 <!doctype html>
@@ -40,11 +40,11 @@ const validToken = Boolean(verifyPasswordResetToken(token));
               <input type="hidden" name="token" value={token} />
               <div class="tm-field">
                 <label for="new-password">Nové heslo</label>
-                <input id="new-password" name="password" type="password" placeholder="aspoň 8 znakov" autocomplete="new-password" required minlength="8" />
+                <input id="new-password" name="password" type="password" placeholder="12 až 128 znakov" autocomplete="new-password" required minlength="12" maxlength="128" />
               </div>
               <div class="tm-field">
                 <label for="new-password2">Potvrďte heslo</label>
-                <input id="new-password2" name="password2" type="password" placeholder="zopakujte heslo" autocomplete="new-password" required minlength="8" />
+                <input id="new-password2" name="password2" type="password" placeholder="zopakujte heslo" autocomplete="new-password" required minlength="12" maxlength="128" />
               </div>
               <button class="tm-btn" type="submit" data-auth-submit>Zmeniť heslo</button>
             </form>

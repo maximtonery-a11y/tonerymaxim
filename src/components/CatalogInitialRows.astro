@@ -1,4 +1,6 @@
 ---
+import { getDispatchParts } from "../scripts/dispatch-message.js";
+
 type Product = Record<string, any>;
 
 const { products = [] } = Astro.props as { products?: Product[] };
@@ -26,9 +28,9 @@ const stockText = (product: Product) => {
 };
 
 const stockClass = (product: Product) => product.stock_status === "instock" ? "is-instock" : product.stock_status === "outofstock" ? "is-outofstock" : product.stock_status === "onbackorder" ? "is-backorder" : "is-unknown";
-// Serverový text je bezpečný fallback. Po načítaní stránky ho spoločný klientsky
-// modul nahradí rovnakou časovou správou, akú používa detail produktu a košík.
-const dispatchText = (product: Product) => product.stock_status === "instock" ? "Expedujeme najbližší pracovný deň" : "Termín dodania overíme";
+const dispatchInfo = (product: Product) => product.stock_status === "instock"
+  ? getDispatchParts()
+  : { title: "Termín dodania", detail: "overíme individuálne" };
 const colorHex = (value: unknown) => {
   const c = String(value || "").toLowerCase();
   if (c.includes("žlt") || c.includes("zlt") || c.includes("yellow")) return "#facc15";
@@ -49,7 +51,12 @@ const productDetailUrl = (product: Product) => {
   return slug ? `/produkt/${encodeURIComponent(slug)}` : "/produkty";
 };
 const printers = (product: Product) => Array.isArray(product.compatible_printers) ? product.compatible_printers.filter(Boolean) : [];
-const groupTitle = (key: string) => key === "compatible" ? "Kompatibilný" : key === "original" ? "Originál" : key === "renovated" ? "Renovovaný" : "Produkt";
+const groupCounts = products.reduce<Record<string, number>>((acc, product) => {
+  const key = product.product_type_key || "product";
+  acc[key] = (acc[key] || 0) + 1;
+  return acc;
+}, {});
+const groupTitle = (key: string) => key === "compatible" ? `Kompatibilné tonery (${groupCounts[key] || 0})` : key === "original" ? `Originálne tonery (${groupCounts[key] || 0})` : key === "renovated" ? `Renovované tonery (${groupCounts[key] || 0})` : `Ostatné produkty (${groupCounts[key] || 0})`;
 let previousGroup = "";
 ---
 {products.map((product) => {
@@ -60,6 +67,7 @@ let previousGroup = "";
   const color = product.color || "Neuvedené";
   const capacity = product.yield || product.page_yield || product.capacity || product.kapacita || "Neuvedené";
   const inStock = product.stock_status === "instock";
+  const dispatch = dispatchInfo(product);
   return (
     <>
       {showGroup && <h2 class={`tm-mobile-product-group tm-mobile-product-group--${type.key}`}>{groupTitle(type.key)}</h2>}
@@ -88,7 +96,13 @@ let previousGroup = "";
             </div>
             <div class="tm-row-compat">
               <button type="button" data-open-printers>Vhodné pre {productPrinters.length} tlačiarní</button>
-              <span class="tm-dispatch" data-tm-dispatch-message={inStock ? "" : undefined}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"></path><path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path></svg>{dispatchText(product)}</span>
+              <span class="tm-dispatch">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"></path><path d="M7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path></svg>
+                <span class="tm-dispatch-copy">
+                  <strong>{dispatch.title}</strong>
+                  <small>{dispatch.detail}</small>
+                </span>
+              </span>
             </div>
           </div>
         </div>

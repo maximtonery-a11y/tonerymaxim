@@ -31,7 +31,7 @@ import InfoPageShell from "../components/InfoPageShell.astro";
                   <label>E-mail *<input type="email" name="email" required autocomplete="email" placeholder="email@example.sk" /></label>
                   <label>Meno a priezvisko *<input name="name" required autocomplete="name" /></label>
                   <label>Telefón<input name="phone" autocomplete="tel" placeholder="+421 917 859 206" /></label>
-                  <label>IBAN na vrátenie peňazí *<input name="iban" required placeholder="SK.." autocomplete="off" /></label>
+                  <label>IBAN – iba ak žiadate inú dohodnutú formu vrátenia<input name="iban" placeholder="SK.." autocomplete="off" /></label>
                   <label>Dátum prevzatia tovaru<input type="date" name="receivedAt" /></label>
                 </div>
                 <label>Adresa kupujúceho *<textarea name="address" rows="3" required placeholder="Ulica a číslo, PSČ, mesto"></textarea></label>
@@ -51,6 +51,15 @@ import InfoPageShell from "../components/InfoPageShell.astro";
               <article class="notice-card"><span class="info-icon">@</span><div><b>Kontakt</b><small>info@tonerymaxim.sk · +421917859206 · Po-Pi 9:00-15:00</small></div></article>
             </aside>
           </section>
+          <article class="legal-panel">
+            <header class="legal-panel-head"><h2>Ako odstúpenie funguje</h2></header>
+            <div class="legal-content">
+              <section><h2>Lehota a oznámenie</h2><p>Spotrebiteľ môže od zmluvy uzavretej na diaľku odstúpiť bez uvedenia dôvodu do 14 dní od prevzatia tovaru. Lehota je zachovaná, ak oznámenie odošlete najneskôr v jej posledný deň. Použitie tohto formulára nie je povinné; odstúpenie možno poslať aj jednoznačným vyhlásením na info@tonerymaxim.sk alebo poštou.</p></section>
+              <section><h2>Vrátenie tovaru</h2><p>Tovar odošlite alebo odovzdajte najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak. Tovar primerane zabaľte. Za zníženie hodnoty zodpovedáte len v rozsahu, ktorý vznikol zaobchádzaním nad rámec potrebný na zistenie vlastností a funkčnosti.</p></section>
+              <section><h2>Vrátenie platby</h2><p>Platby vrátane nákladov na najlacnejší bežný spôsob dodania vrátime najneskôr do 14 dní od doručenia oznámenia. Platbu môžeme zadržať do doručenia tovaru alebo preukázania jeho odoslania. Použijeme rovnaký spôsob platby, ak sa výslovne nedohodneme inak; IBAN preto nie je povinný.</p></section>
+              <section><h2>Zákonné výnimky</h2><p>Právo na odstúpenie sa neuplatní v prípadoch uvedených zákonom, napríklad pri tovare vyrobenom podľa osobitných požiadaviek spotrebiteľa. Bežné otvorenie obalu tonerovej alebo atramentovej náplne samo osebe automaticky neruší právo na odstúpenie; môže však ovplyvniť zodpovednosť za zníženie hodnoty.</p></section>
+            </div>
+          </article>
         </InfoPageShell>
       </main>
       <Footer showTrust={false} />

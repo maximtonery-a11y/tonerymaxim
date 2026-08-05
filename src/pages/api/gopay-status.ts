@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { processPaidGoPayOrder, readPendingGoPayOrder, syncWooGoPayPaymentState } from "../../lib/checkout-order";
 import { verifyGoPayPaymentAgainstOrder } from "../../lib/gopay-client";
+import { verifyPaymentAccessToken } from "../../lib/payment-access";
 
 export const prerender = false;
 
@@ -40,7 +41,7 @@ function getUiState(state: string) {
   }
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, cookies }) => {
   try {
     const paymentId = url.searchParams.get("id") || "";
 
@@ -50,12 +51,19 @@ export const GET: APIRoute = async ({ url }) => {
         error: "Chýba ID platby.",
       }), {
         status: 400,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
       });
     }
 
     const pending = await readPendingGoPayOrder(paymentId);
     if (!pending) throw new Error(`Neznáma GoPay platba ${paymentId}.`);
+    const access = url.searchParams.get('access') || cookies.get('tm_gopay_access')?.value;
+    if ((pending as any).paymentAccessRequired && !verifyPaymentAccessToken(access, pending.orderNumber)) {
+      return new Response(JSON.stringify({ ok: false, error: 'Odkaz na stav platby nie je platný alebo expiroval.' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+      });
+    }
     const amountCents = Number(pending.amountCents);
     if (!Number.isFinite(amountCents) || amountCents <= 0) throw new Error(`GoPay platba ${paymentId} nemá platnú očakávanú sumu.`);
     const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents, currency: pending.currency, requirePaid: false });
@@ -113,7 +121,7 @@ export const GET: APIRoute = async ({ url }) => {
       } : null,
     }), {
       status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
+      headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
     });
   } catch (error: any) {
     console.error("GoPay status error", error?.message || error);
@@ -132,7 +140,7 @@ export const GET: APIRoute = async ({ url }) => {
       } : null,
     }), {
       status: 500,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
+      headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
     });
   }
 };

@@ -10,7 +10,7 @@ const shipping = [
   ["▣", "Kuriér GLS a DPD", "Doručenie priamo na adresu zákazníka.", "3,90 € s DPH", false],
   ["▦", "GLS Balíkomat / ParcelShop", "Vyzdvihnutie v balíkomate alebo na výdajnom mieste GLS.", "2,90 € s DPH", false],
   ["□", "DPD Pickup a DPD Pickup Box", "Vyzdvihnutie na výdajnom mieste alebo v boxe DPD.", "2,90 € s DPH", false],
-  ["✓", "Doprava od 29 € s DPH", "Pri objednávke nad stanovenú hodnotu je doprava zdarma.", "0 €", true],
+  ["✓", "Doprava od 29 € s DPH", "Pri hodnote tovaru po zľavách najmenej 29 € je ponúkaná doprava zdarma.", "0 €", true],
 ];
 const payments = [
   ["G", "GoPay online", "Online platba kartou alebo podporovanou platobnou metódou.", "0 €"],
@@ -24,7 +24,7 @@ const payments = [
   <section class="shipping-highlights">
     <article class="contact-card"><span class="info-icon">🚚</span><div><h2>Doručenie kuriérom</h2><p>GLS alebo DPD doručí zásielku priamo na adresu zákazníka.</p></div></article>
     <article class="contact-card"><span class="info-icon">📦</span><div><h2>Boxy a výdajné miesta</h2><p>GLS Balíkomat, GLS ParcelShop, DPD Pickup a DPD Pickup Box.</p></div></article>
-    <article class="contact-card"><span class="info-icon">✓</span><div><h2>Doprava zdarma</h2><p>Pri objednávke od 29 € s DPH je doprava za 0 €.</p></div></article>
+    <article class="contact-card"><span class="info-icon">✓</span><div><h2>Doprava zdarma</h2><p>Pri hodnote tovaru po zľavách najmenej 29 € s DPH je doprava za 0 €.</p></div></article>
   </section>
   <section class="shipping-grid">
     <article class="price-card"><span class="card-eyebrow">Doprava</span><h2>Možnosti doručenia</h2><div class="price-list">
@@ -35,10 +35,19 @@ const payments = [
     </div></article>
   </section>
   <section class="trust-row">
-    <div class="trust-pill"><span>🚚</span>Expedujeme do 24 hodín pri tovare skladom</div>
+    <div class="trust-pill"><span>🚚</span>Skladom: expedícia dnes do 15:00, inak najbližší pracovný deň</div>
     <div class="trust-pill"><span>☆</span>17+ rokov skúseností na trhu</div>
     <div class="trust-pill"><span>◎</span>30 000+ vybavených objednávok</div>
     <div class="trust-pill"><span>🔒</span>Bezpečný nákup a ochrana údajov</div>
   </section>
+  <article class="legal-panel">
+    <header class="legal-panel-head"><h2>Dôležité podmienky dopravy a platby</h2><p>Konečnú cenu a dostupné kombinácie vždy uvidíte v pokladni pred odoslaním objednávky.</p></header>
+    <div class="legal-content">
+      <section><h2>Expedícia a doručenie</h2><p>Tovar označený „Skladom“ objednaný v pracovný deň do 15:00 expedujeme spravidla v ten istý pracovný deň. Objednávku prijatú po 15:00, cez víkend alebo sviatok expedujeme spravidla najbližší pracovný deň. Pri platbe prevodom začína príprava po pripísaní úhrady.</p><p>Uvádzaná expedícia nie je garantovaný čas doručenia. DPD a GLS doručujú bežne v priebehu 1–2 pracovných dní od prevzatia zásielky; konkrétny termín môže ovplyvniť dopravca, adresa, sviatok alebo mimoriadna udalosť.</p></section>
+      <section><h2>Doprava zdarma</h2><p>Hranica 29 € sa posudzuje z hodnoty tovaru s DPH po uplatnení množstevnej, kupónovej a vernostnej zľavy. Doplatok za dobierku nie je súčasťou hodnoty tovaru. Platná cena dopravy sa vždy zobrazí v súhrne objednávky.</p></section>
+      <section><h2>Platba prevodom</h2><p><strong>Majiteľ účtu:</strong> Roman Babčan INkarus<br /><strong>Banka:</strong> VÚB<br /><strong>IBAN:</strong> SK62 0200 0000 0032 9932 3851<br /><strong>Variabilný symbol:</strong> číslo objednávky uvedené na obrazovke a v e-maile.</p><p>Objednávku neuhrádzajte bez správneho variabilného symbolu. Pri firemnom alebo organizačnom prevode môže byť splatnosť dohodnutá individuálne; nejde o automatický nárok.</p></section>
+      <section><h2>Výdajné miesta</h2><p>Pri DPD Pickup/Box alebo GLS ParcelShop/Balíkomat je potrebné v pokladni vybrať konkrétne miesto. Prevádzku, kapacitu boxu a čas uloženia zásielky určuje dopravca. Kontaktné údaje odovzdáme zvolenému dopravcovi iba na doručenie a súvisiacu komunikáciu.</p></section>
+    </div>
+  </article>
 </InfoPageShell>
 </main><Footer showTrust={false} /><FloatingAdvisor /></div></body></html>

@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { readPendingGoPayOrder, savePendingGoPayOrder } from "../../lib/checkout-order";
 import { getEnv, getGoPayAccessToken, getGoPayHost } from "../../lib/gopay-client";
+import { makePaymentAccessToken, paymentReturnUrl, verifyPaymentAccessToken } from "../../lib/payment-access";
 
 export const prerender = false;
 
@@ -8,7 +9,7 @@ function clean(value: unknown) {
   return String(value ?? "").trim();
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const body = await request.json().catch(() => ({}));
     const oldPaymentId = clean(body?.paymentId || body?.id);
@@ -26,6 +27,13 @@ export const POST: APIRoute = async ({ request }) => {
         headers: { "Content-Type": "application/json; charset=utf-8" },
       });
     }
+    const access = body?.access || cookies.get('tm_gopay_access')?.value;
+    if ((pending as any).paymentAccessRequired && !verifyPaymentAccessToken(access, pending.orderNumber)) {
+      return new Response(JSON.stringify({ ok: false, error: 'Odkaz na opakovanie platby nie je platný alebo expiroval.' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+      });
+    }
 
     const goid = getEnv("GOPAY_GOID");
     const returnUrl = getEnv("GOPAY_RETURN_URL");
@@ -36,6 +44,7 @@ export const POST: APIRoute = async ({ request }) => {
     const contact = pending.contact || {};
     const billing = pending.billing || {};
     const token = await getGoPayAccessToken("payment-create");
+    const accessToken = makePaymentAccessToken(pending.orderNumber);
     const paymentBody = {
       payer: {
         default_payment_instrument: "PAYMENT_CARD",
@@ -62,7 +71,7 @@ export const POST: APIRoute = async ({ request }) => {
         count: 1,
         vat_rate: 23,
       }],
-      callback: { return_url: returnUrl, notification_url: notifyUrl },
+      callback: { return_url: paymentReturnUrl(returnUrl, accessToken), notification_url: notifyUrl },
       lang: "SK",
     };
 
@@ -91,13 +100,22 @@ export const POST: APIRoute = async ({ request }) => {
       amountCents,
       retryOfPaymentId: oldPaymentId,
       retriedAt: new Date().toISOString(),
+      paymentAccessRequired: true,
     } as any);
+    cookies.set('tm_gopay_access', accessToken, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: import.meta.env.PROD,
+      maxAge: 24 * 60 * 60,
+    });
 
     return new Response(JSON.stringify({
       ok: true,
       paymentId: String(data.id),
       orderNumber: pending.orderNumber,
       gwUrl: String(data.gw_url),
+      accessToken,
     }), {
       status: 200,
       headers: {

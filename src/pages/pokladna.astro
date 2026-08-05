@@ -42,15 +42,6 @@ const title = "Pokladňa | ToneryMaxim.sk";
           <span>3. Dokončenie</span>
         </nav>
 
-        <div class="checkout-mobile-guide" data-checkout-mobile-guide aria-live="polite">
-          <div>
-            <span data-checkout-mobile-step-label>Krok 1 z 3</span>
-            <strong data-checkout-mobile-step-title>Kontakt</strong>
-          </div>
-          <div class="checkout-mobile-guide-track" data-checkout-mobile-progress-track role="progressbar" aria-label="Dokončenie údajov objednávky" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><i data-checkout-mobile-progress></i></div>
-          <small>Vyplňte aktuálny krok a pokračujte tlačidlom nižšie.</small>
-        </div>
-
         <div class="checkout-empty" data-checkout-empty hidden>
           <h1>Košík je prázdny</h1>
           <p>Pred pokračovaním do pokladne pridajte produkt do košíka.</p>
@@ -73,7 +64,6 @@ const title = "Pokladňa | ToneryMaxim.sk";
                 <label>Email *<input id="email" name="email" type="email" autocomplete="email" required placeholder="vas@email.sk" /></label>
                 <label>Telefón *<input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="+421 917 859 206" /></label>
               </div>
-              <button class="checkout-step-next" type="button" data-checkout-next="delivery">Pokračovať na dopravu a platbu <span aria-hidden="true">→</span></button>
               </div>
             </section>
 
@@ -119,7 +109,6 @@ const title = "Pokladňa | ToneryMaxim.sk";
                   </div>
                 </div>
               </div>
-              <button class="checkout-step-next" type="button" data-checkout-next="billing">Pokračovať na fakturačné údaje <span aria-hidden="true">→</span></button>
               </div>
             </section>
 
@@ -162,14 +151,6 @@ const title = "Pokladňa | ToneryMaxim.sk";
                 <label>Priezvisko *<input name="last_name" autocomplete="family-name" required /></label>
               </div>
 
-              <section class="checkout-saved-addresses" data-checkout-saved-addresses hidden>
-                <div class="checkout-saved-addresses__head">
-                  <div><strong>Kam máme objednávku doručiť?</strong><span>Vyberte uloženú adresu alebo zadajte inú.</span></div>
-                  <a href="/ucet/adresy">Spravovať adresy</a>
-                </div>
-                <div class="checkout-saved-addresses__list" data-checkout-saved-address-list></div>
-              </section>
-
               <label class="checkline"><input id="different_address" type="checkbox" /> Doručiť na inú adresu</label>
 
               <div class="delivery-address" data-delivery-address hidden>
@@ -190,7 +171,6 @@ const title = "Pokladňa | ToneryMaxim.sk";
                   <label>Telefón<input name="delivery_phone" type="tel" inputmode="tel" autocomplete="shipping tel" placeholder="+421 917 859 206" /></label>
                 </div>
               </div>
-              <button class="checkout-step-next" type="button" data-checkout-next="summary">Skontrolovať objednávku <span aria-hidden="true">→</span></button>
               </div>
             </section>
           </form>
@@ -205,13 +185,13 @@ const title = "Pokladňa | ToneryMaxim.sk";
               <div class="checkout-items" data-checkout-items></div>
               <div class="free-shipping-box" data-free-shipping></div>
               <div class="summary-line"><span>Tovar</span><strong data-summary-subtotal>0,00 €</strong></div>
-              <div class="summary-line summary-discount" data-summary-discount-line hidden><span>Množstevná / sadová zľava</span><strong data-summary-discount></strong></div>
+              <div class="summary-line summary-discount" data-summary-discount-line hidden><span>Množstevná / sadová zľava</span><strong data-summary-discount>-0,00 €</strong></div>
               <div class="summary-line"><span data-summary-shipping-label>Doprava</span><strong data-summary-shipping>0,00 €</strong></div>
               <div class="summary-line"><span data-summary-payment-label>Platba</span><strong data-summary-payment>0,00 €</strong></div>
               <div class="summary-line"><span>Základ bez DPH</span><strong data-summary-net>0,00 €</strong></div>
               <div class="summary-line"><span>DPH 23 %</span><strong data-summary-vat>0,00 €</strong></div>
               <div class="summary-total"><span>Spolu s DPH</span><strong data-summary-total>0,00 €</strong></div>
-              <label class="checkline terms-line"><input id="terms" type="checkbox" /> Súhlasím s obchodnými podmienkami a spracovaním osobných údajov.</label>
+              <label class="checkline terms-line"><input id="terms" type="checkbox" /> Potvrdzujem, že som sa oboznámil/a s <a href="/obchodne-podmienky" target="_blank" rel="noopener">obchodnými podmienkami</a> a <a href="/ochrana-osobnych-udajov" target="_blank" rel="noopener">zásadami ochrany osobných údajov</a>.</label>
               <button class="order-button" type="button" data-submit-order>🔒 Objednať s povinnosťou platby</button>
               <div class="secure-note">Bezpečná platba cez GoPay · Pomoc na telefóne +421 917 859 206</div>
               <div class="trust-mini"><span>✓ 17 rokov skúseností</span><span>✓ 30 000+ objednávok</span><span>✓ Overené zákazníkmi</span></div>
@@ -241,14 +221,6 @@ const title = "Pokladňa | ToneryMaxim.sk";
           <strong data-mobile-total>0,00 €</strong>
           <span>Objednať s povinnosťou platby</span>
         </button>
-      </div>
-
-      <div class="checkout-submit-overlay" data-checkout-submit-overlay hidden role="status" aria-live="assertive" aria-atomic="true">
-        <div class="checkout-submit-dialog">
-          <span class="checkout-submit-spinner" aria-hidden="true"></span>
-          <strong data-checkout-submit-title>Objednávku odosielame</strong>
-          <p data-checkout-submit-message>Prosím, chvíľu počkajte a nezatvárajte túto stránku.</p>
-        </div>
       </div>
 
       <div class="dpd-widget-modal" data-dpd-modal hidden>

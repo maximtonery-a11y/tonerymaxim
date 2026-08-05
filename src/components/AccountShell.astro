@@ -60,7 +60,9 @@ const navItems = [
           ))}
         </nav>
 
-        <a class="account-logout" href="/api/auth/logout">↪ Odhlásiť sa</a>
+        <form method="post" action="/api/auth/logout">
+          <button class="account-logout" type="submit">↪ Odhlásiť sa</button>
+        </form>
       </aside>
 
       <section class="account-content">

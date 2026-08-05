@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const password2 = String(body.password2 || "");
 
     if (!currentPassword) return json({ ok: false, error: "Zadajte aktuálne heslo." }, 400);
-    if (password.length < 8) return json({ ok: false, error: "Nové heslo musí mať aspoň 8 znakov." }, 400);
+    if (password.length < 12 || password.length > 128) return json({ ok: false, error: "Nové heslo musí mať 12 až 128 znakov." }, 400);
     if (password !== password2) return json({ ok: false, error: "Nové heslá sa nezhodujú." }, 400);
 
     const verified = await verifyWordPressLogin(session.email, currentPassword);
