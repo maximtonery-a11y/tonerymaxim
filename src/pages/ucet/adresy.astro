@@ -4,7 +4,8 @@ import "../../styles/footer.css";
 import "../../styles/account.css";
 import { readCustomerSession, setCustomerCookie } from "../../lib/auth-session";
 import { getWooCustomerById } from "../../lib/woo-client";
-import { customerToSession, getBilling, getShipping, getCustomerMeta } from "../../lib/account-data";
+import { customerToSession, getBilling, getCustomerMeta } from "../../lib/account-data";
+import { getCustomerShippingAddresses } from "../../lib/customer-addresses";
 import AccountShell from "../../components/AccountShell.astro";
 
 const session = readCustomerSession(Astro.cookies);
@@ -14,7 +15,7 @@ if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 const billing = getBilling(wooCustomer);
-const shipping = getShipping(wooCustomer);
+const shippingAddresses = getCustomerShippingAddresses(wooCustomer);
 const companyMeta = {
   ico: getCustomerMeta(wooCustomer, "tm_ico") || getCustomerMeta(wooCustomer, "billing_ico") || "",
   dic: getCustomerMeta(wooCustomer, "tm_dic") || getCustomerMeta(wooCustomer, "billing_dic") || "",
@@ -26,7 +27,7 @@ const companyMeta = {
 <html lang="sk">
   <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Adresy | ToneryMaxim.sk</title></head>
   <body>
-    <AccountShell user={customer} active="adresy" title="Adresy" subtitle="Fakturačná a dodacia adresa pre objednávky.">
+    <AccountShell user={customer} active="adresy" title="Adresy" subtitle="Fakturačné údaje a všetky miesta, na ktoré si nechávate posielať objednávky.">
       <div class="auth-alert" data-address-message hidden></div>
       <form class="account-address-form" data-address-form>
         <section class="account-list-card account-address-card account-address-card--billing">
@@ -60,50 +61,122 @@ const companyMeta = {
           </div>
         </section>
 
-        <section class="account-list-card account-address-card">
-          <div class="account-card-heading">
-            <div><span class="account-card-kicker">Doručenie</span><h3>Dodacia adresa</h3></div>
-            <p>Ak ju necháte prázdnu, použije sa fakturačná adresa.</p>
+        <section class="account-list-card account-address-card account-address-card--shipping">
+          <div class="account-card-heading account-card-heading--addresses">
+            <div><span class="account-card-kicker">Doručenie</span><h3>Uložené dodacie adresy</h3><p>V pokladni si potom vyberiete konkrétnu adresu jedným kliknutím.</p></div>
+            <button class="tm-btn tm-btn--secondary" type="button" data-add-shipping-address>+ Pridať adresu</button>
           </div>
-          <div class="account-form-grid two">
-            <label class="tm-field"><span>Meno</span><input class="account-input" name="shipping.first_name" value={shipping.first_name || ""} /></label>
-            <label class="tm-field"><span>Priezvisko</span><input class="account-input" name="shipping.last_name" value={shipping.last_name || ""} /></label>
-            <label class="tm-field span-two"><span>Firma</span><input class="account-input" name="shipping.company" value={shipping.company || ""} /></label>
-            <label class="tm-field span-two"><span>Ulica a číslo</span><input class="account-input" name="shipping.address_1" value={shipping.address_1 || ""} /></label>
-            <label class="tm-field span-two"><span>Doplnenie adresy</span><input class="account-input" name="shipping.address_2" value={shipping.address_2 || ""} /></label>
-            <label class="tm-field"><span>PSČ</span><input class="account-input" name="shipping.postcode" value={shipping.postcode || ""} /></label>
-            <label class="tm-field"><span>Mesto</span><input class="account-input" name="shipping.city" value={shipping.city || ""} /></label>
-            <label class="tm-field"><span>Krajina</span><input class="account-input" name="shipping.country" value={shipping.country || "SK"} /></label>
-            <label class="tm-field"><span>Telefón</span><input class="account-input" name="shipping.phone" value={shipping.phone || ""} /></label>
+          <div class="saved-address-list" data-shipping-addresses></div>
+          <div class="saved-address-empty" data-address-empty hidden>
+            <strong>Zatiaľ nemáte uloženú dodaciu adresu.</strong>
+            <span>Ak ju nepridáte, v pokladni sa použije fakturačná adresa.</span>
           </div>
         </section>
 
         <div class="account-address-actions">
-          <div><strong>Uložiť všetky údaje</strong><span>Po uložení ich automaticky použijeme v pokladni.</span></div>
+          <div><strong>Uložiť všetky údaje</strong><span>Predvolená dodacia adresa sa zosúladí aj s WooCommerce.</span></div>
           <button class="tm-btn" type="submit" data-address-submit>Uložiť adresy</button>
         </div>
       </form>
     </AccountShell>
 
+    <script is:inline define:vars={{ shippingAddresses }}>
+      window.__TM_SAVED_SHIPPING_ADDRESSES__ = shippingAddresses;
+    </script>
     <script>
+      type Address = {
+        id: string; label: string; first_name: string; last_name: string; company: string;
+        address_1: string; address_2: string; city: string; postcode: string; country: string;
+        phone: string; is_default: boolean;
+      };
       const form = document.querySelector<HTMLFormElement>("[data-address-form]")!;
+      const list = document.querySelector<HTMLElement>("[data-shipping-addresses]")!;
+      const empty = document.querySelector<HTMLElement>("[data-address-empty]")!;
       const msg = document.querySelector<HTMLElement>("[data-address-message]")!;
       const submit = document.querySelector<HTMLButtonElement>("[data-address-submit]")!;
-      const nest = (entries: IterableIterator<[string, FormDataEntryValue]>) => {
-        const out: Record<"billing" | "shipping", Record<string, FormDataEntryValue>> = { billing: {}, shipping: {} };
-        for (const [key, value] of entries) {
-          const [group, field] = key.split(".");
-          if ((group === "billing" || group === "shipping") && field) out[group][field] = value;
+      let addresses: Address[] = Array.isArray((window as any).__TM_SAVED_SHIPPING_ADDRESSES__)
+        ? structuredClone((window as any).__TM_SAVED_SHIPPING_ADDRESSES__)
+        : [];
+
+      const esc = (value: unknown) => String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char] || char);
+      const makeId = () => globalThis.crypto?.randomUUID?.() || `address-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const blankAddress = (): Address => ({ id: makeId(), label: "Nová dodacia adresa", first_name: "", last_name: "", company: "", address_1: "", address_2: "", city: "", postcode: "", country: "SK", phone: "", is_default: addresses.length === 0 });
+      const field = (address: Address, name: keyof Address, label: string, span = false) => `<label class="tm-field${span ? " span-two" : ""}"><span>${label}</span><input class="account-input" data-address-field="${name}" value="${esc(address[name])}" ${["label", "first_name", "last_name", "address_1", "city", "postcode"].includes(name) ? "required" : ""} /></label>`;
+
+      function render() {
+        empty.hidden = addresses.length > 0;
+        list.innerHTML = addresses.map((address, index) => `
+          <article class="saved-address-card${address.is_default ? " is-default" : ""}" data-address-index="${index}">
+            <div class="saved-address-card__head">
+              <div><span>${address.is_default ? "Predvolená adresa" : `Dodacia adresa ${index + 1}`}</span><strong>${esc(address.label)}</strong></div>
+              <div class="saved-address-card__actions">
+                <label class="saved-address-default"><input type="radio" name="default_shipping_address" ${address.is_default ? "checked" : ""} data-set-default /> Predvolená</label>
+                <button type="button" class="saved-address-remove" data-remove-address aria-label="Odstrániť adresu">Odstrániť</button>
+              </div>
+            </div>
+            <div class="account-form-grid two">
+              ${field(address, "label", "Názov adresy", true)}
+              ${field(address, "first_name", "Meno")}
+              ${field(address, "last_name", "Priezvisko")}
+              ${field(address, "company", "Firma", true)}
+              ${field(address, "address_1", "Ulica a číslo", true)}
+              ${field(address, "address_2", "Doplnenie adresy", true)}
+              ${field(address, "postcode", "PSČ")}
+              ${field(address, "city", "Mesto")}
+              ${field(address, "country", "Krajina")}
+              ${field(address, "phone", "Telefón")}
+            </div>
+          </article>`).join("");
+      }
+
+      list.addEventListener("input", (event) => {
+        const input = (event.target as HTMLElement).closest<HTMLInputElement>("[data-address-field]");
+        const card = input?.closest<HTMLElement>("[data-address-index]");
+        if (!input || !card) return;
+        const index = Number(card.dataset.addressIndex);
+        (addresses[index] as any)[input.dataset.addressField!] = input.value;
+      });
+      list.addEventListener("change", (event) => {
+        const radio = (event.target as HTMLElement).closest<HTMLInputElement>("[data-set-default]");
+        const card = radio?.closest<HTMLElement>("[data-address-index]");
+        if (!radio || !card) return;
+        const selected = Number(card.dataset.addressIndex);
+        addresses = addresses.map((address, index) => ({ ...address, is_default: index === selected }));
+        render();
+      });
+      list.addEventListener("click", (event) => {
+        const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-remove-address]");
+        const card = button?.closest<HTMLElement>("[data-address-index]");
+        if (!button || !card) return;
+        const index = Number(card.dataset.addressIndex);
+        const removedDefault = addresses[index]?.is_default;
+        addresses.splice(index, 1);
+        if (removedDefault && addresses.length) addresses[0].is_default = true;
+        render();
+      });
+      document.querySelector("[data-add-shipping-address]")?.addEventListener("click", () => {
+        addresses.push(blankAddress());
+        render();
+        list.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+
+      const nestedBilling = () => {
+        const billing: Record<string, string> = {};
+        for (const [key, value] of new FormData(form).entries()) {
+          const [group, fieldName] = key.split(".");
+          if (group === "billing" && fieldName) billing[fieldName] = String(value);
         }
-        return out;
+        return billing;
       };
       const show = (text: string, type = "error") => {
         msg.hidden = false;
         msg.textContent = text;
         msg.className = `auth-alert is-${type}`;
+        msg.scrollIntoView({ behavior: "smooth", block: "center" });
       };
-      form?.addEventListener("submit", async (event) => {
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        if (!form.reportValidity()) return;
         submit.disabled = true;
         submit.textContent = "Ukladám...";
         msg.hidden = true;
@@ -111,10 +184,12 @@ const companyMeta = {
           const response = await fetch("/api/account/update-addresses", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(nest(new FormData(form).entries())),
+            body: JSON.stringify({ billing: nestedBilling(), addresses }),
           });
           const result = await response.json();
           if (!response.ok || !result.ok) throw new Error(result.error || "Adresy sa nepodarilo uložiť.");
+          addresses = Array.isArray(result.addresses) ? result.addresses : addresses;
+          render();
           show(result.message || "Adresy boli uložené.", "success");
         } catch (error) {
           show(error instanceof Error ? error.message : "Adresy sa nepodarilo uložiť.");
@@ -123,6 +198,7 @@ const companyMeta = {
           submit.textContent = "Uložiť adresy";
         }
       });
+      render();
     </script>
   </body>
 </html>

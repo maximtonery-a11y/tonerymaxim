@@ -271,8 +271,74 @@
     return "";
   }
 
+  function customerMetaValue(customer, key) {
+    const meta = Array.isArray(customer?.meta_data) ? customer.meta_data : [];
+    return [...meta].reverse().find((item) => item?.key === key)?.value;
+  }
+
+  function savedShippingAddresses(customer) {
+    let raw = customerMetaValue(customer, "tm_shipping_addresses");
+    if (typeof raw === "string") {
+      try { raw = JSON.parse(raw); } catch { raw = []; }
+    }
+    if (!Array.isArray(raw)) raw = [];
+    const saved = raw.filter((address) => address && address.address_1 && address.city && address.postcode).slice(0, 20);
+    if (saved.length) return saved;
+    const fallback = customer?.shipping || {};
+    return hasUsableShippingAddress(fallback)
+      ? [{ ...fallback, id: "default-shipping", label: "Predvolená dodacia adresa", is_default: true }]
+      : [];
+  }
+
+  function useSavedShippingAddress(address) {
+    const billing = window.__TM_CHECKOUT_CUSTOMER__?.billing || {};
+    writeInput("delivery_first_name", address.first_name || billing.first_name || "", true);
+    writeInput("delivery_last_name", address.last_name || billing.last_name || "", true);
+    writeInput("delivery_street", address.address_1 || "", true);
+    writeInput("delivery_zip", address.postcode || "", true);
+    writeInput("delivery_city", address.city || "", true);
+    writeInput("delivery_phone", normalizePhone(address.phone || billing.phone || ""), true);
+    writeInput("delivery_email", window.__TM_CHECKOUT_CUSTOMER__?.email || billing.email || "", true);
+    const different = document.querySelector("#different_address");
+    if (different) different.checked = true;
+    updateVisibility();
+    refreshCheckoutProgress();
+  }
+
+  function renderSavedShippingAddresses(customer) {
+    const box = document.querySelector("[data-checkout-saved-addresses]");
+    const list = document.querySelector("[data-checkout-saved-address-list]");
+    if (!box || !list) return;
+    const addresses = savedShippingAddresses(customer);
+    box.hidden = addresses.length === 0;
+    if (!addresses.length) {
+      list.innerHTML = "";
+      return;
+    }
+    const escText = (value) => String(value ?? "").replace(/[&<>'\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '\"': "&quot;" })[char] || char);
+    list.innerHTML = addresses.map((address, index) => {
+      const parts = [address.address_1, [address.postcode, address.city].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+      return `<button type="button" class="checkout-saved-address${address.is_default ? " is-default" : ""}" data-checkout-saved-address="${index}">
+        <span>${address.is_default ? "Predvolená" : "Uložená adresa"}</span>
+        <strong>${escText(address.label || `Dodacia adresa ${index + 1}`)}</strong>
+        <small>${escText(parts)}</small>
+      </button>`;
+    }).join("");
+    list.querySelectorAll("[data-checkout-saved-address]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const index = Number(button.dataset.checkoutSavedAddress);
+        const selected = addresses[index];
+        if (!selected) return;
+        list.querySelectorAll(".checkout-saved-address").forEach((item) => item.classList.remove("is-selected"));
+        button.classList.add("is-selected");
+        useSavedShippingAddress(selected);
+      });
+    });
+  }
+
   function hydrateCheckoutFromCustomer(customer) {
     if (!customer) return null;
+    window.__TM_CHECKOUT_CUSTOMER__ = customer;
 
     const billing = customer.billing || {};
     const shipping = customer.shipping || {};
@@ -315,6 +381,8 @@
       writeInput("delivery_email", customer.email || billing.email || "", true);
     }
     if (different) different.checked = false;
+
+    renderSavedShippingAddresses(customer);
 
     updateVisibility();
     renderCheckoutSummary();
@@ -849,6 +917,8 @@
 
     const differentAddressLine = document.querySelector("#different_address")?.closest(".checkline");
     if (differentAddressLine) differentAddressLine.hidden = needsPickup;
+    const savedAddressPicker = document.querySelector("[data-checkout-saved-addresses]");
+    if (savedAddressPicker) savedAddressPicker.toggleAttribute("hidden", needsPickup || !savedAddressPicker.querySelector("[data-checkout-saved-address]"));
 
     renderPickupSummary();
     document.querySelector("[data-company-box]")?.toggleAttribute("hidden", !company);

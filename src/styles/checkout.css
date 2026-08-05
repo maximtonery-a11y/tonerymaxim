@@ -689,6 +689,16 @@ body.has-dpd-modal {
   }
 }
 
+/* TM Update 054 – výber uloženej dodacej adresy v pokladni */
+.checkout-saved-addresses{margin:18px 0;padding:16px;border:1px solid #d7e4f2;border-radius:18px;background:#f8fbff}
+.checkout-saved-addresses[hidden]{display:none!important}
+.checkout-saved-addresses__head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}.checkout-saved-addresses__head>div{display:grid;gap:3px}.checkout-saved-addresses__head strong{color:#071b3a;font-size:16px}.checkout-saved-addresses__head span{color:#64748b;font-size:12px}.checkout-saved-addresses__head a{color:#075fc5;font-size:12px;font-weight:850;white-space:nowrap}
+.checkout-saved-addresses__list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.checkout-saved-address{display:grid;gap:3px;min-width:0;padding:13px;border:1px solid #d5e2f0;border-radius:14px;background:#fff;color:#071b3a;font:inherit;text-align:left;cursor:pointer;transition:.15s ease}
+.checkout-saved-address:hover,.checkout-saved-address:focus-visible{border-color:#6baee8;box-shadow:0 0 0 3px rgba(10,134,232,.08);outline:none}.checkout-saved-address.is-selected{border-color:#0a86e8;background:#eef7ff;box-shadow:0 0 0 3px rgba(10,134,232,.1)}
+.checkout-saved-address>span{color:#0a86e8;font-size:10px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}.checkout-saved-address>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.checkout-saved-address>small{overflow:hidden;color:#64748b;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:720px){.checkout-saved-addresses{margin:16px 0;padding:14px}.checkout-saved-addresses__head{flex-direction:column;gap:7px}.checkout-saved-addresses__list{grid-template-columns:1fr}.checkout-saved-address{min-height:72px;padding:13px 14px}.checkout-saved-address>strong{font-size:15px}.checkout-saved-address>small{font-size:12px}}
+
 
 .gls-widget-modal[hidden] {
   display: none !important;

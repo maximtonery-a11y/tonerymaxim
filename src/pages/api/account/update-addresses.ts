@@ -1,6 +1,16 @@
 import type { APIRoute } from "astro";
+import { randomUUID } from "node:crypto";
 import { readCustomerSession, setCustomerCookie } from "../../../lib/auth-session";
 import { updateWooCustomer } from "../../../lib/woo-client";
+import {
+  defaultShippingAddress,
+  isCompleteShippingAddress,
+  normalizeShippingAddress,
+  parseShippingAddresses,
+  shippingAddressToWoo,
+  SHIPPING_ADDRESSES_META_KEY,
+  type SavedShippingAddress,
+} from "../../../lib/customer-addresses";
 
 export const prerender = false;
 
@@ -34,7 +44,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const body = await request.json().catch(() => ({}));
     const billingInput = body.billing || {};
     const billing = cleanAddress(billingInput, session.email);
-    const shipping = cleanAddress(body.shipping || {}, session.email);
+    const legacyShipping = cleanAddress(body.shipping || {}, session.email);
     const ico = String(billingInput.ico || "").trim();
     const dic = String(billingInput.dic || "").trim();
     const icDph = String(billingInput.ic_dph || billingInput.icDph || "").trim();
@@ -42,19 +52,36 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (!billing.first_name || !billing.last_name) return json({ ok: false, error: "Vyplňte meno a priezvisko vo fakturačnej adrese." }, 400);
     if (!billing.address_1 || !billing.city || !billing.postcode) return json({ ok: false, error: "Vyplňte ulicu, mesto a PSČ vo fakturačnej adrese." }, 400);
 
+    const rawAddresses = Array.isArray(body.addresses)
+      ? body.addresses
+      : (isCompleteShippingAddress(legacyShipping) ? [{ ...legacyShipping, label: "Predvolená dodacia adresa", is_default: true }] : []);
+    const normalized = rawAddresses.slice(0, 20).map((address: any, index: number) => normalizeShippingAddress({
+      ...address,
+      id: String(address?.id || "").trim() || randomUUID(),
+    }, index));
+
+    if (normalized.some((address: SavedShippingAddress) => !isCompleteShippingAddress(address))) {
+      return json({ ok: false, error: "Každá dodacia adresa musí obsahovať názov, meno, priezvisko, ulicu, mesto a PSČ." }, 400);
+    }
+    const addresses = parseShippingAddresses(normalized);
+    if (addresses.length && !addresses.some((address) => address.is_default)) addresses[0].is_default = true;
+    const preferredShipping = defaultShippingAddress(addresses);
+
     const customer = await updateWooCustomer(session.id, {
       billing,
-      shipping: {
-        first_name: shipping.first_name || billing.first_name,
-        last_name: shipping.last_name || billing.last_name,
-        company: shipping.company,
-        address_1: shipping.address_1 || billing.address_1,
-        address_2: shipping.address_2,
-        city: shipping.city || billing.city,
-        postcode: shipping.postcode || billing.postcode,
-        country: shipping.country || billing.country,
-        phone: shipping.phone || billing.phone,
-      },
+      shipping: preferredShipping
+        ? shippingAddressToWoo(preferredShipping)
+        : {
+            first_name: billing.first_name,
+            last_name: billing.last_name,
+            company: billing.company,
+            address_1: billing.address_1,
+            address_2: billing.address_2,
+            city: billing.city,
+            postcode: billing.postcode,
+            country: billing.country,
+            phone: billing.phone,
+          },
       meta_data: [
         { key: "source", value: "tonerymaxim" },
         { key: "sales_channel", value: "tonerymaxim" },
@@ -64,11 +91,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         { key: "billing_ico", value: ico },
         { key: "billing_dic", value: dic },
         { key: "billing_ic_dph", value: icDph },
+        { key: SHIPPING_ADDRESSES_META_KEY, value: JSON.stringify(addresses) },
       ],
     });
 
     setCustomerCookie(cookies, customer);
-    return json({ ok: true, message: "Adresy boli uložené.", customer });
+    return json({ ok: true, message: "Fakturačné údaje a dodacie adresy boli uložené.", customer, addresses });
   } catch (error: any) {
     return json({ ok: false, error: error?.message || "Adresy sa nepodarilo uložiť." }, error?.status || 500);
   }

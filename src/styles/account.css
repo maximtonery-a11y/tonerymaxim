@@ -2374,3 +2374,20 @@
 .account-address-actions div{display:flex;flex-direction:column;gap:4px}.account-address-actions strong{font-size:17px;color:#071b3a}.account-address-actions span{color:#64748b;font-size:14px}
 @media(max-width:900px){.account-address-form{grid-template-columns:1fr}.account-address-card--billing{grid-column:auto}.account-card-heading{flex-direction:column;gap:8px}.account-card-heading p{max-width:none}}
 @media(max-width:620px){.account-form-grid.two{grid-template-columns:1fr}.account-form-grid .span-two{grid-column:auto}.account-address-card{padding:18px}.account-company-title,.account-address-actions{flex-direction:column;align-items:stretch}.account-address-actions .tm-btn{width:100%}}
+
+/* TM Update 054 – viac dodacích adries zákazníka */
+.account-address-card--shipping{grid-column:1/-1}
+.account-card-heading--addresses{align-items:center}
+.account-card-heading--addresses > div > p{margin-top:8px}
+.tm-btn--secondary{background:#eef6ff!important;color:#075fc5!important;border:1px solid #cbdff5!important;box-shadow:none!important;white-space:nowrap}
+.saved-address-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.saved-address-card{padding:20px;border:1px solid #d8e5f4;border-radius:20px;background:#fbfdff;box-shadow:0 8px 24px rgba(7,27,58,.04)}
+.saved-address-card.is-default{border-color:#77b7ef;box-shadow:0 0 0 3px rgba(10,134,232,.08)}
+.saved-address-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #e2ebf6}
+.saved-address-card__head>div:first-child{display:grid;gap:3px}.saved-address-card__head span{color:#0a86e8;font-size:11px;font-weight:950;letter-spacing:.07em;text-transform:uppercase}.saved-address-card__head strong{color:#071b3a;font-size:18px}
+.saved-address-card__actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+.saved-address-default{display:flex;align-items:center;gap:7px;color:#24415f;font-size:12px;font-weight:850;cursor:pointer}.saved-address-default input{width:17px;height:17px;accent-color:#0a86e8}
+.saved-address-remove{padding:6px 9px;border:0;border-radius:9px;background:#fff0f0;color:#b42318;font:inherit;font-size:12px;font-weight:850;cursor:pointer}
+.saved-address-empty{display:grid;gap:5px;padding:24px;border:1px dashed #b9cce1;border-radius:18px;text-align:center;color:#64748b}.saved-address-empty strong{color:#071b3a}
+@media(max-width:1050px){.saved-address-list{grid-template-columns:1fr}}
+@media(max-width:620px){.account-card-heading--addresses{align-items:stretch}.saved-address-card{padding:16px}.saved-address-card__head{flex-direction:column}.saved-address-card__actions{width:100%;justify-content:space-between}.tm-btn--secondary{width:100%}}

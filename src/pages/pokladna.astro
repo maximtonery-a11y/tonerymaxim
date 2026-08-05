@@ -162,6 +162,14 @@ const title = "Pokladňa | ToneryMaxim.sk";
                 <label>Priezvisko *<input name="last_name" autocomplete="family-name" required /></label>
               </div>
 
+              <section class="checkout-saved-addresses" data-checkout-saved-addresses hidden>
+                <div class="checkout-saved-addresses__head">
+                  <div><strong>Kam máme objednávku doručiť?</strong><span>Vyberte uloženú adresu alebo zadajte inú.</span></div>
+                  <a href="/ucet/adresy">Spravovať adresy</a>
+                </div>
+                <div class="checkout-saved-addresses__list" data-checkout-saved-address-list></div>
+              </section>
+
               <label class="checkline"><input id="different_address" type="checkbox" /> Doručiť na inú adresu</label>
 
               <div class="delivery-address" data-delivery-address hidden>
