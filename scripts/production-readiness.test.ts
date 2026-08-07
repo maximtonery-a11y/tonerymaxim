@@ -112,6 +112,7 @@ test("e-mailová politika blokuje WordPress správy pre ToneryMAXIM a vyžaduje 
   assert.match(woo, /verifyWordPressEmailPolicy/);
   assert.match(health, /wordpressEmailPolicyCheck/);
   assert.match(plugin, /pre_wp_mail/);
+  assert.match(plugin, /Version:\s*1\.0\.1/);
   assert.match(plugin, /woocommerce_email_enabled_/);
   assert.match(plugin, /customer_processing_order/);
   assert.match(plugin, /send_password_change_email/);
@@ -125,6 +126,8 @@ test("mobilné a zákaznícke funkcie sa nesmú pri ďalšom nasadení vrátiť 
   const checkout = await readFile(new URL("../src/pages/pokladna.astro", import.meta.url), "utf8");
   const productDetail = await readFile(new URL("../src/scripts/product-detail.js", import.meta.url), "utf8");
   const accountCss = await readFile(new URL("../src/styles/account.css", import.meta.url), "utf8");
+  const home = await readFile(new URL("../src/pages/index.astro", import.meta.url), "utf8");
+  const legacyLayout = await readFile(new URL("../src/layouts/Layout.astro", import.meta.url), "utf8");
 
   assert.match(legalCss, /@media\s*\(max-width:\s*760px\)[\s\S]*?\.info-sidebar\s*\{\s*display:\s*none\s*!important/);
   assert.match(footer, /href="\/toner-bez-starosti"/);
@@ -135,4 +138,6 @@ test("mobilné a zákaznícke funkcie sa nesmú pri ďalšom nasadení vrátiť 
   assert.match(productDetail, /class="compat-modal-head"/);
   assert.match(accountCss, /\.toner-care-intro/);
   assert.match(accountCss, /\.saved-address-list/);
+  assert.match(home, /href="\/produkty\?s=HP\+305&category=atramentove-naplne"/);
+  assert.doesNotMatch(legacyLayout, /googletagmanager|gtag\s*\(/);
 });

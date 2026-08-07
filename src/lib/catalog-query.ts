@@ -225,11 +225,23 @@ export function exactProductIdentityMatch(product: CatalogProduct, analysis: Cat
   return { score, matchedReferences };
 }
 
+function hasExplicitNumberedCartridgeReference(product: CatalogProduct, analysis: CatalogQueryAnalysis) {
+  if (analysis.referenceTokens.length !== 1) return false;
+  const reference = analysis.referenceTokens[0];
+  if (!/^\d{2,6}$/.test(reference)) return false;
+
+  const identity = normalize(productIdentityValue(product))
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+  const marker = new RegExp(`(?:^|\\s)(?:no|nr)\\s*${reference}(?:\\s*(?:xl|xxl))?(?:\\s|$)`);
+  return marker.test(identity);
+}
+
 export function findExactProductIdentityMatches(products: CatalogProduct[], query: string): ExactCatalogMatch[] {
   const analysis = analyzeCatalogQuery(query);
   if (!analysis.hasReference) return [];
 
-  return products
+  const matches = products
     .map((product) => {
       const match = exactProductIdentityMatch(product, analysis);
       return match ? { product, ...match } : null;
@@ -240,6 +252,13 @@ export function findExactProductIdentityMatches(products: CatalogProduct[], quer
       if (scoreDiff) return scoreDiff;
       return String(left.product?.name || "").localeCompare(String(right.product?.name || ""), "sk");
     }) as ExactCatalogMatch[];
+
+  // Číselné atramentové rodiny HP (napr. HP 305, 650, 652) sa môžu
+  // prekrývať s označeniami laserových tonerov 305A/305X. Ak katalóg
+  // obsahuje explicitný zápis „no. 305“, má pred všeobecným číselným
+  // aliasom prednosť a do výsledkov sa nedostanú nesúvisiace tonery.
+  const explicitFamilyMatches = matches.filter((match) => hasExplicitNumberedCartridgeReference(match.product, analysis));
+  return explicitFamilyMatches.length ? explicitFamilyMatches : matches;
 }
 
 export function printerReferenceMatches(value: unknown, analysis: CatalogQueryAnalysis) {

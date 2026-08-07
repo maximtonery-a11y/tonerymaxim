@@ -68,6 +68,46 @@ const products = [
     stock_status: "instock",
     categories: [{ name: "HP", slug: "hp" }],
   },
+  {
+    id: 7,
+    name: "HP 3YM61AE (no. 305) Black originálna atramentová náplň",
+    sku: "3YM61AE",
+    slug: "hp-3ym61ae-no-305-black-originalna-atramentova-napln",
+    product_type_key: "original",
+    stock_status: "instock",
+    categories: [{ name: "Originálne HP atramentové náplne", slug: "originalne-hp-atramentove-naplne" }],
+    search_text: "hp 3ym61ae no 305 black originalna atramentova napln",
+  },
+  {
+    id: 8,
+    name: "HP 3YM62AE (no. 305XL) Black originálna atramentová náplň",
+    sku: "3YM62AE",
+    slug: "hp-3ym62ae-no-305xl-black-originalna-atramentova-napln",
+    product_type_key: "original",
+    stock_status: "instock",
+    categories: [{ name: "Originálne HP atramentové náplne", slug: "originalne-hp-atramentove-naplne" }],
+    search_text: "hp 3ym62ae no 305xl black originalna atramentova napln",
+  },
+  {
+    id: 9,
+    name: "Renovovaný toner HATONA pre HP CE411A 305A Cyan",
+    sku: "HAT-305A-C",
+    slug: "renovovany-toner-hatona-pre-hp-ce411a-305a-cyan",
+    product_type_key: "renovated",
+    stock_status: "instock",
+    categories: [{ name: "HP tonery", slug: "hp-tonery" }],
+    search_text: "renovovany toner hatona pre hp ce411a 305a cyan",
+  },
+  {
+    id: 10,
+    name: "Renovovaný toner HATONA pre HP CE410X 305X Black",
+    sku: "HAT-305X-BK",
+    slug: "renovovany-toner-hatona-pre-hp-ce410x-305x-black",
+    product_type_key: "renovated",
+    stock_status: "instock",
+    categories: [{ name: "HP tonery", slug: "hp-tonery" }],
+    search_text: "renovovany toner hatona pre hp ce410x 305x black",
+  },
 ];
 
 const okiPrinters = [
@@ -155,6 +195,11 @@ test("HP 652XL vráti iba XL variant", () => {
 test("HP 655 a HP 650 sa nemiešajú s modelmi tlačiarní", () => {
   assert.deepEqual(findExactProductIdentityMatches(products, "HP 655").map((match) => match.product.id), [5]);
   assert.deepEqual(findExactProductIdentityMatches(products, "HP 650").map((match) => match.product.id), [6]);
+});
+
+test("HP 305 vráti atramentovú rodinu 305/305XL bez tonerov 305A a 305X", () => {
+  assert.deepEqual(findExactProductIdentityMatches(products, "HP 305").map((match) => match.product.id), [7, 8]);
+  assert.deepEqual(filterProducts(products, { search: "HP 305", category: "atramentove-naplne" }).map((product) => product.id), [7, 8]);
 });
 
 test("HP M652 zostáva modelom tlačiarne, nie náplňou HP 652", () => {
