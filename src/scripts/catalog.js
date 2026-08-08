@@ -778,6 +778,14 @@ import { getDispatchParts } from "./dispatch-message.js";
     document.querySelector("[data-next-page]").disabled = currentPage >= totalPages;
   }
 
+  function applyCatalogData(data) {
+    totalPages = Math.max(1, Number(data.total_pages || 1));
+    data.products = sortProducts(data.products || []);
+    writeCatalogCache(data);
+    renderProducts(data.products);
+    updatePagination();
+  }
+
   async function loadProducts(options = {}) {
     updateMobileQuery();
     updateFilterButtons();
@@ -824,11 +832,7 @@ import { getDispatchParts } from "./dispatch-message.js";
         throw new Error(data.error?.message || data.error || "Nepodarilo sa načítať produkty.");
       }
 
-      totalPages = Math.max(1, Number(data.total_pages || 1));
-      data.products = sortProducts(data.products || []);
-      writeCatalogCache(data);
-      renderProducts(data.products);
-      updatePagination();
+      applyCatalogData(data);
     } catch (error) {
       if (!hasCachedProducts) {
         status.textContent = error.message || "Chyba načítania produktov.";
@@ -885,6 +889,39 @@ import { getDispatchParts } from "./dispatch-message.js";
     }
 
     if (!usedInitialCatalog) loadProducts();
+
+    window.addEventListener("tm:catalog-search", async (event) => {
+      const query = String(event?.detail?.query || "").trim();
+      if (!query) return;
+
+      currentPage = 1;
+      currentSearch = query;
+      currentPrinter = "";
+      currentBrand = "";
+      currentCategory = "";
+      currentType = "";
+      currentColor = "";
+      currentStock = "";
+
+      const mainInput = document.querySelector("[data-catalog-search]");
+      const bottomInput = document.querySelector("[data-catalog-bottom-search-input]");
+      if (mainInput) mainInput.value = query;
+      if (bottomInput) bottomInput.value = query;
+      updateMobileQuery();
+      updateFilterButtons();
+      setUrlState();
+
+      const status = document.querySelector("[data-catalog-status]");
+      if (status) status.textContent = `Hľadám „${query}“...`;
+
+      try {
+        const data = await event.detail.catalogPromise;
+        applyCatalogData(data);
+        window.scrollTo({ top: document.querySelector("[data-catalog-grid]")?.offsetTop || 0, behavior: "smooth" });
+      } catch {
+        loadProducts();
+      }
+    });
 
     document.querySelector("[data-catalog-form]")?.addEventListener("submit", (event) => {
       event.preventDefault();

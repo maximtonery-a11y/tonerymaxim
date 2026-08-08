@@ -77,6 +77,9 @@ const globalStore = globalThis as typeof globalThis & {
   __TM_PRODUCTS_WARM_STARTED_AT__?: number;
 };
 
+const filteredProductsCache = new WeakMap<TmProduct[], Map<string, TmProduct[]>>();
+const FILTERED_PRODUCTS_CACHE_MAX = 250;
+
 const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
 const TM_INK_PLACEHOLDER_IMAGE = "/images/tm-ink-placeholder-box.jpg";
 
@@ -1217,6 +1220,27 @@ function matchesLooseSearch(text: string, query: string) {
 }
 
 export function filterProducts(products: TmProduct[], filters: { search?: string; brand?: string; category?: string; type?: string; printer?: string; color?: string; stock?: string }) {
+  const filterKey = JSON.stringify({
+    search: normalize(filters.search || ""),
+    brand: normalize(filters.brand || ""),
+    category: normalize(filters.category || ""),
+    type: normalize(filters.type || ""),
+    printer: normalize(filters.printer || ""),
+    color: normalize(filters.color || ""),
+    stock: normalize(filters.stock || ""),
+  });
+  let productCache = filteredProductsCache.get(products);
+  if (!productCache) {
+    productCache = new Map();
+    filteredProductsCache.set(products, productCache);
+  }
+  const cachedProducts = productCache.get(filterKey);
+  if (cachedProducts) {
+    productCache.delete(filterKey);
+    productCache.set(filterKey, cachedProducts);
+    return cachedProducts;
+  }
+
   const search = normalize(filters.search || "");
   const brand = normalize(filters.brand || "");
   const printer = normalize(filters.printer || "");
@@ -1229,7 +1253,7 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     ? new Set(findExactPrinterModelMatches(products, filters.search || "").map((match) => match.product))
     : new Set<TmProduct>();
 
-  return products.filter((product) => {
+  const filtered = products.filter((product) => {
     const text = product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`);
     if (filters.type && product.product_type_key !== filters.type) return false;
     if (stock === "instock" && product.stock_status !== "instock") return false;
@@ -1258,6 +1282,14 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     }
     return true;
   });
+
+  productCache.set(filterKey, filtered);
+  while (productCache.size > FILTERED_PRODUCTS_CACHE_MAX) {
+    const oldest = productCache.keys().next().value;
+    if (!oldest) break;
+    productCache.delete(oldest);
+  }
+  return filtered;
 }
 
 export function jsonResponse(body: unknown, status = 200, cacheHeader = "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400") {

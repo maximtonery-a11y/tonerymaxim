@@ -5,13 +5,18 @@
   }
   window.__TM_SMART_SEARCH_MODULE_READY__ = true;
 
-  const CACHE_KEY = "tm_smart_search_v5";
+  const CACHE_KEY = "tm_smart_search_v6";
   const CACHE_TTL = 20 * 60 * 1000;
-  const MIN_QUERY_LENGTH = 2;
-  const DEBOUNCE_MS = 120;
+  // Dvojznakové dotazy (napr. „cr“) majú príliš široký výsledok. Pri krátkom
+  // debounce navyše každý pomalší úder klávesu spustil samostatný serverový
+  // výpočet a finálny dotaz čakal v rade. Tri znaky + 320 ms odošlú spravidla
+  // iba jeden hotový dotaz, stále s okamžitým pocitom odozvy.
+  const MIN_QUERY_LENGTH = 3;
+  const DEBOUNCE_MS = 320;
 
   const memory = new Map();
   const inflight = new Map();
+  const catalogInflight = new Map();
   let activeController = null;
   let runSerial = 0;
 
@@ -265,6 +270,7 @@
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error(data.error || "Vyhľadávanie zlyhalo.");
         sessionWrite(query, data);
+        prefetchCatalog(query);
         return data;
       })
       .finally(() => inflight.delete(key));
@@ -273,9 +279,45 @@
     return promise;
   }
 
+  function prefetchCatalog(query) {
+    const key = cacheKey(query);
+    if (catalogInflight.has(key)) return catalogInflight.get(key);
+
+    const promise = fetch(`/api/products?search=${encodeURIComponent(query)}&per_page=12&page=1`, {
+      headers: { Accept: "application/json" },
+      priority: "low",
+    })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || !data?.ok) throw new Error(data?.error || "Katalóg sa nepodarilo pripraviť.");
+        return data;
+      })
+      .catch((error) => {
+        catalogInflight.delete(key);
+        throw error;
+      });
+
+    catalogInflight.set(key, promise);
+    return promise;
+  }
+
   function goToSearch(input) {
     const query = input.value.trim();
     if (!query) return;
+
+    if (window.location.pathname === "/produkty") {
+      window.dispatchEvent(new CustomEvent("tm:catalog-search", {
+        detail: { query, catalogPromise: prefetchCatalog(query) },
+      }));
+      return;
+    }
+
+    // Na ostatných stránkach sa cieľová stránka začne načítavať už počas
+    // zobrazenia našepkávača. Navigácia potom môže použiť HTTP cache.
+    fetch(`/produkty?s=${encodeURIComponent(query)}`, {
+      headers: { Accept: "text/html" },
+      priority: "low",
+    }).catch(() => undefined);
     window.location.href = `/produkty?s=${encodeURIComponent(query)}`;
   }
 
@@ -301,6 +343,7 @@
 
       const cached = sessionRead(query);
       if (cached) {
+        prefetchCatalog(query);
         renderPanel(panel, cached, query);
         return;
       }
@@ -330,10 +373,16 @@
       }
     });
 
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      goToSearch(input);
-    });
+    // Hlavný katalógový formulár obsluhuje catalog.js. Nesmie sa súčasne
+    // spustiť API načítanie aj úplný reload stránky.
+    if (!form.matches("[data-catalog-form]")) {
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        panel.hidden = true;
+        input.setAttribute("aria-expanded", "false");
+        goToSearch(input);
+      });
+    }
 
     panel.addEventListener("mousedown", (event) => {
       const link = event.target.closest("a");

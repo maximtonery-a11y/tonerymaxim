@@ -505,7 +505,9 @@ function findProductSuggestions(items: IndexedProduct[], query: QueryInfo) {
 export const GET: APIRoute = async ({ url }) => {
   const q = String(url.searchParams.get("q") || url.searchParams.get("search") || "").trim();
 
-  if (q.length < 2) return jsonResponse({ ok: true, query: q, printers: [], productGroups: [], products: [], brands: [], categories: [] }, 200, "private, max-age=30");
+  // Nevykonávame drahé fuzzy hľadanie pre dvojznakový medzistav počas písania.
+  // Klient odošle výsledný dotaz až od troch znakov.
+  if (q.length < 3) return jsonResponse({ ok: true, query: q, printers: [], productGroups: [], products: [], brands: [], categories: [] }, 200, "public, max-age=60, s-maxage=600");
 
   try {
     const cache = await getProductsCache();
