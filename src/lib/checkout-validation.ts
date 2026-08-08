@@ -41,6 +41,8 @@ export type ValidatedCheckout = {
   delivery: Record<string, string | boolean | Record<string, string> | null>;
   pickup: Record<string, string> | null;
   termsAcceptedAt: string;
+  heurekaConsent: boolean;
+  heurekaConsentAt?: string;
 };
 
 export function validateCheckoutRequest(
@@ -48,6 +50,7 @@ export function validateCheckoutRequest(
   allowedPayments: ReadonlySet<string>,
 ): ValidatedCheckout {
   const errors: string[] = [];
+  const heurekaConsent = raw?.heurekaConsent === true;
   const shippingCode = text(typeof raw?.shipping === "string" ? raw.shipping : raw?.shipping?.method, 40);
   const paymentCode = text(typeof raw?.payment === "string" ? raw.payment : raw?.payment?.method, 40);
 
@@ -146,5 +149,7 @@ export function validateCheckoutRequest(
     delivery: { ...delivery, pickup },
     pickup,
     termsAcceptedAt: new Date().toISOString(),
+    heurekaConsent,
+    heurekaConsentAt: heurekaConsent ? new Date().toISOString() : undefined,
   };
 }

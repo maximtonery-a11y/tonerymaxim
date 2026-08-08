@@ -168,7 +168,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const paymentBody = {
       payer: {
         default_payment_instrument: payment.gopayInstrument || "PAYMENT_CARD",
-        allowed_payment_instruments: [payment.gopayInstrument || "PAYMENT_CARD"],
         contact: {
           first_name: String(checkout.billing.firstName || ""),
           last_name: String(checkout.billing.lastName || ""),
@@ -264,6 +263,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       total: Math.round((totalCents / 100) * 100) / 100,
       createdAt: new Date().toISOString(),
       termsAcceptedAt: checkout.termsAcceptedAt,
+      heurekaConsent: checkout.heurekaConsent,
+      heurekaConsentAt: checkout.heurekaConsentAt,
       customerId: session?.id || undefined,
       paymentAccessRequired: true,
     };

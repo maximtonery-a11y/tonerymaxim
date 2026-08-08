@@ -163,6 +163,12 @@ async function main() {
   requireCondition(merchant.response.ok && merchantItems >= 50, `Merchant feed má iba ${merchantItems} položiek alebo vrátil chybu.`);
   requireCondition(/<g:availability>in_stock<\/g:availability>/i.test(merchant.body), 'Merchant feed neobsahuje skladové produkty.');
   requireCondition(!/tonerymaxim\.info/i.test(merchant.body), 'Merchant feed obsahuje testovaciu doménu .info.');
+  const heureka = await request(baseUrl, '/heureka.xml', { accept: 'application/xml', timeout: 60_000 });
+  const heurekaItems = Number(heureka.response.headers.get('x-heureka-feed-items') || 0);
+  requireCondition(heureka.response.ok && heurekaItems >= 50, `Heureka feed má iba ${heurekaItems} položiek alebo vrátil chybu.`);
+  requireCondition(/<SHOP>[\s\S]*<SHOPITEM>/i.test(heureka.body), 'Heureka feed nemá platnú základnú štruktúru SHOP/SHOPITEM.');
+  requireCondition(/<ITEM_ID>[\s\S]*<\/ITEM_ID>/i.test(heureka.body), 'Heureka feed neobsahuje ITEM_ID pre Overené zákazníkmi.');
+  requireCondition(!/tonerymaxim\.info/i.test(heureka.body), 'Heureka feed obsahuje testovaciu doménu .info.');
   const dsa = await request(baseUrl, '/api/dsa-page-feed.csv', { accept: 'text/csv', timeout: 60_000 });
   requireCondition(dsa.response.ok && dsa.body.includes('https://www.tonerymaxim.sk/produkt/'), 'DSA feed nie je dostupný alebo neobsahuje produktové URL.');
 

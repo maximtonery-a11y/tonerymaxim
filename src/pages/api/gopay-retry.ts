@@ -48,7 +48,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const paymentBody = {
       payer: {
         default_payment_instrument: "PAYMENT_CARD",
-        allowed_payment_instruments: ["PAYMENT_CARD"],
         contact: {
           first_name: clean(billing.firstName),
           last_name: clean(billing.lastName),

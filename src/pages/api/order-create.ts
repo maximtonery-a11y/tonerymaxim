@@ -100,6 +100,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       amountCents: Math.round(total * 100),
       createdAt: new Date().toISOString(),
       termsAcceptedAt: checkout.termsAcceptedAt,
+      heurekaConsent: checkout.heurekaConsent,
+      heurekaConsentAt: checkout.heurekaConsentAt,
       customerId: session?.id || undefined,
     };
 

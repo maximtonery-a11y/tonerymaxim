@@ -211,9 +211,19 @@ const title = "Pokladňa | ToneryMaxim.sk";
               <div class="summary-line"><span>Základ bez DPH</span><strong data-summary-net>0,00 €</strong></div>
               <div class="summary-line"><span>DPH 23 %</span><strong data-summary-vat>0,00 €</strong></div>
               <div class="summary-total"><span>Spolu s DPH</span><strong data-summary-total>0,00 €</strong></div>
-              <label class="checkline terms-line"><input id="terms" type="checkbox" /> Potvrdzujem, že som sa oboznámil/a s <a href="/obchodne-podmienky" target="_blank" rel="noopener">obchodnými podmienkami</a> a <a href="/ochrana-osobnych-udajov" target="_blank" rel="noopener">zásadami ochrany osobných údajov</a>.</label>
+              <label class="checkline heureka-consent-line">
+                <input id="heureka-consent" type="checkbox" />
+                <span>Chcem dostať e-mailový dotazník spokojnosti zo služby <strong>Overené zákazníkmi</strong> od Heureky. Súhlas je dobrovoľný.</span>
+              </label>
+              <label class="checkline terms-line">
+                <input id="terms" type="checkbox" />
+                <span class="terms-copy">Potvrdzujem, že som sa oboznámil/a s <a href="/obchodne-podmienky" target="_blank" rel="noopener">obchodnými podmienkami</a> a <a href="/ochrana-osobnych-udajov" target="_blank" rel="noopener">zásadami ochrany osobných údajov</a>.</span>
+              </label>
               <button class="order-button" type="button" data-submit-order>🔒 Objednať s povinnosťou platby</button>
-              <div class="secure-note">Bezpečná platba cez GoPay · Pomoc na telefóne +421 917 859 206</div>
+              <div class="secure-note">
+                <span>🔒 Bezpečná platba cez GoPay</span>
+                <a href="tel:+421917859206">☎ Pomoc: +421 917 859 206</a>
+              </div>
               <div class="trust-mini"><span>✓ 17 rokov skúseností</span><span>✓ 30 000+ objednávok</span><span>✓ Overené zákazníkmi</span></div>
               <div class="order-status" data-order-status></div>
             </div>

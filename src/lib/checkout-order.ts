@@ -8,6 +8,7 @@ import { reserveLoyaltyDiscount } from "./loyalty";
 import { grantThankYouCoupon, markCouponUsed, thankYouCouponCode, type CouponResult } from "./coupons";
 import { registerIssuedCoupon } from "./coupon-registry";
 import { CheckoutProfiler } from "./checkout-profiler";
+import { sendHeurekaVerifiedOrder } from "./heureka-verified";
 
 export type NormalizedCartItem = {
   id: string;
@@ -46,6 +47,8 @@ export type CheckoutOrderSource = {
   total: number;
   createdAt: string;
   termsAcceptedAt?: string;
+  heurekaConsent?: boolean;
+  heurekaConsentAt?: string;
   customerId?: number;
   wooOrderId?: number;
   wooOrderNumber?: string;
@@ -349,6 +352,8 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     { key: "tm_customer_email", value: String(source.contact?.email || source.billing?.email || "") },
     { key: "tm_terms_accepted", value: source.termsAcceptedAt ? "1" : "0" },
     { key: "tm_terms_accepted_at", value: String(source.termsAcceptedAt || "") },
+    { key: "tm_heureka_consent", value: source.heurekaConsent === true ? "1" : "0" },
+    { key: "tm_heureka_consent_at", value: String(source.heurekaConsentAt || "") },
     { key: "tm_shipping_pickup", value: JSON.stringify(source.delivery?.pickup || {}) },
     { key: "tm_shipping_pickup_id", value: p.id },
     { key: "tm_shipping_pickup_text", value: pickupText },
@@ -395,6 +400,8 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     billing: source.billing || {},
     delivery: source.delivery || {},
     contact: source.contact || {},
+    heurekaConsent: source.heurekaConsent === true,
+    heurekaConsentAt: source.heurekaConsentAt || "",
     items: source.cart.map((item) => ({
       name: item.name,
       sku: item.sku,
@@ -584,6 +591,23 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
         },
       })).catch((error) => console.error("Woo loyalty meta update error:", error?.message || error));
     }
+  }
+
+  if (source.heurekaConsent === true && customerEmail) {
+    const heureka = await profiler.measure("heureka-verified-order", () => sendHeurekaVerifiedOrder(source, Number(order?.id || 0))).catch((error) => {
+      console.error("Heureka Overené zákazníkmi error:", error?.message || error);
+      return { sent: false, reason: "request-failed" } as const;
+    });
+    await wooRequest<any>(`/orders/${order.id}`, {
+      method: "PUT",
+      body: {
+        meta_data: [
+          { key: "tm_heureka_sent", value: heureka.sent ? "1" : "0" },
+          { key: "tm_heureka_sent_at", value: heureka.sent ? heureka.sentAt : "" },
+          { key: "tm_heureka_status", value: heureka.sent ? "sent" : heureka.reason },
+        ],
+      },
+    }).catch((error) => console.error("Woo Heureka meta update error:", error?.message || error));
   }
 
   if (customerEmail && options.sendConfirmationEmail !== false) {

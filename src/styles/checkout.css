@@ -437,6 +437,28 @@
   margin: 14px 0 !important;
   font-size: 13px !important;
   line-height: 1.35;
+  align-items: flex-start !important;
+}
+
+.heureka-consent-line {
+  margin: 14px 0 8px !important;
+  align-items: flex-start !important;
+  font-size: 13px !important;
+  line-height: 1.4;
+}
+
+.heureka-consent-line span {
+  display: block;
+  min-width: 0;
+}
+
+.terms-copy {
+  display: block;
+  min-width: 0;
+}
+
+.terms-copy a {
+  display: inline;
 }
 
 .order-button {
@@ -454,19 +476,41 @@
 
 .secure-note {
   margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px 14px;
   color: #667085;
   font-size: 13px;
   line-height: 1.45;
   text-align: center;
 }
 
+.secure-note span,
+.secure-note a {
+  white-space: nowrap;
+}
+
+.secure-note a {
+  color: inherit;
+  font-weight: 750;
+  text-decoration: none;
+}
+
 .trust-mini {
   margin-top: 14px;
-  display: grid;
-  gap: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 14px;
   color: #475467;
   font-size: 13px;
   font-weight: 750;
+}
+
+.trust-mini span {
+  white-space: nowrap;
 }
 
 .order-status {
@@ -1243,6 +1287,28 @@ body.has-gls-modal {
     margin-top: 14px;
     padding-top: 14px;
     border-top: 1px solid rgba(11, 35, 68, 0.1);
+  }
+
+  .heureka-consent-line {
+    font-size: 15px !important;
+    line-height: 1.45;
+  }
+
+  .terms-copy {
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .checkout-summary.is-open .secure-note {
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .checkout-summary.is-open .trust-mini {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
   }
 
   .order-button {

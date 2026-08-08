@@ -2056,6 +2056,7 @@
         })(),
       },
       termsAccepted: document.querySelector("#terms")?.checked === true,
+      heurekaConsent: document.querySelector("#heureka-consent")?.checked === true,
       createdAt: new Date().toISOString(),
       requestId: checkoutRequestId(),
     };
