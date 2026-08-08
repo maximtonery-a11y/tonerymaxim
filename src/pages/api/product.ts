@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getProductsCache, jsonResponse } from "../../lib/tm-products-cache";
+import { getProductFromCache, jsonResponse } from "../../lib/tm-products-cache";
 
 export const prerender = false;
 
@@ -10,16 +10,15 @@ export const GET: APIRoute = async ({ url }) => {
 
     if (!slug && !id) return jsonResponse({ ok: false, error: "Chýba slug alebo id produktu." }, 400, "no-store");
 
-    const cache = await getProductsCache();
-    const product = cache.products.find((item) => {
-      if (id && String(item.id) === id) return true;
-      if (slug && String(item.slug) === slug) return true;
-      return false;
-    });
+    const { cache, product } = await getProductFromCache({ id, slug });
 
     if (!product) return jsonResponse({ ok: false, error: "Produkt sa nenašiel v lokálnej cache." }, 404, "no-store");
 
-    return jsonResponse({ ok: true, source: "local-products-cache", cache_generated_at: cache.generated_at, product });
+    return jsonResponse(
+      { ok: true, source: "local-products-cache-index", cache_generated_at: cache.generated_at, product },
+      200,
+      "public, max-age=60, s-maxage=600, stale-while-revalidate=3600",
+    );
   } catch (error: any) {
     return jsonResponse({ ok: false, error: error?.message || "Chyba detailu produktu" }, 500, "no-store");
   }

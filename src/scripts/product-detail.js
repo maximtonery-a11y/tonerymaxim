@@ -1637,10 +1637,21 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const page = document.querySelector("[data-product-slug]");
     const slug = page?.dataset.productSlug || "";
     const root = document.querySelector("[data-product-root]");
-    const cachedProduct = readCachedProduct(slug);
+    let embeddedProduct = null;
+    const embeddedNode = document.getElementById("tm-product-initial-data");
+    if (embeddedNode?.textContent) {
+      try {
+        embeddedProduct = JSON.parse(embeddedNode.textContent);
+      } catch {
+        embeddedProduct = null;
+      }
+    }
+    const cachedProduct = embeddedProduct || readCachedProduct(slug);
 
     if (cachedProduct) {
       render(cachedProduct);
+      writeCachedProduct(slug, cachedProduct);
+      return;
     }
 
     try {

@@ -32,6 +32,7 @@ type SearchIndexCache = {
   generatedAt: string;
   items: IndexedProduct[];
   prefixMap: Map<string, number[]>;
+  products: any[];
 };
 
 type QueryInfo = {
@@ -177,10 +178,10 @@ function modelTokenScore(queryToken: string, targetCompact: string, targetTokens
 }
 
 function searchableValue(product: any) {
-  const printers = Array.isArray(product.printers) ? product.printers.join(" ") : "";
-  const compatiblePrinters = Array.isArray(product.compatible_printers) ? product.compatible_printers.join(" ") : "";
   const categories = Array.isArray(product.categories) ? product.categories.map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ") : "";
-  return `${product.name || ""} ${product.sku || ""} ${product.slug || ""} ${categories} ${printers} ${compatiblePrinters} ${product.search_text || ""}`;
+  // search_text už obsahuje kompatibilné tlačiarne a atribúty. Ich opätovné
+  // pripájanie násobilo veľkosť indexu a výrazne spomaľovalo prvý dotaz.
+  return `${product.name || ""} ${product.sku || ""} ${product.slug || ""} ${categories} ${product.search_text || ""}`;
 }
 
 function makeIndexedProduct(product: any, index: number): IndexedProduct {
@@ -202,7 +203,6 @@ function makeIndexedProduct(product: any, index: number): IndexedProduct {
   const tokens = uniqueWords(searchValue);
   const candidateTokens = [...new Set([
     ...tokens,
-    ...printers.flatMap((printer) => printer.tokens),
     compactKey(product.sku || ""),
     compactKey(product.slug || ""),
   ].filter((token) => token && token.length >= 2))];
@@ -254,7 +254,7 @@ function getSearchIndex(cache: any): SearchIndexCache {
 
   const items = sortProducts(cache.products).map((product, index) => makeIndexedProduct(product, index));
   const prefixMap = buildPrefixMap(items);
-  const nextIndex: SearchIndexCache = { generatedAt: cache.generated_at, items, prefixMap };
+  const nextIndex: SearchIndexCache = { generatedAt: cache.generated_at, items, prefixMap, products: items.map((item) => item.product) };
   globalStore.__TM_SMART_SEARCH_INDEX__ = nextIndex;
   resultCache.clear();
   return nextIndex;
@@ -510,20 +510,25 @@ export const GET: APIRoute = async ({ url }) => {
   try {
     const cache = await getProductsCache();
     const index = getSearchIndex(cache);
+    if (q === "__tm_warm__") {
+      return jsonResponse({ ok: true, query: "", warmed: true, printers: [], productGroups: [], products: [], brands: [], categories: [] }, 200, "private, max-age=30");
+    }
     const query = queryInfo(q);
-    const indexedProducts = index.items.map((item) => item.product);
-    const exactIdentityMatches = findExactProductIdentityMatches(indexedProducts, q);
-    const exactPrinterMatches = findExactPrinterModelMatches(indexedProducts, q);
     const resultKey = cachedResultKey(index.generatedAt, q);
     const cached = getCachedResult(resultKey);
-    if (cached) return jsonResponse({ ...cached, source: "smart-search-result-cache" }, 200, "private, max-age=60");
+    if (cached) return jsonResponse({ ...cached, source: "smart-search-result-cache" }, 200, "public, max-age=60, s-maxage=600, stale-while-revalidate=3600");
+
+    const prefixCandidates = getCandidateItems(index, query);
+    const candidateProducts = prefixCandidates.map((item) => item.product);
+    const exactIdentityMatches = findExactProductIdentityMatches(candidateProducts, q);
+    const exactPrinterMatches = findExactPrinterModelMatches(candidateProducts, q);
 
     const exactProducts = new Set(exactIdentityMatches.map((match) => match.product));
     const exactPrinterProducts = new Set(exactPrinterMatches.map((match) => match.product));
     const hasStructuredMatches = exactProducts.size > 0 || exactPrinterProducts.size > 0;
     const candidateItems = hasStructuredMatches
       ? index.items.filter((item) => exactProducts.has(item.product) || exactPrinterProducts.has(item.product))
-      : getCandidateItems(index, query);
+      : prefixCandidates;
     const products = findProductSuggestions(candidateItems, query);
     const staticResults = filteredStaticSuggestions(query);
     // Ak názov/SKU presne obsahuje hľadané označenie náplne, modely tlačiarní
@@ -572,7 +577,7 @@ export const GET: APIRoute = async ({ url }) => {
     };
 
     setCachedResult(resultKey, data);
-    return jsonResponse(data, 200, "private, max-age=60");
+    return jsonResponse(data, 200, "public, max-age=60, s-maxage=600, stale-while-revalidate=3600");
   } catch (error: any) {
     const fallback = filteredStaticSuggestions(queryInfo(q));
     return jsonResponse({ ok: true, query: q, printers: [], productGroups: [], products: [], brands: fallback.brands, categories: fallback.categories, warning: error?.message || "Smart search fallback" }, 200, "no-store");

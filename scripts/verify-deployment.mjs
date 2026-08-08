@@ -16,6 +16,7 @@ function parseArgs(argv) {
 }
 
 async function request(baseUrl, pathname, options = {}) {
+  const startedAt = performance.now();
   const response = await fetch(new URL(pathname, baseUrl), {
     method: options.method || 'GET',
     redirect: options.redirect || 'follow',
@@ -29,7 +30,7 @@ async function request(baseUrl, pathname, options = {}) {
     signal: AbortSignal.timeout(options.timeout || 30_000),
   });
   const body = await response.text();
-  return { response, body };
+  return { response, body, durationMs: performance.now() - startedAt };
 }
 
 async function waitForReadiness(baseUrl) {
@@ -109,6 +110,15 @@ async function main() {
   const products = await request(baseUrl, '/api/products?per_page=1', { accept: 'application/json' });
   const productsJson = JSON.parse(products.body);
   requireCondition(products.response.ok && productsJson?.ok === true && Number(productsJson?.total || 0) === Number(readiness.products), 'Produktové API nevrátilo rovnaký kompletný katalóg ako readiness.');
+
+  await request(baseUrl, '/api/smart-search?q=__tm_warm__', { accept: 'application/json', timeout: 60_000 });
+  for (const query of ['HP 652', 'TN-2421', 'OKI C301']) {
+    const search = await request(baseUrl, `/api/smart-search?q=${encodeURIComponent(query)}`, { accept: 'application/json' });
+    const data = JSON.parse(search.body);
+    requireCondition(search.response.ok && data?.ok === true, `Našeptávač zlyhal pre ${query}.`);
+    requireCondition(search.durationMs <= 2_000, `Našeptávač pre ${query} trval ${Math.round(search.durationMs)} ms, limit je 2 000 ms.`);
+    console.log(`  - Našeptávač ${query}: ${Math.round(search.durationMs)} ms`);
+  }
 
   console.log('[4/9] Serverová ochrana pokladne');
   const checkoutValidation = await request(baseUrl, '/api/order-create', {

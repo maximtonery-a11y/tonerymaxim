@@ -62,6 +62,13 @@ function isPrivateNoIndexPath(pathname: string): boolean {
     || pathname.startsWith('/admin/');
 }
 
+function isPublicCacheablePage(request: Request, url: URL, response: Response): boolean {
+  if (request.method.toUpperCase() !== 'GET') return false;
+  if (isPrivateNoIndexPath(url.pathname) || url.pathname.startsWith('/api/')) return false;
+  if (response.headers.has('set-cookie')) return false;
+  return response.status === 200;
+}
+
 function jsonError(message: string, status: number, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify({ ok: false, error: message }), {
     status,
@@ -215,6 +222,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const html = await response.text();
+  if (isPublicCacheablePage(request, url, response) && !headers.has('cache-control')) {
+    headers.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600');
+  }
   const googleTag = optionalGoogleTag();
   const tags = [
     html.includes('/tm-analytics.js') ? '' : ANALYTICS_TAG,

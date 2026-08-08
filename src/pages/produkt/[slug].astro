@@ -8,7 +8,7 @@ import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import SeoHead from "../../components/SeoHead.astro";
-import { getProductsCache, stripHtml } from "../../lib/tm-products-cache";
+import { getProductFromCache, stripHtml } from "../../lib/tm-products-cache";
 import { breadcrumbJsonLd, organizationJsonLd, productDescription, productJsonLd, absoluteUrl, websiteJsonLd } from "../../lib/seo";
 import {
   printerBrandForName,
@@ -18,8 +18,9 @@ import {
 } from "../../lib/seo-catalog";
 
 const { slug } = Astro.params;
-const cache = await getProductsCache().catch(() => null);
-const product = cache?.products?.find((item: any) => String(item.slug) === String(slug) || String(item.id) === String(slug));
+const lookup = await getProductFromCache({ slug, id: slug }).catch(() => null);
+const cache = lookup?.cache || null;
+const product = lookup?.product || null;
 if (!product) {
   return new Response(`<!doctype html>
 <html lang="sk">
@@ -81,6 +82,12 @@ const productSafetyRows = [
   ['Zodpovedný hospodársky subjekt v EÚ', product.eu_responsible_person],
   ['Bezpečnostné informácie a upozornenia', product.safety_information],
 ].filter(([, value]) => String(value || '').trim());
+const initialProductJson = JSON.stringify(product)
+  .replace(/</g, "\\u003c")
+  .replace(/>/g, "\\u003e")
+  .replace(/&/g, "\\u0026")
+  .replace(/\u2028/g, "\\u2028")
+  .replace(/\u2029/g, "\\u2029");
 const printerEntityLinks = printerLinksFromNames(cache?.products || [], printers, 16);
 const oemEntityLinks = productOemCodes(product).map((code) => ({
   href: `/oem/${code.toLowerCase()}`,
@@ -114,6 +121,7 @@ const brandEntityLinks = [...new Map(
       </a>
 
       <main class="product-detail-page" data-product-slug={slug}>
+        <script id="tm-product-initial-data" type="application/json" is:inline set:html={initialProductJson}></script>
         <div class="detail-wrap">
           <a class="back-link" href="/produkty">← Späť na produkty</a>
           <section data-product-root class="tm-detail product-seo-initial tm-product-hydrating" aria-busy="true">

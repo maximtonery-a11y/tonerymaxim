@@ -8,7 +8,7 @@
   const CACHE_KEY = "tm_smart_search_v5";
   const CACHE_TTL = 20 * 60 * 1000;
   const MIN_QUERY_LENGTH = 2;
-  const DEBOUNCE_MS = 180;
+  const DEBOUNCE_MS = 120;
 
   const memory = new Map();
   const inflight = new Map();
@@ -360,8 +360,20 @@
     document.querySelectorAll("form.search, form.catalog-search, [data-smart-search]").forEach(installSmartSearch);
   }
 
+  function warmServerIndex() {
+    if (window.__TM_SMART_SEARCH_WARM_REQUESTED__) return;
+    window.__TM_SMART_SEARCH_WARM_REQUESTED__ = true;
+    fetch("/api/smart-search?q=__tm_warm__", {
+      headers: { Accept: "application/json" },
+      priority: "low",
+    }).catch(() => undefined);
+  }
+
   window.tmInitSmartSearch = init;
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
+
+  if ("requestIdleCallback" in window) window.requestIdleCallback(warmServerIndex, { timeout: 800 });
+  else window.setTimeout(warmServerIndex, 250);
 })();

@@ -67,6 +67,11 @@ const WOO_FIELDS = [
 
 const globalStore = globalThis as typeof globalThis & {
   __TM_PRODUCTS_FILE_CACHE__?: CacheFile;
+  __TM_PRODUCTS_LOOKUP_INDEX__?: {
+    generatedAt: string;
+    byId: Map<string, TmProduct>;
+    bySlug: Map<string, TmProduct>;
+  };
   __TM_PRODUCTS_SYNC_PROMISE__?: Promise<ProductsSyncResult>;
   __TM_PRODUCTS_WARM_PROMISE__?: Promise<void>;
   __TM_PRODUCTS_WARM_STARTED_AT__?: number;
@@ -1094,6 +1099,33 @@ export async function getProductsCache() {
   const current = await readProductsCache();
   if (current) return current;
   return (await syncProductsCache({ force: true })).cache;
+}
+
+function getProductLookupIndex(cache: CacheFile) {
+  const current = globalStore.__TM_PRODUCTS_LOOKUP_INDEX__;
+  if (current?.generatedAt === cache.generated_at) return current;
+
+  const byId = new Map<string, TmProduct>();
+  const bySlug = new Map<string, TmProduct>();
+  for (const product of cache.products) {
+    const id = String(product?.id || "").trim();
+    const slug = String(product?.slug || "").trim();
+    if (id) byId.set(id, product);
+    if (slug) bySlug.set(slug, product);
+  }
+
+  const next = { generatedAt: cache.generated_at, byId, bySlug };
+  globalStore.__TM_PRODUCTS_LOOKUP_INDEX__ = next;
+  return next;
+}
+
+export async function getProductFromCache(input: { id?: unknown; slug?: unknown }) {
+  const cache = await getProductsCache();
+  const index = getProductLookupIndex(cache);
+  const id = String(input.id || "").trim();
+  const slug = String(input.slug || "").trim();
+  const product = (id ? index.byId.get(id) : undefined) || (slug ? index.bySlug.get(slug) : undefined) || null;
+  return { cache, product };
 }
 
 export function ensureProductsCacheWarmStarted(): void {
