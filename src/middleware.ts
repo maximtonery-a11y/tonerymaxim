@@ -40,9 +40,18 @@ function shouldInjectAnalytics(pathname: string): boolean {
 }
 
 function optionalGoogleTag(): string {
-  const id = String(process.env.PUBLIC_GTM_ID || import.meta.env.PUBLIC_GTM_ID || '').trim().toUpperCase();
-  return /^GTM-[A-Z0-9]+$/.test(id)
-    ? `<script src="/tm-google-tags.js" data-gtm-id="${id}" defer></script>`
+  const id = String(
+    process.env.PUBLIC_GOOGLE_TAG_ID ||
+      import.meta.env.PUBLIC_GOOGLE_TAG_ID ||
+      process.env.PUBLIC_GTM_ID ||
+      import.meta.env.PUBLIC_GTM_ID ||
+      'G-F8E3LFM3WJ',
+  )
+    .trim()
+    .toUpperCase();
+
+  return /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(id)
+    ? `<script src="/tm-google-tags.js" data-google-tag-id="${id}" defer></script>`
     : '';
 }
 
@@ -206,10 +215,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const html = await response.text();
-  const tags = [ANALYTICS_TAG, optionalGoogleTag()].filter(Boolean).join('\n');
-  const withAnalytics = html.includes('/tm-analytics.js')
-    ? html
-    : html.replace('</body>', `${tags}\n</body>`);
+  const googleTag = optionalGoogleTag();
+  const tags = [
+    html.includes('/tm-analytics.js') ? '' : ANALYTICS_TAG,
+    !googleTag || html.includes('/tm-google-tags.js') ? '' : googleTag,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  const withAnalytics = tags ? html.replace('</body>', `${tags}\n</body>`) : html;
 
   headers.delete('content-length');
   return new Response(withAnalytics, {
