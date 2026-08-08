@@ -7,19 +7,19 @@
 
 .catalog-hero {
   background: linear-gradient(180deg, #ffffff 0%, #edf7ff 100%);
-  padding: 52px 0 34px;
+  padding: 22px 0 20px;
   border-bottom: 1px solid #e3ebf5;
 }
 
 .catalog-hero-inner {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 520px;
-  gap: 40px;
-  align-items: end;
+  gap: 28px;
+  align-items: center;
 }
 
 .eyebrow {
-  margin: 0 0 10px;
+  margin: 0 0 5px;
   color: #009ee3;
   font-weight: 950;
 }
@@ -28,17 +28,17 @@
   max-width: 840px;
   margin: 0;
   color: #071b3a;
-  font-size: clamp(38px, 4.6vw, 66px);
-  line-height: .97;
-  letter-spacing: -0.06em;
+  font-size: clamp(27px, 2.6vw, 40px);
+  line-height: 1.06;
+  letter-spacing: -0.04em;
 }
 
 .lead {
   max-width: 760px;
-  margin: 16px 0 0;
+  margin: 7px 0 0;
   color: #526174;
-  font-size: 17px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .catalog-search {

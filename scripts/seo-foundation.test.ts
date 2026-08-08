@@ -101,13 +101,17 @@ test("model tlačiarne používa nekolidujúcu dvojúrovňovú routu", () => {
   assert.equal(existsSync(join(root, "src/pages/tlaciarne/[brand]/[model].astro")), true);
 });
 
-test("Merchant feed má verejnú XML routu, prísne filtre a bezpečnostnú poistku", () => {
+test("Merchant feed má verejnú XML routu, všetky produktové skupiny, prísne filtre a bezpečnostnú poistku", () => {
   assert.equal(existsSync(join(root, "src/pages/merchant-feed.xml.ts")), true);
   const route = read("src/pages/merchant-feed.xml.ts");
   const source = read("src/lib/merchant-feed.ts");
   assert.match(route, /\(\{ request \}\)/);
   assert.match(route, /merchantFeedResponse\(request\)/);
-  assert.match(source, /product\.product_type !== "compatible"/);
+  assert.match(source, /buildMerchantProducts/);
+  assert.match(source, /product\.product_type_key === "original"/);
+  assert.match(source, /product\.product_type_key === "renovated"/);
+  assert.match(source, /product\.product_type_key === "product"/);
+  assert.doesNotMatch(source, /product\.product_type !== "compatible"/);
   assert.match(source, /product\.price <= 0/);
   assert.match(source, /product\.description\.length < 40/);
   assert.match(source, /validMerchantImage/);

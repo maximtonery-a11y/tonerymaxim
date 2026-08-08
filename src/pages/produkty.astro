@@ -105,8 +105,8 @@ const initialCatalogJson = JSON.stringify(initialCatalog)
           <div class="wrap catalog-hero-inner">
             <div>
               <p class="eyebrow">Tonery a náplne</p>
-              <h1>Nájdite správny produkt pre vašu tlačiareň</h1>
-              <p class="lead">Prehľadný riadkový výpis s jasným rozlíšením originálneho, kompatibilného a renovovaného spotrebného materiálu.</p>
+              <h1>{query ? <>Výsledky pre „{query}“</> : "Vyberte správnu náplň"}</h1>
+              <p class="lead">{initialCatalog ? `${initialCatalog.total.toLocaleString("sk-SK")} nájdených produktov` : "Vyhľadajte podľa modelu tlačiarne alebo označenia náplne."}</p>
             </div>
 
             <form data-catalog-form class="catalog-search" data-smart-search>

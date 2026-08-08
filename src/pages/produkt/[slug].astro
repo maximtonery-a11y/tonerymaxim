@@ -10,12 +10,7 @@ import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import SeoHead from "../../components/SeoHead.astro";
 import { getProductFromCache, stripHtml } from "../../lib/tm-products-cache";
 import { breadcrumbJsonLd, organizationJsonLd, productDescription, productJsonLd, absoluteUrl, websiteJsonLd } from "../../lib/seo";
-import {
-  printerBrandForName,
-  printerLinksFromNames,
-  productOemCodes,
-  validIndexableProduct,
-} from "../../lib/seo-catalog";
+import { validIndexableProduct } from "../../lib/seo-catalog";
 
 const { slug } = Astro.params;
 const lookup = await getProductFromCache({ slug, id: slug }).catch(() => null);
@@ -88,20 +83,6 @@ const initialProductJson = JSON.stringify(product)
   .replace(/&/g, "\\u0026")
   .replace(/\u2028/g, "\\u2028")
   .replace(/\u2029/g, "\\u2029");
-const printerEntityLinks = printerLinksFromNames(cache?.products || [], printers, 16);
-const oemEntityLinks = productOemCodes(product).map((code) => ({
-  href: `/oem/${code.toLowerCase()}`,
-  label: code,
-}));
-const brandEntityLinks = [...new Map(
-  printers
-    .map((printer: string) => printerBrandForName(printer))
-    .filter(Boolean)
-    .map((brand: any) => [brand.slug, {
-      href: `/znacky/${brand.slug}`,
-      label: `Produkty pre ${brand.name}`,
-    }]),
-).values()];
 ---
 
 <!doctype html>
@@ -155,45 +136,6 @@ const brandEntityLinks = [...new Map(
           </section>
         </div>
       </main>
-
-      {(oemEntityLinks.length > 0 || printerEntityLinks.length > 0 || brandEntityLinks.length > 0) && (
-        <section class="product-seo-relations" aria-labelledby="product-related-navigation">
-          <div class="product-seo-relations-inner">
-            <div class="product-seo-relations-heading">
-              <p>Súvisiace overené údaje</p>
-              <h2 id="product-related-navigation">Nájdite ďalšie vhodné produkty</h2>
-              <span>Odkazy vznikajú z OEM označenia a kompatibilných tlačiarní uvedených pri tomto produkte.</span>
-            </div>
-
-            <div class="product-seo-relation-groups">
-              {oemEntityLinks.length > 0 && (
-                <article>
-                  <h3>Podľa OEM označenia</h3>
-                  <nav aria-label="OEM označenia produktu">
-                    {oemEntityLinks.map((link) => <a href={link.href}>{link.label}</a>)}
-                  </nav>
-                </article>
-              )}
-              {printerEntityLinks.length > 0 && (
-                <article>
-                  <h3>Podľa modelu tlačiarne</h3>
-                  <nav aria-label="Kompatibilné modely tlačiarní">
-                    {printerEntityLinks.map((link) => <a href={link.href}>{link.label}</a>)}
-                  </nav>
-                </article>
-              )}
-              {brandEntityLinks.length > 0 && (
-                <article>
-                  <h3>Podľa značky</h3>
-                  <nav aria-label="Značky kompatibilných tlačiarní">
-                    {brandEntityLinks.map((link: any) => <a href={link.href}>{link.label}</a>)}
-                  </nav>
-                </article>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
 
       <section class="product-mobile-help-area" aria-label="Pomoc s výberom správnej náplne">
         <div class="product-mobile-help-card" aria-label="Radi vám pomôžeme">

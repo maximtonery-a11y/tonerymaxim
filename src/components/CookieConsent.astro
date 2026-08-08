@@ -18,7 +18,7 @@
         <a href="/cookies">Viac informácií o cookies</a>
       </div>
 
-      <div class="tm-cookie-options" aria-label="Výber cookies">
+      <div class="tm-cookie-options" id="tm-cookie-options" aria-label="Výber cookies" hidden>
         <label class="tm-cookie-option tm-cookie-option-locked">
           <input type="checkbox" checked disabled />
           <span>
@@ -46,7 +46,8 @@
 
       <div class="tm-cookie-actions">
         <button type="button" class="tm-cookie-btn tm-cookie-btn-light" id="tm-cookie-reject">Odmietnuť voliteľné</button>
-        <button type="button" class="tm-cookie-btn tm-cookie-btn-light" id="tm-cookie-save">Uložiť výber</button>
+        <button type="button" class="tm-cookie-btn tm-cookie-btn-light" id="tm-cookie-customize" aria-expanded="false" aria-controls="tm-cookie-options">Nastaviť</button>
+        <button type="button" class="tm-cookie-btn tm-cookie-btn-light tm-cookie-save" id="tm-cookie-save">Uložiť výber</button>
         <button type="button" class="tm-cookie-btn tm-cookie-btn-dark" id="tm-cookie-accept">Prijať všetko</button>
       </div>
     </div>
@@ -77,11 +78,11 @@
   #tm-cookie-panel {
     display: none !important;
     position: relative !important;
-    width: min(100%, 1040px) !important;
+    width: min(100%, 900px) !important;
     margin: 0 auto !important;
-    padding: 22px !important;
+    padding: 17px 20px !important;
     border: 1px solid rgba(203, 213, 225, .95) !important;
-    border-radius: 26px !important;
+    border-radius: 20px !important;
     background: rgba(255, 255, 255, .98) !important;
     box-shadow: 0 24px 80px rgba(15, 23, 42, .20) !important;
     backdrop-filter: blur(18px) !important;
@@ -150,7 +151,9 @@
   .tm-cookie-content {
     display: grid !important;
     grid-template-columns: 1fr !important;
-    gap: 14px !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: end !important;
+    gap: 12px 20px !important;
     padding-right: 30px !important;
   }
 
@@ -171,7 +174,7 @@
   .tm-cookie-text h2 {
     margin: 8px 0 6px !important;
     color: #071b3a !important;
-    font-size: 22px !important;
+    font-size: 20px !important;
     line-height: 1.15 !important;
     letter-spacing: -.035em !important;
   }
@@ -181,7 +184,7 @@
     margin: 0 !important;
     color: #526172 !important;
     font-size: 14px !important;
-    line-height: 1.55 !important;
+    line-height: 1.42 !important;
   }
 
   .tm-cookie-text a {
@@ -194,10 +197,13 @@
   }
 
   .tm-cookie-options {
+    grid-column: 1 / -1 !important;
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 10px !important;
   }
+
+  .tm-cookie-options[hidden] { display: none !important; }
 
   .tm-cookie-option {
     display: flex !important;
@@ -245,6 +251,10 @@
     gap: 9px !important;
   }
 
+  .tm-cookie-save { display: none !important; }
+  #tm-cookie-consent.tm-cookie-customizing .tm-cookie-save { display: inline-flex !important; }
+  #tm-cookie-consent.tm-cookie-customizing #tm-cookie-customize { display: none !important; }
+
   .tm-cookie-btn {
     min-height: 44px !important;
     padding: 0 17px !important;
@@ -279,6 +289,8 @@
     }
 
     .tm-cookie-content {
+      grid-template-columns: 1fr !important;
+      align-items: stretch !important;
       padding-right: 0 !important;
     }
 
@@ -288,12 +300,17 @@
 
     .tm-cookie-actions {
       display: grid !important;
-      grid-template-columns: 1fr !important;
+      grid-template-columns: 1fr 1fr !important;
     }
 
     .tm-cookie-btn {
       width: 100% !important;
+      min-height: 42px !important;
     }
+
+    #tm-cookie-accept { grid-column: 1 / -1; grid-row: 1; }
+    #tm-cookie-reject { grid-column: 1; }
+    #tm-cookie-customize, #tm-cookie-save { grid-column: 2; }
 
     #tm-cookie-consent.tm-cookie-is-hidden #tm-cookie-floating,
     #tm-cookie-consent #tm-cookie-floating {
@@ -361,11 +378,22 @@
     r.classList.add("tm-cookie-is-open");
   }
 
+  function setCustomizing(enabled) {
+    var r = root();
+    var options = el("tm-cookie-options");
+    var customize = el("tm-cookie-customize");
+    if (!r || !options) return;
+    r.classList.toggle("tm-cookie-customizing", !!enabled);
+    options.hidden = !enabled;
+    if (customize) customize.setAttribute("aria-expanded", String(!!enabled));
+  }
+
   function closePanel() {
     var r = root();
     if (!r) return;
     r.classList.remove("tm-cookie-is-open");
     r.classList.add("tm-cookie-is-hidden");
+    setCustomizing(false);
   }
 
   function saveConsent(analyticsValue, marketingValue) {
@@ -409,12 +437,14 @@
     var accept = el("tm-cookie-accept");
     var reject = el("tm-cookie-reject");
     var save = el("tm-cookie-save");
+    var customize = el("tm-cookie-customize");
     var close = el("tm-cookie-close");
     var floating = el("tm-cookie-floating");
 
     if (accept) accept.addEventListener("click", function (event) { event.preventDefault(); acceptAll(); });
     if (reject) reject.addEventListener("click", function (event) { event.preventDefault(); rejectOptional(); });
     if (save) save.addEventListener("click", function (event) { event.preventDefault(); saveSelection(); });
+    if (customize) customize.addEventListener("click", function (event) { event.preventDefault(); setCustomizing(true); });
     if (close) close.addEventListener("click", function (event) { event.preventDefault(); closePanel(); });
     if (floating) floating.addEventListener("click", function (event) { event.preventDefault(); openPanel(); });
 

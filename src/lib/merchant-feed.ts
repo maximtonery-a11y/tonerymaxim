@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import { buildAdsProducts } from "./ads-products";
-import { getProductsCache, type TmProduct } from "./tm-products-cache";
+import { buildMerchantProducts, type MerchantMaterialType, type MerchantProductType } from "./merchant-products.ts";
+import { getProductsCache, type TmProduct } from "./tm-products-cache.ts";
 
 const PRODUCTION_ORIGIN = "https://www.tonerymaxim.sk";
 const GOOGLE_PRODUCT_CATEGORY = "356";
@@ -19,11 +19,12 @@ export type MerchantFeedConfig = {
 
 export type MerchantFeedStats = {
   sourceProducts: number;
-  compatibleCandidates: number;
+  eligibleCandidates: number;
   transformedCandidates: number;
   includedProducts: number;
   excludedProducts: number;
   excluded: Record<string, number>;
+  includedByType: Record<MerchantProductType, number>;
   withGtin: number;
   withBrandAndMpn: number;
   withFreeShipping: number;
@@ -90,10 +91,20 @@ function increase(stats: MerchantFeedStats, reason: string): void {
   stats.excluded[reason] = (stats.excluded[reason] || 0) + 1;
 }
 
-function productTypeName(materialType: "toner" | "ink"): string {
-  return materialType === "ink"
-    ? "ToneryMaxim > Kompatibilné atramentové náplne"
-    : "ToneryMaxim > Kompatibilné tonery";
+function productTypeName(productType: MerchantProductType, materialType: MerchantMaterialType): string {
+  const type = {
+    compatible: "Kompatibilné",
+    original: "Originálne",
+    renovated: "Renovované",
+    product: "Ostatné",
+  }[productType];
+  const material = {
+    toner: "tonery",
+    ink: "atramentové náplne",
+    drum: "optické valce",
+    component: "komponenty a spotrebný materiál",
+  }[materialType];
+  return `ToneryMaxim > ${type} > ${material}`;
 }
 
 function shippingXml(price: number, config: MerchantFeedConfig): string[] {
@@ -116,25 +127,27 @@ export function buildMerchantFeed(
   generatedAt: string,
   config: MerchantFeedConfig = merchantFeedConfig(),
 ): MerchantFeedBuild {
-  const compatibleCandidates = sourceProducts.filter((product) => product.product_type_key === "compatible");
-  const transformed = buildAdsProducts(sourceProducts, config.origin, false);
+  const eligibleCandidates = sourceProducts.filter((product) => (
+    product.product_type_key === "compatible"
+    || product.product_type_key === "original"
+    || product.product_type_key === "renovated"
+    || product.product_type_key === "product"
+  ));
+  const transformed = buildMerchantProducts(sourceProducts, config.origin);
   const stats: MerchantFeedStats = {
     sourceProducts: sourceProducts.length,
-    compatibleCandidates: compatibleCandidates.length,
+    eligibleCandidates: eligibleCandidates.length,
     transformedCandidates: transformed.length,
     includedProducts: 0,
     excludedProducts: 0,
     excluded: {},
+    includedByType: { compatible: 0, original: 0, renovated: 0, product: 0 },
     withGtin: 0,
     withBrandAndMpn: 0,
     withFreeShipping: 0,
   };
 
   const products = transformed.filter((product) => {
-    if (product.product_type !== "compatible") {
-      increase(stats, "not_compatible");
-      return false;
-    }
     if (!product.id || !product.slug || product.name.length < 5) {
       increase(stats, "missing_identity");
       return false;
@@ -162,10 +175,11 @@ export function buildMerchantFeed(
     return true;
   });
 
-  const untransformedCompatible = Math.max(0, compatibleCandidates.length - transformed.length);
-  if (untransformedCompatible) stats.excluded.unsupported_or_duplicate = untransformedCompatible;
+  const untransformed = Math.max(0, eligibleCandidates.length - transformed.length);
+  if (untransformed) stats.excluded.unsupported_or_duplicate = untransformed;
   stats.includedProducts = products.length;
   stats.excludedProducts = Math.max(0, stats.sourceProducts - products.length);
+  for (const product of products) stats.includedByType[product.productType] += 1;
   stats.withGtin = products.filter((product) => product.gtin).length;
   stats.withBrandAndMpn = products.filter((product) => product.brand && product.mpn).length;
   stats.withFreeShipping = products.filter((product) => product.price >= config.freeShippingFrom).length;
@@ -175,7 +189,7 @@ export function buildMerchantFeed(
   }
 
   const items = products.map((product) => {
-    const labels = product.dsa_labels.slice(0, 5);
+    const labels = product.labels.slice(0, 5);
     return [
       "    <item>",
       `      <g:id>${xml(product.id)}</g:id>`,
@@ -183,7 +197,7 @@ export function buildMerchantFeed(
       `      <g:description>${xml(product.description)}</g:description>`,
       `      <g:link>${xml(product.url)}</g:link>`,
       `      <g:image_link>${xml(product.image)}</g:image_link>`,
-      ...product.additional_images
+      ...product.additionalImages
         .filter(validMerchantImage)
         .slice(0, 10)
         .map((image) => `      <g:additional_image_link>${xml(image)}</g:additional_image_link>`),
@@ -191,11 +205,11 @@ export function buildMerchantFeed(
       "      <g:condition>new</g:condition>",
       `      <g:price>${product.price.toFixed(2)} EUR</g:price>`,
       `      <g:google_product_category>${GOOGLE_PRODUCT_CATEGORY}</g:google_product_category>`,
-      `      <g:product_type>${xml(productTypeName(product.material_type))}</g:product_type>`,
+      `      <g:product_type>${xml(productTypeName(product.productType, product.materialType))}</g:product_type>`,
       ...(product.brand ? [`      <g:brand>${xml(product.brand)}</g:brand>`] : []),
       ...(product.gtin ? [`      <g:gtin>${xml(product.gtin)}</g:gtin>`] : []),
       ...(product.mpn ? [`      <g:mpn>${xml(product.mpn)}</g:mpn>`] : []),
-      `      <g:identifier_exists>${product.identifier_exists ? "yes" : "no"}</g:identifier_exists>`,
+      `      <g:identifier_exists>${product.identifierExists ? "yes" : "no"}</g:identifier_exists>`,
       ...(product.color ? [`      <g:color>${xml(product.color)}</g:color>`] : []),
       "      <g:ships_from_country>SK</g:ships_from_country>",
       ...shippingXml(product.price, config),
@@ -210,9 +224,9 @@ export function buildMerchantFeed(
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
     "<rss version=\"2.0\" xmlns:g=\"http://base.google.com/ns/1.0\">",
     "  <channel>",
-    "    <title>ToneryMaxim.sk – kompatibilné tonery a atramentové náplne</title>",
+    "    <title>ToneryMaxim.sk – tonery, atramentové náplne a komponenty</title>",
     `    <link>${config.origin}</link>`,
-    "    <description>Skladové kompatibilné tonery a atramentové náplne s cenou s DPH a doručením na Slovensko.</description>",
+    "    <description>Skladové kompatibilné, originálne a renovované tonery, atramentové náplne a komponenty s cenou s DPH a doručením na Slovensko.</description>",
     ...(lastBuildDate ? [`    <lastBuildDate>${lastBuildDate}</lastBuildDate>`] : []),
     items,
     "  </channel>",

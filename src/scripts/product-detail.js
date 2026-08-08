@@ -204,33 +204,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     }).format(Number(value || 0));
   }
 
-  function hashNumber(seed, min, max) {
-    const text = String(seed || "produkt");
-    let hash = 0;
-    for (let i = 0; i < text.length; i += 1) {
-      hash = ((hash << 5) - hash) + text.charCodeAt(i);
-      hash |= 0;
-    }
-    const normalized = Math.abs(hash);
-    return min + (normalized % (max - min + 1));
-  }
-
-  function productStats(product) {
-    const seed = product.sku || product.slug || product.name || product.id;
-    const sold = hashNumber(seed, 67, 638);
-    const ratingOptions = [5, 5, 5, 4.5, 4.5, 4];
-    const rating = ratingOptions[hashNumber(seed, 0, ratingOptions.length - 1)];
-    return { sold, rating };
-  }
-
-  function starsHtml(rating) {
-    const full = Math.floor(Number(rating || 5));
-    const half = Number(rating || 5) % 1 !== 0;
-    let stars = "★".repeat(full);
-    if (half) stars += "½";
-    return `<span class="product-stars" aria-label="Hodnotenie ${esc(rating)} z 5">${stars}</span>`;
-  }
-
   function stockText(product) {
     if (product.stock_status === "instock") {
       if (product.stock_quantity !== null && product.stock_quantity !== undefined) return `Skladom ${product.stock_quantity} ks`;
@@ -1072,7 +1045,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         <div>
           <span class="mini-badge">${esc(productTypeLabel(typeKey))}</span>
           <a class="mini-title" href="${esc(getProductUrl(product))}">${esc(product.name)}</a>
-          <small>★★★★★ ${esc(String(productStats(product).rating).replace(".", ","))}/5</small>
+          <small>${isProductInStock(product) ? "Skladom" : "Dostupnosť na overenie"}</small>
           <strong>${money(product.price)}</strong>
         </div>
         <button type="button" data-related-add aria-label="Pridať do košíka">🛒</button>
@@ -1265,7 +1238,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const productColor = product.color || "Neuvedené";
     const productYield = normalizeYield(product);
     const productWarrantyValue = productWarranty(product);
-    const stats = productStats(product);
     const priceWithoutVat = Number(product.price || 0) / 1.23;
     const printers = getPrinters(product);
 
@@ -1298,12 +1270,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
           </div>
 
           <h1>${esc(product.name)}</h1>
-
-          <div class="rating-row">
-            ${starsHtml(stats.rating)}
-            <strong>${String(stats.rating).replace(".", ",")}/5</strong>
-            <span>Predaných viac ako ${stats.sold} ks</span>
-          </div>
 
           <p class="summary-subtitle">${esc(product.product_type_detail_label || product.description || "Spotrebný materiál pre vašu tlačiareň.")}</p>
 
@@ -1343,12 +1309,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
             <span>${esc(deliveryMissing(product))}</span>
           </div>
 
-          <a class="heureka-mini" href="https://obchody.heureka.sk/tonerymaxim-sk/recenze/" target="_blank" rel="noopener noreferrer">
-            <span>★★★★★</span>
-            <strong>5,0/5</strong>
-            <small>1 323 recenzií</small>
-          </a>
-
           <label>Množstvo</label>
           <div class="qty-row">
             <button type="button" data-qty-minus>-</button>
@@ -1361,6 +1321,12 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
           </button>
 
           ${isProductInStock(product) ? `<button type="button" class="buy-now" data-buy-now>Kúpiť ihneď</button>` : ""}
+
+          <a class="heureka-mini purchase-heureka" href="https://obchody.heureka.sk/tonerymaxim-sk/recenze/" target="_blank" rel="noopener noreferrer" aria-label="Overené hodnotenie obchodu ToneryMaxim na Heureke">
+            <span data-heureka-stars aria-hidden="true">★★★★★</span>
+            <strong><span data-heureka-rating>4,9</span>/5</strong>
+            <small><b data-heureka-count>1 326</b> overených recenzií obchodu na Heureke</small>
+          </a>
 
           <div class="purchase-note">
             <span>✓ Bezpečný nákup</span>

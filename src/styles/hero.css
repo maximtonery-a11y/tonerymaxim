@@ -1,6 +1,7 @@
 .hero-shell {
   position: relative;
-  overflow: hidden;
+  z-index: 40;
+  overflow: visible;
   background:
     radial-gradient(circle at 76% 36%, rgba(237, 245, 255, .96) 0, rgba(237, 245, 255, .70) 28%, transparent 56%),
     linear-gradient(180deg, #fff 0%, #fff 75%, #f8fbff 100%);
@@ -15,6 +16,8 @@
 }
 
 .hero-copy {
+  position: relative;
+  z-index: 50;
   min-width: 0;
 }
 

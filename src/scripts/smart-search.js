@@ -122,13 +122,11 @@
     if (section === "printers") return "🖨️";
     if (section === "products") return "🧾";
     if (section === "brands") return "🏷️";
-    if (section === "productGroups") return "📦";
     return "📂";
   }
 
   function sectionTitle(section) {
     if (section === "printers") return "Tlačiarne";
-    if (section === "productGroups") return "Nájdené typy produktov";
     if (section === "products") return "Produkty";
     if (section === "brands") return "Značky";
     return "Kategórie";
@@ -170,20 +168,6 @@
     return { wrapper, panel };
   }
 
-  function productGroupTemplate(item, query) {
-    const type = item.type || "product";
-    return `
-      <a class="tm-smart-group tm-smart-group--${esc(type)}" href="${esc(item.url || "/produkty?s=" + encodeURIComponent(query))}" data-smart-result="productGroups">
-        <span class="tm-smart-group-dot"></span>
-        <span>
-          <strong>${highlight(item.title || "", query)}</strong>
-          ${item.subtitle ? `<small>${esc(item.subtitle)}</small>` : ""}
-        </span>
-        <b>Zobraziť</b>
-      </a>
-    `;
-  }
-
   function itemTemplate(item, section, query) {
     const type = item.type || "";
     const image = item.image
@@ -211,9 +195,7 @@
   function renderSection(section, items, query) {
     if (!Array.isArray(items) || !items.length) return "";
 
-    const body = section === "productGroups"
-      ? items.map((item) => productGroupTemplate(item, query)).join("")
-      : items.map((item) => itemTemplate(item, section, query)).join("");
+    const body = items.map((item) => itemTemplate(item, section, query)).join("");
 
     return `
       <section class="tm-smart-section tm-smart-section--${section}">
@@ -223,13 +205,24 @@
     `;
   }
 
+  function renderTypeFilters(groups) {
+    if (!Array.isArray(groups) || !groups.length) return "";
+    const filters = groups
+      .filter((item) => ["compatible", "original", "renovated"].includes(item.type))
+      .map((item) => `<a class="tm-smart-filter tm-smart-filter--${esc(item.type)}" href="${esc(item.url)}">${esc(typeLabel(item.type))} <b>${esc(item.count || "")}</b></a>`)
+      .join("");
+    return filters ? `<nav class="tm-smart-filters" aria-label="Filtrovať nájdené produkty podľa typu">${filters}</nav>` : "";
+  }
+
   function renderPanel(panel, data, query) {
+    const productCount = Array.isArray(data?.productGroups)
+      ? data.productGroups.reduce((sum, item) => sum + Number(item.count || 0), 0)
+      : Number(data?.products?.length || 0);
     const html = [
-      renderSection("printers", data?.printers, query),
-      renderSection("productGroups", data?.productGroups, query),
-      renderSection("products", data?.products, query),
-      renderSection("brands", data?.brands, query),
-      renderSection("categories", data?.categories, query),
+      renderSection("printers", data?.printers?.slice(0, 5), query),
+      renderTypeFilters(data?.productGroups),
+      renderSection("products", data?.products?.slice(0, 6), query),
+      productCount > 6 ? `<a class="tm-smart-all" href="/produkty?s=${encodeURIComponent(query)}">Zobraziť všetkých ${productCount} produktov <span>›</span></a>` : "",
     ].join("");
 
     panel.innerHTML = html || `
