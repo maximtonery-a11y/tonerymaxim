@@ -10,6 +10,7 @@ import {
   topOemLinks,
   topPrinterLinks,
 } from "../../../lib/seo-catalog";
+import { findPrinterGeoPilot, pilotFaq } from "../../../data/geo-pilot";
 
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const printer = findPrinterEntity(cache.products, Astro.params.brand, Astro.params.model);
@@ -24,6 +25,7 @@ if (notFound) {
 }
 
 const printerName = printer?.name || "Neznámy model tlačiarne";
+const geoPilot = printer ? findPrinterGeoPilot(printer.name) : undefined;
 const brandName = printer?.brand.name || "Tlačiareň";
 const canonicalPath = printer
   ? `/tlaciarne/${printer.brand.slug}/${printer.slug}`
@@ -70,8 +72,14 @@ const relatedPrinterLinks = printer
   faq={notFound ? [] : [
     { question: `Ktorý toner je vhodný pre ${printerName}?`, answer: `Vyberte niektorý z produktov uvedených na tejto stránke a v detaile ešte skontrolujte model ${printerName} a OEM označenie kazety.` },
     { question: "Môžem použiť kompatibilný toner namiesto originálneho?", answer: "Áno, ak je konkrétny kompatibilný produkt určený pre tento model tlačiarne. Typ produktu je viditeľne označený pri každej položke." },
+    ...(geoPilot ? pilotFaq(printerName, geoPilot) : []),
   ]}
   contentSections={notFound ? [] : [
+    ...(geoPilot ? [{
+      heading: `Odborné odporúčanie pre ${printerName}`,
+      paragraphs: [geoPilot.selection, geoPilot.caution],
+      bullets: [`Typ spotrebného materiálu: ${geoPilot.productKind}.`, "Porovnajte celý OEM kód vrátane farebnej alebo kapacitnej koncovky.", "Kompatibilitu potvrďte v detaile konkrétneho produktu."],
+    }] : []),
     {
       heading: `Výber tonera alebo náplne pre ${printerName}`,
       paragraphs: [`Produkty na tejto stránke majú model ${printerName} uvedený v zozname kompatibilných tlačiarní. Rozhodujúci je celý názov modelu, pretože podobne pomenované zariadenia ${brandName} nemusia používať rovnakú kazetu.`],
@@ -91,5 +99,13 @@ const relatedPrinterLinks = printer
     { name: brandName, url: printer ? `/znacky/${printer.brand.slug}` : undefined },
     { name: `Tonery pre ${printerName}` },
   ]}
+  expertGuide={geoPilot ? {
+    title: `Aké náplne používa ${printerName}?`,
+    summary: `${geoPilot.selection} ${geoPilot.caution}`,
+    updated: "2026-08-09",
+    author: "Roman Babčan",
+    experience: "17+ rokov skúseností",
+    links: geoPilot.adviceLinks,
+  } : undefined}
   notFound={notFound}
 />

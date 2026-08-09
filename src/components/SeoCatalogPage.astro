@@ -15,6 +15,14 @@ type Link = { href: string; label: string };
 type Faq = { question: string; answer: string };
 type ContentSection = { heading: string; paragraphs: string[]; bullets?: string[] };
 type LinkGroup = { heading: string; intro?: string; links: EntityLink[] };
+type ExpertGuide = {
+  title: string;
+  summary: string;
+  updated: string;
+  author?: string;
+  experience?: string;
+  links?: Link[];
+};
 
 interface Props {
   title: string;
@@ -34,7 +42,7 @@ interface Props {
   generatedAt?: string;
   schemaEntities?: Array<{ name: string; url?: string }>;
   notFound?: boolean;
-  pagination?: { page: number; totalPages: number; pageSize: number; basePath: string };
+  expertGuide?: ExpertGuide;
 }
 
 const {
@@ -55,27 +63,14 @@ const {
   generatedAt = "",
   schemaEntities = [],
   notFound = false,
-  pagination,
+  expertGuide,
 } = Astro.props;
 
 const SEO_ORIGIN = "https://www.tonerymaxim.sk";
 const previewHost = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname.toLowerCase());
 const canonical = new URL(canonicalPath, SEO_ORIGIN).toString();
 const noindex = previewHost || notFound || products.length === 0;
-const shownProducts = pagination
-  ? products.slice((pagination.page - 1) * pagination.pageSize, pagination.page * pagination.pageSize)
-  : products.slice(0, 80);
-const pageUrl = (page: number) => page > 1 ? `${pagination?.basePath}?page=${page}` : String(pagination?.basePath || canonicalPath);
-const paginationItems: Array<number | "ellipsis"> = [];
-if (pagination && pagination.totalPages > 1) {
-  const pages = [...new Set([1, pagination.page - 2, pagination.page - 1, pagination.page, pagination.page + 1, pagination.page + 2, pagination.totalPages])]
-    .filter((page) => page >= 1 && page <= pagination.totalPages)
-    .sort((a, b) => a - b);
-  pages.forEach((page, index) => {
-    if (index > 0 && page - pages[index - 1] > 1) paginationItems.push("ellipsis");
-    paginationItems.push(page);
-  });
-}
+const shownProducts = products.slice(0, 80);
 const breadcrumbItems = [{ name: "Domov", path: "/" }, ...breadcrumbs];
 const stats = catalogStats(products);
 const money = (value: number) => new Intl.NumberFormat("sk-SK", {
@@ -107,15 +102,35 @@ const faqJsonLd = faq.length ? {
     acceptedAnswer: { "@type": "Answer", text: item.answer },
   })),
 } : null;
+const expertJsonLd = expertGuide ? {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "@id": `${canonical}#expert-guide`,
+  headline: expertGuide.title,
+  description: expertGuide.summary,
+  url: canonical,
+  mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+  datePublished: "2026-08-09",
+  dateModified: expertGuide.updated,
+  inLanguage: "sk-SK",
+  author: {
+    "@type": "Person",
+    name: expertGuide.author || "Roman Babčan",
+    jobTitle: "Odborný poradca pre tonery a tlačiarne",
+    worksFor: { "@id": `${SEO_ORIGIN}/#organization` },
+  },
+  publisher: { "@id": `${SEO_ORIGIN}/#organization` },
+} : null;
 const jsonLd = [
   organizationJsonLd(SEO_ORIGIN),
   websiteJsonLd(SEO_ORIGIN),
   breadcrumbJsonLd(SEO_ORIGIN, breadcrumbItems),
-  collectionJsonLd(SEO_ORIGIN, canonicalPath, heading, description, shownProducts, {
+  collectionJsonLd(SEO_ORIGIN, canonicalPath, heading, description, products, {
     generatedAt,
     about: schemaEntities,
   }),
   ...(faqJsonLd ? [faqJsonLd] : []),
+  ...(expertJsonLd ? [expertJsonLd] : []),
 ];
 ---
 
@@ -131,8 +146,6 @@ const jsonLd = [
       noindex={noindex}
       jsonLd={jsonLd}
     />
-    {pagination && pagination.page > 1 && <link rel="prev" href={new URL(pageUrl(pagination.page - 1), SEO_ORIGIN)} />}
-    {pagination && pagination.page < pagination.totalPages && <link rel="next" href={new URL(pageUrl(pagination.page + 1), SEO_ORIGIN)} />}
   </head>
   <body>
     <div class="page">
@@ -190,14 +203,37 @@ const jsonLd = [
           </section>
         )}
 
+        {!notFound && expertGuide && (
+          <section class="seo-expert-guide" aria-labelledby="seo-expert-title">
+            <div class="wrap seo-expert-guide-grid">
+              <article>
+                <p class="eyebrow">Odborné odporúčanie</p>
+                <h2 id="seo-expert-title">{expertGuide.title}</h2>
+                <p>{expertGuide.summary}</p>
+                {expertGuide.links && expertGuide.links.length > 0 && (
+                  <nav aria-label="Súvisiace odborné návody">
+                    {expertGuide.links.map((link) => <a href={link.href}>{link.label}<span aria-hidden="true">→</span></a>)}
+                  </nav>
+                )}
+              </article>
+              <aside>
+                <strong>{expertGuide.author || "Roman Babčan"}</strong>
+                <span>odborný garant obsahu</span>
+                <b>{expertGuide.experience || "17+ rokov skúseností"}</b>
+                <small>Aktualizované {new Intl.DateTimeFormat("sk-SK", { dateStyle: "medium" }).format(new Date(`${expertGuide.updated}T12:00:00Z`))}</small>
+              </aside>
+            </div>
+          </section>
+        )}
+
         <section class="seo-catalog-products">
           <div class="wrap">
             <div class="seo-section-heading">
               <div>
                 <p class="eyebrow">Aktuálna ponuka</p>
-                <h2>{notFound ? "Stránka sa nenašla" : `${products.length} produktov v ponuke${pagination && pagination.page > 1 ? ` – strana ${pagination.page}` : ""}`}</h2>
+                <h2>{notFound ? "Stránka sa nenašla" : `${products.length} produktov v ponuke`}</h2>
               </div>
-              {!notFound && !pagination && products.length > shownProducts.length && (
+              {!notFound && products.length > shownProducts.length && (
                 <a href={`/produkty?s=${encodeURIComponent(heading)}`}>Zobraziť celý katalóg</a>
               )}
             </div>
@@ -215,17 +251,6 @@ const jsonLd = [
                   <a href="/tlaciarne">Vybrať tlačiareň</a>
                 </div>
               </div>
-            )}
-            {pagination && pagination.totalPages > 1 && (
-              <nav class="seo-pagination" aria-label="Stránkovanie produktov">
-                {pagination.page > 1 && <a rel="prev" href={pageUrl(pagination.page - 1)}>← Predchádzajúca</a>}
-                {paginationItems.map((item) => item === "ellipsis"
-                  ? <span aria-hidden="true">…</span>
-                  : item === pagination.page
-                    ? <strong aria-current="page">{item}</strong>
-                    : <a href={pageUrl(item)}>{item}</a>)}
-                {pagination.page < pagination.totalPages && <a rel="next" href={pageUrl(pagination.page + 1)}>Ďalšia →</a>}
-              </nav>
             )}
           </div>
         </section>

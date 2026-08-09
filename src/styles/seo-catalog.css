@@ -102,37 +102,6 @@
   background: #d8e8ff;
 }
 
-.seo-pagination {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 2rem;
-}
-
-.seo-pagination a,
-.seo-pagination strong {
-  display: inline-flex;
-  min-width: 42px;
-  min-height: 42px;
-  align-items: center;
-  justify-content: center;
-  padding: 0.55rem 0.8rem;
-  border: 1px solid #cbd9ea;
-  border-radius: 10px;
-  background: #fff;
-  color: #0b4fb3;
-  font-weight: 850;
-  text-decoration: none;
-}
-
-.seo-pagination strong {
-  border-color: #0758d8;
-  background: #0758d8;
-  color: #fff;
-}
-
 .seo-answer-section {
   padding: 1.5rem 0;
   border-bottom: 1px solid #dfe8f3;
@@ -535,3 +504,4 @@
     flex: 0 0 auto;
   }
 }
+.seo-expert-guide{padding:0 0 42px;background:#f5f9ff}.seo-expert-guide-grid{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:26px;align-items:center;padding:28px;border:1px solid #dce8f6;border-radius:22px;background:#fff;box-shadow:0 12px 34px rgba(12,42,82,.06)}.seo-expert-guide h2{margin:0 0 12px;color:#092249;font-size:clamp(24px,3vw,34px)}.seo-expert-guide article>p:not(.eyebrow){margin:0;color:#4e637d;font-size:17px;line-height:1.7}.seo-expert-guide nav{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}.seo-expert-guide nav a{display:inline-flex;gap:8px;padding:10px 13px;border-radius:11px;background:#edf5ff;color:#0b5cba;font-weight:800;text-decoration:none}.seo-expert-guide aside{display:grid;gap:4px;padding:20px;border-radius:17px;background:#edf5ff}.seo-expert-guide aside strong{font-size:19px}.seo-expert-guide aside span,.seo-expert-guide aside small{color:#60738b}.seo-expert-guide aside b{margin:8px 0;color:#0b63c8}@media(max-width:760px){.seo-expert-guide-grid{grid-template-columns:1fr;padding:22px}.seo-expert-guide aside{padding:16px}}

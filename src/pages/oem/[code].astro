@@ -10,6 +10,7 @@ import {
   topBrandLinks,
   topOemLinks,
 } from "../../lib/seo-catalog";
+import { findOemGeoPilot, pilotFaq } from "../../data/geo-pilot";
 
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const oem = findOemEntity(cache.products, Astro.params.code);
@@ -24,6 +25,7 @@ if (notFound) {
 }
 
 const code = oem?.code || String(Astro.params.code || "").toUpperCase();
+const geoPilot = oem ? findOemGeoPilot(oem.code) : undefined;
 const canonicalPath = oem ? `/oem/${oem.slug}` : Astro.url.pathname;
 const printerFacts = oem?.printers.slice(0, 6) || [];
 const printerLinks = oem ? printerLinksFromNames(cache.products, oem.printers, 16) : [];
@@ -66,8 +68,14 @@ const relatedOemLinks = oem
   faq={notFound ? [] : [
     { question: `Čo znamená označenie ${code}?`, answer: `${code} je OEM označenie produktovej rodiny tonera alebo náplne. Pri nákupe je zároveň potrebné overiť presný model tlačiarne.` },
     { question: `Sú všetky produkty ${code} navzájom rovnaké?`, answer: "Nie. Produkty sa môžu líšiť farbou, kapacitou, typom balenia alebo tým, či ide o originálnu, kompatibilnú alebo renovovanú verziu." },
+    ...(geoPilot ? pilotFaq(code, geoPilot) : []),
   ]}
   contentSections={notFound ? [] : [
+    ...(geoPilot ? [{
+      heading: `Odborný výber pre OEM ${code}`,
+      paragraphs: [geoPilot.selection, geoPilot.caution],
+      bullets: [`Typ produktu: ${geoPilot.productKind}.`, "Porovnajte kód znak po znaku.", "V detaile potvrďte presný model tlačiarne, farbu a kapacitu."],
+    }] : []),
     {
       heading: `Ako správne porovnať produkty ${code}`,
       paragraphs: [`OEM označenie ${code} zúži výber na relevantnú produktovú rodinu. Pred objednaním ešte porovnajte celý názov kazety, farbu, prípadnú koncovku XL a presný model tlačiarne.`],
@@ -87,5 +95,13 @@ const relatedOemLinks = oem
     { name: `OEM ${code}`, url: canonicalPath },
     ...printerLinks.slice(0, 8).map((link) => ({ name: link.label, url: link.href })),
   ]}
+  expertGuide={geoPilot ? {
+    title: `Ako správne vybrať ${code}`,
+    summary: `${geoPilot.selection} ${geoPilot.caution}`,
+    updated: "2026-08-09",
+    author: "Roman Babčan",
+    experience: "17+ rokov skúseností",
+    links: geoPilot.adviceLinks,
+  } : undefined}
   notFound={notFound}
 />
