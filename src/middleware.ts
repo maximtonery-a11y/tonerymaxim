@@ -29,6 +29,20 @@ const PRIVATE_NOINDEX_PATHS = new Set([
   '/reset-hesla',
 ]);
 
+const CANONICAL_NO_TRAILING_SLASH_PATHS = new Set([
+  '/kontakt',
+  '/doprava-a-platba',
+  '/obchodne-podmienky',
+  '/reklamacie',
+  '/faq',
+  '/cookies',
+  '/o-nas',
+  '/ochrana-osobnych-udajov',
+  '/partneri-a-tretie-strany',
+  '/registracia',
+]);
+const CANONICAL_NO_TRAILING_SLASH_PREFIXES = ['/produkt/', '/znacky/', '/tlaciarne/', '/oem/'];
+
 function isNoIndexHost(hostname: string): boolean {
   return NOINDEX_HOSTS.has(hostname.toLowerCase());
 }
@@ -123,6 +137,26 @@ function canonicalProductionRedirect(request: Request, url: URL): Response | nul
   });
 }
 
+function canonicalTrailingSlashRedirect(request: Request, url: URL): Response | null {
+  if (!PRODUCTION_HOSTS.has(url.hostname.toLowerCase())) return null;
+  if (request.method !== 'GET' && request.method !== 'HEAD') return null;
+  if (url.pathname === '/' || !url.pathname.endsWith('/')) return null;
+
+  const pathWithoutSlash = url.pathname.slice(0, -1);
+  const isCanonicalRoute = CANONICAL_NO_TRAILING_SLASH_PATHS.has(pathWithoutSlash)
+    || CANONICAL_NO_TRAILING_SLASH_PREFIXES.some((prefix) => pathWithoutSlash.startsWith(prefix));
+  if (!isCanonicalRoute) return null;
+
+  const target = new URL(`${pathWithoutSlash}${url.search}`, PRODUCTION_ORIGIN);
+  return new Response(null, {
+    status: 301,
+    headers: {
+      Location: target.toString(),
+      'Cache-Control': 'public, max-age=300',
+    },
+  });
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   validateRuntimeSecretsOnce();
   if (backgroundWorkersEnabled()) {
@@ -134,6 +168,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { request, url } = context;
   const canonicalRedirect = canonicalProductionRedirect(request, url);
   if (canonicalRedirect) return canonicalRedirect;
+  const trailingSlashRedirect = canonicalTrailingSlashRedirect(request, url);
+  if (trailingSlashRedirect) return trailingSlashRedirect;
   const noIndex = isNoIndexHost(url.hostname);
   const id = requestId(request);
   const commonSecurityHeaders = securityHeaders(url, id);

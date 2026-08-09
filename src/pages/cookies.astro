@@ -6,6 +6,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
 const cards = [
   ["○", "Čo sú cookies", "Malé textové súbory, ktoré sa ukladajú do zariadenia a pomáhajú zlepšiť fungovanie webu.", "", ""],
   ["✓", "Nevyhnutné cookies", "Zabezpečujú základné funkcie webu, košík, prihlásenie a navigáciu.", "Vždy aktívne", "green"],
@@ -13,7 +14,7 @@ const cards = [
   ["◎", "Marketingové cookies", "Používajú sa na zobrazovanie relevantnej reklamy na našom webe aj mimo neho.", "Voliteľné", "red"],
 ];
 ---
-<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Cookies | ToneryMaxim.sk</title><link rel="canonical" href="https://www.tonerymaxim.sk/cookies" /></head><body><div class="page"><Header /><main>
+<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><SeoHead title="Cookies | ToneryMaxim.sk" description="Informácie o používaní nevyhnutných, analytických a marketingových cookies na webe ToneryMaxim.sk a možnosti správy súhlasu." canonical="https://www.tonerymaxim.sk/cookies" /></head><body><div class="page"><Header /><main>
 <InfoPageShell active="/cookies" eyebrow="Cookies" title="Cookies" intro="Zásady používania súborov cookies na webe ToneryMaxim.sk.">
   <section class="cookie-grid">{cards.map(([icon,title,text,state,color]) => <article class="cookie-card"><span class="info-icon">{icon}</span><h2>{title}</h2><p>{text}</p>{state && <div class:list={["cookie-state", color]}>{state}</div>}</article>)}</section>
   <article class="legal-panel">

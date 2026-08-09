@@ -6,6 +6,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
 const cards = [
   ["▤", "Kto sme", "Správcom osobných údajov je Roman Babčan INkarus."],
   ["☰", "Aké údaje spracúvame", "Údaje potrebné pri nákupe, registrácii alebo kontakte."],
@@ -15,7 +16,7 @@ const cards = [
   ["♙", "Vaše práva", "Prístup, oprava, výmaz, obmedzenie, námietka a sťažnosť."],
 ];
 ---
-<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Ochrana osobných údajov | ToneryMaxim.sk</title><link rel="canonical" href="https://www.tonerymaxim.sk/ochrana-osobnych-udajov" /></head><body><div class="page"><Header /><main>
+<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><SeoHead title="Ochrana osobných údajov | ToneryMaxim.sk" description="Zásady ochrany osobných údajov e-shopu ToneryMaxim.sk, rozsah spracúvania údajov, právne základy, príjemcovia a vaše práva." canonical="https://www.tonerymaxim.sk/ochrana-osobnych-udajov" /></head><body><div class="page"><Header /><main>
 <InfoPageShell active="/ochrana-osobnych-udajov" eyebrow="GDPR" title="Ochrana osobných údajov" intro="Zásady ochrany osobných údajov e-shopu ToneryMaxim.sk.">
   <section class="gdpr-grid">{cards.map(([icon,title,text]) => <article class="gdpr-card"><span class="info-icon">{icon}</span><h2>{title}</h2><p>{text}</p></article>)}</section>
   <article class="legal-panel">

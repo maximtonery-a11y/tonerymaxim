@@ -6,6 +6,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
 const shipping = [
   ["▣", "Kuriér GLS a DPD", "Doručenie priamo na adresu zákazníka.", "3,90 € s DPH", false],
   ["▦", "GLS Balíkomat / ParcelShop", "Vyzdvihnutie v balíkomate alebo na výdajnom mieste GLS.", "2,90 € s DPH", false],
@@ -19,7 +20,7 @@ const payments = [
   ["⌂", "Prevodný príkaz pre štátne organizácie a firmy", "Pre školy, obce, mestá, štátne organizácie a firmy.", "0 €"],
 ];
 ---
-<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Doprava a platba | ToneryMaxim.sk</title><link rel="canonical" href="https://www.tonerymaxim.sk/doprava-a-platba" /></head><body><div class="page"><Header /><main>
+<!doctype html><html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><SeoHead title="Doprava a platba | ToneryMaxim.sk" description="Možnosti dopravy a platby v e-shope ToneryMaxim. Doručenie cez GLS alebo DPD, výdajné miesta a doprava zdarma od 29 €." canonical="https://www.tonerymaxim.sk/doprava-a-platba" /></head><body><div class="page"><Header /><main>
 <InfoPageShell active="/doprava-a-platba" eyebrow="Doprava a platba" title="Doprava a platba" intro="Vyberte si spôsob doručenia a platby, ktorý vám najviac vyhovuje.">
   <section class="shipping-highlights">
     <article class="contact-card"><span class="info-icon">🚚</span><div><h2>Doručenie kuriérom</h2><p>GLS alebo DPD doručí zásielku priamo na adresu zákazníka.</p></div></article>

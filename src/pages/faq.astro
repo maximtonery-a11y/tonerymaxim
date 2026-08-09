@@ -6,6 +6,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
 import { faqCategories, faqItems } from "../data/faq";
 
 const categoryCounts = faqCategories.map((category) => ({
@@ -18,9 +19,8 @@ const categoryCounts = faqCategories.map((category) => ({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FAQ | Najčastejšie otázky | ToneryMaxim.sk</title>
-    <meta name="description" content="Najčastejšie otázky o výbere tonerov, kompatibilite, problémoch s tlačou, doprave, platbe a reklamáciách v e-shope ToneryMaxim.sk." />
-  <link rel="canonical" href="https://www.tonerymaxim.sk/faq" /></head>
+    <SeoHead title="FAQ | Najčastejšie otázky | ToneryMaxim.sk" description="Najčastejšie otázky o výbere tonerov, kompatibilite, problémoch s tlačou, doprave, platbe a reklamáciách v e-shope ToneryMaxim.sk." canonical="https://www.tonerymaxim.sk/faq" />
+  </head>
   <body>
     <div class="page">
       <Header />

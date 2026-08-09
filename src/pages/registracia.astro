@@ -5,6 +5,7 @@ import "../styles/account.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import SeoHead from "../components/SeoHead.astro";
 import { readCustomerSession } from "../lib/auth-session";
 
 const session = readCustomerSession(Astro.cookies);
@@ -16,8 +17,8 @@ if (session) return Astro.redirect("/ucet");
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Registrácia | ToneryMaxim.sk</title>
-  <link rel="canonical" href="https://www.tonerymaxim.sk/registracia" /></head>
+    <SeoHead title="Registrácia | ToneryMaxim.sk" description="Vytvorte si bezplatný zákaznícky účet ToneryMaxim a nakupujte rýchlejšie pri každej ďalšej objednávke." canonical="https://www.tonerymaxim.sk/registracia" noindex={true} />
+  </head>
   <body>
     <div class="page account-page">
       <Header />
