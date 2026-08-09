@@ -304,3 +304,19 @@ test("produkčný kód už neobsahuje sitemap placeholder ani TODO ProductGrid",
   ].map(read).join("\n");
   assert.doesNotMatch(sources, /placeholder|TODO: ProductGrid/i);
 });
+
+test("kategória komponentov je doplnkom troch hlavných skupín a odkazy nepridávajú textové hľadanie", () => {
+  const cache = read("src/lib/tm-products-cache.ts");
+  assert.match(cache, /category === "ostatne-komponenty"\) return !isToner && !isInk && !isDrum/);
+
+  const links = [
+    "src/components/Header.astro",
+    "src/components/Footer.astro",
+    "src/components/ProductFinder.astro",
+    "src/pages/index.astro",
+    "src/pages/tlaciarne.astro",
+    "src/pages/tlaciarne/[brand].astro",
+  ].map(read).join("\n");
+  assert.match(links, /\/produkty\?category=ostatne-komponenty/);
+  assert.doesNotMatch(links, /ostatne-komponenty&(search|s)=|s=ostatné komponenty|search=komponent/);
+});

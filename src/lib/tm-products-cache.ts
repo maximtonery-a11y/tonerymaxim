@@ -1165,10 +1165,20 @@ export function ensureProductsCacheWarmStarted(): void {
 function matchesCategory(product: TmProduct, category: string) {
   if (!category) return true;
   const text = product.search_text || "";
-  if (category === "tonery") return text.includes("toner") && !text.includes("valec") && !text.includes("drum") && !text.includes("optick");
-  if (category === "atramentove-naplne") return text.includes("atrament") || text.includes("ink") || text.includes("napln") || text.includes("nápln") || text.includes("naplne") || text.includes("cartridge");
-  if (category === "opticke-valce") return text.includes("optick") || text.includes("valec") || text.includes("drum") || text.includes("opc");
-  if (category === "ostatne-komponenty") return text.includes("fuser") || text.includes("zapek") || text.includes("odpad") || text.includes("waste") || text.includes("unit") || text.includes("komponent") || text.includes("maintenance");
+  const isDrum = text.includes("optick") || text.includes("valec") || text.includes("drum") || text.includes("opc");
+  const isInk = !text.includes("toner") && (
+    text.includes("atrament") || text.includes("ink") || text.includes("napln") ||
+    text.includes("nápln") || text.includes("naplne") || text.includes("cartridge") ||
+    text.includes("kazeta")
+  );
+  const isToner = text.includes("toner") && !isDrum;
+  if (category === "tonery") return isToner;
+  if (category === "atramentove-naplne") return isInk;
+  if (category === "opticke-valce") return isDrum;
+  // Komponenty sú zámerne úplný doplnok troch hlavných skupín. Takto sa
+  // zobrazia aj fixačné jednotky, pásy, odpadové nádobky, pásky a staršie
+  // produkty bez presného názvu kategórie.
+  if (category === "ostatne-komponenty") return !isToner && !isInk && !isDrum;
   return text.includes(normalize(category));
 }
 

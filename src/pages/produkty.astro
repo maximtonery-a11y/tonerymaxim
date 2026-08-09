@@ -10,7 +10,10 @@ import CatalogInitialRows from "../components/CatalogInitialRows.astro";
 import { breadcrumbJsonLd } from "../lib/seo";
 import { filterProducts, getProductsCache } from "../lib/tm-products-cache";
 
-const query = String(Astro.url.searchParams.get("s") || Astro.url.searchParams.get("search") || "").trim();
+const rawQuery = String(Astro.url.searchParams.get("s") || Astro.url.searchParams.get("search") || "").trim();
+const requestedCategory = String(Astro.url.searchParams.get("category") || "").trim();
+const legacyComponentSearch = ["ostatné komponenty", "ostatne komponenty", "komponent"].includes(rawQuery.toLowerCase());
+const query = requestedCategory === "ostatne-komponenty" && legacyComponentSearch ? "" : rawQuery;
 const SEO_ORIGIN = 'https://www.tonerymaxim.sk';
 const clean = (name: string) => String(Astro.url.searchParams.get(name) || "").trim();
 const requestedPage = Number(clean("page") || 1);
@@ -19,7 +22,7 @@ const initialFilters = {
   search: query,
   printer: clean("printer"),
   brand: clean("brand"),
-  category: clean("category"),
+  category: requestedCategory,
   type: clean("type"),
   color: clean("color"),
   stock: clean("stock"),

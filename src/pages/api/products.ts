@@ -91,9 +91,11 @@ function slimProduct(product: TmProduct) {
 
 export const GET: APIRoute = async ({ url }) => {
   try {
-    const search = cleanParam(url.searchParams.get("search") || url.searchParams.get("s"));
+    const rawSearch = cleanParam(url.searchParams.get("search") || url.searchParams.get("s"));
     const brand = cleanParam(url.searchParams.get("brand"));
     const category = cleanParam(url.searchParams.get("category"));
+    const legacyComponentSearch = ["ostatné komponenty", "ostatne komponenty", "komponent"].includes(rawSearch.toLowerCase());
+    const search = category === "ostatne-komponenty" && legacyComponentSearch ? "" : rawSearch;
     const type = cleanParam(url.searchParams.get("type"));
     const color = cleanParam(url.searchParams.get("color"));
     const stock = cleanParam(url.searchParams.get("stock"));

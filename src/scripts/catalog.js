@@ -880,6 +880,14 @@ import { getDispatchParts } from "./dispatch-message.js";
     currentColor = (url.searchParams.get("color") || "").trim();
     currentStock = (url.searchParams.get("stock") || "").trim();
 
+    if (currentCategory === "ostatne-komponenty" && ["ostatné komponenty", "ostatne komponenty", "komponent"].includes(currentSearch.toLowerCase())) {
+      currentSearch = "";
+      url.searchParams.delete("s");
+      url.searchParams.delete("search");
+      url.searchParams.delete("q");
+      window.history.replaceState({}, "", url.toString());
+    }
+
     if (currentBrand && !["HP", "Canon", "Brother"].includes(currentBrand)) {
       const moreBrands = document.querySelector("[data-more-brands]");
       if (moreBrands) moreBrands.hidden = false;
