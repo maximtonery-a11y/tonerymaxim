@@ -128,7 +128,15 @@ function productBrandName(product: TmProduct): string | undefined {
 export function productJsonLd(origin: string, product: TmProduct) {
   const url = productDetailUrl(origin, product);
   const image = (Array.isArray(product.images) ? product.images : [product.image]).filter(Boolean).map((v) => absoluteUrl(origin, v));
-  const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
+  const stockStatus = String(product.stock_status || '').toLowerCase();
+  const stockQuantity = product.stock_quantity == null ? null : Number(product.stock_quantity);
+  const availability = stockStatus === 'onbackorder'
+    ? 'https://schema.org/BackOrder'
+    : stockStatus === 'preorder'
+      ? 'https://schema.org/PreOrder'
+      : stockStatus === 'instock' && (stockQuantity == null || stockQuantity > 0)
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock';
   const price = Number(product.price || 0);
   const brand = productBrandName(product);
   const gtin = cleanGtin(product.gtin);
@@ -152,9 +160,17 @@ export function productJsonLd(origin: string, product: TmProduct) {
       url,
       priceCurrency: 'EUR',
       price: price.toFixed(2),
-      availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      availability,
       itemCondition: 'https://schema.org/NewCondition',
       seller: { '@id': `${origin}/#organization` },
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'SK',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 14,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        returnFees: 'https://schema.org/ReturnShippingFees',
+      },
     } : undefined,
   };
   return data;
