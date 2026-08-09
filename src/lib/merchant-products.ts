@@ -210,7 +210,7 @@ export function toMerchantProduct(product: TmProduct, origin: string): MerchantP
     labels: [
       productType,
       material,
-      inStock ? "in-stock" : "out-of-stock",
+      productType === "compatible" || productType === "renovated" ? "ads-primary" : "ads-review",
       priceBucket(price),
       price >= 29 ? "free-shipping" : "paid-shipping",
     ],

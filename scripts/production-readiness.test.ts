@@ -141,3 +141,20 @@ test("mobilné a zákaznícke funkcie sa nesmú pri ďalšom nasadení vrátiť 
   assert.match(home, /href="\/produkty\?s=HP\+305&category=atramentove-naplne"/);
   assert.doesNotMatch(legacyLayout, /googletagmanager|gtag\s*\(/);
 });
+
+test("Google meranie pokrýva celý nákupný lievik bez dvojitého purchase", async () => {
+  const middleware = await readFile(new URL("../src/middleware.ts", import.meta.url), "utf8");
+  const ecommerce = await readFile(new URL("../public/tm-ecommerce.js", import.meta.url), "utf8");
+  const cart = await readFile(new URL("../src/scripts/cart.js", import.meta.url), "utf8");
+  const confirmation = await readFile(new URL("../src/pages/platba-dokoncena.astro", import.meta.url), "utf8");
+
+  assert.match(middleware, /ECOMMERCE_TAG/);
+  assert.match(middleware, /html\.includes\('\/tm-ecommerce\.js'\)/);
+  assert.match(ecommerce, /add_to_cart/);
+  assert.match(ecommerce, /begin_checkout/);
+  assert.match(ecommerce, /purchase/);
+  assert.match(ecommerce, /transaction_id/);
+  assert.match(ecommerce, /tm_ga4_purchase_/);
+  assert.match(cart, /tmTrackCartAdd/);
+  assert.match(confirmation, /tmTrackPurchase/);
+});

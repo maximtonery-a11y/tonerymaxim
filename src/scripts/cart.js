@@ -1024,6 +1024,7 @@ function formatMoney(value) {
       };
 
       addToCart(product);
+      if (typeof window.tmTrackCartAdd === "function") window.tmTrackCartAdd(product, 1);
       showAddCartDrawer(product);
 
       const originalText = addButton.textContent;

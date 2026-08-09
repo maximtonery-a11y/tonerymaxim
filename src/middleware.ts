@@ -19,6 +19,7 @@ const PRODUCTION_ORIGIN = 'https://www.tonerymaxim.sk';
 const PRODUCTION_HOSTS = new Set(['tonerymaxim.sk', 'www.tonerymaxim.sk']);
 const NOINDEX_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
 const ANALYTICS_TAG = '<script src="/tm-analytics.js" defer></script>';
+const ECOMMERCE_TAG = '<script src="/tm-ecommerce.js" defer></script>';
 const PRIVATE_NOINDEX_PATHS = new Set([
   '/kosik',
   '/pokladna',
@@ -220,7 +221,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const contentType = headers.get('content-type') || '';
-  if (!contentType.includes('text/html') || !shouldInjectAnalytics(url.pathname)) {
+  if (!contentType.includes('text/html')) {
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
@@ -234,7 +235,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
   const googleTag = optionalGoogleTag();
   const tags = [
-    html.includes('/tm-analytics.js') ? '' : ANALYTICS_TAG,
+    shouldInjectAnalytics(url.pathname) && !html.includes('/tm-analytics.js') ? ANALYTICS_TAG : '',
+    html.includes('/tm-ecommerce.js') ? '' : ECOMMERCE_TAG,
     !googleTag || html.includes('/tm-google-tags.js') ? '' : googleTag,
   ]
     .filter(Boolean)
