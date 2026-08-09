@@ -6,13 +6,26 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
+import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
+
+const SEO_ORIGIN = "https://www.tonerymaxim.sk";
+const jsonLd = [
+  organizationJsonLd(SEO_ORIGIN),
+  websiteJsonLd(SEO_ORIGIN),
+  breadcrumbJsonLd(SEO_ORIGIN, [
+    { name: "Domov", path: "/" },
+    { name: "Reklamácie", path: "/reklamacie" },
+    { name: "Online reklamácia", path: "/reklamacia-online" },
+  ]),
+];
 ---
 <!doctype html>
 <html lang="sk">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Online reklamácia | ToneryMaxim.sk</title>
+    <SeoHead title="Online reklamácia | ToneryMaxim.sk" description="Odošlite reklamáciu produktu zakúpeného v e-shope ToneryMaxim.sk online. Uveďte objednávku, produkt a popis problému." canonical={`${SEO_ORIGIN}/reklamacia-online`} jsonLd={jsonLd} />
   </head>
   <body>
     <div class="page">

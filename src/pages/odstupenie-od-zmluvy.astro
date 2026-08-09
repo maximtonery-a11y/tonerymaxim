@@ -6,13 +6,25 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
+import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
+
+const SEO_ORIGIN = "https://www.tonerymaxim.sk";
+const jsonLd = [
+  organizationJsonLd(SEO_ORIGIN),
+  websiteJsonLd(SEO_ORIGIN),
+  breadcrumbJsonLd(SEO_ORIGIN, [
+    { name: "Domov", path: "/" },
+    { name: "Odstúpenie od zmluvy", path: "/odstupenie-od-zmluvy" },
+  ]),
+];
 ---
 <!doctype html>
 <html lang="sk">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Odstúpenie od zmluvy | ToneryMaxim.sk</title>
+    <SeoHead title="Odstúpenie od zmluvy | ToneryMaxim.sk" description="Online formulár na odstúpenie od zmluvy v e-shope ToneryMaxim.sk, zákonné lehoty, postup vrátenia tovaru a PDF na stiahnutie." canonical={`${SEO_ORIGIN}/odstupenie-od-zmluvy`} jsonLd={jsonLd} />
   </head>
   <body>
     <div class="page">

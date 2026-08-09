@@ -10,7 +10,7 @@ import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import SeoHead from "../../components/SeoHead.astro";
 import { getProductFromCache, stripHtml } from "../../lib/tm-products-cache";
 import { breadcrumbJsonLd, organizationJsonLd, productDescription, productJsonLd, absoluteUrl, websiteJsonLd } from "../../lib/seo";
-import { printerLinksFromNames, validIndexableProduct } from "../../lib/seo-catalog";
+import { printerBrandForName, printerLinksFromNames, productOemCodes, validIndexableProduct } from "../../lib/seo-catalog";
 
 const { slug } = Astro.params;
 const lookup = await getProductFromCache({ slug, id: slug }).catch(() => null);
@@ -70,6 +70,16 @@ const inStock = product.stock_status === 'instock' && Number(product.stock_quant
 const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.price || 0));
 const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
 const printerLinks = cache ? printerLinksFromNames(cache.products, printers, 100) : [];
+const oemLinks = productOemCodes(product).map((code) => ({
+  href: `/oem/${code.toLowerCase()}`,
+  label: code,
+}));
+const brandLinks = [...new Map(
+  printers
+    .map((printer) => printerBrandForName(printer))
+    .filter(Boolean)
+    .map((brand) => [brand!.slug, { href: `/znacky/${brand!.slug}`, label: brand!.name }]),
+).values()];
 const plainDescription = stripHtml(product.description_html || product.short_description_html || product.description || '');
 const productSafetyRows = [
   ['Výrobca produktu', product.manufacturer_name],
@@ -142,6 +152,28 @@ const initialProductJson = JSON.stringify(product)
             )}
             </div>
           </section>
+          {(oemLinks.length > 0 || printerLinks.length > 0 || brandLinks.length > 0) && (
+            <nav class="product-seo-relations" aria-label="Súvisiace katalógové odkazy">
+              {oemLinks.length > 0 && (
+                <section>
+                  <h2>Podľa OEM označenia</h2>
+                  <div>{oemLinks.map((item) => <a href={item.href}>{item.label}</a>)}</div>
+                </section>
+              )}
+              {printerLinks.length > 0 && (
+                <section>
+                  <h2>Podľa modelu tlačiarne</h2>
+                  <div>{printerLinks.slice(0, 30).map((item) => <a href={item.href}>{item.label}</a>)}</div>
+                </section>
+              )}
+              {brandLinks.length > 0 && (
+                <section>
+                  <h2>Podľa značky tlačiarne</h2>
+                  <div>{brandLinks.map((item) => <a href={item.href}>{item.label}</a>)}</div>
+                </section>
+              )}
+            </nav>
+          )}
         </div>
       </main>
 
