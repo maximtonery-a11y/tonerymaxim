@@ -236,8 +236,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const googleTag = optionalGoogleTag();
   const tags = [
     shouldInjectAnalytics(url.pathname) && !html.includes('/tm-analytics.js') ? ANALYTICS_TAG : '',
-    html.includes('/tm-ecommerce.js') ? '' : ECOMMERCE_TAG,
     !googleTag || html.includes('/tm-google-tags.js') ? '' : googleTag,
+    html.includes('/tm-ecommerce.js') ? '' : ECOMMERCE_TAG,
   ]
     .filter(Boolean)
     .join('\n');

@@ -150,6 +150,10 @@ test("Google meranie pokrýva celý nákupný lievik bez dvojitého purchase", a
 
   assert.match(middleware, /ECOMMERCE_TAG/);
   assert.match(middleware, /html\.includes\('\/tm-ecommerce\.js'\)/);
+  assert.ok(
+    middleware.indexOf("html.includes('/tm-google-tags.js')") < middleware.indexOf("html.includes('/tm-ecommerce.js')"),
+    "Google tag musí byť inicializovaný pred e-commerce udalosťami",
+  );
   assert.match(ecommerce, /add_to_cart/);
   assert.match(ecommerce, /begin_checkout/);
   assert.match(ecommerce, /purchase/);
