@@ -610,6 +610,9 @@ function formatMoney(value) {
     }
 
     saveCart(cart);
+    if (typeof window.tmTrackCartAdd === "function") {
+      window.tmTrackCartAdd(product, cleanQty(product.qty || 1));
+    }
   }
 
   let addCartDrawerTimer = null;
@@ -1024,7 +1027,6 @@ function formatMoney(value) {
       };
 
       addToCart(product);
-      if (typeof window.tmTrackCartAdd === "function") window.tmTrackCartAdd(product, 1);
       showAddCartDrawer(product);
 
       const originalText = addButton.textContent;
