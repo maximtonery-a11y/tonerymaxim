@@ -102,9 +102,15 @@ function detectDevice(userAgent: string, viewport = ''): string {
   const width = Number(viewport.split('x')[0] || 0);
   return width > 0 && width < 768 ? 'mobile' : width < 1100 && width >= 768 ? 'tablet' : 'desktop';
 }
-function detectSource(referrer: string): string {
-  const v = referrer.toLowerCase();
+function detectSource(referrer: string, utmSource = ''): string {
+  const v = `${referrer} ${utmSource}`.toLowerCase().trim();
   if (!v) return 'direct';
+  if (/chatgpt|openai/.test(v)) return 'AI – ChatGPT';
+  if (/perplexity/.test(v)) return 'AI – Perplexity';
+  if (/copilot|bing\.com\/chat/.test(v)) return 'AI – Copilot';
+  if (/gemini|bard\.google/.test(v)) return 'AI – Gemini';
+  if (/claude\.ai|anthropic/.test(v)) return 'AI – Claude';
+  if (/you\.com|phind|mistral|lechat|meta\.ai|grok|x\.ai/.test(v)) return 'AI – ostatné';
   if (v.includes('google.')) return 'google';
   if (v.includes('facebook.') || v.includes('fb.')) return 'facebook';
   if (v.includes('instagram.')) return 'instagram';
@@ -174,6 +180,8 @@ export async function saveAnalyticsEvent(request: Request, payload: unknown): Pr
   if (!sessionId) return { ok: true, ignored: true };
   const referrer = cleanText(data.referrer || request.headers.get('referer'), 700);
   const viewport = cleanText(data.viewport, 40);
+  const meta = typeof data.meta === 'object' && data.meta ? data.meta as Record<string, unknown> : undefined;
+  const utmSource = cleanText(meta?.utm_source, 120);
   const event: TMAnalyticsEvent = {
     type: cleanText(data.type || 'event', 60) || 'event',
     ts: new Date().toISOString(),
@@ -183,13 +191,13 @@ export async function saveAnalyticsEvent(request: Request, payload: unknown): Pr
     url: cleanPath(data.url || data.path), title: cleanText(data.title, 200), referrer,
     durationMs: cleanNumber(data.durationMs), activeMs: cleanNumber(data.activeMs), viewport,
     device: cleanText(data.device, 40) || detectDevice(userAgent, viewport),
-    language: cleanText(data.language, 40), userAgent, source: detectSource(referrer),
+    language: cleanText(data.language, 40), userAgent, source: detectSource(referrer, utmSource),
     country: requestHeader(request, 'cf-ipcountry') || requestHeader(request, 'x-vercel-ip-country') || requestHeader(request, 'x-country-code'),
     region: requestHeader(request, 'x-vercel-ip-country-region') || requestHeader(request, 'x-region'),
     city: requestHeader(request, 'x-vercel-ip-city') || requestHeader(request, 'x-city'),
     search: cleanText(data.search, 200), product: cleanText(data.product, 300),
     value: cleanNumber(data.value, 1_000_000),
-    meta: typeof data.meta === 'object' && data.meta ? data.meta as Record<string, unknown> : undefined,
+    meta,
     sessionId, visitorId: cleanText(data.visitorId, 100), owner: cookieValue(request, 'tm_analytics_owner') === '1', ipHash: ipHash(request),
   };
   await mkdir(ANALYTICS_DIR, { recursive: true, mode: 0o700 });

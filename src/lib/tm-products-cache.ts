@@ -3,6 +3,7 @@ import path from "node:path";
 import { TM_CACHE_ROOT } from './runtime-paths.ts';
 import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, productPrinterValues } from './catalog-query.ts';
 import { normalizedCompletenessRatio, requiredProductCount } from './product-cache-policy.ts';
+import { notifyIndexNowAfterProductSync, type IndexNowResult } from './indexnow.ts';
 
 export type TmProduct = Record<string, any>;
 
@@ -20,6 +21,7 @@ type ProductsSyncResult = {
   refreshed: boolean;
   warning?: string;
   sync?: Awaited<ReturnType<typeof fetchAllWooProducts>>;
+  indexNow?: IndexNowResult;
 };
 
 const CACHE_VERSION = 3;
@@ -1079,7 +1081,14 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
   }
 
   globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
-  return { cache: next, refreshed: true, sync: raw };
+  const indexNow = await notifyIndexNowAfterProductSync(current?.products || [], products)
+    .catch((error: any): IndexNowResult => ({
+      attempted: 0,
+      accepted: 0,
+      status: 'failed',
+      error: String(error?.message || error || 'IndexNow zlyhal').slice(0, 300),
+    }));
+  return { cache: next, refreshed: true, sync: raw, indexNow };
 }
 
 export async function syncProductsCache(options: { force?: boolean } = {}): Promise<ProductsSyncResult> {

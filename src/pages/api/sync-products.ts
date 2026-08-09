@@ -66,6 +66,7 @@ export const GET: APIRoute = async ({ url, request }) => {
         warning: (result as any).warning || "",
         total: result.cache.total,
         generated_at: result.cache.generated_at,
+        indexnow: result.indexNow || { status: "skipped", attempted: 0, accepted: 0 },
         duration_ms: Date.now() - startedAt,
       },
       200,
