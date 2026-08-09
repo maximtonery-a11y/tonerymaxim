@@ -8,20 +8,20 @@ const { showTrust = true } = Astro.props;
 const heurekaUrl = "https://obchody.heureka.sk/tonerymaxim-sk/recenze/";
 
 const paymentLogos = [
-  { src: "/images/footer-logos/gopay-banner-colorfull.png", alt: "GoPay" },
-  { src: "/images/footer-logos/img (1).png", alt: "Visa" },
-  { src: "/images/footer-logos/img (2).png", alt: "Visa Electron" },
-  { src: "/images/footer-logos/img.png", alt: "Verified by Visa" },
-  { src: "/images/footer-logos/mc_vrt_opt_pos_73_2x.png", alt: "Mastercard" },
-  { src: "/images/footer-logos/ms_vrt_opt_pos_73_2x.png", alt: "Maestro" },
-  { src: "/images/footer-logos/mc_securecode_156px_width.png", alt: "Mastercard SecureCode" },
+  { src: "/images/footer-logos/gopay-banner-colorfull.png", alt: "GoPay", width: 100, height: 35 },
+  { src: "/images/footer-logos/img (1).png", alt: "Visa", width: 67, height: 23 },
+  { src: "/images/footer-logos/img (2).png", alt: "Visa Electron", width: 67, height: 43 },
+  { src: "/images/footer-logos/img.png", alt: "Verified by Visa", width: 67, height: 30 },
+  { src: "/images/footer-logos/mc_vrt_opt_pos_73_2x.png", alt: "Mastercard", width: 140, height: 115 },
+  { src: "/images/footer-logos/ms_vrt_opt_pos_73_2x.png", alt: "Maestro", width: 140, height: 115 },
+  { src: "/images/footer-logos/mc_securecode_156px_width.png", alt: "Mastercard SecureCode", width: 156, height: 72 },
 ];
 
 const shippingLogos = [
-  { src: "/images/footer-logos/gls-logo.png", alt: "GLS kuriér" },
-  { src: "/images/footer-logos/gls-ptp.png", alt: "GLS ParcelShop" },
-  { src: "/images/footer-logos/dpd-logo.png", alt: "DPD kuriér" },
-  { src: "/images/footer-logos/dpd-pickup.png", alt: "DPD Pickup" },
+  { src: "/images/footer-logos/gls-logo-optimized.webp", alt: "GLS kuriér", width: 220, height: 150 },
+  { src: "/images/footer-logos/gls-ptp-optimized.webp", alt: "GLS ParcelShop", width: 300, height: 170 },
+  { src: "/images/footer-logos/dpd-logo-optimized.webp", alt: "DPD kuriér", width: 300, height: 133 },
+  { src: "/images/footer-logos/dpd-pickup-optimized.webp", alt: "DPD Pickup", width: 240, height: 77 },
 ];
 ---
 
@@ -45,7 +45,7 @@ const shippingLogos = [
   <div class="wrap footer-main">
     <div class="footer-brand">
       <a class="footer-logo" href="/" aria-label="ToneryMaxim.sk">
-        <img src="/images/logo.png" alt="ToneryMaxim" />
+        <img src="/images/logo-optimized.webp" alt="ToneryMaxim" width="384" height="256" loading="lazy" decoding="async" />
       </a>
       <p>Slovenský špecialista na tonery, atramentové náplne a komponenty pre tlačiarne.</p>
     </div>
@@ -107,7 +107,7 @@ const shippingLogos = [
       <div class="footer-logo-list footer-logo-list--payments">
         {paymentLogos.map((logo) => (
           <span class="footer-logo-tile">
-            <img src={logo.src} alt={logo.alt} loading="lazy" />
+            <img src={logo.src} alt={logo.alt} width={logo.width} height={logo.height} loading="lazy" decoding="async" />
           </span>
         ))}
       </div>
@@ -118,7 +118,7 @@ const shippingLogos = [
       <div class="footer-logo-list footer-logo-list--shipping">
         {shippingLogos.map((logo) => (
           <span class="footer-logo-tile footer-logo-tile--shipping">
-            <img src={logo.src} alt={logo.alt} loading="lazy" />
+            <img src={logo.src} alt={logo.alt} width={logo.width} height={logo.height} loading="lazy" decoding="async" />
           </span>
         ))}
       </div>

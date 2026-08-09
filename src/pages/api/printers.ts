@@ -40,6 +40,12 @@ const BRAND_SLUGS: Record<string, string> = {
   dell: "Dell",
 };
 
+type PrinterItem = { title: string; brand: string; product_count: number; url: string };
+
+const globalStore = globalThis as typeof globalThis & {
+  __TM_PRINTERS_INDEX__?: { generatedAt: string; items: PrinterItem[] };
+};
+
 function cleanBrand(value: string) {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -59,6 +65,35 @@ function printerBrand(printer: string) {
   return BRANDS.find((brand) => text.includes(normalize(brand))) || "";
 }
 
+function getPrinterIndex(cache: any) {
+  const current = globalStore.__TM_PRINTERS_INDEX__;
+  if (current?.generatedAt === cache.generated_at) return current.items;
+
+  const map = new Map<string, PrinterItem>();
+  for (const product of cache.products) {
+    for (const printer of productPrinterValues(product)) {
+      const title = String(printer || "").replace(/\s+/g, " ").trim();
+      if (!title) continue;
+      const key = compactKey(title);
+      const existing = map.get(key);
+      if (existing) {
+        existing.product_count += 1;
+        continue;
+      }
+      map.set(key, {
+        title,
+        brand: printerBrand(title),
+        product_count: 1,
+        url: `/produkty?printer=${encodeURIComponent(title)}`,
+      });
+    }
+  }
+
+  const items = [...map.values()].sort((a, b) => a.title.localeCompare(b.title, "sk", { numeric: true, sensitivity: "base" }));
+  globalStore.__TM_PRINTERS_INDEX__ = { generatedAt: cache.generated_at, items };
+  return items;
+}
+
 export const GET: APIRoute = async ({ url }) => {
   try {
     const brand = cleanBrand(url.searchParams.get("brand") || "");
@@ -68,35 +103,9 @@ export const GET: APIRoute = async ({ url }) => {
     const compactQ = compactKey(q);
 
     const cache = await getProductsCache();
-    const map = new Map<string, { title: string; brand: string; product_count: number; url: string }>();
-
-    for (const product of cache.products) {
-      const printers = productPrinterValues(product);
-      for (const printer of printers) {
-        const title = String(printer || "").replace(/\s+/g, " ").trim();
-        if (!title) continue;
-
-        const detectedBrand = printerBrand(title);
-        if (brand && normalize(detectedBrand || title).indexOf(normalize(brand)) === -1) continue;
-        if (q && !normalize(title).includes(normalizedQ) && !compactKey(title).includes(compactQ)) continue;
-
-        const key = compactKey(title);
-        const current = map.get(key);
-        if (current) {
-          current.product_count += 1;
-        } else {
-          map.set(key, {
-            title,
-            brand: detectedBrand || brand || "",
-            product_count: 1,
-            url: `/produkty?printer=${encodeURIComponent(title)}`,
-          });
-        }
-      }
-    }
-
-    const printers = [...map.values()]
-      .sort((a, b) => a.title.localeCompare(b.title, "sk", { numeric: true, sensitivity: "base" }))
+    const printers = getPrinterIndex(cache)
+      .filter((printer) => !brand || normalize(printer.brand || printer.title).includes(normalize(brand)))
+      .filter((printer) => !q || normalize(printer.title).includes(normalizedQ) || compactKey(printer.title).includes(compactQ))
       .slice(0, limit);
 
     return jsonResponse({
@@ -109,7 +118,7 @@ export const GET: APIRoute = async ({ url }) => {
       total: printers.length,
       brands: BRANDS.map((item) => ({ title: item, slug: brandSlug(item), url: `/tlaciarne/${brandSlug(item)}` })),
       printers,
-    });
+    }, 200, "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400");
   } catch (error: any) {
     return jsonResponse({ ok: false, error: error?.message || "Nepodarilo sa načítať tlačiarne" }, 500, "no-store");
   }
