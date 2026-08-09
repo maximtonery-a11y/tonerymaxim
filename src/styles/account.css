@@ -53,8 +53,10 @@
 }
 
 .auth-logo {
-  width: 210px;
   height: auto;
+  aspect-ratio: 1270 / 222;
+  object-fit: contain;
+  width: 210px;
   margin-bottom: 28px;
 }
 

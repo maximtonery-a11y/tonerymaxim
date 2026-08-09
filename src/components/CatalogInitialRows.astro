@@ -50,6 +50,12 @@ const productDetailUrl = (product: Product) => {
   const slug = String(product?.slug || product?.id || "").trim();
   return slug ? `/produkt/${encodeURIComponent(slug)}` : "/produkty";
 };
+const desktopProductImage = (value: unknown) => {
+  const src = String(value || "");
+  if (src.includes("/231-1.jpg")) return "/images/products/brother-lc-123xlm-clean.webp";
+  if (src.includes("/232-1.jpg")) return "/images/products/brother-lc-123xly-clean.webp";
+  return src;
+};
 const printers = (product: Product) => Array.isArray(product.compatible_printers) ? product.compatible_printers.filter(Boolean) : [];
 const groupTitle = (key: string) => key === "compatible" ? "Kompatibilný" : key === "original" ? "Originál" : key === "renovated" ? "Renovovaný" : "Produkt";
 let previousGroup = "";
@@ -78,7 +84,10 @@ let previousGroup = "";
           </div>
         </div>
         <a href={productDetailUrl(product)} class="tm-row-photo" aria-label="Otvoriť produkt">
-          <img src={product.image} alt={product.name} loading="lazy" class="tm-product-fit-image" />
+          <picture>
+            <source media="(min-width: 761px)" srcset={desktopProductImage(product.image)} />
+            <img src={product.image} alt={product.name} loading="lazy" class="tm-product-fit-image" />
+          </picture>
         </a>
         <div class="tm-row-main">
           <h2><a href={productDetailUrl(product)}>{product.name}</a></h2>

@@ -71,6 +71,13 @@ import { getDispatchParts } from "./dispatch-message.js";
     return TM_GENERIC_IMAGE_PATTERNS.some((pattern) => lower.includes(pattern)) ? TM_PRODUCT_PLACEHOLDER_IMAGE : url;
   }
 
+  function desktopProductImageSrc(value, product) {
+    const src = productImageSrc(value, product);
+    if (src.includes("/231-1.jpg")) return "/images/products/brother-lc-123xlm-clean.webp";
+    if (src.includes("/232-1.jpg")) return "/images/products/brother-lc-123xly-clean.webp";
+    return src;
+  }
+
   const CART_KEY = "tm_cart_v1";
 
   const CATALOG_CACHE_VERSION = "tm_catalog_v4";
@@ -714,7 +721,10 @@ import { getDispatchParts } from "./dispatch-message.js";
         </div>
 
         <a href="${esc(cartProductUrl(product))}" class="tm-row-photo" aria-label="Otvoriť produkt">
-          ${`<img src="${esc(productImageSrc(product.image, product))}" alt="${esc(product.name)}" loading="lazy" class="tm-product-fit-image">`}
+          <picture>
+            <source media="(min-width: 761px)" srcset="${esc(desktopProductImageSrc(product.image, product))}">
+            <img src="${esc(productImageSrc(product.image, product))}" alt="${esc(product.name)}" loading="lazy" class="tm-product-fit-image">
+          </picture>
         </a>
 
         <div class="tm-row-main">

@@ -82,6 +82,9 @@
 
 .footer-logo img {
   width: 196px;
+  height: auto;
+  aspect-ratio: 1270 / 222;
+  object-fit: contain;
   max-width: 100%;
   display: block;
   filter: brightness(0) invert(1);

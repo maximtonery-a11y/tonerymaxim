@@ -739,6 +739,34 @@
   100% { background-position: calc(100% + 240px) 0, 0 0; }
 }
 
+/* Desktop: produktové fotografie musia zostať celé a centrované.
+   Mobilné karty majú vlastné rozmery a týmto pravidlom sa nemenia. */
+@media (min-width: 761px) {
+  .tm-row-photo {
+    width: 168px;
+    height: 128px;
+    overflow: visible;
+  }
+
+  .tm-row-photo img.tm-product-fit-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 138px;
+    max-height: 108px;
+    padding: 0;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .tm-row-photo picture {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+  }
+}
+
 .catalog-filter button.is-active {
   background: #071b3a;
   color: #fff;
