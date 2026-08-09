@@ -1,0 +1,150 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/advice.css";
+import Header from "./Header.astro";
+import Footer from "./Footer.astro";
+import FloatingAdvisor from "./FloatingAdvisor.astro";
+import SeoHead from "./SeoHead.astro";
+import type { AdviceArticle } from "../data/advice";
+import { adviceArticles } from "../data/advice";
+import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
+
+interface Props { article: AdviceArticle }
+const { article } = Astro.props;
+const origin = "https://www.tonerymaxim.sk";
+const canonical = `${origin}/poradna/${article.slug}`;
+const related = adviceArticles.filter((item) => item.slug !== article.slug).slice(0, 3);
+const skDate = new Intl.DateTimeFormat("sk-SK", { day: "numeric", month: "long", year: "numeric" });
+const updatedLabel = skDate.format(new Date(`${article.updated}T12:00:00Z`));
+const jsonLd = [
+  organizationJsonLd(origin),
+  websiteJsonLd(origin),
+  breadcrumbJsonLd(origin, [
+    { name: "Domov", path: "/" },
+    { name: "Odborná poradňa", path: "/poradna" },
+    { name: article.title, path: `/poradna/${article.slug}` },
+  ]),
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "@id": `${canonical}#article`,
+    headline: article.title,
+    description: article.description,
+    url: canonical,
+    mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+    datePublished: article.published,
+    dateModified: article.updated,
+    inLanguage: "sk-SK",
+    keywords: article.topics.join(", "),
+    author: {
+      "@type": "Person",
+      name: "Roman Babčan",
+      jobTitle: "Odborný poradca pre tonery a tlačiarne",
+      worksFor: { "@id": `${origin}/#organization` },
+    },
+    publisher: { "@id": `${origin}/#organization` },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${canonical}#faq`,
+    mainEntity: article.faq.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
+  },
+];
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <SeoHead title={`${article.title} | ToneryMaxim.sk`} description={article.description} canonical={canonical} type="article" jsonLd={jsonLd} />
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+      <main class="advice-page">
+        <div class="wrap advice-wrap">
+          <nav class="advice-breadcrumbs" aria-label="Drobečková navigácia">
+            <a href="/">Domov</a><span>›</span><a href="/poradna">Odborná poradňa</a><span>›</span><span>{article.title}</span>
+          </nav>
+
+          <article class="advice-article">
+            <header class="advice-article-head">
+              <p class="advice-eyebrow">Odborná poradňa ToneryMaxim.sk</p>
+              <h1>{article.title}</h1>
+              <p class="advice-lead">{article.description}</p>
+              <div class="advice-meta">
+                <span><strong>Roman Babčan</strong>, odborný poradca</span>
+                <span>17+ rokov skúseností</span>
+                <span>Aktualizované {updatedLabel}</span>
+                <span>{article.readingMinutes} min čítania</span>
+              </div>
+            </header>
+
+            <section class="advice-answer" aria-labelledby="rychla-odpoved">
+              <p>Stručná odpoveď</p>
+              <h2 id="rychla-odpoved">Čo potrebujete vedieť</h2>
+              <div>{article.answer}</div>
+            </section>
+
+            <div class="advice-body">
+              {article.sections.map((section) => (
+                <section>
+                  <h2>{section.heading}</h2>
+                  {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+                  {section.bullets && <ul>{section.bullets.map((item) => <li>{item}</li>)}</ul>}
+                  {section.note && <aside class="advice-note"><strong>Dôležité:</strong> {section.note}</aside>}
+                </section>
+              ))}
+            </div>
+
+            <section class="advice-faq" aria-labelledby="article-faq">
+              <p class="advice-eyebrow">Praktické odpovede</p>
+              <h2 id="article-faq">Najčastejšie otázky</h2>
+              {article.faq.map((item) => (
+                <details>
+                  <summary>{item.question}</summary>
+                  <p>{item.answer}</p>
+                </details>
+              ))}
+            </section>
+
+            <section class="advice-author" aria-label="Autor článku">
+              <div class="advice-author-mark" aria-hidden="true">RB</div>
+              <div>
+                <p class="advice-eyebrow">Odborný garant obsahu</p>
+                <h2>Roman Babčan</h2>
+                <p>Zakladateľ ToneryMaxim.sk a odborný poradca s viac ako 17 rokmi skúseností s tonermi, náplňami, kompatibilitou tlačiarní a riešením problémov pri tlači.</p>
+              </div>
+            </section>
+
+            <nav class="advice-actions" aria-label="Súvisiace služby">
+              {article.links.map((link) => <a href={link.href}>{link.label}<span>→</span></a>)}
+            </nav>
+          </article>
+
+          <aside class="advice-related" aria-labelledby="related-title">
+            <div><p class="advice-eyebrow">Pokračujte v poradni</p><h2 id="related-title">Súvisiace odborné návody</h2></div>
+            <div class="advice-card-grid">
+              {related.map((item) => (
+                <a class="advice-card" href={`/poradna/${item.slug}`}>
+                  <small>{item.readingMinutes} min čítania</small>
+                  <strong>{item.title}</strong>
+                  <span>{item.description}</span>
+                  <b>Prečítať návod →</b>
+                </a>
+              ))}
+            </div>
+          </aside>
+        </div>
+      </main>
+      <Footer showTrust={false} />
+      <FloatingAdvisor />
+    </div>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { getProductsCache, type TmProduct } from "./tm-products-cache";
 import { brandProducts, oemEntities, printerEntities, SEO_BRANDS, validIndexableProduct } from "./seo-catalog";
+import { adviceArticles } from "../data/advice";
 
 export const SITEMAP_ORIGIN = "https://www.tonerymaxim.sk";
 export const SITEMAP_MAX_URLS = 50_000;
@@ -33,6 +34,8 @@ export const INDEXABLE_STATIC_PATHS = [
   "/kontakt",
   "/doprava-a-platba",
   "/faq",
+  "/poradna",
+  ...adviceArticles.map((article) => `/poradna/${article.slug}`),
   "/reklamacie",
   "/reklamacia-online",
   "/odstupenie-od-zmluvy",

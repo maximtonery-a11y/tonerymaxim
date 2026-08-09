@@ -1,0 +1,14 @@
+---
+import AdviceArticlePage from "../../components/AdviceArticlePage.astro";
+import { findAdviceArticle } from "../../data/advice";
+
+export const prerender = false;
+const article = findAdviceArticle(Astro.params.slug);
+if (!article) Astro.response.status = 404;
+---
+{article ? <AdviceArticlePage article={article} /> : (
+  <html lang="sk">
+    <head><meta charset="utf-8" /><meta name="robots" content="noindex,follow" /><title>Článok sa nenašiel | ToneryMaxim.sk</title></head>
+    <body><main><h1>Článok sa nenašiel</h1><p><a href="/poradna">Prejsť do odbornej poradne</a></p></main></body>
+  </html>
+)}
