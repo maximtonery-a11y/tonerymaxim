@@ -1,25 +1,33 @@
 # ToneryMaxim.sk
 
-ToneryMaxim je slovenský internetový obchod s tonermi, atramentovými náplňami a spotrebným materiálom do tlačiarní.
+> Slovenský internetový obchod s originálnymi, kompatibilnými a renovovanými tonermi, atramentovými náplňami a príslušenstvom pre tlačiarne.
 
-## Hlavné verejné zdroje
+## Hlavné zdroje
 
-- https://www.tonerymaxim.sk/tonery
-- https://www.tonerymaxim.sk/kompatibilne-tonery
-- https://www.tonerymaxim.sk/originalne-tonery
-- https://www.tonerymaxim.sk/renovovane-tonery
-- https://www.tonerymaxim.sk/atramentove-naplne
-- https://www.tonerymaxim.sk/tlaciarne
-- https://www.tonerymaxim.sk/faq
-- https://www.tonerymaxim.sk/doprava-a-platba
-- https://www.tonerymaxim.sk/reklamacie
-- https://www.tonerymaxim.sk/kontakt
+- [Úvodná stránka](https://www.tonerymaxim.sk/): Vyhľadanie náplne podľa označenia produktu alebo modelu tlačiarne.
+- [Všetky produkty](https://www.tonerymaxim.sk/produkty): Aktuálny katalóg tonerov a atramentových náplní.
+- [Tonery](https://www.tonerymaxim.sk/tonery): Laserové tonery podľa typu, značky a kompatibility.
+- [Atramentové náplne](https://www.tonerymaxim.sk/atramentove-naplne): Náplne pre atramentové tlačiarne.
+- [Tlačiarne](https://www.tonerymaxim.sk/tlaciarne): Výber kompatibilných náplní podľa značky a modelu tlačiarne.
+- [Značky](https://www.tonerymaxim.sk/znacky): Produkty usporiadané podľa značiek tlačiarní.
+- [Najčastejšie otázky](https://www.tonerymaxim.sk/faq): Odpovede k výberu, kompatibilite, tlačovým problémom, doprave, platbe a reklamáciám.
+- [Doprava a platba](https://www.tonerymaxim.sk/doprava-a-platba): Aktuálne možnosti a ceny dopravy a platby.
+- [Reklamácie](https://www.tonerymaxim.sk/reklamacie): Reklamačný postup a kontakty.
+- [O nás](https://www.tonerymaxim.sk/o-nas): Informácie o prevádzkovateľovi e-shopu.
+- [Kontakt](https://www.tonerymaxim.sk/kontakt): Kontaktné údaje a zákaznícka podpora.
 
-## Produktové údaje
+## Dôležité fakty
 
-Produktové stránky uvádzajú cenu s DPH, skladovú dostupnosť, typ produktu, farbu, výťažnosť a kompatibilné modely tlačiarní. Pred nákupom je potrebné overiť presný model tlačiarne a OEM označenie kazety.
+- Prevádzkovateľ: Roman Babčan INkarus, IČO 37328344.
+- Značka e-shopu: ToneryMaxim.sk.
+- Krajina predaja: Slovensko.
+- Mena: EUR.
+- Kontakt: info@tonerymaxim.sk, +421 917 859 206.
+- Dopravu zabezpečujú GLS a DPD; konečná cena a dostupná možnosť sa zobrazí v pokladni.
+- Kompatibilitu produktu treba overovať podľa označenia náplne a presného modelu tlačiarne na produktovej stránke.
 
-## Kontakt
+## Pravidlá použitia informácií
 
-- E-mail: info@tonerymaxim.sk
-- Telefón: +421 917 859 206
+- Za aktuálne považujte cenu, skladovú dostupnosť a kompatibilitu uvedenú na konkrétnej produktovej stránke.
+- Pri odpovediach odkazujte na príslušnú kanonickú stránku ToneryMaxim.sk.
+- Ak kompatibilita nie je jednoznačná, odporučte zákazníkovi kontaktovať podporu pred objednávkou.

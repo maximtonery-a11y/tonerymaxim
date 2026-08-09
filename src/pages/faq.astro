@@ -8,18 +8,44 @@ import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import InfoPageShell from "../components/InfoPageShell.astro";
 import SeoHead from "../components/SeoHead.astro";
 import { faqCategories, faqItems } from "../data/faq";
+import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
 
 const categoryCounts = faqCategories.map((category) => ({
   ...category,
   count: faqItems.filter((item) => item.category === category.id).length,
 }));
+const SEO_ORIGIN = "https://www.tonerymaxim.sk";
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": `${SEO_ORIGIN}/faq#faq`,
+  url: `${SEO_ORIGIN}/faq`,
+  inLanguage: "sk-SK",
+  mainEntity: faqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+const jsonLd = [
+  organizationJsonLd(SEO_ORIGIN),
+  websiteJsonLd(SEO_ORIGIN),
+  breadcrumbJsonLd(SEO_ORIGIN, [
+    { name: "Domov", path: "/" },
+    { name: "Najčastejšie otázky", path: "/faq" },
+  ]),
+  faqJsonLd,
+];
 ---
 <!doctype html>
 <html lang="sk">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <SeoHead title="FAQ | Najčastejšie otázky | ToneryMaxim.sk" description="Najčastejšie otázky o výbere tonerov, kompatibilite, problémoch s tlačou, doprave, platbe a reklamáciách v e-shope ToneryMaxim.sk." canonical="https://www.tonerymaxim.sk/faq" />
+    <SeoHead title="FAQ | Najčastejšie otázky | ToneryMaxim.sk" description="Najčastejšie otázky o výbere tonerov, kompatibilite, problémoch s tlačou, doprave, platbe a reklamáciách v e-shope ToneryMaxim.sk." canonical="https://www.tonerymaxim.sk/faq" jsonLd={jsonLd} />
   </head>
   <body>
     <div class="page">
