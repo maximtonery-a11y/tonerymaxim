@@ -183,6 +183,8 @@ import { getDispatchParts } from "./dispatch-message.js";
     setOrDelete("type", currentType);
     setOrDelete("color", currentColor);
     setOrDelete("stock", currentStock);
+    if (currentPage > 1) url.searchParams.set("page", String(currentPage));
+    else url.searchParams.delete("page");
     url.searchParams.delete("search");
     url.searchParams.delete("q");
     window.history.replaceState({}, "", url.toString());
@@ -774,8 +776,20 @@ import { getDispatchParts } from "./dispatch-message.js";
 
   function updatePagination() {
     document.querySelector("[data-page-info]").textContent = `Strana ${currentPage} / ${totalPages}`;
-    document.querySelector("[data-prev-page]").disabled = currentPage <= 1;
-    document.querySelector("[data-next-page]").disabled = currentPage >= totalPages;
+    const pageUrl = (page) => {
+      const url = new URL(window.location.href);
+      if (page > 1) url.searchParams.set("page", String(page));
+      else url.searchParams.delete("page");
+      return `${url.pathname}${url.search}`;
+    };
+    const prev = document.querySelector("[data-prev-page]");
+    const next = document.querySelector("[data-next-page]");
+    prev.href = pageUrl(Math.max(1, currentPage - 1));
+    next.href = pageUrl(Math.min(totalPages, currentPage + 1));
+    prev.classList.toggle("is-disabled", currentPage <= 1);
+    next.classList.toggle("is-disabled", currentPage >= totalPages);
+    prev.setAttribute("aria-disabled", String(currentPage <= 1));
+    next.setAttribute("aria-disabled", String(currentPage >= totalPages));
   }
 
   function applyCatalogData(data) {
@@ -960,13 +974,15 @@ import { getDispatchParts } from "./dispatch-message.js";
       document.querySelector("[data-toggle-more-brands]").textContent = box.hidden ? "+ ostatné značky" : "− skryť ostatné značky";
     });
 
-    document.querySelector("[data-prev-page]")?.addEventListener("click", () => {
+    document.querySelector("[data-prev-page]")?.addEventListener("click", (event) => {
+      event.preventDefault();
       if (currentPage <= 1) return;
       currentPage -= 1;
       loadProducts();
     });
 
-    document.querySelector("[data-next-page]")?.addEventListener("click", () => {
+    document.querySelector("[data-next-page]")?.addEventListener("click", (event) => {
+      event.preventDefault();
       if (currentPage >= totalPages) return;
       currentPage += 1;
       loadProducts();

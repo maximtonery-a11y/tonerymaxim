@@ -3011,3 +3011,7 @@ body.product-detail-body .related-section-stacked .accessory-grid {
 @media (prefers-reduced-motion: reduce) {
   .tm-product-loading-image, .tm-product-loading-copy span, .tm-product-loading-price span { animation: none; }
 }
+.product-printer-links { margin: 1rem 0; }
+.product-printer-links summary { cursor: pointer; color: #0b4fb3; font-weight: 850; }
+.product-printer-links nav { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.7rem; }
+.product-printer-links a { padding: 0.4rem 0.6rem; border-radius: 8px; background: #eef5ff; color: #0758d8; font-size: 0.88rem; text-decoration: none; }

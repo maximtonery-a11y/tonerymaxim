@@ -10,7 +10,7 @@ import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import SeoHead from "../../components/SeoHead.astro";
 import { getProductFromCache, stripHtml } from "../../lib/tm-products-cache";
 import { breadcrumbJsonLd, organizationJsonLd, productDescription, productJsonLd, absoluteUrl, websiteJsonLd } from "../../lib/seo";
-import { validIndexableProduct } from "../../lib/seo-catalog";
+import { printerLinksFromNames, validIndexableProduct } from "../../lib/seo-catalog";
 
 const { slug } = Astro.params;
 const lookup = await getProductFromCache({ slug, id: slug }).catch(() => null);
@@ -69,6 +69,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
 const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
 const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.price || 0));
 const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
+const printerLinks = cache ? printerLinksFromNames(cache.products, printers, 100) : [];
 const plainDescription = stripHtml(product.description_html || product.short_description_html || product.description || '');
 const productSafetyRows = [
   ['Výrobca produktu', product.manufacturer_name],
@@ -120,7 +121,14 @@ const initialProductJson = JSON.stringify(product)
                 <div class="badge-row"><span class="type-badge">{product.product_type_label}</span></div>
                 <h1>{product.name}</h1>
                 <p class="summary-subtitle">{description}</p>
-                {printers.length > 0 && <p><strong>Kompatibilné tlačiarne:</strong> {printers.slice(0, 8).join(', ')}</p>}
+                {printerLinks.length > 0 && (
+                  <details class="product-printer-links">
+                    <summary>Kompatibilné tlačiarne ({printerLinks.length})</summary>
+                    <nav aria-label="Kompatibilné modely tlačiarní">
+                      {printerLinks.map((printer) => <a href={printer.href}>{printer.label}</a>)}
+                    </nav>
+                  </details>
+                )}
                 <div class:list={["stock-line", inStock ? "is-available" : "is-unavailable"]}><strong>{inStock ? 'Skladom' : 'Momentálne nie je skladom'}</strong></div>
               </div>
               <aside class="purchase-panel"><span class="vat-label">Cena s DPH</span><div class="price-row"><strong>{price}</strong><span>s DPH</span></div></aside>

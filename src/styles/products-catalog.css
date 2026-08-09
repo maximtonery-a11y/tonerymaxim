@@ -608,16 +608,23 @@
   gap: 14px;
 }
 
-.catalog-pagination button {
+.catalog-pagination button,
+.catalog-pagination a {
   height: 44px;
   padding: 0 18px;
   background: #071b3a;
   color: #fff;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  text-decoration: none;
 }
 
-.catalog-pagination button:disabled {
+.catalog-pagination button:disabled,
+.catalog-pagination a.is-disabled {
   opacity: .35;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
 .catalog-pagination span {

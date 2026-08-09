@@ -14,7 +14,10 @@ import {
 const brand = findBrand(Astro.params.brand);
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const products = brand ? brandProducts(cache.products, brand) : [];
-const notFound = !brand || products.length === 0;
+const pageSize = 48;
+const requestedPage = Math.max(1, Math.floor(Number(Astro.url.searchParams.get("page") || 1)) || 1);
+const totalPages = Math.max(1, Math.ceil(products.length / pageSize));
+const notFound = !brand || products.length === 0 || requestedPage > totalPages;
 const stats = catalogStats(products);
 
 if (notFound) {
@@ -24,11 +27,13 @@ if (notFound) {
 }
 
 const brandName = brand?.name || "Neznáma značka";
-const canonicalPath = brand ? `/znacky/${brand.slug}` : Astro.url.pathname;
+const basePath = brand ? `/znacky/${brand.slug}` : Astro.url.pathname;
+const canonicalPath = requestedPage > 1 ? `${basePath}?page=${requestedPage}` : basePath;
+const pageSuffix = requestedPage > 1 ? ` – strana ${requestedPage}` : "";
 ---
 
 <SeoCatalogPage
-  title={notFound ? "Značka sa nenašla | ToneryMaxim.sk" : `${brandName} tonery a náplne | ToneryMaxim.sk`}
+  title={notFound ? "Značka sa nenašla | ToneryMaxim.sk" : `${brandName} tonery a náplne${pageSuffix} | ToneryMaxim.sk`}
   description={notFound
     ? "Požadovaná značka sa v katalógu nenašla."
     : `Kompatibilné, originálne a renovované tonery a náplne pre tlačiarne ${brandName}. Aktuálne ceny, sklad a overené modely tlačiarní.`}
@@ -79,4 +84,5 @@ const canonicalPath = brand ? `/znacky/${brand.slug}` : Astro.url.pathname;
     { name: `Náplne do tlačiarní ${brandName}` },
   ]}
   notFound={notFound}
+  pagination={notFound ? undefined : { page: requestedPage, totalPages, pageSize, basePath }}
 />

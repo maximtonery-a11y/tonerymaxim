@@ -1233,3 +1233,42 @@
     margin: 0 auto;
   }
 }
+.printer-model-directory-section {
+  padding: 1rem 0 3rem;
+  background: #f6f9fd;
+}
+
+.printer-model-directory {
+  border: 1px solid #d8e3f0;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.printer-model-directory summary {
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  color: #0b2345;
+  font-weight: 900;
+}
+
+.printer-model-directory nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.5rem;
+  max-height: 560px;
+  padding: 0 1rem 1rem;
+  overflow: auto;
+}
+
+.printer-model-directory a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.7rem;
+  border-radius: 9px;
+  background: #f2f7fd;
+  color: #0b4fb3;
+  text-decoration: none;
+}
+
+.printer-model-directory small { color: #64748b; }

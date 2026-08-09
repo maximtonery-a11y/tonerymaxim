@@ -9,6 +9,8 @@ import "../../styles/footer.css";
 import mobileLogo from "../../assets/tonerymaxim-mobile-approved-logo.png";
 import SeoHead from "../../components/SeoHead.astro";
 import { breadcrumbJsonLd } from "../../lib/seo";
+import { getProductsCache } from "../../lib/tm-products-cache";
+import { findBrand, printerEntities } from "../../lib/seo-catalog";
 
 const brandParam = String(Astro.params.brand || "");
 const brandMap: Record<string, string> = {
@@ -33,6 +35,11 @@ const brandMap: Record<string, string> = {
   pantum: "Pantum",
 };
 const selectedBrand = brandMap[brandParam.toLowerCase()] || brandParam;
+const brand = findBrand(brandParam);
+const cache = await getProductsCache().catch(() => ({ products: [] as any[] }));
+const brandPrinters = brand
+  ? printerEntities(cache.products).filter((printer) => printer.brand.slug === brand.slug)
+  : [];
 const SEO_ORIGIN = 'https://www.tonerymaxim.sk';
 const title = `Tonery a náplne do tlačiarní ${selectedBrand} | ToneryMaxim.sk`;
 const description = `Vyberte model tlačiarne ${selectedBrand} a nájdite kompatibilný alebo originálny toner, atrament či optický valec.`;
@@ -189,6 +196,23 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
           <div class="printer-popular-grid" data-printer-popular-grid></div>
         </section>
       </main>
+
+      {brandPrinters.length > 0 && (
+        <section class="printer-model-directory-section">
+          <div class="wrap">
+            <details class="printer-model-directory">
+              <summary>Všetky modely tlačiarní {selectedBrand} ({brandPrinters.length})</summary>
+              <nav aria-label={`Modely tlačiarní ${selectedBrand}`}>
+                {brandPrinters.map((printer) => (
+                  <a href={`/tlaciarne/${printer.brand.slug}/${printer.slug}`}>
+                    <span>{printer.name}</span><small>{printer.products.length} produktov</small>
+                  </a>
+                ))}
+              </nav>
+            </details>
+          </div>
+        </section>
+      )}
 
       <dialog class="printer-brand-modal" data-brand-modal>
         <div class="printer-brand-modal-card">

@@ -12,12 +12,9 @@ import { filterProducts, getProductsCache } from "../lib/tm-products-cache";
 
 const query = String(Astro.url.searchParams.get("s") || Astro.url.searchParams.get("search") || "").trim();
 const SEO_ORIGIN = 'https://www.tonerymaxim.sk';
-const title = query ? `${query} – tonery a náplne | ToneryMaxim.sk` : "Tonery a náplne do tlačiarní | ToneryMaxim.sk";
-const description = query ? `Výsledky pre ${query}. Porovnajte kompatibilné, originálne a renovované tonery a náplne.` : "Vyhľadajte toner alebo náplň podľa označenia, značky či modelu tlačiarne. Kompatibilné, originálne a renovované produkty na jednom mieste.";
-const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname) || Astro.url.searchParams.size > 0;
-
 const clean = (name: string) => String(Astro.url.searchParams.get(name) || "").trim();
-const initialPage = Math.max(1, Number(clean("page") || 1));
+const requestedPage = Number(clean("page") || 1);
+const initialPage = Number.isFinite(requestedPage) ? Math.max(1, Math.floor(requestedPage)) : 1;
 const initialFilters = {
   search: query,
   printer: clean("printer"),
@@ -26,6 +23,18 @@ const initialFilters = {
   type: clean("type"),
   color: clean("color"),
   stock: clean("stock"),
+};
+const hasFilters = Object.values(initialFilters).some(Boolean);
+const pageSuffix = !hasFilters && initialPage > 1 ? ` – strana ${initialPage}` : "";
+const title = query ? `${query} – tonery a náplne | ToneryMaxim.sk` : `Tonery a náplne do tlačiarní${pageSuffix} | ToneryMaxim.sk`;
+const description = query ? `Výsledky pre ${query}. Porovnajte kompatibilné, originálne a renovované tonery a náplne.` : `Vyhľadajte toner alebo náplň podľa označenia, značky či modelu tlačiarne. Kompatibilné, originálne a renovované produkty na jednom mieste${initialPage > 1 ? ` – strana ${initialPage}` : ""}.`;
+const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname) || hasFilters;
+const canonicalPath = !hasFilters && initialPage > 1 ? `/produkty?page=${initialPage}` : "/produkty";
+const pageHref = (page: number) => {
+  const params = new URLSearchParams(Astro.url.searchParams);
+  if (page > 1) params.set("page", String(page)); else params.delete("page");
+  const queryString = params.toString();
+  return queryString ? `/produkty?${queryString}` : "/produkty";
 };
 
 let initialCatalog: any = null;
@@ -93,7 +102,9 @@ const initialCatalogJson = JSON.stringify(initialCatalog)
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <SeoHead title={title} description={description} noindex={noindex} canonical={`${SEO_ORIGIN}/produkty`} jsonLd={breadcrumbJsonLd(SEO_ORIGIN, [{ name: "Domov", path: "/" }, { name: "Produkty", path: "/produkty" }])} />
+    <SeoHead title={title} description={description} noindex={noindex} canonical={`${SEO_ORIGIN}${canonicalPath}`} jsonLd={breadcrumbJsonLd(SEO_ORIGIN, [{ name: "Domov", path: "/" }, { name: "Produkty", path: canonicalPath }])} />
+    {initialPage > 1 && <link rel="prev" href={`${SEO_ORIGIN}${pageHref(initialPage - 1)}`} />}
+    {initialCatalog && initialPage < initialCatalog.total_pages && <link rel="next" href={`${SEO_ORIGIN}${pageHref(initialPage + 1)}`} />}
   </head>
 
   <body>
@@ -197,9 +208,9 @@ const initialCatalogJson = JSON.stringify(initialCatalog)
               </div>
 
               <div class="catalog-pagination">
-                <button type="button" data-prev-page>Predchádzajúce</button>
-                <span data-page-info>Strana 1</span>
-                <button type="button" data-next-page>Ďalšie</button>
+                <a href={pageHref(Math.max(1, initialPage - 1))} rel="prev" data-prev-page>Predchádzajúce</a>
+                <span data-page-info>Strana {initialPage} / {initialCatalog?.total_pages || 1}</span>
+                <a href={pageHref(initialPage + 1)} rel="next" data-next-page>Ďalšie</a>
               </div>
             </div>
           </div>

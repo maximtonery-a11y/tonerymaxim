@@ -978,6 +978,20 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   }
 
   function printerProductsUrl(printer) {
+    const clean = normalizePrinter(printer);
+    const brands = [
+      ["konica minolta", "konica-minolta"], ["hewlett packard", "hp"], ["kyocera", "kyocera"],
+      ["brother", "brother"], ["samsung", "samsung"], ["lexmark", "lexmark"], ["panasonic", "panasonic"],
+      ["toshiba", "toshiba"], ["philips", "philips"], ["pantum", "pantum"], ["xerox", "xerox"],
+      ["canon", "canon"], ["epson", "epson"], ["ricoh", "ricoh"], ["sharp", "sharp"],
+      ["utax", "utax"], ["dell", "dell"], ["oki", "oki"], ["ibm", "ibm"], ["hp", "hp"],
+    ];
+    const normalized = clean.toLowerCase().replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+    const match = brands.find(([name]) => normalized === name || normalized.startsWith(`${name} `));
+    if (match && /\d/.test(clean)) {
+      const slug = clean.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      return `/tlaciarne/${match[1]}/${slug}`;
+    }
     const url = new URL("/produkty", window.location.origin);
     url.searchParams.set("printer", printer);
     return `${url.pathname}?${url.searchParams.toString()}`;
