@@ -8,7 +8,7 @@ import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import "../../styles/footer.css";
 import mobileLogo from "../../assets/tonerymaxim-mobile-approved-logo.png";
 import SeoHead from "../../components/SeoHead.astro";
-import { breadcrumbJsonLd } from "../../lib/seo";
+import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../../lib/seo";
 import { getProductsCache } from "../../lib/tm-products-cache";
 import { findBrand, printerEntities } from "../../lib/seo-catalog";
 
@@ -36,14 +36,76 @@ const brandMap: Record<string, string> = {
 };
 const selectedBrand = brandMap[brandParam.toLowerCase()] || brandParam;
 const brand = findBrand(brandParam);
-const cache = await getProductsCache().catch(() => ({ products: [] as any[] }));
+const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const brandPrinters = brand
   ? printerEntities(cache.products).filter((printer) => printer.brand.slug === brand.slug)
   : [];
+const brandProductMap = new Map<string, any>();
+brandPrinters.forEach((printer) => printer.products.forEach((product) => {
+  const key = String(product.id || product.slug || product.sku || "");
+  if (key) brandProductMap.set(key, product);
+}));
+const brandProducts = [...brandProductMap.values()];
+const inStockProducts = brandProducts.filter((product) => product.stock_status === "instock").length;
 const SEO_ORIGIN = 'https://www.tonerymaxim.sk';
 const title = `Tonery a náplne do tlačiarní ${selectedBrand} | ToneryMaxim.sk`;
 const description = `Vyberte model tlačiarne ${selectedBrand} a nájdite kompatibilný alebo originálny toner, atrament či optický valec.`;
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname);
+const generatedDate = cache.generated_at && !Number.isNaN(new Date(cache.generated_at).getTime())
+  ? new Intl.DateTimeFormat("sk-SK", { dateStyle: "medium" }).format(new Date(cache.generated_at))
+  : "";
+const faqItems = [
+  {
+    question: `Ako nájdem správnu náplň pre tlačiareň ${selectedBrand}?`,
+    answer: `Vyberte presný model tlačiarne ${selectedBrand}. Na stránke modelu sa zobrazia iba produkty, pri ktorých je daný model uvedený medzi kompatibilnými zariadeniami. Pred objednaním porovnajte aj OEM označenie pôvodnej kazety.`,
+  },
+  {
+    question: `Používajú podobne označené tlačiarne ${selectedBrand} rovnaký toner?`,
+    answer: `Nie vždy. Rozdielne modelové rady alebo koncovky názvu môžu používať inú kazetu, preto treba porovnať celý názov modelu a OEM kód.`,
+  },
+  {
+    question: `Sú pre tlačiarne ${selectedBrand} dostupné originálne aj kompatibilné náplne?`,
+    answer: `Dostupný typ závisí od konkrétneho modelu. Pri každom produkte je uvedené, či ide o originálny, kompatibilný alebo renovovaný výrobok, jeho cena a aktuálna skladová dostupnosť.`,
+  },
+];
+const jsonLd = [
+  organizationJsonLd(SEO_ORIGIN),
+  websiteJsonLd(SEO_ORIGIN),
+  breadcrumbJsonLd(SEO_ORIGIN, [{ name: "Domov", path: "/" }, { name: "Tlačiarne", path: "/tlaciarne" }, { name: selectedBrand, path: `/tlaciarne/${brandParam}` }]),
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${SEO_ORIGIN}/tlaciarne/${brandParam}#collection`,
+    url: `${SEO_ORIGIN}/tlaciarne/${brandParam}`,
+    name: `Tlačiarne ${selectedBrand} a vhodné náplne`,
+    description,
+    inLanguage: "sk-SK",
+    isPartOf: { "@id": `${SEO_ORIGIN}/#website` },
+    provider: { "@id": `${SEO_ORIGIN}/#organization` },
+    ...(cache.generated_at ? { dateModified: cache.generated_at } : {}),
+    about: { "@type": "Brand", name: selectedBrand },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: brandPrinters.length,
+      itemListElement: brandPrinters.slice(0, 50).map((printer, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: printer.name,
+        url: `${SEO_ORIGIN}/tlaciarne/${printer.brand.slug}/${printer.slug}`,
+      })),
+    },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${SEO_ORIGIN}/tlaciarne/${brandParam}#faq`,
+    mainEntity: faqItems.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
+  },
+];
 ---
 
 <!doctype html>
@@ -51,7 +113,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <SeoHead title={title} description={description} noindex={noindex} jsonLd={breadcrumbJsonLd(SEO_ORIGIN, [{ name: "Domov", path: "/" }, { name: "Tlačiarne", path: "/tlaciarne" }, { name: selectedBrand, path: `/tlaciarne/${brandParam}` }])} />
+    <SeoHead title={title} description={description} canonical={`${SEO_ORIGIN}/tlaciarne/${brandParam}`} noindex={noindex} jsonLd={jsonLd} />
   </head>
   <body class="printer-brand-page">
     <div class="page">
@@ -196,6 +258,33 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
           <div class="printer-popular-grid" data-printer-popular-grid></div>
         </section>
       </main>
+
+      {brandPrinters.length > 0 && (
+        <section class="printer-geo-answer-section" aria-labelledby="printer-geo-answer-title">
+          <div class="wrap">
+            <article class="printer-geo-answer-card">
+              <p class="eyebrow">Aktuálne údaje z katalógu</p>
+              <h2 id="printer-geo-answer-title">Ako vybrať toner alebo náplň pre tlačiareň {selectedBrand}</h2>
+              <p>
+                Pre značku {selectedBrand} evidujeme <strong>{brandPrinters.length} modelov tlačiarní</strong> s priradenými produktmi.
+                V týchto modeloch je spolu <strong>{brandProducts.length} jedinečných tonerov a náplní</strong>, z ktorých je aktuálne <strong>{inStockProducts} skladom</strong>.
+                Najspoľahlivejší výber získate podľa celého názvu modelu a OEM označenia pôvodnej kazety.
+              </p>
+              {generatedDate && <small>Produktové údaje aktualizované: {generatedDate}</small>}
+            </article>
+
+            <div class="printer-geo-faq">
+              <h2>Časté otázky k tlačiarňam {selectedBrand}</h2>
+              {faqItems.map((item) => (
+                <details>
+                  <summary>{item.question}</summary>
+                  <p>{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {brandPrinters.length > 0 && (
         <section class="printer-model-directory-section">

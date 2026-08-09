@@ -1272,3 +1272,76 @@
 }
 
 .printer-model-directory small { color: #64748b; }
+.printer-geo-answer-section {
+  padding: 28px 0;
+  background: #f4f8fc;
+}
+
+.printer-geo-answer-section > .wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.printer-geo-answer-card,
+.printer-geo-faq {
+  padding: 24px;
+  border: 1px solid #dbe6f1;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(7, 27, 58, .06);
+}
+
+.printer-geo-answer-card h2,
+.printer-geo-faq h2 {
+  margin: 0 0 12px;
+  color: #071b3a;
+  font-size: clamp(21px, 2vw, 28px);
+  line-height: 1.2;
+}
+
+.printer-geo-answer-card p:not(.eyebrow),
+.printer-geo-faq p {
+  margin: 0;
+  color: #41536a;
+  line-height: 1.65;
+}
+
+.printer-geo-answer-card small {
+  display: block;
+  margin-top: 12px;
+  color: #67778a;
+}
+
+.printer-geo-faq details {
+  border-top: 1px solid #e3ebf3;
+}
+
+.printer-geo-faq summary {
+  padding: 14px 0;
+  color: #071b3a;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.printer-geo-faq details p {
+  padding: 0 0 15px;
+}
+
+@media (max-width: 760px) {
+  .printer-geo-answer-section {
+    padding: 18px 0;
+  }
+
+  .printer-geo-answer-section > .wrap {
+    grid-template-columns: 1fr;
+    padding-inline: 14px;
+  }
+
+  .printer-geo-answer-card,
+  .printer-geo-faq {
+    padding: 18px;
+    border-radius: 15px;
+  }
+}
