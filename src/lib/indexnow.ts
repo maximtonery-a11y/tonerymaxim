@@ -52,8 +52,16 @@ function productBrand(product: Product): string {
 }
 
 function changedUrls(previous: Product[], current: Product[]): string[] {
-  const before = new Map(previous.map((product) => [productKey(product), product]).filter(([key]) => key));
-  const after = new Map(current.map((product) => [productKey(product), product]).filter(([key]) => key));
+  const before = new Map<string, Product>();
+  const after = new Map<string, Product>();
+  for (const product of previous) {
+    const key = productKey(product);
+    if (key) before.set(key, product);
+  }
+  for (const product of current) {
+    const key = productKey(product);
+    if (key) after.set(key, product);
+  }
   const changed: Product[] = [];
   const urls = new Set<string>();
 

@@ -269,6 +269,9 @@ export async function printersSitemapResponse(request?: Request): Promise<Respon
       .map((printer) => ({
         path: `/tlaciarne/${printer.brand.slug}/${printer.slug}`,
         lastModified,
+        image: printer.products
+          .flatMap((product) => [product.image, ...(Array.isArray(product.images) ? product.images : [])])
+          .find((value) => sitemapImage(value)),
       }));
     return urlSetResponse(entries, request, lastModified);
   } catch (error) {

@@ -15,6 +15,7 @@ type Link = { href: string; label: string };
 type Faq = { question: string; answer: string };
 type ContentSection = { heading: string; paragraphs: string[]; bullets?: string[] };
 type LinkGroup = { heading: string; intro?: string; links: EntityLink[] };
+type Pagination = { page: number; totalPages: number; pageSize: number; basePath: string };
 type ExpertGuide = {
   title: string;
   summary: string;
@@ -27,6 +28,7 @@ type ExpertGuide = {
 interface Props {
   title: string;
   description: string;
+  image?: string;
   canonicalPath: string;
   eyebrow: string;
   heading: string;
@@ -43,11 +45,13 @@ interface Props {
   schemaEntities?: Array<{ name: string; url?: string }>;
   notFound?: boolean;
   expertGuide?: ExpertGuide;
+  pagination?: Pagination;
 }
 
 const {
   title,
   description,
+  image,
   canonicalPath,
   eyebrow,
   heading,
@@ -64,13 +68,20 @@ const {
   schemaEntities = [],
   notFound = false,
   expertGuide,
+  pagination,
 } = Astro.props;
 
 const SEO_ORIGIN = "https://www.tonerymaxim.sk";
 const previewHost = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname.toLowerCase());
 const canonical = new URL(canonicalPath, SEO_ORIGIN).toString();
 const noindex = previewHost || notFound || products.length === 0;
-const shownProducts = products.slice(0, 80);
+const paginationPage = pagination ? Math.min(pagination.totalPages, Math.max(1, pagination.page)) : 1;
+const shownProducts = pagination
+  ? products.slice((paginationPage - 1) * pagination.pageSize, paginationPage * pagination.pageSize)
+  : products.slice(0, 80);
+const paginationUrl = (page: number) => page <= 1 ? pagination?.basePath || canonicalPath : `${pagination?.basePath || canonicalPath}?page=${page}`;
+const previousPage = pagination && paginationPage > 1 ? paginationUrl(paginationPage - 1) : "";
+const nextPage = pagination && paginationPage < pagination.totalPages ? paginationUrl(paginationPage + 1) : "";
 const breadcrumbItems = [{ name: "Domov", path: "/" }, ...breadcrumbs];
 const stats = catalogStats(products);
 const money = (value: number) => new Intl.NumberFormat("sk-SK", {
@@ -125,7 +136,7 @@ const jsonLd = [
   organizationJsonLd(SEO_ORIGIN),
   websiteJsonLd(SEO_ORIGIN),
   breadcrumbJsonLd(SEO_ORIGIN, breadcrumbItems),
-  collectionJsonLd(SEO_ORIGIN, canonicalPath, heading, description, products, {
+  collectionJsonLd(SEO_ORIGIN, canonicalPath, heading, description, shownProducts, {
     generatedAt,
     about: schemaEntities,
   }),
@@ -143,9 +154,12 @@ const jsonLd = [
       title={title}
       description={description}
       canonical={canonical}
+      image={image}
       noindex={noindex}
       jsonLd={jsonLd}
     />
+    {previousPage && <link rel="prev" href={new URL(previousPage, SEO_ORIGIN).toString()} />}
+    {nextPage && <link rel="next" href={new URL(nextPage, SEO_ORIGIN).toString()} />}
   </head>
   <body>
     <div class="page">
@@ -239,9 +253,18 @@ const jsonLd = [
             </div>
 
             {shownProducts.length > 0 ? (
-              <div class="catalog-list seo-catalog-list">
-                <CatalogInitialRows products={shownProducts} />
-              </div>
+              <>
+                <div class="catalog-list seo-catalog-list">
+                  <CatalogInitialRows products={shownProducts} />
+                </div>
+                {pagination && pagination.totalPages > 1 && (
+                  <nav class="catalog-pagination" aria-label="Stránkovanie produktov">
+                    <a class:list={{ "is-disabled": !previousPage }} href={previousPage || paginationUrl(1)} aria-disabled={!previousPage}>Predchádzajúca</a>
+                    <span>Strana {paginationPage} z {pagination.totalPages}</span>
+                    <a class:list={{ "is-disabled": !nextPage }} href={nextPage || paginationUrl(pagination.totalPages)} aria-disabled={!nextPage}>Ďalšia</a>
+                  </nav>
+                )}
+              </>
             ) : (
               <div class="seo-empty-state">
                 <h2>{notFound ? "Táto stránka neexistuje" : "Produkty pripravujeme"}</h2>

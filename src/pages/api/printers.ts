@@ -67,7 +67,7 @@ function printerBrand(printer: string) {
 
 function getPrinterIndex(cache: any) {
   const current = globalStore.__TM_PRINTERS_INDEX__;
-  if (current?.generatedAt === cache.generated_at) return current.items;
+  if (current && current.generatedAt === cache.generated_at) return current.items;
 
   const map = new Map<string, PrinterItem>();
   for (const product of cache.products) {

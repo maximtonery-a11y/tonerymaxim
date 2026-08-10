@@ -35,13 +35,45 @@ const relatedPrinterLinks = printer
       .filter((link) => link.href !== canonicalPath)
       .slice(0, 12)
   : [];
+
+const typeNames = [
+  ...(stats.compatible ? ["kompatibilné"] : []),
+  ...(stats.original ? ["originálne"] : []),
+  ...(stats.renovated ? ["renovované"] : []),
+  ...(stats.other ? ["ďalšie"] : []),
+];
+const typeSummary = typeNames.length > 1
+  ? `${typeNames.slice(0, -1).join(", ")} a ${typeNames.at(-1)}`
+  : typeNames[0] || "dostupné";
+const modelDescription = `Tonery a náplne pre ${printerName}: ${typeSummary}. Aktuálne ceny, dostupnosť, farby a výťažnosť.`;
+const blockedImageTokens = ["no-image", "image-coming-soon", `tm-product-${"place"}holder`, `tm-ink-${"place"}holder`];
+const imageCandidate = products
+  .flatMap((product) => [product.image, ...(Array.isArray(product.images) ? product.images : [])])
+  .map((value) => String(value || "").trim())
+  .find((value) => value && !blockedImageTokens.some((token) => value.toLowerCase().includes(token)));
+let modelImage: string | undefined;
+if (imageCandidate) {
+  try {
+    const url = new URL(imageCandidate, "https://www.tonerymaxim.sk");
+    if (url.protocol === "https:") modelImage = url.toString();
+  } catch {
+    modelImage = undefined;
+  }
+}
+const typeFacts = [
+  ...(stats.compatible ? [`Kompatibilné: ${stats.compatible}`] : []),
+  ...(stats.original ? [`Originálne: ${stats.original}`] : []),
+  ...(stats.renovated ? [`Renovované: ${stats.renovated}`] : []),
+  ...(stats.other ? [`Ostatné: ${stats.other}`] : []),
+];
 ---
 
 <SeoCatalogPage
   title={notFound ? "Model tlačiarne sa nenašiel | ToneryMaxim.sk" : `Tonery pre ${printerName} | ToneryMaxim.sk`}
   description={notFound
     ? "Požadovaný model tlačiarne sa v katalógu nenašiel."
-    : `Kompatibilné a originálne tonery alebo náplne pre ${printerName}. Aktuálna cena, dostupnosť, farba a výťažnosť.`}
+    : modelDescription}
+  image={modelImage}
   canonicalPath={canonicalPath}
   eyebrow={notFound ? "Neznámy model" : "Náplne podľa modelu tlačiarne"}
   heading={notFound ? "Model tlačiarne sa nenašiel" : `Tonery a náplne pre ${printerName}`}
@@ -60,7 +92,7 @@ const relatedPrinterLinks = printer
   ]}
   entityFacts={notFound ? [] : [
     `Značka ${brandName}`,
-    `${printer?.products.length || 0} kompatibilných produktov`,
+    ...typeFacts,
     "Cena s DPH a aktuálny sklad",
   ]}
   relatedLinks={[
@@ -71,7 +103,7 @@ const relatedPrinterLinks = printer
   ]}
   faq={notFound ? [] : [
     { question: `Ktorý toner je vhodný pre ${printerName}?`, answer: `Vyberte niektorý z produktov uvedených na tejto stránke a v detaile ešte skontrolujte model ${printerName} a OEM označenie kazety.` },
-    { question: "Môžem použiť kompatibilný toner namiesto originálneho?", answer: "Áno, ak je konkrétny kompatibilný produkt určený pre tento model tlačiarne. Typ produktu je viditeľne označený pri každej položke." },
+    ...(stats.compatible > 0 ? [{ question: "Môžem použiť kompatibilný toner namiesto originálneho?", answer: "Áno, ak je konkrétny kompatibilný produkt určený pre tento model tlačiarne. Typ produktu je viditeľne označený pri každej položke." }] : []),
     ...(geoPilot ? pilotFaq(printerName, geoPilot) : []),
   ]}
   contentSections={notFound ? [] : [
