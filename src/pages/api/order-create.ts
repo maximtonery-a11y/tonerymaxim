@@ -84,6 +84,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       billing: checkout.billing,
       delivery: checkout.delivery,
       contact: checkout.contact,
+      orderNote: checkout.orderNote,
       shippingCode,
       shippingLabel: shipping.label,
       shippingPrice,

@@ -2045,6 +2045,7 @@
         pickup: getSelectedPickup(),
       },
       payment: getSelected("payment"),
+      orderNote: document.querySelector("#order_note")?.value || "",
       coupon: tmCoupon?.ok ? { code: tmCoupon.code, label: tmCoupon.label || "Kupónová zľava", discount: couponDiscountForTotal(cartPricing(cart).subtotal - cartPricing(cart).discount) } : null,
       loyalty: {
         apply: tmLoyaltyApply,

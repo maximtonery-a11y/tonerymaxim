@@ -190,6 +190,18 @@ const title = "Pokladňa | ToneryMaxim.sk";
                   <label>Telefón<input name="delivery_phone" type="tel" inputmode="tel" autocomplete="shipping tel" placeholder="+421 917 859 206" /></label>
                 </div>
               </div>
+
+              <details class="checkout-order-note">
+                <summary>
+                  <span>📝 Poznámka k objednávke</span>
+                  <small>Voliteľné</small>
+                </summary>
+                <div class="checkout-order-note__body">
+                  <label for="order_note">Poznámka pre nás</label>
+                  <textarea id="order_note" name="order_note" rows="4" maxlength="1000" placeholder="Napríklad: zavolajte pred doručením alebo doplňujúce informácie k objednávke."></textarea>
+                  <small>Maximálne 1 000 znakov.</small>
+                </div>
+              </details>
               <button class="checkout-step-next" type="button" data-checkout-next="summary">Skontrolovať objednávku <span aria-hidden="true">→</span></button>
               </div>
             </section>

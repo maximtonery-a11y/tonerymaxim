@@ -33,6 +33,7 @@ export type CheckoutOrderSource = {
   billing: Record<string, any>;
   delivery: Record<string, any>;
   contact: Record<string, any>;
+  orderNote?: string;
   shippingCode: string;
   shippingLabel: string;
   shippingPrice: number;
@@ -351,6 +352,7 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     { key: "billing_ic_dph", value: String(source.billing?.icDph || source.billing?.ic_dph || "") },
     { key: "_billing_ic_dph", value: String(source.billing?.icDph || source.billing?.ic_dph || "") },
     { key: "tm_customer_email", value: String(source.contact?.email || source.billing?.email || "") },
+    { key: "tm_customer_note", value: String(source.orderNote || "") },
     { key: "tm_terms_accepted", value: source.termsAcceptedAt ? "1" : "0" },
     { key: "tm_terms_accepted_at", value: String(source.termsAcceptedAt || "") },
     { key: "tm_heureka_consent", value: source.heurekaConsent === true ? "1" : "0" },
@@ -401,6 +403,7 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     billing: source.billing || {},
     delivery: source.delivery || {},
     contact: source.contact || {},
+    orderNote: source.orderNote || "",
     heurekaConsent: source.heurekaConsent === true,
     heurekaConsentAt: source.heurekaConsentAt || "",
     items: source.cart.map((item) => ({
@@ -583,13 +586,7 @@ async function createWooOrderFromCheckoutInternal(source: CheckoutOrderSource, o
       payment_method_title: payment.title,
       transaction_id: paymentId || undefined,
       customer_id: customerId > 0 ? customerId : undefined,
-      customer_note: options.customerNote || [
-        "Objednávka vytvorená z pokladne ToneryMaxim.sk.",
-        source.billing?.company ? `Firma: ${source.billing.company}` : "",
-        source.billing?.ico ? `IČO: ${source.billing.ico}` : "",
-        source.billing?.dic ? `DIČ: ${source.billing.dic}` : "",
-        (source.billing?.icDph || source.billing?.ic_dph) ? `IČ DPH: ${source.billing?.icDph || source.billing?.ic_dph}` : "",
-      ].filter(Boolean).join("\n"),
+      customer_note: String(source.orderNote || ""),
       billing: billingForCreate,
       shipping,
       line_items: lineItemsPayload,

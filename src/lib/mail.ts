@@ -284,6 +284,9 @@ function buildOrderConfirmationContent(input: {
   const includeBankPayment = isBankPrepaidPayment(source.paymentCode, input.paymentTitle);
   const bankText = includeBankPayment ? `\n\n${bankPaymentText(orderNumber, totalGross)}` : "";
   const bankHtml = includeBankPayment ? bankPaymentHtml(orderNumber, totalGross) : "";
+  const orderNote = String(source.orderNote || "").trim();
+  const noteText = orderNote ? `\n\nPoznámka k objednávke:\n${orderNote}` : "";
+  const noteHtml = orderNote ? `<div style="background:#fffaf0;border:1px solid #f1dfb4;border-radius:16px;padding:16px;margin:18px 0"><strong>Poznámka k objednávke</strong><p style="white-space:pre-wrap;margin:8px 0 0">${escapeHtml(orderNote)}</p></div>` : "";
 
   const rowsText = items.map((item: any) => {
     const original = toNumber(Number(item.price || 0) * Number(item.qty || 1));
@@ -303,7 +306,7 @@ function buildOrderConfirmationContent(input: {
     </tr>`;
   }).join("");
 
-  const text = `Dobrý deň, ${firstName},\n\nďakujeme za objednávku č. ${orderNumber}.\n\nObjednávku sme prijali a spracujeme ju čo najskôr.\n\nProdukty:\n${rowsText}\n\nMedzisúčet tovaru s DPH: ${formatMoney(originalSubtotalGross)}\n${quantityDiscountGross > 0 ? `Množstevná / sadová zľava: -${formatMoney(quantityDiscountGross)}\nCena po množstevnej zľave: ${formatMoney(subtotalGross)}\n` : ""}${couponGross > 0 ? `${source.coupon?.label || "Kupónová zľava"}: -${formatMoney(couponGross)}\n` : ""}${loyaltyGross > 0 ? `Vernostná zľava: -${formatMoney(loyaltyGross)}\n` : ""}Doprava: ${input.shippingTitle} · ${formatMoney(shippingGross)}\nSpôsob platby: ${input.paymentTitle} · ${formatMoney(paymentGross)}\nCena spolu s DPH: ${formatMoney(totalGross)}\nZáklad bez DPH: ${formatMoney(totalNet)}\nDPH 23 %: ${formatMoney(totalVat)}${bankText}\n\nFakturačná adresa:\n${addressBlock(billing, contact)}\n\nDodacia adresa:\n${addressBlock(delivery?.differentAddress ? delivery : billing, contact)}\n\nPrávne informácie:\n${siteUrl()}/obchodne-podmienky\n${siteUrl()}/reklamacie\n${siteUrl()}/reklamacia-online\n${siteUrl()}/odstupenie-od-zmluvy\n${siteUrl()}/ochrana-osobnych-udajov\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk\n+421917859206`;
+  const text = `Dobrý deň, ${firstName},\n\nďakujeme za objednávku č. ${orderNumber}.\n\nObjednávku sme prijali a spracujeme ju čo najskôr.\n\nProdukty:\n${rowsText}\n\nMedzisúčet tovaru s DPH: ${formatMoney(originalSubtotalGross)}\n${quantityDiscountGross > 0 ? `Množstevná / sadová zľava: -${formatMoney(quantityDiscountGross)}\nCena po množstevnej zľave: ${formatMoney(subtotalGross)}\n` : ""}${couponGross > 0 ? `${source.coupon?.label || "Kupónová zľava"}: -${formatMoney(couponGross)}\n` : ""}${loyaltyGross > 0 ? `Vernostná zľava: -${formatMoney(loyaltyGross)}\n` : ""}Doprava: ${input.shippingTitle} · ${formatMoney(shippingGross)}\nSpôsob platby: ${input.paymentTitle} · ${formatMoney(paymentGross)}\nCena spolu s DPH: ${formatMoney(totalGross)}\nZáklad bez DPH: ${formatMoney(totalNet)}\nDPH 23 %: ${formatMoney(totalVat)}${bankText}\n\nFakturačná adresa:\n${addressBlock(billing, contact)}\n\nDodacia adresa:\n${addressBlock(delivery?.differentAddress ? delivery : billing, contact)}${noteText}\n\nPrávne informácie:\n${siteUrl()}/obchodne-podmienky\n${siteUrl()}/reklamacie\n${siteUrl()}/reklamacia-online\n${siteUrl()}/odstupenie-od-zmluvy\n${siteUrl()}/ochrana-osobnych-udajov\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk\n+421917859206`;
 
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.55;color:#061735;max-width:680px;margin:0 auto;padding:24px">
@@ -328,6 +331,7 @@ function buildOrderConfirmationContent(input: {
       </table>
       ${bankHtml}
       <table style="width:100%;border-collapse:collapse;margin:18px 0"><tr><td style="width:50%;vertical-align:top;padding:14px;border:1px solid #e6edf5"><strong>Fakturačná adresa</strong><br>${addressBlockHtml(billing, contact) || "-"}</td><td style="width:50%;vertical-align:top;padding:14px;border:1px solid #e6edf5"><strong>Dodacia adresa</strong><br>${addressBlockHtml(delivery?.differentAddress ? delivery : billing, contact) || "-"}</td></tr></table>
+      ${noteHtml}
       <div style="background:#f5faff;border:1px solid #dbe8f6;border-radius:16px;padding:16px;margin:18px 0"><strong>Právne dokumenty a zákaznícka pomoc</strong><p style="margin:8px 0 0;color:#64748b">V prílohe e-mailu nájdete obchodné podmienky, reklamačný formulár a formulár na odstúpenie od zmluvy.</p><p style="margin:10px 0 0"><a href="${siteUrl()}/obchodne-podmienky">Obchodné podmienky</a> · <a href="${siteUrl()}/reklamacie">Reklamačné podmienky</a> · <a href="${siteUrl()}/reklamacia-online">Reklamácia online</a> · <a href="${siteUrl()}/odstupenie-od-zmluvy">Odstúpenie online</a> · <a href="${siteUrl()}/ochrana-osobnych-udajov">Ochrana osobných údajov</a></p></div>
       <p style="color:#64748b">O ďalšom stave objednávky a odoslaní zásielky vás budeme informovať e-mailom.</p>
       <p>ToneryMAXIM.sk<br><a href="mailto:info@tonerymaxim.sk">info@tonerymaxim.sk</a><br><a href="tel:+421917859206">+421 917 859 206</a></p>

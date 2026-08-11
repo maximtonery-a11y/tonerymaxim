@@ -12,6 +12,18 @@ function text(value: unknown, max = 160) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
+function multilineText(value: unknown, max = 1000) {
+  return String(value ?? "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ")
+    .split("\n")
+    .map((line) => line.replace(/[\t ]+/g, " ").trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+    .slice(0, max);
+}
+
 function digits(value: unknown) {
   return text(value, 32).replace(/\D/g, "");
 }
@@ -43,6 +55,7 @@ export type ValidatedCheckout = {
   termsAcceptedAt: string;
   heurekaConsent: boolean;
   heurekaConsentAt?: string;
+  orderNote: string;
 };
 
 export function validateCheckoutRequest(
@@ -51,6 +64,7 @@ export function validateCheckoutRequest(
 ): ValidatedCheckout {
   const errors: string[] = [];
   const heurekaConsent = raw?.heurekaConsent === true;
+  const orderNote = multilineText(raw?.orderNote, 1000);
   const shippingCode = text(typeof raw?.shipping === "string" ? raw.shipping : raw?.shipping?.method, 40);
   const paymentCode = text(typeof raw?.payment === "string" ? raw.payment : raw?.payment?.method, 40);
 
@@ -151,5 +165,6 @@ export function validateCheckoutRequest(
     termsAcceptedAt: new Date().toISOString(),
     heurekaConsent,
     heurekaConsentAt: heurekaConsent ? new Date().toISOString() : undefined,
+    orderNote,
   };
 }
