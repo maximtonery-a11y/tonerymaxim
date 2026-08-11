@@ -1,10 +1,11 @@
 import type { APIRoute } from "astro";
 import { compactKey, getProductsCache, jsonResponse, normalize, sortProducts } from "../../lib/tm-products-cache";
-import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIdentityMatches } from "../../lib/catalog-query";
+import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, productPrinterValues } from "../../lib/catalog-query";
+import { entitySlug, printerBrandForName } from "../../lib/seo-catalog";
 
 export const prerender = false;
 
-const BRANDS = ["HP", "Canon", "Brother", "Epson", "Xerox", "Samsung", "Lexmark", "Kyocera", "OKI", "Ricoh", "Utax", "Toshiba", "Panasonic", "Dell", "Konica Minolta"];
+const BRANDS = ["HP", "Canon", "Brother", "Epson", "Xerox", "Samsung", "Lexmark", "Kyocera", "OKI", "Ricoh", "Utax", "Toshiba", "Panasonic", "Dell", "Konica Minolta", "Sharp", "Pantum", "Philips", "IBM"];
 const CATEGORIES = [
   { label: "Tonery", value: "tonery" },
   { label: "Atramentové náplne", value: "atramentove-naplne" },
@@ -31,6 +32,7 @@ type ResultCacheEntry = {
 type SearchIndexCache = {
   generatedAt: string;
   items: IndexedProduct[];
+  printers: IndexedPrinter[];
   prefixMap: Map<string, number[]>;
   products: any[];
 };
@@ -163,13 +165,18 @@ function modelTokenScore(queryToken: string, targetCompact: string, targetTokens
   const queryCompact = compactKey(queryToken);
   if (!queryCompact) return 0;
 
-  if (targetCompact.includes(queryCompact)) return 90;
-
-  let best = 0;
+  let best = targetCompact.includes(queryCompact) ? 70 : 0;
   for (const token of targetTokens) {
     const tokenCompact = compactKey(token);
     if (!/\d/.test(tokenCompact)) continue;
-    if (tokenCompact === queryCompact) best = Math.max(best, 90);
+    if (tokenCompact === queryCompact) best = Math.max(best, 110);
+    else if (tokenCompact.startsWith(queryCompact)) {
+      const suffix = tokenCompact.slice(queryCompact.length);
+      // M28a/M28w sú prirodzenejšie doplnenia M28 než samostatná rada M280/M281.
+      if (/^[a-z]{1,3}$/.test(suffix)) best = Math.max(best, 100);
+      else if (/^\d/.test(suffix)) best = Math.max(best, 78);
+      else best = Math.max(best, 90);
+    }
     else if (tokenCompact.includes(queryCompact) || queryCompact.includes(tokenCompact)) best = Math.max(best, 70);
     else if (levenshtein(queryCompact, tokenCompact, queryCompact.length >= 5 ? 2 : 1) <= (queryCompact.length >= 5 ? 2 : 1)) best = Math.max(best, 46);
   }
@@ -186,7 +193,12 @@ function searchableValue(product: any) {
 
 function makeIndexedProduct(product: any, index: number): IndexedProduct {
   const searchValue = searchableValue(product);
-  const printerNames = [...new Set([...(Array.isArray(product.printers) ? product.printers : []), ...(Array.isArray(product.compatible_printers) ? product.compatible_printers : [])])];
+  // Niektoré staršie Woo záznamy majú viac modelov uložených v jednej hodnote
+  // oddelenej čiarkami. V našepkávači musia byť samostatnými tlačiarňami.
+  const printerNames = [...new Set(productPrinterValues(product)
+    .flatMap((value) => String(value || "").split(/[,;|\n]+/))
+    .map((value) => value.replace(/\s+/g, " ").trim())
+    .filter(Boolean))];
   const printers = printerNames
     .map((printer: any) => {
       const title = String(printer || "").trim();
@@ -253,8 +265,15 @@ function getSearchIndex(cache: any): SearchIndexCache {
   if (currentIndex && currentIndex.generatedAt === cache.generated_at) return currentIndex;
 
   const items = sortProducts(cache.products).map((product, index) => makeIndexedProduct(product, index));
+  const printerMap = new Map<string, IndexedPrinter>();
+  for (const item of items) {
+    for (const printer of item.printers) {
+      if (!printerMap.has(printer.key)) printerMap.set(printer.key, printer);
+    }
+  }
+  const printers = [...printerMap.values()];
   const prefixMap = buildPrefixMap(items);
-  const nextIndex: SearchIndexCache = { generatedAt: cache.generated_at, items, prefixMap, products: items.map((item) => item.product) };
+  const nextIndex: SearchIndexCache = { generatedAt: cache.generated_at, items, printers, prefixMap, products: items.map((item) => item.product) };
   globalStore.__TM_SMART_SEARCH_INDEX__ = nextIndex;
   resultCache.clear();
   return nextIndex;
@@ -471,26 +490,29 @@ function makeProductGroups(items: any[], query: string, exactPrinterQuery = fals
   }).filter(Boolean);
 }
 
-function findPrinterSuggestions(items: IndexedProduct[], query: QueryInfo) {
+function findPrinterSuggestions(printers: IndexedPrinter[], query: QueryInfo) {
   const bestByPrinter = new Map<string, { title: string; score: number }>();
-  const candidateItems = items.filter((item) => isLikelyCandidate(item, query));
 
-  for (const item of candidateItems) {
-    for (const printer of item.printers) {
-      if (query.modelTokens.length && !query.modelTokens.some((token) => printer.compact.includes(compactKey(token)))) continue;
-      if (query.brandTokens.length && !query.brandTokens.some((brand) => printer.text.includes(brand))) continue;
+  for (const printer of printers) {
+    if (query.modelTokens.length && !query.modelTokens.some((token) => printer.compact.includes(compactKey(token)))) continue;
+    if (query.brandTokens.length && !query.brandTokens.some((brand) => printer.text.includes(brand))) continue;
 
-      const score = printerScore(printer, query);
-      if (score < 55) continue;
-      const current = bestByPrinter.get(printer.key);
-      if (!current || score > current.score) bestByPrinter.set(printer.key, { title: printer.title, score });
-    }
+    const score = printerScore(printer, query);
+    if (score < 55) continue;
+    const current = bestByPrinter.get(printer.key);
+    if (!current || score > current.score) bestByPrinter.set(printer.key, { title: printer.title, score });
   }
 
   return [...bestByPrinter.values()]
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, "sk"))
     .slice(0, 8)
-    .map((item) => ({ title: item.title, subtitle: "Tlačiareň · zobraziť kompatibilné produkty", url: `/produkty?s=${encodeURIComponent(item.title)}&printer=${encodeURIComponent(item.title)}`, relevance: item.score }));
+    .map((item) => {
+      const brand = printerBrandForName(item.title);
+      const url = brand
+        ? `/tlaciarne/${brand.slug}/${entitySlug(item.title)}`
+        : `/produkty?printer=${encodeURIComponent(item.title)}`;
+      return { title: item.title, subtitle: "Tlačiareň · zobraziť kompatibilné produkty", url, relevance: item.score };
+    });
 }
 
 function findProductSuggestions(items: IndexedProduct[], query: QueryInfo) {
@@ -516,6 +538,7 @@ export const GET: APIRoute = async ({ url }) => {
       return jsonResponse({ ok: true, query: "", warmed: true, printers: [], productGroups: [], products: [], brands: [], categories: [] }, 200, "private, max-age=30");
     }
     const query = queryInfo(q);
+    const queryAnalysis = analyzeCatalogQuery(q);
     const resultKey = cachedResultKey(index.generatedAt, q);
     const cached = getCachedResult(resultKey);
     if (cached) return jsonResponse({ ...cached, source: "smart-search-result-cache" }, 200, "public, max-age=60, s-maxage=600, stale-while-revalidate=3600");
@@ -535,11 +558,10 @@ export const GET: APIRoute = async ({ url }) => {
     const staticResults = filteredStaticSuggestions(query);
     // Ak názov/SKU presne obsahuje hľadané označenie náplne, modely tlačiarní
     // s podobným číslom (6520, M652...) nesmú prekryť správne produkty.
-    const printerItems = exactPrinterProducts.size
-      ? findPrinterSuggestions(candidateItems, query)
-      : exactProducts.size
-        ? []
-        : findPrinterSuggestions(candidateItems, query);
+    const hasPartialPrinterModel = index.printers.some((printer) => partialPrinterModelMatch(printer.title, queryAnalysis));
+    const printerItems = exactPrinterProducts.size || !exactProducts.size || hasPartialPrinterModel
+      ? findPrinterSuggestions(index.printers, query)
+      : [];
 
     const brandMap = new Map<string, { title: string; subtitle: string; url: string }>();
     staticResults.brands.forEach((brand) => brandMap.set(compactKey(brand.title), brand));

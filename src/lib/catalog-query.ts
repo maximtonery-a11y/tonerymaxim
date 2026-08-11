@@ -28,6 +28,10 @@ export const CATALOG_BRANDS = [
   "Utax",
   "OKI",
   "HP",
+  "Sharp",
+  "Pantum",
+  "Philips",
+  "IBM",
 ] as const;
 
 export type CatalogQueryAnalysis = {
@@ -100,6 +104,12 @@ function referenceAliases(value: unknown, includeMixedTokenSegments = true) {
     }
 
     const next = compactKey(tokens[index + 1] || "");
+    // Séria a číslo bývajú oddelené pomlčkou alebo medzerou: CLP-320,
+    // FS 1035, SP 3400, e-STUDIO 163. Pre prefixové hľadanie potrebujeme
+    // aj spojený alias (clp320, fs1035, sp3400, studio163).
+    if (/^[a-z]{1,12}$/.test(token) && /^\d{1,8}[a-z]{0,4}$/.test(next)) {
+      aliases.add(`${token}${next}`);
+    }
     if (/^\d{2,6}$/.test(token) && /^(?:xl|xxl|bk|k|c|m|y)$/.test(next)) {
       aliases.add(`${token}${next}`);
     }
@@ -112,12 +122,18 @@ function detectBrands(value: unknown) {
   const normalized = normalize(value);
   const compact = compactKey(value);
 
-  return CATALOG_BRANDS.filter((brand) => {
+  const detected = CATALOG_BRANDS.filter((brand) => {
     const normalizedBrand = normalize(brand);
     const compactBrand = compactKey(brand);
     if (new RegExp(`(^|[^a-z0-9])${normalizedBrand.replace(/\s+/g, "[\\s-]*")}([^a-z0-9]|$)`, "i").test(normalized)) return true;
     return compact.startsWith(compactBrand) && /\d/.test(compact.slice(compactBrand.length));
   });
+
+  // Zákazníci bežne skracujú Konica Minolta iba na „Konica“.
+  if (/(^|[^a-z0-9])konica([^a-z0-9]|$)/.test(normalized) && !detected.includes("Konica Minolta")) {
+    detected.push("Konica Minolta");
+  }
+  return detected;
 }
 
 function brandlessQuery(value: string, brands: string[]) {
@@ -323,6 +339,27 @@ export function exactPrinterModelMatch(value: unknown, analysis: CatalogQueryAna
   // produktové rodiny a modely tlačiarní navzájom nemiešali.
   const aliases = referenceAliases(value, false);
   return analysis.referenceTokens.some((reference) => aliases.has(reference));
+}
+
+/**
+ * Rozpozná neúplný alfanumerický model tlačiarne (M28 -> M28w,
+ * C301 -> C301dn). Čisto číselné označenia zámerne nepovažujeme za prefix:
+ * dotaz HP 652 je produktová rodina a nesmie sa zameniť za DeskJet 6520.
+ */
+export function partialPrinterModelMatch(value: unknown, analysis: CatalogQueryAnalysis) {
+  if (!analysis.hasReference) return false;
+
+  const printerBrands = detectBrands(value);
+  if (analysis.brands.length && printerBrands.length) {
+    const hasSameBrand = analysis.brands.some((queryBrand) => printerBrands.some((printerBrand) => compactKey(queryBrand) === compactKey(printerBrand)));
+    if (!hasSameBrand) return false;
+  }
+
+  const aliases = referenceAliases(value, false);
+  return analysis.referenceTokens.some((reference) => {
+    if (reference.length < 3 || !/[a-z]/.test(reference) || !/\d/.test(reference)) return false;
+    return [...aliases].some((alias) => alias.length > reference.length && alias.startsWith(reference));
+  });
 }
 
 export function findExactPrinterModelMatches(products: CatalogProduct[], query: string): ExactPrinterCatalogMatch[] {
