@@ -2,7 +2,7 @@ import { mkdir, unlink, readdir, stat, rename } from "node:fs/promises";
 import { join } from "node:path";
 import { TM_CACHE_ROOT } from './runtime-paths';
 import { readSignedJson, writeSignedJson, quarantineFile, TM_DATA_ROOT } from "./secure-persistence";
-import { createWooOrderFromCheckout, type CheckoutOrderSource } from "./checkout-order";
+import { createWooOrderFromCheckout, readPendingGoPayOrder, savePendingGoPayOrder, type CheckoutOrderSource } from "./checkout-order";
 import { CheckoutProfiler } from "./checkout-profiler";
 import { sendOrderAdminCopyEmail, sendOrderConfirmationEmail } from "./mail";
 import { wooRequest } from "./woo-client";
@@ -152,6 +152,23 @@ async function processOneJob(file: string) {
       job.wooOrderId = result.orderId;
       job.wooOrderNumber = result.orderNumber;
       await writeJob(PROCESSING_DIR, job);
+
+      // GoPay notify/status musí poznať už vytvorenú Woo objednávku. Bez tohto
+      // zápisu by po potvrdení platby vytvoril druhú objednávku s rovnakým
+      // interným číslom.
+      if (job.source.paymentId) {
+        const pending = await readPendingGoPayOrder(job.source.paymentId);
+        if (pending) {
+          const updated = {
+            ...pending,
+            wooOrderId: result.orderId,
+            wooOrderNumber: result.orderNumber,
+          };
+          await savePendingGoPayOrder(updated);
+          job.source = updated;
+          await writeJob(PROCESSING_DIR, job);
+        }
+      }
     }
 
     const customerEmail = String(job.source.contact?.email || job.source.billing?.email || "").trim();

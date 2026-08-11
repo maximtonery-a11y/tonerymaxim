@@ -9,6 +9,7 @@ import { grantThankYouCoupon, markCouponUsed, thankYouCouponCode, type CouponRes
 import { registerIssuedCoupon } from "./coupon-registry";
 import { CheckoutProfiler } from "./checkout-profiler";
 import { sendHeurekaVerifiedOrder } from "./heureka-verified";
+import { withOrderIdempotency } from "./order-idempotency";
 
 export type NormalizedCartItem = {
   id: string;
@@ -500,7 +501,43 @@ function wooPaymentMethod(source: CheckoutOrderSource) {
   }
 }
 
-export async function createWooOrderFromCheckout(source: CheckoutOrderSource, options: {
+type WooOrderCreationResult = {
+  created: boolean;
+  orderId: number;
+  orderNumber: string;
+  raw?: any;
+};
+
+function wooMetaValue(order: any, key: string): string {
+  const item = (Array.isArray(order?.meta_data) ? order.meta_data : [])
+    .find((meta: any) => String(meta?.key || "") === key);
+  return String(item?.value || "");
+}
+
+async function findExistingWooOrder(source: CheckoutOrderSource): Promise<any | null> {
+  const tmOrderNumber = String(source.orderNumber || "").trim();
+  const paymentId = String(source.paymentId || "").trim();
+  if (!tmOrderNumber && !paymentId) return null;
+
+  // Poistka pre prípad, že Woo objednávka vznikla, ale server sa reštartoval
+  // skôr, než sa jej ID stihlo uložiť do lokálneho idempotentného záznamu.
+  const orders = await wooRequest<any[]>("/orders", {
+    query: { per_page: 100, orderby: "date", order: "desc" },
+  });
+
+  return (Array.isArray(orders) ? orders : []).find((order: any) => {
+    const storedOrderNumber = wooMetaValue(order, "tm_order_number")
+      || wooMetaValue(order, "gopay_order_number");
+    const storedPaymentId = String(order?.transaction_id || "")
+      || wooMetaValue(order, "gopay_payment_id");
+    return Boolean(
+      (tmOrderNumber && storedOrderNumber === tmOrderNumber)
+      || (paymentId && storedPaymentId === paymentId)
+    );
+  }) || null;
+}
+
+async function createWooOrderFromCheckoutInternal(source: CheckoutOrderSource, options: {
   gopayPayment?: GoPayPayment;
   customerNote?: string;
   waitForEmail?: boolean;
@@ -645,6 +682,48 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
   };
 }
 
+export async function createWooOrderFromCheckout(source: CheckoutOrderSource, options: {
+  gopayPayment?: GoPayPayment;
+  customerNote?: string;
+  waitForEmail?: boolean;
+  sendConfirmationEmail?: boolean;
+} = {}): Promise<WooOrderCreationResult> {
+  const key = `woo-order-${source.orderNumber || source.paymentId || "unknown"}`;
+  const result = await withOrderIdempotency(key, async () => {
+    const existing = await findExistingWooOrder(source);
+    if (existing?.id) {
+      return {
+        ok: true,
+        status: 200,
+        payload: {
+          created: false,
+          orderId: Number(existing.id),
+          orderNumber: String(existing.number || existing.id),
+        },
+        createdAt: new Date().toISOString(),
+      };
+    }
+
+    const created = await createWooOrderFromCheckoutInternal(source, options);
+    return {
+      ok: true,
+      status: 201,
+      payload: {
+        created: true,
+        orderId: created.orderId,
+        orderNumber: created.orderNumber,
+      },
+      createdAt: new Date().toISOString(),
+    };
+  });
+
+  return {
+    created: Boolean(result.payload.created),
+    orderId: Number(result.payload.orderId || 0),
+    orderNumber: String(result.payload.orderNumber || ""),
+  };
+}
+
 export async function savePendingGoPayOrder(source: CheckoutOrderSource) {
   if (!source.paymentId) throw new Error("Chýba GoPay paymentId pre uloženie objednávky.");
   await ensureStoreDir();
@@ -730,6 +809,9 @@ async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
     {
       gopayPayment: payment,
       customerNote: "Objednávka vytvorená automaticky po úspešnej GoPay platbe.",
+      // Potvrdzovací e-mail vlastní asynchrónna fronta. Pri súbehu notify +
+      // fronta by sa inak mohol odoslať dvakrát.
+      sendConfirmationEmail: false,
     }
   );
 
@@ -744,7 +826,7 @@ async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
   await savePendingGoPayOrder(updated);
 
   return {
-    created: true,
+    created: result.created,
     orderId: result.orderId,
     orderNumber: result.orderNumber,
   };
