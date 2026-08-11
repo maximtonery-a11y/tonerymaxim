@@ -177,13 +177,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
       'Disallow: /ucet/',
       'Disallow: /kosik',
       'Disallow: /pokladna',
-      'Disallow: /*?*',
     ];
-    // Uvádzame vyhľadávacie a používateľské AI crawlery výslovne. Všeobecné
-    // pravidlo User-agent: * ich síce povoľuje tiež, explicitné skupiny však
-    // odstraňujú nejednoznačnosť pre služby, ktoré vyhodnocujú iba vlastnú
-    // skupinu pravidiel. Súkromné a transakčné časti ostávajú chránené.
-    const aiUserAgents = [
+    const publicCrawlers = [
+      '*',
       'ClaudeBot',
       'Claude-User',
       'Claude-SearchBot',
@@ -196,16 +192,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
       'Applebot-Extended',
       'meta-externalagent',
     ];
-    const publicRules = (userAgent: string) => [
-      `User-agent: ${userAgent}`,
+    const crawlerRules = publicCrawlers.flatMap((crawler) => [
+      `User-agent: ${crawler}`,
       'Allow: /',
       ...paginationAllow,
       ...commonDisallow,
       '',
-    ];
+    ]);
     const body = [
-      ...publicRules('*'),
-      ...aiUserAgents.flatMap(publicRules),
+      ...crawlerRules,
       ...(noIndex ? [] : [`Sitemap: ${PRODUCTION_ORIGIN}/sitemap.xml`]),
       '',
     ].join('\n');
