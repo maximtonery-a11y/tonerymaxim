@@ -179,21 +179,33 @@ export const onRequest = defineMiddleware(async (context, next) => {
       'Disallow: /pokladna',
       'Disallow: /*?*',
     ];
+    // Uvádzame vyhľadávacie a používateľské AI crawlery výslovne. Všeobecné
+    // pravidlo User-agent: * ich síce povoľuje tiež, explicitné skupiny však
+    // odstraňujú nejednoznačnosť pre služby, ktoré vyhodnocujú iba vlastnú
+    // skupinu pravidiel. Súkromné a transakčné časti ostávajú chránené.
+    const aiUserAgents = [
+      'ClaudeBot',
+      'Claude-User',
+      'Claude-SearchBot',
+      'OAI-SearchBot',
+      'ChatGPT-User',
+      'GPTBot',
+      'PerplexityBot',
+      'Perplexity-User',
+      'Google-Extended',
+      'Applebot-Extended',
+      'meta-externalagent',
+    ];
+    const publicRules = (userAgent: string) => [
+      `User-agent: ${userAgent}`,
+      'Allow: /',
+      ...paginationAllow,
+      ...commonDisallow,
+      '',
+    ];
     const body = [
-      'User-agent: *',
-      'Allow: /',
-      ...paginationAllow,
-      ...commonDisallow,
-      '',
-      'User-agent: OAI-SearchBot',
-      'Allow: /',
-      ...paginationAllow,
-      ...commonDisallow,
-      '',
-      'User-agent: GPTBot',
-      'Allow: /',
-      ...paginationAllow,
-      ...commonDisallow,
+      ...publicRules('*'),
+      ...aiUserAgents.flatMap(publicRules),
       ...(noIndex ? [] : [`Sitemap: ${PRODUCTION_ORIGIN}/sitemap.xml`]),
       '',
     ].join('\n');
