@@ -91,6 +91,21 @@ function increase(stats: MerchantFeedStats, reason: string): void {
   stats.excluded[reason] = (stats.excluded[reason] || 0) + 1;
 }
 
+function normalizedProductName(value: unknown): string {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+export function excludedChiplessCompatibleProduct(product: TmProduct): boolean {
+  if (product.product_type_key !== "compatible") return false;
+  const name = normalizedProductName(product.name);
+  return /\bno\s*chip\b/.test(name) || /\bbez\s+(?:cipu|chipu)\b/.test(name);
+}
+
 function productTypeName(productType: MerchantProductType, materialType: MerchantMaterialType): string {
   const type = {
     compatible: "Kompatibilné",
@@ -127,13 +142,15 @@ export function buildMerchantFeed(
   generatedAt: string,
   config: MerchantFeedConfig = merchantFeedConfig(),
 ): MerchantFeedBuild {
-  const eligibleCandidates = sourceProducts.filter((product) => (
+  const merchantSourceProducts = sourceProducts.filter((product) => !excludedChiplessCompatibleProduct(product));
+  const chiplessCompatibleProducts = sourceProducts.length - merchantSourceProducts.length;
+  const eligibleCandidates = merchantSourceProducts.filter((product) => (
     product.product_type_key === "compatible"
     || product.product_type_key === "original"
     || product.product_type_key === "renovated"
     || product.product_type_key === "product"
   ));
-  const transformed = buildMerchantProducts(sourceProducts, config.origin);
+  const transformed = buildMerchantProducts(merchantSourceProducts, config.origin);
   const stats: MerchantFeedStats = {
     sourceProducts: sourceProducts.length,
     eligibleCandidates: eligibleCandidates.length,
@@ -146,6 +163,7 @@ export function buildMerchantFeed(
     withBrandAndMpn: 0,
     withFreeShipping: 0,
   };
+  if (chiplessCompatibleProducts) stats.excluded.compatible_without_chip = chiplessCompatibleProducts;
 
   const products = transformed.filter((product) => {
     if (!product.id || !product.slug || product.name.length < 5) {
