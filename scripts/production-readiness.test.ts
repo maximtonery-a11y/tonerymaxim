@@ -144,14 +144,15 @@ test("mobilné a zákaznícke funkcie sa nesmú pri ďalšom nasadení vrátiť 
 
 test("Google meranie pokrýva celý nákupný lievik bez dvojitého purchase", async () => {
   const middleware = await readFile(new URL("../src/middleware.ts", import.meta.url), "utf8");
+  const header = await readFile(new URL("../src/components/Header.astro", import.meta.url), "utf8");
   const ecommerce = await readFile(new URL("../public/tm-ecommerce.js", import.meta.url), "utf8");
   const cart = await readFile(new URL("../src/scripts/cart.js", import.meta.url), "utf8");
   const confirmation = await readFile(new URL("../src/pages/platba-dokoncena.astro", import.meta.url), "utf8");
 
-  assert.match(middleware, /ECOMMERCE_TAG/);
-  assert.match(middleware, /html\.includes\('\/tm-ecommerce\.js'\)/);
+  assert.doesNotMatch(middleware, /await\s+response\.text/);
+  assert.match(header, /src="\/tm-ecommerce\.js"/);
   assert.ok(
-    middleware.indexOf("html.includes('/tm-google-tags.js')") < middleware.indexOf("html.includes('/tm-ecommerce.js')"),
+    header.indexOf('src="/tm-google-tags.js"') < header.indexOf('src="/tm-ecommerce.js"'),
     "Google tag musí byť inicializovaný pred e-commerce udalosťami",
   );
   assert.match(ecommerce, /add_to_cart/);

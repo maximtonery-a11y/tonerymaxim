@@ -17,8 +17,6 @@ import {
 const PRODUCTION_ORIGIN = 'https://www.tonerymaxim.sk';
 const PRODUCTION_HOSTS = new Set(['tonerymaxim.sk', 'www.tonerymaxim.sk']);
 const NOINDEX_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
-const ANALYTICS_TAG = '<script src="/tm-analytics.js" defer></script>';
-const ECOMMERCE_TAG = '<script src="/tm-ecommerce.js" defer></script>';
 const PRIVATE_NOINDEX_PATHS = new Set([
   '/kosik',
   '/pokladna',
@@ -31,28 +29,6 @@ const PRIVATE_NOINDEX_PATHS = new Set([
 
 function isNoIndexHost(hostname: string): boolean {
   return NOINDEX_HOSTS.has(hostname.toLowerCase());
-}
-
-function shouldInjectAnalytics(pathname: string): boolean {
-  return !pathname.startsWith('/api/')
-    && !pathname.startsWith('/admin/')
-    && !isPrivateNoIndexPath(pathname);
-}
-
-function optionalGoogleTag(): string {
-  const id = String(
-    process.env.PUBLIC_GOOGLE_TAG_ID ||
-      import.meta.env.PUBLIC_GOOGLE_TAG_ID ||
-      process.env.PUBLIC_GTM_ID ||
-      import.meta.env.PUBLIC_GTM_ID ||
-      'G-F8E3LFM3WJ',
-  )
-    .trim()
-    .toUpperCase();
-
-  return /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(id)
-    ? `<script src="/tm-google-tags.js" data-google-tag-id="${id}" defer></script>`
-    : '';
 }
 
 function isPrivateNoIndexPath(pathname: string): boolean {
@@ -234,25 +210,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     });
   }
 
-  const html = await response.text();
   if (isPublicCacheablePage(request, url, response)) {
-    // HTML obsahuje hashované odkazy na CSS/JS konkrétneho Astro buildu.
-    // Cloudflare preto nesmie po nasadení podávať staré HTML, ktoré odkazuje
-    // na už neexistujúce assety predchádzajúceho kontajnera.
-    headers.set('Cache-Control', 'public, max-age=0, s-maxage=0, no-cache, must-revalidate');
+    headers.set('Cache-Control', 'public, max-age=0, s-maxage=30, must-revalidate');
   }
-  const googleTag = optionalGoogleTag();
-  const tags = [
-    shouldInjectAnalytics(url.pathname) && !html.includes('/tm-analytics.js') ? ANALYTICS_TAG : '',
-    !googleTag || html.includes('/tm-google-tags.js') ? '' : googleTag,
-    html.includes('/tm-ecommerce.js') ? '' : ECOMMERCE_TAG,
-  ]
-    .filter(Boolean)
-    .join('\n');
-  const withAnalytics = tags ? html.replace('</body>', `${tags}\n</body>`) : html;
-
-  headers.delete('content-length');
-  return new Response(withAnalytics, {
+  return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
     headers,

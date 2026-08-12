@@ -96,6 +96,7 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
           if (!response.ok || !result.ok) throw new Error(result.error || "Prihlásenie zlyhalo.");
 
           showMessage("Prihlásenie prebehlo úspešne. Presmerovávam...", "success");
+          try { sessionStorage.removeItem("tm_header_account_v1"); } catch {}
           window.location.href = result.redirect || "/ucet";
         } catch (error) {
           showMessage(error instanceof Error ? error.message : "Prihlásenie zlyhalo.");

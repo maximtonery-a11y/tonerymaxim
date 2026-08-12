@@ -1,6 +1,20 @@
 ---
 import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
 import TrustBar from "./TrustBar.astro";
+
+const privateNoIndexPaths = new Set([
+  "/kosik", "/pokladna", "/platba-dokoncena", "/prihlasenie", "/registracia",
+  "/zabudnute-heslo", "/reset-hesla",
+]);
+const pathname = Astro.url.pathname;
+const includeAnalytics = !privateNoIndexPaths.has(pathname)
+  && !pathname.startsWith("/ucet")
+  && !pathname.startsWith("/admin");
+const googleTagId = String(
+  process.env.PUBLIC_GOOGLE_TAG_ID || import.meta.env.PUBLIC_GOOGLE_TAG_ID
+    || process.env.PUBLIC_GTM_ID || import.meta.env.PUBLIC_GTM_ID || "G-F8E3LFM3WJ",
+).trim().toUpperCase();
+const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
 ---
 
 <header class="site-header">
@@ -120,6 +134,9 @@ import TrustBar from "./TrustBar.astro";
 
   <TrustBar />
 </header>
+{includeAnalytics && <script src="/tm-analytics.js" defer></script>}
+{includeGoogleTag && <script src="/tm-google-tags.js" data-google-tag-id={googleTagId} defer></script>}
+<script src="/tm-ecommerce.js" defer></script>
 <script is:inline>
   (() => {
     const RETRY_PARAM = '__tm_assets_retry';
@@ -222,23 +239,38 @@ body.has-add-cart-drawer { overflow: hidden; }
   async function updateHeaderAccountState() {
     const links = document.querySelectorAll('.account-link');
     if (!links.length) return;
-    try {
-      const response = await fetch('/api/auth/me', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' });
-      const data = await response.json().catch(() => ({}));
-      const customer = data?.customer;
-      if (!response.ok || !data?.ok || !customer) throw new Error('not logged');
+    const cacheKey = 'tm_header_account_v1';
+    const render = (customer) => {
+      if (!customer) {
+        links.forEach((link) => {
+          link.setAttribute('href', '/prihlasenie');
+          link.textContent = 'Účet';
+          link.setAttribute('aria-label', 'Prihlásenie alebo účet');
+        });
+        return;
+      }
       const first = String(customer.first_name || customer.billing?.first_name || customer.username || customer.email || '').trim().split(/\s+/)[0] || 'Môj účet';
       links.forEach((link) => {
         link.setAttribute('href', '/ucet');
         link.textContent = `Účet: ${first}`;
         link.setAttribute('aria-label', 'Môj účet');
       });
+    };
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null');
+      if (cached && Number(cached.expiresAt) > Date.now()) {
+        render(cached.customer || null);
+        return;
+      }
+      const response = await fetch('/api/auth/me', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' });
+      const data = await response.json().catch(() => ({}));
+      const customer = data?.customer;
+      if (!response.ok || !data?.ok || !customer) throw new Error('not logged');
+      sessionStorage.setItem(cacheKey, JSON.stringify({ customer, expiresAt: Date.now() + 300000 }));
+      render(customer);
     } catch {
-      links.forEach((link) => {
-        if (link.getAttribute('href') === '/ucet') return;
-        link.setAttribute('href', '/prihlasenie');
-        link.textContent = 'Účet';
-      });
+      sessionStorage.setItem(cacheKey, JSON.stringify({ customer: null, expiresAt: Date.now() + 30000 }));
+      render(null);
     }
   }
 

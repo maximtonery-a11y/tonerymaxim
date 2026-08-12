@@ -206,13 +206,20 @@ const shippingLogos = [
   }
 
   async function loadFooterHeurekaStats() {
+    const cacheKey = "tm_heureka_stats_v1";
     try {
+      const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
+      if (cached && Date.now() < Number(cached.expiresAt || 0) && cached.data) {
+        updateFooterHeureka(cached.data);
+        return;
+      }
       const response = await fetch("/api/heureka-reviews", {
         headers: { Accept: "application/json" },
         cache: "default",
       });
       const data = await response.json();
       updateFooterHeureka(data);
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ data, expiresAt: Date.now() + 1800000 })); } catch {}
     } catch (error) {
       // Zostanú zobrazené posledné overené hodnoty a recenzie uložené v HTML.
     }
