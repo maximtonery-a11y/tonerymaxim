@@ -155,11 +155,14 @@ test("Google meranie pokrýva celý nákupný lievik bez dvojitého purchase", a
     header.indexOf('src="/tm-google-tags.js"') < header.indexOf('src="/tm-ecommerce.js"'),
     "Google tag musí byť inicializovaný pred e-commerce udalosťami",
   );
+  assert.match(ecommerce, /view_item/);
+  assert.match(ecommerce, /tm-product-initial-data/);
   assert.match(ecommerce, /add_to_cart/);
   assert.match(ecommerce, /begin_checkout/);
   assert.match(ecommerce, /purchase/);
   assert.match(ecommerce, /transaction_id/);
   assert.match(ecommerce, /tm_ga4_purchase_/);
+  assert.doesNotMatch(ecommerce, /dataLayer\.push\(Object\.assign\(\{ event: name \}/);
   assert.match(cart, /tmTrackCartAdd/);
   assert.match(confirmation, /tmTrackPurchase/);
 });

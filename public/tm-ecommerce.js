@@ -33,9 +33,26 @@
 
   function emit(name, params) {
     params = Object.assign({ currency: CURRENCY }, params || {});
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', name, params);
+      return;
+    }
     window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push(Object.assign({ event: name }, params));
-    if (typeof window.gtag === 'function') window.gtag('event', name, params);
+    window.dataLayer.push({ event: name, ecommerce: params });
+  }
+
+  function viewItem() {
+    if (!/^\/produkt\//.test(location.pathname)) return;
+    var node = document.getElementById('tm-product-initial-data');
+    if (!node) return;
+    var raw = null;
+    try { raw = JSON.parse(node.textContent || 'null'); } catch (_) { return; }
+    var product = item(raw, 1);
+    if (!product.item_id) return;
+    emit('view_item', {
+      value: Math.round(product.price * 100) / 100,
+      items: [product]
+    });
   }
 
   window.tmTrackEcommerce = function (name, params) {
@@ -82,7 +99,12 @@
     emit('begin_checkout', { value: valueOf(list), items: list });
   }
 
+  function trackPageEcommerce() {
+    viewItem();
+    beginCheckout();
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', beginCheckout, { once: true });
-  } else beginCheckout();
+    document.addEventListener('DOMContentLoaded', trackPageEcommerce, { once: true });
+  } else trackPageEcommerce();
 })();
