@@ -977,6 +977,17 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       });
   }
 
+  function isPrinterRelatedProduct(product) {
+    if (getPrinters(product).length) return true;
+    const type = String(product?.product_type_key || "").toLowerCase();
+    if (["compatible", "original", "renovated"].includes(type)) return true;
+    const categories = Array.isArray(product?.categories)
+      ? product.categories.map((category) => `${category?.name || ""} ${category?.slug || ""}`).join(" ")
+      : "";
+    const text = `${product?.name || ""} ${product?.slug || ""} ${product?.product_type_label || ""} ${product?.product_type_detail_label || ""} ${categories}`.toLowerCase();
+    return /\b(toner|tonery|atrament|náplň|napln|kazeta|cartridge|optick[ýy]\s+valec|fotovalec|drum|fuser|zapekac)/i.test(text);
+  }
+
   function printerProductsUrl(printer) {
     const clean = normalizePrinter(printer);
     const brands = [
@@ -1081,6 +1092,9 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const originalName = product.name && product.name !== title ? product.name : "";
     return `
       <article class="mini-product accessory-mini product" data-related-id="${esc(product.id || product.sku || product.slug)}">
+        <a class="mini-img accessory-product-image" href="${esc(getProductUrl(product))}">
+          <img src="${esc(productImageSrc(product.image || product.images?.[0] || "", product))}" alt="${esc(title)}" loading="lazy" decoding="async">
+        </a>
         <div class="mini-copy">
           <span class="mini-badge">DOPLNKOVÝ PRODUKT</span>
           <a class="mini-title" href="${esc(getProductUrl(product))}">${esc(title)}</a>
@@ -1183,16 +1197,20 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     return pickAlternativesByType(all, 3);
   }
 
-  async function findAccessories() {
+  async function findAccessories(currentProduct) {
     const queries = [
-      { search: "Kancelársky papier A4 80g 500", title: "Kancelársky papier" },
-      { search: "pákový šanón", title: "Pákový šanón" },
-      { search: "roller", title: "Roller" },
+      { search: "Kancelársky papier A4 80g 500", title: "Kancelársky papier", match: /kancel[aá]rsky\s+papier|papier\s+a4/i },
+      { search: "pákový šanón", title: "Pákový šanón", match: /p[aá]kov[yý]\s+[sš]an[oó]n/i },
+      { search: "roller", title: "Roller", match: /\broller\b|frixion/i },
     ];
     const out = [];
+    const currentId = String(currentProduct?.id || currentProduct?.sku || currentProduct?.slug || "");
     for (const query of queries) {
       const products = await fetchProductsBySearch(query.search, 18);
-      const picked = products.find((item) => Number(item.price || 0) > 0) || products[0];
+      const picked = products.find((item) => {
+        const itemId = String(item?.id || item?.sku || item?.slug || "");
+        return itemId !== currentId && Number(item.price || 0) > 0 && query.match.test(`${item.name || ""} ${item.slug || ""}`);
+      });
       if (picked && !out.some((existing) => String(existing.id) === String(picked.id))) {
         out.push({ ...picked, tm_accessory_title: query.title });
       }
@@ -1219,9 +1237,10 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const root = document.querySelector("[data-product-root]");
     if (!root) return;
 
+    const printerRelated = isPrinterRelatedProduct(currentProduct);
     const [accessories, alternatives] = await Promise.all([
-      findAccessories(),
-      findAlternatives(currentProduct),
+      findAccessories(currentProduct),
+      printerRelated ? findAlternatives(currentProduct) : Promise.resolve([]),
     ]);
 
     const accessoriesRoot = root.querySelector("[data-accessories]");
@@ -1254,6 +1273,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const productWarrantyValue = productWarranty(product);
     const priceWithoutVat = Number(product.price || 0) / 1.23;
     const printers = getPrinters(product);
+    const printerRelated = isPrinterRelatedProduct(product);
 
     root.className = `tm-detail product-theme-${theme.key}`;
     root.setAttribute("aria-busy", "false");
@@ -1287,11 +1307,11 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
           <p class="summary-subtitle">${esc(product.product_type_detail_label || product.description || "Spotrebný materiál pre vašu tlačiareň.")}</p>
 
-          <div class="compat-preview">
+          ${printerRelated ? `<div class="compat-preview">
             <span>Kompatibilné s</span>
             <strong>${esc(compatibilitySummary(product))}</strong>
             ${printers.length ? `<button type="button" data-show-compatible>Zobraziť všetky kompatibilné modely ›</button>` : ""}
-          </div>
+          </div>` : ""}
 
           <div class="chips chips-inline">
             <span class="chip chip-color">${colorEmoji(productColor)} ${esc(productColor)}</span>
@@ -1386,7 +1406,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
       ${productSafetyHtml(product)}
 
-      <section class="compat-section compat-section-modern" id="compatible-printers">
+      ${printerRelated ? `<section class="compat-section compat-section-modern" id="compatible-printers">
         <div class="section-head compat-section-head">
           <div>
             <span class="section-eyebrow">Jednoduchý výber podľa tlačiarne</span>
@@ -1395,15 +1415,15 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
           <p>${printers.length ? `Produkt je vhodný pre ${printers.length} modelov tlačiarní.` : "Kompatibilita bude doplnená."}</p>
         </div>
         ${compatibilityNavigationHtml(product)}
-      </section>
+      </section>` : ""}
 
       <section class="related-section related-section-stacked">
-        <div class="related-column related-column-alternatives">
+        ${printerRelated ? `<div class="related-column related-column-alternatives">
           <div class="related-title-row"><h2>Alternatívy k produktu</h2><span>Porovnajte dostupné varianty</span></div>
           <div class="alternative-grid" data-alternatives>
             <p class="related-loading">Načítavam skutočné alternatívy…</p>
           </div>
-        </div>
+        </div>` : ""}
 
         <div class="related-column related-column-accessories">
           <div class="related-title-row"><h2>Často kupované spolu</h2><span>Praktické doplnky k objednávke</span></div>
@@ -1413,7 +1433,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         </div>
       </section>
 
-      <div class="compat-modal" data-compat-modal hidden>
+      ${printerRelated ? `<div class="compat-modal" data-compat-modal hidden>
         <div class="compat-modal-card">
           <div class="compat-modal-head">
             <h2>Všetky kompatibilné modely tlačiarní</h2>
@@ -1422,7 +1442,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
           <p>Kliknutím na model otvoríte výpis produktov pre danú tlačiareň.</p>
           ${printersListHtml(product)}
         </div>
-      </div>
+      </div>` : ""}
 
       <div class="description-modal" data-description-modal hidden>
         <div class="description-modal-card">
