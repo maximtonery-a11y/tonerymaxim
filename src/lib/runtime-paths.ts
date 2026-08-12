@@ -31,5 +31,8 @@ export const TM_CACHE_ROOT = resolve(
     || (persistentDataRoot ? join(persistentDataRoot, 'product-cache') : '')
     || (process.platform === 'win32'
       ? join(process.cwd(), '.tm-cache')
-      : existingOrDefault('/app/tm-cache', join(process.cwd(), '.tm-cache'))),
+      : existingOrDefault(
+          '/app/.tm-data/product-cache',
+          existingOrDefault('/app/data/product-cache', existingOrDefault('/app/tm-cache', join(process.cwd(), '.tm-cache'))),
+        )),
 );
