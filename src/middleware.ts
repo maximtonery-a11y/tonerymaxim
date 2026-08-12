@@ -3,7 +3,6 @@ import { ensureEmailQueueStarted } from './lib/email-queue';
 import { ensureAsyncOrderQueueStarted } from './lib/async-order-queue';
 import { authSecret } from './lib/runtime-secret';
 import { persistenceSecret } from './lib/secure-persistence';
-import { ensureProductsCacheWarmStarted } from './lib/tm-products-cache';
 import {
   bodyTooLarge,
   rateLimitFor,
@@ -129,7 +128,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (backgroundWorkersEnabled()) {
     ensureEmailQueueStarted();
     ensureAsyncOrderQueueStarted();
-    ensureProductsCacheWarmStarted();
   }
 
   const { request, url } = context;

@@ -397,20 +397,9 @@
     document.querySelectorAll("form.search, form.catalog-search, [data-smart-search]").forEach(installSmartSearch);
   }
 
-  function warmServerIndex() {
-    if (window.__TM_SMART_SEARCH_WARM_REQUESTED__) return;
-    window.__TM_SMART_SEARCH_WARM_REQUESTED__ = true;
-    fetch("/api/smart-search?q=__tm_warm__", {
-      headers: { Accept: "application/json" },
-      priority: "low",
-    }).catch(() => undefined);
-  }
-
   window.tmInitSmartSearch = init;
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 
-  if ("requestIdleCallback" in window) window.requestIdleCallback(warmServerIndex, { timeout: 800 });
-  else window.setTimeout(warmServerIndex, 250);
 })();

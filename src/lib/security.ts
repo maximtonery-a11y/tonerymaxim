@@ -19,8 +19,10 @@ const buckets = new Map<string, Bucket>();
 const RATE_STATE_PATH = join(TM_DATA_ROOT, 'security', 'rate-limit.json');
 let rateStateLoaded = false;
 let rateStateLock: Promise<void> = Promise.resolve();
+let rateStateTimer: ReturnType<typeof setTimeout> | undefined;
 const events: SecurityEvent[] = [];
 const MAX_EVENTS = 300;
+const RATE_STATE_FLUSH_MS = 5_000;
 
 const RATE_RULES: Array<{ match: RegExp; methods?: string[]; rule: RateRule }> = [
   // Prihlásenie: dostatočná rezerva pre reálnych zákazníkov aj firemné siete,
@@ -79,11 +81,32 @@ async function loadPersistentBuckets(): Promise<void> {
   rateStateLoaded = true;
 }
 
-function persistBuckets(): void {
-  const snapshot = Object.fromEntries([...buckets.entries()].filter(([, value]) => value.resetAt > Date.now()));
-  rateStateLock = rateStateLock.then(() => writeSignedJson(RATE_STATE_PATH, snapshot)).catch((error) => {
+function flushBuckets(): void {
+  if (rateStateTimer) clearTimeout(rateStateTimer);
+  rateStateTimer = undefined;
+  rateStateLock = rateStateLock.then(async () => {
+    const now = Date.now();
+    for (const [key, value] of buckets) {
+      if (value.resetAt <= now) buckets.delete(key);
+    }
+    const snapshot = Object.fromEntries(buckets.entries());
+    await writeSignedJson(RATE_STATE_PATH, snapshot);
+  }).catch((error) => {
     console.error('[TM security] rate-limit persistence failed:', error?.message || error);
   });
+}
+
+function persistBuckets(immediate = false): void {
+  // Verejné GET endpointy vyhľadávania môžu dostať veľa požiadaviek počas
+  // písania. Ich stav zapisujeme najviac raz za päť sekúnd, nie pri každom
+  // znaku. Citlivé mutácie (login, checkout...) zostávajú zapísané okamžite.
+  if (immediate) {
+    flushBuckets();
+    return;
+  }
+  if (rateStateTimer) return;
+  rateStateTimer = setTimeout(flushBuckets, RATE_STATE_FLUSH_MS);
+  rateStateTimer.unref?.();
 }
 
 function env(name: string): string {
@@ -130,12 +153,12 @@ export async function rateLimitFor(path: string, method: string, request: Reques
 
   if (!current || current.resetAt <= now) {
     buckets.set(key, { count: 1, resetAt: now + matched.rule.windowMs });
-    persistBuckets();
+    persistBuckets(method !== 'GET');
     return { ok: true };
   }
 
   current.count += 1;
-  persistBuckets();
+  persistBuckets(method !== 'GET');
   if (current.count <= matched.rule.limit) return { ok: true };
 
   const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
