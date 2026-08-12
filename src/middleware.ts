@@ -237,8 +237,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const html = await response.text();
-  if (isPublicCacheablePage(request, url, response) && !headers.has('cache-control')) {
-    headers.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600');
+  if (isPublicCacheablePage(request, url, response)) {
+    // HTML obsahuje hashované odkazy na CSS/JS konkrétneho Astro buildu.
+    // Cloudflare preto nesmie po nasadení podávať staré HTML, ktoré odkazuje
+    // na už neexistujúce assety predchádzajúceho kontajnera.
+    headers.set('Cache-Control', 'public, max-age=0, s-maxage=0, no-cache, must-revalidate');
   }
   const googleTag = optionalGoogleTag();
   const tags = [

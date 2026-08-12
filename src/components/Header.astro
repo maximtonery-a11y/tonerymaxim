@@ -120,6 +120,39 @@ import TrustBar from "./TrustBar.astro";
 
   <TrustBar />
 </header>
+<script is:inline>
+  (() => {
+    const RETRY_PARAM = '__tm_assets_retry';
+    const retryUrl = new URL(window.location.href);
+
+    function cleanRetryParameter() {
+      if (!retryUrl.searchParams.has(RETRY_PARAM)) return;
+      retryUrl.searchParams.delete(RETRY_PARAM);
+      history.replaceState(history.state, '', `${retryUrl.pathname}${retryUrl.search}${retryUrl.hash}`);
+    }
+
+    window.addEventListener('load', () => {
+      window.setTimeout(() => {
+        const failedStyles = [...document.querySelectorAll('link[rel="stylesheet"]')]
+          .some((link) => !link.sheet);
+
+        if (!failedStyles) {
+          cleanRetryParameter();
+          return;
+        }
+
+        const retryKey = `tm_asset_retry:${location.pathname}`;
+        const lastRetry = Number(sessionStorage.getItem(retryKey) || 0);
+        if (Date.now() - lastRetry < 120000) return;
+
+        sessionStorage.setItem(retryKey, String(Date.now()));
+        const next = new URL(window.location.href);
+        next.searchParams.set(RETRY_PARAM, String(Date.now()));
+        window.location.replace(next.toString());
+      }, 500);
+    }, { once: true });
+  })();
+</script>
 <style is:global>
 .add-cart-drawer[hidden] { display: none !important; }
 .add-cart-drawer { position: fixed; inset: 0; z-index: 2147483000; font-family: inherit; }

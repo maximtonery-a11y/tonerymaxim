@@ -44,7 +44,7 @@ const BRAND_SLUGS: Record<string, string> = {
 type PrinterItem = { title: string; brand: string; product_count: number; url: string };
 
 const globalStore = globalThis as typeof globalThis & {
-  __TM_PRINTERS_INDEX__?: { generatedAt: string; items: PrinterItem[] };
+  __TM_PRINTERS_INDEX__?: Map<string, { generatedAt: string; items: PrinterItem[] }>;
 };
 
 function cleanBrand(value: string) {
@@ -66,51 +66,61 @@ function printerBrand(printer: string) {
   return BRANDS.find((brand) => text.includes(normalize(brand))) || "";
 }
 
-type PrinterAccumulator = PrinterItem & { productKeys: Set<string> };
-
-export function buildPrinterIndex(products: any[]) {
-  const map = new Map<string, PrinterAccumulator>();
+export function buildPrinterIndex(products: any[], selectedBrand = "") {
+  const map = new Map<string, PrinterItem>();
   for (const product of products) {
-    const productKey = String(product?.id || product?.sku || product?.slug || product?.name || "");
+    // Jeden produkt môže mať rovnaký model zapísaný vo viacerých poliach alebo
+    // vo viacerých variantoch. Deduplikujeme ho iba počas spracovania daného
+    // produktu; množiny ID pre tisíce modelov nesmieme držať trvalo v RAM.
+    const productFamilies = new Map<string, { title: string; brand: string }>();
     for (const printer of productPrinterValues(product)) {
       const title = String(printer || "").replace(/\s+/g, " ").trim();
       if (!title) continue;
+      const detectedBrand = printerBrand(title);
+      if (selectedBrand && detectedBrand !== selectedBrand) continue;
       const consumableFamily = consumablePrinterFamilyKey(title);
       const key = consumableFamily ? `consumable-family:${consumableFamily}` : compactKey(title);
+      const current = productFamilies.get(key);
+      if (!current || compactKey(title).length < compactKey(current.title).length) {
+        productFamilies.set(key, { title, brand: detectedBrand });
+      }
+    }
+
+    for (const [key, printer] of productFamilies) {
       const existing = map.get(key);
       if (existing) {
-        existing.productKeys.add(productKey);
-        existing.product_count = existing.productKeys.size;
+        existing.product_count += 1;
 
         // Ako názov rodiny ponechaj základný model bez koncovky výbavy.
         // Napr. Phaser 3020 má prednosť pred 3020B a 3020BI.
-        if (compactKey(title).length < compactKey(existing.title).length) {
-          existing.title = title;
-          existing.url = `/produkty?printer=${encodeURIComponent(title)}`;
+        if (compactKey(printer.title).length < compactKey(existing.title).length) {
+          existing.title = printer.title;
+          existing.url = `/produkty?printer=${encodeURIComponent(printer.title)}`;
         }
         continue;
       }
       map.set(key, {
-        title,
-        brand: printerBrand(title),
+        title: printer.title,
+        brand: printer.brand,
         product_count: 1,
-        url: `/produkty?printer=${encodeURIComponent(title)}`,
-        productKeys: new Set([productKey]),
+        url: `/produkty?printer=${encodeURIComponent(printer.title)}`,
       });
     }
   }
 
   return [...map.values()]
-    .map(({ productKeys: _productKeys, ...item }) => item)
     .sort((a, b) => a.title.localeCompare(b.title, "sk", { numeric: true, sensitivity: "base" }));
 }
 
-function getPrinterIndex(cache: any) {
-  const current = globalStore.__TM_PRINTERS_INDEX__;
+function getPrinterIndex(cache: any, brand = ""): PrinterItem[] {
+  const indexes = globalStore.__TM_PRINTERS_INDEX__ || new Map();
+  globalStore.__TM_PRINTERS_INDEX__ = indexes;
+  const indexKey = brand || "__all__";
+  const current = indexes.get(indexKey);
   if (current && current.generatedAt === cache.generated_at) return current.items;
 
-  const items = buildPrinterIndex(cache.products);
-  globalStore.__TM_PRINTERS_INDEX__ = { generatedAt: cache.generated_at, items };
+  const items = buildPrinterIndex(cache.products, brand);
+  indexes.set(indexKey, { generatedAt: cache.generated_at, items });
   return items;
 }
 
@@ -123,7 +133,7 @@ export const GET: APIRoute = async ({ url }) => {
     const compactQ = compactKey(q);
 
     const cache = await getProductsCache();
-    const printers = getPrinterIndex(cache)
+    const printers = getPrinterIndex(cache, brand)
       .filter((printer) => !brand || normalize(printer.brand || printer.title).includes(normalize(brand)))
       .filter((printer) => !q || normalize(printer.title).includes(normalizedQ) || compactKey(printer.title).includes(compactQ))
       .slice(0, limit);
