@@ -42,17 +42,27 @@
   }
 
   function viewItem() {
-    if (!/^\/produkt\//.test(location.pathname)) return;
+    if (!/^\/produkt\//.test(location.pathname)) return false;
     var node = document.getElementById('tm-product-initial-data');
-    if (!node) return;
+    if (!node) return false;
     var raw = null;
-    try { raw = JSON.parse(node.textContent || 'null'); } catch (_) { return; }
+    try { raw = JSON.parse(node.textContent || 'null'); } catch (_) { return false; }
     var product = item(raw, 1);
-    if (!product.item_id) return;
+    if (!product.item_id) return false;
+
+    // One view_item per product page in this tab. The load fallback below only
+    // retries pages where the first DOM-ready attempt could not read product data.
+    var key = 'tm_ga4_view_item_' + String(product.item_id).replace(/[^a-zA-Z0-9_-]/g, '');
+    try {
+      if (sessionStorage.getItem(key) === location.pathname) return true;
+      sessionStorage.setItem(key, location.pathname);
+    } catch (_) {}
+
     emit('view_item', {
       value: Math.round(product.price * 100) / 100,
       items: [product]
     });
+    return true;
   }
 
   window.tmTrackEcommerce = function (name, params) {
@@ -107,4 +117,10 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', trackPageEcommerce, { once: true });
   } else trackPageEcommerce();
+
+  // Safe fallback for server-rendered product data that may become readable only
+  // after deferred scripts/assets finish. sessionStorage dedupe prevents duplicates.
+  if (/^\/produkt\//.test(location.pathname)) {
+    window.addEventListener('load', viewItem, { once: true });
+  }
 })();
