@@ -1,0 +1,45 @@
+---
+interface Props { mobile?: boolean }
+const { mobile = false } = Astro.props;
+---
+
+<section class:list={["account-benefits", { "account-benefits--mobile": mobile }]} aria-label="Výhody zákazníckeho účtu">
+  <div class={mobile ? undefined : "wrap"}>
+    <div class="account-benefits-panel">
+      <header><span>Výhody zákazníckeho účtu</span><h2>Nakupujte výhodnejšie a bez opakovaného hľadania</h2></header>
+      <div class="account-benefits-grid">
+        <article><b>5 %</b><div><strong>Zľava po registrácii</strong><small>Platí na prvý nákup počas 30 dní.</small></div></article>
+        <article><b>7 %</b><div><strong>Odmena za každý nákup</strong><small>Hodnota nákupu sa vám vráti v bodoch na ďalší nákup.</small></div></article>
+        <article><b aria-hidden="true">▤</b><div><strong>Uložené tlačiarne</strong><small>Správne náplne nájdete nabudúce okamžite.</small></div></article>
+        <article><b aria-hidden="true">♡</b><div><strong>Uložené tonery</strong><small>Obľúbený produkt objednáte znova pár kliknutiami.</small></div></article>
+      </div>
+      <div class="account-benefits-actions"><a href="/registracia">Vytvoriť účet a získať 5 %</a><a href="/vernostny-program">Ako fungujú odmeny <span aria-hidden="true">→</span></a></div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .account-benefits { padding:12px 0 26px; background:#fff; }
+  .account-benefits-panel { padding:26px; border:1px solid #cfe3f3; border-radius:26px; background:linear-gradient(135deg,#eef9ff 0%,#fff 48%,#fff8e6 100%); box-shadow:0 18px 45px rgba(7,27,58,.08); }
+  header { text-align:center; } header span { color:#0878b7; font-size:12px; font-weight:950; letter-spacing:.06em; text-transform:uppercase; }
+  h2 { margin:7px 0 20px; color:#071b3a; font-size:clamp(23px,2vw,31px); line-height:1.12; letter-spacing:-.6px; }
+  .account-benefits-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+  article { min-width:0; display:grid; grid-template-columns:48px minmax(0,1fr); gap:12px; align-items:center; padding:15px; border:1px solid rgba(215,229,241,.9); border-radius:18px; background:rgba(255,255,255,.88); }
+  article b { width:48px; height:48px; display:grid; place-items:center; border-radius:15px; background:#071b3a; color:#fff; font-size:18px; font-weight:950; }
+  article strong, article small { display:block; } article strong { color:#071b3a; font-size:15px; line-height:1.15; } article small { margin-top:4px; color:#607086; font-size:12px; line-height:1.35; }
+  .account-benefits-actions { display:flex; justify-content:center; align-items:center; gap:18px; margin-top:18px; }
+  .account-benefits-actions a { color:#071b3a; font-size:13px; font-weight:900; text-decoration:none; }
+  .account-benefits-actions a:first-child { min-height:44px; display:inline-flex; align-items:center; padding:0 19px; border-radius:999px; background:#071b3a; color:#fff; }
+  .account-benefits--mobile { padding:0; background:transparent; }
+  @media (min-width:761px) { .account-benefits--mobile { display:none; } }
+  @media (max-width:760px) {
+    .account-benefits:not(.account-benefits--mobile) { display:none; }
+    .account-benefits-panel { margin:0 0 18px; padding:18px 14px; border-radius:22px; }
+    h2 { margin-bottom:14px; font-size:21px; }
+    .account-benefits-grid { grid-template-columns:1fr 1fr; gap:8px; }
+    article { grid-template-columns:38px minmax(0,1fr); gap:8px; padding:10px 8px; border-radius:14px; }
+    article b { width:38px; height:38px; border-radius:12px; font-size:14px; } article strong { font-size:12px; } article small { font-size:10px; }
+    .account-benefits-actions { align-items:stretch; flex-direction:column; gap:10px; margin-top:14px; text-align:center; }
+    .account-benefits-actions a:first-child { justify-content:center; }
+  }
+</style>

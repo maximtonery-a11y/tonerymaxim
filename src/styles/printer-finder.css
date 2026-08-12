@@ -932,39 +932,46 @@
 
   .tm-printer-bottom-search {
     position: fixed;
-    left: 18px;
-    right: 18px;
-    bottom: max(14px, env(safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 950;
+    padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    contain: layout paint;
   }
 
   .tm-printer-bottom-search form {
-    min-height: 74px;
+    width: min(100%, 560px);
+    min-height: 64px;
     display: grid;
-    grid-template-columns: 54px minmax(0, 1fr) 132px;
+    grid-template-columns: 42px minmax(0, 1fr) 96px;
     align-items: center;
-    gap: 10px;
-    padding: 8px 10px 8px 22px;
+    gap: 8px;
+    margin: 0 auto;
+    padding: 8px 10px 8px 18px;
     border: 1px solid #d9e7f4;
     border-radius: 999px;
     background: rgba(255,255,255,.96);
     box-shadow: 0 18px 54px rgba(7,27,58,.15);
-    backdrop-filter: blur(18px);
   }
 
   .tm-printer-bottom-search form > span {
     color: #071b3a;
-    font-size: 48px;
-    line-height: .7;
+    font-size: 40px;
+    line-height: 1;
   }
 
   .tm-printer-bottom-search input {
     min-width: 0;
+    width: 100%;
+    height: 44px;
     border: 0;
     outline: 0;
     background: transparent;
     color: #071b3a;
-    font-size: 23px;
+    font-size: 17px;
     font-weight: 950;
   }
 
@@ -973,12 +980,12 @@
   }
 
   .tm-printer-bottom-search button {
-    height: 58px;
+    height: 50px;
     border: 0;
     border-radius: 999px;
     background: #061b3d;
     color: #ffffff;
-    font-size: 22px;
+    font-size: 16px;
     font-weight: 950;
   }
 

@@ -9,6 +9,7 @@ import Header from "../components/Header.astro";
 import HeroSearch from "../components/HeroSearch.astro";
 import ProductFinder from "../components/ProductFinder.astro";
 import Benefits from "../components/Benefits.astro";
+import AccountBenefits from "../components/AccountBenefits.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
@@ -108,10 +109,12 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
                 type="search"
                 name="s"
                 data-smart-search-input
-                placeholder="Hľadať tlačiareň alebo toner"
+                placeholder="Hľadať toner"
                 aria-label="Hľadať tlačiareň alebo toner"
               />
-              <button type="submit" aria-label="Vyhľadať">›</button>
+              <button type="submit" aria-label="Vyhľadať">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+              </button>
             </form>
 
             <div class="tm-mobile-search-examples" aria-label="Príklady hľadania">
@@ -133,7 +136,9 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
                 </svg>
               </span>
               <strong>Vybrať podľa tlačiarne</strong>
-              <span class="tm-mobile-printer-arrow" aria-hidden="true">›</span>
+              <span class="tm-mobile-printer-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" /></svg>
+              </span>
             </a>
 
             <div class="tm-mobile-trust-row" aria-label="Výhody nákupu">
@@ -173,6 +178,8 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
               </a>
             </div>
 
+            <AccountBenefits mobile />
+
             <section class="tm-mobile-help-card" aria-label="Pomoc s výberom">
               <a class="tm-mobile-help-card-link" href="/kontakt" aria-label="Kontaktujte nás">
                 <img class="tm-mobile-help-card-image" src={tmHelpVisual.src} alt="Potrebujete poradiť? Sme tu pre vás. Kontaktujte nás." loading="lazy" decoding="async" />
@@ -191,6 +198,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
 
         <HeroSearch />
         <ProductFinder />
+        <AccountBenefits />
         <Benefits />
       </main>
 

@@ -23,13 +23,13 @@ function moneyNumber(value: unknown) {
 }
 
 export function pointsFromGross(total: unknown) {
-  return Math.max(0, Math.floor(moneyNumber(total)));
+  return Math.max(0, Math.floor(moneyNumber(total) * 7));
 }
 
 export function loyaltyDiscountFromPoints(points: number) {
   const value = Number(points || 0);
   if (!Number.isFinite(value) || value < 20) return 0;
-  return Math.round(value / 10) / 10;
+  return Math.floor(value) / 100;
 }
 
 export async function syncCustomerLoyaltyPoints(customerId: number) {

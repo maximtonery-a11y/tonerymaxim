@@ -1648,6 +1648,9 @@ button.catalog-filter-chip:hover {
     display: block;
     padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
     background: linear-gradient(180deg, rgba(247,251,255,0) 0%, rgba(247,251,255,.96) 24%, rgba(247,251,255,1) 100%);
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    contain: layout paint;
   }
 
   .catalog-mobile-bottom-search form {

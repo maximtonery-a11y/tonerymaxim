@@ -175,10 +175,19 @@
     border: 0;
     background: transparent;
     color: #071b3a;
-    font-size: 44px;
-    font-weight: 700;
-    line-height: 1;
     cursor: pointer;
+  }
+
+  body.home-page .tm-mobile-hero-search button svg,
+  body.home-page .tm-mobile-printer-arrow svg {
+    width: 28px;
+    height: 28px;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   body.home-page .tm-mobile-search-examples {
@@ -239,10 +248,11 @@
   }
 
   body.home-page .tm-mobile-printer-arrow {
+    width: 30px;
+    height: 44px;
+    display: grid;
+    place-items: center;
     justify-self: end;
-    font-size: 48px;
-    font-weight: 500;
-    line-height: 1;
   }
 
   body.home-page .tm-mobile-trust-row {
