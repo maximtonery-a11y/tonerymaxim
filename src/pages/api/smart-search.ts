@@ -279,6 +279,12 @@ function getSearchIndex(cache: any): SearchIndexCache {
   return nextIndex;
 }
 
+export async function warmSmartSearchIndex() {
+  const cache = await getProductsCache();
+  const index = getSearchIndex(cache);
+  return { generatedAt: index.generatedAt, products: index.items.length, printers: index.printers.length };
+}
+
 function cachedResultKey(generatedAt: string, query: string) {
   return `${generatedAt}:${compactKey(query) || normalize(query)}`;
 }

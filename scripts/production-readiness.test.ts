@@ -168,3 +168,11 @@ test("Google meranie pokrýva celý nákupný lievik bez dvojitého purchase", a
   assert.match(cart, /tmTrackCartAdd/);
   assert.match(confirmation, /tmTrackPurchase/);
 });
+
+test("readiness zahreje smart-search index pred prijatím návštevnosti", async () => {
+  const readiness = await readFile(new URL("../src/pages/api/readiness.ts", import.meta.url), "utf8");
+  assert.match(readiness, /warmSmartSearchIndex/);
+  assert.doesNotMatch(readiness, /127\.0\.0\.1|localhost/);
+  assert.match(readiness, /search_warm:\s*searchWarm/);
+  assert.match(readiness, /const ready = catalogReady && searchWarm/);
+});

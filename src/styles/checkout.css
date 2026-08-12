@@ -786,6 +786,7 @@ body.has-dpd-modal {
   }
 }
 
+
 /* TM Update 054 – výber uloženej dodacej adresy v pokladni */
 .checkout-saved-addresses{margin:18px 0;padding:16px;border:1px solid #d7e4f2;border-radius:18px;background:#f8fbff}
 .checkout-saved-addresses[hidden]{display:none!important}

@@ -637,6 +637,14 @@ function formatMoney(value) {
           <a class="btn-secondary" href="/kosik">Do košíka</a>
           <button class="btn-link" type="button" data-add-cart-close>Pokračovať v nákupe</button>
         </div>
+        <section class="tm-drawer-benefits" aria-label="Výhody registrácie">
+          <h3>Výhody registrácie</h3>
+          <div><b>5 %</b><span><strong>Zľava za novú registráciu</strong><small>Uvítacia zľava na prvý nákup.</small></span></div>
+          <div><b>7 %</b><span><strong>Odmena za každú objednávku</strong><small>Po odoslaní objednávky získate 7 % z jej hodnoty na ďalší nákup.</small></span></div>
+          <div><b>★</b><span><strong>Vernostný program</strong><small>Vernostné body sú samostatná odmena navyše.</small></span></div>
+          <div><b>♡</b><span><strong>Vaše tlačiarne a tonery</strong><small>Uložte si ich do účtu a nabudúce ich nájdete rýchlejšie.</small></span></div>
+          <a href="/vyhody-registracie">Pozrieť všetky výhody →</a>
+        </section>
       </aside>
     `;
     document.body.appendChild(drawer);

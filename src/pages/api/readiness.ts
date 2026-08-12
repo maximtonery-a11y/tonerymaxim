@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { readProductsCache } from '../../lib/tm-products-cache';
+import { warmSmartSearchIndex } from './smart-search';
 import {
   normalizedCompletenessRatio,
   productCompletenessRatio,
@@ -23,10 +24,19 @@ export const GET: APIRoute = async () => {
     completenessRatio: completenessTarget,
   });
   const ratio = productCompletenessRatio(total, reported);
-  const generated = Date.parse(String(cache?.generated_at || ""));
+  const generated = Date.parse(String(cache?.generated_at || ''));
   const maxAgeMs = Math.max(60 * 60_000, Number(process.env.WOO_READINESS_MAX_CACHE_AGE_MS || import.meta.env.WOO_READINESS_MAX_CACHE_AGE_MS || 36 * 60 * 60_000));
   const fresh = Number.isFinite(generated) && Date.now() - generated <= maxAgeMs;
-  const ready = Boolean(cache && total >= expected && ratio >= completenessTarget && fresh);
+  const catalogReady = Boolean(cache && total >= expected && ratio >= completenessTarget && fresh);
+
+  // Search index sa zostaví ešte počas readiness kontroly, nie pri prvom zákazníkovi.
+  // Pri rovnakej generated_at sa warm-up v tomto Node procese vykoná iba raz.
+  const searchWarm = catalogReady
+    ? await warmSmartSearchIndex()
+        .then((warm) => warm.generatedAt === String(cache?.generated_at || ''))
+        .catch(() => false)
+    : false;
+  const ready = catalogReady && searchWarm;
 
   return new Response(JSON.stringify({
     ok: ready,
@@ -37,14 +47,19 @@ export const GET: APIRoute = async () => {
     woo_reported_total: reported,
     completeness_ratio: Math.round(ratio * 10_000) / 10_000,
     cache_fresh: fresh,
+    search_warm: searchWarm,
     generated_at: cache?.generated_at || null,
-    error: ready ? null : 'Produktová cache nie je úplná, aktuálna alebo nedosahuje očakávaný počet produktov.',
+    error: ready
+      ? null
+      : !catalogReady
+        ? 'Produktová cache nie je úplná, aktuálna alebo nedosahuje očakávaný počet produktov.'
+        : 'Vyhľadávací index ešte nie je pripravený.',
   }), {
     status: ready ? 200 : 503,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store',
-      ...(ready ? {} : { 'Retry-After': '15' }),
+      ...(ready ? {} : { 'Retry-After': '5' }),
     },
   });
 };

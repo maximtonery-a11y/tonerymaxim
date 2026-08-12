@@ -804,6 +804,15 @@
   }
 }
 
+/* Výhody registrácie pri nadpise košíka – iba desktop. */
+.cart-heading-row { display:grid; grid-template-columns:minmax(0,1fr) 430px; gap:28px; align-items:center; margin-bottom:26px; }
+.cart-heading-row .cart-heading { margin:0; }
+.cart-registration-benefits { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.cart-registration-benefits a { display:grid; grid-template-columns:38px 1fr; gap:9px; align-items:center; min-height:55px; padding:9px 11px; border:1px solid #dce8f5; border-radius:14px; background:#f7fbff; color:#183454; font-size:11px; font-weight:850; line-height:1.25; text-decoration:none; }
+.cart-registration-benefits b { display:grid; width:38px; height:38px; place-items:center; border-radius:11px; background:#e6f2ff; color:#0864c7; font-size:14px; }
+.cart-registration-benefits a:hover { border-color:#9fc9ef; background:#f0f8ff; }
+@media (max-width:900px) { .cart-heading-row { display:block; margin-bottom:0; } .cart-registration-benefits { display:none; } }
+
 .add-cart-drawer[hidden] { display: none; }
 .add-cart-drawer { position: fixed; inset: 0; z-index: 9999; }
 .add-cart-backdrop { position: absolute; inset: 0; background: rgba(2, 15, 40, .34); backdrop-filter: blur(3px); }

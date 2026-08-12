@@ -1,0 +1,40 @@
+---
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import "../styles/footer.css";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Výhody registrácie | ToneryMaxim.sk</title>
+    <meta name="description" content="Získajte 5 % zľavu za registráciu, odmenu 7 % na ďalší nákup, vernostné body a možnosť uložiť si tlačiarne a tonery." />
+  </head>
+  <body>
+    <div class="page benefits-page">
+      <Header />
+      <main class="benefits-wrap">
+        <header class="benefits-hero">
+          <span>Váš zákaznícky účet</span>
+          <h1>Výhody registrácie</h1>
+          <p>Registrácia vám zjednoduší ďalšie nákupy a prinesie zľavy aj samostatné vernostné odmeny.</p>
+        </header>
+        <section class="benefits-grid">
+          <article><b>5 %</b><div><h2>Zľava za novú registráciu</h2><p>Po vytvorení zákazníckeho účtu získate uvítaciu zľavu 5 % na svoj prvý nákup.</p></div></article>
+          <article><b>7 %</b><div><h2>Odmena na ďalší nákup</h2><p>Po odoslaní každej objednávky získate odmenu vo výške 7 % z jej hodnoty, ktorú využijete pri ďalšom nákupe.</p></div></article>
+          <article><b>★</b><div><h2>Samostatný vernostný program</h2><p>Vernostné body sa evidujú oddelene od 7 % odmeny. V účte uvidíte ich stav aj dostupnú vernostnú zľavu.</p></div></article>
+          <article><b>♡</b><div><h2>Uložené tlačiarne a tonery</h2><p>Uložte si používané tlačiarne a obľúbené tonery. Pri ďalšej objednávke ich nájdete rýchlo a bez opakovaného hľadania.</p></div></article>
+        </section>
+        <section class="benefits-cta"><div><h2>Vytvorte si účet</h2><p>Registrácia je rýchla a všetky výhody budete mať prehľadne na jednom mieste.</p></div><a href="/registracia">Zaregistrovať sa</a></section>
+      </main>
+      <Footer />
+      <FloatingAdvisor />
+    </div>
+  </body>
+</html>
+<style>
+  .benefits-page{background:linear-gradient(180deg,#f3f8ff 0,#fff 520px);color:#071d41}.benefits-wrap{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:58px 0 80px}.benefits-hero{max-width:780px;margin-bottom:34px}.benefits-hero>span{color:#0872d8;font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.benefits-hero h1{margin:9px 0 14px;font-size:clamp(38px,6vw,62px);line-height:1}.benefits-hero p{margin:0;color:#52657d;font-size:18px;line-height:1.65}.benefits-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.benefits-grid article{display:grid;grid-template-columns:70px 1fr;gap:20px;padding:28px;border:1px solid #dce8f5;border-radius:22px;background:#fff;box-shadow:0 14px 40px rgba(8,35,72,.06)}.benefits-grid article>b{display:grid;width:70px;height:70px;place-items:center;border-radius:20px;background:#e8f4ff;color:#0864c7;font-size:22px}.benefits-grid h2{margin:3px 0 9px;font-size:21px}.benefits-grid p{margin:0;color:#5a6d84;line-height:1.6}.benefits-cta{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:24px;padding:28px 32px;border-radius:22px;background:#071d41;color:#fff}.benefits-cta h2{margin:0 0 6px}.benefits-cta p{margin:0;color:#cbd8e8}.benefits-cta a{flex:0 0 auto;padding:14px 22px;border-radius:13px;background:#fff;color:#071d41;font-weight:900;text-decoration:none}@media(max-width:720px){.benefits-wrap{padding:34px 0 56px}.benefits-grid{grid-template-columns:1fr}.benefits-grid article{grid-template-columns:52px 1fr;padding:20px;gap:14px}.benefits-grid article>b{width:52px;height:52px;border-radius:15px;font-size:17px}.benefits-grid h2{font-size:18px}.benefits-cta{align-items:stretch;flex-direction:column;padding:23px}.benefits-cta a{text-align:center}}
+</style>
