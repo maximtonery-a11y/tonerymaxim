@@ -64,6 +64,34 @@
       "Canon PIXMA MX495",
       "Canon imagePROGRAF iPF8300",
     ],
+    Xerox: [
+      "Xerox WorkCentre 6515",
+      "Xerox Phaser 6510",
+      "Xerox VersaLink C405",
+      "Xerox VersaLink C400",
+      "Xerox C315",
+      "Xerox C310",
+      "Xerox WorkCentre 6605",
+      "Xerox Phaser 6600",
+      "Xerox C235",
+      "Xerox C230",
+      "Xerox Phaser 3020",
+      "Xerox WorkCentre 3025",
+    ],
+    Samsung: [
+      "Samsung SL-M2026W",
+      "Samsung SL-M2070W",
+      "Samsung Xpress SL-C430W",
+      "Samsung Xpress SL-C480W",
+      "Samsung Xpress C410W",
+      "Samsung Xpress C460FW",
+      "Samsung CLP-365",
+      "Samsung CLX-3305",
+      "Samsung CLP-320",
+      "Samsung CLX-3185",
+      "Samsung Xpress M2825",
+      "Samsung Xpress M2875",
+    ],
   };
 
   const normalize = (value) => String(value || "")
@@ -73,6 +101,16 @@
     .replace(/[\u0300-\u036f]/g, "");
 
   const compactKey = (value) => normalize(value).replace(/[^a-z0-9]/g, "");
+
+  function samsungFamilyKey(value) {
+    const key = compactKey(value);
+    if (!key.startsWith("samsung")) return "";
+    let model = key.slice("samsung".length)
+      .replace(/^(?:multixpress|proxpress|xpress)/, "")
+      .replace(/^sl/, "");
+    if (!/\d/.test(model)) return "";
+    return model.replace(/(?:series|fdw|ndw|fnw|dn|dw|fd|fw|fn|nd|nw|w|n|f|d)$/, "");
+  }
 
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char]));
@@ -143,6 +181,32 @@
     [compactKey("Brother MFC-J4510DW")]: "/printer-images/brother/mfc-j4510dw.webp",
     [compactKey("Brother MFC-J4610DW")]: "/printer-images/brother/mfc-j4610dw.webp",
     [compactKey("Brother MFC-J4710DW")]: "/printer-images/brother/mfc-j4710dw.webp",
+
+    [compactKey("Xerox WorkCentre 6515")]: "/printer-images/xerox/xerox-workcentre-6515.webp",
+    [compactKey("Xerox Phaser 6510")]: "/printer-images/xerox/xerox-phaser-6510.webp",
+    [compactKey("Xerox VersaLink C405")]: "/printer-images/xerox/xerox-versalink-c405.webp",
+    [compactKey("Xerox VersaLink C400")]: "/printer-images/xerox/xerox-versalink-c400.webp",
+    [compactKey("Xerox C315")]: "/printer-images/xerox/xerox-c315.webp",
+    [compactKey("Xerox C310")]: "/printer-images/xerox/xerox-c310.webp",
+    [compactKey("Xerox WorkCentre 6605")]: "/printer-images/xerox/xerox-workcentre-6605.webp",
+    [compactKey("Xerox Phaser 6600")]: "/printer-images/xerox/xerox-phaser-6600.webp",
+    [compactKey("Xerox C235")]: "/printer-images/xerox/xerox-c235.webp",
+    [compactKey("Xerox C230")]: "/printer-images/xerox/xerox-c230.webp",
+    [compactKey("Xerox Phaser 3020")]: "/printer-images/xerox/xerox-phaser-3020.webp",
+    [compactKey("Xerox WorkCentre 3025")]: "/printer-images/xerox/xerox-workcentre-3025.webp",
+
+    [compactKey("Samsung SL-M2026W")]: "https://cdn.cs.1worldsync.com/13/d8/13d82067-c91a-420b-9cb1-a86fe1b4db20.jpg",
+    [compactKey("Samsung SL-M2070W")]: "https://image.alza.cz/products/PN072x2/PN072x2.jpg",
+    [compactKey("Samsung Xpress SL-C430W")]: "https://www.bedienungsanleitung-pdf.de/p/pictures1/samsung-xpress-c430w-farblaserdrucker-wlan-nfc-3016.jpg",
+    [compactKey("Samsung Xpress SL-C480W")]: "https://www.printerland.co.za/images/Product_LargeImages/C480W-large.jpg",
+    [compactKey("Samsung Xpress C410W")]: "https://media.officedepot.com/images/f_auto%2Cq_auto%2Ce_sharpen%2Ch_450/products/774866/774866_o52/774866",
+    [compactKey("Samsung Xpress C460FW")]: "https://www.amatteroffax.com/assets/images/defaultproducts/L010-022.jpg",
+    [compactKey("Samsung CLP-365")]: "https://awella.ru/pic-samsung/clp-365-1.jpg",
+    [compactKey("Samsung CLX-3305")]: "https://www.drtusz.com/ndcimages/zdjecia/baza/urzadzenia/samsung-clx-3305-20322020512.jpg",
+    [compactKey("Samsung CLP-320")]: "https://www.printer-care.de/media/images/org/samsung-clp-320_200SAGO-CLP-320_1.jpg",
+    [compactKey("Samsung CLX-3185")]: "https://cdn.lesnumeriques.com/optim/produits/36/11106/36_11106_2__400_400.jpg",
+    [compactKey("Samsung Xpress M2825")]: "https://www.bhphotovideo.com/images/images2500x2500/samsung_sl_m2825dw_xac_xpress_m2825dw_monochrome_laser_1235343.jpg",
+    [compactKey("Samsung Xpress M2875")]: "https://www.hpmarket.cz/library/configuration/tiskarny/Samsung-SL-M2875ND_0b.jpg",
   };
 
   function printerImage(title) {
@@ -219,7 +283,12 @@
       const used = new Set();
       const preferred = popularByBrand[brand] || [];
       const preferredItems = preferred
-        .map((title) => printers.find((printer) => compactKey(printer.title) === compactKey(title)))
+        .map((title) => {
+          const family = samsungFamilyKey(title);
+          const printer = printers.find((item) => compactKey(item.title) === compactKey(title))
+            || (family ? printers.find((item) => samsungFamilyKey(item.title) === family) : null);
+          return printer ? { ...printer, title } : null;
+        })
         .filter(Boolean);
 
       const fallbackItems = [...printers]

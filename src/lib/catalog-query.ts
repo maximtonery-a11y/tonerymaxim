@@ -1,4 +1,5 @@
 export type CatalogProduct = Record<string, any>;
+import { sameConsumablePrinterFamily } from "./printer-model-family.ts";
 
 function normalize(value: unknown) {
   return String(value || "")
@@ -334,6 +335,11 @@ export function exactPrinterModelMatch(value: unknown, analysis: CatalogQueryAna
     const hasSameBrand = analysis.brands.some((queryBrand) => printerBrands.some((printerBrand) => compactKey(queryBrand) === compactKey(printerBrand)));
     if (!hasSameBrand) return false;
   }
+
+  // Pri Xeroxe koncovky B/BI/N/DN/DNI/V označujú výbavu rovnakého modelu,
+  // nie inú tonerovú rodinu. Dotaz „Xerox Phaser 3020“ preto musí zahrnúť
+  // aj 3020B a 3020BI. Toto pravidlo sa zámerne nevzťahuje na HP/HP+.
+  if (sameConsumablePrinterFamily(analysis.raw, value)) return true;
 
   // Bez rozkladania M652 na všeobecné číslo 652. To je kľúčové, aby sa
   // produktové rodiny a modely tlačiarní navzájom nemiešali.

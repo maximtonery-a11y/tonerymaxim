@@ -1,4 +1,5 @@
 import { normalize, sortProducts, stripHtml, type TmProduct } from "./tm-products-cache";
+import { sameConsumablePrinterFamily } from "./printer-model-family.ts";
 
 export type { TmProduct } from "./tm-products-cache";
 
@@ -188,7 +189,19 @@ export function findPrinterEntity(products: TmProduct[], brandSlug: unknown, mod
   const brand = findBrand(brandSlug);
   const wantedModel = entitySlug(modelSlug);
   if (!brand || !wantedModel) return null;
-  return printerEntities(products).find((entity) => entity.brand.slug === brand.slug && entity.slug === wantedModel) || null;
+  const entities = printerEntities(products);
+  const exact = entities.find((entity) => entity.brand.slug === brand.slug && entity.slug === wantedModel) || null;
+  if (!exact || !["xerox", "samsung"].includes(brand.slug)) return exact;
+
+  const familyProducts = new Map<string, TmProduct>();
+  entities
+    .filter((entity) => entity.brand.slug === brand.slug && sameConsumablePrinterFamily(exact.name, entity.name))
+    .forEach((entity) => entity.products.forEach((product) => {
+      const key = String(product.id || product.slug || product.sku || "");
+      if (key) familyProducts.set(key, product);
+    }));
+
+  return { ...exact, products: sortProducts([...familyProducts.values()]) };
 }
 
 function normalizeOemCode(value: unknown): string {

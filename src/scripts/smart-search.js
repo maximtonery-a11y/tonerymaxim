@@ -263,7 +263,6 @@
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error(data.error || "Vyhľadávanie zlyhalo.");
         sessionWrite(query, data);
-        prefetchCatalog(query);
         return data;
       })
       .finally(() => inflight.delete(key));
@@ -305,12 +304,9 @@
       return;
     }
 
-    // Na ostatných stránkach sa cieľová stránka začne načítavať už počas
-    // zobrazenia našepkávača. Navigácia potom môže použiť HTTP cache.
-    fetch(`/produkty?s=${encodeURIComponent(query)}`, {
-      headers: { Accept: "text/html" },
-      priority: "low",
-    }).catch(() => undefined);
+    // Mimo katalógu pošli iba jeden request: samotnú navigáciu. Prednačítanie
+    // API aj HTML tu kedysi bežalo súčasne s navigáciou a na slabšom serveri
+    // mohlo krátkodobo preťažiť Astro proces, čo proxy zobrazila ako 502.
     window.location.href = `/produkty?s=${encodeURIComponent(query)}`;
   }
 
@@ -336,7 +332,6 @@
 
       const cached = sessionRead(query);
       if (cached) {
-        prefetchCatalog(query);
         renderPanel(panel, cached, query);
         return;
       }
