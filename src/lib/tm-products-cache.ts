@@ -1,6 +1,6 @@
 import { mkdir, open, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { TM_CACHE_ROOT } from './runtime-paths.ts';
+import { TM_PRODUCT_CACHE_ROOT } from './runtime-paths.ts';
 import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, productPrinterValues } from './catalog-query.ts';
 import { normalizedCompletenessRatio, requiredProductCount } from './product-cache-policy.ts';
 import { notifyIndexNowAfterProductSync, type IndexNowResult } from './indexnow.ts';
@@ -27,7 +27,7 @@ type ProductsSyncResult = {
 
 const CACHE_VERSION = 4;
 const LEGACY_CACHE_VERSION = 3;
-const CACHE_DIR = TM_CACHE_ROOT;
+const CACHE_DIR = TM_PRODUCT_CACHE_ROOT;
 const CACHE_FILE = path.join(CACHE_DIR, "products.json");
 const FALLBACK_CACHE_FILES = [
   CACHE_FILE,
