@@ -324,8 +324,41 @@ function queryPrefixes(query: QueryInfo) {
 }
 
 function getCandidateItems(index: SearchIndexCache, query: QueryInfo) {
-  const candidates = new Set<number>();
+  // Pri dotaze „HP M28“, „Brother L2350“, „Canon 054“ atď. nesmie široký
+  // brandový bucket (HP/Canon/Brother) zaliať úzky modelový bucket. Pôvodná
+  // verzia zjednotila oba buckety, narazila na MAX_PREFIX_BUCKET a následne
+  // spustila drahé presné/fuzzy porovnávanie nad celými 7k+ produktmi.
+  // To spôsobovalo 2–2,5 s pri PRVOM unikátnom dotaze, hoci RAM index bol warm.
+  const modelPrefixes = [...new Set(query.modelTokens
+    .map((token) => compactKey(token))
+    .filter((token) => token.length >= 2))];
 
+  if (modelPrefixes.length) {
+    const modelCandidates = new Set<number>();
+    for (const prefix of modelPrefixes) {
+      const bucket = index.prefixMap.get(prefix);
+      if (!bucket) continue;
+      for (const itemIndex of bucket) modelCandidates.add(itemIndex);
+    }
+
+    if (modelCandidates.size) {
+      let items = [...modelCandidates].map((itemIndex) => index.items[itemIndex]).filter(Boolean);
+
+      // Značku používame až ako lacný filter nad úzkym modelovým bucketom.
+      // Ak by historické dáta značku pri produkte nemali, výsledok radšej
+      // ponecháme než aby sme vytvorili false-negative.
+      if (query.brandTokens.length) {
+        const branded = items.filter((item) => query.brandTokens.some((brand) =>
+          item.text.includes(brand) || item.printers.some((printer) => printer.text.includes(brand))
+        ));
+        if (branded.length) items = branded;
+      }
+
+      return items;
+    }
+  }
+
+  const candidates = new Set<number>();
   for (const prefix of queryPrefixes(query)) {
     const bucket = index.prefixMap.get(prefix);
     if (!bucket) continue;
@@ -333,11 +366,9 @@ function getCandidateItems(index: SearchIndexCache, query: QueryInfo) {
   }
 
   if (!candidates.size) return index.items;
-  const items = [...candidates]
-    .map((itemIndex) => index.items[itemIndex])
-    .filter(Boolean);
+  const items = [...candidates].map((itemIndex) => index.items[itemIndex]).filter(Boolean);
 
-  // Ak je bucket príliš široký, pôvodné filtrovanie nad celým indexom dá lepšie výsledky než náhodne orezané kandidáty.
+  // Pri všeobecnom texte bez modelu zachovávame pôvodný bezpečný fallback.
   return items.length >= MAX_PREFIX_BUCKET ? index.items : items;
 }
 
