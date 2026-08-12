@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, open, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TM_CACHE_ROOT } from './runtime-paths.ts';
 import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, productPrinterValues } from './catalog-query.ts';
@@ -13,6 +13,7 @@ type CacheFile = {
   generated_at: string;
   total: number;
   woo_reported_total?: number;
+  details_file?: string;
   products: TmProduct[];
 };
 
@@ -24,7 +25,8 @@ type ProductsSyncResult = {
   indexNow?: IndexNowResult;
 };
 
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 4;
+const LEGACY_CACHE_VERSION = 3;
 const CACHE_DIR = TM_CACHE_ROOT;
 const CACHE_FILE = path.join(CACHE_DIR, "products.json");
 const FALLBACK_CACHE_FILES = [
@@ -77,6 +79,8 @@ const globalStore = globalThis as typeof globalThis & {
   __TM_PRODUCTS_SYNC_PROMISE__?: Promise<ProductsSyncResult>;
   __TM_PRODUCTS_WARM_PROMISE__?: Promise<void>;
   __TM_PRODUCTS_WARM_STARTED_AT__?: number;
+  __TM_PRODUCTS_READ_PROMISE__?: Promise<CacheFile | null>;
+  __TM_PRODUCT_DETAILS_CACHE__?: Map<string, TmProduct>;
 };
 
 const filteredProductsCache = new WeakMap<TmProduct[], Map<string, TmProduct[]>>();
@@ -829,25 +833,123 @@ function parseCacheFile(text: string): CacheFile | null {
     const data = JSON.parse(text) as CacheFile;
     if (
       !data
-      || data.version !== CACHE_VERSION
+      || ![LEGACY_CACHE_VERSION, CACHE_VERSION].includes(data.version)
       || !Array.isArray(data.products)
       || data.products.length < 1
       || Number(data.total || 0) !== data.products.length
     ) return null;
+
+    // Staršie cache súbory obsahujú kompatibilné aliasy ako dve samostatné
+    // JSON polia. Po načítaní zdieľajú jednu hodnotu, čím sa uvoľnia duplicitné
+    // objekty bez zmeny verejného tvaru produktu alebo výsledkov vyhľadávania.
+    for (const product of data.products) compactProductAliases(product);
     return data;
   } catch {
     return null;
   }
 }
 
-export async function readProductsCache(): Promise<CacheFile | null> {
+function runtimeProduct(product: TmProduct): TmProduct {
+  const compact = { ...product };
+  delete compact.description_html;
+  delete compact.short_description_html;
+  delete compact.attributes_all;
+  delete compact.printers;
+  return compact;
+}
+
+function productDetail(product: TmProduct): TmProduct {
+  return {
+    description_html: product.description_html || "",
+    short_description_html: product.short_description_html || "",
+  };
+}
+
+function safeDetailsFile(value: unknown): string {
+  const file = path.basename(String(value || "").trim());
+  return /^product-details-[a-zA-Z0-9._-]+\.ndjson$/.test(file) ? file : "";
+}
+
+async function writeSplitCache(source: CacheFile, oldDetailsFile = ""): Promise<CacheFile> {
+  await mkdir(CACHE_DIR, { recursive: true });
+  const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const detailsFile = `product-details-${stamp}.ndjson`;
+  const detailsPath = path.join(CACHE_DIR, detailsFile);
+  const detailsTmp = `${detailsPath}.tmp`;
+  const cacheTmp = `${CACHE_FILE}.${stamp}.tmp`;
+  const detailLines: string[] = [];
+  let offset = 0;
+
+  const products = source.products.map((product) => {
+    const line = `${JSON.stringify(productDetail(product))}\n`;
+    const length = Buffer.byteLength(line);
+    detailLines.push(line);
+    const compact = runtimeProduct(product);
+    compact._detail_offset = offset;
+    compact._detail_length = length;
+    offset += length;
+    return compact;
+  });
+
+  const next: CacheFile = {
+    ...source,
+    version: CACHE_VERSION,
+    details_file: detailsFile,
+    products,
+  };
+
+  try {
+    await writeFile(detailsTmp, detailLines.join(""), "utf8");
+    await rename(detailsTmp, detailsPath);
+    await writeFile(cacheTmp, JSON.stringify(next), "utf8");
+    await rename(cacheTmp, CACHE_FILE);
+  } catch (error) {
+    await rm(detailsTmp, { force: true }).catch(() => undefined);
+    await rm(cacheTmp, { force: true }).catch(() => undefined);
+    throw error;
+  }
+
+  const previous = safeDetailsFile(oldDetailsFile);
+  if (previous && previous !== detailsFile) {
+    await rm(path.join(CACHE_DIR, previous), { force: true }).catch(() => undefined);
+  }
+  return next;
+}
+
+function sameStringArray(left: unknown, right: unknown): boolean {
+  if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
+  return left.every((value, index) => String(value ?? '') === String(right[index] ?? ''));
+}
+
+function sameAttributeArray(left: unknown, right: unknown): boolean {
+  if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
+  return left.every((value, index) => JSON.stringify(value) === JSON.stringify(right[index]));
+}
+
+function compactProductAliases(product: TmProduct): void {
+  if (sameAttributeArray(product.attributes, product.attributes_all)) {
+    product.attributes_all = product.attributes;
+  }
+  if (sameStringArray(product.compatible_printers, product.printers)) {
+    product.printers = product.compatible_printers;
+  }
+}
+
+async function readProductsCacheInternal(): Promise<CacheFile | null> {
   if (globalStore.__TM_PRODUCTS_FILE_CACHE__) return globalStore.__TM_PRODUCTS_FILE_CACHE__;
 
   for (const file of FALLBACK_CACHE_FILES) {
     try {
       const text = await readFile(file, "utf8");
-      const data = parseCacheFile(text);
+      let data = parseCacheFile(text);
       if (!data) continue;
+      if (data.version === LEGACY_CACHE_VERSION) {
+        try {
+          data = await writeSplitCache(data);
+        } catch (error: any) {
+          console.warn(`[TM product cache] Rozdelenie starej cache zlyhalo, použitá zostáva pôvodná cache: ${error?.message || error}`);
+        }
+      }
       globalStore.__TM_PRODUCTS_FILE_CACHE__ = data;
       return data;
     } catch {
@@ -856,6 +958,18 @@ export async function readProductsCache(): Promise<CacheFile | null> {
   }
 
   return null;
+}
+
+export async function readProductsCache(): Promise<CacheFile | null> {
+  if (globalStore.__TM_PRODUCTS_FILE_CACHE__) return globalStore.__TM_PRODUCTS_FILE_CACHE__;
+  if (globalStore.__TM_PRODUCTS_READ_PROMISE__) return globalStore.__TM_PRODUCTS_READ_PROMISE__;
+  const operation = readProductsCacheInternal();
+  globalStore.__TM_PRODUCTS_READ_PROMISE__ = operation;
+  try {
+    return await operation;
+  } finally {
+    if (globalStore.__TM_PRODUCTS_READ_PROMISE__ === operation) delete globalStore.__TM_PRODUCTS_READ_PROMISE__;
+  }
 }
 
 function parseWooPayload(text: string) {
@@ -1061,7 +1175,7 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
   }
 
   const products = sortProducts(enrichProductsFromRelated(raw.products.map(mapProduct)));
-  const next: CacheFile = {
+  const fullNext: CacheFile = {
     ok: true,
     version: CACHE_VERSION,
     generated_at: new Date().toISOString(),
@@ -1070,15 +1184,7 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
     products,
   };
 
-  await mkdir(CACHE_DIR, { recursive: true });
-  const tmp = `${CACHE_FILE}.${Date.now()}.tmp`;
-  try {
-    await writeFile(tmp, JSON.stringify(next, null, 2), "utf8");
-    await rename(tmp, CACHE_FILE);
-  } catch (error) {
-    await rm(tmp, { force: true }).catch(() => undefined);
-    throw error;
-  }
+  const next = await writeSplitCache(fullNext, current?.details_file);
 
   globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
   const indexNow = await notifyIndexNowAfterProductSync(current?.products || [], products)
@@ -1136,8 +1242,53 @@ export async function getProductFromCache(input: { id?: unknown; slug?: unknown 
   const index = getProductLookupIndex(cache);
   const id = String(input.id || "").trim();
   const slug = String(input.slug || "").trim();
-  const product = (id ? index.byId.get(id) : undefined) || (slug ? index.bySlug.get(slug) : undefined) || null;
+  const compactProduct = (id ? index.byId.get(id) : undefined) || (slug ? index.bySlug.get(slug) : undefined) || null;
+  const product = compactProduct ? await loadProductDetail(cache, compactProduct) : null;
   return { cache, product };
+}
+
+async function loadProductDetail(cache: CacheFile, product: TmProduct): Promise<TmProduct> {
+  const detailsFile = safeDetailsFile(cache.details_file);
+  const offset = Number(product._detail_offset);
+  const length = Number(product._detail_length);
+  const aliases = {
+    attributes_all: Array.isArray(product.attributes) ? product.attributes : [],
+    printers: Array.isArray(product.compatible_printers) ? product.compatible_printers : [],
+  };
+  if (!detailsFile || !Number.isSafeInteger(offset) || offset < 0 || !Number.isSafeInteger(length) || length < 2 || length > 5_000_000) {
+    return { ...product, ...aliases };
+  }
+
+  const cacheKey = `${cache.generated_at}:${product.id || product.slug}`;
+  const detailCache = globalStore.__TM_PRODUCT_DETAILS_CACHE__ || new Map<string, TmProduct>();
+  globalStore.__TM_PRODUCT_DETAILS_CACHE__ = detailCache;
+  const cached = detailCache.get(cacheKey);
+  if (cached) {
+    detailCache.delete(cacheKey);
+    detailCache.set(cacheKey, cached);
+    return cached;
+  }
+
+  let handle: Awaited<ReturnType<typeof open>> | undefined;
+  try {
+    handle = await open(path.join(CACHE_DIR, detailsFile), "r");
+    const buffer = Buffer.allocUnsafe(length);
+    const { bytesRead } = await handle.read(buffer, 0, length, offset);
+    if (bytesRead !== length) throw new Error("Neúplný záznam detailu produktu.");
+    const detail = JSON.parse(buffer.toString("utf8").trim());
+    const merged = { ...product, ...detail, ...aliases };
+    detailCache.set(cacheKey, merged);
+    while (detailCache.size > 100) {
+      const oldest = detailCache.keys().next().value;
+      if (!oldest) break;
+      detailCache.delete(oldest);
+    }
+    return merged;
+  } catch {
+    return { ...product, ...aliases };
+  } finally {
+    await handle?.close().catch(() => undefined);
+  }
 }
 
 export function ensureProductsCacheWarmStarted(): void {

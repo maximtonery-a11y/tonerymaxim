@@ -34,7 +34,6 @@ type SearchIndexCache = {
   items: IndexedProduct[];
   printers: IndexedPrinter[];
   prefixMap: Map<string, number[]>;
-  products: any[];
 };
 
 type QueryInfo = {
@@ -58,12 +57,11 @@ type IndexedProduct = {
   product: any;
   index: number;
   brand: string;
-  searchValue: string;
   text: string;
   compact: string;
   tokens: string[];
   printers: IndexedPrinter[];
-  candidateTokens: string[];
+  candidateTokens?: string[];
 };
 
 type SmartSearchResponse = {
@@ -223,7 +221,6 @@ function makeIndexedProduct(product: any, index: number): IndexedProduct {
     product,
     index,
     brand: productBrand(product),
-    searchValue,
     text: normalize(searchValue),
     compact: compactKey(searchValue),
     tokens,
@@ -246,7 +243,7 @@ function buildPrefixMap(items: IndexedProduct[]) {
   const prefixMap = new Map<string, number[]>();
 
   for (const item of items) {
-    for (const token of item.candidateTokens) {
+    for (const token of item.candidateTokens || []) {
       const compact = compactKey(token);
       if (compact.length < 2) continue;
       const max = Math.min(10, compact.length);
@@ -273,7 +270,10 @@ function getSearchIndex(cache: any): SearchIndexCache {
   }
   const printers = [...printerMap.values()];
   const prefixMap = buildPrefixMap(items);
-  const nextIndex: SearchIndexCache = { generatedAt: cache.generated_at, items, printers, prefixMap, products: items.map((item) => item.product) };
+  // Kandidátske tokeny sú potrebné iba počas zostavenia prefixovej mapy.
+  // Ich ďalšie držanie v RAM zdvojuje časť vyhľadávacieho indexu.
+  for (const item of items) delete item.candidateTokens;
+  const nextIndex: SearchIndexCache = { generatedAt: cache.generated_at, items, printers, prefixMap };
   globalStore.__TM_SMART_SEARCH_INDEX__ = nextIndex;
   resultCache.clear();
   return nextIndex;
