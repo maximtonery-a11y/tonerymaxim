@@ -114,32 +114,72 @@ function priceBucket(price: number): string {
   return "price-30-plus";
 }
 
-function description(product: TmProduct, type: MerchantProductType, material: MerchantMaterialType): string {
-  const supplied = cleanText(stripHtml(
-    product.short_description_html || product.description_html || product.description || "",
-  ), 5_000);
-  if (supplied.length >= 40) return supplied;
-
-  const typeLabel = {
-    compatible: "kompatibilný",
-    original: "originálny",
-    renovated: "renovovaný",
+function productTypeLabel(type: MerchantProductType): string {
+  return {
+    compatible: "Kompatibilný",
+    original: "Originálny",
+    renovated: "Renovovaný",
     product: "",
   }[type];
-  const materialLabel = {
+}
+
+function materialLabel(material: MerchantMaterialType): string {
+  return {
     toner: "toner",
     ink: "atramentová náplň",
     drum: "optický valec",
     component: "spotrebný materiál pre tlačiarne",
   }[material];
+}
+
+function merchantTitle(product: TmProduct, type: MerchantProductType, material: MerchantMaterialType): string {
+  // Pri alternatívach dávame Googlu na začiatok názvu presný OEM kód, pre ktorý
+  // je výrobok určený. OEM kód zostáva iba textovým signálom – neposielame ho
+  // ako MPN/GTIN kompatibilného výrobku.
+  if (type !== "compatible" && type !== "renovated") return cleanText(product.name, 150);
+
+  const sourceName = cleanText(product.name, 150);
+  const brand = cleanText(product.product_brand, 40);
+  const beforeType = sourceName
+    .replace(/\b(?:kompatibiln(?:ý|y|á|a|é|e)|renovovan(?:ý|y|á|a|é|e))\b.*$/i, "")
+    .trim();
+  const withoutBrand = brand && beforeType.toLowerCase().startsWith(brand.toLowerCase())
+    ? beforeType.slice(brand.length).trim()
+    : beforeType;
+  const primary = withoutBrand.match(/^[A-Z0-9][A-Z0-9._/-]*\d[A-Z0-9._/-]*/i)?.[0] || "";
+  const alternate = withoutBrand.match(/\((?:no\.?\s*)?([A-Z0-9][A-Z0-9._/-]*\d[A-Z0-9._/-]*)\)/i)?.[1] || "";
+  if (!primary) return sourceName;
+
+  const codes = unique([primary, alternate], 2).join(" / ");
+  const color = cleanText(product.color || product.farba, 40);
+  return cleanText([
+    `${productTypeLabel(type)} ${materialLabel(material)} pre`,
+    brand,
+    codes,
+    color ? `– ${color}` : "",
+  ].filter(Boolean).join(" "), 150);
+}
+
+function description(product: TmProduct, type: MerchantProductType, material: MerchantMaterialType): string {
+  const shortDescription = cleanText(stripHtml(product.short_description_html || ""), 1_500);
+  const longDescription = cleanText(stripHtml(product.description_html || product.description || ""), 3_000);
   const printers = unique(
     Array.isArray(product.compatible_printers) ? product.compatible_printers : [],
-    5,
+    8,
   );
+  const compatibility = printers.length
+    ? `Určené pre tlačiarne ${printers.join(", ")}.`
+    : "";
+
+  // Description vždy obsahuje názov/OEM kód a kompatibilné tlačiarne. Predtým
+  // sa pri dostatočne dlhom short_description vracal iba všeobecný text
+  // (farba, kapacita, záruka), takže Google strácal hlavný signál kompatibility.
   return cleanText([
     product.name,
-    typeLabel && `${typeLabel} ${materialLabel}`,
-    printers.length ? `Určené pre tlačiarne ${printers.join(", ")}.` : "Spotrebný materiál pre tlačiarne.",
+    `${productTypeLabel(type)} ${materialLabel(material)}`.trim(),
+    compatibility,
+    shortDescription,
+    longDescription,
   ].filter(Boolean).join(". "), 5_000);
 }
 
@@ -192,7 +232,7 @@ export function toMerchantProduct(product: TmProduct, origin: string): MerchantP
 
   return {
     id: stableId(product),
-    name: cleanText(product.name, 150),
+    name: merchantTitle(product, productType, material),
     slug: cleanText(product.slug, 300),
     url: landingPage(origin, product),
     image: images[0] || "",

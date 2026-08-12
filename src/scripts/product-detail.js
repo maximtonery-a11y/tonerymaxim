@@ -1134,6 +1134,15 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     return response.ok && data.ok && Array.isArray(data.products) ? data.products : [];
   }
 
+  async function fetchProductBySlug(slug) {
+    const response = await fetch(`/api/product?slug=${encodeURIComponent(slug)}`, {
+      headers: { Accept: "application/json" },
+      cache: "default",
+    });
+    const data = await response.json().catch(() => ({}));
+    return response.ok && data.ok && data.product ? data.product : null;
+  }
+
   function uniquePushProduct(list, item, currentId = "") {
     const itemId = String(item?.id || item?.sku || item?.slug || "");
     if (!item || !itemId || itemId === currentId) return;
@@ -1199,14 +1208,15 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
   async function findAccessories(currentProduct) {
     const queries = [
-      { search: "Kancelársky papier A4 80g 500", title: "Kancelársky papier", match: /kancel[aá]rsky\s+papier|papier\s+a4/i },
+      { slug: "kancelarsky-papier-a4-80g-500-harkov", title: "Kancelársky papier", match: /kancel[aá]rsky\s+papier|papier\s+a4/i },
       { search: "pákový šanón", title: "Pákový šanón", match: /p[aá]kov[yý]\s+[sš]an[oó]n/i },
       { search: "roller", title: "Roller", match: /\broller\b|frixion/i },
     ];
     const out = [];
     const currentId = String(currentProduct?.id || currentProduct?.sku || currentProduct?.slug || "");
     for (const query of queries) {
-      const products = await fetchProductsBySearch(query.search, 18);
+      const exactProduct = query.slug ? await fetchProductBySlug(query.slug) : null;
+      const products = exactProduct ? [exactProduct] : await fetchProductsBySearch(query.search, 18);
       const picked = products.find((item) => {
         const itemId = String(item?.id || item?.sku || item?.slug || "");
         return itemId !== currentId && Number(item.price || 0) > 0 && query.match.test(`${item.name || ""} ${item.slug || ""}`);
