@@ -103,7 +103,7 @@ export function activeStoredCoupon(coupon: StoredCoupon) {
 export function couponUsageText(coupon: Pick<StoredCoupon, "type" | "scope" | "expiresAt">) {
   if (coupon.type === "thankyou7") return "Platný na ďalšiu objednávku";
   if (coupon.expiresAt) return `Platí do ${new Date(coupon.expiresAt).toLocaleDateString("sk-SK")}`;
-  return coupon.scope === "compatible" ? "Platný na kompatibilné produkty" : "Platný na celý sortiment";
+  return coupon.scope === "compatible" ? "Platný na kompatibilné tonery" : "Platný na celý sortiment";
 }
 
 export async function getBestAutoCoupon(customerId: number | undefined, cart: NormalizedCartItem[]): Promise<CouponResult | null> {
@@ -172,7 +172,7 @@ export async function grantThankYouCoupon(customerId: number | undefined, orderI
   const coupon: StoredCoupon = {
     code: thankYouCouponCode(visibleNumber),
     type: "thankyou7",
-    label: "Zľava 7 % na kompatibilné produkty",
+    label: "Zľava 7 % na kompatibilné tonery",
     percent: 7,
     scope: "compatible",
     status: "active",
@@ -203,13 +203,13 @@ function guestThankYouCouponResult(code: string, cart: NormalizedCartItem[]): Co
   const coupon = { percent: 7, scope: "compatible" as CouponScope };
   const discount = couponDiscount(coupon, cart);
   if (discount <= 0) {
-    return { ok: false, code, reason: "Kupón platí iba na kompatibilné produkty." };
+    return { ok: false, code, reason: "Kupón platí iba na kompatibilné tonery." };
   }
   return {
     ok: true,
     code: normalizeCouponCode(code),
     type: "thankyou7",
-    label: "Zľava 7 % na kompatibilné produkty",
+    label: "Zľava 7 % na kompatibilné tonery",
     percent: 7,
     scope: "compatible",
     discount,
@@ -259,7 +259,7 @@ export async function validateCheckoutCoupon(customerId: number | undefined, raw
       }
       if (!activeStoredCoupon(stored)) return { ok: false, code, reason: "Kupón už expiroval." };
       const discount = couponDiscount(stored, cart);
-      if (discount <= 0) return { ok: false, code, reason: stored.scope === "compatible" ? "Kupón platí iba na kompatibilné produkty." : "Kupón nie je možné použiť na prázdny košík." };
+      if (discount <= 0) return { ok: false, code, reason: stored.scope === "compatible" ? "Kupón platí iba na kompatibilné tonery." : "Kupón nie je možné použiť na prázdny košík." };
       return { ok: true, code: stored.code, type: stored.type, label: stored.label, percent: stored.percent, scope: stored.scope, discount, expiresAt: stored.expiresAt };
     }
   }

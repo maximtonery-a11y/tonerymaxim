@@ -23,7 +23,7 @@ const visibleCoupons = [
   ...activeCoupons.map((coupon) => ({
     code: coupon.code,
     label: coupon.label,
-    detail: `${coupon.scope === "compatible" ? "Na kompatibilné produkty" : "Na celý sortiment"} · ${couponUsageText(coupon)}`,
+    detail: `${coupon.scope === "compatible" ? "Na kompatibilné tonery" : "Na celý sortiment"} · ${couponUsageText(coupon)}`,
     href: coupon.scope === "compatible" ? "/produkty?type=compatible" : "/produkty",
   })),
 ];
@@ -90,7 +90,7 @@ const visibleCoupons = [
           ) : (
             <div class="account-empty-box">
               <strong>Nemáte aktívny kupón.</strong>
-              <p>Nový 7 % kupón na kompatibilné produkty získate po ďalšej objednávke.</p>
+              <p>Nový 7 % kupón na ďalší nákup kompatibilných tonerov získate po dokončení ďalšej objednávky.</p>
             </div>
           )}
         </article>

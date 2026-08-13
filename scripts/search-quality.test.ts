@@ -177,6 +177,69 @@ const okiProducts = [
   },
 ];
 
+const regressionProducts = [
+  {
+    id: 301,
+    name: "HP W1420A (no. 142A) kompatibilný toner",
+    sku: "13276",
+    slug: "hp-w1420a-no-142a-kompatibilny-toner",
+    product_type_key: "compatible",
+    stock_status: "instock",
+    categories: [{ name: "HP tonery", slug: "hp-tonery" }],
+    compatible_printers: ["HP LaserJet M110w", "HP LaserJet MFP M140w"],
+  },
+  {
+    id: 302,
+    name: "HP W1350A (135A) kompatibilný toner",
+    sku: "13313",
+    slug: "hp-w1350a-135a-kompatibilny-toner",
+    product_type_key: "compatible",
+    stock_status: "instock",
+    categories: [{ name: "HP tonery", slug: "hp-tonery" }],
+    compatible_printers: ["HP LaserJet M209dw", "HP LaserJet Pro MFP M234dw"],
+  },
+  {
+    id: 303,
+    name: "HP W1470A (147A) kompatibilný toner",
+    sku: "13274",
+    slug: "hp-w1470a-147a-kompatibilny-toner",
+    product_type_key: "compatible",
+    stock_status: "instock",
+    categories: [{ name: "HP tonery", slug: "hp-tonery" }],
+    compatible_printers: ["HP LaserJet Enterprise M610", "HP LaserJet Enterprise M611"],
+  },
+  {
+    id: 304,
+    name: "Brother TN-2420 kompatibilný toner",
+    sku: "TN2420",
+    slug: "brother-tn-2420-kompatibilny-toner",
+    product_type_key: "compatible",
+    stock_status: "instock",
+    categories: [{ name: "Brother tonery", slug: "brother-tonery" }],
+    compatible_printers: ["Brother HL-L2350DW"],
+  },
+  {
+    id: 305,
+    name: "Brother TN-2421 kompatibilný toner",
+    sku: "TN2421",
+    slug: "brother-tn-2421-kompatibilny-toner",
+    product_type_key: "compatible",
+    stock_status: "instock",
+    categories: [{ name: "Brother tonery", slug: "brother-tonery" }],
+    compatible_printers: ["Brother HL-L2352DW"],
+  },
+  {
+    id: 306,
+    name: "Xerox 106R02773 kompatibilný toner",
+    sku: "106R02773",
+    slug: "xerox-106r02773-kompatibilny-toner",
+    product_type_key: "compatible",
+    stock_status: "instock",
+    categories: [{ name: "Xerox tonery", slug: "xerox-tonery" }],
+    compatible_printers: ["Xerox Phaser 3020B", "Xerox WorkCentre 3025"],
+  },
+];
+
 test("HP 652 nájde iba produktovú rodinu 652 a 652XL", () => {
   const matches = findExactProductIdentityMatches(products, "HP 652");
   assert.deepEqual(matches.map((match) => match.product.id), [1, 2]);
@@ -279,4 +342,23 @@ test("OpenAI odpoveď musí mať povolený stav, odseky a istotu", () => {
     answer: [],
     confidence: 1,
   }), null);
+});
+
+test("HP W1420 je presná OEM rodina a nemieša sa s W1350 ani W1470", () => {
+  assert.deepEqual(
+    findExactProductIdentityMatches(regressionProducts, "HP W1420").map((match) => match.product.id),
+    [301],
+  );
+  assert.deepEqual(filterProducts(regressionProducts, { search: "HP W1420" }).map((product) => product.id), [301]);
+});
+
+test("Brother L2350 a L2352 ostávajú oddelené regionálne modely", () => {
+  assert.deepEqual(findExactPrinterModelMatches(regressionProducts, "Brother HL-L2350DW").map((match) => match.product.id), [304]);
+  assert.deepEqual(findExactPrinterModelMatches(regressionProducts, "Brother HL-L2352DW").map((match) => match.product.id), [305]);
+  assert.deepEqual(findExactProductIdentityMatches(regressionProducts, "TN2421").map((match) => match.product.id), [305]);
+});
+
+test("Xerox 3020 nájde priradený produkt bez zámeny OEM kódu", () => {
+  assert.deepEqual(findExactPrinterModelMatches(regressionProducts, "Xerox Phaser 3020B").map((match) => match.product.id), [306]);
+  assert.deepEqual(findExactProductIdentityMatches(regressionProducts, "106R02773").map((match) => match.product.id), [306]);
 });

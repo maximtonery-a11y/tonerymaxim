@@ -212,6 +212,15 @@ function referenceMatchStrength(reference: string, aliases: Set<string>) {
     if (aliases.has(`${reference}xl`) || aliases.has(`${reference}xxl`)) return 2;
   }
 
+  // OEM rodiny sa často hľadajú bez kapacitnej koncovky: W1420 musí nájsť
+  // W1420A/W1420X/W1420XL, ale nikdy inú číselnú rodinu W1350/W1470.
+  // Ak zákazník koncovku zadá (W1420A), vyžaduje sa už presná zhoda vyššie.
+  if (/^(?=.*[a-z])(?=.*\d)[a-z0-9]+\d$/.test(reference)) {
+    if ([...aliases].some((alias) => /(?:a|x|y|xl|xxl)$/.test(alias) && alias.replace(/(?:a|x|y|xl|xxl)$/, "") === reference)) {
+      return 2;
+    }
+  }
+
   return 0;
 }
 

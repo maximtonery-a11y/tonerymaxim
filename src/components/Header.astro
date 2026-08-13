@@ -240,7 +240,7 @@ body.has-add-cart-drawer { overflow: hidden; }
     const links = document.querySelectorAll('.account-link');
     if (!links.length) return;
     const cacheKey = 'tm_header_account_v1';
-    const render = (customer) => {
+    const render = (customer: any) => {
       if (!customer) {
         links.forEach((link) => {
           link.setAttribute('href', '/prihlasenie');

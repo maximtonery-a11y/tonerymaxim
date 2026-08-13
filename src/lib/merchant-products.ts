@@ -22,6 +22,8 @@ export type MerchantProduct = {
   identifierExists: boolean;
   color: string;
   description: string;
+  oemCodes: string[];
+  excludedDestinations: string[];
   labels: string[];
 };
 
@@ -107,11 +109,46 @@ function productImages(origin: string, product: TmProduct): string[] {
   return unique(source.map((entry: any) => absoluteUrl(origin, entry?.src || entry?.url || entry)), 11);
 }
 
-function priceBucket(price: number): string {
-  if (price < 10) return "price-under-10";
-  if (price < 20) return "price-10-20";
-  if (price < 30) return "price-20-30";
-  return "price-30-plus";
+function attributeValues(product: TmProduct, aliases: string[]): string[] {
+  const wanted = aliases.map(compactKey);
+  const attributes = Array.isArray(product.attributes_all)
+    ? product.attributes_all
+    : Array.isArray(product.attributes)
+      ? product.attributes
+      : [];
+  const found = attributes.find((attribute: any) => {
+    const name = compactKey(attribute?.name || "");
+    const slug = compactKey(attribute?.slug || "");
+    return wanted.includes(name) || wanted.includes(slug);
+  });
+  if (!found) return [];
+  const values = Array.isArray(found.values)
+    ? found.values
+    : Array.isArray(found.options)
+      ? found.options
+      : [found.value || found.option];
+  return unique(values, 10);
+}
+
+function oemCodes(product: TmProduct): string[] {
+  const explicit = attributeValues(product, ["OEM"]);
+  const source = explicit.length ? explicit : [product.name || ""];
+  const codes: string[] = [];
+  for (const value of source) {
+    for (const match of String(value).toUpperCase().matchAll(/\b(?=[A-Z0-9._/-]*\d)[A-Z0-9][A-Z0-9._/-]{2,24}\b/g)) {
+      const code = match[0].replace(/^NO\.?$/i, "").replace(/[.,;:]+$/, "");
+      if (code && !/^\d+(?:[.,]\d+)?$/.test(code)) codes.push(code);
+    }
+  }
+  return unique(codes, 8);
+}
+
+function oemFamilyLabel(codes: string[]): string {
+  const primary = codes[0] || "";
+  if (!primary) return "oem-unclassified";
+  // A/X/XL/Y sú kapacitné varianty tej istej OEM rodiny (W1420A -> W1420).
+  const family = primary.replace(/(?:XL|XXL|[AXY])$/i, "");
+  return `oem-${compactKey(family || primary)}`.slice(0, 100);
 }
 
 function productTypeLabel(type: MerchantProductType): string {
@@ -229,6 +266,7 @@ export function toMerchantProduct(product: TmProduct, origin: string): MerchantP
   const inStock = product.stock_status === "instock" && (!Number.isFinite(stockQuantity) || stockQuantity > 0);
   const images = productImages(origin, product);
   const ids = identifiers(product, productType);
+  const exactOemCodes = oemCodes(product);
 
   return {
     id: stableId(product),
@@ -247,11 +285,15 @@ export function toMerchantProduct(product: TmProduct, origin: string): MerchantP
     identifierExists: ids.identifierExists,
     color: cleanText(product.color || product.farba, 100),
     description: description(product, productType, material),
+    oemCodes: exactOemCodes,
+    // Originály a renovované výrobky ostávajú v bezplatných záznamoch, ale
+    // samotný feed ich už technicky nepustí do platenej Shopping inzercie.
+    excludedDestinations: productType === "compatible" ? [] : ["Shopping_ads"],
     labels: [
       productType,
       material,
-      productType === "compatible" || productType === "renovated" ? "ads-primary" : "ads-review",
-      priceBucket(price),
+      productType === "compatible" ? "ads-compatible" : "organic-only",
+      oemFamilyLabel(exactOemCodes),
       price >= 29 ? "free-shipping" : "paid-shipping",
     ],
   };

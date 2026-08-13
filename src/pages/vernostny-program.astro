@@ -21,7 +21,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <SeoHead
       title="Vernostný program | ToneryMaxim.sk"
-      description="Zbierajte body za objednávky a využite ich ako zľavu pri ďalšom nákupe v e-shope ToneryMaxim.sk."
+      description="Za každé 1 € nákupu získate 1 bod. Za dokončenú objednávku navyše získate 7 % zľavu na ďalší nákup kompatibilných tonerov."
       canonical={canonical}
       noindex={noindex}
       jsonLd={breadcrumbJsonLd(SEO_ORIGIN, [
@@ -38,7 +38,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
           active="/vernostny-program"
           eyebrow="Vernostný program"
           title="Odmeňujeme vaše nákupy"
-          intro="Za vybavené objednávky získavate body, ktoré môžete použiť ako zľavu pri ďalšom nákupe."
+          intro="Za každé 1 € nákupu získate 1 bod. Za dokončenú objednávku navyše získate samostatnú 7 % zľavu na ďalší nákup kompatibilných tonerov."
         >
           <section class="loyalty-public-grid">
             <article class="loyalty-public-card">
@@ -49,13 +49,20 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
             <article class="loyalty-public-card">
               <span>2</span>
               <h2>Nakupujte a získavajte body</h2>
-              <p>Za každé minuté 1 € z vybavenej objednávky získate 7 bodov.</p>
+              <p>Za každé minuté 1 € z dokončenej objednávky získate 1 bod.</p>
             </article>
             <article class="loyalty-public-card">
               <span>3</span>
               <h2>Premeňte body na zľavu</h2>
-              <p>100 bodov má hodnotu 1 €. Z nákupu tak získate približne 7 % späť na ďalší nákup.</p>
+              <p>100 bodov má hodnotu 1 € zľavy. Body nie sú to isté ako 7 % odmena za dokončenú objednávku.</p>
             </article>
+          </section>
+
+          <section class="loyalty-public-actions">
+            <div>
+              <h2>7 % zľava je samostatná odmena</h2>
+              <p>Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa počíta oddelene od vernostných bodov.</p>
+            </div>
           </section>
 
           <section class="loyalty-public-panel">

@@ -152,6 +152,24 @@ test("Merchant XML obsahuje povinné Google atribúty, dopravu a cache validáci
   assert.match(source, /status: 304/);
 });
 
+test("Merchant feed povoľuje platené Shopping reklamy iba kompatibilným produktom", () => {
+  const products = read("src/lib/merchant-products.ts");
+  const feed = read("src/lib/merchant-feed.ts");
+  assert.match(products, /productType === "compatible" \? \[\] : \["Shopping_ads"\]/);
+  assert.match(products, /productType === "compatible" \? "ads-compatible" : "organic-only"/);
+  assert.doesNotMatch(products, /productType === "compatible" \|\| productType === "renovated" \? "ads-primary"/);
+  assert.match(feed, /g:excluded_destination/);
+});
+
+test("Merchant feed odovzdáva presnú OEM rodinu ako štruktúrovaný signál", () => {
+  const products = read("src/lib/merchant-products.ts");
+  const feed = read("src/lib/merchant-feed.ts");
+  assert.match(products, /function oemCodes/);
+  assert.match(products, /oemFamilyLabel/);
+  assert.match(feed, /g:product_detail/);
+  assert.match(feed, /OEM kód náplne/);
+});
+
 test("Merchant identifikátory nepoužívajú značku tlačiarne ako značku produktu", () => {
   const ads = read("src/lib/ads-products.ts");
   const identifiers = read("src/lib/product-identifiers.ts");
