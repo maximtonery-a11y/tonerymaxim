@@ -11,6 +11,7 @@ import {
   topPrinterLinks,
 } from "../../../lib/seo-catalog";
 import { findPrinterGeoPilot, pilotFaq } from "../../../data/geo-pilot";
+import { geoPrinterPriority } from "../../../data/geo-priorities";
 
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const printer = findPrinterEntity(cache.products, Astro.params.brand, Astro.params.model);
@@ -26,6 +27,7 @@ if (notFound) {
 
 const printerName = printer?.name || "Neznámy model tlačiarne";
 const geoPilot = printer ? findPrinterGeoPilot(printer.name) : undefined;
+const geoPriority = printer ? geoPrinterPriority(printer.slug) : undefined;
 const brandName = printer?.brand.name || "Tlačiareň";
 const canonicalPath = printer
   ? `/tlaciarne/${printer.brand.slug}/${printer.slug}`
@@ -107,6 +109,11 @@ const typeFacts = [
     ...(geoPilot ? pilotFaq(printerName, geoPilot) : []),
   ]}
   contentSections={notFound ? [] : [
+    ...(geoPriority ? [{
+      heading: `Overená kompatibilita pre ${printerName}`,
+      paragraphs: [`Táto prioritná stránka vychádza z aktuálneho produktového katalógu ToneryMaxim.sk. Zobrazuje iba produkty, pri ktorých je presný model ${printerName} uvedený medzi kompatibilnými tlačiarňami.`],
+      bullets: [`Aktuálne priradených produktov: ${stats.total}.`, `Skladom: ${stats.inStock}.`, "Podobné číslo modelu neznamená automaticky rovnaký toner; rozhoduje celý názov modelu a OEM kód."],
+    }] : []),
     ...(geoPilot ? [{
       heading: `Odborné odporúčanie pre ${printerName}`,
       paragraphs: [geoPilot.selection, geoPilot.caution],

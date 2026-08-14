@@ -4,6 +4,20 @@
   var PRIVATE_PATHS = ['/kosik', '/pokladna', '/platba-dokoncena', '/prihlasenie', '/registracia', '/zabudnute-heslo', '/reset-hesla', '/ucet'];
   var started = false;
 
+  function aiSource() {
+    var ref = String(document.referrer || '').toLowerCase();
+    if (/chatgpt\.com|openai\.com/.test(ref)) return 'chatgpt';
+    if (/perplexity\.ai/.test(ref)) return 'perplexity';
+    if (/copilot\.microsoft\.com|bing\.com\/chat/.test(ref)) return 'copilot';
+    if (/gemini\.google\.com|bard\.google\.com/.test(ref)) return 'gemini';
+    if (/claude\.ai|anthropic\.com/.test(ref)) return 'claude';
+    if (/you\.com/.test(ref)) return 'you';
+    if (/phind\.com/.test(ref)) return 'phind';
+    if (/mistral\.ai|chat\.mistral\.ai/.test(ref)) return 'mistral';
+    if (/grok\.com|x\.ai/.test(ref)) return 'grok';
+    return '';
+  }
+
   function consent() {
     try {
       var value = JSON.parse(localStorage.getItem('tm_cookie_consent_v10') || 'null');
@@ -56,7 +70,15 @@
   function start() {
     if (started || !consent() || privatePage()) return;
     started = true;
-    send('pageview');
+    var source = aiSource();
+    send('pageview', source ? { meta: { ai_source: source } } : undefined);
+    if (source && typeof window.gtag === 'function') {
+      window.gtag('event', 'ai_referral_visit', {
+        ai_source: source,
+        page_path: location.pathname,
+        transport_type: 'beacon'
+      });
+    }
     document.addEventListener('click', function (event) {
       var target = event.target && event.target.closest ? event.target.closest('a,button') : null;
       if (!target) return;

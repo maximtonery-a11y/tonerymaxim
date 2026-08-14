@@ -11,6 +11,7 @@ import {
   topOemLinks,
 } from "../../lib/seo-catalog";
 import { findOemGeoPilot, pilotFaq } from "../../data/geo-pilot";
+import { geoOemPriority } from "../../data/geo-priorities";
 
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const oem = findOemEntity(cache.products, Astro.params.code);
@@ -26,6 +27,7 @@ if (notFound) {
 
 const code = oem?.code || String(Astro.params.code || "").toUpperCase();
 const geoPilot = oem ? findOemGeoPilot(oem.code) : undefined;
+const geoPriority = oem ? geoOemPriority(oem.code) : undefined;
 const canonicalPath = oem ? `/oem/${oem.slug}` : Astro.url.pathname;
 const printerFacts = oem?.printers.slice(0, 6) || [];
 const printerLinks = oem ? printerLinksFromNames(cache.products, oem.printers, 16) : [];
@@ -71,6 +73,11 @@ const relatedOemLinks = oem
     ...(geoPilot ? pilotFaq(code, geoPilot) : []),
   ]}
   contentSections={notFound ? [] : [
+    ...(geoPriority ? [{
+      heading: `Overené údaje pre OEM ${code}`,
+      paragraphs: [`OEM rodina ${code} je prioritne kontrolovaná podľa aktuálneho katalógu ToneryMaxim.sk. Na stránke sú produkty, pri ktorých sa presné označenie nachádza v názve alebo produktových údajoch.`],
+      bullets: [`Aktuálne produktov: ${stats.total}.`, `Skladom: ${stats.inStock}.`, `Evidované tlačiarne: ${oem?.printers.length || 0}.`, "Pred objednaním treba potvrdiť celý kód vrátane farebnej alebo kapacitnej koncovky."],
+    }] : []),
     ...(geoPilot ? [{
       heading: `Odborný výber pre OEM ${code}`,
       paragraphs: [geoPilot.selection, geoPilot.caution],
