@@ -10,6 +10,7 @@ import SeoHead from "./SeoHead.astro";
 import CatalogInitialRows from "./CatalogInitialRows.astro";
 import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
 import { catalogStats, collectionJsonLd, type EntityLink, type TmProduct } from "../lib/seo-catalog";
+import { EXPERT_EXPERIENCE, EXPERT_NAME, EXPERT_PATH, expertPersonJsonLd } from "../lib/expert";
 
 type Link = { href: string; label: string };
 type Faq = { question: string; answer: string };
@@ -126,7 +127,9 @@ const expertJsonLd = expertGuide ? {
   inLanguage: "sk-SK",
   author: {
     "@type": "Person",
+    "@id": `${SEO_ORIGIN}${EXPERT_PATH}#person`,
     name: expertGuide.author || "Roman Babčan",
+    url: `${SEO_ORIGIN}${EXPERT_PATH}`,
     jobTitle: "Odborný poradca pre tonery a tlačiarne",
     worksFor: { "@id": `${SEO_ORIGIN}/#organization` },
   },
@@ -134,6 +137,7 @@ const expertJsonLd = expertGuide ? {
 } : null;
 const jsonLd = [
   organizationJsonLd(SEO_ORIGIN),
+  expertPersonJsonLd(SEO_ORIGIN),
   websiteJsonLd(SEO_ORIGIN),
   breadcrumbJsonLd(SEO_ORIGIN, breadcrumbItems),
   collectionJsonLd(SEO_ORIGIN, canonicalPath, heading, description, shownProducts, {
@@ -231,16 +235,16 @@ const jsonLd = [
                 )}
               </article>
               <aside>
-                <strong>{expertGuide.author || "Roman Babčan"}</strong>
+                <strong><a href={EXPERT_PATH}>{expertGuide.author || EXPERT_NAME}</a></strong>
                 <span>odborný garant obsahu</span>
-                <b>{expertGuide.experience || "17+ rokov skúseností"}</b>
+                <b>{expertGuide.experience || EXPERT_EXPERIENCE}</b>
                 <small>Aktualizované {new Intl.DateTimeFormat("sk-SK", { dateStyle: "medium" }).format(new Date(`${expertGuide.updated}T12:00:00Z`))}</small>
               </aside>
             </div>
           </section>
         )}
 
-        <section class="seo-catalog-products">
+        <section class="seo-catalog-products" id="produkty">
           <div class="wrap">
             <div class="seo-section-heading">
               <div>
@@ -322,7 +326,7 @@ const jsonLd = [
           <section class="seo-faq-section">
             <div class="wrap seo-faq-wrap">
               <div>
-                <p class="eyebrow">Overené odpovede</p>
+                <p class="eyebrow">Faktografické odpovede</p>
                 <h2>Najčastejšie otázky</h2>
               </div>
               <div class="seo-faq-list">

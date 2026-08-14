@@ -9,6 +9,7 @@ import SeoHead from "./SeoHead.astro";
 import type { AdviceArticle } from "../data/advice";
 import { adviceArticles } from "../data/advice";
 import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
+import { EXPERT_PATH, expertPersonJsonLd } from "../lib/expert";
 
 interface Props { article: AdviceArticle }
 const { article } = Astro.props;
@@ -19,6 +20,7 @@ const skDate = new Intl.DateTimeFormat("sk-SK", { day: "numeric", month: "long",
 const updatedLabel = skDate.format(new Date(`${article.updated}T12:00:00Z`));
 const jsonLd = [
   organizationJsonLd(origin),
+  expertPersonJsonLd(origin),
   websiteJsonLd(origin),
   breadcrumbJsonLd(origin, [
     { name: "Domov", path: "/" },
@@ -39,7 +41,9 @@ const jsonLd = [
     keywords: article.topics.join(", "),
     author: {
       "@type": "Person",
+      "@id": `${origin}${EXPERT_PATH}#person`,
       name: "Roman Babčan",
+      url: `${origin}${EXPERT_PATH}`,
       jobTitle: "Odborný poradca pre tonery a tlačiarne",
       worksFor: { "@id": `${origin}/#organization` },
     },
@@ -79,7 +83,7 @@ const jsonLd = [
               <h1>{article.title}</h1>
               <p class="advice-lead">{article.description}</p>
               <div class="advice-meta">
-                <span><strong>Roman Babčan</strong>, odborný poradca</span>
+                <span><strong><a href={EXPERT_PATH}>Roman Babčan</a></strong>, odborný poradca</span>
                 <span>17+ rokov skúseností</span>
                 <span>Aktualizované {updatedLabel}</span>
                 <span>{article.readingMinutes} min čítania</span>
@@ -118,7 +122,7 @@ const jsonLd = [
               <div class="advice-author-mark" aria-hidden="true">RB</div>
               <div>
                 <p class="advice-eyebrow">Odborný garant obsahu</p>
-                <h2>Roman Babčan</h2>
+                <h2><a href={EXPERT_PATH}>Roman Babčan</a></h2>
                 <p>Zakladateľ ToneryMaxim.sk a odborný poradca s viac ako 17 rokmi skúseností s tonermi, náplňami, kompatibilitou tlačiarní a riešením problémov pri tlači.</p>
               </div>
             </section>

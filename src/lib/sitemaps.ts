@@ -35,6 +35,7 @@ export const INDEXABLE_STATIC_PATHS = [
   "/doprava-a-platba",
   "/faq",
   "/poradna",
+  "/autor/roman-babcan",
   ...adviceArticles.map((article) => `/poradna/${article.slug}`),
   "/reklamacie",
   "/reklamacia-online",

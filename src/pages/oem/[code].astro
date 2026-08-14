@@ -12,6 +12,7 @@ import {
 } from "../../lib/seo-catalog";
 import { findOemGeoPilot, pilotFaq } from "../../data/geo-pilot";
 import { geoOemPriority } from "../../data/geo-priorities";
+import { benchmarkAnswer, benchmarkForPath, DEFAULT_GEO_GUIDES } from "../../data/geo-benchmark-content";
 
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const oem = findOemEntity(cache.products, Astro.params.code);
@@ -29,6 +30,8 @@ const code = oem?.code || String(Astro.params.code || "").toUpperCase();
 const geoPilot = oem ? findOemGeoPilot(oem.code) : undefined;
 const geoPriority = oem ? geoOemPriority(oem.code) : undefined;
 const canonicalPath = oem ? `/oem/${oem.slug}` : Astro.url.pathname;
+const benchmark = oem ? benchmarkForPath(canonicalPath) : undefined;
+const guideLinks = geoPilot?.adviceLinks?.length ? geoPilot.adviceLinks : DEFAULT_GEO_GUIDES;
 const printerFacts = oem?.printers.slice(0, 6) || [];
 const printerLinks = oem ? printerLinksFromNames(cache.products, oem.printers, 16) : [];
 const relatedOemLinks = oem
@@ -50,7 +53,9 @@ const relatedOemLinks = oem
   products={products}
   answer={notFound
     ? ""
-    : `Pre OEM označenie ${code} evidujeme ${stats.total} produktov s platnou cenou, z toho ${stats.inStock} je skladom. Medzi nimi je ${stats.compatible} kompatibilných, ${stats.original} originálnych a ${stats.renovated} renovovaných možností. Rovnaký základ kódu ešte nemusí znamenať rovnakú farbu alebo kapacitu.`}
+    : benchmark
+      ? benchmarkAnswer(code, benchmark.expected, "oem")
+      : `Podľa aktuálneho katalógu ToneryMaxim.sk evidujeme pre OEM označenie ${code} ${stats.total} produktov s platnou cenou, z toho ${stats.inStock} je skladom. Rovnaký základ kódu ešte nemusí znamenať rovnakú farbu alebo kapacitu.`}
   generatedAt={cache.generated_at}
   breadcrumbs={[
     { name: "OEM označenia", path: "/tonery" },
@@ -74,8 +79,10 @@ const relatedOemLinks = oem
   ]}
   contentSections={notFound ? [] : [
     ...(geoPriority ? [{
-      heading: `Overené údaje pre OEM ${code}`,
-      paragraphs: [`OEM rodina ${code} je prioritne kontrolovaná podľa aktuálneho katalógu ToneryMaxim.sk. Na stránke sú produkty, pri ktorých sa presné označenie nachádza v názve alebo produktových údajoch.`],
+      heading: benchmark?.prompt || `Čo uvádza aktuálny katalóg pre OEM ${code}?`,
+      paragraphs: [benchmark
+        ? benchmarkAnswer(code, benchmark.expected, "oem")
+        : `Na stránke sú produkty, pri ktorých sa označenie ${code} nachádza v názve alebo produktových údajoch aktuálneho katalógu ToneryMaxim.sk.`],
       bullets: [`Aktuálne produktov: ${stats.total}.`, `Skladom: ${stats.inStock}.`, `Evidované tlačiarne: ${oem?.printers.length || 0}.`, "Pred objednaním treba potvrdiť celý kód vrátane farebnej alebo kapacitnej koncovky."],
     }] : []),
     ...(geoPilot ? [{
@@ -95,6 +102,8 @@ const relatedOemLinks = oem
   ]}
   linkGroups={notFound ? [] : [
     { heading: `Tlačiarne podporujúce ${code}`, intro: "Zoznam vzniká z kompatibilných tlačiarní uvedených pri produktoch v katalógu.", links: printerLinks },
+    { heading: `Produkty s označením ${code}`, intro: "Konkrétne produkty s cenou, dostupnosťou a detailom kompatibility sú uvedené v aktuálnej ponuke.", links: [{ href: "#produkty", label: `Zobraziť ${stats.total} produktov rodiny ${code}`, count: stats.total }] },
+    { heading: "Relevantné návody", intro: "Postup kontroly OEM kódu, modelu tlačiarne a typu spotrebného materiálu.", links: guideLinks },
     { heading: "Súvisiace značky tlačiarní", intro: "Pokračujte na ponuku podľa značky zariadenia.", links: topBrandLinks(products, 8) },
     { heading: "Súvisiace OEM označenia", intro: "Niektoré produkty obsahujú viac relevantných označení alebo variantov.", links: relatedOemLinks },
   ]}
@@ -102,13 +111,15 @@ const relatedOemLinks = oem
     { name: `OEM ${code}`, url: canonicalPath },
     ...printerLinks.slice(0, 8).map((link) => ({ name: link.label, url: link.href })),
   ]}
-  expertGuide={geoPilot ? {
-    title: `Ako správne vybrať ${code}`,
-    summary: `${geoPilot.selection} ${geoPilot.caution}`,
+  expertGuide={geoPriority || geoPilot ? {
+    title: benchmark?.prompt || `Ako správne vybrať ${code}`,
+    summary: benchmark
+      ? benchmarkAnswer(code, benchmark.expected, "oem")
+      : `${geoPilot?.selection || "Výber vychádza z aktuálneho katalógu."} ${geoPilot?.caution || "Pred objednaním potvrďte celý OEM kód a model tlačiarne."}`,
     updated: "2026-08-09",
     author: "Roman Babčan",
     experience: "17+ rokov skúseností",
-    links: geoPilot.adviceLinks,
+    links: guideLinks,
   } : undefined}
   notFound={notFound}
 />

@@ -1,0 +1,61 @@
+---
+import "../../styles/global.css";
+import "../../styles/footer.css";
+import "../../styles/advice.css";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
+import SeoHead from "../../components/SeoHead.astro";
+import { adviceArticles } from "../../data/advice";
+import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../../lib/seo";
+import { EXPERT_EXPERIENCE, EXPERT_NAME, EXPERT_PATH, EXPERT_ROLE, expertPersonJsonLd } from "../../lib/expert";
+
+const origin = "https://www.tonerymaxim.sk";
+const canonical = `${origin}${EXPERT_PATH}`;
+const title = `${EXPERT_NAME} – odborný garant | ToneryMaxim.sk`;
+const description = "Profil odborného garanta ToneryMaxim.sk pre výber tonerov, OEM označenia, kompatibilitu tlačiarní a praktické problémy pri tlači.";
+const jsonLd = [
+  organizationJsonLd(origin), websiteJsonLd(origin), expertPersonJsonLd(origin),
+  breadcrumbJsonLd(origin, [
+    { name: "Domov", path: "/" }, { name: "Odborná poradňa", path: "/poradna" }, { name: EXPERT_NAME, path: EXPERT_PATH },
+  ]),
+  {
+    "@context": "https://schema.org", "@type": "ProfilePage", "@id": `${canonical}#profile`,
+    name: `${EXPERT_NAME} – odborný garant ToneryMaxim.sk`, description, url: canonical,
+    inLanguage: "sk-SK", mainEntity: { "@id": `${canonical}#person` }, isPartOf: { "@id": `${origin}/#website` },
+  },
+];
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <SeoHead title={title} description={description} canonical={canonical} type="article" jsonLd={jsonLd} />
+  </head>
+  <body>
+    <div class="page">
+      <Header />
+      <main class="advice-page"><div class="wrap advice-wrap">
+        <nav class="advice-breadcrumbs" aria-label="Drobečková navigácia"><a href="/">Domov</a><span>›</span><a href="/poradna">Odborná poradňa</a><span>›</span><span>{EXPERT_NAME}</span></nav>
+        <article class="advice-article">
+          <header class="advice-article-head">
+            <p class="advice-eyebrow">Odborný garant ToneryMaxim.sk</p><h1>{EXPERT_NAME}</h1>
+            <p class="advice-lead">{EXPERT_ROLE}. Odborný obsah pripravuje a kontroluje so zameraním na presný model tlačiarne, OEM označenie a údaje dostupné v aktuálnom produktovom katalógu.</p>
+            <div class="advice-meta"><span><strong>{EXPERT_EXPERIENCE}</strong></span><span>Tonery a náplne do tlačiarní</span><span>Slovenský trh</span></div>
+          </header>
+          <section class="advice-answer" aria-labelledby="profil-odpoved">
+            <p>Oblasť odbornosti</p><h2 id="profil-odpoved">S čím Roman Babčan pomáha zákazníkom?</h2>
+            <div>Pomáha vyberať spotrebný materiál podľa celého modelu tlačiarne a OEM kódu, rozlišovať toner, atrament a optický valec a kontrolovať farbu, kapacitu a typ produktu pred objednaním.</div>
+          </section>
+          <div class="advice-body">
+            <section><h2>Ako vznikajú odborné odpovede</h2><p>Odporúčania vychádzajú z aktuálneho katalógu ToneryMaxim.sk. Ak údaj nie je jednoznačný, zákazník má pred nákupom porovnať štítok zariadenia, celý OEM kód a detail konkrétneho produktu.</p><p>Podobný názov tlačiarne alebo podobné číslo kazety samo osebe nepotvrdzuje kompatibilitu. Preto stránky neprezentujú automatické priradenie ako absolútnu záruku.</p></section>
+            <section><h2>Hlavné odborné témy</h2><ul><li>výber náplne podľa presného modelu tlačiarne,</li><li>kontrola OEM označenia a kapacitnej alebo farebnej koncovky,</li><li>rozdiel medzi originálnym, kompatibilným a renovovaným produktom,</li><li>rozdiel medzi tonerom, atramentom a optickým valcom,</li><li>praktická diagnostika problémov pri tlači.</li></ul></section>
+          </div>
+          <nav class="advice-actions" aria-label="Odborné zdroje"><a href="/poradna">Odborná poradňa <span>→</span></a><a href="/tlaciarne">Výber podľa tlačiarne <span>→</span></a><a href="/tonery">Výber podľa OEM <span>→</span></a></nav>
+        </article>
+        <aside class="advice-related" aria-labelledby="author-articles"><div><p class="advice-eyebrow">Publikované návody</p><h2 id="author-articles">Odborné články autora</h2></div><div class="advice-card-grid">{adviceArticles.slice(0, 6).map((article) => (<a class="advice-card" href={`/poradna/${article.slug}`}><small>{article.readingMinutes} min čítania</small><strong>{article.title}</strong><span>{article.description}</span><b>Prečítať návod →</b></a>))}</div></aside>
+      </div></main>
+      <Footer showTrust={false} /><FloatingAdvisor />
+    </div>
+  </body>
+</html>

@@ -17,6 +17,7 @@ ToneryMaxim.sk pomáha zákazníkom nájsť správnu náplň podľa presného mo
 - [Renovované tonery](${ORIGIN}/renovovane-tonery): Odborne obnovené kazety.
 - [Atramentové náplne](${ORIGIN}/atramentove-naplne): Náplne pre atramentové tlačiarne.
 - [Odborná poradňa](${ORIGIN}/poradna): Faktografické návody k výberu, kompatibilite a problémom pri tlači.
+- [Odborný garant Roman Babčan](${ORIGIN}/autor/roman-babcan): Profil autora a odborné oblasti, ktoré zastrešuje.
 - [Najčastejšie otázky](${ORIGIN}/faq): Výber, doprava, platba, reklamácie a pomoc.
 
 ## Odborné návody

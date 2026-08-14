@@ -8,6 +8,7 @@ import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import SeoHead from "../components/SeoHead.astro";
 import { adviceArticles } from "../data/advice";
 import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
+import { EXPERT_PATH, expertPersonJsonLd } from "../lib/expert";
 
 const origin = "https://www.tonerymaxim.sk";
 const canonical = `${origin}/poradna`;
@@ -15,6 +16,7 @@ const title = "Odborná poradňa o toneroch a tlačiarňach | ToneryMaxim.sk";
 const description = "Praktické odborné návody k výberu tonerov, OEM kódom, výťažnosti, chybám tlače, renovácii, skladovaniu a recyklácii náplní.";
 const jsonLd = [
   organizationJsonLd(origin),
+  expertPersonJsonLd(origin),
   websiteJsonLd(origin),
   breadcrumbJsonLd(origin, [{ name: "Domov", path: "/" }, { name: "Odborná poradňa", path: "/poradna" }]),
   {
@@ -59,7 +61,7 @@ const jsonLd = [
               <p>Overené praktické odpovede k výberu náplní, kompatibilite, prevádzke tlačiarne aj riešeniu problémov bez zbytočnej výmeny dielov.</p>
             </div>
             <aside>
-              <strong>Roman Babčan</strong>
+              <strong><a href={EXPERT_PATH}>Roman Babčan</a></strong>
               <span>odborný garant poradne</span>
               <b>17+ rokov skúseností</b>
             </aside>
