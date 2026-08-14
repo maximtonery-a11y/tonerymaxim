@@ -109,7 +109,7 @@ export function buildHeurekaFeed(products: TmProduct[]) {
     const manufacturer = cleanProductBrand(product.product_brand || product.manufacturer_name);
     const ean = cleanGtin(product.gtin);
     const validEan = ean.length === 13 ? ean : "";
-    const type = product.product_type_key === "renovated" ? "bazaar" : "new";
+    const type = "new";
 
     return [
       "  <SHOPITEM>",

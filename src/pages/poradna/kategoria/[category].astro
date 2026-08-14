@@ -1,0 +1,9 @@
+---
+import AdviceCategoryPage from "../../../components/AdviceCategoryPage.astro";
+import { findAdviceCategory } from "../../../data/advice-categories";
+
+export const prerender = false;
+const category = findAdviceCategory(Astro.params.category);
+if (!category) Astro.response.status = 404;
+---
+{category && <AdviceCategoryPage categorySlug={category.slug} />}

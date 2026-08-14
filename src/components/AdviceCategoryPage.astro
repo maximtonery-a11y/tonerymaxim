@@ -1,0 +1,38 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/advice.css";
+import Header from "./Header.astro";
+import Footer from "./Footer.astro";
+import FloatingAdvisor from "./FloatingAdvisor.astro";
+import SeoHead from "./SeoHead.astro";
+import { adviceArticlesInCategory } from "../data/advice";
+import { findAdviceCategory, type AdviceCategorySlug } from "../data/advice-categories";
+import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
+
+const { categorySlug } = Astro.props as { categorySlug: AdviceCategorySlug };
+const category = findAdviceCategory(categorySlug);
+if (!category) throw new Error(`Neznáma kategória poradne: ${categorySlug}`);
+const articles = adviceArticlesInCategory(category.slug);
+const origin = "https://www.tonerymaxim.sk";
+const canonical = `${origin}/poradna/kategoria/${category.slug}`;
+const jsonLd = [
+  organizationJsonLd(origin), websiteJsonLd(origin),
+  breadcrumbJsonLd(origin, [
+    { name: "Domov", path: "/" },
+    { name: "Odborná poradňa", path: "/poradna" },
+    { name: category.name, path: `/poradna/kategoria/${category.slug}` },
+  ]),
+  { "@context": "https://schema.org", "@type": "CollectionPage", "@id": `${canonical}#collection`, name: category.name, description: category.description, url: canonical, inLanguage: "sk-SK", mainEntity: { "@type": "ItemList", numberOfItems: articles.length, itemListElement: articles.map((article, index) => ({ "@type": "ListItem", position: index + 1, url: `${origin}/poradna/${article.slug}`, name: article.title })) } },
+];
+---
+<!doctype html>
+<html lang="sk"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width" /><SeoHead title={`${category.name} | Poradňa ToneryMaxim.sk`} description={category.description} canonical={canonical} jsonLd={jsonLd} /></head>
+<body><div class="page"><Header /><main class="advice-page"><div class="wrap advice-wrap">
+  <nav class="advice-breadcrumbs" aria-label="Drobečková navigácia"><a href="/">Domov</a><span>›</span><a href="/poradna">Odborná poradňa</a><span>›</span><span>{category.name}</span></nav>
+  <header class="advice-category-head"><p class="advice-eyebrow">Odborná poradňa</p><h1>{category.name}</h1><p>{category.question}</p><div>{category.description}</div></header>
+  <section aria-labelledby="category-list"><div class="advice-section-head"><div><p class="advice-eyebrow">Návody krok za krokom</p><h2 id="category-list">Všetky články v tejto téme</h2></div><span>{articles.length} článkov</span></div>
+    <div class="advice-card-grid advice-card-grid--hub">{articles.map((article) => <a class="advice-card" href={`/poradna/${article.slug}`}><small>{article.readingMinutes} min čítania</small><strong>{article.title}</strong><span>{article.description}</span><b>Prečítať návod →</b></a>)}</div>
+  </section>
+  <nav class="advice-back"><a href="/poradna">← Všetky témy poradne</a></nav>
+</div></main><Footer showTrust={false} /><FloatingAdvisor /></div></body></html>

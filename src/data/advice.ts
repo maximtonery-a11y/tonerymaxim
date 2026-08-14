@@ -1,3 +1,6 @@
+import { additionalAdviceArticles } from "./advice-extra";
+import type { AdviceCategorySlug } from "./advice-categories";
+
 export type AdviceArticle = {
   slug: string;
   title: string;
@@ -15,6 +18,7 @@ export type AdviceArticle = {
   }>;
   faq: Array<{ question: string; answer: string }>;
   links: Array<{ href: string; label: string }>;
+  category: AdviceCategorySlug;
 };
 
 const common = {
@@ -22,7 +26,7 @@ const common = {
   updated: "2026-08-09",
 };
 
-export const adviceArticles: AdviceArticle[] = [
+const baseAdviceArticles: Array<Omit<AdviceArticle, "category">> = [
   {
     ...common,
     slug: "kompatibilny-alebo-originalny-toner",
@@ -238,9 +242,145 @@ export const adviceArticles: AdviceArticle[] = [
     ],
     links: [{ href: "/tlaciarne", label: "Výber podľa tlačiarne" }, { href: "/produkty", label: "Vyhľadať OEM alebo produkt" }, { href: "/kontakt", label: "Nechať si poradiť" }],
   },
+  {
+    published: "2026-08-14",
+    updated: "2026-08-14",
+    slug: "aky-toner-do-hp-laserjet-m110w",
+    title: "Aký toner patrí do HP LaserJet M110w?",
+    description: "Presná odpoveď pre HP LaserJet M110w: označenie kazety HP 142A, produktový kód W1420A, farba, výťažnosť a kontrola pred objednaním.",
+    answer: "Tlačiareň HP LaserJet M110w používa čiernu tonerovú kazetu HP 142A s produktovým kódom W1420A. Náhradná kazeta má deklarovanú výťažnosť približne 950 strán podľa ISO/IEC 19752; toner dodaný s novou tlačiarňou je štartovací a má nižšiu výťažnosť. Pred nákupom skontrolujte označenie W1420A a presný model M110w v kompatibilite produktu.",
+    readingMinutes: 4,
+    topics: ["HP LaserJet M110w", "HP 142A", "W1420A", "toner do M110w"],
+    sections: [
+      { heading: "Správne označenie kazety", paragraphs: ["Pre HP LaserJet M110w je určený čierny toner HP 142A. Úplný produktový kód originálnej kazety je W1420A. Označenie 142A je názov tonerovej rodiny, kým W1420A je presný objednávací kód."], bullets: ["Tlačiareň: HP LaserJet M110w", "Tonerová rodina: HP 142A", "Produktový kód: W1420A", "Farba: čierna", "Deklarovaná výťažnosť náhradnej kazety: približne 950 strán"] },
+      { heading: "Prečo má toner v novej tlačiarni nižšiu kapacitu", paragraphs: ["Tlačiareň M110w sa dodáva so štartovacou čiernou kazetou s výťažnosťou približne 300 strán. Nejde o rovnakú náplň ako plná náhradná kazeta W1420A. Preto môže prvý toner skončiť podstatne skôr než neskôr zakúpená náhradná kazeta."], note: "Skutočná výťažnosť závisí od pokrytia strán, obsahu dokumentov, nastavenia tlače a prevádzkových podmienok." },
+      { heading: "Kontrola pred objednaním", paragraphs: ["Neriadte sa iba slovom HP alebo podobným číslom kazety. Kódy W1350A a W1470A patria do iných tonerových rodín. Na detaile produktu musí byť uvedený kód W1420A alebo HP 142A a medzi podporovanými zariadeniami presný model HP LaserJet M110w."], bullets: ["Porovnajte celý kód W1420A.", "Skontrolujte model M110w, nie iba M110.", "Pri kompatibilnej kazete overte, či má čip a či nie je označená No chip alebo bez čipu."] },
+    ],
+    faq: [
+      { question: "Aký toner používa HP LaserJet M110w?", answer: "Čierny toner HP 142A s produktovým kódom W1420A." },
+      { question: "Koľko strán vytlačí HP 142A W1420A?", answer: "Výrobca uvádza približne 950 strán podľa ISO/IEC 19752. Reálny výsledok sa mení podľa obsahu a podmienok tlače." },
+      { question: "Je toner v balení tlačiarne plnohodnotný W1420A?", answer: "Nie. Dodaná štartovacia kazeta má podľa údajov výrobcu približne 300 strán, teda nižšiu výťažnosť než náhradný W1420A." },
+    ],
+    links: [{ href: "/tlaciarne/hp/hp-laserjet-m110w", label: "Tonery pre HP LaserJet M110w" }, { href: "/oem/w1420a", label: "Produkty rodiny W1420A" }, { href: "/poradna/ako-najst-toner-podla-oem-kodu", label: "Ako čítať OEM kód" }],
+  },
+  {
+    published: "2026-08-14",
+    updated: "2026-08-14",
+    slug: "hp-142a-w1420a-co-znamena-oznacenie",
+    title: "HP 142A a W1420A: čo znamenajú tieto označenia?",
+    description: "Rozdiel medzi názvom tonerovej rodiny HP 142A a produktovým kódom W1420A, vrátane farby, kapacity a bezpečného párovania s tlačiarňou.",
+    answer: "HP 142A je obchodné označenie čiernej tonerovej kazety a W1420A je jej presný produktový kód. Pri vyhľadávaní možno použiť oba údaje, ale pri objednaní treba overiť celý kód W1420A a presný model tlačiarne. Podobný kód alebo rovnaká značka neznamenajú kompatibilitu.",
+    readingMinutes: 4,
+    topics: ["HP 142A", "W1420A", "OEM kód HP", "označenie tonera"],
+    sections: [
+      { heading: "Dve označenia jednej tonerovej rodiny", paragraphs: ["Na obale a v katalógoch sa môžete stretnúť s údajmi 142A aj W1420A. Číslo 142A je kratšie označenie, podľa ktorého zákazník toner bežne hľadá. W1420A je úplný produktový kód používaný na presnú identifikáciu kazety."], bullets: ["142A: krátke obchodné označenie", "W1420A: úplný produktový kód", "K: čierna farba sa v tomto kóde samostatnou koncovkou neuvádza", "Kapacita: približne 950 strán podľa ISO/IEC 19752"] },
+      { heading: "Prečo nestačí podobné číslo", paragraphs: ["HP používa množstvo tonerových rodín s podobnou štruktúrou kódu. W1350A ani W1470A nie sú varianty W1420A a nemožno ich zamieňať iba preto, že začínajú písmenom W. Rozhoduje úplná zhoda kódu a zoznam kompatibilných tlačiarní."], note: "Vyhľadávač môže ponúknuť súvisiace výrazy. Konečné rozhodnutie musí vychádzať z detailu konkrétneho produktu." },
+      { heading: "Ako označenie skontrolovať", paragraphs: ["Kód hľadajte na štítku pôvodnej kazety, na obale alebo v dokumentácii tlačiarne. Potom ho porovnajte s OEM údajom na produktovej stránke. Ak starú kazetu nemáte, vyhľadávajte podľa celého modelu tlačiarne vrátane písmen na konci."], bullets: ["Odpíšte W1420A bez zámeny číslic.", "Overte model tlačiarne v detaile produktu.", "Skontrolujte, či kupujete originálny, kompatibilný alebo renovovaný variant."] },
+    ],
+    faq: [
+      { question: "Je HP 142A to isté ako W1420A?", answer: "Áno, pri tejto kazete ide o krátke označenie tonerovej rodiny a jej úplný produktový kód." },
+      { question: "Je W1420A farebný toner?", answer: "Nie. W1420A je čierna tonerová kazeta pre čiernobiele laserové tlačiarne." },
+      { question: "Môžem namiesto W1420A použiť W1350A?", answer: "Nie bez výslovného potvrdenia výrobcu, ktoré pri týchto rozdielnych rodinách nie je dané. Podobný formát kódu neznamená zameniteľnosť." },
+    ],
+    links: [{ href: "/oem/w1420a", label: "Prehľad W1420A" }, { href: "/tlaciarne/hp/hp-laserjet-m110w", label: "HP LaserJet M110w" }, { href: "/poradna/aky-toner-do-hp-laserjet-m110w", label: "Presný toner do M110w" }],
+  },
+  {
+    published: "2026-08-14",
+    updated: "2026-08-14",
+    slug: "hp-w1420a-originalny-alebo-kompatibilny",
+    title: "HP W1420A: originálny alebo kompatibilný toner?",
+    description: "Faktografické porovnanie originálneho a kompatibilného W1420A podľa kompatibility, čipu, firmvéru, výťažnosti a ceny za stranu.",
+    answer: "Originálny HP W1420A ponúka najpredvídateľnejšie rozpoznanie v podporovanej tlačiarni. Kvalitný kompatibilný W1420A môže znížiť cenu za stranu, ale musí byť určený pre presný model, mať vhodný čip a nesmie ísť o verziu No chip, ak zákazník nechce prenášať čip. Pri zariadeniach s obmedzeniami kaziet treba pred nákupom overiť aktuálnu kompatibilitu.",
+    readingMinutes: 5,
+    topics: ["W1420A kompatibilný", "W1420A originálny", "HP 142A", "cena za stranu"],
+    sections: [
+      { heading: "Čo sa pri oboch variantoch musí zhodovať", paragraphs: ["Originálny aj kompatibilný výrobok musí mechanicky pasovať, používať správny tonerový systém a komunikovať s tlačiarňou. Pre zákazníka sú rozhodujúce údaje W1420A alebo 142A, presný model zariadenia, prítomnosť čipu a deklarovaná výťažnosť."], bullets: ["Úplný OEM kód", "Presný model tlačiarne", "Čierna farba", "Čip alebo jasné označenie bez čipu", "Výťažnosť a podmienky záruky"] },
+      { heading: "Kedy zvoliť originálny W1420A", paragraphs: ["Originál je konzervatívna voľba, ak je tlačiareň kritická pre prevádzku, nechcete riešiť kompatibilitu čipu alebo sa na zariadení uplatňuje politika kaziet výrobcu. Vyššiu obstarávaciu cenu treba porovnať s požadovanou spoľahlivosťou a nákladmi prípadného výpadku."], note: "Niektoré zariadenia a nastavenia môžu obmedzovať použitie kaziet bez originálneho čipu. Konkrétne podmienky sa overujú podľa presného modelu a aktuálneho firmvéru." },
+      { heading: "Kedy dáva zmysel kompatibilný W1420A", paragraphs: ["Kompatibilný toner dáva zmysel pri bežnej tlači, ak má overenú zhodu s vaším modelom, vlastný vhodný čip a predajca garantuje riešenie nekompatibility. Úsporu počítajte ako cenu za deklarovanú stranu, nie iba ako rozdiel cien kaziet."], bullets: ["Vyhnite sa verzii No chip, ak nechcete prenášať pôvodný čip.", "Pred aktualizáciou firmvéru skontrolujte upozornenia výrobcu kazety.", "Po vložení skontrolujte stav kazety a vytlačte skúšobnú stranu."] },
+    ],
+    faq: [
+      { question: "Je kompatibilný W1420A vždy lacnejší na stranu?", answer: "Nie automaticky. Porovnajte cenu, deklarovanú výťažnosť, kvalitu, prípadné reklamácie a reálne pokrytie tlače." },
+      { question: "Môže firmvér ovplyvniť kompatibilný toner?", answer: "Áno, pri niektorých tlačiarňach môže aktualizácia alebo politika kaziet ovplyvniť rozpoznanie čipu alternatívnej kazety." },
+      { question: "Čo znamená W1420A bez čipu?", answer: "Kazeta nemá použiteľný rozpoznávací čip a zvyčajne vyžaduje presun čipu zo starej kazety, ak je na to konkrétny produkt určený." },
+    ],
+    links: [{ href: "/oem/w1420a", label: "Porovnať varianty W1420A" }, { href: "/kompatibilne-tonery", label: "Kompatibilné tonery" }, { href: "/poradna/toner-bez-cipu-no-chip-co-to-znamena", label: "Čo znamená No chip" }],
+  },
+  {
+    published: "2026-08-14",
+    updated: "2026-08-14",
+    slug: "toner-bez-cipu-no-chip-co-to-znamena",
+    title: "Toner bez čipu (No chip): čo to znamená pred nákupom",
+    description: "Presné vysvetlenie tonerov No chip, prenosu pôvodného čipu, obmedzení ukazovateľa stavu a situácií, keď taký toner nekupovať.",
+    answer: "Toner označený No chip alebo bez čipu nemá nový použiteľný čip na komunikáciu s tlačiarňou. Pri produktoch navrhnutých na opätovné použitie čipu treba preniesť čip zo starej kazety podľa návodu. Tlačiareň potom nemusí správne zobrazovať zostávajúci toner a neodborná manipulácia môže poškodiť čip alebo kazetu.",
+    readingMinutes: 5,
+    topics: ["toner bez čipu", "No chip", "prenos čipu", "nerozpoznaný toner"],
+    sections: [
+      { heading: "Na čo čip v tonerovej kazete slúži", paragraphs: ["Čip identifikuje kazetu, komunikuje jej stav a pri niektorých zariadeniach uchováva údaje o používaní. Nejde o zásobník tonera ani o časť, ktorá vytvára obraz, ale bez správnej komunikácie môže tlačiareň kazetu odmietnuť alebo zobrazovať neúplné údaje."], bullets: ["Identifikácia typu kazety", "Komunikácia s tlačiarňou", "Počítadlo alebo odhad stavu", "Kontrola regionálnych či výrobných obmedzení pri vybraných modeloch"] },
+      { heading: "Čo zákazník pri verzii No chip musí urobiť", paragraphs: ["Ak výrobca konkrétnej kazety povoľuje opätovné použitie čipu, čip sa prenáša zo spotrebovanej kazety. Postup, nástroje a poloha držiaka sa líšia podľa tonerovej rodiny, preto nemožno použiť jeden univerzálny návod."], bullets: ["Najskôr si ponechajte pôvodnú kazetu.", "Použite návod dodaný ku konkrétnemu produktu.", "Nedotýkajte sa kontaktov a chráňte čip pred statickou elektrinou.", "Kazetu nevkladajte násilím."], note: "Prenesený čip môže naďalej hlásiť starý stav alebo prázdnu kazetu, aj keď nový toner tlačí. Závisí to od konkrétneho zariadenia a čipu." },
+      { heading: "Kedy toner bez čipu nekupovať", paragraphs: ["Verzia No chip nie je vhodná pre zákazníka, ktorý chce kazetu iba rozbaliť a vložiť do tlačiarne. Nevhodná je aj vtedy, ak nemáte pôvodný funkčný čip, nechcete riskovať jeho poškodenie alebo potrebujete spoľahlivé hlásenie zostávajúcej kapacity."], bullets: ["Nemáte starú kazetu s použiteľným čipom.", "Nechcete vykonávať mechanickú úpravu.", "Tlačiareň je kritická pre prevádzku.", "Potrebujete presný ukazovateľ stavu tonera."] },
+    ],
+    faq: [
+      { question: "Bude toner bez čipu tlačiť ihneď po vložení?", answer: "Spravidla nie. Ak je kazeta určená na prenos čipu, pred použitím treba správne osadiť kompatibilný čip zo starej kazety." },
+      { question: "Ukáže prenesený čip plný toner?", answer: "Nemusí. Pri mnohých riešeniach čip naďalej nesie pôvodný stav alebo tlačiareň nezobrazuje presnú zostávajúcu kapacitu." },
+      { question: "Je každý kompatibilný toner bez čipu?", answer: "Nie. Mnohé kompatibilné tonery sa dodávajú s vlastným čipom. Označenie No chip musí byť uvedené pri konkrétnom produkte." },
+    ],
+    links: [{ href: "/kompatibilne-tonery", label: "Kompatibilné tonery" }, { href: "/poradna/tlaciaren-po-vymene-nerozpoznala-toner", label: "Tlačiareň toner nerozpoznala" }, { href: "/kontakt", label: "Overiť vhodný variant" }],
+  },
+  {
+    published: "2026-08-14",
+    updated: "2026-08-14",
+    slug: "tlaciaren-po-vymene-nerozpoznala-toner",
+    title: "Tlačiareň po výmene nerozpoznala toner: bezpečný postup kontroly",
+    description: "Diagnostický postup pri hláseniach Install Cartridge, Supply Memory Error alebo Incompatible Cartridge bez náhodného skúšania nesprávnych tonerov.",
+    answer: "Ak tlačiareň nový toner nerozpozná, najskôr porovnajte celý OEM kód a model zariadenia. Potom odstráňte všetky prepravné prvky, tlačiareň vypnite, po 10 sekundách zapnite a kazetu znovu správne osaďte. Skontrolujte čip a kontakty bez dotýkania. Ak problém zostane, overte politiku kaziet a firmvér; kazetu násilím neupravujte.",
+    readingMinutes: 6,
+    topics: ["tlačiareň nerozpoznala toner", "Supply Memory Error", "Incompatible Cartridge", "chyba tonera"],
+    sections: [
+      { heading: "1. Overte, či kazeta patrí do tlačiarne", paragraphs: ["Najčastejší bezpečne odstrániteľný problém je nesprávny model alebo neúplne odstránené balenie. Porovnajte OEM kód novej a pôvodnej kazety a celý názov tlačiarne vrátane písmen na konci."], bullets: ["Zhoduje sa celý OEM kód?", "Je presný model uvedený v kompatibilite?", "Je kazeta určená pre správny región a farbu?", "Nejde o toner bez čipu?"] },
+      { heading: "2. Skontrolujte prípravu a osadenie", paragraphs: ["Vypnite tlačiareň, počkajte aspoň 10 sekúnd a odpojte ju len vtedy, ak to povoľuje jej návod. Kazetu vyberte, skontrolujte odstránenie oranžovej poistky, tesniacej pásky a ďalších prepravných prvkov a potom ju vložte rovno až do správnej polohy."], bullets: ["Nevysýpajte toner a neotvárajte telo kazety.", "Nedotýkajte sa elektrických kontaktov ani povrchu čipu.", "Kazetu nevkladajte násilím.", "Po zapnutí počkajte na dokončenie inicializácie."] },
+      { heading: "3. Rozlíšte typ hlásenia", paragraphs: ["Hlásenie Install Cartridge často súvisí s neprítomnou, zle osadenou alebo neodistenou kazetou. Supply Memory Error alebo chyba spotrebného materiálu môže súvisieť s čipom či komunikáciou. Incompatible Cartridge upozorňuje na nesúlad kazety, regiónu, čipu alebo politiky kaziet."], note: "Názvy a význam hlásení sa líšia podľa značky a modelu. Presný kód chyby si zapíšte alebo odfoťte." },
+      { heading: "4. Kedy prestať skúšať a kontaktovať podporu", paragraphs: ["Ak opätovné osadenie nepomohlo, nevykonávajte náhodné resetovanie firmvéru ani mechanické zásahy. Otestujte iba známu správnu kazetu, ak ju máte. Podpore pošlite model tlačiarne, OEM kód, fotografiu čipu a presné hlásenie."], bullets: ["Chyba zostala po opätovnom vložení.", "Čip alebo kontakty sú poškodené.", "Problém vznikol po aktualizácii firmvéru.", "Tlačiareň rozpozná pôvodnú kazetu, ale novú nie."] },
+    ],
+    faq: [
+      { question: "Pomôže vypnutie tlačiarne?", answer: "Môže obnoviť inicializáciu, ale nevyrieši nesprávnu kazetu alebo chybný čip. Výrobca pri viacerých chybách odporúča vypnúť zariadenie približne na 10 sekúnd a kazetu znovu osadiť." },
+      { question: "Mám očistiť čip alkoholom?", answer: "Bez pokynu výrobcu nie. Najprv iba vizuálne skontrolujte čistotu a poškodenie; nevhodná kvapalina alebo statická elektrina môžu čip poškodiť." },
+      { question: "Môže byť príčinou aktualizácia firmvéru?", answer: "Pri niektorých zariadeniach áno, najmä pri alternatívnych čipoch alebo zapnutej politike kaziet. Najskôr však vylúčte nesprávny kód, prepravné prvky a zlé osadenie." },
+    ],
+    links: [{ href: "/poradna/ako-najst-toner-podla-oem-kodu", label: "Overenie OEM kódu" }, { href: "/poradna/toner-bez-cipu-no-chip-co-to-znamena", label: "Toner bez čipu" }, { href: "/kontakt", label: "Poslať údaje na kontrolu" }],
+  },
+];
+
+const categoryBySlug: Record<string, AdviceCategorySlug> = {
+  "kompatibilny-alebo-originalny-toner": "vyber-naplne",
+  "ako-najst-toner-podla-oem-kodu": "vyber-naplne",
+  "toner-alebo-opticky-valec": "vyber-naplne",
+  "co-znamena-vytaznost-tonera": "naklady-vytaznost",
+  "tlaciaren-tlaci-pasy-alebo-bledo": "riesenie-problemov",
+  "ako-skladovat-tonery-a-naplne": "udrzba-bezpecnost",
+  "ako-vybrat-toner-podla-modelu-tlaciarne": "vyber-naplne",
+  "renovovany-toner-vyhody-a-obmedzenia": "vyber-naplne",
+  "recyklacia-a-spatny-odber-tonerov": "udrzba-bezpecnost",
+  "najcastejsie-chyby-pri-vybere-naplne": "vyber-naplne",
+  "aky-toner-do-hp-laserjet-m110w": "vyber-naplne",
+  "hp-142a-w1420a-co-znamena-oznacenie": "vyber-naplne",
+  "hp-w1420a-originalny-alebo-kompatibilny": "vyber-naplne",
+  "toner-bez-cipu-no-chip-co-to-znamena": "cipy-firmware",
+  "tlaciaren-po-vymene-nerozpoznala-toner": "riesenie-problemov",
+};
+
+export const adviceArticles: AdviceArticle[] = [
+  ...baseAdviceArticles.map((article) => ({
+    ...article,
+    category: categoryBySlug[article.slug] || "vyber-naplne",
+  })),
+  ...additionalAdviceArticles,
 ];
 
 export function findAdviceArticle(slug: unknown): AdviceArticle | undefined {
   const key = String(slug || "").trim().toLowerCase();
   return adviceArticles.find((article) => article.slug === key);
+}
+
+export function adviceArticlesInCategory(category: AdviceCategorySlug): AdviceArticle[] {
+  return adviceArticles.filter((article) => article.category === category);
 }

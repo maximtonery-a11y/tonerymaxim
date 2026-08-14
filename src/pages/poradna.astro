@@ -7,6 +7,7 @@ import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import SeoHead from "../components/SeoHead.astro";
 import { adviceArticles } from "../data/advice";
+import { adviceCategories } from "../data/advice-categories";
 import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
 import { EXPERT_PATH, expertPersonJsonLd } from "../lib/expert";
 
@@ -69,15 +70,42 @@ const jsonLd = [
 
           <section aria-labelledby="advice-list-title">
             <div class="advice-section-head">
-              <div><p class="advice-eyebrow">Praktické návody</p><h2 id="advice-list-title">Vyberte si tému</h2></div>
+              <div><p class="advice-eyebrow">Tematický rozcestník</p><h2 id="advice-list-title">S čím potrebujete pomôcť?</h2></div>
               <span>{adviceArticles.length} odborných článkov</span>
             </div>
-            <div class="advice-card-grid advice-card-grid--hub">
-              {adviceArticles.map((article) => (
-                <a class="advice-card" href={`/poradna/${article.slug}`}>
-                  <small>{article.readingMinutes} min čítania</small>
-                  <strong>{article.title}</strong>
-                  <span>{article.description}</span>
+            <div class="advice-category-grid">
+              {adviceCategories.map((category, index) => {
+                const articles = adviceArticles.filter((article) => article.category === category.slug);
+                return (
+                <a class="advice-category-card" href={`/poradna/kategoria/${category.slug}`}>
+                  <span class="advice-category-number">0{index + 1}</span>
+                  <small>{articles.length} článkov</small>
+                  <strong>{category.name}</strong>
+                  <p>{category.description}</p>
+                  <b>Zobraziť tému →</b>
+                </a>
+                );
+              })}
+            </div>
+          </section>
+
+          <section class="advice-featured" aria-labelledby="featured-title">
+            <div class="advice-section-head">
+              <div><p class="advice-eyebrow">Najčastejšie riešenia</p><h2 id="featured-title">Začnite presnou odpoveďou</h2></div>
+            </div>
+            <div class="advice-card-grid">
+              {[
+                "ako-vybrat-toner-podla-modelu-tlaciarne",
+                "tlaciaren-po-vymene-nerozpoznala-toner",
+                "hp-supply-memory-error-co-robit",
+                "ako-vypocitat-cenu-za-stranu",
+                "toner-bez-cipu-no-chip-co-to-znamena",
+                "tlaciaren-tlaci-pasy-alebo-bledo",
+              ].map((slug) => adviceArticles.find((article) => article.slug === slug)).filter(Boolean).map((article) => (
+                <a class="advice-card" href={`/poradna/${article!.slug}`}>
+                  <small>{article!.readingMinutes} min čítania</small>
+                  <strong>{article!.title}</strong>
+                  <span>{article!.description}</span>
                   <b>Prečítať návod →</b>
                 </a>
               ))}

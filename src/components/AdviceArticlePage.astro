@@ -8,6 +8,7 @@ import FloatingAdvisor from "./FloatingAdvisor.astro";
 import SeoHead from "./SeoHead.astro";
 import type { AdviceArticle } from "../data/advice";
 import { adviceArticles } from "../data/advice";
+import { findAdviceCategory } from "../data/advice-categories";
 import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
 import { EXPERT_PATH, expertPersonJsonLd } from "../lib/expert";
 
@@ -15,7 +16,8 @@ interface Props { article: AdviceArticle }
 const { article } = Astro.props;
 const origin = "https://www.tonerymaxim.sk";
 const canonical = `${origin}/poradna/${article.slug}`;
-const related = adviceArticles.filter((item) => item.slug !== article.slug).slice(0, 3);
+const category = findAdviceCategory(article.category)!;
+const related = adviceArticles.filter((item) => item.slug !== article.slug && item.category === article.category).slice(0, 3);
 const skDate = new Intl.DateTimeFormat("sk-SK", { day: "numeric", month: "long", year: "numeric" });
 const updatedLabel = skDate.format(new Date(`${article.updated}T12:00:00Z`));
 const jsonLd = [
@@ -25,6 +27,7 @@ const jsonLd = [
   breadcrumbJsonLd(origin, [
     { name: "Domov", path: "/" },
     { name: "Odborná poradňa", path: "/poradna" },
+    { name: category.name, path: `/poradna/kategoria/${category.slug}` },
     { name: article.title, path: `/poradna/${article.slug}` },
   ]),
   {
@@ -74,12 +77,12 @@ const jsonLd = [
       <main class="advice-page">
         <div class="wrap advice-wrap">
           <nav class="advice-breadcrumbs" aria-label="Drobečková navigácia">
-            <a href="/">Domov</a><span>›</span><a href="/poradna">Odborná poradňa</a><span>›</span><span>{article.title}</span>
+            <a href="/">Domov</a><span>›</span><a href="/poradna">Odborná poradňa</a><span>›</span><a href={`/poradna/kategoria/${category.slug}`}>{category.shortName}</a><span>›</span><span>{article.title}</span>
           </nav>
 
           <article class="advice-article">
             <header class="advice-article-head">
-              <p class="advice-eyebrow">Odborná poradňa ToneryMaxim.sk</p>
+              <p class="advice-eyebrow"><a href={`/poradna/kategoria/${category.slug}`}>{category.name}</a></p>
               <h1>{article.title}</h1>
               <p class="advice-lead">{article.description}</p>
               <div class="advice-meta">

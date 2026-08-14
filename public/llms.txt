@@ -19,12 +19,28 @@ ToneryMaxim.sk pomáha zákazníkom nájsť správnu náplň podľa presného mo
 
 ## Odborné návody
 
+### Tematické centrá
+
+- [Výber správnej náplne](https://www.tonerymaxim.sk/poradna/kategoria/vyber-naplne): Presný model tlačiarne, OEM kód, typ a veľkosť kazety.
+- [Riešenie problémov s tlačou](https://www.tonerymaxim.sk/poradna/kategoria/riesenie-problemov): Diagnostika hlásení, bledej tlače, pásov, bodiek a problémov po výmene kazety.
+- [Čipy a firmvér](https://www.tonerymaxim.sk/poradna/kategoria/cipy-firmware): Funkcia čipu, hlásenia tlačiarne a vplyv aktualizácií firmvéru.
+- [Náklady a výťažnosť](https://www.tonerymaxim.sk/poradna/kategoria/naklady-vytaznost): Výpočet ceny za stranu, normy výťažnosti a voľba štandardnej alebo XL kazety.
+- [Údržba a bezpečnosť](https://www.tonerymaxim.sk/poradna/kategoria/udrzba-bezpecnost): Bezpečná výmena, skladovanie, čistenie a riešenie vysypaného tonera.
+
+### Prioritné odpovede
+
 - [Ako vybrať toner podľa presného modelu tlačiarne](https://www.tonerymaxim.sk/poradna/ako-vybrat-toner-podla-modelu-tlaciarne)
+- [Ako zistiť presný model tlačiarne](https://www.tonerymaxim.sk/poradna/ako-zistit-presny-model-tlaciarne)
 - [Ako nájsť toner podľa OEM kódu](https://www.tonerymaxim.sk/poradna/ako-najst-toner-podla-oem-kodu)
 - [Kompatibilný alebo originálny toner](https://www.tonerymaxim.sk/poradna/kompatibilny-alebo-originalny-toner)
 - [Toner alebo optický valec](https://www.tonerymaxim.sk/poradna/toner-alebo-opticky-valec)
 - [Čo znamená výťažnosť tonera](https://www.tonerymaxim.sk/poradna/co-znamena-vytaznost-tonera)
+- [Čo znamená ISO/IEC 19752 pri výťažnosti tonera](https://www.tonerymaxim.sk/poradna/iso-iec-19752-vytaznost-tonera)
+- [Ako vypočítať cenu tlače za jednu stranu](https://www.tonerymaxim.sk/poradna/ako-vypocitat-cenu-za-stranu)
 - [Riešenie pásov, fľakov a bledej tlače](https://www.tonerymaxim.sk/poradna/tlaciaren-tlaci-pasy-alebo-bledo)
+- [HP Supply Memory Error – čo skontrolovať](https://www.tonerymaxim.sk/poradna/hp-supply-memory-error-co-robit)
+- [Brother hlási Replace Toner aj po výmene](https://www.tonerymaxim.sk/poradna/brother-replace-toner-po-vymene)
+- [Ako aktualizácia firmvéru ovplyvňuje kompatibilný toner](https://www.tonerymaxim.sk/poradna/aktualizacia-firmveru-a-kompatibilny-toner)
 
 ## Informácie o obchode
 
