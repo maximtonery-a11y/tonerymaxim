@@ -36,6 +36,44 @@ const robots = noindex
   : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
 const isDefaultImage = image === defaultImage;
 const jsonItems = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const entityJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'OnlineStore',
+  '@id': `${PRODUCTION_ORIGIN}/#organization`,
+  name: 'ToneryMaxim.sk',
+  legalName: 'Roman Babčan INkarus',
+  url: `${PRODUCTION_ORIGIN}/`,
+  logo: `${PRODUCTION_ORIGIN}/images/logo.png`,
+  image: `${PRODUCTION_ORIGIN}/images/tonerymaxim-social-preview.jpg`,
+  email: 'info@tonerymaxim.sk',
+  telephone: '+421917859206',
+  taxID: 'SK1020059920',
+  identifier: {
+    '@type': 'PropertyValue',
+    propertyID: 'IČO',
+    value: '37328344',
+  },
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Tajov 265',
+    postalCode: '976 34',
+    addressLocality: 'Tajov',
+    addressCountry: 'SK',
+  },
+  areaServed: {
+    '@type': 'Country',
+    name: 'Slovensko',
+  },
+  currenciesAccepted: 'EUR',
+  knowsAbout: [
+    'tonery do tlačiarní',
+    'atramentové náplne',
+    'kompatibilita tonerov a tlačiarní',
+    'OEM označenia kaziet',
+    'optické valce',
+    'renovované tonery',
+  ],
+};
 const safeJson = (value: Record<string, unknown>) => JSON.stringify(value)
   .replace(/</g, '\\u003c')
   .replace(/>/g, '\\u003e')
@@ -47,6 +85,7 @@ const safeJson = (value: Record<string, unknown>) => JSON.stringify(value)
 <meta name="description" content={description} />
 <meta name="robots" content={robots} />
 <link rel="canonical" href={canonical} />
+<link rel="alternate" type="text/plain" href={`${PRODUCTION_ORIGIN}/llms.txt`} title="ToneryMaxim.sk pre AI asistentov" />
 <meta property="og:locale" content="sk_SK" />
 <meta property="og:type" content={type} />
 <meta property="og:site_name" content="ToneryMaxim.sk" />
@@ -64,4 +103,5 @@ const safeJson = (value: Record<string, unknown>) => JSON.stringify(value)
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={image} />
 <meta name="twitter:image:alt" content={title} />
+<script is:inline type="application/ld+json" set:html={safeJson(entityJsonLd)} />
 {jsonItems.map((item) => <script is:inline type="application/ld+json" set:html={safeJson(item)} />)}

@@ -41,6 +41,30 @@ test("sitemap index odkazuje iba na existujúce endpointy", () => {
   }
 });
 
+test("GEO poskytuje spoľahlivý llms.txt endpoint a odkazuje naň z HTML", () => {
+  assert.equal(existsSync(join(root, "src/pages/llms.txt.ts")), true);
+  const route = read("src/pages/llms.txt.ts");
+  const llms = read("src/lib/geo/llms.ts");
+  const seoHead = read("src/components/SeoHead.astro");
+  assert.match(route, /llmsResponse\(request\)/);
+  assert.match(llms, /Content-Type.*text\/plain/s);
+  assert.match(llms, /Cache-Control/);
+  assert.match(llms, /OEM označenie/);
+  assert.match(llms, /Nevymýšľajte cenu/);
+  assert.match(llms, /sitemap-printers\.xml/);
+  assert.match(seoHead, /rel="alternate" type="text\/plain"/);
+});
+
+test("globálna identita obchodu používa overiteľné štruktúrované údaje", () => {
+  const seoHead = read("src/components/SeoHead.astro");
+  assert.match(seoHead, /'@type': 'OnlineStore'/);
+  assert.match(seoHead, /'@id': `\$\{PRODUCTION_ORIGIN\}\/\#organization`/);
+  assert.match(seoHead, /legalName: 'Roman Babčan INkarus'/);
+  assert.match(seoHead, /propertyID: 'IČO'/);
+  assert.match(seoHead, /value: '37328344'/);
+  assert.match(seoHead, /addressCountry: 'SK'/);
+});
+
 test("sitemap XML má bezpečné limity, cache validáciu a korektné hlavičky", () => {
   const source = read("src/lib/sitemaps.ts");
   assert.match(source, /SITEMAP_MAX_URLS = 50_000/);
