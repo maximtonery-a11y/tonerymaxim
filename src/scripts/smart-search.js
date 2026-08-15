@@ -10,13 +10,11 @@
   // Nášepkávač štartuje od 3 znakov. Krátky debounce iba zlučuje veľmi rýchle
   // údery klávesov; používateľ nemá čakať stovky ms pred samotným requestom.
   const MIN_QUERY_LENGTH = 3;
-  const DEBOUNCE_MS = 120;
-  const WARM_URL = "/api/smart-search?q=__tm_warm__";
+  const DEBOUNCE_MS = 70;
 
   const memory = new Map();
   const inflight = new Map();
   const catalogInflight = new Map();
-  let activeController = null;
   let runSerial = 0;
 
   function normalize(value) {
@@ -251,12 +249,11 @@
     const key = cacheKey(query);
     if (inflight.has(key)) return inflight.get(key);
 
-    if (activeController) activeController.abort();
-    activeController = new AbortController();
-
+    // Neabortujeme už rozbehnutý serverový search pri každom ďalšom znaku.
+    // Abort v prehliadači nezastaví CPU prácu na serveri a pri rýchlom písaní
+    // vytváral frontu drahých requestov. Starú odpoveď ignoruje runSerial.
     const promise = fetch(`/api/smart-search?q=${encodeURIComponent(query)}`, {
       headers: { Accept: "application/json" },
-      signal: activeController.signal,
     })
       .then(async (response) => {
         const data = await response.json();
@@ -309,24 +306,6 @@
     window.location.href = `/produkty?s=${encodeURIComponent(query)}`;
   }
 
-  let warmStarted = false;
-
-  function warmSearchServer() {
-    if (warmStarted) return;
-    warmStarted = true;
-    // Spusti zostavenie RAM indexu hneď po načítaní stránky, nie až po prvom
-    // zákazníckom dotaze. keepalive dovolí warm-up dokončiť aj pri navigácii.
-    fetch(WARM_URL, {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-      keepalive: true,
-      priority: "high",
-    }).catch(() => {
-      // Vyhľadávanie funguje aj bez warm-upu; ďalší reálny request ho vytvorí.
-      warmStarted = false;
-    });
-  }
-
   function installSmartSearch(form) {
     const input = form.querySelector("input[type='search'], input[type='text'], [data-smart-search-input]");
     if (!input || input.dataset.smartSearchReady === "1") return;
@@ -366,20 +345,8 @@
       }
     }, DEBOUNCE_MS);
 
-    input.addEventListener("input", () => {
-      const query = input.value.trim();
-      if (query.length >= MIN_QUERY_LENGTH) {
-        const cached = sessionRead(query);
-        if (cached) renderPanel(panel, cached, query);
-        else setLoading(panel, query);
-      } else {
-        panel.hidden = true;
-        panel.innerHTML = "";
-      }
-      run();
-    });
+    input.addEventListener("input", run);
     input.addEventListener("focus", () => {
-      warmSearchServer();
       if (input.value.trim().length >= MIN_QUERY_LENGTH) run();
     });
 
@@ -422,9 +389,20 @@
     });
   }
 
+  function warmSearchServer() {
+    if (window.__TM_SMART_SEARCH_WARM_PROMISE__) return window.__TM_SMART_SEARCH_WARM_PROMISE__;
+    const operation = fetch("/api/smart-search?q=__tm_warm__", {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    }).catch(() => null);
+    window.__TM_SMART_SEARCH_WARM_PROMISE__ = operation;
+    return operation;
+  }
+
   function init() {
-    document.querySelectorAll("form.search, form.catalog-search, [data-smart-search]").forEach(installSmartSearch);
+    // Warmup štartuje okamžite s UI, nie až pri prvom napísanom dotaze.
     warmSearchServer();
+    document.querySelectorAll("form.search, form.catalog-search, [data-smart-search]").forEach(installSmartSearch);
   }
 
   window.tmInitSmartSearch = init;

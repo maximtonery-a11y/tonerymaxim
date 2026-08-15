@@ -217,8 +217,29 @@ function makeIndexedProduct(product: any, index: number): IndexedProduct {
     .filter((printer) => printer.title);
 
   const tokens = uniqueWords(searchValue);
+  // Prefix index musí poznať aj celé reálne katalógové kódy (OEM/MPN/atribúty),
+  // nie iba tokeny rozdelené na pomlčkách. Napr. TN-247BK sa pri words() rozdelí
+  // na "tn" + "247bk"; bez celého "tn247bk" bucket pre dotaz TN247 neexistoval
+  // a search padal na drahý full-scan. Zároveň týmto nič nevieme o farbách:
+  // indexujeme ľubovoľné reálne hodnoty z katalógu.
+  const structuredValues = [
+    product.name,
+    product.sku,
+    product.mpn,
+    ...(Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [])
+      .flatMap((attribute: any) => [attribute?.value, ...(attribute?.values || []), ...(attribute?.options || [])]),
+  ].filter(Boolean);
+  const structuredCodes = structuredValues.flatMap((value) => {
+    const raw = String(value || "");
+    return [
+      compactKey(raw),
+      ...raw.split(/\s+/).map((part) => compactKey(part)),
+    ];
+  });
+
   const candidateTokens = [...new Set([
     ...tokens,
+    ...structuredCodes,
     compactKey(product.sku || ""),
     compactKey(product.slug || ""),
   ].filter((token) => token && token.length >= 2))];
