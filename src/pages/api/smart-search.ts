@@ -184,9 +184,15 @@ function modelTokenScore(queryToken: string, targetCompact: string, targetTokens
 
 function searchableValue(product: any) {
   const categories = Array.isArray(product.categories) ? product.categories.map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ") : "";
-  // search_text už obsahuje kompatibilné tlačiarne a atribúty. Ich opätovné
-  // pripájanie násobilo veľkosť indexu a výrazne spomaľovalo prvý dotaz.
-  return `${product.name || ""} ${product.sku || ""} ${product.slug || ""} ${categories} ${product.search_text || ""}`;
+  const printers = productPrinterValues(product).join(" ");
+  const attributes = (Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [])
+    .map((attribute: any) => [attribute?.name, attribute?.slug, attribute?.value, ...(attribute?.values || []), ...(attribute?.options || [])].filter(Boolean).join(" "))
+    .join(" ");
+  // Nášepkávač nepotrebuje indexovať dlhé marketingové popisy zo search_text.
+  // Indexujeme iba identitu produktu, kategórie, štruktúrované atribúty a
+  // kompatibilné tlačiarne. Výrazne to zrýchli cold/warm index bez straty
+  // relevantných tonerových, OEM a modelových zhôd.
+  return `${product.name || ""} ${product.sku || ""} ${product.slug || ""} ${categories} ${attributes} ${printers}`;
 }
 
 function makeIndexedProduct(product: any, index: number): IndexedProduct {

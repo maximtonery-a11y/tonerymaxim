@@ -92,16 +92,19 @@ function slimProduct(product: TmProduct) {
 export const GET: APIRoute = async ({ url }) => {
   try {
     const rawSearch = cleanParam(url.searchParams.get("search") || url.searchParams.get("s"));
-    const brand = cleanParam(url.searchParams.get("brand"));
-    const category = cleanParam(url.searchParams.get("category"));
+    const requestedBrand = cleanParam(url.searchParams.get("brand"));
+    const requestedCategory = cleanParam(url.searchParams.get("category"));
     const legacyComponentSearch = ["ostatné komponenty", "ostatne komponenty", "komponent"].includes(rawSearch.toLowerCase());
-    const search = category === "ostatne-komponenty" && legacyComponentSearch ? "" : rawSearch;
-    const type = cleanParam(url.searchParams.get("type"));
-    // Voľné vyhľadávanie tonera/tlačiarne nesmie zdediť starý farebný filter z URL.
-    // Farba je samostatný facet a používateľ ju môže zvoliť až nad výsledkami.
+    const search = requestedCategory === "ostatne-komponenty" && legacyComponentSearch ? "" : rawSearch;
+    // Textové vyhľadávanie je vždy globálne. Žiadny starý URL/filter stav
+    // (farba, typ, značka, sklad, kategória ani tlačiareň) nesmie obmedziť
+    // výsledky nového dotazu. Filtre sa uplatnia iba bez textového searchu.
+    const brand = search ? "" : requestedBrand;
+    const category = search ? "" : requestedCategory;
+    const type = search ? "" : cleanParam(url.searchParams.get("type"));
     const color = search ? "" : cleanParam(url.searchParams.get("color"));
-    const stock = cleanParam(url.searchParams.get("stock"));
-    const printer = cleanParam(url.searchParams.get("printer"));
+    const stock = search ? "" : cleanParam(url.searchParams.get("stock"));
+    const printer = search ? "" : cleanParam(url.searchParams.get("printer"));
     const page = Math.max(1, Number(url.searchParams.get("page") || 1));
     const perPage = Math.min(96, Math.max(1, Number(url.searchParams.get("per_page") || 12)));
 

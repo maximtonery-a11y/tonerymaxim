@@ -5,14 +5,13 @@
   }
   window.__TM_SMART_SEARCH_MODULE_READY__ = true;
 
-  const CACHE_KEY = "tm_smart_search_v6";
+  const CACHE_KEY = "tm_smart_search_v7";
   const CACHE_TTL = 20 * 60 * 1000;
-  // Dvojznakové dotazy (napr. „cr“) majú príliš široký výsledok. Pri krátkom
-  // debounce navyše každý pomalší úder klávesu spustil samostatný serverový
-  // výpočet a finálny dotaz čakal v rade. Tri znaky + 320 ms odošlú spravidla
-  // iba jeden hotový dotaz, stále s okamžitým pocitom odozvy.
+  // Nášepkávač štartuje od 3 znakov. Krátky debounce iba zlučuje veľmi rýchle
+  // údery klávesov; používateľ nemá čakať stovky ms pred samotným requestom.
   const MIN_QUERY_LENGTH = 3;
-  const DEBOUNCE_MS = 320;
+  const DEBOUNCE_MS = 120;
+  const WARM_URL = "/api/smart-search?q=__tm_warm__";
 
   const memory = new Map();
   const inflight = new Map();
@@ -310,6 +309,24 @@
     window.location.href = `/produkty?s=${encodeURIComponent(query)}`;
   }
 
+  let warmStarted = false;
+
+  function warmSearchServer() {
+    if (warmStarted) return;
+    warmStarted = true;
+    // Spusti zostavenie RAM indexu hneď po načítaní stránky, nie až po prvom
+    // zákazníckom dotaze. keepalive dovolí warm-up dokončiť aj pri navigácii.
+    fetch(WARM_URL, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      keepalive: true,
+      priority: "high",
+    }).catch(() => {
+      // Vyhľadávanie funguje aj bez warm-upu; ďalší reálny request ho vytvorí.
+      warmStarted = false;
+    });
+  }
+
   function installSmartSearch(form) {
     const input = form.querySelector("input[type='search'], input[type='text'], [data-smart-search-input]");
     if (!input || input.dataset.smartSearchReady === "1") return;
@@ -349,8 +366,20 @@
       }
     }, DEBOUNCE_MS);
 
-    input.addEventListener("input", run);
+    input.addEventListener("input", () => {
+      const query = input.value.trim();
+      if (query.length >= MIN_QUERY_LENGTH) {
+        const cached = sessionRead(query);
+        if (cached) renderPanel(panel, cached, query);
+        else setLoading(panel, query);
+      } else {
+        panel.hidden = true;
+        panel.innerHTML = "";
+      }
+      run();
+    });
     input.addEventListener("focus", () => {
+      warmSearchServer();
       if (input.value.trim().length >= MIN_QUERY_LENGTH) run();
     });
 
@@ -395,6 +424,7 @@
 
   function init() {
     document.querySelectorAll("form.search, form.catalog-search, [data-smart-search]").forEach(installSmartSearch);
+    warmSearchServer();
   }
 
   window.tmInitSmartSearch = init;

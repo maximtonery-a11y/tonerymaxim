@@ -111,7 +111,10 @@ function referenceAliases(value: unknown, includeMixedTokenSegments = true) {
     if (/^[a-z]{1,12}$/.test(token) && /^\d{1,8}[a-z]{0,4}$/.test(next)) {
       aliases.add(`${token}${next}`);
     }
-    if (/^\d{2,6}$/.test(token) && /^(?:xl|xxl|bk|k|c|m|y)$/.test(next)) {
+    // Neviažeme vyhľadávanie na žiadny zoznam farieb ani kapacitných koncoviek.
+    // Ak je kód rozdelený medzerou/pomlčkou (napr. 247 GY), spojíme ho
+    // všeobecne; význam koncovky určuje iba reálny katalógový kód.
+    if (/^\d{2,8}$/.test(token) && /^[a-z]{1,12}$/.test(next)) {
       aliases.add(`${token}${next}`);
     }
   }
@@ -205,26 +208,26 @@ export function productBrand(product: CatalogProduct) {
   }) || "";
 }
 
-function referenceMatchStrength(reference: string, aliases: Set<string>) {
+function referenceMatchStrength(reference: string, aliases: Set<string>, allowFamilyPrefix = true) {
   if (aliases.has(reference)) return 3;
 
   if (/^\d{2,6}$/.test(reference)) {
     if (aliases.has(`${reference}xl`) || aliases.has(`${reference}xxl`)) return 2;
   }
 
-  // OEM rodiny sa často hľadajú bez kapacitnej koncovky: W1420 musí nájsť
-  // W1420A/W1420X/W1420XL, ale nikdy inú číselnú rodinu W1350/W1470.
-  // Ak zákazník koncovku zadá (W1420A), vyžaduje sa už presná zhoda vyššie.
-  if (/^(?=.*[a-z])(?=.*\d)[a-z0-9]+\d$/.test(reference)) {
-    if ([...aliases].some((alias) => /(?:a|x|y|xl|xxl)$/.test(alias) && alias.replace(/(?:a|x|y|xl|xxl)$/, "") === reference)) {
-      return 2;
-    }
+  // Rodina spotrebného materiálu sa rozširuje dátovo, bez zoznamu farieb
+  // alebo povolených suffixov. Za prefixom môže byť ľubovoľná alfanumerická
+  // koncovka začínajúca písmenom; ďalšia číselná rada sa tým nezachytí.
+  if (allowFamilyPrefix && /^(?=.*[a-z])(?=.*\d)[a-z0-9]+\d$/.test(reference)) {
+    if ([...aliases].some((alias) => alias.startsWith(reference)
+      && alias.length > reference.length
+      && /^[a-z][a-z0-9]*$/.test(alias.slice(reference.length)))) return 2;
   }
 
   return 0;
 }
 
-export function exactProductIdentityMatch(product: CatalogProduct, analysis: CatalogQueryAnalysis) {
+export function exactProductIdentityMatch(product: CatalogProduct, analysis: CatalogQueryAnalysis, allowFamilyPrefix = true) {
   if (!analysis.hasReference) return null;
 
   const brand = productBrand(product);
@@ -235,7 +238,7 @@ export function exactProductIdentityMatch(product: CatalogProduct, analysis: Cat
   let score = 0;
 
   for (const reference of analysis.referenceTokens) {
-    const strength = referenceMatchStrength(reference, aliases);
+    const strength = referenceMatchStrength(reference, aliases, allowFamilyPrefix);
     if (!strength) continue;
     matchedReferences.push(reference);
     score = Math.max(score, strength === 3 ? 300 : 255);
@@ -267,9 +270,16 @@ export function findExactProductIdentityMatches(products: CatalogProduct[], quer
   const analysis = analyzeCatalogQuery(query);
   if (!analysis.hasReference) return [];
 
+  // Ak je dotaz zároveň presným modelom tlačiarne v katalógu (napr. C301),
+  // nesmie sa produktová rodina rozšíriť na C301dn. Pri OEM dotaze (TN247,
+  // W1420...) sa naopak prefix rozšíri na všetky reálne suffixy bez znalosti farby.
+  const queryIsExactPrinter = products.some((product) =>
+    productPrinterValues(product).some((printer) => exactPrinterModelMatch(printer, analysis))
+  );
+
   const matches = products
     .map((product) => {
-      const match = exactProductIdentityMatch(product, analysis);
+      const match = exactProductIdentityMatch(product, analysis, !queryIsExactPrinter);
       return match ? { product, ...match } : null;
     })
     .filter(Boolean)

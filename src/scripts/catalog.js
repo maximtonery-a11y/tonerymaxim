@@ -877,12 +877,21 @@ import { getDispatchParts } from "./dispatch-message.js";
     currentBrand = (url.searchParams.get("brand") || "").trim();
     currentCategory = (url.searchParams.get("category") || "").trim();
     currentType = (url.searchParams.get("type") || "").trim();
-    currentColor = currentSearch ? "" : (url.searchParams.get("color") || "").trim();
-    if (currentSearch && url.searchParams.has("color")) {
-      url.searchParams.delete("color");
+    currentColor = (url.searchParams.get("color") || "").trim();
+    currentStock = (url.searchParams.get("stock") || "").trim();
+
+    // Nový textový dotaz nikdy nededí staré filtre z URL/histórie.
+    // Search musí prehľadať celý katalóg; filtre môže používateľ zvoliť až potom.
+    if (currentSearch) {
+      currentPrinter = "";
+      currentBrand = "";
+      currentCategory = "";
+      currentType = "";
+      currentColor = "";
+      currentStock = "";
+      ["printer", "brand", "category", "type", "color", "stock"].forEach((key) => url.searchParams.delete(key));
       window.history.replaceState({}, "", url.toString());
     }
-    currentStock = (url.searchParams.get("stock") || "").trim();
 
     if (currentCategory === "ostatne-komponenty" && ["ostatné komponenty", "ostatne komponenty", "komponent"].includes(currentSearch.toLowerCase())) {
       currentSearch = "";
@@ -964,11 +973,6 @@ import { getDispatchParts } from "./dispatch-message.js";
       currentPage = 1;
       currentSearch = document.querySelector("[data-catalog-search]").value.trim();
       currentPrinter = "";
-      currentBrand = "";
-      currentCategory = "";
-      currentType = "";
-      currentColor = "";
-      currentStock = "";
       loadProducts();
     });
 
