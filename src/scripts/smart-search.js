@@ -16,6 +16,8 @@
   const inflight = new Map();
   const catalogInflight = new Map();
   let runSerial = 0;
+  let suggestionWorker = null;
+  let pendingSuggestion = null;
 
   function normalize(value) {
     return String(value || "")
@@ -242,29 +244,104 @@
     panel.hidden = false;
   }
 
-  async function fetchSuggestions(query) {
+  async function fetchSuggestionsDirect(query) {
     const cached = sessionRead(query);
     if (cached) return cached;
 
     const key = cacheKey(query);
     if (inflight.has(key)) return inflight.get(key);
 
-    // Neabortujeme už rozbehnutý serverový search pri každom ďalšom znaku.
-    // Abort v prehliadači nezastaví CPU prácu na serveri a pri rýchlom písaní
-    // vytváral frontu drahých requestov. Starú odpoveď ignoruje runSerial.
-    const promise = fetch(`/api/smart-search?q=${encodeURIComponent(query)}`, {
-      headers: { Accept: "application/json" },
-    })
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok || !data.ok) throw new Error(data.error || "Vyhľadávanie zlyhalo.");
-        sessionWrite(query, data);
-        return data;
-      })
-      .finally(() => inflight.delete(key));
+    const request = async () => {
+      let lastError;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          const response = await fetch(`/api/smart-search?q=${encodeURIComponent(query)}`, {
+            headers: { Accept: "application/json" },
+            cache: "no-store",
+          });
+          const data = await response.json().catch(() => null);
+          if (!response.ok || !data?.ok) {
+            const error = new Error(data?.error || `Vyhľadávanie zlyhalo (${response.status}).`);
+            error.status = response.status;
+            throw error;
+          }
+          sessionWrite(query, data);
+          return data;
+        } catch (error) {
+          lastError = error;
+          const retryable = !error?.status || [429, 502, 503, 504].includes(error.status);
+          if (!retryable || attempt === 1) throw error;
+          await new Promise((resolve) => setTimeout(resolve, 120));
+        }
+      }
+      throw lastError || new Error("Vyhľadávanie zlyhalo.");
+    };
 
+    const promise = request().finally(() => inflight.delete(key));
     inflight.set(key, promise);
     return promise;
+  }
+
+  // Na server nikdy neposielame viac nášepkávacích výpočtov naraz z jedného
+  // prehliadača. Pri rýchlom písaní sa čakajúci dotaz nahradí najnovším.
+  // Tým nevzniká fronta tn2 -> tn24 -> tn243 -> ... ktorá predtým vedela
+  // zahltiť Node proces a skončiť 502/503 alebo niekoľkosekundovým čakaním.
+  function fetchSuggestions(query) {
+    const cached = sessionRead(query);
+    if (cached) return Promise.resolve(cached);
+
+    if (suggestionWorker) {
+      return new Promise((resolve, reject) => {
+        if (pendingSuggestion) pendingSuggestion.resolve(null);
+        pendingSuggestion = { query, resolve, reject };
+      }).then((data) => data || fetchSuggestions(query));
+    }
+
+    const run = async (firstQuery) => {
+      let current = firstQuery;
+      let firstResult;
+      let firstError;
+      while (current) {
+        try {
+          const data = await fetchSuggestionsDirect(current);
+          if (current === firstQuery) firstResult = data;
+          const pending = pendingSuggestion;
+          pendingSuggestion = null;
+          if (pending) {
+            if (cacheKey(pending.query) === cacheKey(current)) pending.resolve(data);
+            else {
+              current = pending.query;
+              try {
+                const nextData = await fetchSuggestionsDirect(current);
+                pending.resolve(nextData);
+              } catch (error) {
+                pending.reject(error);
+              }
+              current = null;
+            }
+          } else current = null;
+        } catch (error) {
+          if (current === firstQuery) firstError = error;
+          const pending = pendingSuggestion;
+          pendingSuggestion = null;
+          if (pending) {
+            current = pending.query;
+            try {
+              const nextData = await fetchSuggestionsDirect(current);
+              pending.resolve(nextData);
+            } catch (nextError) {
+              pending.reject(nextError);
+            }
+            current = null;
+          } else current = null;
+        }
+      }
+      if (firstError) throw firstError;
+      return firstResult;
+    };
+
+    suggestionWorker = run(query).finally(() => { suggestionWorker = null; });
+    return suggestionWorker;
   }
 
   function prefetchCatalog(query) {
@@ -340,7 +417,7 @@
         renderPanel(panel, data, query);
       } catch (error) {
         if (error?.name === "AbortError") return;
-        panel.innerHTML = `<div class="tm-smart-empty"><strong>Vyhľadávanie sa nepodarilo.</strong><span>Stlačte Enter a otvorí sa klasický výpis.</span></div>`;
+        panel.innerHTML = `<div class="tm-smart-empty"><strong>Dočasne sa nepodarilo načítať nášepkávač.</strong><span>Skúste pokračovať v písaní alebo stlačte Enter.</span></div>`;
         panel.hidden = false;
       }
     }, DEBOUNCE_MS);
