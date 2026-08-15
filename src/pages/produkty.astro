@@ -24,7 +24,8 @@ const initialFilters = {
   brand: clean("brand"),
   category: requestedCategory,
   type: clean("type"),
-  color: clean("color"),
+  // Pri textovom vyhľadávaní nesmie starý/sticky farebný filter obmedziť výsledky.
+  color: query ? "" : clean("color"),
   stock: clean("stock"),
 };
 const hasFilters = Object.values(initialFilters).some(Boolean);

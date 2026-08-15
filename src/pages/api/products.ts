@@ -97,7 +97,9 @@ export const GET: APIRoute = async ({ url }) => {
     const legacyComponentSearch = ["ostatné komponenty", "ostatne komponenty", "komponent"].includes(rawSearch.toLowerCase());
     const search = category === "ostatne-komponenty" && legacyComponentSearch ? "" : rawSearch;
     const type = cleanParam(url.searchParams.get("type"));
-    const color = cleanParam(url.searchParams.get("color"));
+    // Voľné vyhľadávanie tonera/tlačiarne nesmie zdediť starý farebný filter z URL.
+    // Farba je samostatný facet a používateľ ju môže zvoliť až nad výsledkami.
+    const color = search ? "" : cleanParam(url.searchParams.get("color"));
     const stock = cleanParam(url.searchParams.get("stock"));
     const printer = cleanParam(url.searchParams.get("printer"));
     const page = Math.max(1, Number(url.searchParams.get("page") || 1));

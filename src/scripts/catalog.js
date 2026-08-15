@@ -877,7 +877,11 @@ import { getDispatchParts } from "./dispatch-message.js";
     currentBrand = (url.searchParams.get("brand") || "").trim();
     currentCategory = (url.searchParams.get("category") || "").trim();
     currentType = (url.searchParams.get("type") || "").trim();
-    currentColor = (url.searchParams.get("color") || "").trim();
+    currentColor = currentSearch ? "" : (url.searchParams.get("color") || "").trim();
+    if (currentSearch && url.searchParams.has("color")) {
+      url.searchParams.delete("color");
+      window.history.replaceState({}, "", url.toString());
+    }
     currentStock = (url.searchParams.get("stock") || "").trim();
 
     if (currentCategory === "ostatne-komponenty" && ["ostatné komponenty", "ostatne komponenty", "komponent"].includes(currentSearch.toLowerCase())) {
@@ -960,6 +964,11 @@ import { getDispatchParts } from "./dispatch-message.js";
       currentPage = 1;
       currentSearch = document.querySelector("[data-catalog-search]").value.trim();
       currentPrinter = "";
+      currentBrand = "";
+      currentCategory = "";
+      currentType = "";
+      currentColor = "";
+      currentStock = "";
       loadProducts();
     });
 
