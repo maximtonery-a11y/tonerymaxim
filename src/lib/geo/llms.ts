@@ -22,12 +22,28 @@ ToneryMaxim.sk pomáha zákazníkom nájsť správnu náplň podľa presného mo
 
 ## Odborné návody
 
+### Tematické centrá
+
+- [Výber správnej náplne](${ORIGIN}/poradna/kategoria/vyber-naplne): Presný model tlačiarne, OEM kód, typ a veľkosť kazety.
+- [Riešenie problémov s tlačou](${ORIGIN}/poradna/kategoria/riesenie-problemov): Diagnostika hlásení, bledej tlače, pásov, bodiek a problémov po výmene kazety.
+- [Čipy a firmvér](${ORIGIN}/poradna/kategoria/cipy-firmware): Funkcia čipu, hlásenia tlačiarne a vplyv aktualizácií firmvéru.
+- [Náklady a výťažnosť](${ORIGIN}/poradna/kategoria/naklady-vytaznost): Výpočet ceny za stranu, normy výťažnosti a voľba štandardnej alebo XL kazety.
+- [Údržba a bezpečnosť](${ORIGIN}/poradna/kategoria/udrzba-bezpecnost): Bezpečná výmena, skladovanie, čistenie a riešenie vysypaného tonera.
+
+### Prioritné odpovede
+
 - [Ako vybrať toner podľa presného modelu tlačiarne](${ORIGIN}/poradna/ako-vybrat-toner-podla-modelu-tlaciarne)
+- [Ako zistiť presný model tlačiarne](${ORIGIN}/poradna/ako-zistit-presny-model-tlaciarne)
 - [Ako nájsť toner podľa OEM kódu](${ORIGIN}/poradna/ako-najst-toner-podla-oem-kodu)
 - [Kompatibilný alebo originálny toner](${ORIGIN}/poradna/kompatibilny-alebo-originalny-toner)
 - [Toner alebo optický valec](${ORIGIN}/poradna/toner-alebo-opticky-valec)
 - [Čo znamená výťažnosť tonera](${ORIGIN}/poradna/co-znamena-vytaznost-tonera)
+- [Čo znamená ISO/IEC 19752 pri výťažnosti tonera](${ORIGIN}/poradna/iso-iec-19752-vytaznost-tonera)
+- [Ako vypočítať cenu tlače za jednu stranu](${ORIGIN}/poradna/ako-vypocitat-cenu-za-stranu)
 - [Riešenie pásov, fľakov a bledej tlače](${ORIGIN}/poradna/tlaciaren-tlaci-pasy-alebo-bledo)
+- [HP Supply Memory Error – čo skontrolovať](${ORIGIN}/poradna/hp-supply-memory-error-co-robit)
+- [Brother hlási Replace Toner aj po výmene](${ORIGIN}/poradna/brother-replace-toner-po-vymene)
+- [Ako aktualizácia firmvéru ovplyvňuje kompatibilný toner](${ORIGIN}/poradna/aktualizacia-firmveru-a-kompatibilny-toner)
 
 ## Informácie o obchode
 
