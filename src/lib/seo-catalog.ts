@@ -66,7 +66,7 @@ export const SEO_BRANDS: BrandDefinition[] = [
   { slug: "pantum", name: "Pantum", aliases: ["pantum"] },
 ];
 
-const OEM_PATTERN = /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CRG|CF|CE|W|Q|TK|MLT|CLT|T)[\s-]*\d{2,6}(?:[\s-]*[A-Z]{1,3})?\b|\b(?:C13T|C13S)[A-Z0-9]{4,12}\b/gi;
+const OEM_PATTERN = /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CRG|CF|CE|W|Q|TK|MLT|CLT|T)[\s-]*\d{2,6}(?:[\s-]*[A-Z]{1,3})?\b|\b(?:C13T|C13S)[A-Z0-9]{4,12}\b|\b\d{3}R\d{5}\b/gi;
 
 export function entitySlug(value: unknown): string {
   return normalize(value)

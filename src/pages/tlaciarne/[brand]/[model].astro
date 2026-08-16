@@ -12,7 +12,8 @@ import {
 } from "../../../lib/seo-catalog";
 import { findPrinterGeoPilot, pilotFaq } from "../../../data/geo-pilot";
 import { geoPrinterPriority } from "../../../data/geo-priorities";
-import { benchmarkAnswer, benchmarkForPath, DEFAULT_GEO_GUIDES } from "../../../data/geo-benchmark-content";
+import { benchmarkForPath, DEFAULT_GEO_GUIDES } from "../../../data/geo-benchmark-content";
+import { printerGeoAnswer } from "../../../lib/geo-entity-answer";
 
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const printer = findPrinterEntity(cache.products, Astro.params.brand, Astro.params.model);
@@ -34,7 +35,11 @@ const canonicalPath = printer
   ? `/tlaciarne/${printer.brand.slug}/${printer.slug}`
   : Astro.url.pathname;
 const benchmark = printer ? benchmarkForPath(canonicalPath) : undefined;
-const guideLinks = geoPilot?.adviceLinks?.length ? geoPilot.adviceLinks : DEFAULT_GEO_GUIDES;
+const integratedDrum = Boolean(geoPilot && /(?:obsahuje|súčasťou|spojen[ée]|jednej zostave|v jednej kazete).{0,80}(?:valec|drum)|(?:valec|drum).{0,80}(?:obsahuje|súčasťou|spojen[ée]|jednej zostave|v jednej kazete)/i.test(`${geoPilot.productKind} ${geoPilot.selection} ${geoPilot.caution}`));
+const rawGuideLinks = geoPilot?.adviceLinks?.length ? geoPilot.adviceLinks : DEFAULT_GEO_GUIDES;
+const guideLinks = integratedDrum
+  ? rawGuideLinks.filter((link) => !/valec|drum/i.test(`${link.href} ${link.label}`))
+  : rawGuideLinks;
 const relatedPrinterLinks = printer
   ? topPrinterLinks(brandProducts(cache.products, printer.brand), 24)
       .filter((link) => link.href !== canonicalPath)
@@ -65,6 +70,8 @@ if (imageCandidate) {
     modelImage = undefined;
   }
 }
+const geoAnswer = !notFound ? printerGeoAnswer(printerName, products, geoPilot) : undefined;
+
 const typeFacts = [
   ...(stats.compatible ? [`Kompatibilné: ${stats.compatible}`] : []),
   ...(stats.original ? [`Originálne: ${stats.original}`] : []),
@@ -86,11 +93,7 @@ const typeFacts = [
     ? "Skontrolujte označenie modelu alebo sa vráťte na výber tlačiarne."
     : `Zobrazené produkty majú model ${printerName} uvedený medzi kompatibilnými tlačiarňami. Pred objednaním odporúčame porovnať aj OEM označenie kazety.`}
   products={products}
-  answer={notFound
-    ? ""
-    : benchmark
-      ? benchmarkAnswer(printerName, benchmark.expected, "printer")
-      : `Podľa aktuálneho katalógu ToneryMaxim.sk je k tlačiarni ${printerName} priradených ${stats.total} produktov s platnou cenou, z ktorých je ${stats.inStock} skladom. Pred nákupom porovnajte celý model, OEM kód a farbu kazety.`}
+  answer={notFound ? "" : geoAnswer?.answer || ""}
   generatedAt={cache.generated_at}
   breadcrumbs={[
     { name: "Tlačiarne", path: "/tlaciarne" },
@@ -109,23 +112,11 @@ const typeFacts = [
     { href: "/tlaciarne", label: "Zmeniť tlačiareň" },
   ]}
   faq={notFound ? [] : [
-    { question: `Ktorý toner je vhodný pre ${printerName}?`, answer: `Vyberte niektorý z produktov uvedených na tejto stránke a v detaile ešte skontrolujte model ${printerName} a OEM označenie kazety.` },
+    { question: geoAnswer?.question || `Ktorá náplň je vhodná pre ${printerName}?`, answer: geoAnswer?.answer || "" },
     ...(stats.compatible > 0 ? [{ question: "Môžem použiť kompatibilný toner namiesto originálneho?", answer: "Áno, ak je konkrétny kompatibilný produkt určený pre tento model tlačiarne. Typ produktu je viditeľne označený pri každej položke." }] : []),
     ...(geoPilot ? pilotFaq(printerName, geoPilot) : []),
   ]}
   contentSections={notFound ? [] : [
-    ...(geoPriority ? [{
-      heading: benchmark?.prompt || `Aké náplne sú podľa katalógu priradené k ${printerName}?`,
-      paragraphs: [benchmark
-        ? benchmarkAnswer(printerName, benchmark.expected, "printer")
-        : `Táto stránka vychádza z aktuálneho produktového katalógu ToneryMaxim.sk a zobrazuje produkty, pri ktorých je model ${printerName} uvedený medzi kompatibilnými tlačiarňami.`],
-      bullets: [`Aktuálne priradených produktov: ${stats.total}.`, `Skladom: ${stats.inStock}.`, "Podobné číslo modelu neznamená automaticky rovnaký toner; rozhoduje celý názov modelu a OEM kód."],
-    }] : []),
-    ...(geoPilot ? [{
-      heading: `Odborné odporúčanie pre ${printerName}`,
-      paragraphs: [geoPilot.selection, geoPilot.caution],
-      bullets: [`Typ spotrebného materiálu: ${geoPilot.productKind}.`, "Porovnajte celý OEM kód vrátane farebnej alebo kapacitnej koncovky.", "Kompatibilitu potvrďte v detaile konkrétneho produktu."],
-    }] : []),
     {
       heading: `Výber tonera alebo náplne pre ${printerName}`,
       paragraphs: [`Produkty na tejto stránke majú model ${printerName} uvedený v zozname kompatibilných tlačiarní. Rozhodujúci je celý názov modelu, pretože podobne pomenované zariadenia ${brandName} nemusia používať rovnakú kazetu.`],
@@ -148,10 +139,8 @@ const typeFacts = [
     { name: `Tonery pre ${printerName}` },
   ]}
   expertGuide={geoPriority || geoPilot ? {
-    title: benchmark?.prompt || `Aké náplne používa ${printerName}?`,
-    summary: benchmark
-      ? benchmarkAnswer(printerName, benchmark.expected, "printer")
-      : `${geoPilot?.selection || "Výber vychádza z aktuálneho katalógu."} ${geoPilot?.caution || "Pred objednaním potvrďte celý model a OEM kód."}`,
+    title: geoAnswer?.question || benchmark?.prompt || `Aké náplne používa ${printerName}?`,
+    summary: geoAnswer?.answer || `${geoPilot?.selection || "Výber vychádza z aktuálneho katalógu."} ${geoPilot?.caution || "Pred objednaním potvrďte celý model a OEM kód."}`,
     updated: "2026-08-09",
     author: "Roman Babčan",
     experience: "17+ rokov skúseností",
