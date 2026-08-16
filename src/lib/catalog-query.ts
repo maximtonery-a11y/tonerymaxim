@@ -56,6 +56,15 @@ export type ExactPrinterCatalogMatch = {
   matchedPrinters: string[];
 };
 
+// Memoizácia odvodených search hodnôt. Produktová cache používa počas života
+// procesu tie isté objekty, takže drahé parsovanie identity/atribútov/tlačiarní
+// nemusíme opakovať pri každom dotaze ani pri negatívnom vyhľadávaní.
+const PRODUCT_IDENTITY_ALIASES = new WeakMap<object, Set<string>>();
+const PRODUCT_BRAND_CACHE = new WeakMap<object, string>();
+const PRODUCT_PRINTER_VALUES = new WeakMap<object, string[]>();
+const REFERENCE_ALIASES_CACHE = new Map<string, Set<string>>();
+const REFERENCE_ALIASES_CACHE_MAX = 50_000;
+
 const QUERY_FILLER_WORDS = new Set([
   "aky",
   "aka",
@@ -86,8 +95,13 @@ function alphanumericTokens(value: unknown) {
 }
 
 function referenceAliases(value: unknown, includeMixedTokenSegments = true) {
+  const rawValue = String(value || "");
+  const cacheKey = `${includeMixedTokenSegments ? "1" : "0"}:${rawValue}`;
+  const cached = REFERENCE_ALIASES_CACHE.get(cacheKey);
+  if (cached) return cached;
+
   const aliases = new Set<string>();
-  const tokens = alphanumericTokens(value);
+  const tokens = alphanumericTokens(rawValue);
 
   for (let index = 0; index < tokens.length; index += 1) {
     const token = compactKey(tokens[index]);
@@ -119,6 +133,11 @@ function referenceAliases(value: unknown, includeMixedTokenSegments = true) {
     }
   }
 
+  REFERENCE_ALIASES_CACHE.set(cacheKey, aliases);
+  if (REFERENCE_ALIASES_CACHE.size > REFERENCE_ALIASES_CACHE_MAX) {
+    const oldest = REFERENCE_ALIASES_CACHE.keys().next().value;
+    if (oldest) REFERENCE_ALIASES_CACHE.delete(oldest);
+  }
   return aliases;
 }
 
@@ -195,17 +214,23 @@ export function productIdentityValue(product: CatalogProduct) {
 }
 
 export function productBrand(product: CatalogProduct) {
+  if (product && typeof product === "object") {
+    const cached = PRODUCT_BRAND_CACHE.get(product);
+    if (cached !== undefined) return cached;
+  }
   const identity = normalize(productIdentityValue(product));
   const categoryText = Array.isArray(product.categories)
     ? product.categories.map((category: any) => `${category?.name || ""} ${category?.slug || ""}`).join(" ")
     : "";
   const searchable = normalize(`${identity} ${categoryText}`);
 
-  return CATALOG_BRANDS.find((brand) => {
+  const result = CATALOG_BRANDS.find((brand) => {
     const normalizedBrand = normalize(brand);
     if (normalizedBrand === "hp") return /(^|[^a-z0-9])hp([^a-z0-9]|$)/.test(searchable) || searchable.includes("hewlett packard");
     return searchable.includes(normalizedBrand);
   }) || "";
+  if (product && typeof product === "object") PRODUCT_BRAND_CACHE.set(product, result);
+  return result;
 }
 
 function referenceMatchStrength(reference: string, aliases: Set<string>, allowFamilyPrefix = true) {
@@ -233,7 +258,11 @@ export function exactProductIdentityMatch(product: CatalogProduct, analysis: Cat
   const brand = productBrand(product);
   if (analysis.brands.length && !analysis.brands.some((queryBrand) => compactKey(queryBrand) === compactKey(brand))) return null;
 
-  const aliases = referenceAliases(productIdentityValue(product));
+  let aliases = product && typeof product === "object" ? PRODUCT_IDENTITY_ALIASES.get(product) : undefined;
+  if (!aliases) {
+    aliases = referenceAliases(productIdentityValue(product));
+    if (product && typeof product === "object") PRODUCT_IDENTITY_ALIASES.set(product, aliases);
+  }
   const matchedReferences: string[] = [];
   let score = 0;
 
@@ -319,6 +348,10 @@ function uniqueValues(values: unknown[]) {
  * pri krátkych modeloch by vytváral falošné zhody.
  */
 export function productPrinterValues(product: CatalogProduct) {
+  if (product && typeof product === "object") {
+    const cached = PRODUCT_PRINTER_VALUES.get(product);
+    if (cached) return cached;
+  }
   const values: unknown[] = [
     ...(Array.isArray(product.compatible_printers) ? product.compatible_printers : []),
     ...(Array.isArray(product.printers) ? product.printers : []),
@@ -338,7 +371,9 @@ export function productPrinterValues(product: CatalogProduct) {
     if (Array.isArray(attribute?.options)) values.push(...attribute.options);
   });
 
-  return uniqueValues(values.flatMap((value) => Array.isArray(value) ? value : [value]));
+  const result = uniqueValues(values.flatMap((value) => Array.isArray(value) ? value : [value]));
+  if (product && typeof product === "object") PRODUCT_PRINTER_VALUES.set(product, result);
+  return result;
 }
 
 /**

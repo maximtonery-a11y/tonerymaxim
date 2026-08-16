@@ -10,14 +10,11 @@
   // Nášepkávač štartuje od 3 znakov. Krátky debounce iba zlučuje veľmi rýchle
   // údery klávesov; používateľ nemá čakať stovky ms pred samotným requestom.
   const MIN_QUERY_LENGTH = 3;
-  const DEBOUNCE_MS = 70;
+  const DEBOUNCE_MS = 90;
 
   const memory = new Map();
-  const inflight = new Map();
   const catalogInflight = new Map();
-  let runSerial = 0;
-  let suggestionWorker = null;
-  let pendingSuggestion = null;
+  let warmupStarted = false;
 
   function normalize(value) {
     return String(value || "")
@@ -224,7 +221,11 @@
       productCount > 6 ? `<a class="tm-smart-all" href="/produkty?s=${encodeURIComponent(query)}">Zobraziť všetkých ${productCount} produktov <span>›</span></a>` : "",
     ].join("");
 
-    panel.innerHTML = html || `
+    const alternative = data?.didYouMean
+      ? `<div class="tm-smart-empty tm-smart-empty--alternative"><strong>Možno ste mysleli:</strong><a class="tm-smart-didyoumean" href="${esc(data.didYouMean.url)}">${esc(data.didYouMean.label)}</a></div>`
+      : "";
+
+    panel.innerHTML = html || alternative || `
       <div class="tm-smart-empty">
         <strong>Nič sme nenašli.</strong>
         <span>Skúste zadať model tlačiarne, značku alebo kód toneru.</span>
@@ -244,104 +245,34 @@
     panel.hidden = false;
   }
 
-  async function fetchSuggestionsDirect(query) {
+  async function fetchSuggestions(query, signal) {
     const cached = sessionRead(query);
     if (cached) return cached;
 
-    const key = cacheKey(query);
-    if (inflight.has(key)) return inflight.get(key);
-
-    const request = async () => {
-      let lastError;
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        try {
-          const response = await fetch(`/api/smart-search?q=${encodeURIComponent(query)}`, {
-            headers: { Accept: "application/json" },
-            cache: "no-store",
-          });
-          const data = await response.json().catch(() => null);
-          if (!response.ok || !data?.ok) {
-            const error = new Error(data?.error || `Vyhľadávanie zlyhalo (${response.status}).`);
-            error.status = response.status;
-            throw error;
-          }
-          sessionWrite(query, data);
-          return data;
-        } catch (error) {
-          lastError = error;
-          const retryable = !error?.status || [429, 502, 503, 504].includes(error.status);
-          if (!retryable || attempt === 1) throw error;
-          await new Promise((resolve) => setTimeout(resolve, 120));
-        }
-      }
-      throw lastError || new Error("Vyhľadávanie zlyhalo.");
-    };
-
-    const promise = request().finally(() => inflight.delete(key));
-    inflight.set(key, promise);
-    return promise;
+    const response = await fetch(`/api/smart-search?q=${encodeURIComponent(query)}`, {
+      headers: { Accept: "application/json" },
+      signal,
+      cache: "no-store",
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Vyhľadávanie zlyhalo.");
+    sessionWrite(query, data);
+    return data;
   }
 
-  // Na server nikdy neposielame viac nášepkávacích výpočtov naraz z jedného
-  // prehliadača. Pri rýchlom písaní sa čakajúci dotaz nahradí najnovším.
-  // Tým nevzniká fronta tn2 -> tn24 -> tn243 -> ... ktorá predtým vedela
-  // zahltiť Node proces a skončiť 502/503 alebo niekoľkosekundovým čakaním.
-  function fetchSuggestions(query) {
-    const cached = sessionRead(query);
-    if (cached) return Promise.resolve(cached);
-
-    if (suggestionWorker) {
-      return new Promise((resolve, reject) => {
-        if (pendingSuggestion) pendingSuggestion.resolve(null);
-        pendingSuggestion = { query, resolve, reject };
-      }).then((data) => data || fetchSuggestions(query));
-    }
-
-    const run = async (firstQuery) => {
-      let current = firstQuery;
-      let firstResult;
-      let firstError;
-      while (current) {
-        try {
-          const data = await fetchSuggestionsDirect(current);
-          if (current === firstQuery) firstResult = data;
-          const pending = pendingSuggestion;
-          pendingSuggestion = null;
-          if (pending) {
-            if (cacheKey(pending.query) === cacheKey(current)) pending.resolve(data);
-            else {
-              current = pending.query;
-              try {
-                const nextData = await fetchSuggestionsDirect(current);
-                pending.resolve(nextData);
-              } catch (error) {
-                pending.reject(error);
-              }
-              current = null;
-            }
-          } else current = null;
-        } catch (error) {
-          if (current === firstQuery) firstError = error;
-          const pending = pendingSuggestion;
-          pendingSuggestion = null;
-          if (pending) {
-            current = pending.query;
-            try {
-              const nextData = await fetchSuggestionsDirect(current);
-              pending.resolve(nextData);
-            } catch (nextError) {
-              pending.reject(nextError);
-            }
-            current = null;
-          } else current = null;
-        }
-      }
-      if (firstError) throw firstError;
-      return firstResult;
+  function warmupSearch() {
+    if (warmupStarted) return;
+    warmupStarted = true;
+    const start = () => {
+      fetch('/api/smart-search?q=__tm_warm__', {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+        priority: 'low',
+      }).catch(() => {});
     };
-
-    suggestionWorker = run(query).finally(() => { suggestionWorker = null; });
-    return suggestionWorker;
+    // Index začni zohrievať okamžite. requestIdleCallback vedel warmup odložiť
+    // až o 800 ms, takže prvý používateľský dotaz mohol predbehnúť index.
+    start();
   }
 
   function prefetchCatalog(query) {
@@ -391,56 +322,102 @@
     form.dataset.smartSearch = "true";
 
     const { panel } = prepareWrapper(form, input);
+    let timer = null;
+    let loadingTimer = null;
+    let controller = null;
+    let serial = 0;
 
-    const run = debounce(async () => {
+    const cancelPending = () => {
+      serial += 1;
+      if (timer) clearTimeout(timer);
+      if (loadingTimer) clearTimeout(loadingTimer);
+      timer = null;
+      loadingTimer = null;
+      if (controller) controller.abort();
+      controller = null;
+    };
+
+    const hidePanel = () => {
+      panel.hidden = true;
+      panel.innerHTML = "";
+      input.setAttribute("aria-expanded", "false");
+    };
+
+    const schedule = () => {
+      cancelPending();
       const query = input.value.trim();
-      const serial = ++runSerial;
-      input.setAttribute("aria-expanded", query.length >= MIN_QUERY_LENGTH ? "true" : "false");
+      const mySerial = serial;
 
       if (query.length < MIN_QUERY_LENGTH) {
-        panel.hidden = true;
-        panel.innerHTML = "";
+        hidePanel();
         return;
       }
 
+      input.setAttribute("aria-expanded", "true");
       const cached = sessionRead(query);
       if (cached) {
         renderPanel(panel, cached, query);
         return;
       }
 
-      setLoading(panel, query);
+      // Panel sa otvorí hneď, ale spinner ukážeme až keď odpoveď naozaj trvá.
+      // Pri bežnom rýchlom requeste tak UI nebliká stavom „Hľadám“.
+      panel.hidden = false;
+      loadingTimer = setTimeout(() => {
+        if (mySerial === serial && input.value.trim() === query) setLoading(panel, query);
+      }, 120);
 
-      try {
-        const data = await fetchSuggestions(query);
-        if (serial !== runSerial || input.value.trim() !== query) return;
-        renderPanel(panel, data, query);
-      } catch (error) {
-        if (error?.name === "AbortError") return;
-        panel.innerHTML = `<div class="tm-smart-empty"><strong>Dočasne sa nepodarilo načítať nášepkávač.</strong><span>Skúste pokračovať v písaní alebo stlačte Enter.</span></div>`;
-        panel.hidden = false;
-      }
-    }, DEBOUNCE_MS);
+      timer = setTimeout(async () => {
+        if (mySerial !== serial || input.value.trim() !== query) return;
+        controller = new AbortController();
+        const requestController = controller;
+        const timeout = setTimeout(() => requestController.abort(), 1800);
 
-    input.addEventListener("input", run);
+        try {
+          const data = await fetchSuggestions(query, requestController.signal);
+          if (mySerial !== serial || input.value.trim() !== query) return;
+          if (loadingTimer) clearTimeout(loadingTimer);
+          loadingTimer = null;
+          renderPanel(panel, data, query);
+        } catch (error) {
+          if (mySerial !== serial || input.value.trim() !== query) return;
+          if (loadingTimer) clearTimeout(loadingTimer);
+          loadingTimer = null;
+          if (error?.name === "AbortError") {
+            // Timeout alebo nový dotaz nikdy nesmie nechať UI visieť.
+            panel.innerHTML = `<div class="tm-smart-empty"><strong>Pokračujte Enterom.</strong><span>Otvoríme kompletné výsledky pre „${esc(query)}“.</span></div>`;
+          } else {
+            panel.innerHTML = `<div class="tm-smart-empty"><strong>Našepkávanie je dočasne nedostupné.</strong><span>Stlačte Enter pre kompletné výsledky.</span></div>`;
+          }
+          panel.hidden = false;
+        } finally {
+          clearTimeout(timeout);
+          if (controller === requestController) controller = null;
+        }
+      }, DEBOUNCE_MS);
+    };
+
+    input.addEventListener("input", schedule);
     input.addEventListener("focus", () => {
-      if (input.value.trim().length >= MIN_QUERY_LENGTH) run();
+      const query = input.value.trim();
+      if (query.length < MIN_QUERY_LENGTH) return;
+      const cached = sessionRead(query);
+      if (cached) renderPanel(panel, cached, query);
+      else schedule();
     });
 
     input.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        panel.hidden = true;
-        input.setAttribute("aria-expanded", "false");
+        cancelPending();
+        hidePanel();
       }
     });
 
-    // Hlavný katalógový formulár obsluhuje catalog.js. Nesmie sa súčasne
-    // spustiť API načítanie aj úplný reload stránky.
     if (!form.matches("[data-catalog-form]")) {
       form.addEventListener("submit", (event) => {
         event.preventDefault();
-        panel.hidden = true;
-        input.setAttribute("aria-expanded", "false");
+        cancelPending();
+        hidePanel();
         goToSearch(input);
       });
     }
@@ -448,38 +425,24 @@
     panel.addEventListener("mousedown", (event) => {
       const link = event.target.closest("a");
       if (!link) return;
-
       if (link.dataset.smartResult === "products") {
         const title = link.querySelector(".tm-smart-copy > span")?.textContent || "";
         try {
           sessionStorage.setItem("tm_last_product_click", JSON.stringify({ title, time: Date.now() }));
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
     });
 
     document.addEventListener("click", (event) => {
       if (form.parentElement?.contains(event.target)) return;
-      panel.hidden = true;
-      input.setAttribute("aria-expanded", "false");
+      cancelPending();
+      hidePanel();
     });
   }
 
-  function warmSearchServer() {
-    if (window.__TM_SMART_SEARCH_WARM_PROMISE__) return window.__TM_SMART_SEARCH_WARM_PROMISE__;
-    const operation = fetch("/api/smart-search?q=__tm_warm__", {
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-    }).catch(() => null);
-    window.__TM_SMART_SEARCH_WARM_PROMISE__ = operation;
-    return operation;
-  }
-
   function init() {
-    // Warmup štartuje okamžite s UI, nie až pri prvom napísanom dotaze.
-    warmSearchServer();
     document.querySelectorAll("form.search, form.catalog-search, [data-smart-search]").forEach(installSmartSearch);
+    warmupSearch();
   }
 
   window.tmInitSmartSearch = init;

@@ -1416,14 +1416,23 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
   const printer = normalize(filters.printer || "");
   const color = normalize(filters.color || "");
   const stock = normalize(filters.stock || "");
-  const exactSearchProducts = search
-    ? new Set(findExactProductIdentityMatches(products, filters.search || "").map((match) => match.product))
+  // Najprv lacný predvýber cez už predpočítaný search_text. Pôvodne sme pri
+  // KAŽDOM unikátnom dotaze spúšťali dve drahé štruktúrované kontroly nad
+  // všetkými 7k+ produktmi (vrátane parsovania tlačiarní a aliasov). To bolo
+  // ~2 s aj pri nulovom výsledku. Štruktúrovanú presnosť teraz aplikujeme iba
+  // na úzky okruh kandidátov, ktoré dotaz reálne obsahujú.
+  const looseCandidates = search
+    ? products.filter((product) => matchesLooseSearch(product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`), search))
+    : products;
+  const exactSearchProducts = search && looseCandidates.length
+    ? new Set(findExactProductIdentityMatches(looseCandidates, filters.search || "").map((match) => match.product))
     : new Set<TmProduct>();
-  const exactPrinterProducts = search
-    ? new Set(findExactPrinterModelMatches(products, filters.search || "").map((match) => match.product))
+  const exactPrinterProducts = search && looseCandidates.length
+    ? new Set(findExactPrinterModelMatches(looseCandidates, filters.search || "").map((match) => match.product))
     : new Set<TmProduct>();
 
-  const filtered = products.filter((product) => {
+  const sourceProducts = search ? looseCandidates : products;
+  const filtered = sourceProducts.filter((product) => {
     const text = product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`);
     if (filters.type && product.product_type_key !== filters.type) return false;
     if (stock === "instock" && product.stock_status !== "instock") return false;

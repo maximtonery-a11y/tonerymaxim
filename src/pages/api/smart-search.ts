@@ -34,6 +34,7 @@ type SearchIndexCache = {
   items: IndexedProduct[];
   printers: IndexedPrinter[];
   prefixMap: Map<string, number[]>;
+  codes: Map<string, string>;
 };
 
 type QueryInfo = {
@@ -75,6 +76,7 @@ type SmartSearchResponse = {
   products: any[];
   brands: any[];
   categories: any[];
+  didYouMean?: { label: string; query: string; url: string } | null;
   warning?: string;
 };
 
@@ -297,10 +299,30 @@ function getSearchIndex(cache: any): SearchIndexCache {
   }
   const printers = [...printerMap.values()];
   const prefixMap = buildPrefixMap(items);
+  const codes = new Map<string, string>();
+  for (const item of items) {
+    const product = item.product || {};
+    const attrs = Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [];
+    const rawValues = [product.sku, product.mpn, product.name, ...attrs.flatMap((attribute: any) => [attribute?.value, ...(attribute?.values || []), ...(attribute?.options || [])])].filter(Boolean);
+    for (const rawValue of rawValues) {
+      const raw = String(rawValue || '');
+      // Kód vyberáme po jednotlivých tokenoch, nie spolu so značkou pred ním.
+      // Pôvodný regex z názvu "Canon CRG-067 ..." vytvoril kľúč
+      // "canoncrg067", takže dotaz CRG068 nemal šancu nájsť CRG067.
+      // Zachováme ľubovoľné alfanumerické OEM/modelové kódy bez zoznamu farieb.
+      const matches = raw.match(/(?<![A-Za-z0-9])[A-Za-z]{1,10}(?:[-\s]?\d{2,7})[A-Za-z0-9-]*/g) || [];
+      for (const match of matches) {
+        const clean = match.trim().replace(/\s+/g, '-').replace(/--+/g, '-');
+        const key = compactKey(clean);
+        if (key.length < 4 || !/[a-z]/.test(key) || !/\d/.test(key)) continue;
+        if (!codes.has(key)) codes.set(key, clean);
+      }
+    }
+  }
   // Kandidátske tokeny sú potrebné iba počas zostavenia prefixovej mapy.
   // Ich ďalšie držanie v RAM zdvojuje časť vyhľadávacieho indexu.
   for (const item of items) delete item.candidateTokens;
-  const nextIndex: SearchIndexCache = { generatedAt: cache.generated_at, items, printers, prefixMap };
+  const nextIndex: SearchIndexCache = { generatedAt: cache.generated_at, items, printers, prefixMap, codes };
   globalStore.__TM_SMART_SEARCH_INDEX__ = nextIndex;
   resultCache.clear();
   return nextIndex;
@@ -524,6 +546,42 @@ function productItem(item: IndexedProduct, relevance: number) {
   };
 }
 
+
+function alphaPrefix(value: string) {
+  return (compactKey(value).match(/^[a-z]+/) || [''])[0];
+}
+
+function didYouMeanCode(index: SearchIndexCache, rawQuery: string) {
+  const query = compactKey(rawQuery);
+  if (query.length < 4 || !/[a-z]/.test(query) || !/\d/.test(query) || index.codes.has(query)) return null;
+  const prefix = alphaPrefix(query);
+  const queryNumber = Number((query.match(/\d+/) || [''])[0] || NaN);
+  let best: { key: string; label: string; distance: number; prefixLen: number; numericDelta: number; numericValue: number } | null = null;
+  for (const [key, label] of index.codes) {
+    if (Math.abs(key.length - query.length) > 2) continue;
+    const distance = levenshtein(query, key, 2);
+    if (distance > 2) continue;
+    // Pri vzdialenosti 1 povoľ aj preklep v písmene prefixu (TM2421 -> TN2421).
+    // Pri vzdialenosti 2 už vyžadujeme rovnaký písmenový prefix, aby návrhy
+    // nepreskakovali medzi nesúvisiacimi tonerovými rodinami.
+    if (prefix && alphaPrefix(key) !== prefix && distance > 1) continue;
+    let prefixLen = 0;
+    while (prefixLen < query.length && prefixLen < key.length && query[prefixLen] === key[prefixLen]) prefixLen += 1;
+    const numericValue = Number((key.match(/\d+/) || [''])[0] || NaN);
+    const numericDelta = Number.isFinite(queryNumber) && Number.isFinite(numericValue) ? Math.abs(queryNumber - numericValue) : Number.POSITIVE_INFINITY;
+    if (!best
+      || distance < best.distance
+      || (distance === best.distance && numericDelta < best.numericDelta)
+      || (distance === best.distance && numericDelta === best.numericDelta && numericValue < best.numericValue)
+      || (distance === best.distance && numericDelta === best.numericDelta && numericValue === best.numericValue && prefixLen > best.prefixLen)
+      || (distance === best.distance && numericDelta === best.numericDelta && numericValue === best.numericValue && prefixLen === best.prefixLen && key.length < best.key.length)) {
+      best = { key, label, distance, prefixLen, numericDelta, numericValue };
+    }
+  }
+  if (!best) return null;
+  return { label: best.label.toUpperCase(), query: best.label, url: `/produkty?s=${encodeURIComponent(best.label)}` };
+}
+
 function filteredStaticSuggestions(query: QueryInfo) {
   const brands = BRANDS.filter((brand) => {
     const normalizedBrand = normalize(brand);
@@ -662,6 +720,7 @@ export const GET: APIRoute = async ({ url }) => {
       products: products.slice(0, 12),
       brands: [...brandMap.values()].slice(0, 8),
       categories: [...categoryMap.values()].slice(0, 8),
+      didYouMean: products.length === 0 && printerItems.length === 0 ? didYouMeanCode(index, q) : null,
     };
 
     setCachedResult(resultKey, data);

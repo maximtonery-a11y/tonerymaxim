@@ -681,6 +681,75 @@ import { getDispatchParts } from "./dispatch-message.js";
 
     if (!products.length) {
       status.textContent = "Nenašli sa žiadne produkty.";
+      const searched = String(currentSearch || currentPrinter || "").trim();
+      list.innerHTML = `
+        <section class="tm-no-results" data-no-results>
+          <div class="tm-no-results-copy">
+            <p class="tm-no-results-eyebrow">Pomôžeme vám nájsť správnu náplň</p>
+            <h2>Nenašli ste správny toner alebo náplň?</h2>
+            <p>Je možné, že produkt máme pod iným označením alebo ho vieme zabezpečiť. Pošlite nám označenie náplne alebo presný model tlačiarne.</p>
+            <div class="tm-no-results-contact">
+              <a href="tel:+421917859206">☎ +421 917 859 206</a>
+              <a href="mailto:info@tonerymaxim.sk">✉ info@tonerymaxim.sk</a>
+              <span>Po–Pi 9:00–15:00</span>
+            </div>
+            <div class="tm-no-results-alternative" data-no-results-alternative hidden></div>
+          </div>
+          <form class="tm-no-results-form" data-no-results-form>
+            <label>Model tlačiarne alebo označenie náplne<input name="query" value="${esc(searched)}" required></label>
+            <div class="tm-no-results-grid">
+              <label>Meno<input name="name" required autocomplete="name"></label>
+              <label>E-mail<input name="email" type="email" required autocomplete="email"></label>
+            </div>
+            <label>Telefón <span>voliteľné</span><input name="phone" type="tel" autocomplete="tel"></label>
+            <label>Poznámka <span>voliteľné</span><textarea name="note" rows="3"></textarea></label>
+            <label class="tm-no-results-privacy"><input name="privacy" type="checkbox" value="yes" required> Súhlasím so spracovaním údajov na vybavenie tejto požiadavky.</label>
+            <button type="submit">Pomôžte mi nájsť správnu náplň</button>
+            <p class="tm-no-results-message" data-no-results-message aria-live="polite"></p>
+          </form>
+        </section>`;
+      const alternative = list.querySelector("[data-no-results-alternative]");
+      if (searched && alternative) {
+        fetch(`/api/smart-search?q=${encodeURIComponent(searched)}`, { headers: { Accept: "application/json" } })
+          .then((response) => response.ok ? response.json() : null)
+          .then((data) => {
+            if (!data?.didYouMean) return;
+            alternative.innerHTML = `<strong>Možno ste mysleli:</strong> <a href="${esc(data.didYouMean.url)}">${esc(data.didYouMean.label)}</a>`;
+            alternative.hidden = false;
+          })
+          .catch(() => {});
+      }
+      const form = list.querySelector("[data-no-results-form]");
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const message = form.querySelector("[data-no-results-message]");
+        const button = form.querySelector('button[type="submit"]');
+        const data = new FormData(form);
+        const query = String(data.get("query") || "").trim();
+        const note = String(data.get("note") || "").trim();
+        const payload = new FormData();
+        payload.set("name", String(data.get("name") || ""));
+        payload.set("email", String(data.get("email") || ""));
+        payload.set("phone", String(data.get("phone") || ""));
+        payload.set("type", "Pomoc s výberom náplne");
+        payload.set("message", `Hľadané označenie/model: ${query}${note ? `\n\nPoznámka: ${note}` : ""}`);
+        payload.set("privacy", String(data.get("privacy") || ""));
+        if (button) button.disabled = true;
+        if (message) message.textContent = "Odosielam požiadavku...";
+        try {
+          const response = await fetch("/api/contact", { method: "POST", body: payload });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.message || "Odoslanie sa nepodarilo.");
+          if (message) message.textContent = "Ďakujeme. Ozveme sa vám a pomôžeme nájsť správnu náplň.";
+          form.reset();
+          const queryInput = form.querySelector('[name="query"]');
+          if (queryInput) queryInput.value = searched;
+        } catch (error) {
+          if (message) message.textContent = error?.message || "Odoslanie sa nepodarilo. Kontaktujte nás prosím telefonicky alebo e-mailom.";
+        } finally {
+          if (button) button.disabled = false;
+        }
+      });
       return;
     }
 
