@@ -10,8 +10,15 @@
   const input = root.querySelector('[data-ai-input]');
   const messages = root.querySelector('[data-ai-messages]');
   const quick = root.querySelector('[data-ai-quick]');
+  const handoff = root.querySelector('[data-ai-handoff]');
+  const handoffForm = root.querySelector('[data-ai-handoff-form]');
+  const handoffPhone = root.querySelector('[data-ai-handoff-phone]');
+  const handoffEmail = root.querySelector('[data-ai-handoff-email]');
+  const handoffConsent = root.querySelector('[data-ai-handoff-consent]');
+  const handoffHp = root.querySelector('[data-ai-handoff-hp]');
+  const handoffStatus = root.querySelector('[data-ai-handoff-status]');
 
-  const state = { busy: false };
+  const state = { busy: false, history: [], lastQuestion: '' };
   const mobileQuery = window.matchMedia('(max-width: 760px), (hover: none) and (pointer: coarse)');
 
   function openPanel() {
@@ -165,8 +172,11 @@
   async function askAssistant(question) {
     if (!question || state.busy) return;
     state.busy = true;
+    state.lastQuestion = question;
+    if (handoff) handoff.hidden = true;
 
     addMessage('user', `<p>${escapeHtml(question)}</p>`);
+    const requestHistory = state.history.slice(-12);
     const loading = addMessage('bot', '<p>Hľadám odpoveď…</p>');
     const startTop = messages.scrollTop;
 
@@ -174,11 +184,15 @@
       const response = await fetch('/api/ai-sales-assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: question, page: location.pathname }),
+        body: JSON.stringify({ message: question, page: location.pathname, history: requestHistory }),
       });
 
       const data = await response.json();
       loading.innerHTML = `${textToHtml(data.answer || 'Nenašiel som presnú odpoveď.')}${renderGroups(data.groups)}`;
+      state.history.push({ role: 'user', content: question });
+      state.history.push({ role: 'assistant', content: Array.isArray(data.answer) ? data.answer.join(' ') : String(data.answer || '') });
+      if (state.history.length > 12) state.history = state.history.slice(-12);
+      if (handoff && data.handoffSuggested === true) { handoff.hidden = false; handoff.classList.remove('is-success'); if (handoffStatus) handoffStatus.textContent = ''; }
       // Neodskakujeme automaticky na koniec dlhej ponuky. Používateľ vidí odpoveď od začiatku.
       messages.scrollTop = startTop;
     } catch (error) {
@@ -221,6 +235,27 @@
     const question = input.value.trim();
     input.value = '';
     askAssistant(question);
+  });
+
+
+  handoffForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const phone = handoffPhone?.value.trim() || '';
+    const email = handoffEmail?.value.trim() || '';
+    if (!phone && !email) { if (handoffStatus) handoffStatus.textContent = 'Zadajte telefón alebo e-mail.'; return; }
+    if (!handoffConsent?.checked) { if (handoffStatus) handoffStatus.textContent = 'Potvrďte súhlas s kontaktovaním.'; return; }
+    const button = handoffForm.querySelector('button[type="submit"]');
+    if (button) button.disabled = true;
+    if (handoffStatus) handoffStatus.textContent = 'Odosielam…';
+    try {
+      const response = await fetch('/api/ai-handoff', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ phone, email, question:state.lastQuestion, page:location.pathname, consent:true, website:handoffHp?.value || '' }) });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.error || 'Odoslanie sa nepodarilo.');
+      if (handoffStatus) handoffStatus.textContent = 'Odoslané. Kolega dostal vašu otázku a kontakt.';
+      handoff?.classList.add('is-success');
+      if (handoffPhone) handoffPhone.value = ''; if (handoffEmail) handoffEmail.value = ''; if (handoffConsent) handoffConsent.checked = false;
+    } catch (error) { if (handoffStatus) handoffStatus.textContent = error?.message || 'Odoslanie sa nepodarilo. Skúste kontakt info@tonerymaxim.sk.'; }
+    finally { if (button) button.disabled = false; }
   });
 
   messages.addEventListener('click', (event) => {

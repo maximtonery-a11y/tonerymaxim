@@ -1,20 +1,19 @@
 import type { APIRoute } from 'astro';
-import { randomUUID } from 'node:crypto';
-import path from 'node:path';
-import { TM_DATA_ROOT, writeSignedJson } from '../../lib/secure-persistence';
 import { buildAssistantAnswer } from '../../lib/aiSalesAssistant';
+import { saveAiUnanswered } from '../../lib/ai-unanswered';
 
 export const prerender = false;
 
-async function logUnanswered(payload: Record<string, unknown>) {
-  try {
-    await writeSignedJson(path.join(TM_DATA_ROOT, 'ai', 'unanswered', `${Date.now()}-${randomUUID()}.json`), {
-      created_at: new Date().toISOString(),
-      ...payload,
-    });
-  } catch {
-    // Logovanie nesmie zhodiť odpoveď asistenta.
-  }
+function explicitHumanRequest(message: string): boolean {
+  const n = String(message || '').toLocaleLowerCase('sk-SK');
+  return /(?:chcem|potrebujem|spoj|spojte|prepoj|prepojte|daj|dajte|mozem|môžem).*?(?:clovek|človek|operator|operátor|predajca|kolega|pracovnik|pracovník|zivy|živý)|(?:zavolajte|zavolal|ozvite|ozval|kontaktujte ma|chcem telefonovat|chcem volať|chcem volat)/i.test(n);
+}
+
+function businessRelevantForHandoff(message: string, page: string): boolean {
+  const n = String(message || '').toLocaleLowerCase('sk-SK');
+  if (/recept|pocasie|počasie|politika|basen|báseň|vtip|futbal|film|hudba/.test(n)) return false;
+  if (/toner|napln|náplň|tlaciaren|tlačiareň|objednav|objednáv|dopr|platb|reklamac|vraten|vráten|registr|prihlas|účet|ucet|faktur|produkt|sklad|cena|zlav|zľav|bod|gopay|kurier|kuriér|gls|dpd|cesk|česk|brno|praha|tlač|tlac|kazet|valec|cartridge|firmware/.test(n)) return true;
+  return /\/(produkt|produkty|tlaciarne|kosik|pokladna|reklamacie|prihlasenie|registracia|ucet)/.test(page);
 }
 
 function redactAiInput(value: unknown, max: number): string {
@@ -33,10 +32,26 @@ export const POST: APIRoute = async ({ request }) => {
     const message = redactAiInput(body?.message, 500);
     let page = '/';
     try { page = new URL(String(body?.page || '/'), 'https://www.tonerymaxim.sk').pathname.slice(0, 300); } catch {}
-    const result = await buildAssistantAnswer(message, page);
+    const history = Array.isArray(body?.history) ? body.history.slice(-12).map((turn: any) => ({
+      role: turn?.role === 'assistant' ? 'assistant' : 'user',
+      content: redactAiInput(turn?.content, 500),
+    })).filter((turn: any) => turn.content) : [];
+    const wantsHuman = explicitHumanRequest(message);
+    const result: any = wantsHuman ? {
+      answer: [
+        'Samozrejme. Ak chcete pomoc od človeka, môžete nám zanechať telefón alebo e-mail cez kontaktný formulár nižšie.',
+        'Kolega dostane vašu otázku spolu s kontaktom na info@tonerymaxim.sk a ozve sa vám podľa zadaného kontaktu.'
+      ],
+      products: [], groups: [], intent: 'handoff', confidence: 0.99, unanswered: false
+    } : await buildAssistantAnswer(message, page, history);
+    const unresolvedImportant = ((result as any).unanswered || result.intent === 'fallback' || Number((result as any).confidence || 0) < 0.35) && businessRelevantForHandoff(message, page);
+    (result as any).handoffSuggested = wantsHuman || unresolvedImportant;
 
-    if ((result as any).unanswered || result.intent === 'fallback') {
-      await logUnanswered({ message, page, intent: result.intent, confidence: (result as any).confidence || 0 });
+    if ((result as any).unanswered || result.intent === 'fallback' || Number((result as any).confidence || 0) < 0.35) {
+      // Zápis je oddelený od odpovede Tomáša: zákazník na diskové logovanie nečaká.
+      const confidence = Number((result as any).confidence || 0);
+      const kind = ((result as any).unanswered || result.intent === 'fallback') ? 'unknown_question' : 'low_confidence';
+      void saveAiUnanswered({ message, page, intent: result.intent, confidence, kind }).catch(() => undefined);
     }
 
     return new Response(JSON.stringify({ ok: true, ...result }), {

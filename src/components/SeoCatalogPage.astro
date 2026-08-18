@@ -47,6 +47,7 @@ interface Props {
   notFound?: boolean;
   expertGuide?: ExpertGuide;
   pagination?: Pagination;
+  productFirst?: boolean;
 }
 
 const {
@@ -70,6 +71,7 @@ const {
   notFound = false,
   expertGuide,
   pagination,
+  productFirst = false,
 } = Astro.props;
 
 const SEO_ORIGIN = "https://www.tonerymaxim.sk";
@@ -200,7 +202,7 @@ const jsonLd = [
           </div>
         </section>
 
-        {!notFound && answer && (
+        {!productFirst && !notFound && answer && (
           <section class="seo-answer-section" aria-label="Aktuálne údaje z katalógu">
             <div class="wrap seo-answer-grid">
               <article class="seo-answer-card">
@@ -221,7 +223,7 @@ const jsonLd = [
           </section>
         )}
 
-        {!notFound && expertGuide && (
+        {!productFirst && !notFound && expertGuide && (
           <section class="seo-expert-guide" aria-labelledby="seo-expert-title">
             <div class="wrap seo-expert-guide-grid">
               <article>
@@ -240,6 +242,22 @@ const jsonLd = [
                 <b>{expertGuide.experience || EXPERT_EXPERIENCE}</b>
                 <small>Aktualizované {new Intl.DateTimeFormat("sk-SK", { dateStyle: "medium" }).format(new Date(`${expertGuide.updated}T12:00:00Z`))}</small>
               </aside>
+            </div>
+          </section>
+        )}
+
+        {productFirst && !notFound && answer && (
+          <section class="seo-printer-quick" aria-label="Rýchly súhrn pre výber náplne">
+            <div class="wrap seo-printer-quick-inner">
+              <div>
+                <strong>{answer}</strong>
+                <a href="#odborne-informacie">Odborné informácie a kontrola kompatibility ↓</a>
+              </div>
+              <dl aria-label="Súhrn ponuky">
+                <div><dt>Produktov</dt><dd>{stats.total}</dd></div>
+                <div><dt>Skladom</dt><dd>{stats.inStock}</dd></div>
+                {stats.minPrice > 0 && <div><dt>Od</dt><dd>{money(stats.minPrice)}</dd></div>}
+              </dl>
             </div>
           </section>
         )}
@@ -281,6 +299,47 @@ const jsonLd = [
             )}
           </div>
         </section>
+
+        {productFirst && !notFound && (answer || expertGuide) && (
+          <div id="odborne-informacie" class="seo-printer-details">
+            {answer && (
+              <section class="seo-answer-section" aria-label="Aktuálne údaje z katalógu">
+                <div class="wrap seo-answer-grid">
+                  <article class="seo-answer-card">
+                    <div class="seo-answer-label"><span aria-hidden="true">✓</span> Údaje z aktuálneho katalógu</div>
+                    <p>{answer}</p>
+                    {generatedDate && <small>Produktové údaje aktualizované: {generatedDate}</small>}
+                  </article>
+                  <dl class="seo-stat-grid" aria-label="Súhrn ponuky">
+                    {statCards.slice(0, 6).map((item) => <div><dt>{item.label}</dt><dd>{item.value}</dd></div>)}
+                  </dl>
+                </div>
+              </section>
+            )}
+            {expertGuide && (
+              <section class="seo-expert-guide" aria-labelledby="seo-expert-title-after">
+                <div class="wrap seo-expert-guide-grid">
+                  <article>
+                    <p class="eyebrow">Odborné odporúčanie</p>
+                    <h2 id="seo-expert-title-after">{expertGuide.title}</h2>
+                    <p>{expertGuide.summary}</p>
+                    {expertGuide.links && expertGuide.links.length > 0 && (
+                      <nav aria-label="Súvisiace odborné návody">
+                        {expertGuide.links.map((link) => <a href={link.href}>{link.label}<span aria-hidden="true">→</span></a>)}
+                      </nav>
+                    )}
+                  </article>
+                  <aside>
+                    <strong><a href={EXPERT_PATH}>{expertGuide.author || EXPERT_NAME}</a></strong>
+                    <span>odborný garant obsahu</span>
+                    <b>{expertGuide.experience || EXPERT_EXPERIENCE}</b>
+                    <small>Aktualizované {new Intl.DateTimeFormat("sk-SK", { dateStyle: "medium" }).format(new Date(`${expertGuide.updated}T12:00:00Z`))}</small>
+                  </aside>
+                </div>
+              </section>
+            )}
+          </div>
+        )}
 
         {contentSections.length > 0 && (
           <section class="seo-content-section">

@@ -58,6 +58,19 @@ import '../styles/ai-sales-assistant.css';
       </article>
     </div>
 
+    <div class="tm-ai-handoff" data-ai-handoff hidden>
+      <strong>Chcete pomoc od človeka?</strong>
+      <p>Zanechajte telefón alebo e-mail. Vašu otázku pošleme pracovníkovi ToneryMAXIM.</p>
+      <form data-ai-handoff-form>
+        <input data-ai-handoff-phone type="tel" autocomplete="tel" placeholder="Telefón (voliteľné)" />
+        <input data-ai-handoff-email type="email" autocomplete="email" placeholder="E-mail (voliteľné)" />
+        <label class="tm-ai-handoff__consent"><input data-ai-handoff-consent type="checkbox" required /> Súhlasím, aby ma ToneryMAXIM kontaktoval k tejto otázke.</label>
+        <input data-ai-handoff-hp type="text" tabindex="-1" autocomplete="off" aria-hidden="true" class="tm-ai-handoff__hp" />
+        <button type="submit">Poslať otázku človeku</button>
+        <span data-ai-handoff-status aria-live="polite"></span>
+      </form>
+    </div>
+
     <form class="tm-ai-assistant__form" data-ai-form>
       <input data-ai-input type="text" autocomplete="off" placeholder="Napíšte model, toner alebo otázku…" />
       <button type="submit">Odoslať</button>

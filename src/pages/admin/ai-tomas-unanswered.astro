@@ -1,0 +1,13 @@
+---
+import { getAdminAccessKey, isAdminLocked } from '../../lib/admin-access';
+import { readAiUnansweredSummary } from '../../lib/ai-unanswered';
+export const prerender = false;
+const adminKey = getAdminAccessKey(Astro.locals);
+const suppliedKey = Astro.url.searchParams.get('key') || '';
+const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostname });
+const data = locked ? null : await readAiUnansweredSummary(1000);
+const dt = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'short', timeStyle: 'short' });
+---
+<!doctype html><html lang="sk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="robots" content="noindex,nofollow"><title>AI Tomáš – nezodpovedané otázky</title><style>
+:root{font-family:Inter,system-ui,sans-serif;color:#081a3a;background:#f4f8ff}*{box-sizing:border-box}body{margin:0;padding:24px}main{max-width:1200px;margin:auto}.card{background:#fff;border:1px solid #dbe6f6;border-radius:18px;padding:18px;margin:14px 0}h1{font-size:clamp(30px,5vw,50px);margin:0 0 8px}p{color:#5d6b82}.stats{display:flex;gap:12px;flex-wrap:wrap}.stat{min-width:160px}.stat strong{display:block;font-size:30px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #e7edf6;vertical-align:top}th{font-size:12px;text-transform:uppercase;color:#66748b}.q{font-weight:800}.count{font-size:20px;font-weight:900}.locked{max-width:650px;margin:80px auto;text-align:center}@media(max-width:700px){body{padding:14px}table,thead,tbody,tr,th,td{display:block}thead{display:none}tr{padding:10px 0;border-bottom:1px solid #e7edf6}td{border:0;padding:4px 0}}
+</style></head><body><main>{locked || !data ? <section class="card locked"><h1>AI Tomáš</h1><p>Prehľad je chránený. Otvor ho s rovnakým admin parametrom <strong>?key=...</strong> ako ostatné admin stránky.</p></section> : <><h1>Nezodpovedané otázky AI Tomáša</h1><p>Otázky, pri ktorých Tomáš použil bezpečný fallback alebo mal nízku istotu. Rovnaké otázky sú zoskupené, aby bolo vidieť, čo treba doplniť ako prvé.</p><section class="stats"><div class="card stat"><span>Záznamov</span><strong>{data.total}</strong></div><div class="card stat"><span>Unikátnych</span><strong>{data.unique}</strong></div></section><section class="card"><table><thead><tr><th>Počet</th><th>Otázka</th><th>Posledný výskyt</th><th>Stránka</th><th>Typ</th></tr></thead><tbody>{data.items.map((item)=><tr><td class="count">{item.count}×</td><td class="q">{item.message}</td><td>{dt.format(new Date(item.last))}</td><td>{item.page}</td><td>{item.kind === 'low_confidence' ? 'nízka istota' : 'nezodpovedané'}</td></tr>)}</tbody></table></section></>}</main></body></html>
