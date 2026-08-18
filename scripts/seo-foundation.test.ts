@@ -362,3 +362,25 @@ test("kategória komponentov je doplnkom troch hlavných skupín a odkazy neprid
   assert.match(links, /\/produkty\?category=ostatne-komponenty/);
   assert.doesNotMatch(links, /ostatne-komponenty&(search|s)=|s=ostatné komponenty|search=komponent/);
 });
+
+
+test("printer pages keep full mobile description below products", () => {
+  const component = read("src/components/SeoCatalogPage.astro");
+  const route = read("src/pages/tlaciarne/[brand]/[model].astro");
+  assert.match(route, /productFirst=\{!notFound\}/);
+  assert.match(component, /seo-printer-content/);
+  assert.match(component, /!productFirst && contentSections\.length > 0/);
+  assert.match(component, /id="odborne-informacie"/);
+});
+
+test("printer type filters only expose types that exist", () => {
+  const route = read("src/pages/tlaciarne/[brand]/[model].astro");
+  assert.match(route, /stats\.compatible \? \[`Kompatibilné:/);
+  assert.match(route, /stats\.original \? \[`Originálne:/);
+  assert.match(route, /stats\.renovated \? \[`Renovované:/);
+});
+
+test("AI fallback cannot wait ten seconds", () => {
+  const ai = read("src/lib/openai-sales-assistant.ts");
+  assert.match(ai, /OPENAI_TIMEOUT_MS", 2_500, 800, 3_500/);
+});

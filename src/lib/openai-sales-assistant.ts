@@ -69,7 +69,7 @@ export async function answerWithOpenAi(message: string, page = "") {
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
-    numberEnv("OPENAI_TIMEOUT_MS", 12_000, 3_000, 30_000),
+    numberEnv("OPENAI_TIMEOUT_MS", 2_500, 800, 3_500),
   );
 
   const instructions = [
