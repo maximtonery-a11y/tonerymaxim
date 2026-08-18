@@ -18,8 +18,13 @@ import { printerGeoAnswer } from "../../../lib/geo-entity-answer";
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const printer = findPrinterEntity(cache.products, Astro.params.brand, Astro.params.model);
 const notFound = !printer;
-const products = printer?.products || [];
-const stats = catalogStats(products);
+const allProducts = printer?.products || [];
+const requestedType = String(Astro.url.searchParams.get("typ") || "").toLowerCase();
+const selectedType = ["compatible", "original", "renovated"].includes(requestedType) ? requestedType : "";
+const products = selectedType
+  ? allProducts.filter((product) => product.product_type_key === selectedType)
+  : allProducts;
+const stats = catalogStats(allProducts);
 
 if (notFound) {
   Astro.response.status = 404;
@@ -70,7 +75,10 @@ if (imageCandidate) {
     modelImage = undefined;
   }
 }
-const geoAnswer = !notFound ? printerGeoAnswer(printerName, products, geoPilot) : undefined;
+const geoAnswer = !notFound ? printerGeoAnswer(printerName, allProducts, geoPilot) : undefined;
+const quickAnswer = !notFound
+  ? (geoAnswer?.answer || `Pre ${printerName} máme v aktuálnom katalógu ${allProducts.length} priradených produktov. Vyberte kompatibilné, originálne alebo renovované produkty a pred objednaním porovnajte OEM označenie kazety.`)
+  : "";
 
 const typeFacts = [
   ...(stats.compatible ? [`Kompatibilné: ${stats.compatible}`] : []),
@@ -93,7 +101,7 @@ const typeFacts = [
     ? "Skontrolujte označenie modelu alebo sa vráťte na výber tlačiarne."
     : `Zobrazené produkty majú model ${printerName} uvedený medzi kompatibilnými tlačiarňami. Pred objednaním odporúčame porovnať aj OEM označenie kazety.`}
   products={products}
-  answer={notFound ? "" : geoAnswer?.answer || ""}
+  answer={quickAnswer}
   generatedAt={cache.generated_at}
   breadcrumbs={[
     { name: "Tlačiarne", path: "/tlaciarne" },
@@ -148,4 +156,5 @@ const typeFacts = [
   } : undefined}
   notFound={notFound}
   productFirst={!notFound}
+  productTypeFilters={!notFound}
 />

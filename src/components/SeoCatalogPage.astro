@@ -195,7 +195,9 @@ const jsonLd = [
                 {entityFacts.map((fact) => {
                   const match = productTypeFilters ? fact.match(/^(Kompatibilné|Originálne|Renovované):\s*(\d+)/) : null;
                   const filter = match?.[1] === "Kompatibilné" ? "compatible" : match?.[1] === "Originálne" ? "original" : match?.[1] === "Renovované" ? "renovated" : "";
-                  return <li>{filter ? <button type="button" class="seo-type-filter" data-seo-type-filter={filter}>{fact}</button> : fact}</li>;
+                  const selected = filter && Astro.url.searchParams.get("typ") === filter;
+                  const filterHref = filter ? (selected ? `${canonicalPath}#produkty` : `${canonicalPath}?typ=${filter}#produkty`) : "";
+                  return <li class:list={{ [`seo-type-${filter}`]: Boolean(filter), "is-active": Boolean(selected) }}>{filter ? <a class="seo-type-filter" href={filterHref} aria-current={selected ? "true" : undefined}>{fact}</a> : fact}</li>;
                 })}
               </ul>
             )}
@@ -421,23 +423,6 @@ const jsonLd = [
           button.addEventListener("click", () => { window.location.href = target; });
         });
       });
-
-      const typeButtons = Array.from(document.querySelectorAll("[data-seo-type-filter]"));
-      const applyTypeFilter = (type) => {
-        const rows = Array.from(document.querySelectorAll(".seo-catalog-list .tm-product-row"));
-        const headings = Array.from(document.querySelectorAll(".seo-catalog-list .tm-mobile-product-group"));
-        const active = typeButtons.find((button) => button.dataset.seoTypeFilter === type && button.classList.contains("is-active"));
-        const wanted = active ? "" : type;
-        rows.forEach((row) => { row.hidden = Boolean(wanted) && !row.classList.contains(`tm-product-row--${wanted}`); });
-        headings.forEach((heading) => { heading.hidden = Boolean(wanted) && !heading.classList.contains(`tm-mobile-product-group--${wanted}`); });
-        typeButtons.forEach((button) => {
-          const selected = Boolean(wanted) && button.dataset.seoTypeFilter === wanted;
-          button.classList.toggle("is-active", selected);
-          button.setAttribute("aria-pressed", selected ? "true" : "false");
-        });
-        document.querySelector("#produkty")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      };
-      typeButtons.forEach((button) => button.addEventListener("click", () => applyTypeFilter(button.dataset.seoTypeFilter || "")));
 
       window.tmInitSmartSearch?.();
       document.addEventListener("DOMContentLoaded", () => window.tmInitSmartSearch?.());
