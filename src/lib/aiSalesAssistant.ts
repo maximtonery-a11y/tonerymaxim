@@ -527,6 +527,52 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     };
   }
 
+  // Identita asistenta: bežné otázky o tom, kto Tomáš je, nesmú skončiť vo fallbacku.
+  if (/\b(ako sa volas|kto si|si (?:umela inteligencia|ai|robot)|si clovek|co si zac)\b/i.test(normalizedMessage)) {
+    const identity = aiKnowledge.find((item) => item.id === 'ai-tomas-identita');
+    if (identity) return { answer: [`${identity.title}:`, ...identity.answer], products: [], groups: [], intent: 'support', faq: identity.id, confidence: 0.99 };
+  }
+
+  // ToneryMAXIM nepredáva samotné tlačiarne. Toto musí mať prednosť pred katalógovým hľadaním,
+  // pretože názvy kompatibilných tlačiarní sa nachádzajú v produktových dátach tonerov.
+  if (/\b(predavate|mate|ponukate|kupim.*u vas|da sa.*kupit).*\btlaciarn/i.test(normalizedMessage)) {
+    const printers = aiKnowledge.find((item) => item.id === 'predaj-tlaciarni');
+    if (printers) return { answer: [`${printers.title}:`, ...printers.answer], products: [], groups: [], intent: 'support', faq: printers.id, confidence: 0.99 };
+  }
+
+  // Všeobecné otázky „predávate/máte X?“ overujeme priamo v aktuálnom katalógu.
+  // Hľadáme iba v identite produktu (názov, SKU, typ/kategória), nie v zozname kompatibilných tlačiarní.
+  const sellMatch = normalizedMessage.match(/\b(?:predavate|mate|ponukate)\s+(.{2,80}?)(?:\?|$)/i);
+  if (sellMatch && !hasProductCodeOrModel(originalMessage)) {
+    const rawWanted = String(sellMatch[1] || '').replace(/\b(?:v ponuke|na sklade|skladom|do tlaciarni|do tlaciarne)\b/gi, ' ').trim();
+    const wantedWords = words(rawWanted).filter((w) => !['produkt', 'produkty', 'tovar'].includes(w));
+    if (wantedWords.length) {
+      const cache = await getProductsCache();
+      const matches = (cache.products || []).filter((product: Product) => {
+        const haystack = normalize([product.name, product.sku, product.product_type_label, product.category, product.categories, product.type].filter(Boolean).join(' '));
+        return wantedWords.every((word) => haystack.includes(word) || (word.startsWith('pask') && haystack.includes('pask')));
+      }).slice(0, 12);
+      if (matches.length) {
+        const groups = groupProductsForQuestion(matches, originalMessage);
+        return {
+          answer: [
+            `Áno, v aktuálnom katalógu som našiel ${formatCount(matches.length, 'relevantný produkt', 'relevantné produkty', 'relevantných produktov')} pre „${rawWanted}“.`,
+            'Ak mi napíšete presný model tlačiarne alebo označenie pôvodného spotrebného materiálu, pomôžem vybrať správnu možnosť.'
+          ],
+          products: groups.flatMap((group) => group.products).slice(0, 12).map(asAiProduct),
+          groups: groups.map((group) => ({ key: group.key, label: group.label, count: group.count, products: group.products.slice(0, 4).map(asAiProduct) })),
+          intent: 'product_search', confidence: 0.96,
+        };
+      }
+      return {
+        answer: [
+          `Pre „${rawWanted}“ som v aktuálnom katalógu nenašiel spoľahlivú zhodu. Nechcem preto tvrdiť, že tento sortiment predávame, ak to neviem overiť.`,
+          'Napíšte presný model tlačiarne alebo označenie produktu a skúsim ho preveriť presnejšie.'
+        ], products: [], groups: [], intent: 'fallback', confidence: 0.55, unanswered: true, clarification: true,
+      };
+    }
+  }
+
   // Otázky okolo hranice dopravy zdarma majú prednosť pred platbou/dobierkou.
   if (/\b(29|28[,.]?\d*)\b/.test(normalizedMessage) && /doprava|dobierka|kosik|nakup|objednavk/.test(normalizedMessage)) {
     const shipping = aiKnowledge.find((item) => item.id === 'doprava-ceny');

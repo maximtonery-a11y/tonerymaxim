@@ -319,6 +319,24 @@ export const aiKnowledge: AiKnowledgeItem[] = [
   },
 
   {
+    id: 'ai-tomas-identita', intent: 'support', title: 'Kto je AI Tomáš', priority: 180,
+    triggers: ['ako sa volas', 'ako sa volaš', 'kto si', 'si umela inteligencia', 'si ai', 'si robot', 'co si zac', 'si clovek'],
+    answer: [
+      'Volám sa AI Tomáš a som virtuálny AI poradca e-shopu ToneryMAXIM.',
+      'Áno, som systém umelej inteligencie, nie človek. Pomáham s výberom tonerov a náplní, kompatibilitou, produktmi, dopravou, platbou, reklamáciami, zákazníckym účtom a základným technickým poradenstvom o tlači.',
+      'Ak potrebujete človeka, napíšte mi napríklad „chcem komunikovať s človekom“ a ponúknem možnosť odovzdať otázku pracovníkovi ToneryMAXIM.'
+    ],
+  },
+  {
+    id: 'predaj-tlaciarni', intent: 'support', title: 'Predaj tlačiarní', priority: 175,
+    triggers: ['predavate tlaciarne', 'mate tlaciarne', 'kupim u vas tlaciaren', 'da sa u vas kupit tlaciaren', 'ponukate tlaciarne'],
+    answer: [
+      'Samotné tlačiarne nepredávame. ToneryMAXIM sa špecializuje na spotrebný materiál do tlačiarní.',
+      'Ak už tlačiareň máte, napíšte jej presný model zo štítku a pomôžem vám nájsť vhodný toner, atrament alebo ďalší spotrebný materiál z našej ponuky.'
+    ],
+  },
+
+  {
     id: 'typy-tlaciarni-prehlad', intent: 'support', title: 'Laserová, atramentová a tanková tlačiareň', priority: 125,
     triggers: ['aka je tankova tlaciaren', 'co je tankova tlaciaren', 'tankova tlaciaren', 'laserova alebo atramentova', 'laser alebo tank', 'atrament alebo tank', 'typy tlaciarni', 'aky typ tlaciarne'],
     answer: [
