@@ -308,26 +308,8 @@ const jsonLd = [
           </div>
         </section>
 
-        {productFirst && !notFound && (answer || expertGuide || contentSections.length > 0) && (
+        {productFirst && !notFound && (answer || expertGuide) && (
           <div id="odborne-informacie" class="seo-printer-details">
-            {contentSections.length > 0 && (
-              <section class="seo-content-section seo-printer-content" aria-label="Informácie o tlačiarni">
-                <div class="wrap">
-                  <p class="eyebrow">Informácie o tlačiarni</p>
-                  <div class="seo-content-grid">
-                    {contentSections.map((section) => (
-                      <article>
-                        <h2>{section.heading}</h2>
-                        {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
-                        {section.bullets && section.bullets.length > 0 && (
-                          <ul>{section.bullets.map((bullet) => <li>{bullet}</li>)}</ul>
-                        )}
-                      </article>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
             {answer && (
               <section class="seo-answer-section" aria-label="Aktuálne údaje z katalógu">
                 <div class="wrap seo-answer-grid">
@@ -367,7 +349,7 @@ const jsonLd = [
           </div>
         )}
 
-        {!productFirst && contentSections.length > 0 && (
+        {contentSections.length > 0 && (
           <section class="seo-content-section">
             <div class="wrap seo-content-grid">
               {contentSections.map((section) => (

@@ -442,8 +442,10 @@ function contextualizeFollowUp(message: string, history: AiConversationTurn[] = 
   // môže heuristika modelu vyhodnotiť ako kód, hoci ide len o dopravu.
   const locationFollowUp = /\b(?:brno|brna|praha|cesko|ceska|cr|cz)\b/.test(n) && /posl|kurier|dopr|doruc|pickup|parcel|box/.test(n);
   if (hasProductCodeOrModel(current) && !locationFollowUp) return current;
-  // Jednoznačná samostatná servisná otázka nepotrebuje zdediť predchádzajúci produkt.
-  if (/\b(?:dobierk\w*|gopay|platb\w*|prevod\w*|faktur\w*|reklamac\w*|vraten\w*|odstupen\w*|hesl\w*|registrac\w*|gdpr|kontakt\w*|telefon\w*|email\w*|pracovna doba)/.test(n)) return current;
+  // Jednoznačná samostatná servisná otázka nesmie zdediť predchádzajúci produkt.
+  // Inak by napr. „koľko stojí doprava?“ po produktovej otázke znovu spustilo
+  // katalógové hľadanie, pridalo tonery pod odpoveď a zbytočne spomalilo chat.
+  if (/\b(?:doprava|dopravn\w*|postovn\w*|kurier\w*|doruc\w*|parcelshop|balikomat|pickup|dobierk\w*|gopay|platb\w*|prevod\w*|faktur\w*|reklamac\w*|vraten\w*|odstupen\w*|hesl\w*|registrac\w*|gdpr|kontakt\w*|telefon\w*|email\w*|pracovna doba)/.test(n)) return current;
 
   const followUp = current.length <= 90 && (
     /^(a |ale |tak |dobre |ok |ano |nie )/.test(n)
@@ -482,7 +484,8 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   const normalizedMessage = normalize(originalMessage);
 
   // Jasné požiadavky mimo schopností asistenta nesmú byť omylom klasifikované podľa slov ako e-mail či faktúra.
-  if (/\b(napis|napiste|vytvor|urob)\b.*\b(email|mail|basen|basnick|zivotopis)\b/i.test(normalizedMessage)
+  if ((/\b(napis|napiste|vytvor|urob)\b.*\b(email|mail|basen|basnick|zivotopis)\b/i.test(normalizedMessage)
+      && !/\b(kontakt|kontaktovat|spojit|spojim|adresa|aky je vas email|vas email)\b/i.test(normalizedMessage))
       || /\b(urob|vystav|vytvor)\b.*\bfaktur/i.test(normalizedMessage)) {
     return {
       answer: [
@@ -506,10 +509,31 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     if (printers) return { answer: [`${printers.title}:`, ...printers.answer], products: [], groups: [], intent: 'support', faq: printers.id, confidence: 0.99 };
   }
 
+  // Rýchle deterministické routovanie servisných otázok. Tieto otázky nikdy nesmú
+  // spúšťať katalóg ani zobrazovať produkty. Je to zároveň ochrana rýchlosti chatu.
+  const directServiceId = /\b(?:kolko|aka|cena|stoji|postovn|doprav|kurier|gls|dpd|parcelshop|balikomat|pickup|doruc)\w*/i.test(normalizedMessage)
+    && /\b(?:dopr|postovn|kurier|gls|dpd|parcelshop|balikomat|pickup|doruc)\w*/i.test(normalizedMessage)
+      ? 'doprava-ceny'
+    : /\b(?:dopravcov|aky kurier|cim posiel|gls|dpd|parcelshop|balikomat|pickup)\w*/i.test(normalizedMessage)
+      ? 'doprava-dopravcovia'
+    : /\b(?:plat|zaplat|dobierk|gopay|bankov.*prevod|prevodom|kartou)\w*/i.test(normalizedMessage)
+      ? 'platba-moznosti'
+    : /\b(?:reklamac|reklamuj|vratit|vraten|odstup|vymen|nepasuj|nespravny toner|zly toner|poskoden.*tovar)\w*/i.test(normalizedMessage)
+      ? (/vrat|vraten|odstup|vymen|nespravny toner/i.test(normalizedMessage) ? 'vratenie-tovaru' : 'reklamacia-postup')
+    : /\b(?:zabud|obnov|zmen)\w*.*\bhesl\w*|\bneviem sa prihlas|\bprihlasen/i.test(normalizedMessage)
+      ? 'ucet-heslo'
+    : /\b(?:kontakt|telefon|email|mail|spojim|spojit|pracovn.*doba|volat|volať|otvorene v sobotu)\w*/i.test(normalizedMessage)
+      ? 'kontakt'
+      : '';
+  if (directServiceId) {
+    const directService = aiKnowledge.find((item) => item.id === directServiceId);
+    if (directService) return { answer: [`${directService.title}:`, ...directService.answer], products: [], groups: [], intent: directService.intent as AiIntent, faq: directService.id, confidence: 0.99 };
+  }
+
   // Všeobecné otázky „predávate/máte X?“ overujeme priamo v aktuálnom katalógu.
   // Hľadáme iba v identite produktu (názov, SKU, typ/kategória), nie v zozname kompatibilných tlačiarní.
   const sellMatch = normalizedMessage.match(/\b(?:predavate|mate|ponukate)\s+(.{2,80}?)(?:\?|$)/i);
-  if (sellMatch && !hasProductCodeOrModel(originalMessage)) {
+  if (sellMatch && !hasProductCodeOrModel(originalMessage) && !['shipping', 'payment', 'claim', 'order', 'diagnostic', 'account', 'loyalty', 'legal', 'contact'].includes(classified.intent)) {
     const rawWanted = String(sellMatch[1] || '').replace(/\b(?:v ponuke|na sklade|skladom|do tlaciarni|do tlaciarne)\b/gi, ' ').trim();
     const wantedWords = words(rawWanted).filter((w) => !['produkt', 'produkty', 'tovar'].includes(w));
     if (wantedWords.length) {
