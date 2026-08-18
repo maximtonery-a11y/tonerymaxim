@@ -76,7 +76,24 @@ const pageHref = (page: number) => {
 let initialCatalog: any = null;
 try {
   const cache = await getProductsCache();
-  const filtered = filterProducts(cache.products, initialFilters);
+  const allFiltered = filterProducts(cache.products, initialFilters);
+  const normalizedSearch = String(initialFilters.search || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const directSpecialSearch = /bez[ -]?cip|no[ -]?chip|oem[ -]?cip|hatona/.test(normalizedSearch);
+  const specialKind = (product: any) => {
+    const type = String(product?.product_type_key || "");
+    if (type !== "compatible" && type !== "renovated") return "";
+    const text = `${product?.name || ""} ${product?.slug || ""}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (/bez[ -]?cip|no[ -]?chip/.test(text)) return "no-chip";
+    if (/oem[ -]?cip/.test(text)) return "oem-chip";
+    if (/hatona/.test(text)) return "hatona";
+    return "";
+  };
+  const specialCounts = {
+    noChip: allFiltered.filter((p: any) => specialKind(p) === "no-chip").length,
+    oemChip: allFiltered.filter((p: any) => specialKind(p) === "oem-chip").length,
+    hatona: allFiltered.filter((p: any) => specialKind(p) === "hatona").length,
+  };
+  const filtered = directSpecialSearch ? allFiltered : allFiltered.filter((p: any) => !specialKind(p));
   const start = (initialPage - 1) * 12;
   const products = filtered.slice(start, start + 12).map((product: any) => ({
     id: product.id,
@@ -119,6 +136,7 @@ try {
     total: filtered.length,
     total_pages: Math.max(1, Math.ceil(filtered.length / 12)),
     filters: initialFilters,
+    special_variants: directSpecialSearch ? { noChip: 0, oemChip: 0, hatona: 0 } : specialCounts,
     products,
   };
 } catch {
@@ -242,6 +260,16 @@ const initialCatalogJson = JSON.stringify(initialCatalog)
               <div data-catalog-grid class="catalog-list">
                 {initialCatalog && <CatalogInitialRows products={initialCatalog.products} />}
               </div>
+
+              <aside class="tm-special-variants-summary" data-special-variants-summary hidden={!(initialCatalog?.special_variants && (initialCatalog.special_variants.noChip || initialCatalog.special_variants.oemChip || initialCatalog.special_variants.hatona))}>
+                <strong>Dostupné sú aj ďalšie varianty</strong>
+                <span>Pre skúsenejších používateľov ponúkame aj špeciálne verzie:</span>
+                <div data-special-variants-links>
+                  {initialCatalog?.special_variants?.noChip > 0 && <a href={`/produkty?search=${encodeURIComponent("bez čipu")}`}>Bez čipu ({initialCatalog.special_variants.noChip})</a>}
+                  {initialCatalog?.special_variants?.oemChip > 0 && <a href={`/produkty?search=${encodeURIComponent("OEM čip")}`}>S OEM čipom ({initialCatalog.special_variants.oemChip})</a>}
+                  {initialCatalog?.special_variants?.hatona > 0 && <a href={`/produkty?search=${encodeURIComponent("Hatona")}`}>Hatona ({initialCatalog.special_variants.hatona})</a>}
+                </div>
+              </aside>
 
               <div class="catalog-pagination">
                 <a href={pageHref(Math.max(1, initialPage - 1))} rel="prev" data-prev-page>Predchádzajúce</a>

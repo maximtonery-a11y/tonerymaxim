@@ -126,11 +126,24 @@ export const GET: APIRoute = async ({ url }) => {
     // Produktová cache je už pri synchronizácii zoradená podľa pravidla:
     // kompatibilný → originál → renovovaný → ostatné, skladom najskôr.
     // Preto tu znovu netriedime celé pole pri každom requeste.
-    const filterInput = { search, brand, category, type, color, stock, printer };
-    const filtered = filterProducts(productsCache.products, filterInput);
-    const withSpecialVariants = filterProducts(productsCache.products, filterInput, { includeSpecialVariants: true });
-    const primarySet = new Set(filtered);
-    const specialVariants = withSpecialVariants.filter((product) => !primarySet.has(product)).slice(0, 24).map(slimProduct);
+    const allFiltered = filterProducts(productsCache.products, { search, brand, category, type, color, stock, printer });
+    const normalizedSearch = search.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const directSpecialSearch = /bez[ -]?cip|no[ -]?chip|oem[ -]?cip|hatona/.test(normalizedSearch);
+    const specialKind = (product: TmProduct) => {
+      const productType = String(product.product_type_key || "");
+      if (productType !== "compatible" && productType !== "renovated") return "";
+      const text = `${product.name || ""} ${product.slug || ""}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      if (/bez[ -]?cip|no[ -]?chip/.test(text)) return "no-chip";
+      if (/oem[ -]?cip/.test(text)) return "oem-chip";
+      if (/hatona/.test(text)) return "hatona";
+      return "";
+    };
+    const specialVariants = directSpecialSearch ? { noChip: 0, oemChip: 0, hatona: 0 } : {
+      noChip: allFiltered.filter((p) => specialKind(p) === "no-chip").length,
+      oemChip: allFiltered.filter((p) => specialKind(p) === "oem-chip").length,
+      hatona: allFiltered.filter((p) => specialKind(p) === "hatona").length,
+    };
+    const filtered = directSpecialSearch ? allFiltered : allFiltered.filter((p) => !specialKind(p));
     const start = (page - 1) * perPage;
     const products = filtered.slice(start, start + perPage).map(slimProduct);
 
