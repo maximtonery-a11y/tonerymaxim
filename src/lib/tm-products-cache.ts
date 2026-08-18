@@ -1213,10 +1213,28 @@ export async function syncProductsCache(options: { force?: boolean } = {}): Prom
   }
 }
 
+function isHiddenRenovationService(product: TmProduct) {
+  const text = [
+    product?.name,
+    product?.description,
+    product?.description_html,
+    product?.short_description_html,
+    product?.search_text,
+  ].map((value) => String(value || "")).join(" ")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  return text.includes("sluzba renovacia");
+}
+
+function publicCatalogCache(cache: CacheFile): CacheFile {
+  const products = cache.products.filter((product) => !isHiddenRenovationService(product));
+  if (products.length === cache.products.length) return cache;
+  return { ...cache, total: products.length, products };
+}
+
 export async function getProductsCache() {
   const current = await readProductsCache();
-  if (current) return current;
-  return (await syncProductsCache({ force: true })).cache;
+  if (current) return publicCatalogCache(current);
+  return publicCatalogCache((await syncProductsCache({ force: true })).cache);
 }
 
 function getProductLookupIndex(cache: CacheFile) {

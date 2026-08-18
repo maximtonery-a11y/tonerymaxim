@@ -3076,3 +3076,12 @@ body.product-detail-body .related-section-stacked .accessory-grid {
 @media (max-width: 700px) {
   .product-seo-relations { margin: 16px 0 4px; padding: 16px; border-radius: 16px; }
 }
+
+/* Regression guard: product description dialog must always be closable and scrollable on mobile. */
+.description-modal{z-index:2147483000;overscroll-behavior:contain}
+.description-modal-card{max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.description-modal .modal-close{position:sticky;top:0;z-index:4;display:block;margin:0 0 -38px auto;box-shadow:0 2px 10px rgba(7,27,58,.12)}
+@media(max-width:880px){
+  .description-modal{place-items:center;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
+  .description-modal-card{max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:20px 16px 24px}
+}

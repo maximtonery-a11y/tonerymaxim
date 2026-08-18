@@ -398,45 +398,11 @@ function groupProducts(products: Product[]): ProductGroup[] {
   }).sort((a, b) => (TYPE_ORDER[a.key] || 9) - (TYPE_ORDER[b.key] || 9));
 }
 
-function buildProductAnswer(message: string, products: Product[]) {
-  const groups = groupProductsForQuestion(products, message);
-  const total = products.length;
-  const compatible = groups.find((g) => g.key === 'compatible');
-  const original = groups.find((g) => g.key === 'original');
-  const renovated = groups.find((g) => g.key === 'renovated');
-  const query = message.trim();
-
-  const groupText = groups.map((group) => {
-    if (group.key === 'compatible') return formatCount(group.count, 'kompatibilný', 'kompatibilné', 'kompatibilných');
-    if (group.key === 'original') return formatCount(group.count, 'originálny', 'originálne', 'originálnych');
-    if (group.key === 'renovated') return formatCount(group.count, 'renovovaný', 'renovované', 'renovovaných');
-    return formatCount(group.count, 'ostatný', 'ostatné', 'ostatných');
-  }).join(', ');
-
-  const parts = [`Pre „${query}“ máme v ponuke ${formatCount(total, 'produkt', 'produkty', 'produktov')}: ${groupText}.`];
-
-  if (asksCostPerPage(message)) {
-    const ranked = products.map((p) => ({ p, cpp: costPerPage(p), pages: parsePageYield(p) })).filter((x) => x.cpp != null).sort((a, b) => (a.cpp! - b.cpp!));
-    if (ranked.length) {
-      const best = ranked[0];
-      parts.push(`Najlepší vypočítateľný pomer ceny a deklarovanej výťažnosti má ${best.p.name}: približne ${formatCostPerPage(best.cpp!)} pri cene ${Number(best.p.price || 0).toFixed(2).replace('.', ',')} € a deklarovanej kapacite ${best.pages!.toLocaleString('sk-SK')} strán.`);
-      parts.push('Ide o orientačný prepočet z aktuálnej ceny a deklarovanej kapacity v katalógu. Reálna cena za stranu závisí od pokrytia stránky a spôsobu tlače. Produkty bez spoľahlivo uvedenej kapacity do poradia podľa ceny za stranu nezaraďujem.');
-    } else {
-      parts.push('Pri týchto produktoch nemám v katalógu dostatočne spoľahlivú kapacitu na korektný výpočet ceny za jednu stranu, preto poradie nebudem odhadovať.');
-    }
-  }
-
-  if (compatible?.recommended) {
-    const cpp = costPerPage(compatible.recommended);
-    parts.push(asksCostPerPage(message) && cpp != null
-      ? `Z kompatibilných možností vychádza najlepšie ${compatible.recommended.name} – približne ${formatCostPerPage(cpp)}.`
-      : `Z kompatibilných možností je cenovo najvýhodnejšia ${compatible.recommended.name}. Vhodnosť vždy overte podľa presného modelu tlačiarne.`);
-  }
-  if (original?.recommended) parts.push(`Ak chcete originálnu kvalitu výrobcu tlačiarne, vyberte originálnu možnosť ${original.recommended.name}. Je drahšia, ale je to najistejšia originálna voľba.`);
-  if (renovated?.recommended) parts.push(`Renovovaná možnosť je vhodná ako ekologickejšia alternatíva: ${renovated.recommended.name}.`);
-
-  parts.push('Nižšie zobrazujem najvhodnejšie produkty zoradené podľa typu. Pred vložením do košíka ešte odporúčam skontrolovať model tlačiarne v detaile produktu.');
-  return parts;
+function buildProductAnswer(_message: string, _products: Product[]) {
+  // Product-search responses intentionally use one neutral introduction.
+  // The catalogue results shown below are the source of truth; do not
+  // reconstruct the customer's query or invent recommendations here.
+  return ['Máme v ponuke tieto produkty:'];
 }
 
 function enrichProductAnswer(message: string, answer: string[], products: Product[]) {

@@ -48,6 +48,7 @@ interface Props {
   expertGuide?: ExpertGuide;
   pagination?: Pagination;
   productFirst?: boolean;
+  productTypeFilters?: boolean;
 }
 
 const {
@@ -72,6 +73,7 @@ const {
   expertGuide,
   pagination,
   productFirst = false,
+  productTypeFilters = false,
 } = Astro.props;
 
 const SEO_ORIGIN = "https://www.tonerymaxim.sk";
@@ -190,7 +192,11 @@ const jsonLd = [
 
             {entityFacts.length > 0 && (
               <ul class="seo-fact-list" aria-label="Dôležité informácie">
-                {entityFacts.map((fact) => <li>{fact}</li>)}
+                {entityFacts.map((fact) => {
+                  const match = productTypeFilters ? fact.match(/^(Kompatibilné|Originálne|Renovované):\s*(\d+)/) : null;
+                  const filter = match?.[1] === "Kompatibilné" ? "compatible" : match?.[1] === "Originálne" ? "original" : match?.[1] === "Renovované" ? "renovated" : "";
+                  return <li>{filter ? <button type="button" class="seo-type-filter" data-seo-type-filter={filter}>{fact}</button> : fact}</li>;
+                })}
               </ul>
             )}
 
@@ -415,6 +421,23 @@ const jsonLd = [
           button.addEventListener("click", () => { window.location.href = target; });
         });
       });
+
+      const typeButtons = Array.from(document.querySelectorAll("[data-seo-type-filter]"));
+      const applyTypeFilter = (type) => {
+        const rows = Array.from(document.querySelectorAll(".seo-catalog-list .tm-product-row"));
+        const headings = Array.from(document.querySelectorAll(".seo-catalog-list .tm-mobile-product-group"));
+        const active = typeButtons.find((button) => button.dataset.seoTypeFilter === type && button.classList.contains("is-active"));
+        const wanted = active ? "" : type;
+        rows.forEach((row) => { row.hidden = Boolean(wanted) && !row.classList.contains(`tm-product-row--${wanted}`); });
+        headings.forEach((heading) => { heading.hidden = Boolean(wanted) && !heading.classList.contains(`tm-mobile-product-group--${wanted}`); });
+        typeButtons.forEach((button) => {
+          const selected = Boolean(wanted) && button.dataset.seoTypeFilter === wanted;
+          button.classList.toggle("is-active", selected);
+          button.setAttribute("aria-pressed", selected ? "true" : "false");
+        });
+        document.querySelector("#produkty")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+      typeButtons.forEach((button) => button.addEventListener("click", () => applyTypeFilter(button.dataset.seoTypeFilter || "")));
 
       window.tmInitSmartSearch?.();
       document.addEventListener("DOMContentLoaded", () => window.tmInitSmartSearch?.());
