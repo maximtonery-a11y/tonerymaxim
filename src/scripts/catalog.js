@@ -151,14 +151,6 @@ import { getDispatchParts } from "./dispatch-message.js";
       const rank = typeRank(a) - typeRank(b);
       if (rank !== 0) return rank;
 
-      // Bežné hotové tonery vždy pred špeciálnymi variantmi.
-      // Varianty sa potom zobrazia kompaktne na konci danej kategórie.
-      const specialA = chipVariant(a);
-      const specialB = chipVariant(b);
-      const specialRankA = specialA && specialA.key !== "ready-chip" ? 1 : 0;
-      const specialRankB = specialB && specialB.key !== "ready-chip" ? 1 : 0;
-      if (specialRankA !== specialRankB) return specialRankA - specialRankB;
-
       const stockA = a.stock_status === "instock" ? 0 : 1;
       const stockB = b.stock_status === "instock" ? 0 : 1;
       if (stockA !== stockB) return stockA - stockB;
@@ -779,7 +771,6 @@ import { getDispatchParts } from "./dispatch-message.js";
     sortedProducts.forEach((product) => {
       const type = typeData(product);
       const chip = chipVariant(product);
-      const isSpecialVariant = chip && chip.key !== "ready-chip";
       const mobileGroupKey = type.key || "product";
 
       if (mobileGroupKey !== previousMobileGroup) {
@@ -791,31 +782,10 @@ import { getDispatchParts } from "./dispatch-message.js";
         list.appendChild(heading);
       }
 
-      if (isSpecialVariant) {
-        const variant = document.createElement("article");
-        variant.className = `tm-special-variant tm-special-variant--${esc(type.key)} tm-special-variant--${esc(chip.key)}`;
-        variant.innerHTML = `
-          <div class="tm-special-variant-copy">
-            <span class="tm-chip-variant tm-chip-variant--${esc(chip.key)}">${esc(chip.label)}</span>
-            <div>
-              <strong>${esc(product.name)}</strong>
-              <small>${esc(chip.note)}</small>
-            </div>
-          </div>
-          <div class="tm-special-variant-action">
-            <strong>${money(product.price)}</strong>
-            <a href="${esc(cartProductUrl(product))}">Zobraziť variant</a>
-          </div>
-        `;
-        variant.querySelector("a")?.addEventListener("click", () => writeProductDetailCache(product));
-        list.appendChild(variant);
-        return;
-      }
-
       const printers = getPrinters(product);
       const dispatch = dispatchInfo(product);
       const row = document.createElement("article");
-      row.className = `tm-product-row tm-product-row--${type.key}`;
+      row.className = `tm-product-row tm-product-row--${type.key}${chip && chip.key !== "ready-chip" ? ` tm-product-row--special-variant tm-product-row--variant-${chip.key}` : ""}`;
 
       row.innerHTML = `
         <div class="tm-row-accent" aria-hidden="true"></div>
@@ -826,7 +796,7 @@ import { getDispatchParts } from "./dispatch-message.js";
           </div>
           <div class="tm-row-type-copy">
             <span class="tm-type-badge">${esc(type.label)}</span>
-            ${chip ? `<span class="tm-chip-variant tm-chip-variant--${esc(chip.key)}" title="${esc(chip.note)}">${esc(chip.label)}</span>` : ""}
+            ${chip ? `<span class="tm-chip-variant tm-chip-variant--${esc(chip.key)}" title="${esc(chip.note)}">${esc(chip.label)}</span>${chip.key !== "ready-chip" ? `<span class="tm-special-variant-label">Ďalší variant</span>` : ""}` : ""}
             <p>${type.note}</p>
           </div>
         </div>
@@ -921,15 +891,12 @@ import { getDispatchParts } from "./dispatch-message.js";
     updatePagination();
   }
 
-  function scrollToCatalogStart() {
-    const target = document.querySelector("[data-catalog-status]")?.closest(".catalog-toolbar") || document.querySelector(".catalog-main");
+  function scrollCatalogToStart() {
+    const target = document.querySelector("[data-catalog-status]") || document.querySelector("[data-catalog-grid]");
     if (!target) return;
-    // Dva frame-y počkajú na DOM/layout po výmene stránky. Bez smooth animácie
-    // nevzniká pretek medzi starou a novou výškou zoznamu na desktope.
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      const header = document.querySelector("header");
-      const offset = (header?.getBoundingClientRect().height || 0) + 18;
-      const top = Math.max(0, window.scrollY + target.getBoundingClientRect().top - offset);
+      const headerOffset = 118;
+      const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - headerOffset);
       window.scrollTo({ top, behavior: "auto" });
     }));
   }
@@ -981,6 +948,7 @@ import { getDispatchParts } from "./dispatch-message.js";
       }
 
       applyCatalogData(data);
+      if (options.scrollToCatalog) scrollCatalogToStart();
     } catch (error) {
       if (!hasCachedProducts) {
         status.textContent = error.message || "Chyba načítania produktov.";
@@ -1133,14 +1101,14 @@ import { getDispatchParts } from "./dispatch-message.js";
       event.preventDefault();
       if (currentPage <= 1) return;
       currentPage -= 1;
-      loadProducts().finally(scrollToCatalogStart);
+      loadProducts({ scrollToCatalog: true });
     });
 
     document.querySelector("[data-next-page]")?.addEventListener("click", (event) => {
       event.preventDefault();
       if (currentPage >= totalPages) return;
       currentPage += 1;
-      loadProducts().finally(scrollToCatalogStart);
+      loadProducts({ scrollToCatalog: true });
     });
   });
 })();
