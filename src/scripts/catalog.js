@@ -785,7 +785,7 @@ import { getDispatchParts } from "./dispatch-message.js";
       const printers = getPrinters(product);
       const dispatch = dispatchInfo(product);
       const row = document.createElement("article");
-      row.className = `tm-product-row tm-product-row--${type.key}${chip && chip.key !== "ready-chip" ? ` tm-product-row--special-variant tm-product-row--variant-${chip.key}` : ""}`;
+      row.className = `tm-product-row tm-product-row--${type.key}`;
 
       row.innerHTML = `
         <div class="tm-row-accent" aria-hidden="true"></div>
@@ -883,11 +883,36 @@ import { getDispatchParts } from "./dispatch-message.js";
     next.setAttribute("aria-disabled", String(currentPage >= totalPages));
   }
 
+  function renderSpecialVariants(variants = []) {
+    const list = document.querySelector("[data-catalog-grid]");
+    if (!list) return;
+    list.querySelector("[data-special-variants]")?.remove();
+    if (!Array.isArray(variants) || !variants.length) return;
+
+    const groups = { "no-chip": [], "oem-chip": [], hatona: [] };
+    variants.forEach((product) => {
+      const chip = chipVariant(product);
+      if (chip && groups[chip.key]) groups[chip.key].push(product);
+    });
+    const labels = { "no-chip": "Varianty bez čipu", "oem-chip": "Varianty s OEM čipom", hatona: "Renovované Hatona" };
+    const parts = Object.entries(groups).filter(([, items]) => items.length).map(([key, items]) => {
+      const links = items.slice(0, 8).map((p) => `<a href="${esc(cartProductUrl(p))}">${esc(p.name)} <strong>${money(p.price)}</strong></a>`).join("");
+      return `<div class="tm-special-variants-group"><strong>${labels[key]}</strong><div>${links}</div></div>`;
+    }).join("");
+    if (!parts) return;
+    const box = document.createElement("section");
+    box.className = "tm-special-variants-box";
+    box.dataset.specialVariants = "";
+    box.innerHTML = `<div class="tm-special-variants-head"><span>Ďalšie dostupné varianty</span><small>Pre zákazníkov, ktorí cielene hľadajú špeciálne vyhotovenie tonera.</small></div>${parts}`;
+    list.appendChild(box);
+  }
+
   function applyCatalogData(data) {
     totalPages = Math.max(1, Number(data.total_pages || 1));
     data.products = sortProducts(data.products || []);
     writeCatalogCache(data);
     renderProducts(data.products);
+    renderSpecialVariants(data.special_variants || []);
     updatePagination();
   }
 
@@ -913,6 +938,7 @@ import { getDispatchParts } from "./dispatch-message.js";
     if (hasCachedProducts) {
       totalPages = Math.max(1, Number(cached.total_pages || 1));
       renderProducts(cached.products);
+      renderSpecialVariants(cached.special_variants || []);
       updatePagination();
       status.textContent = "Produkty načítané z rýchlej cache. Aktualizujem...";
     } else if (!options.silent) {

@@ -126,7 +126,11 @@ export const GET: APIRoute = async ({ url }) => {
     // Produktová cache je už pri synchronizácii zoradená podľa pravidla:
     // kompatibilný → originál → renovovaný → ostatné, skladom najskôr.
     // Preto tu znovu netriedime celé pole pri každom requeste.
-    const filtered = filterProducts(productsCache.products, { search, brand, category, type, color, stock, printer });
+    const filterInput = { search, brand, category, type, color, stock, printer };
+    const filtered = filterProducts(productsCache.products, filterInput);
+    const withSpecialVariants = filterProducts(productsCache.products, filterInput, { includeSpecialVariants: true });
+    const primarySet = new Set(filtered);
+    const specialVariants = withSpecialVariants.filter((product) => !primarySet.has(product)).slice(0, 24).map(slimProduct);
     const start = (page - 1) * perPage;
     const products = filtered.slice(start, start + perPage).map(slimProduct);
 
@@ -142,6 +146,7 @@ export const GET: APIRoute = async ({ url }) => {
       total_pages: Math.max(1, Math.ceil(filtered.length / perPage)),
       filters: { search, brand, category, type, color, stock, printer },
       sorted_by: "compatible-original-renovated",
+      special_variants: specialVariants,
       products,
     });
 

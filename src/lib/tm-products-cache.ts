@@ -1424,7 +1424,7 @@ function explicitlyRequestsSpecialChipVariant(searchValue: unknown) {
   return /bez[ -]?cip|no[ -]?chip|oem[ -]?cip|hatona/.test(text);
 }
 
-export function filterProducts(products: TmProduct[], filters: { search?: string; brand?: string; category?: string; type?: string; printer?: string; color?: string; stock?: string }) {
+export function filterProducts(products: TmProduct[], filters: { search?: string; brand?: string; category?: string; type?: string; printer?: string; color?: string; stock?: string }, options: { includeSpecialVariants?: boolean } = {}) {
   const filterKey = JSON.stringify({
     search: normalize(filters.search || ""),
     brand: normalize(filters.brand || ""),
@@ -1433,6 +1433,7 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     printer: normalize(filters.printer || ""),
     color: normalize(filters.color || ""),
     stock: normalize(filters.stock || ""),
+    includeSpecialVariants: Boolean(options.includeSpecialVariants),
   });
   let productCache = filteredProductsCache.get(products);
   if (!productCache) {
@@ -1470,9 +1471,10 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
   const filtered = sourceProducts.filter((product) => {
     // Služby renovácie nie sú samostatný predajný produkt a v katalógu sa nezobrazujú.
     if (isRenovationServiceProduct(product)) return false;
-    // Špeciálne varianty (bez čipu / OEM čip / Hatona) zostávajú v dátach.
-    // UI ich zobrazuje kompaktne pod príslušným typom, takže sa nestratia a
-    // zároveň nezahltia hlavný výpis. Toto je deterministické pre SSR aj API.
+    // Špeciálne varianty sa v bežnom katalógu nevykresľujú ako plné produktové karty.
+    // Zobrazia sa iba pri cielenom vyhľadávaní (bez čipu / OEM čip / Hatona)
+    // alebo keď si ich interný volajúci výslovne vyžiada na zostavenie prehľadu variantov.
+    if (!options.includeSpecialVariants && !explicitlyRequestsSpecialChipVariant(filters.search) && isSpecialChipVariantProduct(product)) return false;
     const text = product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`);
     if (filters.type && product.product_type_key !== filters.type) return false;
     if (stock === "instock" && product.stock_status !== "instock") return false;
