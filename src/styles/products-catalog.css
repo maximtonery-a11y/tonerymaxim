@@ -1996,3 +1996,9 @@ button.catalog-filter-chip:hover {
 .tm-chip-variant--no-chip { border-color: #fecaca; background: #fff1f2; color: #be123c; }
 .tm-chip-variant--oem-chip { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; }
 .tm-chip-variant--hatona { border-color: #ddd6fe; background: #f5f3ff; color: #6d28d9; }
+
+
+/* Kompaktné špeciálne varianty tonerov: bez čipu / OEM čip / Hatona */
+.tm-special-variant{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:8px 0 14px;padding:13px 18px;border:1px solid #dbe5f1;border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(15,42,79,.05)}
+.tm-special-variant-copy{display:flex;align-items:center;gap:12px;min-width:0}.tm-special-variant-copy>div{display:flex;flex-direction:column;gap:3px;min-width:0}.tm-special-variant-copy strong{font-size:14px;line-height:1.25;color:#0b2348}.tm-special-variant-copy small{font-size:12px;color:#64748b}.tm-special-variant-action{display:flex;align-items:center;gap:14px;white-space:nowrap}.tm-special-variant-action>strong{font-size:17px;color:#0b2348}.tm-special-variant-action a{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:10px;background:#eef5ff;color:#075bd8;font-weight:800;text-decoration:none}.tm-special-variant--compatible{border-left:4px solid #12a765}.tm-special-variant--renovated{border-left:4px solid #ff6b17}
+@media(max-width:760px){.tm-special-variant{align-items:flex-start;padding:12px 13px;gap:10px}.tm-special-variant-copy{align-items:flex-start;flex-direction:column;gap:7px}.tm-special-variant-copy strong{font-size:13px}.tm-special-variant-copy small{display:none}.tm-special-variant-action{flex-direction:column;align-items:flex-end;gap:6px}.tm-special-variant-action>strong{font-size:15px}.tm-special-variant-action a{min-height:34px;padding:0 10px;font-size:12px}}

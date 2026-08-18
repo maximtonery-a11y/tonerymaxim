@@ -1467,13 +1467,12 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     : new Set<TmProduct>();
 
   const sourceProducts = search ? looseCandidates : products;
-  const showSpecialChipVariants = explicitlyRequestsSpecialChipVariant(filters.search);
   const filtered = sourceProducts.filter((product) => {
     // Služby renovácie nie sú samostatný predajný produkt a v katalógu sa nezobrazujú.
     if (isRenovationServiceProduct(product)) return false;
-    // Bezčipové, OEM-chip a Hatona varianty nezahltia bežný výpis. Zostávajú
-    // dostupné pri cielenom vyhľadaní ich typu ("bez čipu", "OEM čip", "Hatona").
-    if (!showSpecialChipVariants && isSpecialChipVariantProduct(product)) return false;
+    // Špeciálne varianty (bez čipu / OEM čip / Hatona) zostávajú v dátach.
+    // UI ich zobrazuje kompaktne pod príslušným typom, takže sa nestratia a
+    // zároveň nezahltia hlavný výpis. Toto je deterministické pre SSR aj API.
     const text = product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`);
     if (filters.type && product.product_type_key !== filters.type) return false;
     if (stock === "instock" && product.stock_status !== "instock") return false;

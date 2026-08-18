@@ -151,6 +151,14 @@ import { getDispatchParts } from "./dispatch-message.js";
       const rank = typeRank(a) - typeRank(b);
       if (rank !== 0) return rank;
 
+      // Bežné hotové tonery vždy pred špeciálnymi variantmi.
+      // Varianty sa potom zobrazia kompaktne na konci danej kategórie.
+      const specialA = chipVariant(a);
+      const specialB = chipVariant(b);
+      const specialRankA = specialA && specialA.key !== "ready-chip" ? 1 : 0;
+      const specialRankB = specialB && specialB.key !== "ready-chip" ? 1 : 0;
+      if (specialRankA !== specialRankB) return specialRankA - specialRankB;
+
       const stockA = a.stock_status === "instock" ? 0 : 1;
       const stockB = b.stock_status === "instock" ? 0 : 1;
       if (stockA !== stockB) return stockA - stockB;
@@ -771,6 +779,7 @@ import { getDispatchParts } from "./dispatch-message.js";
     sortedProducts.forEach((product) => {
       const type = typeData(product);
       const chip = chipVariant(product);
+      const isSpecialVariant = chip && chip.key !== "ready-chip";
       const mobileGroupKey = type.key || "product";
 
       if (mobileGroupKey !== previousMobileGroup) {
@@ -780,6 +789,27 @@ import { getDispatchParts } from "./dispatch-message.js";
         heading.className = `tm-mobile-product-group tm-mobile-product-group--${group.key}`;
         heading.textContent = group.title;
         list.appendChild(heading);
+      }
+
+      if (isSpecialVariant) {
+        const variant = document.createElement("article");
+        variant.className = `tm-special-variant tm-special-variant--${esc(type.key)} tm-special-variant--${esc(chip.key)}`;
+        variant.innerHTML = `
+          <div class="tm-special-variant-copy">
+            <span class="tm-chip-variant tm-chip-variant--${esc(chip.key)}">${esc(chip.label)}</span>
+            <div>
+              <strong>${esc(product.name)}</strong>
+              <small>${esc(chip.note)}</small>
+            </div>
+          </div>
+          <div class="tm-special-variant-action">
+            <strong>${money(product.price)}</strong>
+            <a href="${esc(cartProductUrl(product))}">Zobraziť variant</a>
+          </div>
+        `;
+        variant.querySelector("a")?.addEventListener("click", () => writeProductDetailCache(product));
+        list.appendChild(variant);
+        return;
       }
 
       const printers = getPrinters(product);
@@ -892,12 +922,16 @@ import { getDispatchParts } from "./dispatch-message.js";
   }
 
   function scrollToCatalogStart() {
-    const target = document.querySelector(".catalog-main") || document.querySelector("[data-catalog-grid]");
+    const target = document.querySelector("[data-catalog-status]")?.closest(".catalog-toolbar") || document.querySelector(".catalog-main");
     if (!target) return;
-    const header = document.querySelector("header");
-    const offset = (header?.getBoundingClientRect().height || 0) + 16;
-    const top = Math.max(0, window.scrollY + target.getBoundingClientRect().top - offset);
-    window.scrollTo({ top, behavior: "smooth" });
+    // Dva frame-y počkajú na DOM/layout po výmene stránky. Bez smooth animácie
+    // nevzniká pretek medzi starou a novou výškou zoznamu na desktope.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const header = document.querySelector("header");
+      const offset = (header?.getBoundingClientRect().height || 0) + 18;
+      const top = Math.max(0, window.scrollY + target.getBoundingClientRect().top - offset);
+      window.scrollTo({ top, behavior: "auto" });
+    }));
   }
 
   async function loadProducts(options = {}) {
