@@ -60,7 +60,7 @@ export function validateGroundedOpenAiResult(value: unknown): OpenAiAssistantRes
 }
 
 export function isOpenAiAssistantEnabled() {
-  return env("OPENAI_ASSISTANT_ENABLED") !== "0" && env("OPENAI_API_KEY").length >= 20;
+  return env("OPENAI_ASSISTANT_ENABLED") === "1" && env("OPENAI_API_KEY").length >= 20;
 }
 
 export async function answerWithOpenAi(message: string, page = "") {
@@ -69,7 +69,7 @@ export async function answerWithOpenAi(message: string, page = "") {
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
-    numberEnv("OPENAI_TIMEOUT_MS", 2_500, 800, 3_500),
+    numberEnv("OPENAI_TIMEOUT_MS", 1_200, 600, 1_500),
   );
 
   const instructions = [

@@ -382,5 +382,5 @@ test("printer type filters only expose types that exist", () => {
 
 test("AI fallback cannot wait ten seconds", () => {
   const ai = read("src/lib/openai-sales-assistant.ts");
-  assert.match(ai, /OPENAI_TIMEOUT_MS", 2_500, 800, 3_500/);
+  assert.match(ai, /OPENAI_TIMEOUT_MS", 1_200, 600, 1_500/);
 });

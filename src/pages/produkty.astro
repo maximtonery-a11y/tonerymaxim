@@ -8,7 +8,8 @@ import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import SeoHead from "../components/SeoHead.astro";
 import CatalogInitialRows from "../components/CatalogInitialRows.astro";
 import { breadcrumbJsonLd } from "../lib/seo";
-import { filterProducts, getProductsCache } from "../lib/tm-products-cache";
+import { filterProducts, getProductsCache, normalize } from "../lib/tm-products-cache";
+import { printerEntities } from "../lib/seo-catalog";
 
 const rawQuery = String(Astro.url.searchParams.get("s") || Astro.url.searchParams.get("search") || "").trim();
 const requestedCategory = String(Astro.url.searchParams.get("category") || "").trim();
@@ -34,6 +35,37 @@ const title = query ? `${query} – tonery a náplne | ToneryMaxim.sk` : `Tonery
 const description = query ? `Výsledky pre ${query}. Porovnajte kompatibilné, originálne a renovované tonery a náplne.` : `Vyhľadajte toner alebo náplň podľa označenia, značky či modelu tlačiarne. Kompatibilné, originálne a renovované produkty na jednom mieste${initialPage > 1 ? ` – strana ${initialPage}` : ""}.`;
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname) || hasFilters;
 const canonicalPath = !hasFilters && initialPage > 1 ? `/produkty?page=${initialPage}` : "/produkty";
+// Ak zákazník hľadá presný model tlačiarne, pošleme ho na plnohodnotnú
+// stránku modelu. Tá obsahuje produkty aj odborný popis; obyčajný výsledok
+// /produkty?s=... by popis tlačiarne nemal kde zobraziť.
+if (query && !requestedCategory && !clean("brand") && !clean("type") && !clean("color") && !clean("stock") && !clean("printer")) {
+  try {
+    const cache = await getProductsCache();
+    const wanted = normalize(query).replace(/[^a-z0-9]+/g, "");
+    const entities = printerEntities(cache.products);
+    let exactPrinter = entities.find((entity) =>
+      normalize(entity.name).replace(/[^a-z0-9]+/g, "") === wanted
+    );
+    // Znesie aj marketingový názov navyše (napr. „Canon i-SENSYS MF655Cdw“ vs. „Canon MF655Cdw“),
+    // ale presmeruje iba pri jednej jednoznačnej zhode.
+    if (!exactPrinter) {
+      const tokens = normalize(query).split(/[^a-z0-9]+/).filter((token) => token.length >= 2);
+      if (tokens.some((token) => /\d/.test(token))) {
+        const candidates = entities.filter((entity) => {
+          const name = normalize(entity.name);
+          return tokens.every((token) => name.includes(token));
+        });
+        if (candidates.length === 1) exactPrinter = candidates[0];
+      }
+    }
+    if (exactPrinter) {
+      return Astro.redirect(`/tlaciarne/${exactPrinter.brand.slug}/${exactPrinter.slug}`, 302);
+    }
+  } catch {
+    // Pri dočasnom probléme cache ponecháme pôvodné produktové vyhľadávanie.
+  }
+}
+
 const pageHref = (page: number) => {
   const params = new URLSearchParams(Astro.url.searchParams);
   if (page > 1) params.set("page", String(page)); else params.delete("page");
