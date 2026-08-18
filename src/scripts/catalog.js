@@ -891,6 +891,15 @@ import { getDispatchParts } from "./dispatch-message.js";
     updatePagination();
   }
 
+  function scrollToCatalogStart() {
+    const target = document.querySelector(".catalog-main") || document.querySelector("[data-catalog-grid]");
+    if (!target) return;
+    const header = document.querySelector("header");
+    const offset = (header?.getBoundingClientRect().height || 0) + 16;
+    const top = Math.max(0, window.scrollY + target.getBoundingClientRect().top - offset);
+    window.scrollTo({ top, behavior: "smooth" });
+  }
+
   async function loadProducts(options = {}) {
     updateMobileQuery();
     updateFilterButtons();
@@ -1090,14 +1099,14 @@ import { getDispatchParts } from "./dispatch-message.js";
       event.preventDefault();
       if (currentPage <= 1) return;
       currentPage -= 1;
-      loadProducts();
+      loadProducts().finally(scrollToCatalogStart);
     });
 
     document.querySelector("[data-next-page]")?.addEventListener("click", (event) => {
       event.preventDefault();
       if (currentPage >= totalPages) return;
       currentPage += 1;
-      loadProducts();
+      loadProducts().finally(scrollToCatalogStart);
     });
   });
 })();
