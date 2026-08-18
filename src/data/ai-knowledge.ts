@@ -317,6 +317,65 @@ export const aiKnowledge: AiKnowledgeItem[] = [
       'Využiť môžete pravidlá spätného odberu, zberný dvor alebo oprávneného spracovateľa podľa miestnych možností. Ak potrebujete postup pre konkrétny prípad, kontaktujte nás.',
     ],
   },
+
+  {
+    id: 'typy-tlaciarni-prehlad', intent: 'support', title: 'Laserová, atramentová a tanková tlačiareň', priority: 125,
+    triggers: ['aka je tankova tlaciaren', 'co je tankova tlaciaren', 'tankova tlaciaren', 'laserova alebo atramentova', 'laser alebo tank', 'atrament alebo tank', 'typy tlaciarni', 'aky typ tlaciarne'],
+    answer: [
+      'Laserová tlačiareň používa tonerový prášok. Je veľmi vhodná na častú kancelársku tlač, najmä textu; čiernobiele laserové modely bývajú rýchle a majú nízke prevádzkové náklady.',
+      'Klasická atramentová tlačiareň používa atramentové kazety. Vie veľmi dobre tlačiť farby a fotografie, ale pri lacných modeloch s malými kazetami môže byť cena jednej strany vyššia.',
+      'Tanková atramentová tlačiareň nemá malé jednorazové kazety ako bežná atramentová tlačiareň. Atrament sa dolieva z fľaštičiek do zásobníkov. Obstarávacia cena tlačiarne býva vyššia, ale pri väčšom objeme tlače má tankový systém spravidla veľmi nízku cenu za stranu.',
+      'Najvhodnejší typ závisí od toho, koľko strán mesačne tlačíte, či potrebujete farbu/fotografie a aké sú ceny spotrebného materiálu pre konkrétny model.',
+    ],
+  },
+  {
+    id: 'naklady-na-stranu-typ-tlaciarne', intent: 'support', title: 'Ktorý typ tlačiarne má najlacnejšiu tlač', priority: 130,
+    triggers: ['pri akom type je najlacnejsia tlac', 'najlacnejsia tlac laser tank atrament', 'co tlaci najlacnejsie', 'najlacnejsia cena za stranu', 'laser tank atrament cena za stranu', 'ktora tlaciaren ma najlacnejsiu prevadzku', 'najlacnejsia prevadzka tlaciarne'],
+    answer: [
+      'Pri vysokom objeme tlače má zvyčajne najnižšie náklady na jednu stranu tanková atramentová tlačiareň, pretože atrament sa dopĺňa z veľkoobjemových fľaštičiek.',
+      'Pri prevažne čiernobielej kancelárskej tlači je veľmi výhodná aj čiernobiela laserová tlačiareň, najmä s vysokokapacitným tonerom. Výhodou je rýchlosť, odolnosť výtlačku a menšie riziko zasychania pri nepravidelnej tlači.',
+      'Klasická lacná atramentová tlačiareň s malými kazetami má často najvyššiu cenu za stranu. Neplatí to však pre každý model, preto treba porovnávať cenu náplne a jej deklarovanú výťažnosť.',
+      'Ak mi napíšete približný počet strán mesačne, či tlačíte čiernobielo alebo farebne a čo najčastejšie tlačíte, poradím vhodnejší typ tlačiarne.',
+    ],
+  },
+  {
+    id: 'cena-za-stranu-vypocet', intent: 'support', title: 'Ako vypočítať cenu jednej vytlačenej strany', priority: 130,
+    triggers: ['cena za jednu stranu', 'cena za stranu', 'naklad na stranu', 'kolko stoji jedna strana', 'prepocet na stranu', 'pomer cena strana', 'cena toneru na stranu'],
+    answer: [
+      'Orientačná cena spotrebného materiálu na jednu stranu sa vypočíta ako cena náplne delená deklarovanou výťažnosťou. Napríklad toner za 20 € s výťažnosťou 2 000 strán vychádza približne na 0,01 € za stranu, teda 1 cent.',
+      'Výťažnosť tonerov sa zvyčajne udáva podľa normovanej metodiky pri približne 5 % pokrytí strany. Reálna cena preto závisí od toho, čo tlačíte; plné grafiky spotrebujú výrazne viac.',
+      'Pri farebnej laserovej tlači treba počítať so spotrebou štyroch farieb CMYK a podľa tlačiarne aj s ďalšími spotrebnými dielmi, napríklad valcom, pásom alebo fixačnou jednotkou.',
+      'Ak mi zadáte presný model tlačiarne alebo označenie toneru, môžem porovnať vhodné náplne podľa ceny, kapacity a orientačnej ceny za stranu, ak sú tieto údaje v katalógu dostupné.',
+    ],
+  },
+  {
+    id: 'najlacnejsi-toner-bez-modelu', intent: 'support', title: 'Najlacnejší toner závisí od modelu tlačiarne', priority: 135,
+    triggers: ['odporuc mi najlacnejsi toner do ciernbielej tlaciarne', 'odporuc najlacnejsi toner do ciernobielej tlaciarne', 'najlacnejsi toner do ciernobielej', 'najlacnejsi toner do farebnej', 'najlacnejsi toner pre farebnu tlaciaren', 'aky je najlacnejsi toner'],
+    answer: [
+      'Najlacnejší toner sa nedá bezpečne vybrať iba podľa toho, či je tlačiareň čiernobiela alebo farebná. Toner musí byť kompatibilný s presným modelom tlačiarne.',
+      'Napíšte značku a presný model tlačiarne zo štítku, napríklad Brother HL-L2352DW alebo HP LaserJet M110w. Potom môžem z kompatibilných možností porovnať cenu, typ náplne a kapacitu.',
+      'Pri rozhodovaní nepozerajte iba na cenu kazety. Toner za 25 € s kapacitou 3 000 strán môže byť výhodnejší než toner za 15 € s kapacitou 1 000 strán.',
+    ],
+  },
+  {
+    id: 'najlepsi-pomer-toner', intent: 'support', title: 'Najlepší pomer ceny a počtu strán', priority: 135,
+    triggers: ['ktore tonery maju najlepsi pomer', 'najlepsi pomer cena strana', 'najvyhodnejsi toner na stranu', 'toner najlepsi cena vykon', 'najlacnejsi toner na jednu stranu', 'najlepsia cena za stranu toner'],
+    answer: [
+      'Najlepší pomer sa má porovnávať iba medzi tonermi kompatibilnými s tou istou tlačiarňou. Rozhodujúca nie je len cena kazety, ale najmä jej deklarovaná kapacita.',
+      'Porovnanie robíme orientačne ako cena toneru ÷ deklarovaný počet strán. Vysokokapacitné XL/HC tonery preto často vychádzajú lacnejšie na jednu stranu, aj keď samotná kazeta stojí viac.',
+      'Pri kompatibilnom, originálnom a renovovanom toneri treba okrem ceny za stranu zohľadniť aj kvalitu, požadovaný typ použitia a spoľahlivosť. Ak mi napíšete presný model tlačiarne, porovnám iba produkty, ktoré sú preň určené.',
+    ],
+  },
+  {
+    id: 'vyber-tlaciarne-podla-pouzitia', intent: 'support', title: 'Ako vybrať ekonomickú tlačiareň', priority: 120,
+    triggers: ['aku tlaciaren kupit', 'odporuc tlaciaren', 'najlacnejsia tlaciaren na prevadzku', 'tlaciaren na vela tlace', 'tlaciaren na malo tlace', 'tlaciaren domov', 'tlaciaren do kancelarie'],
+    answer: [
+      'Ak tlačíte hlavne veľa čiernobieleho textu, zvyčajne dáva zmysel čiernobiela laserová tlačiareň s dostupným vysokokapacitným tonerom.',
+      'Ak tlačíte veľa farebných strán a chcete nízke náklady na atrament, veľmi zaujímavá je tanková atramentová tlačiareň. Na fotografie je atramentová technológia spravidla vhodnejšia než laser.',
+      'Ak tlačíte iba občas, treba myslieť aj na to, že atrament v tlačovej hlave môže pri dlhom nepoužívaní zasychať; laserová tlačiareň tento problém nemá.',
+      'Pri kúpe preto porovnávajte nielen cenu tlačiarne, ale aj cenu a výťažnosť náplní, dostupnosť kompatibilných náplní a prípadné ďalšie spotrebné diely.',
+    ],
+  },
 ];
 
 // Poznámka: znalostná databáza je jediný zdroj firemných faktov pre AI Tomáša.

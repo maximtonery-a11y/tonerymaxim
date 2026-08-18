@@ -12,11 +12,14 @@
   const quick = root.querySelector('[data-ai-quick]');
   const handoff = root.querySelector('[data-ai-handoff]');
   const handoffForm = root.querySelector('[data-ai-handoff-form]');
+  const handoffQuestion = root.querySelector('[data-ai-handoff-question]');
   const handoffPhone = root.querySelector('[data-ai-handoff-phone]');
   const handoffEmail = root.querySelector('[data-ai-handoff-email]');
   const handoffConsent = root.querySelector('[data-ai-handoff-consent]');
   const handoffHp = root.querySelector('[data-ai-handoff-hp]');
   const handoffStatus = root.querySelector('[data-ai-handoff-status]');
+  const handoffClose = root.querySelector('[data-ai-handoff-close]');
+  const handoffContinue = root.querySelector('[data-ai-handoff-continue]');
 
   const state = { busy: false, history: [], lastQuestion: '' };
   const mobileQuery = window.matchMedia('(max-width: 760px), (hover: none) and (pointer: coarse)');
@@ -192,7 +195,12 @@
       state.history.push({ role: 'user', content: question });
       state.history.push({ role: 'assistant', content: Array.isArray(data.answer) ? data.answer.join(' ') : String(data.answer || '') });
       if (state.history.length > 12) state.history = state.history.slice(-12);
-      if (handoff && data.handoffSuggested === true) { handoff.hidden = false; handoff.classList.remove('is-success'); if (handoffStatus) handoffStatus.textContent = ''; }
+      if (handoff && data.handoffSuggested === true) {
+        handoff.hidden = false;
+        handoff.classList.remove('is-success');
+        if (handoffQuestion) handoffQuestion.value = question;
+        if (handoffStatus) handoffStatus.textContent = '';
+      }
       // Neodskakujeme automaticky na koniec dlhej ponuky. Používateľ vidí odpoveď od začiatku.
       messages.scrollTop = startTop;
     } catch (error) {
@@ -238,20 +246,33 @@
   });
 
 
+  function hideHandoff(options = {}) {
+    if (!handoff) return;
+    handoff.hidden = true;
+    handoff.classList.remove('is-success');
+    if (handoffStatus) handoffStatus.textContent = '';
+    if (options.focusInput) input?.focus({ preventScroll: true });
+  }
+
+  handoffClose?.addEventListener('click', () => hideHandoff({ focusInput: true }));
+  handoffContinue?.addEventListener('click', () => hideHandoff({ focusInput: true }));
+
   handoffForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
+    const question = handoffQuestion?.value.trim() || state.lastQuestion || '';
     const phone = handoffPhone?.value.trim() || '';
     const email = handoffEmail?.value.trim() || '';
+    if (!question) { if (handoffStatus) handoffStatus.textContent = 'Napíšte otázku pre pracovníka.'; return; }
     if (!phone && !email) { if (handoffStatus) handoffStatus.textContent = 'Zadajte telefón alebo e-mail.'; return; }
     if (!handoffConsent?.checked) { if (handoffStatus) handoffStatus.textContent = 'Potvrďte súhlas s kontaktovaním.'; return; }
     const button = handoffForm.querySelector('button[type="submit"]');
     if (button) button.disabled = true;
     if (handoffStatus) handoffStatus.textContent = 'Odosielam…';
     try {
-      const response = await fetch('/api/ai-handoff', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ phone, email, question:state.lastQuestion, page:location.pathname, consent:true, website:handoffHp?.value || '' }) });
+      const response = await fetch('/api/ai-handoff', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ phone, email, question, page:location.pathname, consent:true, website:handoffHp?.value || '' }) });
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.error || 'Odoslanie sa nepodarilo.');
-      if (handoffStatus) handoffStatus.textContent = 'Odoslané. Kolega dostal vašu otázku a kontakt.';
+      if (handoffStatus) handoffStatus.textContent = 'Odoslané. Kolega dostal vašu otázku a kontakt. Môžete pokračovať s AI Tomášom.';
       handoff?.classList.add('is-success');
       if (handoffPhone) handoffPhone.value = ''; if (handoffEmail) handoffEmail.value = ''; if (handoffConsent) handoffConsent.checked = false;
     } catch (error) { if (handoffStatus) handoffStatus.textContent = error?.message || 'Odoslanie sa nepodarilo. Skúste kontakt info@tonerymaxim.sk.'; }

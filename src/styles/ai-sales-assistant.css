@@ -507,3 +507,12 @@
 }
 
 .tm-ai-handoff{margin:0 12px 10px;padding:12px;border:1px solid #d8e5f5;border-radius:14px;background:#f7faff;font-size:12px;line-height:1.4}.tm-ai-handoff strong{display:block;font-size:14px;color:#081a3a}.tm-ai-handoff p{margin:4px 0 9px;color:#5d6b82}.tm-ai-handoff form{display:grid;gap:7px}.tm-ai-handoff input[type="tel"],.tm-ai-handoff input[type="email"]{width:100%;height:40px;border:1px solid #cbd9ec;border-radius:9px;padding:0 10px;font:inherit}.tm-ai-handoff button{min-height:40px;border:0;border-radius:9px;padding:8px 12px;font-weight:800;cursor:pointer}.tm-ai-handoff__consent{display:flex;gap:7px;align-items:flex-start;color:#46566f}.tm-ai-handoff__consent input{margin-top:2px}.tm-ai-handoff__hp{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;opacity:0!important}[data-ai-handoff-status]{font-size:11px;color:#46566f}.tm-ai-handoff.is-success{background:#f3fbf5}
+
+/* V12: human handoff stays dismissible and does not block the AI conversation. */
+.tm-ai-handoff__head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tm-ai-handoff__head strong{margin:0}
+.tm-ai-handoff__close{flex:0 0 34px!important;width:34px!important;min-height:34px!important;padding:0!important;border-radius:50%!important;background:#e7eef8!important;color:#17365f;font-size:23px;line-height:1;cursor:pointer}
+.tm-ai-handoff textarea{width:100%;min-height:76px;max-height:150px;resize:vertical;border:1px solid #cbd9ec;border-radius:9px;padding:9px 10px;font:inherit;line-height:1.35;background:#fff;color:#081a3a}
+.tm-ai-handoff__continue{background:transparent!important;border:1px solid #cbd9ec!important;color:#17365f!important}
+.tm-ai-handoff.is-success .tm-ai-handoff__continue{background:#fff!important}
+@media(max-width:760px){.tm-ai-handoff{max-height:min(58dvh,440px);overflow:auto}.tm-ai-handoff textarea{min-height:68px}.tm-ai-handoff__close{position:sticky;top:0}}

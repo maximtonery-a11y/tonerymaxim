@@ -319,6 +319,65 @@ function noChipPenalty(product: Product) {
   return /no chip|no-chip|bez cipu|bez čipu/.test(text) ? 1 : 0;
 }
 
+
+function parsePageYield(product: Product): number | null {
+  const candidates = [product.capacity, product.kapacita, product.yield, product.page_yield];
+  if (Array.isArray(product.attributes)) {
+    for (const attr of product.attributes) {
+      const name = normalize(`${attr?.name || ''}`);
+      if (/kapacit|vytaz|vytaznost|yield|stran/.test(name)) {
+        candidates.push(attr?.value, ...(Array.isArray(attr?.options) ? attr.options : []));
+      }
+    }
+  }
+  for (const value of candidates) {
+    if (value == null) continue;
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
+    const text = String(value).replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+    // Kapacity tonerov sú typicky stovky až desiatky tisíc strán. Neberieme náhodné malé čísla.
+    const matches = [...text.matchAll(/(\d{3,6}(?:[ .]\d{3})*)\s*(?:str(?:a|á)n|pages?)?/gi)];
+    for (const match of matches) {
+      const num = Number(match[1].replace(/[ .]/g, ''));
+      if (Number.isFinite(num) && num >= 100 && num <= 200000) return num;
+    }
+  }
+  return null;
+}
+
+function costPerPage(product: Product): number | null {
+  const price = Number(product.price || 0);
+  const pages = parsePageYield(product);
+  if (!price || price <= 0 || !pages) return null;
+  return price / pages;
+}
+
+function asksCostPerPage(message: string) {
+  const text = normalize(message);
+  return /cena.*stran|naklad.*stran|pomer.*cena.*stran|najvyhodnejs.*toner|najleps.*pomer|najlacnejs.*tlac|kolko.*jedna stran/.test(text);
+}
+
+function formatCostPerPage(value: number) {
+  if (value < 0.01) return `${(value * 100).toFixed(2).replace('.', ',')} centa/str.`;
+  return `${value.toFixed(3).replace('.', ',')} €/str.`;
+}
+
+function groupProductsForQuestion(products: Product[], message: string): ProductGroup[] {
+  const groups = groupProducts(products);
+  if (!asksCostPerPage(message)) return groups;
+  return groups.map((group) => {
+    const withCpp = group.products
+      .map((p) => ({ p, cpp: costPerPage(p) }))
+      .sort((a, b) => {
+        if (a.cpp == null && b.cpp == null) return noChipPenalty(a.p) - noChipPenalty(b.p) || Number(a.p.price || 999999) - Number(b.p.price || 999999);
+        if (a.cpp == null) return 1;
+        if (b.cpp == null) return -1;
+        return noChipPenalty(a.p) - noChipPenalty(b.p) || a.cpp - b.cpp || Number(a.p.price || 999999) - Number(b.p.price || 999999);
+      });
+    const sorted = withCpp.map((x) => x.p);
+    return { ...group, products: sorted.slice(0, 4), recommended: sorted[0] || null };
+  });
+}
+
 function groupProducts(products: Product[]): ProductGroup[] {
   const map = new Map<string, Product[]>();
   for (const product of products) {
@@ -340,7 +399,7 @@ function groupProducts(products: Product[]): ProductGroup[] {
 }
 
 function buildProductAnswer(message: string, products: Product[]) {
-  const groups = groupProducts(products);
+  const groups = groupProductsForQuestion(products, message);
   const total = products.length;
   const compatible = groups.find((g) => g.key === 'compatible');
   const original = groups.find((g) => g.key === 'original');
@@ -356,7 +415,23 @@ function buildProductAnswer(message: string, products: Product[]) {
 
   const parts = [`Pre „${query}“ máme v ponuke ${formatCount(total, 'produkt', 'produkty', 'produktov')}: ${groupText}.`];
 
-  if (compatible?.recommended) parts.push(`Z kompatibilných možností je cenovo najvýhodnejšia ${compatible.recommended.name}. Vhodnosť vždy overte podľa presného modelu tlačiarne.`);
+  if (asksCostPerPage(message)) {
+    const ranked = products.map((p) => ({ p, cpp: costPerPage(p), pages: parsePageYield(p) })).filter((x) => x.cpp != null).sort((a, b) => (a.cpp! - b.cpp!));
+    if (ranked.length) {
+      const best = ranked[0];
+      parts.push(`Najlepší vypočítateľný pomer ceny a deklarovanej výťažnosti má ${best.p.name}: približne ${formatCostPerPage(best.cpp!)} pri cene ${Number(best.p.price || 0).toFixed(2).replace('.', ',')} € a deklarovanej kapacite ${best.pages!.toLocaleString('sk-SK')} strán.`);
+      parts.push('Ide o orientačný prepočet z aktuálnej ceny a deklarovanej kapacity v katalógu. Reálna cena za stranu závisí od pokrytia stránky a spôsobu tlače. Produkty bez spoľahlivo uvedenej kapacity do poradia podľa ceny za stranu nezaraďujem.');
+    } else {
+      parts.push('Pri týchto produktoch nemám v katalógu dostatočne spoľahlivú kapacitu na korektný výpočet ceny za jednu stranu, preto poradie nebudem odhadovať.');
+    }
+  }
+
+  if (compatible?.recommended) {
+    const cpp = costPerPage(compatible.recommended);
+    parts.push(asksCostPerPage(message) && cpp != null
+      ? `Z kompatibilných možností vychádza najlepšie ${compatible.recommended.name} – približne ${formatCostPerPage(cpp)}.`
+      : `Z kompatibilných možností je cenovo najvýhodnejšia ${compatible.recommended.name}. Vhodnosť vždy overte podľa presného modelu tlačiarne.`);
+  }
   if (original?.recommended) parts.push(`Ak chcete originálnu kvalitu výrobcu tlačiarne, vyberte originálnu možnosť ${original.recommended.name}. Je drahšia, ale je to najistejšia originálna voľba.`);
   if (renovated?.recommended) parts.push(`Renovovaná možnosť je vhodná ako ekologickejšia alternatíva: ${renovated.recommended.name}.`);
 
@@ -518,7 +593,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     const conflict = findCompatibilityConflict(cache.products || [], originalMessage);
     if (conflict?.requested && conflict.alternatives.length) {
       const found = conflict.alternatives.slice(0, 60);
-      const groups = groupProducts(found);
+      const groups = groupProductsForQuestion(found, originalMessage);
       return {
         answer: enrichProductAnswer(originalMessage, [
           `${conflict.requested.name || conflict.requested.sku || 'Zadaná náplň'} nie je v našich katalógových dátach vedená ako kompatibilná so zadaným modelom tlačiarne.`,
@@ -533,7 +608,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     }
     const found = relevantProducts(cache.products || [], originalMessage);
     if (found.length) {
-      const groups = groupProducts(found);
+      const groups = groupProductsForQuestion(found, originalMessage);
       const selectedProducts = groups.flatMap((group) => group.products).slice(0, 12).map(asAiProduct);
       return {
         answer: enrichProductAnswer(originalMessage, buildProductAnswer(originalMessage, found), found),
@@ -543,6 +618,26 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
         confidence: 0.95,
       };
     }
+  }
+
+  // Technické poradenské otázky o typoch tlačiarní a nákladoch na tlač.
+  // Majú prednosť pred všeobecným produktovým fallbackom, ale nikdy nehádať konkrétny toner bez modelu tlačiarne.
+  const technicalKnowledgeId = /tankov\w* tlaciar/i.test(normalizedMessage)
+    ? 'typy-tlaciarni-prehlad'
+    : /(?:najlacnejs|najnižš|najnizs).*?(?:tlac|prevadzk)|(?:laser|tank|atrament).*?(?:cena za stranu|najlacnejs)/i.test(normalizedMessage)
+      ? 'naklady-na-stranu-typ-tlaciarne'
+    : /(?:cena|naklad|prepocet).*?(?:jedn\w* )?stran|kolko stoji.*stran/i.test(normalizedMessage)
+      ? 'cena-za-stranu-vypocet'
+    : /(?:najleps|najvyhodnejs).*?(?:pomer|cena).*?stran|toner.*?cena.*?vykon/i.test(normalizedMessage)
+      ? 'najlepsi-pomer-toner'
+    : /najlacnejs\w* toner.*?(?:ciern|farebn)|aky.*najlacnejs\w* toner/i.test(normalizedMessage)
+      ? 'najlacnejsi-toner-bez-modelu'
+    : /aku tlaciaren.*(?:kup|odpor)|odporuc.*tlaciaren|tlaciaren.*(?:domov|kancelari|vela tlace|malo tlace)/i.test(normalizedMessage)
+      ? 'vyber-tlaciarne-podla-pouzitia'
+      : '';
+  if (technicalKnowledgeId) {
+    const technical = aiKnowledge.find((item) => item.id === technicalKnowledgeId);
+    if (technical) return { answer: [`${technical.title}:`, ...technical.answer], products: [], groups: [], intent: 'support', faq: technical.id, confidence: 0.98 };
   }
 
   const matched = knowledgeMatch(originalMessage, classified.intent);
@@ -562,7 +657,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     const cache = await getProductsCache();
     const found = relevantProducts(cache.products || [], originalMessage);
     if (found.length) {
-      const groups = groupProducts(found);
+      const groups = groupProductsForQuestion(found, originalMessage);
       return {
         answer: enrichProductAnswer(originalMessage, buildProductAnswer(originalMessage, found), found),
         products: groups.flatMap((group) => group.products).slice(0, 12).map(asAiProduct),
