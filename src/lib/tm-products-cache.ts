@@ -1412,19 +1412,19 @@ function isRenovationServiceProduct(product: TmProduct) {
   return text.includes("sluzba renovacia");
 }
 
-function isSpecialChipVariantProduct(product: TmProduct) {
+export function isSpecialChipVariantProduct(product: TmProduct) {
   const type = String(product.product_type_key || "");
   if (type !== "compatible" && type !== "renovated") return false;
   const text = normalize(`${product.name || ""} ${product.slug || ""}`);
   return /bez[ -]?cip|no[ -]?chip|oem[ -]?cip|hatona/.test(text);
 }
 
-function explicitlyRequestsSpecialChipVariant(searchValue: unknown) {
+export function explicitlyRequestsSpecialChipVariant(searchValue: unknown) {
   const text = normalize(searchValue || "");
   return /bez[ -]?cip|no[ -]?chip|oem[ -]?cip|hatona/.test(text);
 }
 
-export function filterProducts(products: TmProduct[], filters: { search?: string; brand?: string; category?: string; type?: string; printer?: string; color?: string; stock?: string }, options: { includeSpecialVariants?: boolean } = {}) {
+export function filterProducts(products: TmProduct[], filters: { search?: string; brand?: string; category?: string; type?: string; printer?: string; color?: string; stock?: string }) {
   const filterKey = JSON.stringify({
     search: normalize(filters.search || ""),
     brand: normalize(filters.brand || ""),
@@ -1433,7 +1433,6 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     printer: normalize(filters.printer || ""),
     color: normalize(filters.color || ""),
     stock: normalize(filters.stock || ""),
-    includeSpecialVariants: Boolean(options.includeSpecialVariants),
   });
   let productCache = filteredProductsCache.get(products);
   if (!productCache) {
@@ -1471,10 +1470,10 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
   const filtered = sourceProducts.filter((product) => {
     // Služby renovácie nie sú samostatný predajný produkt a v katalógu sa nezobrazujú.
     if (isRenovationServiceProduct(product)) return false;
-    // Špeciálne varianty sa v bežnom katalógu nevykresľujú ako plné produktové karty.
-    // Zobrazia sa iba pri cielenom vyhľadávaní (bez čipu / OEM čip / Hatona)
-    // alebo keď si ich interný volajúci výslovne vyžiada na zostavenie prehľadu variantov.
-    if (!options.includeSpecialVariants && !explicitlyRequestsSpecialChipVariant(filters.search) && isSpecialChipVariantProduct(product)) return false;
+    // V bežnom katalógu zobrazujeme ako hlavné karty iba hotové produkty.
+    // Bez čipu / OEM čip / Hatona sa zobrazia ako samostatné výsledky iba
+    // pri explicitnom vyhľadaní daného variantu. Ostatné UI ich ponúka v
+    // kompaktnom bloku „Ďalšie dostupné varianty“.
     const text = product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`);
     if (filters.type && product.product_type_key !== filters.type) return false;
     if (stock === "instock" && product.stock_status !== "instock") return false;

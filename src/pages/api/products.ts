@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { filterProducts, getProductsCache, jsonResponse, type TmProduct } from "../../lib/tm-products-cache";
+import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductsCache, isSpecialChipVariantProduct, jsonResponse, type TmProduct } from "../../lib/tm-products-cache";
 
 export const prerender = false;
 
@@ -126,26 +126,12 @@ export const GET: APIRoute = async ({ url }) => {
     // Produktová cache je už pri synchronizácii zoradená podľa pravidla:
     // kompatibilný → originál → renovovaný → ostatné, skladom najskôr.
     // Preto tu znovu netriedime celé pole pri každom requeste.
-    const allFiltered = filterProducts(productsCache.products, { search, brand, category, type, color, stock, printer });
-    const normalizedSearch = search.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const directSpecialSearch = /bez[ -]?cip|no[ -]?chip|oem[ -]?cip|hatona/.test(normalizedSearch);
-    const specialKind = (product: TmProduct) => {
-      const productType = String(product.product_type_key || "");
-      if (productType !== "compatible" && productType !== "renovated") return "";
-      const text = `${product.name || ""} ${product.slug || ""}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      if (/bez[ -]?cip|no[ -]?chip/.test(text)) return "no-chip";
-      if (/oem[ -]?cip/.test(text)) return "oem-chip";
-      if (/hatona/.test(text)) return "hatona";
-      return "";
-    };
-    const specialVariants = directSpecialSearch ? { noChip: 0, oemChip: 0, hatona: 0 } : {
-      noChip: allFiltered.filter((p) => specialKind(p) === "no-chip").length,
-      oemChip: allFiltered.filter((p) => specialKind(p) === "oem-chip").length,
-      hatona: allFiltered.filter((p) => specialKind(p) === "hatona").length,
-    };
-    const filtered = directSpecialSearch ? allFiltered : allFiltered.filter((p) => !specialKind(p));
+    const filtered = filterProducts(productsCache.products, { search, brand, category, type, color, stock, printer });
+    const explicitSpecial = explicitlyRequestsSpecialChipVariant(search);
+    const specialVariants = explicitSpecial ? [] : filtered.filter(isSpecialChipVariantProduct);
+    const mainFiltered = explicitSpecial ? filtered : filtered.filter((product) => !isSpecialChipVariantProduct(product));
     const start = (page - 1) * perPage;
-    const products = filtered.slice(start, start + perPage).map(slimProduct);
+    const products = mainFiltered.slice(start, start + perPage).map(slimProduct);
 
     const body = JSON.stringify({
       ok: true,
@@ -155,11 +141,11 @@ export const GET: APIRoute = async ({ url }) => {
       page,
       per_page: perPage,
       count: products.length,
-      total: filtered.length,
-      total_pages: Math.max(1, Math.ceil(filtered.length / perPage)),
+      total: mainFiltered.length,
+      total_pages: Math.max(1, Math.ceil(mainFiltered.length / perPage)),
+      special_variants: specialVariants.map(slimProduct),
       filters: { search, brand, category, type, color, stock, printer },
       sorted_by: "compatible-original-renovated",
-      special_variants: specialVariants,
       products,
     });
 

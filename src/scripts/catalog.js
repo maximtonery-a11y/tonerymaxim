@@ -680,7 +680,7 @@ import { getDispatchParts } from "./dispatch-message.js";
     node.innerHTML = `Hľadanie: <strong>${esc(label)}</strong>`;
   }
 
-  function renderProducts(products) {
+  function renderProducts(products, specialVariants = []) {
     ensureCatalogImageFitStyles();
     const list = document.querySelector("[data-catalog-grid]");
     const status = document.querySelector("[data-catalog-status]");
@@ -863,6 +863,20 @@ import { getDispatchParts } from "./dispatch-message.js";
 
       list.appendChild(row);
     });
+
+    const groups = [
+      { key: "no-chip", label: "Bez čipu", note: "Cenovo výhodnejší variant pre zákazníkov, ktorí vedia použiť pôvodný čip." },
+      { key: "oem-chip", label: "S OEM čipom", note: "Renovovaný variant s originálnym OEM čipom." },
+      { key: "hatona", label: "Hatona", note: "Alternatívny renovovaný variant Hatona." },
+    ].map((group) => ({ ...group, products: specialVariants.filter((product) => chipVariant(product)?.key === group.key) })).filter((group) => group.products.length);
+
+    if (groups.length) {
+      const box = document.createElement("section");
+      box.className = "tm-special-variants-box";
+      box.setAttribute("aria-label", "Ďalšie dostupné varianty");
+      box.innerHTML = `<div class="tm-special-variants-head"><strong>Ďalšie dostupné varianty</strong><span>Pre skúsenejších používateľov sú dostupné aj špeciálne verzie.</span></div><div class="tm-special-variants-list">${groups.map((group) => `<div class="tm-special-variants-group tm-special-variants-group--${esc(group.key)}"><div><strong>${esc(group.label)}</strong><small>${esc(group.note)}</small></div><div class="tm-special-variants-links">${group.products.slice(0,8).map((product) => `<a href="${esc(cartProductUrl(product))}">${esc(product.name)}<b>${money(product.price)}</b></a>`).join("")}</div></div>`).join("")}</div>`;
+      list.appendChild(box);
+    }
   }
 
   function updatePagination() {
@@ -883,27 +897,11 @@ import { getDispatchParts } from "./dispatch-message.js";
     next.setAttribute("aria-disabled", String(currentPage >= totalPages));
   }
 
-  function renderSpecialVariantsSummary(variants) {
-    const box = document.querySelector("[data-special-variants-summary]");
-    const links = document.querySelector("[data-special-variants-links]");
-    if (!box || !links) return;
-    const noChip = Number(variants?.noChip || 0);
-    const oemChip = Number(variants?.oemChip || 0);
-    const hatona = Number(variants?.hatona || 0);
-    const items = [];
-    if (noChip > 0) items.push(`<a href="/produkty?search=${encodeURIComponent("bez čipu")}">Bez čipu (${noChip})</a>`);
-    if (oemChip > 0) items.push(`<a href="/produkty?search=${encodeURIComponent("OEM čip")}">S OEM čipom (${oemChip})</a>`);
-    if (hatona > 0) items.push(`<a href="/produkty?search=${encodeURIComponent("Hatona")}">Hatona (${hatona})</a>`);
-    links.innerHTML = items.join("");
-    box.hidden = items.length === 0;
-  }
-
   function applyCatalogData(data) {
     totalPages = Math.max(1, Number(data.total_pages || 1));
     data.products = sortProducts(data.products || []);
     writeCatalogCache(data);
-    renderProducts(data.products);
-    renderSpecialVariantsSummary(data.special_variants || {});
+    renderProducts(data.products, data.special_variants || []);
     updatePagination();
   }
 
@@ -928,8 +926,7 @@ import { getDispatchParts } from "./dispatch-message.js";
 
     if (hasCachedProducts) {
       totalPages = Math.max(1, Number(cached.total_pages || 1));
-      renderProducts(cached.products);
-      renderSpecialVariantsSummary(cached.special_variants || {});
+      renderProducts(cached.products, cached.special_variants || []);
       updatePagination();
       status.textContent = "Produkty načítané z rýchlej cache. Aktualizujem...";
     } else if (!options.silent) {
@@ -1030,8 +1027,7 @@ import { getDispatchParts } from "./dispatch-message.js";
         if (initialData?.ok && Array.isArray(initialData.products)) {
           currentPage = Math.max(1, Number(initialData.page || 1));
           totalPages = Math.max(1, Number(initialData.total_pages || 1));
-          renderProducts(initialData.products);
-          renderSpecialVariantsSummary(initialData.special_variants || {});
+          renderProducts(initialData.products, initialData.special_variants || []);
           updatePagination();
           updateMobileQuery();
           updateFilterButtons();

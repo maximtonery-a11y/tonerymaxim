@@ -3,7 +3,7 @@ import { getDispatchParts } from "../scripts/dispatch-message.js";
 
 type Product = Record<string, any>;
 
-const { products = [] } = Astro.props as { products?: Product[] };
+const { products = [], specialProducts: suppliedSpecialProducts = [], showSpecialAsProducts = false } = Astro.props as { products?: Product[]; specialProducts?: Product[]; showSpecialAsProducts?: boolean };
 
 const money = (value: unknown) => new Intl.NumberFormat("sk-SK", {
   style: "currency",
@@ -69,8 +69,22 @@ const desktopProductImage = (value: unknown) => {
 const printers = (product: Product) => Array.isArray(product.compatible_printers) ? product.compatible_printers.filter(Boolean) : [];
 const groupTitle = (key: string) => key === "compatible" ? "Kompatibilný" : key === "original" ? "Originál" : key === "renovated" ? "Renovovaný" : "Produkt";
 let previousGroup = "";
+const specialProducts = showSpecialAsProducts ? [] : [...products, ...suppliedSpecialProducts].filter((product) => {
+  const chip = chipVariant(product);
+  return chip && chip.key !== "ready-chip";
+});
+const mainProducts = showSpecialAsProducts ? products : products.filter((product) => {
+  const chip = chipVariant(product);
+  return !chip || chip.key === "ready-chip";
+});
+const specialGroups = [
+  { key: "no-chip", label: "Bez čipu", note: "Cenovo výhodnejší variant pre zákazníkov, ktorí vedia použiť pôvodný čip." },
+  { key: "oem-chip", label: "S OEM čipom", note: "Renovovaný variant s originálnym OEM čipom." },
+  { key: "hatona", label: "Hatona", note: "Alternatívny renovovaný variant Hatona." },
+].map((group) => ({ ...group, products: specialProducts.filter((product) => chipVariant(product)?.key === group.key) })).filter((group) => group.products.length);
+
 ---
-{products.map((product) => {
+{mainProducts.map((product) => {
   const type = typeData(product);
   const chip = chipVariant(product);
   const productPrinters = printers(product);
@@ -83,7 +97,7 @@ let previousGroup = "";
   return (
     <>
       {showGroup && <h2 class={`tm-mobile-product-group tm-mobile-product-group--${type.key}`}>{groupTitle(type.key)}</h2>}
-      <article class={`tm-product-row tm-product-row--${type.key}`}>
+      <article class={`tm-product-row tm-product-row--${type.key}${chip && chip.key !== "ready-chip" ? ` tm-product-row--special-variant tm-product-row--variant-${chip.key}` : ""}`}>
         <div class="tm-row-accent" aria-hidden="true"></div>
         <div class="tm-row-type">
           <div class="tm-row-symbol" aria-hidden="true">
@@ -134,3 +148,19 @@ let previousGroup = "";
     </>
   );
 })}
+
+{specialGroups.length > 0 && (
+  <section class="tm-special-variants-box" aria-label="Ďalšie dostupné varianty">
+    <div class="tm-special-variants-head"><strong>Ďalšie dostupné varianty</strong><span>Pre skúsenejších používateľov sú dostupné aj špeciálne verzie.</span></div>
+    <div class="tm-special-variants-list">
+      {specialGroups.map((group) => (
+        <div class={`tm-special-variants-group tm-special-variants-group--${group.key}`}>
+          <div><strong>{group.label}</strong><small>{group.note}</small></div>
+          <div class="tm-special-variants-links">
+            {group.products.slice(0, 8).map((product) => <a href={productDetailUrl(product)}>{product.name}<b>{money(product.price)}</b></a>)}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
