@@ -1999,21 +1999,9 @@ button.catalog-filter-chip:hover {
 
 
 /* Special chip variants remain discoverable, but are visually secondary. */
-.tm-special-variant-label{display:inline-flex;align-items:center;margin-left:6px;color:#64748b;font-size:10px;font-weight:850;white-space:nowrap}
 @media (min-width:761px){
-  .tm-product-row--special-variant{min-height:112px;grid-template-columns:6px 155px 100px minmax(0,1fr) 210px 170px;box-shadow:0 8px 24px rgba(6,23,53,.045)}
-  .tm-product-row--special-variant .tm-row-symbol{width:58px;height:58px}
-  .tm-product-row--special-variant .tm-row-photo{height:72px}
-  .tm-product-row--special-variant .tm-row-photo img{max-height:72px}
-  .tm-product-row--special-variant .tm-row-main h2{font-size:18px;line-height:1.12}
-  .tm-product-row--special-variant .tm-row-printers{display:none}
-  .tm-product-row--special-variant .tm-row-compat .tm-dispatch{display:none}
-  .tm-product-row--special-variant .tm-row-compat{justify-content:flex-end}
-  .tm-product-row--special-variant .tm-row-type-copy p{display:none}
 }
 @media (max-width:760px){
-  .tm-product-row--special-variant{box-shadow:0 8px 22px rgba(6,23,53,.05)}
-  .tm-product-row--special-variant .tm-row-type-copy p{display:none}
 }
 
 /* Špeciálne tonerové varianty: rovnaké zobrazenie na PC aj mobile. */

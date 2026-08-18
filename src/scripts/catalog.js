@@ -785,7 +785,7 @@ import { getDispatchParts } from "./dispatch-message.js";
       const printers = getPrinters(product);
       const dispatch = dispatchInfo(product);
       const row = document.createElement("article");
-      row.className = `tm-product-row tm-product-row--${type.key}${chip && chip.key !== "ready-chip" ? ` tm-product-row--special-variant tm-product-row--variant-${chip.key}` : ""}`;
+      row.className = `tm-product-row tm-product-row--${type.key}`;
 
       row.innerHTML = `
         <div class="tm-row-accent" aria-hidden="true"></div>
@@ -796,7 +796,7 @@ import { getDispatchParts } from "./dispatch-message.js";
           </div>
           <div class="tm-row-type-copy">
             <span class="tm-type-badge">${esc(type.label)}</span>
-            ${chip ? `<span class="tm-chip-variant tm-chip-variant--${esc(chip.key)}" title="${esc(chip.note)}">${esc(chip.label)}</span>${chip.key !== "ready-chip" ? `<span class="tm-special-variant-label">Ďalší variant</span>` : ""}` : ""}
+            ${chip ? `<span class="tm-chip-variant tm-chip-variant--${esc(chip.key)}" title="${esc(chip.note)}">${esc(chip.label)}</span>` : ""}
             <p>${type.note}</p>
           </div>
         </div>
@@ -874,7 +874,7 @@ import { getDispatchParts } from "./dispatch-message.js";
       const box = document.createElement("section");
       box.className = "tm-special-variants-box";
       box.setAttribute("aria-label", "Ďalšie dostupné varianty");
-      box.innerHTML = `<div class="tm-special-variants-head"><strong>Ďalšie dostupné varianty</strong><span>Pre skúsenejších používateľov sú dostupné aj špeciálne verzie.</span></div><div class="tm-special-variants-list">${groups.map((group) => `<div class="tm-special-variants-group tm-special-variants-group--${esc(group.key)}"><div><strong>${esc(group.label)}</strong><small>${esc(group.note)}</small></div><div class="tm-special-variants-links">${group.products.slice(0,8).map((product) => `<a href="${esc(cartProductUrl(product))}">${esc(product.name)}<b>${money(product.price)}</b></a>`).join("")}</div></div>`).join("")}</div>`;
+      box.innerHTML = `<div class="tm-special-variants-head"><strong>Ďalšie dostupné varianty</strong></div><div class="tm-special-variants-list">${groups.map((group) => `<div class="tm-special-variants-group tm-special-variants-group--${esc(group.key)}"><div><strong>${esc(group.label)}</strong><small>${esc(group.note)}</small></div><div class="tm-special-variants-links">${group.products.slice(0,8).map((product) => `<a href="${esc(cartProductUrl(product))}">${esc(product.name)}<b>${money(product.price)}</b></a>`).join("")}</div></div>`).join("")}</div>`;
       list.appendChild(box);
     }
   }

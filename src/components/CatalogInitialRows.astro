@@ -97,7 +97,7 @@ const specialGroups = [
   return (
     <>
       {showGroup && <h2 class={`tm-mobile-product-group tm-mobile-product-group--${type.key}`}>{groupTitle(type.key)}</h2>}
-      <article class={`tm-product-row tm-product-row--${type.key}${chip && chip.key !== "ready-chip" ? ` tm-product-row--special-variant tm-product-row--variant-${chip.key}` : ""}`}>
+      <article class={`tm-product-row tm-product-row--${type.key}`}>
         <div class="tm-row-accent" aria-hidden="true"></div>
         <div class="tm-row-type">
           <div class="tm-row-symbol" aria-hidden="true">
@@ -105,7 +105,7 @@ const specialGroups = [
           </div>
           <div class="tm-row-type-copy">
             <span class="tm-type-badge">{type.label}</span>
-            {chip && <><span class={`tm-chip-variant tm-chip-variant--${chip.key}`} title={chip.note}>{chip.label}</span>{chip.key !== "ready-chip" && <span class="tm-special-variant-label">Ďalší variant</span>}</>}
+            {chip && <span class={`tm-chip-variant tm-chip-variant--${chip.key}`} title={chip.note}>{chip.label}</span>}
             <p>{type.note}</p>
           </div>
         </div>
@@ -151,7 +151,7 @@ const specialGroups = [
 
 {specialGroups.length > 0 && (
   <section class="tm-special-variants-box" aria-label="Ďalšie dostupné varianty">
-    <div class="tm-special-variants-head"><strong>Ďalšie dostupné varianty</strong><span>Pre skúsenejších používateľov sú dostupné aj špeciálne verzie.</span></div>
+    <div class="tm-special-variants-head"><strong>Ďalšie dostupné varianty</strong></div>
     <div class="tm-special-variants-list">
       {specialGroups.map((group) => (
         <div class={`tm-special-variants-group tm-special-variants-group--${group.key}`}>
