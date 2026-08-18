@@ -1976,3 +1976,23 @@ button.catalog-filter-chip:hover {
 .tm-no-results-copy h2{margin:6px 0 12px;font-size:clamp(24px,3vw,36px);color:#061735}.tm-no-results-copy p{line-height:1.6;color:#52627a}.tm-no-results-eyebrow{font-weight:800;color:#0787c8!important}.tm-no-results-contact a{font-weight:800;color:#061735}.tm-no-results-form{display:grid;gap:13px}.tm-no-results-form label{display:grid;gap:6px;font-weight:700;color:#061735}.tm-no-results-form label span{font-weight:500;color:#718096}.tm-no-results-form input,.tm-no-results-form textarea{width:100%;box-sizing:border-box;border:1px solid #cbd8e8;border-radius:12px;padding:12px 14px;font:inherit;background:#fff}.tm-no-results-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tm-no-results-privacy{grid-template-columns:auto 1fr!important;align-items:start;font-size:13px;font-weight:500!important}.tm-no-results-privacy input{width:auto;margin-top:3px}.tm-no-results-form button{border:0;border-radius:13px;padding:14px 18px;background:#061f49;color:#fff;font-weight:800;cursor:pointer}.tm-no-results-form button:disabled{opacity:.6}.tm-no-results-message{min-height:20px;margin:0;font-weight:700;color:#136f45}
 @media(max-width:760px){.tm-no-results{grid-template-columns:1fr;padding:22px;gap:22px}.tm-no-results-grid{grid-template-columns:1fr}}
 .tm-no-results-contact{display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin-top:18px}.tm-no-results-contact a{display:block;text-decoration:none}.tm-no-results-contact span{font-weight:700;color:#52627a}.tm-no-results-alternative{margin-top:18px;padding:12px 14px;border:1px solid #b9d9f0;border-radius:12px;background:#f4fbff;color:#061735}.tm-no-results-alternative a{font-weight:900;color:#0787c8;text-decoration:underline}
+
+/* Chip variant: presentation only; does not affect catalog/search logic. */
+.tm-chip-variant {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .035em;
+  white-space: nowrap;
+}
+.tm-chip-variant--ready-chip { border-color: #a7f3d0; background: #ecfdf5; color: #047857; }
+.tm-chip-variant--no-chip { border-color: #fecaca; background: #fff1f2; color: #be123c; }
+.tm-chip-variant--oem-chip { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; }
+.tm-chip-variant--hatona { border-color: #ddd6fe; background: #f5f3ff; color: #6d28d9; }

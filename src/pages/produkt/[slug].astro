@@ -80,6 +80,15 @@ const brandLinks = [...new Map(
     .filter(Boolean)
     .map((brand) => [brand!.slug, { href: `/znacky/${brand!.slug}`, label: brand!.name }]),
 ).values()];
+const detailChipVariant = (() => {
+  const key = String(product.product_type_key || "");
+  if (key !== "compatible" && key !== "renovated") return null;
+  const text = `${product.name || ""} ${product.slug || ""} ${product.description || ""}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (/bez[ -]?cip|no[ -]?chip/.test(text)) return { key: "no-chip", label: "BEZ ČIPU", note: "Vyžaduje pôvodný čip" };
+  if (/hatona/.test(text)) return { key: "hatona", label: "HATONA", note: "Renovovaný variant Hatona" };
+  if (/oem[ -]?cip/.test(text)) return { key: "oem-chip", label: "S OEM ČIPOM", note: "Originálny čip" };
+  return { key: "ready-chip", label: "S ČIPOM", note: "Pripravený na použitie" };
+})();
 const plainDescription = stripHtml(product.description_html || product.short_description_html || product.description || '');
 const productSafetyRows = [
   ['Výrobca produktu', product.manufacturer_name],
@@ -128,7 +137,7 @@ const initialProductJson = JSON.stringify(product)
             <section class="detail-hero-card">
               <div class="product-gallery"><div class="main-image"><img src={product.image} alt={product.name} width="640" height="640" loading="eager" decoding="async" /></div></div>
               <div class="product-info">
-                <div class="badge-row"><span class="type-badge">{product.product_type_label}</span></div>
+                <div class="badge-row"><span class="type-badge">{product.product_type_label}</span>{detailChipVariant && <span class={`chip-variant chip-variant--${detailChipVariant.key}`}>{detailChipVariant.label}<small>{detailChipVariant.note}</small></span>}</div>
                 <h1>{product.name}</h1>
                 <p class="summary-subtitle">{description}</p>
                 {printerLinks.length > 0 && (

@@ -3085,3 +3085,27 @@ body.product-detail-body .related-section-stacked .accessory-grid {
   .description-modal{place-items:center;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
   .description-modal-card{max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:20px 16px 24px}
 }
+
+/* Chip variant: clear secondary information without changing product logic. */
+.chip-variant {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .025em;
+}
+.chip-variant small { font-size: 11px; font-weight: 750; letter-spacing: 0; opacity: .82; }
+.chip-variant--ready-chip { border-color: #a7f3d0; background: #ecfdf5; color: #047857; }
+.chip-variant--no-chip { border-color: #fecaca; background: #fff1f2; color: #be123c; }
+.chip-variant--oem-chip { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; }
+.chip-variant--hatona { border-color: #ddd6fe; background: #f5f3ff; color: #6d28d9; }
+@media (max-width: 760px) {
+  .chip-variant { align-items: flex-start; flex-direction: column; gap: 0; padding: 6px 10px; line-height: 1.15; }
+}

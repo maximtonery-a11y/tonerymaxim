@@ -495,6 +495,16 @@ import { getDispatchParts } from "./dispatch-message.js";
     return "#94a3b8";
   }
 
+  function chipVariant(product) {
+    const key = String(product?.product_type_key || "");
+    if (key !== "compatible" && key !== "renovated") return null;
+    const text = `${product?.name || ""} ${product?.slug || ""} ${product?.description || ""}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (/bez[ -]?cip|no[ -]?chip/.test(text)) return { key: "no-chip", label: "BEZ ČIPU", note: "Vyžaduje pôvodný čip" };
+    if (/hatona/.test(text)) return { key: "hatona", label: "HATONA", note: "Renovovaný variant Hatona" };
+    if (/oem[ -]?cip/.test(text)) return { key: "oem-chip", label: "S OEM ČIPOM", note: "Originálny čip" };
+    return { key: "ready-chip", label: "S ČIPOM", note: "Pripravený na použitie" };
+  }
+
   function typeData(product) {
     const key = product.product_type_key || "product";
 
@@ -760,6 +770,7 @@ import { getDispatchParts } from "./dispatch-message.js";
 
     sortedProducts.forEach((product) => {
       const type = typeData(product);
+      const chip = chipVariant(product);
       const mobileGroupKey = type.key || "product";
 
       if (mobileGroupKey !== previousMobileGroup) {
@@ -785,6 +796,7 @@ import { getDispatchParts } from "./dispatch-message.js";
           </div>
           <div class="tm-row-type-copy">
             <span class="tm-type-badge">${esc(type.label)}</span>
+            ${chip ? `<span class="tm-chip-variant tm-chip-variant--${esc(chip.key)}" title="${esc(chip.note)}">${esc(chip.label)}</span>` : ""}
             <p>${type.note}</p>
           </div>
         </div>

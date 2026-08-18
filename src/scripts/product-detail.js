@@ -752,6 +752,16 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     if (modal instanceof HTMLDialogElement) modal.showModal();
   }
 
+  function chipVariant(product) {
+    const key = String(product?.product_type_key || "");
+    if (key !== "compatible" && key !== "renovated") return null;
+    const text = `${product?.name || ""} ${product?.slug || ""} ${product?.description || ""}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (/bez[ -]?cip|no[ -]?chip/.test(text)) return { key: "no-chip", label: "BEZ ČIPU", note: "Vyžaduje pôvodný čip" };
+    if (/hatona/.test(text)) return { key: "hatona", label: "HATONA", note: "Renovovaný variant Hatona" };
+    if (/oem[ -]?cip/.test(text)) return { key: "oem-chip", label: "S OEM ČIPOM", note: "Originálny čip" };
+    return { key: "ready-chip", label: "S ČIPOM", note: "Pripravený na použitie" };
+  }
+
   function productTheme(product) {
     const key = product.product_type_key || "product";
     if (key === "original") {
@@ -1278,6 +1288,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const rawImages = product.images?.length ? product.images : product.image ? [product.image] : [];
     const images = Array.from(new Set((rawImages.length ? rawImages : [TM_PRODUCT_PLACEHOLDER_IMAGE]) .map((image) => productImageSrc(image, product)).filter(Boolean)));
     const theme = productTheme(product);
+    const chip = chipVariant(product);
     const productColor = product.color || "Neuvedené";
     const productYield = normalizeYield(product);
     const productWarrantyValue = productWarranty(product);
@@ -1310,6 +1321,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         <div class="product-info">
           <div class="badge-row">
             <span class="type-badge">${esc(theme.label)}</span>
+            ${chip ? `<span class="chip-variant chip-variant--${esc(chip.key)}" title="${esc(chip.note)}">${esc(chip.label)}<small>${esc(chip.note)}</small></span>` : ""}
             <span class="type-note">${theme.icon} ${esc(theme.note)}</span>
           </div>
 
