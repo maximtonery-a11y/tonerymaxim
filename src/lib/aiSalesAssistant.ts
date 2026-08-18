@@ -194,6 +194,30 @@ function filterRequestedProductType(products: Product[], message: string) {
 function relevantProducts(products: Product[], message: string) {
   const raw = message.trim();
 
+  // Rýchla cesta pre jednoznačný OEM kód (CRG067, CF283A, TN2421, W1420A...).
+  // Pôvodný univerzálny matcher prechádzal pri každom kandidátovi aj tisíce
+  // kompatibilných modelov tlačiarní a na produkcii vedel trvať niekoľko sekúnd.
+  // Pri OEM kóde stačí identita produktu (SKU/názov), takže kompatibility vôbec neskenujeme.
+  const explicitOemFast = normalize(raw).match(/\b(cf|ce|crg|tn|dr|w|q|clt|mlt|tk|pgi|cli|lc)\s*-?\s*(\d{2,}[a-z0-9]*)\b/i);
+  if (explicitOemFast) {
+    const wanted = compactKey(`${explicitOemFast[1]}${explicitOemFast[2]}`);
+    let fastMatches = products.filter((product) => {
+      const identity = compactKey(`${product.sku || ''} ${product.name || ''}`);
+      return identity.includes(wanted);
+    });
+    if (!/renovac|repas|sluzb/i.test(normalize(raw))) {
+      fastMatches = fastMatches.filter((product) => !/\bsluzba\b.*renovac|renovacia pre/i.test(normalize(product.name || '')));
+    }
+    fastMatches = filterRequestedProductType(fastMatches, raw);
+    if (fastMatches.length) {
+      return fastMatches
+        .sort((a, b) => (TYPE_ORDER[a.product_type_key] || 9) - (TYPE_ORDER[b.product_type_key] || 9)
+          || Number(a.price || 0) - Number(b.price || 0)
+          || String(a.name || '').localeCompare(String(b.name || ''), 'sk'))
+        .slice(0, 60);
+    }
+  }
+
   // Pri otázke vo vete najprv hľadáme presný model tlačiarne. Tým zabránime
   // miešaniu regionálnych modelov (napr. L2350DW vs L2352DW) a náhodným atramentom.
   for (const candidate of productQueryCandidates(raw)) {

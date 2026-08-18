@@ -181,7 +181,6 @@
     addMessage('user', `<p>${escapeHtml(question)}</p>`);
     const requestHistory = state.history.slice(-12);
     const loading = addMessage('bot', '<p>Hľadám odpoveď…</p>');
-    const startTop = messages.scrollTop;
 
     try {
       const response = await fetch('/api/ai-sales-assistant', {
@@ -201,11 +200,15 @@
         if (handoffQuestion) handoffQuestion.value = question;
         if (handoffStatus) handoffStatus.textContent = '';
       }
-      // Neodskakujeme automaticky na koniec dlhej ponuky. Používateľ vidí odpoveď od začiatku.
-      messages.scrollTop = startTop;
+      // Po doručení odpovede ju vždy ukážeme od začiatku. Pri dlhej ponuke
+      // sa tak odpoveď neschová pod horným okrajom chatu ani pod vstupným poľom.
+      requestAnimationFrame(() => {
+        const targetTop = Math.max(0, loading.offsetTop - 8);
+        messages.scrollTo({ top: targetTop, behavior: 'smooth' });
+      });
     } catch (error) {
       loading.innerHTML = '<p>Teraz sa mi nepodarilo odpovedať. Skúste napísať model tlačiarne alebo toneru presnejšie.</p>';
-      messages.scrollTop = startTop;
+      requestAnimationFrame(() => messages.scrollTo({ top: Math.max(0, loading.offsetTop - 8), behavior: 'smooth' }));
     } finally {
       state.busy = false;
     }
