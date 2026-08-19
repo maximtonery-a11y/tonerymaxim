@@ -23,7 +23,7 @@ function moneyNumber(value: unknown) {
 }
 
 export function pointsFromGross(total: unknown) {
-  return Math.max(0, Math.floor(moneyNumber(total) * 7));
+  return Math.max(0, Math.floor(moneyNumber(total)));
 }
 
 export function loyaltyDiscountFromPoints(points: number) {
@@ -83,13 +83,13 @@ export async function getCustomerLoyalty(customerId: number) {
 }
 
 export async function reserveLoyaltyDiscount(customerId: number, orderId: number | string, requestedEuro: unknown) {
-  const requested = Math.max(0, Math.round(moneyNumber(requestedEuro) * 10) / 10);
-  if (!customerId || requested <= 0) return { discount: 0, pointsUsed: 0 };
+  const requested = Math.max(0, Math.round(moneyNumber(requestedEuro) * 100) / 100);
+  if (!customerId || requested < 0.2) return { discount: 0, pointsUsed: 0 };
 
   const synced = await syncCustomerLoyaltyPoints(customerId);
   const maxDiscount = loyaltyDiscountFromPoints(synced.points);
-  const discount = Math.min(requested, maxDiscount);
-  if (discount <= 0) return { discount: 0, pointsUsed: 0 };
+  const discount = Math.round(Math.min(requested, maxDiscount) * 100) / 100;
+  if (discount < 0.2) return { discount: 0, pointsUsed: 0 };
 
   const pointsUsed = Math.min(synced.points, Math.round(discount * 100));
   const remaining = Math.max(0, synced.points - pointsUsed);

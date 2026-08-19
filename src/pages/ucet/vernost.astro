@@ -12,6 +12,7 @@ const loyalty = await getCustomerLoyalty(customer.id);
 const points = loyalty.points;
 const history = loyalty.history;
 const discountValue = loyalty.discountValue;
+const discountValueLabel = discountValue.toFixed(2).replace(".", ",");
 ---
 
 <!doctype html>
@@ -27,7 +28,7 @@ const discountValue = loyalty.discountValue;
         <div>
           <p class="account-kicker">Aktuálny stav</p>
           <h2>{points} bodov</h2>
-          <p>{points > 0 ? <>Vaše body majú aktuálnu hodnotu <strong>{discountValue},00 €</strong> pri ďalšom nákupe.</> : <>Body získate po vybavení objednávky.</>}</p>
+          <p>{points > 0 ? <>Vaše body majú aktuálnu hodnotu <strong>{discountValueLabel} €</strong> pri ďalšom nákupe.</> : <>Body získate po vybavení objednávky.</>}</p>
           <div class="loyalty-progress" aria-label="Postup k ďalšej odmene">
             <span style={`width: ${Math.min(100, Math.round((points / 1000) * 100))}%`}></span>
           </div>
@@ -35,7 +36,7 @@ const discountValue = loyalty.discountValue;
         </div>
         <div class="loyalty-value-card">
           <span>Hodnota zľavy</span>
-          <strong>{discountValue},00 €</strong>
+          <strong>{discountValueLabel} €</strong>
           <a class="tm-btn is-green" href="/produkty">Použiť pri nákupe</a>
         </div>
       </section>

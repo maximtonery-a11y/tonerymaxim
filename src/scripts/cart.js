@@ -40,7 +40,8 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
   function loyaltyDiscountForTotal(total) {
     if (!tmLoyaltyApply || !tmLoyalty.ok) return 0;
-    return Math.min(Number(tmLoyalty.discountValue || 0), Math.max(0, Number(total || 0)));
+    const discount = Math.round(Math.min(Number(tmLoyalty.discountValue || 0), Math.max(0, Number(total || 0))) * 100) / 100;
+    return discount >= 0.2 ? discount : 0;
   }
 
 
