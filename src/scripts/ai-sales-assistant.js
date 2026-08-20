@@ -338,15 +338,39 @@
   const discount = (p,q) => String(p?.type || p?.product_type_key || '').toLowerCase()==='compatible' ? (q>=4?25:(q>=2?10:0)) : 0;
   const unitPrice = (p,q) => Number(p?.price||0)*(1-discount(p,q)/100);
   const linePrice = (p,q) => unitPrice(p,q)*q;
-  const cartKey = p => String(p?.id || p?.sku || p?.name || '');
+  const cartKey = p => String(p?.sku || p?.id || p?.name || '').trim().toLowerCase();
+  const WEB_CART_KEY = 'tm_cart_v1';
+  const cleanCartQty = value => Math.max(1,Math.min(99,parseInt(value,10)||1));
+  function webCartProduct(product,qty){
+    return {id:String(product?.id||product?.sku||product?.name||''),productId:String(product?.id||''),product_id:String(product?.id||''),sku:String(product?.sku||''),name:String(product?.name||'Produkt'),price:Number(product?.price||0),qty:cleanCartQty(qty),image:String(product?.image||''),url:String(product?.url||product?.detail_url||''),slug:String(product?.slug||''),color:String(product?.color||product?.farba||''),capacity:product?.capacity||product?.yield||product?.page_yield||'',stock_status:String(product?.stock_status||'instock'),stock_quantity:product?.stock_quantity??null,stock_text:String(product?.stock_text||''),product_type_key:String(product?.product_type_key||product?.productTypeKey||product?.type||''),product_type_label:String(product?.product_type_label||product?.productTypeLabel||'')};
+  }
+  function readWebCart(){
+    try{const value=JSON.parse(localStorage.getItem(WEB_CART_KEY)||'[]');return Array.isArray(value)?value:[];}catch{return[];}
+  }
+  function hydrateSharedCart(){
+    const merged=new Map();
+    readWebCart().forEach(item=>{const product={...item,id:item.productId||item.product_id||item.id||item.sku};const key=cartKey(product);if(key)merged.set(key,{product,qty:cleanCartQty(item.qty)});});
+    state.cart.forEach(item=>{const key=cartKey(item.product);if(!key)return;const existing=merged.get(key);merged.set(key,{product:{...(existing?.product||{}),...item.product},qty:Math.max(existing?.qty||0,cleanCartQty(item.qty))});});
+    state.cart=[...merged.values()];
+  }
+  function syncSharedCart(){
+    const cart=state.cart.map(({product,qty})=>webCartProduct(product,qty));
+    try{
+      if(window.ToneryMaximCart&&typeof window.ToneryMaximCart.saveCart==='function')window.ToneryMaximCart.saveCart(cart);
+      else localStorage.setItem(WEB_CART_KEY,JSON.stringify(cart));
+      const count=cart.reduce((sum,item)=>sum+cleanCartQty(item.qty),0);
+      document.querySelectorAll('[data-cart-count]').forEach(el=>{el.textContent=String(count);});
+      window.dispatchEvent(new CustomEvent('tm:cart-synced',{detail:{cart,count,source:'ai-tomas'}}));
+    }catch(error){console.error('[AI Tomas cart sync]',error);}
+  }
+  hydrateSharedCart();
   function cartTotal(){ return state.cart.reduce((n,x)=>n+linePrice(x.product,x.qty),0); }
   function updateLiveCart(){
     if(!liveCart) return; const count=state.cart.reduce((n,x)=>n+x.qty,0);
-    root.classList.toggle('has-ai-cart',count>0);
     liveCart.hidden=count===0; root.querySelector('[data-ai-cart-count]').textContent=`${count} ks`;
     root.querySelector('[data-ai-cart-total]').textContent=`· ${money(cartTotal())}`;
     if(topCart){ topCart.hidden=count===0; topCartCount.textContent=`${count} ks`; topCartTotal.textContent=`· ${money(cartTotal())}`; }
-    saveCommerceSession();
+    syncSharedCart();saveCommerceSession();
   }
   function addCommerceItem(product,qty=1){ const k=cartKey(product),x=state.cart.find(i=>cartKey(i.product)===k); if(x)x.qty+=qty;else state.cart.push({product,qty}); updateLiveCart(); }
   function askNextStep(){
@@ -384,7 +408,7 @@
     setExperience('shop');
     setProgress(3);
     messages.hidden=true; form.hidden=true; if(quick)quick.hidden=true; commerce.hidden=false;commerce.classList.add('is-focus-stage');
-    commerce.innerHTML=`<div class="tm-ai-commerce__head"><button class="tm-ai-back" data-c-back>← Späť k ponuke</button><div><b>Váš nákup</b><small>${state.cart.reduce((n,x)=>n+x.qty,0)} ks</small></div></div>${state.cart.length?`<div class="tm-ai-cart-list">${state.cart.map((x,i)=>`<div class="tm-ai-cart-item"><div><strong>${escapeHtml(x.product.name)}</strong><small>${escapeHtml(x.product.sku||'')}${discount(x.product,x.qty)?` · zľava ${discount(x.product,x.qty)} %`:''}</small></div><b>${money(linePrice(x.product,x.qty))}</b><div class="tm-ai-cart-controls"><button aria-label="Znížiť množstvo" data-c-minus="${i}">−</button><strong>${x.qty} ks</strong><button aria-label="Zvýšiť množstvo" data-c-plus="${i}">+</button><button class="remove" data-c-remove="${i}">Odstrániť</button></div>${aiType(x.product)==='compatible'&&x.qty<4?`<button class="tm-ai-offer" data-c-offer="${i}" data-q="${x.qty===1?2:4}">💡 Výhodnejšie: ${x.qty===1?'2 ks so zľavou 10 %':'4 ks so zľavou 25 %'} · ${money(unitPrice(x.product,x.qty===1?2:4))}/ks</button>`:''}</div>`).join('')}</div><div class="tm-ai-cart-total"><span>Spolu za tovar</span><b>${money(cartTotal())}</b></div><div class="tm-ai-commerce__actions tm-ai-cart-actions"><button class="secondary" data-c-more>＋ Pridať ďalší produkt</button><button class="primary" data-c-checkout>Pokračovať v rýchlom nákupe →</button></div><p class="tm-ai-cart-note">V ďalšom kroku zadáte alebo upravíte adresu, dopravu a platbu. Pred odoslaním všetko ešte skontrolujete.</p>`:'<div class="tm-ai-empty-cart"><b>Váš nákup je zatiaľ prázdny.</b><button class="primary" data-c-more>Nájsť toner</button></div>'}`;
+    commerce.innerHTML=`<div class="tm-ai-commerce__head"><button class="tm-ai-back" data-c-back>← Späť k ponuke</button><div><b>Váš nákup</b><small>${state.cart.reduce((n,x)=>n+x.qty,0)} ks</small></div></div>${state.cart.length?`<div class="tm-ai-cart-list">${state.cart.map((x,i)=>`<div class="tm-ai-cart-item"><div><strong>${escapeHtml(x.product.name)}</strong><small>${escapeHtml(x.product.sku||'')}${discount(x.product,x.qty)?` · zľava ${discount(x.product,x.qty)} %`:''}</small></div><b>${money(linePrice(x.product,x.qty))}</b><div class="tm-ai-cart-controls"><button aria-label="Znížiť množstvo" data-c-minus="${i}">−</button><strong>${x.qty} ks</strong><button aria-label="Zvýšiť množstvo" data-c-plus="${i}">+</button><button class="remove" data-c-remove="${i}">Odstrániť</button></div>${aiType(x.product)==='compatible'&&x.qty<4?`<button class="tm-ai-offer" data-c-offer="${i}" data-q="${x.qty===1?2:4}">💡 Výhodnejšie: ${x.qty===1?'2 ks so zľavou 10 %':'4 ks so zľavou 25 %'} · ${money(unitPrice(x.product,x.qty===1?2:4))}/ks</button>`:''}</div>`).join('')}</div><div class="tm-ai-cart-total"><span>Spolu za tovar</span><b>${money(cartTotal())}</b></div><div class="tm-ai-commerce__actions tm-ai-cart-actions"><button class="primary" data-c-checkout>Pokračovať v rýchlom nákupe →</button><button class="secondary" data-c-web>Dokončiť objednávku na webe</button><button class="secondary" data-c-more>＋ Pridať ďalší produkt</button></div><p class="tm-ai-cart-note">Môžete pokračovať s AI alebo prejsť do bežného košíka. Položky aj množstvá zostanú rovnaké.</p>`:'<div class="tm-ai-empty-cart"><b>Váš nákup je zatiaľ prázdny.</b><button class="primary" data-c-more>Nájsť toner</button></div>'}`;
     commerce.scrollTop=0;
     commerce.querySelector('[data-c-back]')?.addEventListener('click',commerceBack); commerce.querySelector('[data-c-more]')?.addEventListener('click',()=>{commerceBack();state.mode='shop';input.focus()});
     commerce.querySelectorAll('[data-c-minus]').forEach(b=>b.onclick=()=>{const i=+b.dataset.cMinus;state.cart[i].qty=Math.max(1,state.cart[i].qty-1);updateLiveCart();renderCart()});
@@ -392,6 +416,7 @@
     commerce.querySelectorAll('[data-c-remove]').forEach(b=>b.onclick=()=>{state.cart.splice(+b.dataset.cRemove,1);updateLiveCart();renderCart()});
     commerce.querySelectorAll('[data-c-offer]').forEach(b=>b.onclick=()=>{state.cart[+b.dataset.cOffer].qty=+b.dataset.q;updateLiveCart();renderCart()});
     commerce.querySelector('[data-c-checkout]')?.addEventListener('click',prepareHandoff);
+    commerce.querySelector('[data-c-web]')?.addEventListener('click',()=>{syncSharedCart();saveCommerceSession();closePanel();location.href='/kosik';});
   }
   function quantityChooser(product){
     const compatible=aiType(product)==='compatible';
@@ -607,8 +632,7 @@
       const checked=await validation.json(); if(!validation.ok||!checked?.ok)throw new Error(checked?.error||'Košík sa nepodarilo overiť.');
     }catch(error){alert(error?.message||'Košík sa nepodarilo overiť.');reviewHandoff(customer,shipping,payment);return;}
     const parts=customer.name.split(/\s+/);const first_name=parts.shift()||'',last_name=parts.join(' ');
-    const cart=state.cart.map(({product:p,qty})=>({id:String(p.id||p.sku),productId:String(p.id||''),product_id:String(p.id||''),sku:String(p.sku||''),name:String(p.name||'Produkt'),price:Number(p.price||0),qty,image:String(p.image||''),url:String(p.url||''),stock_status:String(p.stock_status||'instock'),stock_quantity:p.stock_quantity??null,product_type_key:String(p.type||'')}));
-    localStorage.setItem('tm_cart_v1',JSON.stringify(cart));localStorage.setItem('tm_checkout_selection_v1',JSON.stringify({shipping,payment,savedAt:new Date().toISOString()}));localStorage.setItem('tm_ai_checkout_handoff_v1',JSON.stringify({createdAt:Date.now(),first_name,last_name,email:customer.email,phone:customer.phone,address:customer.street,zip:customer.zip,city:customer.city,companyEnabled:customer.companyEnabled,company:customer.company,ico:customer.ico,dic:customer.dic,icdph:customer.icdph,differentAddress:customer.differentAddress,delivery:customer.delivery,shipping,payment}));saveCommerceSession();closePanel();location.href='/pokladna';
+    syncSharedCart();localStorage.setItem('tm_checkout_selection_v1',JSON.stringify({shipping,payment,savedAt:new Date().toISOString()}));localStorage.setItem('tm_ai_checkout_handoff_v1',JSON.stringify({createdAt:Date.now(),first_name,last_name,email:customer.email,phone:customer.phone,address:customer.street,zip:customer.zip,city:customer.city,companyEnabled:customer.companyEnabled,company:customer.company,ico:customer.ico,dic:customer.dic,icdph:customer.icdph,differentAddress:customer.differentAddress,delivery:customer.delivery,shipping,payment}));saveCommerceSession();closePanel();location.href='/pokladna';
   }
   async function loadCustomerProfile(){try{const r=await fetch('/api/ai-commerce-profile',{cache:'no-store'});if(!r.ok)return;const d=await r.json();if(!d.ok||!d.loggedIn)return;state.profile=d;const repeat=root.querySelector('[data-ai-repeat]');if(repeat){repeat.hidden=!d.lastOrder;repeat.onclick=()=>{beginSession();const ps=d.lastOrder?.products||[];if(!ps.length){addMessage('bot','<p>Produkty z poslednej objednávky už nie sú dostupné. Nič som automaticky nenahradil.</p>');return;}ps.forEach(p=>addCommerceItem(p,Math.max(1,Number(p.historical_quantity||1))));if(d.lastOrder?.unavailableProducts?.length)addMessage('bot',`<p>${d.lastOrder.unavailableProducts.length} položiek z poslednej objednávky už nie je dostupných a nebolo pridaných.</p>`,{scroll:false});renderCart()}}const frequent=root.querySelector('[data-ai-frequent]');const items=Array.isArray(d.frequentProducts)?d.frequentProducts.slice(0,4):[];if(frequent&&items.length){frequent.hidden=false;frequent.innerHTML=`<b>Kupujete najčastejšie</b><div>${items.map((p,i)=>`<button type="button" data-ai-frequent-product="${i}"><span>${escapeHtml(p.name)}</span><small>${Math.max(1,Number(p.suggested_quantity||1))} ks · ${money(p.price)}</small></button>`).join('')}</div>`;frequent.querySelectorAll('[data-ai-frequent-product]').forEach(btn=>btn.onclick=()=>{const p=items[Number(btn.dataset.aiFrequentProduct)];beginSession();quantityChooser(p);});}}catch{}}
 
