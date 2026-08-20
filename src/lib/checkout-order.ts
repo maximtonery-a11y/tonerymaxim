@@ -151,20 +151,32 @@ const PRODUCT_ID_CACHE = new Map<string, number>();
 let STANDARD_TAX_RATE_ID: number | null = null;
 
 async function resolveStandardTaxRateId() {
-  if (STANDARD_TAX_RATE_ID !== null) return STANDARD_TAX_RATE_ID;
-  try {
-    const rates = await wooRequest<any[]>("/taxes", { query: { per_page: 100 } });
-    const preferred = (Array.isArray(rates) ? rates : []).find((rate: any) =>
-      Number(rate?.rate) === 23 &&
-      (!rate?.country || String(rate.country).toUpperCase() === "SK") &&
-      (!rate?.class || String(rate.class) === "standard")
-    ) || (Array.isArray(rates) ? rates : []).find((rate: any) => Number(rate?.rate) === 23);
-    STANDARD_TAX_RATE_ID = Number(preferred?.id || 0);
-  } catch (error) {
-    console.error("Woo tax rate lookup failed:", (error as any)?.message || error);
-    STANDARD_TAX_RATE_ID = 0;
+  if (STANDARD_TAX_RATE_ID !== null && STANDARD_TAX_RATE_ID > 0) return STANDARD_TAX_RATE_ID;
+
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const rates = await wooRequest<any[]>("/taxes", { query: { per_page: 100 } });
+      const preferred = (Array.isArray(rates) ? rates : []).find((rate: any) =>
+        Number(rate?.rate) === 23 &&
+        (!rate?.country || String(rate.country).toUpperCase() === "SK") &&
+        (!rate?.class || String(rate.class) === "standard")
+      ) || (Array.isArray(rates) ? rates : []).find((rate: any) => Number(rate?.rate) === 23);
+      const rateId = Number(preferred?.id || 0);
+      if (Number.isInteger(rateId) && rateId > 0) {
+        STANDARD_TAX_RATE_ID = rateId;
+        return rateId;
+      }
+      lastError = new Error("WooCommerce nevrátil aktívnu 23 % sadzbu DPH.");
+    } catch (error) {
+      lastError = error;
+      console.error(`Woo tax rate lookup failed (attempt ${attempt}/3):`, (error as any)?.message || error);
+    }
   }
-  return STANDARD_TAX_RATE_ID;
+
+  // Nulové ID sa nesmie uložiť do cache ani použiť na vytvorenie objednávky.
+  // WooCommerce by vtedy mohol uložiť iba ceny bez DPH do natívneho order_total.
+  throw new Error(`Objednávku nemožno bezpečne vytvoriť bez sadzby DPH: ${(lastError as any)?.message || lastError || "neznáma chyba"}`);
 }
 
 function numericProductId(item: NormalizedCartItem) {

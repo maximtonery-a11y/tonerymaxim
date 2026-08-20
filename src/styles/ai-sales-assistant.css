@@ -12,6 +12,47 @@
   font-family: inherit;
 }
 
+/* V131 – finálne mobilné rozloženie AI Tomáša. */
+.tm-ai-assistant .tm-ai-livecart[hidden],
+.tm-ai-assistant .tm-ai-assistant__head-cart[hidden]{display:none!important}
+
+@media(max-width:760px){
+  .tm-ai-assistant{right:0!important;bottom:0!important}
+  .tm-ai-assistant__panel{inset:0!important;width:100vw!important;height:var(--tm-ai-visual-height,100dvh)!important;max-height:var(--tm-ai-visual-height,100dvh)!important;grid-template-rows:78px minmax(0,1fr) 54px 30px!important;border-radius:0!important}
+  .tm-ai-assistant__head{position:relative!important;display:grid!important;grid-template-columns:34px minmax(0,1fr) 34px!important;grid-template-areas:"back brand actions"!important;align-items:center!important;gap:7px!important;width:100%!important;min-width:0!important;height:78px!important;min-height:78px!important;padding:7px 9px!important;overflow:hidden!important}
+  .tm-ai-assistant__back{position:static!important;grid-area:back!important;width:34px!important;height:34px!important;min-width:34px!important;margin:0!important;border-radius:50%!important;font-size:20px!important}
+  .tm-ai-assistant__back[hidden]{display:block!important;visibility:hidden!important}
+  .tm-ai-assistant__brand{grid-area:brand!important;display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;align-items:center!important;gap:8px!important;width:100%!important;min-width:0!important;margin:0!important}
+  .tm-ai-assistant__brand-icon{width:36px!important;height:36px!important;min-width:36px!important;flex-basis:36px!important;font-size:11px!important}
+  .tm-ai-assistant__brand>div{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:1px!important;min-width:0!important;line-height:1.12!important}
+  .tm-ai-assistant__brand strong,.tm-ai-assistant__brand>div span,.tm-ai-assistant__brand>div small{display:block!important;width:100%!important;min-width:0!important;margin:0!important;overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important}
+  .tm-ai-assistant__brand strong{font-size:15px!important;line-height:17px!important}
+  .tm-ai-assistant__brand>div span{color:#e5f0ff!important;font-size:10px!important;line-height:13px!important}
+  .tm-ai-assistant__brand>div small{color:#fff4b8!important;font-size:8.5px!important;line-height:11px!important}
+  .tm-ai-assistant__head-actions{position:static!important;grid-area:actions!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;width:34px!important;min-width:34px!important;margin:0!important}
+  .tm-ai-assistant__head-actions>button[data-ai-close]{position:static!important;width:34px!important;height:34px!important;min-width:34px!important;padding:0!important;border-radius:10px!important;font-size:22px!important}
+  .tm-ai-assistant__head-actions>button[data-ai-resize],.tm-ai-assistant__head-cart,.tm-ai-benefits,.tm-ai-progress{display:none!important}
+  .tm-ai-workspace,.tm-ai-workspace__main{height:100%!important;min-height:0!important;padding:0!important;overflow:hidden!important}
+  .tm-ai-assistant__messages,.tm-ai-commerce{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding:10px!important;scroll-padding-bottom:12px;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+  .tm-ai-livecart{flex:0 0 auto;min-height:40px!important;padding:5px 10px!important}
+  .tm-ai-home{flex:0 0 auto;padding:10px!important}.tm-ai-home__intro{padding:9px 10px!important}.tm-ai-home__actions{gap:6px!important;margin-top:8px!important}.tm-ai-home__actions button{min-height:50px!important;padding:8px 10px!important}
+  .tm-ai-msg{max-width:100%!important;padding:10px!important;font-size:13px!important;line-height:1.4!important}
+  .tm-ai-assistant__form{min-height:54px!important;height:54px!important;gap:6px!important;padding:4px 7px!important}
+  .tm-ai-assistant__form input,.tm-ai-assistant__form button{height:46px!important;min-height:46px!important}.tm-ai-assistant__form input{min-width:0!important;padding:0 11px!important;font-size:14px!important}.tm-ai-assistant__form button{min-width:82px!important;padding:0 10px!important;font-size:14px!important}
+  .tm-ai-assistant__tools{min-height:30px!important;height:30px!important;padding:0!important}.tm-ai-assistant__tools button{min-height:30px!important;height:30px!important;padding:0 2px!important;overflow:hidden!important;font-size:8.5px!important;line-height:1!important;white-space:nowrap!important;text-overflow:ellipsis!important}
+  .tm-ai-set-card{min-width:0;padding:11px!important}.tm-ai-set-card__head{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:start}.tm-ai-set-card__head>strong{max-width:92px;font-size:17px!important;line-height:1.2;text-align:right;word-break:keep-all}
+  .tm-ai-set-toners{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}.tm-ai-set-toners>span{display:grid!important;grid-template-columns:44px minmax(0,1fr)!important;justify-items:stretch!important;align-items:center;gap:6px!important;min-width:0;padding:7px!important;text-align:left!important}.tm-ai-set-toners img{width:44px!important;height:44px!important}.tm-ai-set-toners>span>span{display:grid!important;gap:2px;min-width:0}.tm-ai-set-toners>span small{display:-webkit-box;overflow:hidden;white-space:normal!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:10px!important;line-height:1.25}.tm-ai-set-toners>span em{font-size:10px!important;line-height:1.25;overflow-wrap:anywhere}.tm-ai-set-actions{grid-template-columns:1fr!important}
+  .tm-ai-single-grid{grid-template-columns:1fr!important}.tm-ai-single-color{grid-template-columns:64px minmax(0,1fr)!important;gap:8px 10px!important;padding:10px!important}.tm-ai-single-color>img{width:64px!important;height:64px!important}.tm-ai-single-color>span small{overflow:visible!important;white-space:normal!important;text-overflow:clip!important}.tm-ai-single-color>div{display:grid!important;grid-template-columns:1fr 1fr;width:100%}
+}
+
+@media(max-width:360px){
+  .tm-ai-assistant__panel{grid-template-rows:74px minmax(0,1fr) 52px 28px!important}
+  .tm-ai-assistant__head{height:74px!important;min-height:74px!important;grid-template-columns:30px minmax(0,1fr) 32px!important;gap:5px!important;padding-inline:6px!important}
+  .tm-ai-assistant__back{width:30px!important;height:30px!important;min-width:30px!important}.tm-ai-assistant__brand{grid-template-columns:32px minmax(0,1fr)!important;gap:6px!important}.tm-ai-assistant__brand-icon{width:32px!important;height:32px!important;min-width:32px!important}.tm-ai-assistant__brand strong{font-size:14px!important}.tm-ai-assistant__brand>div span{font-size:9px!important}.tm-ai-assistant__brand>div small{font-size:7.5px!important}.tm-ai-assistant__head-actions,.tm-ai-assistant__head-actions>button[data-ai-close]{width:32px!important;min-width:32px!important}.tm-ai-assistant__head-actions>button[data-ai-close]{height:32px!important}
+  .tm-ai-assistant__form{height:52px!important;min-height:52px!important}.tm-ai-assistant__form input,.tm-ai-assistant__form button{height:44px!important;min-height:44px!important}.tm-ai-assistant__tools,.tm-ai-assistant__tools button{height:28px!important;min-height:28px!important}.tm-ai-assistant__tools button{font-size:7.5px!important}
+  .tm-ai-set-toners{grid-template-columns:1fr!important}
+}
+
 .tm-ai-assistant * { box-sizing: border-box; }
 
 .tm-ai-assistant__launcher {
@@ -808,279 +849,21 @@
   .tm-ai-assistant.is-expanded .tm-ai-assistant__panel{width:min(1320px,86vw)!important;height:min(920px,90dvh)!important}
 }
 
-/* V130 – mobil: maximum priestoru pre komunikáciu a bezpečné produktové karty. */
-.tm-ai-assistant .tm-ai-livecart[hidden],
-.tm-ai-assistant .tm-ai-assistant__head-cart[hidden] { display: none !important; }
-
-@media (max-width: 760px) {
-  /* Jediná pevná horná časť je kompaktná hlavička AI Tomáša. */
-  .tm-ai-assistant__panel {
-    grid-template-rows: 58px minmax(0, 1fr) auto auto !important;
-    height: var(--tm-ai-visual-height, 100dvh) !important;
-  }
-
-  .tm-ai-assistant__head {
-    min-height: 58px !important;
-    height: 58px !important;
-    grid-template-columns: auto minmax(0, 1fr) auto !important;
-    grid-template-areas: "back brand actions" !important;
-    gap: 7px !important;
-    padding: 7px 9px !important;
-  }
-
-  .tm-ai-benefits,
-  .tm-ai-progress {
-    display: none !important;
-  }
-
-  .tm-ai-assistant__brand {
-    min-width: 0;
-    gap: 8px !important;
-  }
-
-  .tm-ai-assistant__brand-icon {
-    width: 34px !important;
-    height: 34px !important;
-    flex: 0 0 34px;
-  }
-
-  .tm-ai-assistant__brand > div {
-    min-width: 0;
-    line-height: 1.12;
-  }
-
-  .tm-ai-assistant__brand strong {
-    font-size: 15px !important;
-  }
-
-  .tm-ai-assistant__brand > div span {
-    overflow: hidden;
-    font-size: 10px !important;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .tm-ai-assistant__brand > div small {
-    display: none !important;
-  }
-
-  .tm-ai-assistant__back,
-  .tm-ai-assistant__head-actions > button[data-ai-close] {
-    width: 38px !important;
-    height: 38px !important;
-    padding: 0 !important;
-  }
-
-  .tm-ai-assistant__head-actions > button[data-ai-resize] {
-    display: none !important;
-  }
-
-  .tm-ai-workspace,
-  .tm-ai-workspace__main {
-    height: 100% !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Košík sa ukáže až po reálnom pridaní produktu. */
-  .tm-ai-livecart {
-    flex: 0 0 auto;
-    min-height: 40px !important;
-    padding: 5px 10px !important;
-  }
-
-  .tm-ai-livecart button {
-    min-height: 32px;
-    padding: 5px 9px !important;
-    font-size: 11px !important;
-  }
-
-  .tm-ai-home {
-    flex: 0 0 auto;
-    padding: 10px !important;
-  }
-
-  .tm-ai-home__intro {
-    padding: 9px 10px !important;
-  }
-
-  .tm-ai-home__actions {
-    gap: 6px !important;
-    margin-top: 8px !important;
-  }
-
-  .tm-ai-home__actions button {
-    min-height: 50px !important;
-    padding: 8px 10px !important;
-  }
-
-  .tm-ai-assistant__messages,
-  .tm-ai-commerce {
-    padding: 10px !important;
-    scroll-padding-bottom: 12px;
-  }
-
-  .tm-ai-msg {
-    max-width: 100% !important;
-    padding: 10px !important;
-    font-size: 13px !important;
-    line-height: 1.4 !important;
-  }
-
-  .tm-ai-assistant__form {
-    min-height: 58px;
-    gap: 6px !important;
-    padding: 6px 8px !important;
-  }
-
-  .tm-ai-assistant__form input,
-  .tm-ai-assistant__form button {
-    height: 46px !important;
-  }
-
-  .tm-ai-assistant__form button {
-    min-width: 88px;
-    padding: 0 12px !important;
-  }
-
-  .tm-ai-assistant__tools {
-    min-height: 38px;
-    padding: 0 0 env(safe-area-inset-bottom, 0px) !important;
-  }
-
-  .tm-ai-assistant__tools button {
-    min-height: 38px !important;
-    padding: 0 3px !important;
-    font-size: 9.5px !important;
-    white-space: nowrap;
-  }
-
-  /* Štvorbalenie: 2 × 2, bez prekrývania názvov a skladovosti. */
-  .tm-ai-set-card {
-    min-width: 0;
-    padding: 11px !important;
-  }
-
-  .tm-ai-set-card__head {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: start;
-  }
-
-  .tm-ai-set-card__head > div,
-  .tm-ai-set-card__head small {
-    min-width: 0;
-  }
-
-  .tm-ai-set-card__head > strong {
-    max-width: 92px;
-    font-size: 17px !important;
-    line-height: 1.2;
-    text-align: right;
-    overflow-wrap: normal;
-    word-break: keep-all;
-  }
-
-  .tm-ai-set-toners {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 7px !important;
-  }
-
-  .tm-ai-set-toners > span {
-    display: grid !important;
-    grid-template-columns: 44px minmax(0, 1fr) !important;
-    justify-items: stretch !important;
-    align-items: center;
-    gap: 6px !important;
-    min-width: 0;
-    padding: 7px !important;
-    text-align: left !important;
-  }
-
-  .tm-ai-set-toners img {
-    width: 44px !important;
-    height: 44px !important;
-  }
-
-  .tm-ai-set-toners > span > span {
-    display: grid !important;
-    gap: 2px;
-    min-width: 0;
-  }
-
-  .tm-ai-set-toners > span small {
-    display: -webkit-box;
-    overflow: hidden;
-    white-space: normal !important;
-    text-overflow: ellipsis;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    font-size: 10px !important;
-    line-height: 1.25;
-  }
-
-  .tm-ai-set-toners > span em {
-    font-size: 10px !important;
-    line-height: 1.25;
-    overflow-wrap: anywhere;
-  }
-
-  .tm-ai-set-actions {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Jednotlivé produkty majú celý názov, stav, cenu a dve jasné akcie. */
-  .tm-ai-single-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .tm-ai-single-color {
-    grid-template-columns: 64px minmax(0, 1fr) !important;
-    gap: 8px 10px !important;
-    padding: 10px !important;
-  }
-
-  .tm-ai-single-color > img {
-    width: 64px !important;
-    height: 64px !important;
-  }
-
-  .tm-ai-single-color > span small {
-    overflow: visible !important;
-    white-space: normal !important;
-    text-overflow: clip !important;
-  }
-
-  .tm-ai-single-color > div {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-  }
-
-  .tm-ai-single-color > div a,
-  .tm-ai-single-color > div button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 38px;
-    padding: 7px !important;
-    border-radius: 8px;
-    text-align: center;
-  }
-
-  .tm-ai-single-color > div a {
-    border: 1px solid #0a3c78;
-    color: #0a3c78;
-    text-decoration: none;
-  }
+/* V131 cascade lock – musí zostať na konci súboru. */
+.tm-ai-assistant .tm-ai-livecart[hidden],.tm-ai-assistant .tm-ai-assistant__head-cart[hidden]{display:none!important}
+@media(max-width:760px){
+ .tm-ai-assistant{right:0!important;bottom:0!important}
+ .tm-ai-assistant__panel{inset:0!important;width:100vw!important;height:var(--tm-ai-visual-height,100dvh)!important;max-height:var(--tm-ai-visual-height,100dvh)!important;grid-template-rows:78px minmax(0,1fr) 54px 30px!important;border-radius:0!important}
+ .tm-ai-assistant__head{position:relative!important;display:grid!important;grid-template-columns:34px minmax(0,1fr) 34px!important;grid-template-areas:"back brand actions"!important;align-items:center!important;gap:7px!important;width:100%!important;min-width:0!important;height:78px!important;min-height:78px!important;padding:7px 9px!important;overflow:hidden!important}
+ .tm-ai-assistant__back{position:static!important;grid-area:back!important;width:34px!important;height:34px!important;min-width:34px!important;margin:0!important;border-radius:50%!important;font-size:20px!important}.tm-ai-assistant__back[hidden]{display:block!important;visibility:hidden!important}
+ .tm-ai-assistant__brand{grid-area:brand!important;display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;align-items:center!important;gap:8px!important;width:100%!important;min-width:0!important;margin:0!important}.tm-ai-assistant__brand-icon{width:36px!important;height:36px!important;min-width:36px!important;flex-basis:36px!important;font-size:11px!important}
+ .tm-ai-assistant__brand>div{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:1px!important;min-width:0!important;line-height:1.12!important}.tm-ai-assistant__brand strong,.tm-ai-assistant__brand>div span,.tm-ai-assistant__brand>div small{display:block!important;width:100%!important;min-width:0!important;margin:0!important;overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important}.tm-ai-assistant__brand strong{font-size:15px!important;line-height:17px!important}.tm-ai-assistant__brand>div span{color:#e5f0ff!important;font-size:10px!important;line-height:13px!important}.tm-ai-assistant__brand>div small{color:#fff4b8!important;font-size:8.5px!important;line-height:11px!important}
+ .tm-ai-assistant__head-actions{position:static!important;grid-area:actions!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;width:34px!important;min-width:34px!important;margin:0!important}.tm-ai-assistant__head-actions>button[data-ai-close]{position:static!important;width:34px!important;height:34px!important;min-width:34px!important;padding:0!important;border-radius:10px!important;font-size:22px!important}.tm-ai-assistant__head-actions>button[data-ai-resize],.tm-ai-assistant__head-cart,.tm-ai-benefits,.tm-ai-progress{display:none!important}
+ .tm-ai-workspace,.tm-ai-workspace__main{height:100%!important;min-height:0!important;padding:0!important;overflow:hidden!important}.tm-ai-assistant__messages,.tm-ai-commerce{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding:10px!important;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+ .tm-ai-assistant__form{min-height:54px!important;height:54px!important;gap:6px!important;padding:4px 7px!important}.tm-ai-assistant__form input,.tm-ai-assistant__form button{height:46px!important;min-height:46px!important}.tm-ai-assistant__form input{min-width:0!important;padding:0 11px!important;font-size:14px!important}.tm-ai-assistant__form button{min-width:82px!important;padding:0 10px!important;font-size:14px!important}
+ .tm-ai-assistant__tools{min-height:30px!important;height:30px!important;padding:0!important}.tm-ai-assistant__tools button{min-height:30px!important;height:30px!important;padding:0 2px!important;overflow:hidden!important;font-size:8.5px!important;line-height:1!important;white-space:nowrap!important;text-overflow:ellipsis!important}
+ .tm-ai-set-toners{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}.tm-ai-set-toners>span{grid-template-columns:44px minmax(0,1fr)!important;min-width:0!important;padding:7px!important}.tm-ai-set-toners>span small{white-space:normal!important;font-size:10px!important;line-height:1.25}.tm-ai-single-grid{grid-template-columns:1fr!important}.tm-ai-single-color>span small{overflow:visible!important;white-space:normal!important;text-overflow:clip!important}
 }
-
-@media (max-width: 380px) {
-  .tm-ai-set-toners {
-    grid-template-columns: 1fr !important;
-  }
-
-  .tm-ai-assistant__tools button {
-    font-size: 8.5px !important;
-  }
+@media(max-width:360px){
+ .tm-ai-assistant__panel{grid-template-rows:74px minmax(0,1fr) 52px 28px!important}.tm-ai-assistant__head{height:74px!important;min-height:74px!important;grid-template-columns:30px minmax(0,1fr) 32px!important;gap:5px!important;padding-inline:6px!important}.tm-ai-assistant__back{width:30px!important;height:30px!important;min-width:30px!important}.tm-ai-assistant__brand{grid-template-columns:32px minmax(0,1fr)!important;gap:6px!important}.tm-ai-assistant__brand-icon{width:32px!important;height:32px!important;min-width:32px!important}.tm-ai-assistant__brand strong{font-size:14px!important}.tm-ai-assistant__brand>div span{font-size:9px!important}.tm-ai-assistant__brand>div small{font-size:7.5px!important}.tm-ai-assistant__head-actions,.tm-ai-assistant__head-actions>button[data-ai-close]{width:32px!important;min-width:32px!important}.tm-ai-assistant__head-actions>button[data-ai-close]{height:32px!important}.tm-ai-assistant__form{height:52px!important;min-height:52px!important}.tm-ai-assistant__form input,.tm-ai-assistant__form button{height:44px!important;min-height:44px!important}.tm-ai-assistant__tools,.tm-ai-assistant__tools button{height:28px!important;min-height:28px!important}.tm-ai-assistant__tools button{font-size:7.5px!important}.tm-ai-set-toners{grid-template-columns:1fr!important}
 }
