@@ -1,0 +1,105 @@
+---
+export const prerender=false;
+import { getAdminAccessKey, isAdminLocked } from '../../lib/admin-access';
+import { loadAdsIntelligenceSettings } from '../../lib/ads-intelligence-settings-store';
+import { calculateAdsIntelligence } from '../../lib/ads-intelligence-runtime';
+import { readGoogleAdsStatus } from '../../lib/google-ads-readonly';
+const configuredKey=getAdminAccessKey(Astro.locals);
+const adminKey=Astro.url.searchParams.get('key')||'';
+const locked=isAdminLocked({adminKey:configuredKey,suppliedKey:adminKey,hostname:Astro.url.hostname});
+const initial=locked?null:calculateAdsIntelligence(await loadAdsIntelligenceSettings());
+const decisions=(initial?.decisions||[]) as any[];
+const summary=(initial?.summary||{products:0,eligible:0,counts:{},daily_budget:0}) as any;
+const settings=(initial?.settings||{}) as any;
+const googleAds=locked?null:await readGoogleAdsStatus((Astro.locals as any)?.runtime?.env);
+const top=decisions.filter((d:any)=>d.eligible).slice(0,500);
+---
+<html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>ToneryMAXIM Ads Intelligence</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color:#172033;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1500px;margin:auto;padding:24px}.head{display:flex;justify-content:space-between;gap:16px;align-items:center}.head h1{margin:0;font-size:28px}.muted{color:#697386}.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:20px 0}.card,.panel{background:white;border:1px solid #e4e8ef;border-radius:14px;padding:16px}.metric{font-size:27px;font-weight:750;margin-top:5px}.tabs{display:flex;gap:8px;margin:18px 0}.tabs button,.btn{border:1px solid #d8dee8;background:#fff;border-radius:9px;padding:9px 13px;cursor:pointer}.tabs button.active{background:#172033;color:#fff}.panel{margin-top:12px}.settings{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.settings label{font-size:13px;color:#566074}.settings input{width:100%;margin-top:5px;padding:9px;border:1px solid #d8dee8;border-radius:8px}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.toolbar input,.toolbar select{padding:9px;border:1px solid #d8dee8;border-radius:8px}.tablewrap{overflow:auto;max-height:650px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px 9px;border-bottom:1px solid #edf0f5;text-align:left;white-space:nowrap}th{position:sticky;top:0;background:#fff}.pill{display:inline-block;padding:4px 8px;border-radius:99px;font-weight:700;font-size:12px}.learn{background:#fff5cc;color:#7b5c00}.keep{background:#e7f0ff;color:#2452a4}.scale{background:#ddf7e7;color:#17633a}.limit{background:#ffe9d5;color:#8a4700}.stop{background:#ffe0e0;color:#8d1e1e}.exclude{background:#eceff3;color:#4d5663}.hidden{display:none}@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.settings{grid-template-columns:1fr}.wrap{padding:14px}}
+</style></head><body><div class="wrap">
+{locked ? <section class="panel"><h1>ToneryMAXIM Ads Intelligence</h1><p>Stránka je chránená. Otvorte ju s platným administrátorským kľúčom.</p></section> : <div id="app" data-admin-key={adminKey}><div class="head"><div><h1>ToneryMAXIM Ads Intelligence</h1><div class="muted">Pre-training + Product Economics + Campaign Decision Engine</div></div><div class="muted">Dataset: {new Date(initial!.generated_at).toLocaleString('sk-SK')}</div></div>
+<div class="grid">
+<div class="card"><div class="muted">Produkty</div><div class="metric">{summary.products}</div></div>
+<div class="card"><div class="muted">Reklamne vhodné</div><div class="metric">{summary.eligible}</div></div>
+<div class="card"><div class="muted">UČÍ SA</div><div class="metric">{summary.counts['UČÍ SA']}</div></div>
+<div class="card"><div class="muted">PONECHAŤ</div><div class="metric">{summary.counts['PONECHAŤ']}</div></div>
+<div class="card"><div class="muted">POSILNIŤ</div><div class="metric">{summary.counts['POSILNIŤ']}</div></div>
+<div class="card"><div class="muted">Denný rozpočet</div><div class="metric">{summary.daily_budget} €</div></div>
+</div>
+<div class="grid" id="learningSummary">
+  <div class="card"><div class="muted">Kliky</div><div class="metric" id="lClicks">0</div></div>
+  <div class="card"><div class="muted">Košíky</div><div class="metric" id="lCarts">0</div></div>
+  <div class="card"><div class="muted">Objednávky</div><div class="metric" id="lPurchases">0</div></div>
+  <div class="card"><div class="muted">Náklad</div><div class="metric" id="lCost">0 €</div></div>
+  <div class="card"><div class="muted">Tržba</div><div class="metric" id="lRevenue">0 €</div></div>
+  <div class="card"><div class="muted">Zisk po reklame</div><div class="metric" id="lProfit">0 €</div></div>
+</div>
+<div class="tabs"><button class="active" data-tab="dashboard">Rozhodnutia</button><button data-tab="settings">Nastavenia</button><button data-tab="learning">Reálne učenie</button><button data-tab="rules">Pravidlá systému</button></div>
+<section id="dashboard" class="panel tabpanel"><div class="toolbar"><input id="q" placeholder="Hľadať SKU alebo produkt"><select id="state"><option value="">Všetky stavy</option><option>UČÍ SA</option><option>PONECHAŤ</option><option>POSILNIŤ</option><option>OBMEDZIŤ</option><option>ZASTAVIŤ</option></select><span class="muted" id="shown"></span></div>
+<div class="tablewrap"><table><thead><tr><th>Stav</th><th>Produkt</th><th>SKU</th><th>Dopyt SK</th><th>Priorita</th><th>Max CPC</th><th>Cieľ CPA</th><th>Break-even CPA</th><th>Rozpočet/deň</th><th>Confidence</th><th>Dôvod</th></tr></thead><tbody id="rows">
+{top.map((d:any)=><tr data-state={d.state} data-search={`${d.sku} ${d.name}`.toLowerCase()}><td><span class={`pill ${d.state==='UČÍ SA'?'learn':d.state==='PONECHAŤ'?'keep':d.state==='POSILNIŤ'?'scale':d.state==='OBMEDZIŤ'?'limit':'stop'}`}>{d.state}</span></td><td>{d.name}</td><td>{d.sku}</td><td>{d.market_demand}</td><td>{d.priority_score}</td><td>{d.max_cpc.toFixed(2)} €</td><td>{d.target_cpa.toFixed(2)} €</td><td>{d.break_even_cpa.toFixed(2)} €</td><td>{d.allocated_daily_budget.toFixed(2)} €</td><td>{d.market_confidence}</td><td>{d.reason_codes.join(', ')}</td></tr>)}
+</tbody></table></div><p class="muted">Dashboard zobrazuje prvých 500 reklamne vhodných produktov zoradených podľa priority. Rozhodovací engine pracuje so všetkými {summary.products} produktmi.</p></section>
+<section id="settings" class="panel tabpanel hidden"><h2>Nastavenia</h2><p class="muted">Bezpečné predvolené hodnoty Decision Engine V2. Zmeny sa trvalo ukladajú na server a po uložení sa celý katalóg okamžite prepočíta podľa nových pravidiel.</p><div class="settings">
+<label>Denný reklamný rozpočet €<input data-setting="dailyBudgetEur" type="number" step="1" value={settings.dailyBudgetEur}></label>
+<label>Cold-start CVR %<input data-setting="coldStartCvr" type="number" step="0.1" value={settings.coldStartCvr*100}></label>
+<label>Absolútny strop CPC €<input data-setting="maxCpcAbsolute" type="number" step="0.05" value={settings.maxCpcAbsolute}></label>
+<label>Maximum aktívnych produktov<input data-setting="maxActiveProducts" type="number" step="10" value={settings.maxActiveProducts}></label>
+<label>Dopyt pre POSILNIŤ<input data-setting="scaleDemandThreshold" type="number" value={settings.scaleDemandThreshold}></label>
+<label>Kliky pred OBMEDZIŤ<input data-setting="minClicksBeforeLimit" type="number" value={settings.minClicksBeforeLimit}></label>
+<label>Kliky pred ZASTAVIŤ<input data-setting="minClicksBeforePause" type="number" value={settings.minClicksBeforePause}></label>
+<label>Podiel marže – high %<input data-setting="marginSafetyHigh" type="number" step="1" value={settings.marginSafetyHigh*100}></label>
+<label>Podiel marže – medium %<input data-setting="marginSafetyMedium" type="number" step="1" value={settings.marginSafetyMedium*100}></label>
+<label>Podiel marže – low %<input data-setting="marginSafetyLow" type="number" step="1" value={settings.marginSafetyLow*100}></label>
+</div><p><button class="btn" id="save">Uložiť a prepočítať</button> <button class="btn" id="reset">Obnoviť bezpečné hodnoty</button> <button class="btn" id="refreshAbix">Aktualizovať nákupné ceny Abix</button> <button class="btn" id="syncGoogleAds">Synchronizovať Google Ads</button></p><div id="saveMsg" class="muted">Reálne nákupné ceny: {summary.real_purchase_prices||0}</div><p id="googleAdsStatus" class="muted">Google Ads: {googleAds?.configured ? (googleAds.lastSyncAt ? `read-only, posledná synchronizácia ${new Date(googleAds.lastSyncAt).toLocaleString('sk-SK')}` : 'nakonfigurovaný, zatiaľ nesynchronizovaný') : 'čaká na konfiguráciu GOOGLE_ADS_*'}</p></section>
+<section id="learning" class="panel tabpanel hidden">
+<h2>Reálne učenie po spustení reklamy</h2>
+<p class="muted">Skutočné kliky, košíky, objednávky a ekonomika. Market pre-training zostáva iba vstupný signál.</p>
+<div class="toolbar"><input id="learningSearch" placeholder="Produkt / OEM"><select id="learningState"><option value="">Všetky stavy</option><option>UČÍ SA</option><option>PONECHAŤ</option><option>POSILNIŤ</option><option>OBMEDZIŤ</option><option>ZASTAVIŤ</option></select><button class="btn" id="refreshLearning">Obnoviť</button></div>
+<div class="tablewrap"><table><thead><tr><th>Produkt</th><th>OEM</th><th>Kliky</th><th>Košíky</th><th>Obj.</th><th>Náklad</th><th>CPA</th><th>ROAS</th><th>Zisk po reklame</th><th>Confidence</th><th>Stav</th></tr></thead><tbody id="learningRows"></tbody></table></div>
+</section>
+<section id="rules" class="panel tabpanel hidden"><h2>Pravidlá Decision Engine V2</h2><p><b>UČÍ SA</b> – chýba dostatok Google alebo reálnych Ads dát. Produkt sa nevypína.</p><p><b>PONECHAŤ</b> – ekonomika je vhodná, ale zatiaľ nie je dôvod agresívne zvyšovať rozpočet.</p><p><b>POSILNIŤ</b> – silný pre-training alebo po spustení CPA v bezpečnom limite.</p><p><b>OBMEDZIŤ</b> – máme už negatívny signál, ale ešte nie dostatok dôkazov na zastavenie.</p><p><b>ZASTAVIŤ</b> – až po dostatočnom počte klikov a minutom rozpočte bez objednávky.</p><p><b>VYLÚČIŤ</b> – produkt nie je vhodný pre reklamu, napr. nie je skladom alebo nemá pozitívnu ekonomiku.</p></section>
+</div>}
+{!locked && <script is:inline>
+const app=document.getElementById('app'); const adminKey=app?.dataset.adminKey||''; const api='/api/admin/ads-intelligence';
+if(adminKey&&location.search)history.replaceState(null,'',location.pathname);
+const adminHeaders=adminKey?{'x-admin-key':adminKey}:{};
+const buttons=[...document.querySelectorAll('[data-tab]')];buttons.forEach(b=>b.addEventListener('click',()=>{buttons.forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.tabpanel').forEach(x=>x.classList.add('hidden'));document.getElementById(b.dataset.tab).classList.remove('hidden')}));
+const q=document.getElementById('q'),state=document.getElementById('state');window.trs=[...document.querySelectorAll('#rows tr')];const shown=document.getElementById('shown');function filter(){let n=0;(window.trs||[]).forEach(r=>{const ok=(!q.value||r.dataset.search.includes(q.value.toLowerCase()))&&(!state.value||r.dataset.state===state.value);r.style.display=ok?'':'none';if(ok)n++});shown.textContent=`Zobrazené: ${n}`};q.addEventListener('input',filter);state.addEventListener('change',filter);filter();
+const inputs=[...document.querySelectorAll('[data-setting]')];
+function settingsPayload(){const x={};inputs.forEach(i=>{let v=Number(i.value);if(['coldStartCvr','marginSafetyHigh','marginSafetyMedium','marginSafetyLow'].includes(i.dataset.setting))v/=100;x[i.dataset.setting]=v});return x}
+function applySettings(s){inputs.forEach(i=>{if(s[i.dataset.setting]==null)return;let v=s[i.dataset.setting];if(['coldStartCvr','marginSafetyHigh','marginSafetyMedium','marginSafetyLow'].includes(i.dataset.setting))v*=100;i.value=v})}
+function render(data){decisionById=new Map(data.decisions.map(d=>[String(d.product_id),d]));const sum=data.summary;const cards=document.querySelectorAll('.grid .metric');cards[0].textContent=sum.products;cards[1].textContent=sum.eligible;cards[2].textContent=sum.counts['UČÍ SA']||0;cards[3].textContent=sum.counts['PONECHAŤ']||0;cards[4].textContent=sum.counts['POSILNIŤ']||0;cards[5].textContent=sum.daily_budget+' €';applySettings(data.settings);if(data.googleAds){const g=document.getElementById('googleAdsStatus');g.textContent=data.googleAds.configured?(data.googleAds.error?'Google Ads chyba: '+data.googleAds.error:data.googleAds.lastSyncAt?`Google Ads read-only: ${data.googleAds.rows||0} riadkov, ${data.googleAds.clicks||0} klikov, ${money(data.googleAds.costEur)}, synchronizované ${new Date(data.googleAds.lastSyncAt).toLocaleString('sk-SK')}`:'Google Ads je nakonfigurovaný; spustite prvú synchronizáciu.'):'Google Ads čaká na konfiguráciu GOOGLE_ADS_*';}const body=document.getElementById('rows');body.innerHTML='';data.decisions.filter(d=>d.eligible).slice(0,500).forEach(d=>{const tr=document.createElement('tr');tr.dataset.state=d.state;tr.dataset.search=(d.sku+' '+d.name).toLowerCase();const vals=[d.state,d.name,d.sku,d.market_demand,d.priority_score,d.max_cpc.toFixed(2)+' €',d.target_cpa.toFixed(2)+' €',d.break_even_cpa.toFixed(2)+' €',d.allocated_daily_budget.toFixed(2)+' €',d.market_confidence,d.reason_codes.join(', ')];vals.forEach((v,i)=>{const td=document.createElement('td');if(i===0){const sp=document.createElement('span');sp.className='pill '+(d.state==='UČÍ SA'?'learn':d.state==='PONECHAŤ'?'keep':d.state==='POSILNIŤ'?'scale':d.state==='OBMEDZIŤ'?'limit':'stop');sp.textContent=v;td.appendChild(sp)}else td.textContent=v;tr.appendChild(td)});body.appendChild(tr)});window.trs=[...document.querySelectorAll('#rows tr')];filter();renderLearning()}
+async function load(){const r=await fetch(api,{headers:adminHeaders,cache:'no-store'});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Načítanie zlyhalo');render(d)}
+document.getElementById('save').addEventListener('click',async()=>{const msg=document.getElementById('saveMsg');msg.textContent='Ukladám a prepočítavam celý katalóg…';try{const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json',...adminHeaders},body:JSON.stringify({settings:settingsPayload()})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Uloženie zlyhalo');render(d);msg.textContent='Nastavenia sú trvalo uložené. Dashboard bol prepočítaný.'}catch(e){msg.textContent='Chyba: '+e.message}});
+document.getElementById('reset').addEventListener('click',async()=>{if(!confirm('Obnoviť bezpečné predvolené nastavenia?'))return;const defaults={dailyBudgetEur:30,coldStartCvr:.025,maxCpcAbsolute:1.5,maxActiveProducts:100,scaleDemandThreshold:150,minClicksBeforeLimit:25,minClicksBeforePause:50,marginSafetyHigh:.55,marginSafetyMedium:.40,marginSafetyLow:.25,pauseSpendTargetCpaMultiple:1.25,vatRate:.23,enabled:true};const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json',...adminHeaders},body:JSON.stringify({settings:defaults})});const d=await r.json();if(d.ok){render(d);document.getElementById('saveMsg').textContent='Bezpečné hodnoty obnovené a trvalo uložené.'}});
+document.getElementById('refreshAbix').addEventListener('click',async()=>{const msg=document.getElementById('saveMsg');msg.textContent='Načítavam reálne nákupné ceny z Abix…';try{const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json',...adminHeaders},body:JSON.stringify({action:'refresh_abix'})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Aktualizácia zlyhala');render(d);msg.textContent=`Načítaných ${d.refresh.records} reálnych nákupných cien.`}catch(e){msg.textContent='Abix: '+e.message}});
+document.getElementById('syncGoogleAds').addEventListener('click',async()=>{const msg=document.getElementById('saveMsg');msg.textContent='Sťahujem posledných 30 dní z Google Ads (iba čítanie)…';try{const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json',...adminHeaders},body:JSON.stringify({action:'sync_google_ads'})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Synchronizácia zlyhala');render(d);await loadLearning();msg.textContent=`Google Ads: spracovaných ${d.googleAds.rows||0} riadkov, pridaných ${d.googleAds.importedEvents||0} nových udalostí.`}catch(e){msg.textContent='Google Ads: '+e.message}});
+load().catch(e=>document.getElementById('saveMsg').textContent='API: '+e.message);
+
+const money=(v)=>`${Number(v||0).toFixed(2)} €`;
+let learningData=[];let decisionById=new Map();
+function learningState(a){
+  return decisionById.get(String(a.productId))?.state||"UČÍ SA";
+}
+function renderLearning(){
+ const q=(document.querySelector("#learningSearch")?.value||"").toLowerCase();
+ const sf=document.querySelector("#learningState")?.value||"";
+ const rows=learningData.filter(a=>(!q||(`${a.productId} ${a.oem||""}`).toLowerCase().includes(q))&&(!sf||learningState(a)===sf));
+ const tbody=document.querySelector("#learningRows");
+ if(tbody){tbody.replaceChildren();for(const a of rows){const tr=document.createElement('tr');const values=[a.productId,a.oem||'',a.clicks,a.addToCarts,a.purchases,money(a.costEur),a.cpa==null?'—':money(a.cpa),a.roas==null?'—':a.roas.toFixed(2),money(a.profitAfterAdsEur),a.confidence,learningState(a)];for(const value of values){const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td)}tbody.appendChild(tr)}}
+ const s=learningData.reduce((x,a)=>({clicks:x.clicks+a.clicks,carts:x.carts+a.addToCarts,purchases:x.purchases+a.purchases,cost:x.cost+a.costEur,revenue:x.revenue+a.revenueEur,profit:x.profit+a.profitAfterAdsEur}),{clicks:0,carts:0,purchases:0,cost:0,revenue:0,profit:0});
+ [["#lClicks",s.clicks],["#lCarts",s.carts],["#lPurchases",s.purchases],["#lCost",money(s.cost)],["#lRevenue",money(s.revenue)],["#lProfit",money(s.profit)]].forEach(([id,v])=>{const e=document.querySelector(id);if(e)e.textContent=String(v)});
+}
+async function loadLearning(){
+ const r=await fetch("/api/admin/ads-learning",{headers:adminHeaders,cache:"no-store"});
+ if(!r.ok) return;
+ const j=await r.json(); learningData=j.aggregates||[]; renderLearning();
+}
+document.querySelector("#refreshLearning")?.addEventListener("click",loadLearning);
+document.querySelector("#learningSearch")?.addEventListener("input",renderLearning);
+document.querySelector("#learningState")?.addEventListener("change",renderLearning);
+loadLearning();
+
+</script>}
+</div></body></html>

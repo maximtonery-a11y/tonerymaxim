@@ -1,0 +1,2008 @@
+﻿brand,oem,catalog_products,compatible_printers,oem_search_signal,printer_search_signal_dedup,market_demand_estimate,market_data_confidence,competition_index_avg,bid_low_avg_eur,bid_high_avg_eur,initial_state,top_google_signals
+HP,W1420A,4,6,30.0,114.5,122.0,HIGH,100.0,0.34,1.29,PONECHAŤ,HP LaserJet M110w toner: 90 | HP LaserJet MFP M140w toner: 70 | HP W1420A: 30 | W1420A: 30 | W1420A toner: 20
+HP,W1420XL,1,2,0.0,114.5,114.5,HIGH,100.0,0.33,1.05,PONECHAŤ,HP LaserJet M110w toner: 90 | HP LaserJet MFP M140w toner: 70 | toner HP LaserJet M110w: 20 | HP M140w toner: 20 | M140w toner: 20
+HP,CE285A,4,13,50.0,96.0,108.5,HIGH,99.2,0.36,1.56,PONECHAŤ,CE285A: 50 | HP LaserJet M1132MFP toner: 40 | HP LaserJet P1102 toner: 40 | HP LaserJet Pro P1102 toner: 40 | CE285A toner: 30
+HP,CE285X,1,13,10.0,96.0,98.5,HIGH,99.2,0.35,1.6,PONECHAŤ,HP LaserJet M1132MFP toner: 40 | HP LaserJet P1102 toner: 40 | HP LaserJet Pro P1102 toner: 40 | HP P1102 toner: 20 | HP P1102 toner: 20
+HP,CE285AD,1,13,10.0,96.0,98.5,HIGH,99.2,0.33,1.58,PONECHAŤ,HP LaserJet M1132MFP toner: 40 | HP LaserJet P1102 toner: 40 | HP LaserJet Pro P1102 toner: 40 | HP P1102 toner: 20 | HP P1102 toner: 20
+HP,Q2612A,4,18,20.0,82.5,87.5,HIGH,97.7,0.27,1.16,PONECHAŤ,HP LaserJet 1020 toner: 30 | Q2612A: 20 | HP LaserJet 1018 toner: 20 | HP Q2612A: 10 | Q2612A toner: 10
+HP,Q2612X,1,18,10.0,82.5,85.0,HIGH,95.8,0.22,1.22,PONECHAŤ,HP LaserJet 1020 toner: 30 | HP LaserJet 1018 toner: 20 | HP Q2612X: 10 | Q2612X: 10 | Q2612X toner: 10
+HP,Q2612AD,1,18,10.0,82.5,85.0,HIGH,97.5,0.22,1.22,PONECHAŤ,HP LaserJet 1020 toner: 30 | HP LaserJet 1018 toner: 20 | HP Q2612AD: 10 | Q2612AD: 10 | Q2612AD toner: 10
+HP,W2070A,4,7,20.0,74.5,79.5,HIGH,99.8,1.01,3.18,PONECHAŤ,HP Color Laser MFP 178nw toner: 50 | W2070A: 20 | HP Color Laser 150nw toner: 20 | toner HP Color Laser MFP 178nw: 20 | HP Color Laser MFP 179fnw toner: 20
+Epson,C13T00S14A,2,33,10.0,76.5,79.0,HIGH,98.2,0.17,0.54,PONECHAŤ,Epson C13T00S14A: 10 | C13T00S14A: 10 | Epson L1110 toner: 10 | Epson L1250 toner: 10 | Epson L3110 toner: 10
+Epson,C13T00S24A,2,33,10.0,76.5,79.0,HIGH,98.1,0.17,0.54,PONECHAŤ,C13T00S24A: 10 | Epson L1110 toner: 10 | Epson L1250 toner: 10 | Epson L3110 toner: 10 | L3110 toner: 10
+Epson,C13T00S34A,2,33,10.0,76.5,79.0,HIGH,98.1,0.17,0.54,PONECHAŤ,C13T00S34A: 10 | Epson L1110 toner: 10 | Epson L1250 toner: 10 | Epson L3110 toner: 10 | L3110 toner: 10
+Epson,C13T00S44A,2,33,10.0,76.5,79.0,HIGH,98.1,0.17,0.54,PONECHAŤ,Epson C13T00S44A: 10 | C13T00S44A: 10 | Epson L1110 toner: 10 | Epson L1250 toner: 10 | Epson L3110 toner: 10
+Epson,C13T00S64A,1,33,10.0,76.5,79.0,HIGH,98.2,0.17,0.54,PONECHAŤ,Epson C13T00S64A: 10 | C13T00S64A: 10 | Epson L1110 toner: 10 | Epson L1250 toner: 10 | Epson L3110 toner: 10
+HP,W2071A,4,7,10.0,74.5,77.0,HIGH,99.8,0.71,3.2,PONECHAŤ,HP Color Laser MFP 178nw toner: 50 | HP Color Laser 150nw toner: 20 | toner HP Color Laser MFP 178nw: 20 | HP Color Laser MFP 179fnw toner: 20 | HP W2071A: 10
+HP,W2072A,4,7,10.0,74.5,77.0,HIGH,99.8,0.71,3.2,PONECHAŤ,HP Color Laser MFP 178nw toner: 50 | HP Color Laser 150nw toner: 20 | toner HP Color Laser MFP 178nw: 20 | HP Color Laser MFP 179fnw toner: 20 | HP W2072A: 10
+HP,W2073A,4,7,10.0,74.5,77.0,HIGH,99.8,0.71,3.2,PONECHAŤ,HP Color Laser MFP 178nw toner: 50 | HP Color Laser 150nw toner: 20 | toner HP Color Laser MFP 178nw: 20 | HP Color Laser MFP 179fnw toner: 20 | HP W2073A: 10
+HP,W2070X,1,7,10.0,74.5,77.0,HIGH,98.4,0.71,3.2,PONECHAŤ,HP Color Laser MFP 178nw toner: 50 | HP Color Laser 150nw toner: 20 | toner HP Color Laser MFP 178nw: 20 | HP Color Laser MFP 179fnw toner: 20 | W2070X: 10
+HP,W2071X,1,7,0.0,74.5,74.5,HIGH,99.8,0.71,3.2,PONECHAŤ,HP Color Laser MFP 178nw toner: 50 | HP Color Laser 150nw toner: 20 | toner HP Color Laser MFP 178nw: 20 | HP Color Laser MFP 179fnw toner: 20 | HP Color Laser 150a toner: 10
+HP,W2073X,1,7,0.0,74.5,74.5,HIGH,99.8,0.71,3.2,PONECHAŤ,HP Color Laser MFP 178nw toner: 50 | HP Color Laser 150nw toner: 20 | toner HP Color Laser MFP 178nw: 20 | HP Color Laser MFP 179fnw toner: 20 | HP Color Laser 150a toner: 10
+HP,W2072X,1,7,0.0,74.5,74.5,HIGH,99.8,0.71,3.2,PONECHAŤ,HP Color Laser MFP 178nw toner: 50 | HP Color Laser 150nw toner: 20 | toner HP Color Laser MFP 178nw: 20 | HP Color Laser MFP 179fnw toner: 20 | HP Color Laser 150a toner: 10
+HP,W1106A,3,11,20.0,67.5,72.5,HIGH,99.2,0.58,2.38,PONECHAŤ,HP Laser MFP 135w toner: 50 | W1106A: 20 | HP 135a toner: 20 | toner HP Laser MFP 135w: 20 | HP W1106A: 10
+HP,W1106X,1,11,10.0,67.5,70.0,HIGH,99.1,0.56,1.95,PONECHAŤ,HP Laser MFP 135w toner: 50 | HP 135a toner: 20 | toner HP Laser MFP 135w: 20 | HP W1106X: 10 | W1106X: 10
+HP,CF283A,4,12,40.0,58.5,68.5,HIGH,98.3,0.49,1.98,PONECHAŤ,CF283A: 40 | HP LaserJet Pro M125nw toner: 20 | toner HP LaserJet Pro M125nw: 20 | HP LaserJet Pro MFP M125nw toner: 20 | HP CF283A: 10
+HP,W1106XXL,1,11,0.0,67.5,67.5,HIGH,99.0,0.56,2.03,PONECHAŤ,HP Laser MFP 135w toner: 50 | HP 135a toner: 20 | toner HP Laser MFP 135w: 20 | HP Laser 107a toner: 10 | toner HP Laser 107a: 10
+Canon,CRG-719,2,18,0.0,62.5,62.5,HIGH,92.8,,,PONECHAŤ,Canon LBP251dw toner: 10 | LBP251dw toner: 10 | Canon LBP252dw toner: 10 | LBP252dw toner: 10 | Canon LBP253x toner: 10
+Canon,CRG-719H,3,18,0.0,62.5,62.5,HIGH,92.8,,,PONECHAŤ,Canon LBP251dw toner: 10 | LBP251dw toner: 10 | Canon LBP252dw toner: 10 | LBP252dw toner: 10 | Canon LBP253x toner: 10
+Canon,CRG-719A,1,18,0.0,62.5,62.5,HIGH,92.8,,,PONECHAŤ,Canon LBP251dw toner: 10 | LBP251dw toner: 10 | Canon LBP252dw toner: 10 | LBP252dw toner: 10 | Canon LBP253x toner: 10
+HP,CF283AD,1,12,10.0,58.5,61.0,HIGH,98.3,0.41,1.92,PONECHAŤ,HP LaserJet Pro M125nw toner: 20 | toner HP LaserJet Pro M125nw: 20 | HP LaserJet Pro MFP M125nw toner: 20 | HP CF283AD: 10 | CF283AD: 10
+Canon,CRG-737,3,14,0.0,55.5,55.5,HIGH,97.5,0.17,1.59,PONECHAŤ,Canon LBP151 toner: 10 | LBP151 toner: 10 | Canon MF211 toner: 10 | MF211 toner: 10 | Canon MF212w toner: 10
+HP,CF244A,4,6,40.0,44.0,54.0,HIGH,99.8,0.65,1.89,PONECHAŤ,CF244A: 40 | HP LaserJet Pro MFP M28w toner: 30 | HP CF244A: 20 | CF244A toner: 20 | HP CF244A toner: 10
+HP,W2190A,3,8,10.0,51.5,54.0,HIGH,98.2,0.73,1.97,PONECHAŤ,HP Color LaserJet Pro MFP 3302FDW toner: 20 | HP Color LaserJet Pro MFP 3302FDWG toner: 20 | HP Color LaserJet Pro MFP 3302SDW toner: 20 | HP W2190A: 10 | W2190A: 10
+HP,W2190X,3,8,10.0,51.5,54.0,HIGH,98.2,0.74,2.25,PONECHAŤ,HP Color LaserJet Pro MFP 3302FDW toner: 20 | HP Color LaserJet Pro MFP 3302FDWG toner: 20 | HP Color LaserJet Pro MFP 3302SDW toner: 20 | HP W2190X: 10 | W2190X: 10
+HP,W2191A,3,8,10.0,51.5,54.0,HIGH,97.9,0.73,1.97,PONECHAŤ,HP Color LaserJet Pro MFP 3302FDW toner: 20 | HP Color LaserJet Pro MFP 3302FDWG toner: 20 | HP Color LaserJet Pro MFP 3302SDW toner: 20 | HP W2191A: 10 | W2191A: 10
+HP,W2191X,3,8,10.0,51.5,54.0,HIGH,97.9,0.73,1.97,PONECHAŤ,HP Color LaserJet Pro MFP 3302FDW toner: 20 | HP Color LaserJet Pro MFP 3302FDWG toner: 20 | HP Color LaserJet Pro MFP 3302SDW toner: 20 | W2191X: 10 | HP Color LaserJet Pro 3202DN toner: 10
+HP,W2192A,3,8,10.0,51.5,54.0,HIGH,97.9,0.73,1.97,PONECHAŤ,HP Color LaserJet Pro MFP 3302FDW toner: 20 | HP Color LaserJet Pro MFP 3302FDWG toner: 20 | HP Color LaserJet Pro MFP 3302SDW toner: 20 | W2192A: 10 | HP Color LaserJet Pro 3202DN toner: 10
+HP,W2192X,3,8,10.0,51.5,54.0,HIGH,97.8,0.73,1.97,PONECHAŤ,HP Color LaserJet Pro MFP 3302FDW toner: 20 | HP Color LaserJet Pro MFP 3302FDWG toner: 20 | HP Color LaserJet Pro MFP 3302SDW toner: 20 | W2192X: 10 | HP Color LaserJet Pro 3202DN toner: 10
+HP,W2193A,3,8,10.0,51.5,54.0,HIGH,97.9,0.73,1.97,PONECHAŤ,HP Color LaserJet Pro MFP 3302FDW toner: 20 | HP Color LaserJet Pro MFP 3302FDWG toner: 20 | HP Color LaserJet Pro MFP 3302SDW toner: 20 | HP W2193A: 10 | W2193A: 10
+HP,W2193X,3,8,10.0,51.5,54.0,HIGH,97.8,0.73,1.97,PONECHAŤ,HP Color LaserJet Pro MFP 3302FDW toner: 20 | HP Color LaserJet Pro MFP 3302FDWG toner: 20 | HP Color LaserJet Pro MFP 3302SDW toner: 20 | W2193X: 10 | HP Color LaserJet Pro 3202DN toner: 10
+Canon,CRG-067H,5,10,0.0,51.5,51.5,HIGH,97.9,0.72,3.46,PONECHAŤ,Canon MF655CDW toner: 20 | Canon LBP243DW toner: 10 | LBP243DW toner: 10 | Canon LBP246DW toner: 10 | LBP246DW toner: 10
+Canon,CRG-067BK,2,10,0.0,51.5,51.5,HIGH,98.3,0.73,3.6,PONECHAŤ,Canon MF655CDW toner: 20 | Canon MF655CDW toner: 20 | Canon LBP631CW toner: 10 | Canon LBP631CW toner: 10 | LBP631CW toner: 10
+Canon,CRG-067C,2,10,0.0,51.5,51.5,HIGH,98.3,0.73,3.6,PONECHAŤ,Canon MF655CDW toner: 20 | Canon MF655CDW toner: 20 | Canon LBP631CW toner: 10 | Canon LBP631CW toner: 10 | LBP631CW toner: 10
+Canon,CRG-067HBK,2,10,0.0,51.5,51.5,HIGH,98.3,0.73,3.6,PONECHAŤ,Canon MF655CDW toner: 20 | Canon MF655CDW toner: 20 | Canon LBP631CW toner: 10 | Canon LBP631CW toner: 10 | LBP631CW toner: 10
+Canon,CRG-067HM,2,10,0.0,51.5,51.5,HIGH,98.3,0.73,3.6,PONECHAŤ,Canon MF655CDW toner: 20 | Canon MF655CDW toner: 20 | Canon LBP631CW toner: 10 | Canon LBP631CW toner: 10 | LBP631CW toner: 10
+Canon,CRG-067HY,2,10,0.0,51.5,51.5,HIGH,98.3,0.73,3.6,PONECHAŤ,Canon MF655CDW toner: 20 | Canon MF655CDW toner: 20 | Canon LBP631CW toner: 10 | Canon LBP631CW toner: 10 | LBP631CW toner: 10
+Canon,CRG-067M,2,10,0.0,51.5,51.5,HIGH,98.3,0.73,3.6,PONECHAŤ,Canon MF655CDW toner: 20 | Canon MF655CDW toner: 20 | Canon LBP631CW toner: 10 | Canon LBP631CW toner: 10 | LBP631CW toner: 10
+Canon,CRG-067Y,2,10,0.0,51.5,51.5,HIGH,98.3,0.73,3.6,PONECHAŤ,Canon MF655CDW toner: 20 | Canon MF655CDW toner: 20 | Canon LBP631CW toner: 10 | Canon LBP631CW toner: 10 | LBP631CW toner: 10
+HP,CF244X,1,6,10.0,44.0,46.5,HIGH,99.8,0.7,2.0,PONECHAŤ,HP LaserJet Pro MFP M28w toner: 30 | HP CF244X: 10 | CF244X: 10 | CF244X toner: 10 | HP LaserJet Pro M14 toner: 10
+HP,CF259X,3,9,30.0,38.0,45.5,HIGH,91.2,0.96,2.34,PONECHAŤ,CF259X: 30 | HP CF259X: 10 | CF259X toner: 10 | HP CF259X toner: 10 | HP LaserJet Enterprise M406dn toner: 10
+Canon,CLI-551XLBK,1,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CLI-551XLC,1,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CLI-551XLM,1,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CLI-551XLY,1,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CRG-057H,3,13,0.0,45.0,45.0,HIGH,95.2,0.15,0.57,PONECHAŤ,Canon LBP223dw toner: 10 | LBP223dw toner: 10 | Canon LBP226dw toner: 10 | LBP226dw toner: 10 | Canon LBP228x toner: 10
+Canon,CRG-728,3,17,0.0,45.0,45.0,HIGH,100.0,,,PONECHAŤ,Canon MF4410 toner: 10 | MF4410 toner: 10 | Canon MF4430 toner: 10 | MF4430 toner: 10 | Canon MF4450 toner: 10
+Canon,PGI-550/CLI,1,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,PGI-550XLBK,1,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CLI-551,1,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CLI-551BK,3,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CLI-551C,3,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CLI-551M,3,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CLI-551XL,1,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CLI-551Y,3,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CRG-057,2,13,0.0,45.0,45.0,HIGH,95.2,0.15,0.57,PONECHAŤ,Canon LBP223dw toner: 10 | LBP223dw toner: 10 | Canon LBP226dw toner: 10 | LBP226dw toner: 10 | Canon LBP228x toner: 10
+Canon,PGI-550PGBK,4,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,PGI-555PGBK,1,21,0.0,45.0,45.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG5550 toner: 10 | toner Canon PIXMA MG5550: 10 | Canon MG5550 toner: 10
+Canon,CRG-725,3,8,0.0,44.5,44.5,HIGH,100.0,0.24,1.06,PONECHAŤ,Canon MF3010 toner: 20 | Canon LBP6000 toner: 10 | LBP6000 toner: 10 | Canon LBP6000B toner: 10 | LBP6000B toner: 10
+Canon,CRG-052,3,12,0.0,41.5,41.5,HIGH,97.6,,,PONECHAŤ,Canon LBP212DW toner: 10 | Canon LBP212DW toner: 10 | LBP212DW toner: 10 | Canon LBP214DW toner: 10 | Canon LBP214DW toner: 10
+Canon,CRG-052H,3,12,0.0,41.5,41.5,HIGH,97.6,,,PONECHAŤ,Canon LBP212DW toner: 10 | Canon LBP212DW toner: 10 | LBP212DW toner: 10 | Canon LBP214DW toner: 10 | Canon LBP214DW toner: 10
+Canon,CRG-731H,3,11,0.0,41.5,41.5,HIGH,82.8,,,PONECHAŤ,Canon LBP7100CN toner: 10 | Canon LBP7100CN toner: 10 | LBP7100CN toner: 10 | Canon LBP7110CW toner: 10 | Canon LBP7110CW toner: 10
+HP,CF259A,3,9,10.0,38.0,40.5,HIGH,90.5,1.37,3.1,PONECHAŤ,HP CF259A: 10 | CF259A: 10 | CF259A toner: 10 | HP CF259A toner: 10 | HP LaserJet Enterprise M406dn toner: 10
+Xerox,WORKCENTRE,56,65,40.0,0.0,40.0,MEDIUM,59.5,0.06,1.23,PONECHAŤ,WORKCENTRE: 40 | Xerox WORKCENTRE: 20 | Xerox WORKCENTRE toner: 10
+HP,CF226X,4,8,20.0,34.5,39.5,HIGH,98.2,0.31,1.02,PONECHAŤ,CF226X: 20 | HP CF226X: 10 | CF226X toner: 10 | HP CF226X toner: 10 | HP LaserJet Pro M402d toner: 10
+HP,W1350X,3,9,20.0,34.0,39.0,HIGH,100.0,0.27,0.97,PONECHAŤ,W1350X: 20 | HP LaserJet M209dw toner: 20 | HP W1350X: 10 | W1350X toner: 10 | HP W1350X toner: 10
+HP,W1350A,3,9,20.0,34.0,39.0,HIGH,100.0,0.38,0.97,PONECHAŤ,W1350A: 20 | HP LaserJet M209dw toner: 20 | HP W1350A: 10 | W1350A toner: 10 | HP W1350A toner: 10
+Canon,CLI-521BK,2,13,0.0,38.0,38.0,HIGH,,,,PONECHAŤ,Canon PIXMA MP540 toner: 10 | Canon MP540 toner: 10 | Canon PIXMA MP550 toner: 10 | toner Canon PIXMA MP550: 10 | Canon MP550 toner: 10
+Canon,CLI-521C,2,13,0.0,38.0,38.0,HIGH,,,,PONECHAŤ,Canon PIXMA MP540 toner: 10 | Canon MP540 toner: 10 | Canon PIXMA MP550 toner: 10 | toner Canon PIXMA MP550: 10 | Canon MP550 toner: 10
+Canon,CLI-521M,2,13,0.0,38.0,38.0,HIGH,,,,PONECHAŤ,Canon PIXMA MP540 toner: 10 | Canon MP540 toner: 10 | Canon PIXMA MP550 toner: 10 | toner Canon PIXMA MP550: 10 | Canon MP550 toner: 10
+Canon,CLI-521Y,2,13,0.0,38.0,38.0,HIGH,,,,PONECHAŤ,Canon PIXMA MP540 toner: 10 | Canon MP540 toner: 10 | Canon PIXMA MP550 toner: 10 | toner Canon PIXMA MP550: 10 | Canon MP550 toner: 10
+Canon,CLI-526BK,3,21,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA MG5150 toner: 10 | toner Canon PIXMA MG5150: 10 | Canon MG5150 toner: 10 | Canon MG5200 toner: 10 | Canon PIXMA MG5250 toner: 10
+Canon,CLI-526C,3,21,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA MG5150 toner: 10 | toner Canon PIXMA MG5150: 10 | Canon MG5150 toner: 10 | Canon MG5200 toner: 10 | Canon PIXMA MG5250 toner: 10
+Canon,CLI-526M,3,21,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA MG5150 toner: 10 | toner Canon PIXMA MG5150: 10 | Canon MG5150 toner: 10 | Canon MG5200 toner: 10 | Canon PIXMA MG5250 toner: 10
+Canon,CLI-526Y,3,21,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA MG5150 toner: 10 | toner Canon PIXMA MG5150: 10 | Canon MG5150 toner: 10 | Canon MG5200 toner: 10 | Canon PIXMA MG5250 toner: 10
+Canon,CLI-581XXLBK,1,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,CLI-581XXLC,1,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,CLI-581XXLM,1,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,CLI-581XXLY,1,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,PGI-520/CLI,1,11,0.0,38.0,38.0,HIGH,,,,PONECHAŤ,Canon PIXMA MP540 toner: 10 | Canon MP540 toner: 10 | Canon PIXMA MP550 toner: 10 | toner Canon PIXMA MP550: 10 | Canon MP550 toner: 10
+Canon,PGI-520BK,1,13,0.0,38.0,38.0,HIGH,,,,PONECHAŤ,Canon PIXMA MP540 toner: 10 | Canon MP540 toner: 10 | Canon PIXMA MP550 toner: 10 | toner Canon PIXMA MP550: 10 | Canon MP550 toner: 10
+Canon,PGI-525/CLI,1,21,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA MG5150 toner: 10 | toner Canon PIXMA MG5150: 10 | Canon MG5150 toner: 10 | Canon MG5200 toner: 10 | Canon PIXMA MG5250 toner: 10
+Canon,PGI-525PGBK,2,21,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA MG5150 toner: 10 | toner Canon PIXMA MG5150: 10 | Canon MG5150 toner: 10 | Canon MG5200 toner: 10 | Canon PIXMA MG5250 toner: 10
+Canon,PGI-580/CLI,2,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,PGI-580XXLPGBK,1,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,CLI-521,1,13,0.0,38.0,38.0,HIGH,,,,PONECHAŤ,Canon PIXMA MP540 toner: 10 | Canon MP540 toner: 10 | Canon PIXMA MP550 toner: 10 | toner Canon PIXMA MP550: 10 | Canon MP550 toner: 10
+Canon,CLI-526,2,21,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA MG5150 toner: 10 | toner Canon PIXMA MG5150: 10 | Canon MG5150 toner: 10 | Canon MG5200 toner: 10 | Canon PIXMA MG5250 toner: 10
+Canon,CLI-581,2,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,CLI-581BK,4,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,CLI-581C,4,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,CLI-581M,4,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,CLI-581Y,4,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,CRG-731C,2,10,0.0,38.0,38.0,HIGH,80.9,,,PONECHAŤ,Canon LBP7100CN toner: 10 | Canon LBP7100CN toner: 10 | LBP7100CN toner: 10 | Canon LBP7110CW toner: 10 | Canon LBP7110CW toner: 10
+Canon,CRG-731M,2,10,0.0,38.0,38.0,HIGH,80.9,,,PONECHAŤ,Canon LBP7100CN toner: 10 | Canon LBP7100CN toner: 10 | LBP7100CN toner: 10 | Canon LBP7110CW toner: 10 | Canon LBP7110CW toner: 10
+Canon,CRG-731Y,2,10,0.0,38.0,38.0,HIGH,80.9,,,PONECHAŤ,Canon LBP7100CN toner: 10 | Canon LBP7100CN toner: 10 | LBP7100CN toner: 10 | Canon LBP7110CW toner: 10 | Canon LBP7110CW toner: 10
+Canon,PGI-520PGBK,2,13,0.0,38.0,38.0,HIGH,,,,PONECHAŤ,Canon PIXMA MP540 toner: 10 | Canon MP540 toner: 10 | Canon PIXMA MP550 toner: 10 | toner Canon PIXMA MP550: 10 | Canon MP550 toner: 10
+Canon,PGI-580PGBK,4,27,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA TR7550 toner: 10 | Canon TR7550 toner: 10 | Canon TR8550 toner: 10 | Canon TS6150 toner: 10 | Canon TS6151 toner: 10
+Canon,PGI-525BK,1,21,0.0,38.0,38.0,HIGH,100.0,,,PONECHAŤ,Canon PIXMA MG5150 toner: 10 | toner Canon PIXMA MG5150: 10 | Canon MG5150 toner: 10 | Canon MG5200 toner: 10 | Canon PIXMA MG5250 toner: 10
+Epson,C13T07124011,1,40,10.0,34.5,37.0,HIGH,100.0,,,PONECHAŤ,C13T07124011: 10 | Epson Stylus DX4400 toner: 10 | toner Epson Stylus DX4400: 10 | Epson DX4400 toner: 10 | Epson Stylus DX4450 toner: 10
+HP,CF226A,4,8,10.0,34.5,37.0,HIGH,98.2,0.22,0.88,PONECHAŤ,HP CF226A: 10 | CF226A: 10 | CF226A toner: 10 | HP LaserJet Pro M402d toner: 10 | toner HP LaserJet Pro M402d: 10
+HP,CF410A,4,13,10.0,34.5,37.0,HIGH,100.0,,,PONECHAŤ,HP CF410A: 10 | CF410A: 10 | CF410A toner: 10 | HP CF410A toner: 10 | HP Color LaserJet Pro M452DN toner: 10
+HP,CF410X,4,13,10.0,34.5,37.0,HIGH,100.0,0.33,1.1,PONECHAŤ,HP CF410X: 10 | CF410X: 10 | CF410X toner: 10 | HP CF410X toner: 10 | HP Color LaserJet Pro M452DN toner: 10
+HP,CF411A,4,13,10.0,34.5,37.0,HIGH,100.0,,,PONECHAŤ,HP CF411A: 10 | CF411A: 10 | CF411A toner: 10 | HP Color LaserJet Pro M452DN toner: 10 | HP M452DN toner: 10
+HP,CF411X,5,14,10.0,34.5,37.0,HIGH,100.0,,,PONECHAŤ,HP CF411X: 10 | CF411X: 10 | CF411X toner: 10 | HP CF411X toner: 10 | HP Color LaserJet Pro M452DN toner: 10
+HP,CF412A,4,13,10.0,34.5,37.0,HIGH,100.0,,,PONECHAŤ,HP CF412A: 10 | CF412A: 10 | CF412A toner: 10 | HP Color LaserJet Pro M452DN toner: 10 | HP M452DN toner: 10
+HP,CF412X,4,13,10.0,34.5,37.0,HIGH,100.0,0.49,2.01,PONECHAŤ,HP CF412X: 10 | CF412X: 10 | HP Color LaserJet Pro M452DN toner: 10 | HP M452DN toner: 10 | M452DN toner: 10
+HP,CF413A,4,13,10.0,34.5,37.0,HIGH,100.0,,,PONECHAŤ,HP CF413A: 10 | CF413A: 10 | HP Color LaserJet Pro M452DN toner: 10 | HP M452DN toner: 10 | M452DN toner: 10
+HP,CF413X,4,13,10.0,34.5,37.0,HIGH,100.0,0.18,0.9,PONECHAŤ,HP CF413X: 10 | CF413X: 10 | CF413X toner: 10 | HP Color LaserJet Pro M452DN toner: 10 | HP M452DN toner: 10
+HP,CF226XD,1,8,10.0,34.5,37.0,HIGH,97.9,0.2,0.75,PONECHAŤ,HP CF226XD: 10 | CF226XD: 10 | HP LaserJet Pro M402d toner: 10 | toner HP LaserJet Pro M402d: 10 | M402d toner: 10
+HP,CF217A,5,6,30.0,27.5,36.9,HIGH,99.3,0.5,1.98,PONECHAŤ,CF217A: 30 | HP CF217A: 10 | CF217A toner: 10 | HP CF217A toner: 10 | HP LaserJet Pro M102a toner: 10
+Canon,CLI-571XLBK,1,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,CLI-571XLC,1,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,CLI-571XLM,1,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,CLI-571XLY,1,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,CRG-051H,3,8,0.0,34.5,34.5,HIGH,100.0,0.14,0.78,PONECHAŤ,Canon LBP162DW toner: 10 | Canon LBP162DW toner: 10 | LBP162DW toner: 10 | Canon MF264DW toner: 10 | Canon MF264DW toner: 10
+Canon,CRG-056H,3,9,0.0,34.5,34.5,HIGH,86.0,,,PONECHAŤ,Canon LBP325X toner: 10 | Canon LBP325X toner: 10 | LBP325X toner: 10 | Canon MF542X toner: 10 | Canon MF542X toner: 10
+Canon,PGI-570/CLI,2,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,PGI-570XLPGBK,1,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,CLI-571,2,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,CLI-571BK,3,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,CLI-571C,3,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,CLI-571M,3,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,CLI-571Y,3,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Canon,PGI-570PGBK,4,28,0.0,34.5,34.5,HIGH,100.0,0.27,1.11,PONECHAŤ,Canon MG5700 toner: 10 | Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10
+Epson,C13T07134011,1,40,0.0,34.5,34.5,HIGH,100.0,,,PONECHAŤ,Epson Stylus DX4400 toner: 10 | toner Epson Stylus DX4400: 10 | Epson DX4400 toner: 10 | Epson Stylus DX4450 toner: 10 | Epson DX4450 toner: 10
+Epson,C13T07144011,1,40,0.0,34.5,34.5,HIGH,100.0,,,PONECHAŤ,Epson Stylus DX4400 toner: 10 | toner Epson Stylus DX4400: 10 | Epson DX4400 toner: 10 | Epson Stylus DX4450 toner: 10 | Epson DX4450 toner: 10
+Epson,C13T07154010,1,40,0.0,34.5,34.5,HIGH,100.0,,,PONECHAŤ,Epson Stylus DX4400 toner: 10 | toner Epson Stylus DX4400: 10 | Epson DX4400 toner: 10 | Epson Stylus DX4450 toner: 10 | Epson DX4450 toner: 10
+HP,CE285A/CANON,1,8,0.0,34.5,34.5,HIGH,100.0,,,PONECHAŤ,LBP6000 toner: 10 | LBP6000B toner: 10 | LBP6020 toner: 10 | LBP6020B toner: 10 | LBP6030 toner: 10
+HP,CRG-725,1,8,0.0,34.5,34.5,HIGH,100.0,,,PONECHAŤ,LBP6000 toner: 10 | LBP6000B toner: 10 | LBP6020 toner: 10 | LBP6020B toner: 10 | LBP6030 toner: 10
+Canon,CRG-067,4,5,0.0,34.0,34.0,HIGH,98.4,0.79,3.43,PONECHAŤ,Canon MF655CDW toner: 20 | Canon LBP631CW toner: 10 | LBP631CW toner: 10 | Canon LBP633CDW toner: 10 | LBP633CDW toner: 10
+Canon,CRG-067HC,1,5,0.0,34.0,34.0,HIGH,98.9,0.77,3.6,PONECHAŤ,Canon MF655CDW toner: 20 | Canon MF655CDW toner: 20 | Canon LBP631CW toner: 10 | Canon LBP631CW toner: 10 | LBP631CW toner: 10
+HP,CE410X,4,11,10.0,31.0,33.5,HIGH,100.0,0.18,2.43,PONECHAŤ,HP CE410X: 10 | CE410X: 10 | CE410X toner: 10 | HP CE410X toner: 10 | HP LaserJet Pro 300 Color M351a toner: 10
+HP,CE411A,5,11,10.0,31.0,33.5,HIGH,100.0,,,PONECHAŤ,HP CE411A: 10 | CE411A: 10 | CE411A toner: 10 | HP CE411A toner: 10 | HP LaserJet Pro 300 Color M351a toner: 10
+HP,CE412A,4,11,10.0,31.0,33.5,HIGH,100.0,,,PONECHAŤ,HP CE412A: 10 | CE412A: 10 | CE412A toner: 10 | HP LaserJet Pro 300 Color M351a toner: 10 | toner HP LaserJet Pro 300 Color M351a: 10
+HP,CE413A,4,11,10.0,31.0,33.5,HIGH,100.0,,,PONECHAŤ,HP CE413A: 10 | CE413A: 10 | CE413A toner: 10 | HP CE413A toner: 10 | HP LaserJet Pro 300 Color M351a toner: 10
+HP,CF400A,4,8,10.0,31.0,33.5,HIGH,95.7,0.19,1.7,PONECHAŤ,HP CF400A: 10 | CF400A: 10 | CF400A toner: 10 | HP CF400A toner: 10 | HP Color LaserJet Pro M252dw toner: 10
+HP,CF400X,4,8,10.0,31.0,33.5,HIGH,98.6,0.14,2.19,PONECHAŤ,HP CF400X: 10 | CF400X: 10 | CF400X toner: 10 | HP CF400X toner: 10 | HP Color LaserJet Pro M252dw toner: 10
+HP,CF401A,4,8,10.0,31.0,33.5,HIGH,99.0,0.14,2.19,PONECHAŤ,HP CF401A: 10 | CF401A: 10 | CF401A toner: 10 | HP CF401A toner: 10 | HP Color LaserJet Pro M252dw toner: 10
+HP,CF402A,4,8,10.0,31.0,33.5,HIGH,98.8,0.14,2.19,PONECHAŤ,HP CF402A: 10 | CF402A: 10 | CF402A toner: 10 | HP Color LaserJet Pro M252dw toner: 10 | HP M252dw toner: 10
+HP,CF532A,4,16,10.0,31.0,33.5,HIGH,100.0,,,PONECHAŤ,HP CF532A: 10 | CF532A: 10 | HP M180 toner: 10 | HP M180 toner: 10 | HP Color LaserJet Pro M180N toner: 10
+HP,W2200A,2,11,10.0,31.0,33.5,HIGH,100.0,0.71,2.31,PONECHAŤ,HP W2200A: 10 | W2200A: 10 | W2200A toner: 10 | HP W2200A toner: 10 | HP Color LaserJet Pro 4202dn toner: 10
+HP,W2200X,2,11,10.0,31.0,33.5,HIGH,100.0,0.72,2.81,PONECHAŤ,HP W2200X: 10 | W2200X: 10 | W2200X toner: 10 | HP Color LaserJet Pro 4202dn toner: 10 | HP Color LaserJet Pro 4202dw toner: 10
+HP,W2201A,2,11,10.0,31.0,33.5,HIGH,99.0,0.72,2.54,PONECHAŤ,HP W2201A: 10 | W2201A: 10 | HP Color LaserJet Pro 4202dn toner: 10 | HP Color LaserJet Pro 4202dw toner: 10 | toner HP Color LaserJet Pro 4202dw: 10
+HP,W2201X,2,11,10.0,31.0,33.5,HIGH,100.0,0.72,2.54,PONECHAŤ,HP W2201X: 10 | W2201X: 10 | HP Color LaserJet Pro 4202dn toner: 10 | HP Color LaserJet Pro 4202dw toner: 10 | toner HP Color LaserJet Pro 4202dw: 10
+HP,W2202A,2,11,10.0,31.0,33.5,HIGH,100.0,0.72,2.54,PONECHAŤ,W2202A: 10 | HP Color LaserJet Pro 4202dn toner: 10 | HP Color LaserJet Pro 4202dw toner: 10 | toner HP Color LaserJet Pro 4202dw: 10 | HP 4202dw toner: 10
+HP,W2202X,2,11,10.0,31.0,33.5,HIGH,100.0,0.72,2.54,PONECHAŤ,W2202X: 10 | HP Color LaserJet Pro 4202dn toner: 10 | HP Color LaserJet Pro 4202dw toner: 10 | toner HP Color LaserJet Pro 4202dw: 10 | HP 4202dw toner: 10
+HP,W2203A,2,11,10.0,31.0,33.5,HIGH,100.0,0.72,2.54,PONECHAŤ,W2203A: 10 | HP Color LaserJet Pro 4202dn toner: 10 | HP Color LaserJet Pro 4202dw toner: 10 | toner HP Color LaserJet Pro 4202dw: 10 | HP 4202dw toner: 10
+HP,W2203X,2,11,10.0,31.0,33.5,HIGH,100.0,0.72,2.54,PONECHAŤ,W2203X: 10 | HP Color LaserJet Pro 4202dn toner: 10 | HP Color LaserJet Pro 4202dw toner: 10 | toner HP Color LaserJet Pro 4202dw: 10 | HP 4202dw toner: 10
+HP,CE410A,3,11,10.0,31.0,33.5,HIGH,100.0,,,PONECHAŤ,HP CE410A: 10 | CE410A: 10 | CE410A toner: 10 | HP CE410A toner: 10 | HP LaserJet Pro 300 Color M351a toner: 10
+HP,CF370AM,1,11,10.0,31.0,33.5,HIGH,100.0,,,PONECHAŤ,HP CF370AM: 10 | CF370AM: 10 | CF370AM toner: 10 | HP LaserJet Pro 300 Color M351a toner: 10 | toner HP LaserJet Pro 300 Color M351a: 10
+HP,CE410XD,1,11,10.0,31.0,33.5,HIGH,100.0,,,PONECHAŤ,HP CE410XD: 10 | CE410XD: 10 | HP LaserJet Pro 300 Color M351a toner: 10 | toner HP LaserJet Pro 300 Color M351a: 10 | HP M351a toner: 10
+Canon,CLI-526GY,3,12,0.0,31.0,31.0,HIGH,100.0,,,PONECHAŤ,Canon MG5200 toner: 10 | Canon MG5300 toner: 10 | Canon PIXMA MG5350 toner: 10 | toner Canon PIXMA MG5350: 10 | Canon MG5350 toner: 10
+Canon,CLI-551XLGY,1,15,0.0,31.0,31.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG7150 toner: 10 | Canon MG7150 toner: 10 | Canon PIXMA MG7550 toner: 10
+Canon,CLI-8BK,2,21,0.0,31.0,31.0,HIGH,14.0,,,PONECHAŤ,Canon PIXMA MP500 toner: 10 | Canon MP500 toner: 10 | Canon MP510 toner: 10 | toner Canon PIXMA MP520: 10 | Canon MP520 toner: 10
+Canon,CLI-8C,2,21,0.0,31.0,31.0,HIGH,14.0,,,PONECHAŤ,Canon PIXMA MP500 toner: 10 | Canon MP500 toner: 10 | Canon MP510 toner: 10 | toner Canon PIXMA MP520: 10 | Canon MP520 toner: 10
+Canon,CLI-8M,2,21,0.0,31.0,31.0,HIGH,14.0,,,PONECHAŤ,Canon PIXMA MP500 toner: 10 | Canon MP500 toner: 10 | Canon MP510 toner: 10 | toner Canon PIXMA MP520: 10 | Canon MP520 toner: 10
+Canon,CLI-8Y,2,21,0.0,31.0,31.0,HIGH,14.0,,,PONECHAŤ,Canon PIXMA MP500 toner: 10 | Canon MP500 toner: 10 | Canon MP510 toner: 10 | toner Canon PIXMA MP520: 10 | Canon MP520 toner: 10
+Canon,CRG-054BK,3,7,0.0,31.0,31.0,HIGH,100.0,0.46,2.42,PONECHAŤ,Canon LBP621Cw toner: 10 | LBP621Cw toner: 10 | Canon LBP623Cdw toner: 10 | LBP623Cdw toner: 10 | Canon MF641Cw toner: 10
+Canon,CRG-054C,3,7,0.0,31.0,31.0,HIGH,100.0,0.46,2.42,PONECHAŤ,Canon LBP621Cw toner: 10 | LBP621Cw toner: 10 | Canon LBP623Cdw toner: 10 | LBP623Cdw toner: 10 | Canon MF641Cw toner: 10
+Canon,CRG-054HBK,3,7,0.0,31.0,31.0,HIGH,100.0,0.46,2.42,PONECHAŤ,Canon LBP621Cw toner: 10 | LBP621Cw toner: 10 | Canon LBP623Cdw toner: 10 | LBP623Cdw toner: 10 | Canon MF641Cw toner: 10
+Canon,CRG-054HC,3,7,0.0,31.0,31.0,HIGH,100.0,0.46,2.42,PONECHAŤ,Canon LBP621Cw toner: 10 | LBP621Cw toner: 10 | Canon LBP623Cdw toner: 10 | LBP623Cdw toner: 10 | Canon MF641Cw toner: 10
+Canon,CRG-054HM,3,7,0.0,31.0,31.0,HIGH,100.0,0.46,2.42,PONECHAŤ,Canon LBP621Cw toner: 10 | LBP621Cw toner: 10 | Canon LBP623Cdw toner: 10 | LBP623Cdw toner: 10 | Canon MF641Cw toner: 10
+Canon,CRG-054HY,3,7,0.0,31.0,31.0,HIGH,100.0,0.46,2.42,PONECHAŤ,Canon LBP621Cw toner: 10 | LBP621Cw toner: 10 | Canon LBP623Cdw toner: 10 | LBP623Cdw toner: 10 | Canon MF641Cw toner: 10
+Canon,CRG-054M,3,7,0.0,31.0,31.0,HIGH,100.0,0.46,2.42,PONECHAŤ,Canon LBP621Cw toner: 10 | LBP621Cw toner: 10 | Canon LBP623Cdw toner: 10 | LBP623Cdw toner: 10 | Canon MF641Cw toner: 10
+Canon,CRG-054Y,3,7,0.0,31.0,31.0,HIGH,100.0,0.46,2.42,PONECHAŤ,Canon LBP621Cw toner: 10 | LBP621Cw toner: 10 | Canon LBP623Cdw toner: 10 | LBP623Cdw toner: 10 | Canon MF641Cw toner: 10
+Canon,PGI-5BK,2,21,0.0,31.0,31.0,HIGH,14.0,,,PONECHAŤ,Canon PIXMA MP500 toner: 10 | Canon MP500 toner: 10 | Canon MP510 toner: 10 | toner Canon PIXMA MP520: 10 | Canon MP520 toner: 10
+Canon,CLI-551GY,3,15,0.0,31.0,31.0,HIGH,96.5,,,PONECHAŤ,Canon PIXMA MG5450 toner: 10 | Canon MG5450 toner: 10 | Canon PIXMA MG7150 toner: 10 | Canon MG7150 toner: 10 | Canon PIXMA MG7550 toner: 10
+Canon,CRG-046BK,2,9,0.0,31.0,31.0,HIGH,94.4,,,PONECHAŤ,LBP654CX toner: 10 | Canon MF732CDW toner: 10 | Canon MF732CDW toner: 10 | MF732CDW toner: 10 | Canon MF734CDW toner: 10
+Canon,CRG-046HBK,2,9,0.0,31.0,31.0,HIGH,94.4,,,PONECHAŤ,LBP654CX toner: 10 | Canon MF732CDW toner: 10 | Canon MF732CDW toner: 10 | MF732CDW toner: 10 | Canon MF734CDW toner: 10
+Canon,CRG-046HC,2,9,0.0,31.0,31.0,HIGH,94.4,,,PONECHAŤ,LBP654CX toner: 10 | Canon MF732CDW toner: 10 | Canon MF732CDW toner: 10 | MF732CDW toner: 10 | Canon MF734CDW toner: 10
+Canon,CRG-046HM,2,9,0.0,31.0,31.0,HIGH,94.4,,,PONECHAŤ,LBP654CX toner: 10 | Canon MF732CDW toner: 10 | Canon MF732CDW toner: 10 | MF732CDW toner: 10 | Canon MF734CDW toner: 10
+Canon,CRG-046HY,2,9,0.0,31.0,31.0,HIGH,94.4,,,PONECHAŤ,LBP654CX toner: 10 | Canon MF732CDW toner: 10 | Canon MF732CDW toner: 10 | MF732CDW toner: 10 | Canon MF734CDW toner: 10
+Canon,CRG-716M,2,7,0.0,31.0,31.0,HIGH,,,,PONECHAŤ,Canon LBP5050 toner: 10 | Canon LBP5050 toner: 10 | LBP5050 toner: 10 | Canon MF8030CN toner: 10 | Canon MF8030CN toner: 10
+Canon,CRG-716Y,2,7,0.0,31.0,31.0,HIGH,,,,PONECHAŤ,Canon LBP5050 toner: 10 | Canon LBP5050 toner: 10 | LBP5050 toner: 10 | Canon MF8030CN toner: 10 | Canon MF8030CN toner: 10
+Canon,CRG-716BK,2,7,0.0,31.0,31.0,HIGH,,,,PONECHAŤ,Canon LBP5050 toner: 10 | Canon LBP5050 toner: 10 | LBP5050 toner: 10 | Canon MF8030CN toner: 10 | Canon MF8030CN toner: 10
+Canon,CRG-716C,2,7,0.0,31.0,31.0,HIGH,,,,PONECHAŤ,Canon LBP5050 toner: 10 | Canon LBP5050 toner: 10 | LBP5050 toner: 10 | Canon MF8030CN toner: 10 | Canon MF8030CN toner: 10
+HP,CE311A,5,8,10.0,27.5,30.0,HIGH,100.0,0.41,1.44,PONECHAŤ,HP CE311A: 10 | CE311A: 10 | HP CE311A toner: 10 | toner HP Color LaserJet Pro CP1025: 10 | HP CP1025 toner: 10
+HP,CF401X,4,6,10.0,27.5,30.0,HIGH,99.0,0.14,2.19,PONECHAŤ,HP CF401X: 10 | CF401X: 10 | CF401X toner: 10 | HP Color LaserJet Pro M252dw toner: 10 | HP M252dw toner: 10
+HP,CF402X,4,6,10.0,27.5,30.0,HIGH,98.9,0.14,2.19,PONECHAŤ,HP CF402X: 10 | CF402X: 10 | CF402X toner: 10 | HP CF402X toner: 10 | HP Color LaserJet Pro M252dw toner: 10
+HP,CF403A,4,6,10.0,27.5,30.0,HIGH,92.6,0.14,2.19,PONECHAŤ,HP CF403A: 10 | CF403A: 10 | HP Color LaserJet Pro M252dw toner: 10 | HP M252dw toner: 10 | M252dw toner: 10
+HP,CF403X,4,6,10.0,27.5,30.0,HIGH,98.8,0.14,2.19,PONECHAŤ,HP CF403X: 10 | CF403X: 10 | CF403X toner: 10 | HP Color LaserJet Pro M252dw toner: 10 | HP M252dw toner: 10
+HP,Q5949A,4,7,10.0,27.5,30.0,HIGH,97.8,0.16,0.8,PONECHAŤ,HP Q5949A: 10 | Q5949A: 10 | Q5949A toner: 10 | HP Q5949A toner: 10 | HP LaserJet 1160 toner: 10
+HP,W2030A,4,12,10.0,27.5,30.0,HIGH,98.2,0.23,1.69,PONECHAŤ,HP W2030A: 10 | W2030A: 10 | W2030A toner: 10 | HP W2030A toner: 10 | HP Color LaserJet Pro M454DN toner: 10
+HP,W2030X,4,12,10.0,27.5,30.0,HIGH,98.4,0.23,1.69,PONECHAŤ,HP W2030X: 10 | W2030X: 10 | W2030X toner: 10 | HP W2030X toner: 10 | HP Color LaserJet Pro M454DN toner: 10
+HP,W2031A,4,12,10.0,27.5,30.0,HIGH,98.0,0.23,1.69,PONECHAŤ,HP W2031A: 10 | W2031A: 10 | HP W2031A toner: 10 | HP Color LaserJet Pro M454DN toner: 10 | HP M454DN toner: 10
+HP,W2031X,3,10,10.0,27.5,30.0,HIGH,97.7,0.23,1.69,PONECHAŤ,HP W2031X: 10 | W2031X: 10 | W2031X toner: 10 | HP Color LaserJet Pro M454DN toner: 10 | HP M454DN toner: 10
+HP,W2032A,4,12,10.0,27.5,30.0,HIGH,98.2,0.23,1.69,PONECHAŤ,HP W2032A: 10 | W2032A: 10 | HP Color LaserJet Pro M454DN toner: 10 | HP M454DN toner: 10 | M454DN toner: 10
+HP,W2032X,3,10,10.0,27.5,30.0,HIGH,98.0,0.23,1.69,PONECHAŤ,HP W2032X: 10 | W2032X: 10 | HP Color LaserJet Pro M454DN toner: 10 | HP M454DN toner: 10 | M454DN toner: 10
+HP,W2033A,4,12,10.0,27.5,30.0,HIGH,97.7,0.23,1.69,PONECHAŤ,HP W2033A: 10 | W2033A: 10 | W2033A toner: 10 | HP Color LaserJet Pro M454DN toner: 10 | HP M454DN toner: 10
+HP,W2033X,3,10,10.0,27.5,30.0,HIGH,98.0,0.23,1.69,PONECHAŤ,HP W2033X: 10 | W2033X: 10 | HP Color LaserJet Pro M454DN toner: 10 | HP M454DN toner: 10 | M454DN toner: 10
+HP,W2210A,3,11,10.0,27.5,30.0,HIGH,98.4,,,PONECHAŤ,HP W2210A: 10 | W2210A: 10 | W2210A toner: 10 | HP W2210A toner: 10 | HP Color LaserJet Pro M255DW toner: 10
+HP,W2211A,3,11,10.0,27.5,30.0,HIGH,98.6,,,PONECHAŤ,HP W2211A: 10 | W2211A: 10 | W2211A toner: 10 | HP Color LaserJet Pro M255DW toner: 10 | toner HP Color LaserJet Pro M255DW: 10
+HP,W2211X,3,11,10.0,27.5,30.0,HIGH,98.2,,,PONECHAŤ,HP W2211X: 10 | W2211X: 10 | W2211X toner: 10 | HP Color LaserJet Pro M255DW toner: 10 | toner HP Color LaserJet Pro M255DW: 10
+HP,W2212A,3,11,10.0,27.5,30.0,HIGH,98.0,,,PONECHAŤ,HP W2212A: 10 | W2212A: 10 | HP Color LaserJet Pro M255DW toner: 10 | toner HP Color LaserJet Pro M255DW: 10 | HP M255DW toner: 10
+HP,W2212X,3,11,10.0,27.5,30.0,HIGH,98.2,,,PONECHAŤ,HP W2212X: 10 | W2212X: 10 | HP Color LaserJet Pro M255DW toner: 10 | toner HP Color LaserJet Pro M255DW: 10 | HP M255DW toner: 10
+HP,W2213A,3,11,10.0,27.5,30.0,HIGH,98.2,,,PONECHAŤ,HP W2213A: 10 | W2213A: 10 | W2213A toner: 10 | HP Color LaserJet Pro M255DW toner: 10 | toner HP Color LaserJet Pro M255DW: 10
+HP,W2213X,3,11,10.0,27.5,30.0,HIGH,98.2,,,PONECHAŤ,HP W2213X: 10 | W2213X: 10 | HP Color LaserJet Pro M255DW toner: 10 | toner HP Color LaserJet Pro M255DW: 10 | HP M255DW toner: 10
+HP,W2210X,3,11,10.0,27.5,30.0,HIGH,98.6,0.84,1.67,PONECHAŤ,HP W2210X: 10 | W2210X: 10 | W2210X toner: 10 | HP W2210X toner: 10 | HP Color LaserJet Pro M255DW toner: 10
+HP,CF372AM,1,8,10.0,27.5,30.0,HIGH,100.0,,,PONECHAŤ,CF372AM: 10 | HP Color LaserJet CM2320 MFP toner: 10 | HP Color LaserJet CM2320fxi MFP toner: 10 | toner HP Color LaserJet CM2320fxi MFP: 10 | HP Color LaserJet CM2320nf MFP toner: 10
+HP,CF400XD,1,6,10.0,27.5,30.0,HIGH,98.8,0.14,2.19,PONECHAŤ,HP CF400XD: 10 | CF400XD: 10 | HP Color LaserJet Pro M252dw toner: 10 | HP M252dw toner: 10 | M252dw toner: 10
+HP,CF230X,4,5,20.0,24.0,29.0,HIGH,98.3,0.36,1.54,PONECHAŤ,CF230X: 20 | HP CF230X: 10 | CF230X toner: 10 | HP CF230X toner: 10 | HP LaserJet Pro M203dn toner: 10
+HP,W1490X,3,5,20.0,24.0,29.0,HIGH,98.9,0.48,1.53,PONECHAŤ,W1490X: 20 | HP W1490X: 10 | W1490X toner: 10 | HP W1490X toner: 10 | HP LaserJet Pro 4002DN toner: 10
+Canon,CRG-045BK,3,7,0.0,27.5,27.5,HIGH,92.0,,,PONECHAŤ,Canon LBP611Cn toner: 10 | LBP611Cn toner: 10 | Canon LBP612Cdw toner: 10 | Canon LBP613Cdw toner: 10 | LBP613Cdw toner: 10
+Canon,CRG-045C,3,7,0.0,27.5,27.5,HIGH,92.0,,,PONECHAŤ,Canon LBP611Cn toner: 10 | LBP611Cn toner: 10 | Canon LBP612Cdw toner: 10 | Canon LBP613Cdw toner: 10 | LBP613Cdw toner: 10
+Canon,CRG-045HBK,3,7,0.0,27.5,27.5,HIGH,92.0,,,PONECHAŤ,Canon LBP611Cn toner: 10 | LBP611Cn toner: 10 | Canon LBP612Cdw toner: 10 | Canon LBP613Cdw toner: 10 | LBP613Cdw toner: 10
+Canon,CRG-045HC,3,7,0.0,27.5,27.5,HIGH,92.0,,,PONECHAŤ,Canon LBP611Cn toner: 10 | LBP611Cn toner: 10 | Canon LBP612Cdw toner: 10 | Canon LBP613Cdw toner: 10 | LBP613Cdw toner: 10
+Canon,CRG-045HM,3,7,0.0,27.5,27.5,HIGH,92.0,,,PONECHAŤ,Canon LBP611Cn toner: 10 | LBP611Cn toner: 10 | Canon LBP612Cdw toner: 10 | Canon LBP613Cdw toner: 10 | LBP613Cdw toner: 10
+Canon,CRG-045HY,3,7,0.0,27.5,27.5,HIGH,92.0,,,PONECHAŤ,Canon LBP611Cn toner: 10 | LBP611Cn toner: 10 | Canon LBP612Cdw toner: 10 | Canon LBP613Cdw toner: 10 | LBP613Cdw toner: 10
+Canon,CRG-045M,3,7,0.0,27.5,27.5,HIGH,92.0,,,PONECHAŤ,Canon LBP611Cn toner: 10 | LBP611Cn toner: 10 | Canon LBP612Cdw toner: 10 | Canon LBP613Cdw toner: 10 | LBP613Cdw toner: 10
+Canon,CRG-045Y,3,7,0.0,27.5,27.5,HIGH,92.0,,,PONECHAŤ,Canon LBP611Cn toner: 10 | LBP611Cn toner: 10 | Canon LBP612Cdw toner: 10 | Canon LBP613Cdw toner: 10 | LBP613Cdw toner: 10
+Canon,CRG-047,3,8,0.0,27.5,27.5,HIGH,,,,PONECHAŤ,Canon LBP113W toner: 10 | Canon LBP113W toner: 10 | LBP113W toner: 10 | MF112 toner: 10 | Canon MF113W toner: 10
+Canon,CRG-071H,2,7,0.0,27.5,27.5,HIGH,100.0,,,PONECHAŤ,Canon LBP122DW toner: 10 | Canon LBP122DW toner: 10 | LBP122DW toner: 10 | Canon MF272DW toner: 10 | Canon MF272DW toner: 10
+Canon,PGI-5/CLI,1,13,0.0,27.5,27.5,HIGH,14.0,,,PONECHAŤ,Canon PIXMA MP500 toner: 10 | Canon MP500 toner: 10 | Canon MP510 toner: 10 | toner Canon PIXMA MP520: 10 | Canon MP520 toner: 10
+Canon,CRG-069HBK,1,6,0.0,27.5,27.5,HIGH,96.0,0.39,3.65,PONECHAŤ,Canon LBP673CDW toner: 10 | Canon LBP673CDW toner: 10 | LBP673CDW toner: 10 | Canon MF752CDW toner: 10 | Canon MF752CDW toner: 10
+HP,CF217XXL,1,6,0.0,27.5,27.5,HIGH,99.1,0.39,1.71,PONECHAŤ,HP LaserJet Pro M102a toner: 10 | HP M102a toner: 10 | M102a toner: 10 | HP LaserJet Pro M102w toner: 10 | toner HP LaserJet Pro M102w: 10
+HP,W1335A,1,8,10.0,24.0,26.5,HIGH,100.0,0.24,1.1,PONECHAŤ,HP W1335A: 10 | W1335A: 10 | M438DN toner: 10 | HP LaserJet MFP M438N toner: 10 | HP M438N toner: 10
+HP,W1335X,2,12,10.0,24.0,26.5,HIGH,100.0,0.24,1.1,PONECHAŤ,HP W1335X: 10 | W1335X: 10 | W1335X toner: 10 | HP W1335X toner: 10 | M438DN toner: 10
+HP,CE255A,4,17,10.0,24.0,26.5,HIGH,89.5,,,PONECHAŤ,HP CE255A: 10 | CE255A: 10 | CE255A toner: 10 | HP CE255A toner: 10 | HP P3015 toner: 10
+HP,CE255X,4,17,10.0,24.0,26.5,HIGH,93.0,0.37,2.07,PONECHAŤ,HP CE255X: 10 | CE255X: 10 | CE255X toner: 10 | HP CE255X toner: 10 | HP P3015 toner: 10
+HP,CE278A,4,7,10.0,24.0,26.5,HIGH,100.0,0.58,1.64,PONECHAŤ,HP CE278A: 10 | CE278A: 10 | CE278A toner: 10 | HP CE278A toner: 10 | HP M1530 toner: 10
+HP,CE278X,1,7,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP CE278X: 10 | CE278X: 10 | CE278X toner: 10 | HP M1530 toner: 10 | M1530 toner: 10
+HP,CE505A,4,6,10.0,24.0,26.5,HIGH,94.2,0.17,0.93,PONECHAŤ,HP CE505A: 10 | CE505A: 10 | CE505A toner: 10 | HP CE505A toner: 10 | HP LaserJet P2035 toner: 10
+HP,CF230A,4,5,10.0,24.0,26.5,HIGH,98.2,0.31,1.91,PONECHAŤ,HP CF230A: 10 | CF230A: 10 | CF230A toner: 10 | HP CF230A toner: 10 | HP LaserJet Pro M203dn toner: 10
+HP,CF530A,4,13,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP CF530A: 10 | CF530A: 10 | CF530A toner: 10 | HP M180 toner: 10 | HP Color LaserJet Pro M180N toner: 10
+HP,CF531A,4,13,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP CF531A: 10 | CF531A: 10 | CF531A toner: 10 | HP M180 toner: 10 | HP Color LaserJet Pro M180N toner: 10
+HP,CF540A,4,5,10.0,24.0,26.5,HIGH,100.0,0.39,2.6,PONECHAŤ,HP CF540A: 10 | CF540A: 10 | CF540A toner: 10 | HP CF540A toner: 10 | HP Color LaserJet Pro M254dw toner: 10
+HP,CF540X,4,5,10.0,24.0,26.5,HIGH,100.0,0.66,2.48,PONECHAŤ,HP CF540X: 10 | CF540X: 10 | CF540X toner: 10 | HP CF540X toner: 10 | HP Color LaserJet Pro M254dw toner: 10
+HP,CF541A,4,5,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP CF541A: 10 | CF541A: 10 | CF541A toner: 10 | HP CF541A toner: 10 | HP Color LaserJet Pro M254dw toner: 10
+HP,CF541X,4,5,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP CF541X: 10 | CF541X: 10 | CF541X toner: 10 | HP Color LaserJet Pro M254dw toner: 10 | toner HP Color LaserJet Pro M254dw: 10
+HP,CF542A,4,5,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP CF542A: 10 | CF542A: 10 | CF542A toner: 10 | HP CF542A toner: 10 | HP Color LaserJet Pro M254dw toner: 10
+HP,CF542X,4,5,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP CF542X: 10 | CF542X: 10 | CF542X toner: 10 | HP Color LaserJet Pro M254dw toner: 10 | toner HP Color LaserJet Pro M254dw: 10
+HP,CF543A,4,5,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP CF543A: 10 | CF543A: 10 | CF543A toner: 10 | HP Color LaserJet Pro M254dw toner: 10 | toner HP Color LaserJet Pro M254dw: 10
+HP,CF543X,4,5,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP CF543X: 10 | CF543X: 10 | CF543X toner: 10 | HP Color LaserJet Pro M254dw toner: 10 | toner HP Color LaserJet Pro M254dw: 10
+HP,Q5949X,4,6,10.0,24.0,26.5,HIGH,95.5,0.16,0.8,PONECHAŤ,HP Q5949X: 10 | Q5949X: 10 | Q5949X toner: 10 | HP Q5949X toner: 10 | HP LaserJet 1320 toner: 10
+HP,W1390A,4,8,10.0,24.0,26.5,HIGH,97.3,0.91,2.06,PONECHAŤ,HP W1390A: 10 | W1390A: 10 | W1390A toner: 10 | HP LaserJet Pro 3002DN toner: 10 | toner HP LaserJet Pro 3002DN: 10
+HP,W1390X,3,8,10.0,24.0,26.5,HIGH,97.1,0.75,1.67,PONECHAŤ,HP W1390X: 10 | W1390X: 10 | W1390X toner: 10 | HP LaserJet Pro 3002DN toner: 10 | toner HP LaserJet Pro 3002DN: 10
+HP,W1490A,3,5,10.0,24.0,26.5,HIGH,94.7,0.42,1.5,PONECHAŤ,HP W1490A: 10 | W1490A: 10 | W1490A toner: 10 | HP W1490A toner: 10 | HP LaserJet Pro 4002DN toner: 10
+HP,W2120X,3,7,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP W2120X: 10 | W2120X: 10 | W2120X toner: 10 | HP M578 toner: 10 | HP M554 toner: 10
+HP,W2121X,3,7,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP W2121X: 10 | W2121X: 10 | HP M578 toner: 10 | HP M554 toner: 10 | M554 toner: 10
+HP,W2122X,3,7,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP W2122X: 10 | W2122X: 10 | HP M578 toner: 10 | HP M554 toner: 10 | M554 toner: 10
+HP,W2123X,3,7,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP W2123X: 10 | W2123X: 10 | HP M578 toner: 10 | HP M554 toner: 10 | M554 toner: 10
+HP,CE278AD,1,7,10.0,24.0,26.5,HIGH,100.0,,,PONECHAŤ,HP CE278AD: 10 | CE278AD: 10 | CE278AD toner: 10 | HP M1530 toner: 10 | M1530 toner: 10
+HP,CE505D,1,6,10.0,24.0,26.5,HIGH,92.8,0.17,0.93,PONECHAŤ,CE505D: 10 | HP LaserJet P2035 toner: 10 | HP P2035 toner: 10 | P2035 toner: 10 | HP LaserJet P2050 toner: 10
+Brother,TN-2590XL,4,24,0.0,24.0,24.0,HIGH,94.8,0.34,0.66,PONECHAŤ,L2442DW toner: 10 | L2460DN toner: 10 | Brother L2622DW toner: 10 | Brother L2622DW toner: 10 | L2622DW toner: 10
+Canon,CRG-055H,4,5,0.0,24.0,24.0,HIGH,100.0,0.39,2.04,PONECHAŤ,Canon LBP663Cdw toner: 10 | LBP663Cdw toner: 10 | LBP664Cx toner: 10 | Canon MF742Cdw toner: 10 | MF742Cdw toner: 10
+Canon,CRG-070H,2,5,0.0,24.0,24.0,HIGH,97.3,0.39,3.63,PONECHAŤ,Canon LBP243DW toner: 10 | LBP243DW toner: 10 | Canon LBP246DW toner: 10 | LBP246DW toner: 10 | Canon MF461DW toner: 10
+Canon,CRG-716,4,5,0.0,24.0,24.0,HIGH,,,,PONECHAŤ,Canon LBP5050 toner: 10 | LBP5050 toner: 10 | Canon MF8030CN toner: 10 | MF8030CN toner: 10 | Canon MF8040CN toner: 10
+Canon,CRG-731,5,5,0.0,24.0,24.0,HIGH,78.5,,,PONECHAŤ,Canon LBP7100CN toner: 10 | LBP7100CN toner: 10 | Canon LBP7110CW toner: 10 | LBP7110CW toner: 10 | Canon MF623CN toner: 10
+Canon,CRG-055BK,2,5,0.0,24.0,24.0,HIGH,100.0,0.39,2.04,PONECHAŤ,Canon LBP663Cdw toner: 10 | LBP663Cdw toner: 10 | LBP664Cx toner: 10 | Canon MF742Cdw toner: 10 | MF742Cdw toner: 10
+Canon,CRG-055C,1,5,0.0,24.0,24.0,HIGH,100.0,0.39,2.04,PONECHAŤ,Canon LBP663Cdw toner: 10 | LBP663Cdw toner: 10 | LBP664Cx toner: 10 | Canon MF742Cdw toner: 10 | MF742Cdw toner: 10
+Canon,CRG-055HBK,2,5,0.0,24.0,24.0,HIGH,100.0,0.39,2.04,PONECHAŤ,Canon LBP663Cdw toner: 10 | LBP663Cdw toner: 10 | LBP664Cx toner: 10 | Canon MF742Cdw toner: 10 | MF742Cdw toner: 10
+Canon,CRG-055HC,2,5,0.0,24.0,24.0,HIGH,100.0,0.39,2.04,PONECHAŤ,Canon LBP663Cdw toner: 10 | LBP663Cdw toner: 10 | LBP664Cx toner: 10 | Canon MF742Cdw toner: 10 | MF742Cdw toner: 10
+Canon,CRG-055HM,2,5,0.0,24.0,24.0,HIGH,100.0,0.39,2.04,PONECHAŤ,Canon LBP663Cdw toner: 10 | LBP663Cdw toner: 10 | LBP664Cx toner: 10 | Canon MF742Cdw toner: 10 | MF742Cdw toner: 10
+Canon,CRG-055HY,2,5,0.0,24.0,24.0,HIGH,100.0,0.39,2.04,PONECHAŤ,Canon LBP663Cdw toner: 10 | LBP663Cdw toner: 10 | LBP664Cx toner: 10 | Canon MF742Cdw toner: 10 | MF742Cdw toner: 10
+Canon,CRG-055M,2,5,0.0,24.0,24.0,HIGH,100.0,0.39,2.04,PONECHAŤ,Canon LBP663Cdw toner: 10 | LBP663Cdw toner: 10 | LBP664Cx toner: 10 | Canon MF742Cdw toner: 10 | MF742Cdw toner: 10
+Canon,CRG-055Y,2,5,0.0,24.0,24.0,HIGH,100.0,0.39,2.04,PONECHAŤ,Canon LBP663Cdw toner: 10 | LBP663Cdw toner: 10 | LBP664Cx toner: 10 | Canon MF742Cdw toner: 10 | MF742Cdw toner: 10
+Canon,CRG-070,1,5,0.0,24.0,24.0,HIGH,97.3,0.39,3.63,PONECHAŤ,Canon LBP243DW toner: 10 | LBP243DW toner: 10 | Canon LBP246DW toner: 10 | LBP246DW toner: 10 | Canon MF461DW toner: 10
+Canon,CRG-731BK,1,6,0.0,24.0,24.0,HIGH,85.7,,,PONECHAŤ,Canon LBP7100CN toner: 10 | Canon LBP7100CN toner: 10 | LBP7100CN toner: 10 | Canon LBP7110CW toner: 10 | Canon LBP7110CW toner: 10
+Canon,CRG-056,2,8,0.0,24.0,24.0,HIGH,86.0,,,PONECHAŤ,Canon LBP325X toner: 10 | LBP325X toner: 10 | Canon MF542X toner: 10 | MF542X toner: 10 | Canon MF543X toner: 10
+Canon,CRG-056L,2,8,0.0,24.0,24.0,HIGH,86.0,,,PONECHAŤ,Canon LBP325X toner: 10 | LBP325X toner: 10 | Canon MF542X toner: 10 | MF542X toner: 10 | Canon MF543X toner: 10
+Canon,CRG-055,1,5,0.0,24.0,24.0,HIGH,100.0,0.39,2.04,PONECHAŤ,Canon LBP663Cdw toner: 10 | LBP663Cdw toner: 10 | LBP664Cx toner: 10 | Canon MF742Cdw toner: 10 | MF742Cdw toner: 10
+Epson,C13T08924011,1,8,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,Epson C13T08924011: 10 | Epson Stylus SX100 toner: 10 | Epson SX100 toner: 10 | Epson Stylus SX105 toner: 10 | Epson SX105 toner: 10
+Epson,C13T08944011,1,8,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,Epson C13T08944011: 10 | C13T08944011: 10 | Epson Stylus SX100 toner: 10 | Epson SX100 toner: 10 | Epson Stylus SX105 toner: 10
+HP,CE310A,4,6,10.0,20.5,23.0,HIGH,100.0,0.41,1.44,PONECHAŤ,HP CE310A: 10 | CE310A: 10 | CE310A toner: 10 | HP CE310A toner: 10 | toner HP Color LaserJet Pro CP1025: 10
+HP,CE312A,4,6,10.0,20.5,23.0,HIGH,100.0,0.41,1.44,PONECHAŤ,HP CE312A: 10 | CE312A: 10 | CE312A toner: 10 | HP CE312A toner: 10 | toner HP Color LaserJet Pro CP1025: 10
+HP,CE313A,4,6,10.0,20.5,23.0,HIGH,100.0,0.41,1.44,PONECHAŤ,HP CE313A: 10 | CE313A: 10 | CE313A toner: 10 | HP CE313A toner: 10 | toner HP Color LaserJet Pro CP1025: 10
+HP,CE400X,5,15,10.0,20.5,23.0,HIGH,92.9,,,PONECHAŤ,HP CE400X: 10 | CE400X: 10 | CE400X toner: 10 | HP CE400X toner: 10 | HP LaserJet Enterprise 500 Color M551 toner: 10
+HP,CE401A,5,15,10.0,20.5,23.0,HIGH,85.8,,,PONECHAŤ,HP CE401A: 10 | CE401A: 10 | CE401A toner: 10 | HP CE401A toner: 10 | HP LaserJet Enterprise 500 Color M551 toner: 10
+HP,CE402A,5,15,10.0,20.5,23.0,HIGH,85.8,,,PONECHAŤ,HP CE402A: 10 | CE402A: 10 | HP CE402A toner: 10 | HP LaserJet Enterprise 500 Color M551 toner: 10 | toner HP LaserJet Enterprise 500 Color M551: 10
+HP,CE403A,5,15,10.0,20.5,23.0,HIGH,88.6,,,PONECHAŤ,HP CE403A: 10 | CE403A: 10 | CE403A toner: 10 | HP LaserJet Enterprise 500 Color M551 toner: 10 | toner HP LaserJet Enterprise 500 Color M551: 10
+HP,CE505X,4,4,10.0,20.5,23.0,HIGH,94.2,0.23,1.06,PONECHAŤ,HP CE505X: 10 | CE505X: 10 | CE505X toner: 10 | HP CE505X toner: 10 | HP LaserJet P2050 toner: 10
+HP,CF210X,4,6,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,HP CF210X: 10 | CF210X: 10 | CF210X toner: 10 | HP CF210X toner: 10 | HP LaserJet Pro 200 Color M251n toner: 10
+HP,CF211A,5,6,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,HP CF211A: 10 | CF211A: 10 | CF211A toner: 10 | HP CF211A toner: 10 | HP LaserJet Pro 200 Color M251n toner: 10
+HP,CF212A,5,6,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,HP CF212A: 10 | CF212A: 10 | CF212A toner: 10 | HP CF212A toner: 10 | HP LaserJet Pro 200 Color M251n toner: 10
+HP,CF213A,4,6,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,HP CF213A: 10 | CF213A: 10 | CF213A toner: 10 | HP CF213A toner: 10 | HP LaserJet Pro 200 Color M251n toner: 10
+HP,CF279A,4,4,10.0,20.5,23.0,HIGH,97.9,0.47,1.47,PONECHAŤ,HP CF279A: 10 | CF279A: 10 | CF279A toner: 10 | HP CF279A toner: 10 | HP LaserJet Pro M12A toner: 10
+HP,CF279X,1,4,10.0,20.5,23.0,HIGH,97.2,0.47,1.48,PONECHAŤ,HP CF279X: 10 | CF279X: 10 | CF279X toner: 10 | HP LaserJet Pro M12A toner: 10 | toner HP LaserJet Pro M12A: 10
+HP,CF280A,4,10,10.0,20.5,23.0,HIGH,97.7,,,PONECHAŤ,HP CF280A: 10 | CF280A: 10 | CF280A toner: 10 | HP CF280A toner: 10 | HP M425 toner: 10
+HP,CF283X,4,4,10.0,20.5,23.0,HIGH,97.0,0.65,1.66,PONECHAŤ,HP CF283X: 10 | CF283X: 10 | CF283X toner: 10 | HP CF283X toner: 10 | HP LaserJet Pro M201dw toner: 10
+HP,CF533A,4,13,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,HP CF533A: 10 | CF533A: 10 | CF533A toner: 10 | HP M180 toner: 10 | HP Color LaserJet Pro M180N toner: 10
+HP,W2410A,3,6,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,HP W2410A: 10 | W2410A: 10 | W2410A toner: 10 | HP W2410A toner: 10 | HP M182 toner: 10
+HP,W2411A,3,6,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,HP W2411A: 10 | W2411A: 10 | W2411A toner: 10 | HP M182 toner: 10 | M182 toner: 10
+HP,W2412A,3,6,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,W2412A: 10 | HP M182 toner: 10 | M182 toner: 10 | HP M183 toner: 10 | M183 toner: 10
+HP,W2413A,3,6,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,W2413A: 10 | HP M182 toner: 10 | M182 toner: 10 | HP M183 toner: 10 | M183 toner: 10
+HP,CF210A,3,6,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,HP CF210A: 10 | CF210A: 10 | CF210A toner: 10 | HP CF210A toner: 10 | HP LaserJet Pro 200 Color M251n toner: 10
+HP,CF341A,1,4,10.0,20.5,23.0,HIGH,100.0,0.41,1.44,PONECHAŤ,CF341A: 10 | toner HP Color LaserJet Pro CP1025: 10 | HP CP1025 toner: 10 | CP1025 toner: 10 | HP CP1025nw toner: 10
+HP,CF373AM,1,5,10.0,20.5,23.0,HIGH,100.0,0.41,2.85,PONECHAŤ,HP CF373AM: 10 | CF373AM: 10 | HP Color LaserJet CM1312 MFP toner: 10 | toner HP Color LaserJet CM1312 MFP: 10 | HP Color LaserJet CM1312nfi MFP toner: 10
+HP,CE505XD,1,4,10.0,20.5,23.0,HIGH,91.7,0.17,0.53,PONECHAŤ,CE505XD: 10 | HP LaserJet P2050 toner: 10 | toner HP LaserJet P2050: 10 | HP LaserJet P2055 toner: 10 | HP P2055 toner: 10
+HP,CF283XD,1,4,10.0,20.5,23.0,HIGH,94.8,1.0,2.25,PONECHAŤ,CF283XD: 10 | HP LaserJet Pro M201dw toner: 10 | HP M201dw toner: 10 | M201dw toner: 10 | HP LaserJet Pro M201n toner: 10
+HP,W2120A,3,4,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,W2120A: 10 | W2120A toner: 10 | HP W2120A toner: 10 | HP M578 toner: 10 | HP M554 toner: 10
+HP,W2121A,3,4,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,W2121A: 10 | HP M578 toner: 10 | HP M554 toner: 10 | M554 toner: 10 | HP M555 toner: 10
+HP,W2122A,3,4,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,W2122A: 10 | HP M578 toner: 10 | HP M554 toner: 10 | M554 toner: 10 | HP M555 toner: 10
+HP,W2123A,3,4,10.0,20.5,23.0,HIGH,100.0,,,PONECHAŤ,W2123A: 10 | HP M578 toner: 10 | HP M554 toner: 10 | M554 toner: 10 | HP M555 toner: 10
+Brother,TN-2220,4,15,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Brother FAX 2845 toner: 10 | toner Brother FAX 2845: 10 | Brother HL 2240 toner: 10 | Brother 2240 toner: 10 | Brother HL 2240D toner: 10
+Brother,TN-2210,2,15,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Brother FAX 2845 toner: 10 | toner Brother FAX 2845: 10 | Brother HL 2240 toner: 10 | Brother 2240 toner: 10 | Brother HL 2240D toner: 10
+Canon,CLI-571XLGY,1,15,0.0,20.5,20.5,HIGH,100.0,0.25,0.8,PONECHAŤ,Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10 | Canon PIXMA MG5751 toner: 10
+Canon,CRG-046,4,5,0.0,20.5,20.5,HIGH,93.0,,,PONECHAŤ,LBP654CX toner: 10 | Canon MF732CDW toner: 10 | MF732CDW toner: 10 | Canon MF734CDW toner: 10 | MF734CDW toner: 10
+Canon,CRG-046H,4,5,0.0,20.5,20.5,HIGH,93.0,,,PONECHAŤ,LBP654CX toner: 10 | Canon MF732CDW toner: 10 | MF732CDW toner: 10 | Canon MF734CDW toner: 10 | MF734CDW toner: 10
+Canon,CRG-051,2,4,0.0,20.5,20.5,HIGH,100.0,0.14,0.78,PONECHAŤ,Canon LBP162DW toner: 10 | LBP162DW toner: 10 | Canon MF264DW toner: 10 | MF264DW toner: 10 | Canon MF267DW toner: 10
+Canon,CRG-075,8,4,0.0,20.5,20.5,HIGH,100.0,0.32,1.04,PONECHAŤ,Canon LBP646Cdw toner: 10 | LBP646Cdw toner: 10 | Canon LBP647Cdw toner: 10 | LBP647Cdw toner: 10 | Canon MF664Cdw toner: 10
+Canon,CRG-075H,8,4,0.0,20.5,20.5,HIGH,100.0,0.32,1.04,PONECHAŤ,Canon LBP646Cdw toner: 10 | LBP646Cdw toner: 10 | Canon LBP647Cdw toner: 10 | LBP647Cdw toner: 10 | Canon MF664Cdw toner: 10
+Canon,CRG-703,3,4,0.0,20.5,20.5,HIGH,100.0,0.07,1.16,PONECHAŤ,Canon LBP2900 toner: 10 | Canon LBP2900 toner: 10 | LBP2900 toner: 10 | Canon LBP3000 toner: 10 | Canon LBP3000 toner: 10
+Canon,CRG-712,3,4,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Canon LBP3010 toner: 10 | Canon LBP3010 toner: 10 | LBP3010 toner: 10 | LBP3100 toner: 10 | Canon LBP3010 toner: 10
+Canon,CRG-715,2,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Canon LBP3310 toner: 10 | Canon LBP3310 toner: 10 | LBP3310 toner: 10 | Canon LBP3370 toner: 10 | Canon LBP3370 toner: 10
+Canon,CRG-715H,2,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Canon LBP3310 toner: 10 | Canon LBP3310 toner: 10 | LBP3310 toner: 10 | Canon LBP3370 toner: 10 | Canon LBP3370 toner: 10
+Canon,CRG-724,2,8,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Canon LBP6750DN toner: 10 | Canon LBP6750DN toner: 10 | LBP6780X toner: 10 | Canon LBP6750DN toner: 10 | LBP6780X toner: 10
+Canon,CRG-724H,3,5,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Canon LBP6750DN toner: 10 | Canon LBP6750DN toner: 10 | LBP6780X toner: 10 | Canon LBP6750DN toner: 10 | LBP6780X toner: 10
+Canon,PGI-1500XLBK,1,4,0.0,20.5,20.5,HIGH,100.0,0.17,0.66,PONECHAŤ,Canon MB2050 toner: 10 | Canon MAXIFY MB2150 toner: 10 | toner Canon MAXIFY MB2150: 10 | Canon MB2150 toner: 10 | toner Canon MAXIFY MB2350: 10
+Canon,PGI-1500XLC,1,4,0.0,20.5,20.5,HIGH,100.0,0.17,0.66,PONECHAŤ,Canon MB2050 toner: 10 | Canon MAXIFY MB2150 toner: 10 | toner Canon MAXIFY MB2150: 10 | Canon MB2150 toner: 10 | toner Canon MAXIFY MB2350: 10
+Canon,PGI-1500XLM,1,4,0.0,20.5,20.5,HIGH,100.0,0.17,0.66,PONECHAŤ,Canon MB2050 toner: 10 | Canon MAXIFY MB2150 toner: 10 | toner Canon MAXIFY MB2150: 10 | Canon MB2150 toner: 10 | toner Canon MAXIFY MB2350: 10
+Canon,PGI-1500XLY,1,4,0.0,20.5,20.5,HIGH,100.0,0.17,0.66,PONECHAŤ,Canon MB2050 toner: 10 | Canon MAXIFY MB2150 toner: 10 | toner Canon MAXIFY MB2150: 10 | Canon MB2150 toner: 10 | toner Canon MAXIFY MB2350: 10
+Canon,CLI-571GY,2,15,0.0,20.5,20.5,HIGH,100.0,0.25,0.8,PONECHAŤ,Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10 | Canon PIXMA MG5751 toner: 10
+Canon,PGI-1500,2,4,0.0,20.5,20.5,HIGH,100.0,0.17,0.66,PONECHAŤ,Canon MB2050 toner: 10 | Canon MAXIFY MB2150 toner: 10 | toner Canon MAXIFY MB2150: 10 | Canon MB2150 toner: 10 | toner Canon MAXIFY MB2350: 10
+Canon,PGI-1500BK,1,4,0.0,20.5,20.5,HIGH,100.0,0.17,0.66,PONECHAŤ,Canon MB2050 toner: 10 | Canon MAXIFY MB2150 toner: 10 | toner Canon MAXIFY MB2150: 10 | Canon MB2150 toner: 10 | toner Canon MAXIFY MB2350: 10
+Canon,PGI-1500C,1,4,0.0,20.5,20.5,HIGH,100.0,0.17,0.66,PONECHAŤ,Canon MB2050 toner: 10 | Canon MAXIFY MB2150 toner: 10 | toner Canon MAXIFY MB2150: 10 | Canon MB2150 toner: 10 | toner Canon MAXIFY MB2350: 10
+Canon,PGI-1500M,1,4,0.0,20.5,20.5,HIGH,100.0,0.17,0.66,PONECHAŤ,Canon MB2050 toner: 10 | Canon MAXIFY MB2150 toner: 10 | toner Canon MAXIFY MB2150: 10 | Canon MB2150 toner: 10 | toner Canon MAXIFY MB2350: 10
+Canon,PGI-1500Y,1,4,0.0,20.5,20.5,HIGH,100.0,0.17,0.66,PONECHAŤ,Canon MB2050 toner: 10 | Canon MAXIFY MB2150 toner: 10 | toner Canon MAXIFY MB2150: 10 | Canon MB2150 toner: 10 | toner Canon MAXIFY MB2350: 10
+Canon,CRG-729BK,2,4,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Canon LBP7010C toner: 10 | Canon LBP7010C toner: 10 | LBP7010C toner: 10 | Canon LBP7018C toner: 10 | Canon LBP7018C toner: 10
+Canon,CRG-729C,2,4,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Canon LBP7010C toner: 10 | Canon LBP7010C toner: 10 | LBP7010C toner: 10 | Canon LBP7018C toner: 10 | Canon LBP7018C toner: 10
+Canon,CRG-729M,2,4,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Canon LBP7010C toner: 10 | Canon LBP7010C toner: 10 | LBP7010C toner: 10 | Canon LBP7018C toner: 10 | Canon LBP7018C toner: 10
+Canon,CRG-729Y,2,4,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Canon LBP7010C toner: 10 | Canon LBP7010C toner: 10 | LBP7010C toner: 10 | Canon LBP7018C toner: 10 | Canon LBP7018C toner: 10
+Canon,CRG-731HBK,1,4,0.0,20.5,20.5,HIGH,71.3,,,PONECHAŤ,Canon LBP7100CN toner: 10 | LBP7100CN toner: 10 | Canon LBP7110CW toner: 10 | LBP7110CW toner: 10 | Canon MF623CN toner: 10
+Canon,PGI-1500XL,4,4,0.0,20.5,20.5,HIGH,100.0,0.17,0.66,PONECHAŤ,Canon MB2050 toner: 10 | Canon MAXIFY MB2150 toner: 10 | toner Canon MAXIFY MB2150: 10 | Canon MB2150 toner: 10 | toner Canon MAXIFY MB2350: 10
+Canon,CLI-571XL,1,15,0.0,20.5,20.5,HIGH,100.0,0.25,0.8,PONECHAŤ,Canon PIXMA MG5750 toner: 10 | toner Canon PIXMA MG5750: 10 | Canon MG5750 toner: 10 | MG5750 toner: 10 | Canon PIXMA MG5751 toner: 10
+Epson,C13T08934011,1,8,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Epson Stylus SX100 toner: 10 | Epson SX100 toner: 10 | Epson Stylus SX105 toner: 10 | Epson SX105 toner: 10 | Epson SX110 toner: 10
+HP,CE310AD,1,6,0.0,20.5,20.5,HIGH,100.0,0.41,1.44,PONECHAŤ,toner HP Color LaserJet Pro CP1025: 10 | HP CP1025 toner: 10 | CP1025 toner: 10 | HP CP1025nw toner: 10 | CP1025nw toner: 10
+Kyocera,TK-5230C,2,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Kyocera Ecosys M5521CDN toner: 10 | toner Kyocera Ecosys M5521CDN: 10 | Kyocera M5521CDN toner: 10 | Kyocera M5521CDW toner: 10 | M5521CDW toner: 10
+Kyocera,TK-5230K,2,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Kyocera Ecosys M5521CDN toner: 10 | toner Kyocera Ecosys M5521CDN: 10 | Kyocera M5521CDN toner: 10 | Kyocera M5521CDW toner: 10 | M5521CDW toner: 10
+Kyocera,TK-5230M,2,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Kyocera Ecosys M5521CDN toner: 10 | toner Kyocera Ecosys M5521CDN: 10 | Kyocera M5521CDN toner: 10 | Kyocera M5521CDW toner: 10 | M5521CDW toner: 10
+Kyocera,TK-5230Y,2,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Kyocera Ecosys M5521CDN toner: 10 | toner Kyocera Ecosys M5521CDN: 10 | Kyocera M5521CDN toner: 10 | Kyocera M5521CDW toner: 10 | M5521CDW toner: 10
+Kyocera,TK-5240C,3,4,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Kyocera Ecosys M5526CDN toner: 10 | toner Kyocera Ecosys M5526CDN: 10 | Kyocera M5526CDN toner: 10 | M5526CDN toner: 10 | Kyocera Ecosys M5526CDW toner: 10
+Kyocera,TK-5240K,3,4,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Kyocera Ecosys M5526CDN toner: 10 | toner Kyocera Ecosys M5526CDN: 10 | Kyocera M5526CDN toner: 10 | M5526CDN toner: 10 | Kyocera Ecosys M5526CDW toner: 10
+Kyocera,TK-5240M,3,4,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Kyocera Ecosys M5526CDN toner: 10 | toner Kyocera Ecosys M5526CDN: 10 | Kyocera M5526CDN toner: 10 | M5526CDN toner: 10 | Kyocera Ecosys M5526CDW toner: 10
+Kyocera,TK-5240Y,3,4,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Kyocera Ecosys M5526CDN toner: 10 | toner Kyocera Ecosys M5526CDN: 10 | Kyocera M5526CDN toner: 10 | M5526CDN toner: 10 | Kyocera Ecosys M5526CDW toner: 10
+Kyocera,TK-5280C,3,5,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Kyocera M6235 toner: 10 | Kyocera Ecosys M6235CIDN toner: 10 | Kyocera M6235CIDN toner: 10 | M6235CIDN toner: 10 | Kyocera Ecosys M6635CIDN toner: 10
+Kyocera,TK-5280K,3,5,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Kyocera M6235 toner: 10 | Kyocera Ecosys M6235CIDN toner: 10 | Kyocera M6235CIDN toner: 10 | M6235CIDN toner: 10 | Kyocera Ecosys M6635CIDN toner: 10
+Kyocera,TK-5280M,3,5,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Kyocera M6235 toner: 10 | Kyocera Ecosys M6235CIDN toner: 10 | Kyocera M6235CIDN toner: 10 | M6235CIDN toner: 10 | Kyocera Ecosys M6635CIDN toner: 10
+Kyocera,TK-5280Y,3,5,0.0,20.5,20.5,HIGH,100.0,,,PONECHAŤ,Kyocera M6235 toner: 10 | Kyocera Ecosys M6235CIDN toner: 10 | Kyocera M6235CIDN toner: 10 | M6235CIDN toner: 10 | Kyocera Ecosys M6635CIDN toner: 10
+Kyocera,TK-5430C,1,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,toner Kyocera Ecosys MA2100CFX: 10 | MA2100CFX toner: 10 | Kyocera Ecosys MA2100CWFX toner: 10 | Kyocera MA2100CWFX toner: 10 | MA2100CWFX toner: 10
+Kyocera,TK-5430K,1,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,toner Kyocera Ecosys MA2100CFX: 10 | MA2100CFX toner: 10 | Kyocera Ecosys MA2100CWFX toner: 10 | Kyocera MA2100CWFX toner: 10 | MA2100CWFX toner: 10
+Kyocera,TK-5430M,1,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,toner Kyocera Ecosys MA2100CFX: 10 | MA2100CFX toner: 10 | Kyocera Ecosys MA2100CWFX toner: 10 | Kyocera MA2100CWFX toner: 10 | MA2100CWFX toner: 10
+Kyocera,TK-5430Y,1,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,toner Kyocera Ecosys MA2100CFX: 10 | MA2100CFX toner: 10 | Kyocera Ecosys MA2100CWFX toner: 10 | Kyocera MA2100CWFX toner: 10 | MA2100CWFX toner: 10
+Kyocera,TK-5220C,1,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Kyocera Ecosys M5521CDN toner: 10 | toner Kyocera Ecosys M5521CDN: 10 | Kyocera M5521CDN toner: 10 | Kyocera M5521CDW toner: 10 | M5521CDW toner: 10
+Kyocera,TK-5220K,1,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Kyocera Ecosys M5521CDN toner: 10 | toner Kyocera Ecosys M5521CDN: 10 | Kyocera M5521CDN toner: 10 | Kyocera M5521CDW toner: 10 | M5521CDW toner: 10
+Kyocera,TK-5220M,1,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Kyocera Ecosys M5521CDN toner: 10 | toner Kyocera Ecosys M5521CDN: 10 | Kyocera M5521CDN toner: 10 | Kyocera M5521CDW toner: 10 | M5521CDW toner: 10
+Kyocera,TK-5220Y,1,4,0.0,20.5,20.5,HIGH,,,,PONECHAŤ,Kyocera Ecosys M5521CDN toner: 10 | toner Kyocera Ecosys M5521CDN: 10 | Kyocera M5521CDN toner: 10 | Kyocera M5521CDW toner: 10 | M5521CDW toner: 10
+Xerox,106R02773,3,6,20.0,0.0,20.0,MEDIUM,100.0,0.33,1.12,PONECHAŤ,Xerox 106R02773: 20 | 106R02773: 20 | 106R02773 toner: 10 | Xerox 106R02773 toner: 10
+Epson,C13T07114011,1,25,10.0,17.0,19.5,HIGH,,,,PONECHAŤ,Epson C13T07114011: 10 | C13T07114011: 10 | Epson Stylus DX4400 toner: 10 | toner Epson Stylus DX4400: 10 | Epson DX4400 toner: 10
+HP,CE320A,4,4,10.0,17.0,19.5,HIGH,100.0,,,PONECHAŤ,HP CE320A: 10 | CE320A: 10 | CE320A toner: 10 | HP Color LaserJet Pro CM1415fn MFP toner: 10 | HP CP1525n toner: 10
+HP,CE321A,5,4,10.0,17.0,19.5,HIGH,100.0,,,PONECHAŤ,HP CE321A: 10 | CE321A: 10 | CE321A toner: 10 | HP CE321A toner: 10 | HP Color LaserJet Pro CM1415fn MFP toner: 10
+HP,CE322A,4,4,10.0,17.0,19.5,HIGH,71.3,,,PONECHAŤ,HP CE322A: 10 | CE322A: 10 | CE322A toner: 10 | HP CE322A toner: 10 | HP Color LaserJet Pro CM1415fn MFP toner: 10
+HP,CE323A,4,4,10.0,17.0,19.5,HIGH,100.0,,,PONECHAŤ,HP CE323A: 10 | CE323A: 10 | CE323A toner: 10 | HP CE323A toner: 10 | HP Color LaserJet Pro CM1415fn MFP toner: 10
+HP,CF237A,4,20,10.0,17.0,19.5,HIGH,100.0,,,PONECHAŤ,HP CF237A: 10 | CF237A: 10 | HP LaserJet Enterprise M607N toner: 10 | HP M608DN toner: 10 | M608DN toner: 10
+HP,CF237X,4,19,10.0,17.0,19.5,HIGH,100.0,0.22,0.95,PONECHAŤ,HP CF237X: 10 | CF237X: 10 | CF237X toner: 10 | HP LaserJet Enterprise M607N toner: 10 | HP M608DN toner: 10
+HP,CF280X,4,9,10.0,17.0,19.5,HIGH,96.5,0.46,0.82,PONECHAŤ,HP CF280X: 10 | CF280X: 10 | CF280X toner: 10 | HP CF280X toner: 10 | HP M425 toner: 10
+HP,CF294X,1,3,10.0,17.0,19.5,HIGH,,,,PONECHAŤ,CF294X: 10 | M118DW toner: 10 | M148DW toner: 10 | HP LaserJet Pro MFP M148FDW toner: 10 | HP M148FDW toner: 10
+HP,Q7551X,3,10,10.0,17.0,19.5,HIGH,100.0,,,PONECHAŤ,HP Q7551X: 10 | Q7551X: 10 | Q7551X toner: 10 | HP LaserJet P3005 toner: 10 | HP P3005 toner: 10
+HP,Q7553A,4,11,10.0,17.0,19.5,HIGH,98.7,0.09,0.28,PONECHAŤ,HP Q7553A: 10 | Q7553A: 10 | Q7553A toner: 10 | HP Q7553A toner: 10 | HP LaserJet M2727NF toner: 10
+HP,Q7553X,4,11,10.0,17.0,19.5,HIGH,99.3,0.09,0.28,PONECHAŤ,HP Q7553X: 10 | Q7553X: 10 | Q7553X toner: 10 | HP Q7553X toner: 10 | HP LaserJet M2727NF toner: 10
+HP,W1470X,2,19,10.0,17.0,19.5,HIGH,100.0,,,PONECHAŤ,HP W1470X: 10 | W1470X: 10 | W1470X toner: 10 | HP LaserJet Enterprise M611 toner: 10 | toner HP LaserJet Enterprise M611: 10
+HP,W1530X,2,6,10.0,17.0,19.5,HIGH,100.0,,,PONECHAŤ,HP W1530X: 10 | W1530X: 10 | HP 2604 toner: 10 | HP LaserJet Tank MFP 1604w toner: 10 | toner HP LaserJet Tank MFP 1604w: 10
+HP,CF256A,2,3,10.0,17.0,19.5,HIGH,100.0,,,PONECHAŤ,HP CF256A: 10 | CF256A: 10 | CF256A toner: 10 | HP LaserJet M433A toner: 10 | HP M433A toner: 10
+HP,CF256X,2,3,10.0,17.0,19.5,HIGH,,,,PONECHAŤ,HP CF256X: 10 | CF256X: 10 | CF256X toner: 10 | HP LaserJet M433A toner: 10 | HP M433A toner: 10
+HP,CE400A,3,11,10.0,17.0,19.5,HIGH,90.5,,,PONECHAŤ,HP CE400A: 10 | CE400A: 10 | CE400A toner: 10 | HP CE400A toner: 10 | HP LaserJet Enterprise 500 Color M551 toner: 10
+HP,CF371AM,1,4,10.0,17.0,19.5,HIGH,100.0,,,PONECHAŤ,HP CF371AM: 10 | CF371AM: 10 | HP Color LaserJet Pro CM1415fn MFP toner: 10 | HP CP1525n toner: 10 | CP1525n toner: 10
+HP,W1530A,1,6,10.0,17.0,19.5,HIGH,100.0,,,PONECHAŤ,HP W1530A: 10 | W1530A: 10 | HP 2604 toner: 10 | HP LaserJet Tank MFP 1604w toner: 10 | toner HP LaserJet Tank MFP 1604w: 10
+Canon,CRG-069,4,3,0.0,17.0,17.0,HIGH,95.2,0.38,3.49,PONECHAŤ,Canon LBP673CDW toner: 10 | LBP673CDW toner: 10 | Canon MF752CDW toner: 10 | MF752CDW toner: 10 | Canon MF754CDW toner: 10
+Canon,CRG-069H,4,3,0.0,17.0,17.0,HIGH,95.2,0.38,3.49,PONECHAŤ,Canon LBP673CDW toner: 10 | LBP673CDW toner: 10 | Canon MF752CDW toner: 10 | MF752CDW toner: 10 | Canon MF754CDW toner: 10
+Canon,CRG-708,2,3,0.0,17.0,17.0,HIGH,,,,PONECHAŤ,Canon LBP3300 toner: 10 | Canon LBP3300 toner: 10 | Canon LBP3300 toner: 10 | Canon LBP3360 toner: 10 | LBP3360 toner: 10
+Canon,CRG-708H,3,3,0.0,17.0,17.0,HIGH,,,,PONECHAŤ,Canon LBP3300 toner: 10 | Canon LBP3300 toner: 10 | Canon LBP3300 toner: 10 | Canon LBP3360 toner: 10 | LBP3360 toner: 10
+Canon,C-EXV18,1,4,0.0,17.0,17.0,MEDIUM,86.0,,,PONECHAŤ,1018 toner: 10 | 1020 toner: 10 | 1022 toner: 10
+Canon,CRG-069BK,1,3,0.0,17.0,17.0,HIGH,95.2,0.38,3.49,PONECHAŤ,Canon LBP673CDW toner: 10 | LBP673CDW toner: 10 | Canon MF752CDW toner: 10 | MF752CDW toner: 10 | Canon MF754CDW toner: 10
+Canon,CRG-069C,1,3,0.0,17.0,17.0,HIGH,95.2,0.38,3.49,PONECHAŤ,Canon LBP673CDW toner: 10 | LBP673CDW toner: 10 | Canon MF752CDW toner: 10 | MF752CDW toner: 10 | Canon MF754CDW toner: 10
+Canon,CRG-069HC,1,3,0.0,17.0,17.0,HIGH,95.2,0.38,3.49,PONECHAŤ,Canon LBP673CDW toner: 10 | LBP673CDW toner: 10 | Canon MF752CDW toner: 10 | MF752CDW toner: 10 | Canon MF754CDW toner: 10
+Canon,CRG-069HM,1,3,0.0,17.0,17.0,HIGH,95.2,0.38,3.49,PONECHAŤ,Canon LBP673CDW toner: 10 | LBP673CDW toner: 10 | Canon MF752CDW toner: 10 | MF752CDW toner: 10 | Canon MF754CDW toner: 10
+Canon,CRG-069HY,1,3,0.0,17.0,17.0,HIGH,95.2,0.38,3.49,PONECHAŤ,Canon LBP673CDW toner: 10 | LBP673CDW toner: 10 | Canon MF752CDW toner: 10 | MF752CDW toner: 10 | Canon MF754CDW toner: 10
+Canon,CRG-069M,1,3,0.0,17.0,17.0,HIGH,95.2,0.38,3.49,PONECHAŤ,Canon LBP673CDW toner: 10 | LBP673CDW toner: 10 | Canon MF752CDW toner: 10 | MF752CDW toner: 10 | Canon MF754CDW toner: 10
+Canon,CRG-069Y,1,3,0.0,17.0,17.0,HIGH,95.2,0.38,3.49,PONECHAŤ,Canon LBP673CDW toner: 10 | LBP673CDW toner: 10 | Canon MF752CDW toner: 10 | MF752CDW toner: 10 | Canon MF754CDW toner: 10
+Canon,CRG-046C,1,4,0.0,17.0,17.0,HIGH,93.0,,,PONECHAŤ,LBP654CX toner: 10 | Canon MF732CDW toner: 10 | MF732CDW toner: 10 | Canon MF734CDW toner: 10 | MF734CDW toner: 10
+Canon,CRG-046M,1,4,0.0,17.0,17.0,HIGH,93.0,,,PONECHAŤ,LBP654CX toner: 10 | Canon MF732CDW toner: 10 | MF732CDW toner: 10 | Canon MF734CDW toner: 10 | MF734CDW toner: 10
+Canon,CRG-046Y,1,4,0.0,17.0,17.0,HIGH,93.0,,,PONECHAŤ,LBP654CX toner: 10 | Canon MF732CDW toner: 10 | MF732CDW toner: 10 | Canon MF734CDW toner: 10 | MF734CDW toner: 10
+Epson,C13T12954010,1,6,0.0,17.0,17.0,HIGH,100.0,,,PONECHAŤ,Epson BX305F toner: 10 | Epson Stylus SX235W toner: 10 | toner Epson Stylus SX235W: 10 | Epson SX235W toner: 10 | SX235W toner: 10
+HP,CF294A,1,3,0.0,17.0,17.0,MEDIUM,,,,PONECHAŤ,M118DW toner: 10 | M148DW toner: 10 | HP LaserJet Pro MFP M148FDW toner: 10 | HP M148FDW toner: 10
+Konica,TN216C/TN319C,1,3,0.0,17.0,17.0,HIGH,,,,PONECHAŤ,Konica Minolta Bizhub C220 toner: 10 | Konica C220 toner: 10 | C220 toner: 10 | Konica Minolta Bizhub C280 toner: 10 | toner Konica Minolta Bizhub C280: 10
+Konica,TN216M/TN319M,1,3,0.0,17.0,17.0,HIGH,,,,PONECHAŤ,Konica Minolta Bizhub C220 toner: 10 | Konica C220 toner: 10 | C220 toner: 10 | Konica Minolta Bizhub C280 toner: 10 | toner Konica Minolta Bizhub C280: 10
+Konica,TN216K/TN319K,1,3,0.0,17.0,17.0,HIGH,,,,PONECHAŤ,Konica Minolta Bizhub C220 toner: 10 | Konica C220 toner: 10 | C220 toner: 10 | Konica Minolta Bizhub C280 toner: 10 | toner Konica Minolta Bizhub C280: 10
+Konica,TN216Y/TN319Y,1,3,0.0,17.0,17.0,HIGH,,,,PONECHAŤ,Konica Minolta Bizhub C220 toner: 10 | Konica C220 toner: 10 | C220 toner: 10 | Konica Minolta Bizhub C280 toner: 10 | toner Konica Minolta Bizhub C280: 10
+Kyocera,TK-5270C,2,3,0.0,17.0,17.0,HIGH,,,,PONECHAŤ,Kyocera M6230CIDN toner: 10 | Kyocera Ecosys M6630CIDN toner: 10 | toner Kyocera Ecosys M6630CIDN: 10 | toner Kyocera Ecosys P6230CDN: 10 | Kyocera P6230CDN toner: 10
+Kyocera,TK-5270K,2,3,0.0,17.0,17.0,HIGH,,,,PONECHAŤ,Kyocera M6230CIDN toner: 10 | Kyocera Ecosys M6630CIDN toner: 10 | toner Kyocera Ecosys M6630CIDN: 10 | toner Kyocera Ecosys P6230CDN: 10 | Kyocera P6230CDN toner: 10
+Kyocera,TK-5270M,2,3,0.0,17.0,17.0,HIGH,,,,PONECHAŤ,Kyocera M6230CIDN toner: 10 | Kyocera Ecosys M6630CIDN toner: 10 | toner Kyocera Ecosys M6630CIDN: 10 | toner Kyocera Ecosys P6230CDN: 10 | Kyocera P6230CDN toner: 10
+Kyocera,TK-5270Y,2,3,0.0,17.0,17.0,HIGH,,,,PONECHAŤ,Kyocera M6230CIDN toner: 10 | Kyocera Ecosys M6630CIDN toner: 10 | toner Kyocera Ecosys M6630CIDN: 10 | toner Kyocera Ecosys P6230CDN: 10 | Kyocera P6230CDN toner: 10
+HP,CF289Y,2,7,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP CF289Y: 10 | CF289Y: 10 | CF289Y toner: 10 | HP LaserJet Enterprise M507DN toner: 10 | HP LaserJet Enterprise M507X toner: 10
+HP,CE250X,4,8,10.0,13.5,16.0,HIGH,85.8,,,PONECHAŤ,HP CE250X: 10 | CE250X: 10 | CE250X toner: 10 | HP CE250X toner: 10 | HP Color LaserJet CM3530 toner: 10
+HP,CE251A,4,8,10.0,13.5,16.0,HIGH,81.0,,,PONECHAŤ,HP CE251A: 10 | CE251A: 10 | CE251A toner: 10 | HP CE251A toner: 10 | HP Color LaserJet CM3530 toner: 10
+HP,CE252A,4,8,10.0,13.5,16.0,HIGH,85.8,,,PONECHAŤ,HP CE252A: 10 | CE252A: 10 | CE252A toner: 10 | HP Color LaserJet CM3530 toner: 10 | HP CM3530 toner: 10
+HP,CE253A,4,8,10.0,13.5,16.0,HIGH,81.0,,,PONECHAŤ,HP CE253A: 10 | CE253A: 10 | CE253A toner: 10 | HP CE253A toner: 10 | HP Color LaserJet CM3530 toner: 10
+HP,CF289X,4,7,10.0,13.5,16.0,HIGH,100.0,0.4,0.96,PONECHAŤ,HP CF289X: 10 | CF289X: 10 | CF289X toner: 10 | HP CF289X toner: 10 | HP LaserJet Enterprise M507DN toner: 10
+HP,CF350A,4,2,10.0,13.5,16.0,HIGH,100.0,1.5,4.91,PONECHAŤ,HP CF350A: 10 | CF350A: 10 | CF350A toner: 10 | HP CF350A toner: 10 | HP Color LaserJet Pro M176N toner: 10
+HP,CF351A,4,2,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP CF351A: 10 | CF351A: 10 | CF351A toner: 10 | HP CF351A toner: 10 | HP Color LaserJet Pro M176N toner: 10
+HP,CF352A,4,2,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP CF352A: 10 | CF352A: 10 | CF352A toner: 10 | HP CF352A toner: 10 | HP Color LaserJet Pro M176N toner: 10
+HP,CF353A,4,2,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP CF353A: 10 | CF353A: 10 | HP Color LaserJet Pro M176N toner: 10 | toner HP Color LaserJet Pro M176N: 10 | HP M176N toner: 10
+HP,CF380X,4,3,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP CF380X: 10 | CF380X: 10 | CF380X toner: 10 | HP CF380X toner: 10 | HP M476dn toner: 10
+HP,CF381A,5,3,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP CF381A: 10 | CF381A: 10 | CF381A toner: 10 | HP CF381A toner: 10 | HP M476dn toner: 10
+HP,CF382A,4,3,10.0,13.5,16.0,HIGH,,,,PONECHAŤ,HP CF382A: 10 | CF382A: 10 | CF382A toner: 10 | HP CF382A toner: 10 | HP M476dn toner: 10
+HP,CF383A,4,3,10.0,13.5,16.0,HIGH,,,,PONECHAŤ,HP CF383A: 10 | CF383A: 10 | CF383A toner: 10 | HP CF383A toner: 10 | HP M476dn toner: 10
+HP,Q2613A,4,4,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP Q2613A: 10 | Q2613A: 10 | Q2613A toner: 10 | HP Q2613A toner: 10 | HP LaserJet 1300 toner: 10
+HP,Q2613X,4,4,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP Q2613X: 10 | Q2613X: 10 | Q2613X toner: 10 | HP Q2613X toner: 10 | HP LaserJet 1300 toner: 10
+HP,Q5942X,2,10,10.0,13.5,16.0,HIGH,,,,PONECHAŤ,HP Q5942X: 10 | Q5942X: 10 | Q5942X toner: 10 | HP LaserJet 4250 toner: 10 | HP 4250 toner: 10
+HP,W1331A,1,4,10.0,13.5,16.0,MEDIUM,95.3,0.21,0.45,PONECHAŤ,W1331A: 10 | HP 1020 toner: 10 | 1020 toner: 10 | HP 1005 toner: 10
+HP,W1470A,2,6,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,W1470A: 10 | W1470A toner: 10 | HP W1470A toner: 10 | HP LaserJet Enterprise M611 toner: 10 | toner HP LaserJet Enterprise M611: 10
+HP,W1331X,2,4,10.0,13.5,16.0,HIGH,96.5,0.21,0.45,PONECHAŤ,HP W1331X: 10 | W1331X: 10 | W1331X toner: 10 | HP W1331X toner: 10 | HP 1020 toner: 10
+HP,CF237Y,3,12,10.0,13.5,16.0,HIGH,,,,PONECHAŤ,HP CF237Y: 10 | CF237Y: 10 | HP LaserJet Enterprise M607N toner: 10 | HP M608DN toner: 10 | M608DN toner: 10
+HP,CE250A,3,8,10.0,13.5,16.0,HIGH,85.8,,,PONECHAŤ,HP CE250A: 10 | CE250A: 10 | CE250A toner: 10 | HP CE250A toner: 10 | HP Color LaserJet CM3530 toner: 10
+HP,CF280XD,1,2,10.0,13.5,16.0,HIGH,93.0,,,PONECHAŤ,CF280XD: 10 | CF280XD toner: 10 | HP CF280XD toner: 10 | HP M425 toner: 10 | HP LaserJet Pro 400 M401 toner: 10
+HP,CF289A,2,7,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP CF289A: 10 | CF289A: 10 | CF289A toner: 10 | HP LaserJet Enterprise M507DN toner: 10 | HP LaserJet Enterprise M507X toner: 10
+HP,CF380A,3,3,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP CF380A: 10 | CF380A: 10 | CF380A toner: 10 | HP CF380A toner: 10 | HP M476dn toner: 10
+HP,CF440AM,1,3,10.0,13.5,16.0,HIGH,,,,PONECHAŤ,HP CF440AM: 10 | CF440AM: 10 | HP M476dn toner: 10 | M476dn toner: 10 | HP M476dw toner: 10
+HP,Q5942A,2,9,10.0,13.5,16.0,HIGH,,,,PONECHAŤ,HP Q5942A: 10 | Q5942A: 10 | Q5942A toner: 10 | HP Q5942A toner: 10 | HP LaserJet 4250 toner: 10
+HP,Q7551A,3,9,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP Q7551A: 10 | Q7551A: 10 | Q7551A toner: 10 | HP LaserJet P3005 toner: 10 | HP P3005 toner: 10
+HP,W1470Y,2,9,10.0,13.5,16.0,HIGH,100.0,,,PONECHAŤ,HP W1470Y: 10 | W1470Y: 10 | HP LaserJet Enterprise M611 toner: 10 | toner HP LaserJet Enterprise M611: 10 | HP M611 toner: 10
+Konica,TN216C,1,2,10.0,13.5,16.0,HIGH,,,,PONECHAŤ,TN216C: 10 | Konica Minolta Bizhub C220 toner: 10 | Konica C220 toner: 10 | C220 toner: 10 | Konica Minolta Bizhub C280 toner: 10
+Konica,TN216K,1,2,10.0,13.5,16.0,HIGH,100.0,1.3,2.47,PONECHAŤ,TN216K: 10 | TN216K toner: 10 | Konica Minolta Bizhub C220 toner: 10 | Konica C220 toner: 10 | C220 toner: 10
+Konica,TN216M,1,2,10.0,13.5,16.0,HIGH,,,,PONECHAŤ,TN216M: 10 | Konica Minolta Bizhub C220 toner: 10 | Konica C220 toner: 10 | C220 toner: 10 | Konica Minolta Bizhub C280 toner: 10
+Konica,TN216Y,1,2,10.0,13.5,16.0,HIGH,,,,PONECHAŤ,TN216Y: 10 | TN216Y toner: 10 | Konica Minolta Bizhub C220 toner: 10 | Konica C220 toner: 10 | C220 toner: 10
+Canon,CLI-581XXL,1,15,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,Canon PIXMA TS8250 toner: 10 | Canon PIXMA TS9550 toner: 10
+Canon,CRG-039H,2,4,0.0,13.5,13.5,HIGH,,,,PONECHAŤ,Canon LBP351X toner: 10 | Canon LBP351X toner: 10 | LBP351X toner: 10 | Canon LBP351X toner: 10 | LBP351X toner: 10
+Canon,CRG-040H,8,2,0.0,13.5,13.5,MEDIUM,100.0,,,PONECHAŤ,Canon LBP710CX toner: 10 | LBP710CX toner: 10 | LBP712CX toner: 10
+Canon,CRG-064H,8,4,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,LBP722CDW toner: 10 | Canon MF832CDW toner: 10 | MF832CDW toner: 10
+Canon,CRG-713,3,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,Canon LBP3250 toner: 10 | Canon LBP3250 toner: 10 | Canon LBP3250 toner: 10
+Canon,CRG-718,5,19,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,Canon LBP7660 toner: 10 | Canon MF8330 toner: 10 | MF8330 toner: 10
+Canon,CRG-720,2,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,MF6680DN toner: 10 | MF6680DN toner: 10
+Canon,CRG-726,3,4,0.0,13.5,13.5,HIGH,,,,PONECHAŤ,Canon LBP6200D toner: 10 | Canon LBP6200D toner: 10 | LBP6200D toner: 10 | Canon LBP6200D toner: 10 | LBP6200D toner: 10
+Canon,CRG-729,4,2,0.0,13.5,13.5,MEDIUM,100.0,,,PONECHAŤ,Canon LBP7010C toner: 10 | LBP7010C toner: 10 | Canon LBP7018C toner: 10 | LBP7018C toner: 10
+Canon,PGI-2500XLBK,1,6,0.0,13.5,13.5,MEDIUM,100.0,0.64,1.24,PONECHAŤ,Canon MAXIFY MB5150 toner: 10 | toner Canon MAXIFY MB5150: 10 | Canon MAXIFY MB5450 toner: 10
+Canon,PGI-2500XLC,1,6,0.0,13.5,13.5,MEDIUM,100.0,0.64,1.24,PONECHAŤ,Canon MAXIFY MB5150 toner: 10 | toner Canon MAXIFY MB5150: 10 | Canon MAXIFY MB5450 toner: 10
+Canon,PGI-2500XLM,1,6,0.0,13.5,13.5,MEDIUM,100.0,0.64,1.24,PONECHAŤ,Canon MAXIFY MB5150 toner: 10 | toner Canon MAXIFY MB5150: 10 | Canon MAXIFY MB5450 toner: 10
+Canon,PGI-2500XLY,1,6,0.0,13.5,13.5,MEDIUM,100.0,0.64,1.24,PONECHAŤ,Canon MAXIFY MB5150 toner: 10 | toner Canon MAXIFY MB5150: 10 | Canon MAXIFY MB5450 toner: 10
+Canon,CLI-581PB,3,15,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,Canon PIXMA TS8250 toner: 10 | Canon PIXMA TS9550 toner: 10
+Canon,CRG-064BK,1,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,LBP722CDW toner: 10 | Canon MF832CDW toner: 10 | Canon MF832CDW toner: 10 | MF832CDW toner: 10
+Canon,CRG-064C,1,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,LBP722CDW toner: 10 | Canon MF832CDW toner: 10 | Canon MF832CDW toner: 10 | MF832CDW toner: 10
+Canon,CRG-064HBK,1,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,LBP722CDW toner: 10 | Canon MF832CDW toner: 10 | Canon MF832CDW toner: 10 | MF832CDW toner: 10
+Canon,CRG-064M,1,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,LBP722CDW toner: 10 | Canon MF832CDW toner: 10 | Canon MF832CDW toner: 10 | MF832CDW toner: 10
+Canon,CRG-064Y,1,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,LBP722CDW toner: 10 | Canon MF832CDW toner: 10 | Canon MF832CDW toner: 10 | MF832CDW toner: 10
+Canon,CRG-718BK,2,21,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,Canon LBP7660 toner: 10 | Canon MF8330 toner: 10 | MF8330 toner: 10
+Canon,PGI-2500,1,6,0.0,13.5,13.5,MEDIUM,100.0,0.64,1.24,PONECHAŤ,Canon MAXIFY MB5150 toner: 10 | toner Canon MAXIFY MB5150: 10 | Canon MAXIFY MB5450 toner: 10
+Canon,PGI-2500BK,2,6,0.0,13.5,13.5,MEDIUM,100.0,0.64,1.24,PONECHAŤ,Canon MAXIFY MB5150 toner: 10 | toner Canon MAXIFY MB5150: 10 | Canon MAXIFY MB5450 toner: 10
+Canon,PGI-2500C,1,6,0.0,13.5,13.5,MEDIUM,100.0,0.64,1.24,PONECHAŤ,Canon MAXIFY MB5150 toner: 10 | toner Canon MAXIFY MB5150: 10 | Canon MAXIFY MB5450 toner: 10
+Canon,PGI-2500M,1,6,0.0,13.5,13.5,MEDIUM,100.0,0.64,1.24,PONECHAŤ,Canon MAXIFY MB5150 toner: 10 | toner Canon MAXIFY MB5150: 10 | Canon MAXIFY MB5450 toner: 10
+Canon,PGI-2500Y,1,6,0.0,13.5,13.5,MEDIUM,100.0,0.64,1.24,PONECHAŤ,Canon MAXIFY MB5150 toner: 10 | toner Canon MAXIFY MB5150: 10 | Canon MAXIFY MB5450 toner: 10
+Canon,CRG-064HC,1,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,LBP722CDW toner: 10 | Canon MF832CDW toner: 10 | Canon MF832CDW toner: 10 | MF832CDW toner: 10
+Canon,CRG-064HM,1,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,LBP722CDW toner: 10 | Canon MF832CDW toner: 10 | Canon MF832CDW toner: 10 | MF832CDW toner: 10
+Canon,CRG-064HY,1,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,LBP722CDW toner: 10 | Canon MF832CDW toner: 10 | Canon MF832CDW toner: 10 | MF832CDW toner: 10
+Canon,PGI-2500XL,4,6,0.0,13.5,13.5,MEDIUM,100.0,0.64,1.24,PONECHAŤ,Canon MAXIFY MB5150 toner: 10 | toner Canon MAXIFY MB5150: 10 | Canon MAXIFY MB5450 toner: 10
+Canon,CRG-040,4,2,0.0,13.5,13.5,MEDIUM,100.0,,,PONECHAŤ,Canon LBP710CX toner: 10 | LBP710CX toner: 10 | LBP712CX toner: 10
+Canon,CRG-064,4,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,LBP722CDW toner: 10 | Canon MF832CDW toner: 10 | MF832CDW toner: 10
+Canon,CRG-515,1,2,0.0,13.5,13.5,MEDIUM,,,,PONECHAŤ,Canon LBP3310 toner: 10 | LBP3310 toner: 10 | Canon LBP3370 toner: 10
+Epson,C13T07114H10,1,6,0.0,13.5,13.5,HIGH,100.0,,,PONECHAŤ,Epson Stylus DX4400 toner: 10 | toner Epson Stylus DX4400: 10 | Epson DX4400 toner: 10 | Epson Stylus DX4450 toner: 10 | Epson DX4450 toner: 10
+Epson,C13T08954010,1,8,0.0,13.5,13.5,MEDIUM,100.0,,,PONECHAŤ,Epson Stylus SX100 toner: 10 | Epson SX100 toner: 10 | Epson Stylus SX105 toner: 10 | Epson SX105 toner: 10
+Kyocera,TK-1140,3,9,0.0,13.5,13.5,HIGH,,,,PONECHAŤ,Kyocera Ecosys M2035DN toner: 10 | toner Kyocera Ecosys M2035DN: 10 | Kyocera M2035DN toner: 10 | Kyocera Ecosys M2535DN toner: 10 | toner Kyocera Ecosys M2535DN: 10
+Kyocera,TK-1160,3,2,0.0,13.5,13.5,HIGH,100.0,,,PONECHAŤ,Kyocera Ecosys P2040DN toner: 10 | toner Kyocera Ecosys P2040DN: 10 | Kyocera P2040DN toner: 10 | P2040DN toner: 10 | Kyocera Ecosys P2040DW toner: 10
+HP,CF214A,4,6,10.0,10.0,12.5,HIGH,,,,PONECHAŤ,HP CF214A: 10 | CF214A: 10 | CF214A toner: 10 | HP CF214A toner: 10 | HP LaserJet Enterprise MFP M725DN toner: 10
+HP,CF214X,4,6,10.0,10.0,12.5,MEDIUM,71.0,,,PONECHAŤ,CF214X: 10 | CF214X toner: 10 | HP CF214X toner: 10 | HP LaserJet Enterprise MFP M725DN toner: 10
+HP,CF281A,4,10,10.0,10.0,12.5,MEDIUM,85.5,,,PONECHAŤ,HP CF281A: 10 | CF281A: 10 | CF281A toner: 10 | M605X toner: 10
+HP,CF281X,4,8,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,HP CF281X: 10 | CF281X: 10 | CF281X toner: 10 | M605X toner: 10
+HP,Q1338X,1,1,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,Q1338X: 10 | HP LaserJet 4200 toner: 10 | HP 4200 toner: 10
+HP,Q1339A,2,5,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,Q1339A: 10 | HP Q1339A toner: 10 | HP 4300 toner: 10
+HP,Q2624A,3,1,10.0,10.0,12.5,HIGH,100.0,,,PONECHAŤ,HP Q2624A: 10 | Q2624A: 10 | Q2624A toner: 10 | HP Q2624A toner: 10 | HP LaserJet 1150 toner: 10
+HP,Q5945A,3,7,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,Q5945A: 10 | HP LaserJet M4345 MFP toner: 10 | toner HP LaserJet M4345 MFP: 10
+HP,W2130A,2,11,10.0,10.0,12.5,MEDIUM,89.5,,,PONECHAŤ,HP W2130A: 10 | W2130A: 10 | W2130A toner: 10 | M554DN toner: 10
+HP,W2130X,2,11,10.0,10.0,12.5,MEDIUM,98.0,,,PONECHAŤ,HP W2130X: 10 | W2130X: 10 | W2130X toner: 10 | M554DN toner: 10
+HP,W2131A,2,11,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,W2131A: 10 | M554DN toner: 10
+HP,W2131X,2,11,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,W2131X: 10 | M554DN toner: 10
+HP,W2132A,2,11,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,W2132A: 10 | M554DN toner: 10
+HP,W2132X,2,11,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,W2132X: 10 | M554DN toner: 10
+HP,W2133A,2,11,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,W2133A: 10 | M554DN toner: 10
+HP,W2133X,2,11,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,W2133X: 10 | M554DN toner: 10
+HP,CE255XD,1,3,10.0,10.0,12.5,HIGH,100.0,,,PONECHAŤ,HP CE255XD: 10 | CE255XD: 10 | CE255XD toner: 10 | HP P3015 toner: 10 | P3015 toner: 10
+HP,Q3960A,2,7,10.0,10.0,12.5,MEDIUM,100.0,0.06,0.6,PONECHAŤ,HP Q3960A: 10 | Q3960A: 10 | Q3960A toner: 10 | HP 2800 toner: 10
+HP,Q3961A,2,7,10.0,10.0,12.5,HIGH,96.5,0.06,0.6,PONECHAŤ,HP Q3961A: 10 | Q3961A: 10 | Q3961A toner: 10 | HP Q3961A toner: 10 | HP 2800 toner: 10
+HP,Q3962A,2,7,10.0,10.0,12.5,MEDIUM,100.0,0.06,0.6,PONECHAŤ,HP Q3962A: 10 | HP 2800 toner: 10
+HP,Q3963A,2,7,10.0,10.0,12.5,MEDIUM,100.0,0.06,0.6,PONECHAŤ,HP Q3963A: 10 | Q3963A: 10 | HP Q3963A toner: 10 | HP 2800 toner: 10
+HP,Q6000A,3,10,10.0,10.0,12.5,HIGH,100.0,,,PONECHAŤ,HP Q6000A: 10 | Q6000A: 10 | Q6000A toner: 10 | HP Q6000A toner: 10 | HP 2600 toner: 10
+HP,Q6001A,3,10,10.0,10.0,12.5,HIGH,,,,PONECHAŤ,HP Q6001A: 10 | Q6001A: 10 | Q6001A toner: 10 | HP Q6001A toner: 10 | HP 2600 toner: 10
+HP,Q6002A,3,10,10.0,10.0,12.5,HIGH,,,,PONECHAŤ,HP Q6002A: 10 | Q6002A: 10 | Q6002A toner: 10 | HP 2600 toner: 10 | 2600 toner: 10
+HP,Q6003A,3,10,10.0,10.0,12.5,HIGH,,,,PONECHAŤ,HP Q6003A: 10 | Q6003A: 10 | Q6003A toner: 10 | HP Q6003A toner: 10 | HP 2600 toner: 10
+HP,Q1338A,2,8,10.0,10.0,12.5,HIGH,,,,PONECHAŤ,HP Q1338A: 10 | Q1338A: 10 | Q1338A toner: 10 | HP Q1338A toner: 10 | HP LaserJet 4200 toner: 10
+HP,Q2610A,2,6,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,HP Q2610A: 10 | Q2610A: 10 | Q2610A toner: 10 | HP 2300 toner: 10
+Konica,TNP40,1,1,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,TNP40: 10 | TNP40 toner: 10 | Konica Minolta Bizhub 4020 toner: 10 | toner Konica Minolta Bizhub 4020: 10
+Konica,TN011,1,4,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,TN011: 10 | 1200 toner: 10
+Konica,TN319Y,1,1,10.0,10.0,12.5,HIGH,,,,PONECHAŤ,TN319Y: 10 | Konica Minolta Bizhub C360 toner: 10 | toner Konica Minolta Bizhub C360: 10 | Konica C360 toner: 10 | C360 toner: 10
+Xerox,106R02777,1,4,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,Xerox 106R02777: 10 | 106R02777: 10 | Xerox 106R02777 toner: 10 | 3052 toner: 10
+Xerox,106R02778,3,4,10.0,10.0,12.5,HIGH,100.0,,,PONECHAŤ,Xerox 106R02778: 10 | 106R02778: 10 | 106R02778 toner: 10 | Xerox 106R02778 toner: 10 | 3052 toner: 10
+Xerox,106R03488,3,2,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R03488: 10 | 106R03488: 10 | 106R03488 toner: 10 | 6510 toner: 10
+Xerox,106R03693,3,2,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,Xerox 106R03693: 10 | 106R03693: 10 | 6510 toner: 10
+Xerox,106R03694,3,2,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R03694: 10 | 106R03694: 10 | 6510 toner: 10
+Xerox,106R03695,3,2,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R03695: 10 | 106R03695: 10 | 6510 toner: 10
+Xerox,106R03048,1,2,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R03048: 10 | 106R03048: 10 | 106R03048 toner: 10 | 3020 toner: 10
+Xerox,106R02782,1,4,10.0,10.0,12.5,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R02782: 10 | 106R02782: 10 | 106R02782 toner: 10 | 3052 toner: 10
+Xerox,106R03481,1,2,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,Xerox 106R03481: 10 | 106R03481: 10 | 6510 toner: 10
+Xerox,106R03482,1,2,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,106R03482: 10 | 6510 toner: 10
+Xerox,106R03484,1,2,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,Xerox 106R03484: 10 | 106R03484: 10 | 6510 toner: 10
+Xerox,106R03480,1,2,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,Xerox 106R03480: 10 | 106R03480: 10 | 106R03480 toner: 10 | 6510 toner: 10
+Xerox,106R03690,1,2,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,Xerox 106R03690: 10 | 106R03690: 10 | 6510 toner: 10
+Xerox,106R03691,1,2,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,Xerox 106R03691: 10 | 106R03691: 10 | 6510 toner: 10
+Xerox,106R03692,1,2,10.0,10.0,12.5,MEDIUM,,,,PONECHAŤ,106R03692: 10 | 6510 toner: 10
+Brother,BT5000C,2,9,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Brother BT5000C: 10 | BT5000C: 10
+Brother,BT5000M,2,9,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Brother BT5000M: 10 | BT5000M: 10
+Brother,BT5000Y,2,9,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Brother BT5000Y: 10 | BT5000Y: 10
+Brother,BT6000BK,2,4,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Brother BT6000BK: 10 | BT6000BK: 10
+Brother,BTD60BK,1,5,10.0,0.0,10.0,MEDIUM,100.0,0.48,1.49,PONECHAŤ,Brother BTD60BK: 10 | BTD60BK: 10
+Brother,LC123VALBP,1,41,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Brother LC123VALBP: 10 | LC123VALBP: 10
+Brother,LC227XLVALBP,1,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,LC227XLVALBP: 10
+Brother,BTD100BK,1,5,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Brother BTD100BK: 10 | BTD100BK: 10
+Brother,LC1100BK,2,8,10.0,0.0,10.0,LOW,,,,PONECHAŤ,LC1100BK: 10
+Brother,LC121VALBP,1,41,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Brother LC121VALBP: 10
+Brother,LC123BK,1,41,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Brother LC123BK: 10 | LC123BK: 10
+Brother,LC127XLBK,1,5,10.0,0.0,10.0,LOW,,,,PONECHAŤ,LC127XLBK: 10
+Brother,LC129XLVALBP,1,5,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,LC129XLVALBP: 10
+Brother,LC985BK,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,LC985BK: 10
+Canon,CRG-041,1,1,0.0,10.0,10.0,MEDIUM,,,,PONECHAŤ,Canon LBP312X toner: 10 | LBP312X toner: 10
+Canon,CRG-041H,2,1,0.0,10.0,10.0,MEDIUM,,,,PONECHAŤ,Canon LBP312X toner: 10 | LBP312X toner: 10
+Canon,CRG-072,1,3,0.0,10.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Canon MF287dw toner: 10 | MF287dw toner: 10
+Canon,CRG-072H,1,3,0.0,10.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Canon MF287dw toner: 10 | MF287dw toner: 10
+Canon,PGI-7BK,1,3,0.0,10.0,10.0,LOW,,,,PONECHAŤ,Canon iX4000 toner: 10
+Epson,C13T11N140,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T11N140: 10
+Epson,C13T11N240,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T11N240: 10
+Epson,C13T11N440,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T11N440: 10
+Epson,C13T11P140,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,C13T11P140: 10
+Epson,C13T11P240,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,C13T11P240: 10
+Epson,C13T11P340,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T11P340: 10
+Epson,C13T11P440,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T11P440: 10
+Epson,C13T946140,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T946140: 10
+Epson,C13T11N340,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,C13T11N340: 10
+Epson,C13T08014011,1,8,0.0,10.0,10.0,LOW,,,,PONECHAŤ,P50 toner: 10
+Epson,C13T01C100,1,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Epson C13T01C100: 10 | C13T01C100: 10
+Epson,C13T01C200,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T01C200: 10
+Epson,C13T01C300,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T01C300: 10
+Epson,C13T01C400,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T01C400: 10
+Epson,C13T05304010,1,3,0.0,10.0,10.0,LOW,100.0,,,PONECHAŤ,1200 toner: 10
+Epson,C13T05H64010,1,5,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Epson C13T05H64010: 10 | C13T05H64010: 10
+Epson,C13T08024011,1,8,0.0,10.0,10.0,LOW,,,,PONECHAŤ,P50 toner: 10
+Epson,C13T08034011,1,8,0.0,10.0,10.0,LOW,,,,PONECHAŤ,P50 toner: 10
+Epson,C13T08044011,1,8,0.0,10.0,10.0,LOW,,,,PONECHAŤ,P50 toner: 10
+Epson,C13T08054011,1,8,0.0,10.0,10.0,LOW,,,,PONECHAŤ,P50 toner: 10
+Epson,C13T08064011,1,8,0.0,10.0,10.0,LOW,,,,PONECHAŤ,P50 toner: 10
+Epson,C13T08074011,1,8,0.0,10.0,10.0,LOW,,,,PONECHAŤ,P50 toner: 10
+Epson,C13T13064010,1,5,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T13064010: 10
+Epson,C13T16314010,1,5,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T16314010: 10
+Epson,C13T16344010,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T16344010: 10
+Epson,C13T26214010,1,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T26214010: 10
+Epson,C13T26344010,1,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Epson C13T26344010: 10 | C13T26344010: 10
+Epson,C13T27154010,1,5,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T27154010: 10
+Epson,C13T693100,2,11,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T693100: 10
+Epson,C13T693300,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T693300: 10
+Epson,C13T693500,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T693500: 10
+Epson,C13T694100,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T694100: 10
+Epson,C13T694200,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T694200: 10
+Epson,C13T694300,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T694300: 10
+Epson,C13T694400,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T694400: 10
+Epson,C13T694500,1,6,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,C13T694500: 10
+Epson,C13T70114010,1,5,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T70114010: 10
+Epson,C13T70124010,1,5,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T70124010: 10
+Epson,C13T74414010,1,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T74414010: 10
+Epson,C13T79014010,1,6,10.0,0.0,10.0,MEDIUM,86.0,,,PONECHAŤ,Epson C13T79014010: 10 | C13T79014010: 10
+Epson,C13T79034010,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T79034010: 10
+Epson,C13T79044010,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T79044010: 10
+Epson,C13T79114010,1,6,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Epson C13T79114010: 10 | C13T79114010: 10
+Epson,C13T79144010,1,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T79144010: 10
+Epson,C13T580800,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T580800: 10
+Epson,C13T580900,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,C13T580900: 10
+HP,CE390A,4,10,10.0,0.0,10.0,MEDIUM,93.0,,,PONECHAŤ,HP CE390A: 10 | CE390A: 10 | CE390A toner: 10
+HP,CE390X,4,8,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP CE390X: 10 | CE390X: 10 | CE390X toner: 10 | HP CE390X toner: 10
+HP,CF287A,4,10,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP CF287A: 10 | CF287A: 10 | CF287A toner: 10 | HP CF287A toner: 10
+HP,CF287X,4,8,10.0,0.0,10.0,MEDIUM,100.0,0.69,3.13,PONECHAŤ,HP CF287X: 10 | CF287X: 10 | CF287X toner: 10 | HP CF287X toner: 10
+HP,CF360X,5,13,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP CF360X: 10 | CF360X: 10 | CF360X toner: 10 | HP CF360X toner: 10
+HP,CF361X,5,13,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP CF361X: 10 | CF361X: 10 | CF361X toner: 10 | HP CF361X toner: 10
+HP,CF362X,5,13,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,CF362X: 10 | CF362X toner: 10
+HP,CF363X,5,13,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,CF363X: 10
+HP,Q2624X,2,1,0.0,10.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP LaserJet 1150 toner: 10 | toner HP LaserJet 1150: 10 | HP 1150 toner: 10 | 1150 toner: 10
+HP,W9004MC,2,0,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP W9004MC: 10 | W9004MC: 10 | W9004MC toner: 10 | HP W9004MC toner: 10
+HP,W9024MC,1,0,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP W9024MC: 10 | W9024MC: 10 | W9024MC toner: 10 | HP W9024MC toner: 10
+HP,CF253XM,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP CF253XM: 10 | CF253XM: 10 | CF253XM toner: 10
+HP,CF360A,3,11,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP CF360A: 10 | CF360A: 10 | CF360A toner: 10 | HP CF360A toner: 10
+HP,W1103A,1,5,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP W1103A: 10 | W1103A: 10 | W1103A toner: 10
+HP,W1103AD,1,5,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP W1103AD: 10 | W1103AD: 10 | W1103AD toner: 10 | HP W1103AD toner: 10
+HP,CE260A,3,7,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CE260A: 10
+HP,CE260X,3,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CE260X: 10 | CE260X: 10
+HP,CE261A,3,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CE261A: 10
+HP,CE262A,3,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CE262A: 10
+HP,CE263A,3,6,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CE263A: 10
+HP,CE264X,2,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,CE264X: 10 | CE264X toner: 10
+HP,CE270A,3,8,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CE270A: 10 | CE270A: 10 | CE270A toner: 10 | HP CE270A toner: 10
+HP,CE271A,3,8,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,CE271A toner: 10 | HP CE271A toner: 10
+HP,CE272A,3,8,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CE272A: 10
+HP,CE340A,3,4,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP CE340A: 10 | CE340A: 10 | CE340A toner: 10
+HP,CE341A,3,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,CE341A: 10 | CE341A toner: 10
+HP,CE342A,3,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CE342A: 10
+HP,CE343A,3,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CE343A: 10 | CE343A: 10
+HP,CE390XD,1,8,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CE390XD: 10
+HP,CE740A,3,7,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CE740A: 10 | CE740A: 10 | CE740A toner: 10 | HP CE740A toner: 10
+HP,CE741A,3,7,10.0,0.0,10.0,MEDIUM,25.0,,,PONECHAŤ,CE741A: 10 | CE741A toner: 10
+HP,CE742A,3,7,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CE742A: 10 | CE742A: 10 | CE742A toner: 10 | HP CE742A toner: 10
+HP,CE743A,3,7,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CE743A: 10 | CE743A: 10 | CE743A toner: 10
+HP,CF031A,2,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,CF031A: 10 | CF031A toner: 10 | HP CF031A toner: 10
+HP,CF252XM,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF252XM: 10 | CF252XM: 10 | CF252XM toner: 10
+HP,CF300A,2,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP CF300A: 10 | CF300A: 10 | CF300A toner: 10 | HP CF300A toner: 10
+HP,CF301A,2,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF301A: 10 | CF301A: 10 | CF301A toner: 10 | HP CF301A toner: 10
+HP,CF302A,2,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF302A: 10 | CF302A: 10
+HP,CF303A,2,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF303A: 10 | CF303A: 10
+HP,CF310A,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,CF310A: 10 | CF310A toner: 10
+HP,CF312A,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CF312A: 10
+HP,CF313A,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CF313A: 10
+HP,CF325X,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,CF325X: 10 | CF325X toner: 10
+HP,CF330X,2,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,CF330X: 10 | CF330X toner: 10 | HP CF330X toner: 10
+HP,CF331A,2,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF331A: 10 | CF331A: 10
+HP,CF332A,2,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF332A: 10 | CF332A: 10
+HP,CF333A,2,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CF333A: 10
+HP,CF361A,3,11,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF361A: 10 | CF361A: 10 | CF361A toner: 10 | HP CF361A toner: 10
+HP,CF362A,3,11,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF362A: 10 | CF362A: 10 | CF362A toner: 10
+HP,CF363A,3,11,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,CF363A: 10 | CF363A toner: 10 | HP CF363A toner: 10
+HP,CF410XD,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF410XD: 10 | CF410XD: 10
+HP,CF450A,1,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF450A: 10 | CF450A: 10
+HP,CF451A,1,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF451A: 10 | CF451A: 10
+HP,CF452A,1,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,CF452A: 10 | CF452A toner: 10
+HP,CF453A,1,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,CF453A: 10
+HP,Q5950A,2,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP Q5950A: 10 | Q5950A: 10 | HP Q5950A toner: 10
+HP,Q5951A,2,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP Q5951A: 10 | Q5951A: 10
+HP,Q5952A,2,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Q5952A: 10
+HP,Q5953A,2,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Q5953A: 10
+HP,Q7516A,3,5,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Q7516A: 10
+HP,Q7570A,3,6,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Q7570A: 10 | Q7570A toner: 10
+HP,W2010A,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,W2010A: 10 | W2010A toner: 10
+HP,W2010X,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP W2010X: 10 | W2010X: 10
+HP,W2011A,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,W2011A: 10
+HP,W2011X,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP W2011X: 10 | W2011X: 10
+HP,W2012A,1,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP W2012A: 10 | W2012A: 10
+HP,W2012X,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,W2012X: 10
+HP,W2013A,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,W2013A: 10
+HP,W2013X,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,W2013X: 10
+HP,W2030XH,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP W2030XH: 10 | W2030XH: 10 | W2030XH toner: 10
+HP,W2031XH,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,W2031XH: 10
+HP,W2032XH,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,W2032XH: 10
+HP,Q2670A,1,8,10.0,0.0,10.0,MEDIUM,86.0,,,PONECHAŤ,HP Q2670A: 10 | Q2670A toner: 10
+HP,Q2671A,1,8,10.0,0.0,10.0,LOW,,,,PONECHAŤ,HP Q2671A: 10
+HP,Q2672A,1,8,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP Q2672A: 10 | Q2672A: 10
+HP,Q6460A,1,8,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP Q6460A: 10 | Q6460A: 10
+HP,Q6461A,1,8,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP Q6461A: 10 | Q6461A: 10
+HP,Q6470A,1,11,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP Q6470A: 10 | Q6470A: 10 | HP Q6470A toner: 10
+HP,Q6471A,1,11,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Q6471A: 10
+HP,Q6472A,1,11,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Q6472A: 10 | Q6472A toner: 10 | HP Q6472A toner: 10
+HP,Q6473A,1,11,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP Q6473A: 10 | Q6473A toner: 10
+HP,Q6511A,2,9,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP Q6511A: 10 | Q6511A: 10 | Q6511A toner: 10
+HP,Q6511X,2,9,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,HP Q6511X: 10 | Q6511X: 10 | Q6511X toner: 10
+HP,CF330A,1,3,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF330A: 10 | CF330A toner: 10
+HP,Q7581A,1,8,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP Q7581A: 10 | Q7581A: 10
+HP,Q7582A,1,8,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP Q7582A: 10 | Q7582A: 10
+HP,Q7583A,1,8,10.0,0.0,10.0,LOW,,,,PONECHAŤ,HP Q7583A: 10
+HP,CF320A,1,0,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,CF320A: 10
+HP,CF320X,1,0,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF320X: 10 | CF320X: 10 | CF320X toner: 10
+HP,CF321A,1,0,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF321A: 10 | CF321A: 10
+HP,CF323A,1,0,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,HP CF323A: 10 | CF323A: 10
+Konica,TNP40/42,1,1,0.0,10.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Konica Minolta Bizhub 4020 toner: 10 | toner Konica Minolta Bizhub 4020: 10
+Konica,TN222,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN222: 10
+Konica,TNP36,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TNP36: 10 | TNP36 toner: 10
+Konica,TNP44,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TNP44: 10 | TNP44 toner: 10
+Konica,TNP48C,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP48C: 10
+Konica,TNP48K,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TNP48K: 10 | TNP48K toner: 10
+Konica,TNP48M,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP48M: 10
+Konica,TNP48Y,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP48Y: 10
+Konica,TNP49C,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP49C: 10
+Konica,TNP49K,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TNP49K: 10 | TNP49K toner: 10
+Konica,TNP49Y,1,3,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,TNP49Y: 10
+Konica,TNP63,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TNP63: 10 | TNP63 toner: 10
+Konica,TNP75,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TNP75: 10 | TNP75 toner: 10
+Konica,TNP76,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TNP76: 10 | TNP76 toner: 10
+Konica,TNP79C,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP79C: 10
+Konica,TNP79K,1,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,TNP79K: 10 | TNP79K toner: 10
+Konica,TNP79M,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP79M: 10
+Konica,TNP79Y,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP79Y: 10
+Konica,TNP80C,1,1,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,TNP80C: 10
+Konica,TNP80K,1,1,10.0,0.0,10.0,MEDIUM,100.0,0.75,1.94,PONECHAŤ,TNP80K: 10 | TNP80K toner: 10
+Konica,TNP80M,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP80M: 10
+Konica,TNP80Y,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP80Y: 10
+Konica,TN414,2,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TN414: 10 | TN414 toner: 10
+Konica,TN110,1,1,10.0,0.0,10.0,LOW,50.0,,,PONECHAŤ,TN110: 10
+Konica,TN211,1,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN211 toner: 10
+Konica,TN219,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN219: 10
+Konica,TN221C,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,TN221C: 10
+Konica,TN221K,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN221K: 10
+Konica,TN221M,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN221M: 10
+Konica,TN221Y,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN221Y: 10
+Konica,TN227C,1,3,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TN227C: 10 | TN227C toner: 10
+Konica,TN227K,1,3,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,TN227K: 10
+Konica,TN227M,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN227M: 10
+Konica,TN227Y,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN227Y: 10
+Konica,TN311,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TN311: 10 | TN311 toner: 10
+Konica,TN314K,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TN314K: 10 | TN314K toner: 10
+Konica,TN320,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TN320: 10 | TN320 toner: 10
+Konica,TN324C,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TN324C: 10 | TN324C toner: 10
+Konica,TN324K,1,2,10.0,0.0,10.0,MEDIUM,100.0,0.91,1.84,PONECHAŤ,TN324K: 10 | TN324K toner: 10
+Konica,TN412,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN412: 10
+Konica,TN512C,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN512C: 10
+Konica,TN512M,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN512M: 10
+Konica,TN513,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TN513: 10 | TN513 toner: 10
+Konica,TN612C,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN612C: 10
+Konica,TN612K,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN612K: 10
+Konica,TN612Y,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,TN612Y: 10
+Konica,TN616K,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN616K: 10
+Konica,TN616Y,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,TN616Y: 10
+Konica,TN710,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN710: 10
+Konica,TN711C,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,TN711C: 10
+Konica,TN711K,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,TN711K: 10
+Konica,TN711M,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN711M: 10
+Konica,TN711Y,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TN711Y: 10
+Konica,TNP24,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Konica TNP24: 10 | TNP24: 10 | TNP24 toner: 10
+Konica,TNP27K,1,1,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,TNP27K: 10 | TNP27K toner: 10
+Konica,TNP34,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP34: 10
+Konica,TNP35,2,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,TNP35: 10 | TNP35 toner: 10
+Konica,TNP37,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP37: 10
+Konica,TNP41,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Konica TNP41: 10 | TNP41: 10 | TNP41 toner: 10
+Konica,TNP42,1,1,0.0,10.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Konica Minolta Bizhub 4020 toner: 10 | toner Konica Minolta Bizhub 4020: 10
+Konica,TNP50K,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP50K: 10
+Konica,TNP51K,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP51K: 10
+Konica,TNP55,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,TNP55: 10
+Kyocera,TK-170,4,7,0.0,10.0,10.0,MEDIUM,,,,PONECHAŤ,Kyocera Ecosys P2135DN toner: 10 | toner Kyocera Ecosys P2135DN: 10 | Kyocera P2135DN toner: 10 | P2135DN toner: 10
+Kyocera,TK-580C,3,3,0.0,10.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Kyocera Ecosys P6021CDN toner: 10 | toner Kyocera Ecosys P6021CDN: 10 | Kyocera P6021CDN toner: 10
+Kyocera,TK-580K,3,3,0.0,10.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Kyocera Ecosys P6021CDN toner: 10 | toner Kyocera Ecosys P6021CDN: 10 | Kyocera P6021CDN toner: 10
+Kyocera,TK-580M,3,3,0.0,10.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Kyocera Ecosys P6021CDN toner: 10 | toner Kyocera Ecosys P6021CDN: 10 | Kyocera P6021CDN toner: 10
+Kyocera,TK-580Y,3,3,0.0,10.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Kyocera Ecosys P6021CDN toner: 10 | toner Kyocera Ecosys P6021CDN: 10 | Kyocera P6021CDN toner: 10
+Kyocera,TK-4105,1,4,0.0,10.0,10.0,LOW,,,,PONECHAŤ,2200 toner: 10
+Lexmark,W850H21G,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,W850H21G: 10
+Samsung,MLT-D309E,1,2,0.0,10.0,10.0,LOW,,,,PONECHAŤ,6510 toner: 10
+Samsung,MLT-D309L,1,2,0.0,10.0,10.0,LOW,,,,PONECHAŤ,6510 toner: 10
+Samsung,MLT-D309S,1,2,0.0,10.0,10.0,LOW,,,,PONECHAŤ,6510 toner: 10
+Samsung,MLT-P309E,1,2,0.0,10.0,10.0,LOW,,,,PONECHAŤ,6510 toner: 10
+Xerox,106R04348,3,4,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R04348: 10 | 106R04348: 10 | 106R04348 toner: 10 | Xerox 106R04348 toner: 10
+Xerox,006R04403,2,3,10.0,0.0,10.0,MEDIUM,100.0,0.36,1.33,PONECHAŤ,Xerox 006R04403: 10 | 006R04403: 10 | 006R04403 toner: 10 | Xerox 006R04403 toner: 10
+Xerox,006R04380,3,5,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R04380: 10 | 006R04380: 10 | 006R04380 toner: 10
+Xerox,006R04381,3,5,10.0,0.0,10.0,MEDIUM,100.0,0.38,1.52,PONECHAŤ,Xerox 006R04381: 10 | 006R04381: 10
+Xerox,006R04395,2,2,10.0,0.0,10.0,MEDIUM,100.0,0.48,3.88,PONECHAŤ,Xerox 006R04395: 10 | 006R04395: 10 | 006R04395 toner: 10
+Xerox,006R04396,2,2,10.0,0.0,10.0,MEDIUM,85.5,,,PONECHAŤ,Xerox 006R04396: 10 | 006R04396: 10
+Xerox,006R04397,2,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R04397: 10 | 006R04397: 10
+Xerox,006R04398,2,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R04398: 10
+Xerox,106R02182,1,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R02182: 10 | 106R02182: 10 | 106R02182 toner: 10 | Xerox 106R02182 toner: 10
+Xerox,106R01379,2,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01379: 10 | 106R01379: 10 | 106R01379 toner: 10 | Xerox 106R01379 toner: 10
+Xerox,106R02306,3,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R02306: 10 | 106R02306: 10
+Xerox,106R03623,3,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R03623: 10 | 106R03623: 10 | 106R03623 toner: 10 | Xerox 106R03623 toner: 10
+Xerox,106R01627,2,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Xerox 106R01627: 10
+Xerox,106R01629,2,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Xerox 106R01629: 10
+Xerox,106R01630,2,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01630: 10
+Xerox,106R01631,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R01631: 10 | 106R01631: 10 | 106R01631 toner: 10
+Xerox,106R01632,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01632: 10
+Xerox,106R01633,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R01633: 10 | 106R01633: 10
+Xerox,106R01634,1,3,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01634: 10 | 106R01634: 10 | 106R01634 toner: 10 | Xerox 106R01634 toner: 10
+Xerox,106R02760,2,4,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R02760: 10 | 106R02760: 10 | 106R02760 toner: 10
+Xerox,106R02761,2,4,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R02761: 10 | 106R02761: 10
+Xerox,106R02762,2,4,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R02762: 10 | 106R02762: 10
+Xerox,106R02763,2,4,10.0,0.0,10.0,MEDIUM,67.0,,,PONECHAŤ,Xerox 106R02763: 10 | 106R02763: 10 | 106R02763 toner: 10
+Xerox,106R01601,2,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01601: 10
+Xerox,106R01602,2,4,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01602: 10
+Xerox,106R01603,2,4,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,106R01603: 10
+Xerox,106R01604,2,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01604: 10 | 106R01604: 10
+Xerox,106R03585,2,2,10.0,0.0,10.0,MEDIUM,71.5,,,PONECHAŤ,Xerox 106R03585: 10 | 106R03585: 10
+Xerox,106R01487,3,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R01487: 10 | 106R01487: 10 | 106R01487 toner: 10
+Xerox,106R02312,2,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R02312: 10 | 106R02312: 10 | 106R02312 toner: 10 | Xerox 106R02312 toner: 10
+Xerox,006R04404,2,3,10.0,0.0,10.0,MEDIUM,100.0,0.49,2.4,PONECHAŤ,Xerox 006R04404: 10 | 006R04404: 10 | 006R04404 toner: 10 | Xerox 006R04404 toner: 10
+Xerox,006R01704,1,5,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R01704: 10
+Xerox,006R01758,1,3,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R01758: 10
+Xerox,006R01759,1,3,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R01759: 10
+Xerox,006R01760,1,3,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R01760: 10
+Xerox,006R01761,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01761: 10
+Xerox,106R04349,1,4,10.0,0.0,10.0,MEDIUM,100.0,0.32,2.33,PONECHAŤ,Xerox 106R04349: 10 | 106R04349: 10 | 106R04349 toner: 10
+Xerox,006R04379,1,5,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R04379: 10 | 006R04379: 10 | 006R04379 toner: 10
+Xerox,006R04728,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R04728: 10
+Xerox,006R04387,1,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R04387: 10 | 006R04387: 10 | 006R04387 toner: 10
+Xerox,006R04388,1,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R04388: 10 | 006R04388: 10
+Xerox,006R04389,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R04389: 10 | 006R04389: 10
+Xerox,006R04390,1,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R04390: 10 | 006R04390: 10
+Xerox,006R04362,2,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R04362: 10
+Xerox,006R04363,2,2,10.0,0.0,10.0,LOW,71.0,,,PONECHAŤ,006R04363: 10
+Xerox,006R04368,2,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R04368: 10 | 006R04368: 10
+Xerox,006R04369,2,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R04369: 10
+Xerox,006R04370,2,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R04370: 10
+Xerox,006R04371,2,2,10.0,0.0,10.0,LOW,43.0,,,PONECHAŤ,006R04371: 10
+Xerox,006R04832,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R04832: 10
+Xerox,006R04833,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R04833: 10
+Xerox,006R04834,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R04834: 10
+Xerox,006R04835,1,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R04835: 10 | 006R04835: 10
+Xerox,006R01561,1,3,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R01561: 10
+Xerox,006R01693,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01693: 10 | 006R01693: 10
+Xerox,006R01694,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01694: 10 | 006R01694: 10
+Xerox,006R01695,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01695: 10 | 006R01695: 10
+Xerox,006R01696,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01696: 10 | 006R01696: 10
+Xerox,106R03621,2,3,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R03621: 10 | 106R03621: 10
+Xerox,106R03483,1,2,0.0,10.0,10.0,LOW,,,,PONECHAŤ,6510 toner: 10
+Xerox,106R01570,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01570: 10
+Xerox,106R01571,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01571: 10 | 106R01571: 10
+Xerox,006R01731,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01731: 10 | 006R01731: 10 | 006R01731 toner: 10
+Xerox,106R03396,1,3,10.0,0.0,10.0,MEDIUM,98.0,,,PONECHAŤ,Xerox 106R03396: 10 | 106R03396: 10
+Xerox,006R01819,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01819: 10 | 006R01819: 10 | 006R01819 toner: 10
+Xerox,106R03532,2,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R03532: 10 | 106R03532: 10 | 106R03532 toner: 10
+Xerox,106R03533,2,2,10.0,0.0,10.0,MEDIUM,57.0,,,PONECHAŤ,Xerox 106R03533: 10 | 106R03533: 10
+Xerox,106R03534,2,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R03534: 10
+Xerox,106R03535,2,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R03535: 10
+Xerox,106R03745,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R03745: 10 | 106R03745: 10
+Xerox,106R03746,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R03746: 10 | 106R03746: 10
+Xerox,106R03747,1,3,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R03747: 10 | 106R03747: 10
+Xerox,106R03748,1,3,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R03748: 10 | 106R03748: 10
+Xerox,006R01828,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01828: 10 | 006R01828: 10
+Xerox,006R01829,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01829: 10 | 006R01829: 10
+Xerox,006R01830,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01830: 10 | 006R01830: 10
+Xerox,006R01831,1,3,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,006R01831: 10
+Xerox,006R01573,1,4,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01573: 10 | 006R01573: 10 | 006R01573 toner: 10 | Xerox 006R01573 toner: 10
+Xerox,006R01160,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01160: 10 | 006R01160: 10 | 006R01160 toner: 10
+Xerox,006R01461,1,4,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01461: 10 | 006R01461: 10
+Xerox,006R01462,1,4,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01462: 10 | 006R01462: 10
+Xerox,006R01463,1,4,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01463: 10 | 006R01463: 10
+Xerox,006R01464,1,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01464: 10 | 006R01464: 10
+Xerox,006R01518,1,6,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01518: 10 | 006R01518: 10
+Xerox,006R01519,1,6,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01519: 10 | 006R01519: 10
+Xerox,006R01520,1,6,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01520: 10 | 006R01520: 10
+Xerox,006R01379,1,3,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01379: 10 | 006R01379: 10
+Xerox,006R01380,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01380: 10
+Xerox,006R01381,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01381: 10
+Xerox,006R01382,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01382: 10
+Xerox,006R01701,1,5,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01701: 10 | 006R01701: 10
+Xerox,006R01702,1,5,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01702: 10 | 006R01702: 10
+Xerox,006R01703,1,5,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01703: 10 | 006R01703: 10
+Xerox,006R04360,2,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R04360: 10 | 006R04360: 10
+Xerox,006R01659,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01659: 10 | 006R01659: 10
+Xerox,006R01660,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01660: 10
+Xerox,006R01661,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01661: 10
+Xerox,006R01662,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01662: 10
+Xerox,006R01449,1,5,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01449: 10
+Xerox,006R01450,1,5,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01450: 10
+Xerox,006R01451,1,5,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01451: 10
+Xerox,006R01529,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01529: 10
+Xerox,006R01530,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01530: 10
+Xerox,006R01531,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01531: 10
+Xerox,106R01374,2,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01374: 10 | 106R01374: 10 | 106R01374 toner: 10 | Xerox 106R01374 toner: 10
+Xerox,106R02304,2,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R02304: 10 | 106R02304: 10
+Xerox,106R02721,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R02721: 10 | 106R02721: 10
+Xerox,106R02723,2,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02723: 10
+Xerox,106R02732,2,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R02732: 10 | 106R02732: 10
+Xerox,106R01536,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01536: 10
+Xerox,106R01218,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01218: 10
+Xerox,106R02233,2,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02233: 10
+Xerox,106R02234,2,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R02234: 10 | 106R02234: 10
+Xerox,106R02235,2,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02235: 10
+Xerox,106R02236,2,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,106R02236: 10
+Xerox,106R02249,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02249: 10
+Xerox,106R02251,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02251: 10
+Xerox,106R02252,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Xerox 106R02252: 10
+Xerox,106R01513,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01513: 10
+Xerox,106R01525,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01525: 10
+Xerox,106R01526,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01526: 10
+Xerox,106R02606,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02606: 10
+Xerox,106R02608,1,1,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,106R02608: 10
+Xerox,106R02609,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02609: 10
+Xerox,106R02612,1,1,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,106R02612: 10
+Xerox,106R01441,1,10,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01441: 10
+Xerox,106R01443,2,10,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01443: 10 | 106R01443: 10
+Xerox,106R01444,2,10,10.0,0.0,10.0,MEDIUM,86.0,,,PONECHAŤ,Xerox 106R01444: 10 | 106R01444: 10
+Xerox,106R01445,2,10,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01445: 10
+Xerox,106R01446,2,10,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01446: 10 | 106R01446: 10
+Xerox,106R01572,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01572: 10
+Xerox,106R01573,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01573: 10 | 106R01573: 10
+Xerox,106R01624,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01624: 10
+Xerox,106R01626,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01626: 10
+Xerox,106R03581,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R03581: 10 | 106R03581: 10
+Xerox,106R03583,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R03583: 10 | 106R03583: 10
+Xerox,106R03395,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R03395: 10
+Xerox,106R03508,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R03508: 10 | 106R03508: 10
+Xerox,106R03509,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R03509: 10
+Xerox,106R03510,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R03510: 10
+Xerox,106R03511,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R03511: 10
+Xerox,106R03520,1,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R03520: 10 | 106R03520: 10
+Xerox,106R03522,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R03522: 10
+Xerox,106R03523,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R03523: 10 | 106R03523: 10
+Xerox,106R03884,1,2,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,106R03884: 10
+Xerox,106R03885,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R03885: 10
+Xerox,106R03886,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R03886: 10
+Xerox,106R03887,1,2,10.0,0.0,10.0,LOW,68.0,,,PONECHAŤ,106R03887: 10
+Xerox,006R01046,1,4,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01046: 10 | 006R01046: 10
+Xerox,106R02310,2,2,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R02310: 10 | 106R02310: 10
+Xerox,106R01531,2,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01531: 10 | 106R01531: 10
+Xerox,106R02739,1,1,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,106R02739: 10
+Xerox,106R01305,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01305: 10 | 106R01305: 10 | 106R01305 toner: 10 | Xerox 106R01305 toner: 10
+Xerox,006R01552,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01552: 10
+Xerox,106R02752,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02752: 10
+Xerox,106R02753,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02753: 10
+Xerox,106R02754,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02754: 10
+Xerox,106R02755,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R02755: 10 | 106R02755: 10
+Xerox,006R01175,1,7,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R01175: 10 | 006R01175: 10
+Xerox,006R01176,1,7,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01176: 10
+Xerox,006R01177,1,7,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01177: 10
+Xerox,006R01178,1,7,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01178: 10
+Xerox,006R01399,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01399: 10
+Xerox,006R01400,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01400: 10
+Xerox,006R01401,1,3,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01401: 10
+Xerox,006R01517,1,7,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 006R01517: 10 | 006R01517: 10 | 006R01517 toner: 10 | Xerox 006R01517 toner: 10
+Xerox,106R01412,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01412: 10 | 106R01412: 10
+Xerox,106R02307,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R02307: 10 | 106R02307: 10
+Xerox,106R01415,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01415: 10 | 106R01415: 10
+Xerox,106R01400,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Xerox 106R01400: 10
+Xerox,106R01401,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01401: 10
+Xerox,106R01402,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01402: 10
+Xerox,106R01403,1,1,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R01403: 10 | 106R01403: 10
+Xerox,006R04364,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R04364: 10 | 006R04364: 10
+Xerox,006R04366,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R04366: 10
+Xerox,006R04367,1,2,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 006R04367: 10 | 006R04367: 10
+Xerox,106R00442,1,1,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Xerox 106R00442: 10
+Xerox,106R01159,1,5,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R01159: 10 | 106R01159: 10 | 106R01159 toner: 10 | Xerox 106R01159 toner: 10
+Xerox,106R03622,1,3,10.0,0.0,10.0,LOW,100.0,,,PONECHAŤ,106R03622 toner: 10
+Xerox,106R03624,1,3,10.0,0.0,10.0,MEDIUM,100.0,,,PONECHAŤ,Xerox 106R03624: 10 | 106R03624: 10 | 106R03624 toner: 10
+Xerox,106R02229,1,13,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02229: 10
+Xerox,106R02231,1,13,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R02231: 10
+Xerox,106R02232,1,13,10.0,0.0,10.0,MEDIUM,,,,PONECHAŤ,Xerox 106R02232: 10 | 106R02232: 10
+Xerox,106R01437,1,10,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01437: 10
+Xerox,106R01439,1,10,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R01439: 10
+Xerox,106R03528,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,106R03528: 10
+Xerox,106R03530,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Xerox 106R03530: 10
+Xerox,106R02311,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,Xerox 106R02311: 10
+Xerox,006R01278,1,2,10.0,0.0,10.0,LOW,,,,PONECHAŤ,006R01278: 10
+Brother,LC-1100C,2,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1100M,2,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1100XXL,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1100Y,2,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-123XLBK,2,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-123XLC,2,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-123XLM,2,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-123XLY,2,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1240BK,4,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1240C,3,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1240M,3,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1240Y,3,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-125XLC,3,17,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-125XLM,3,17,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-125XLY,3,17,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-127XLBK,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1280XLBK,4,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1280XLC,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1280XLM,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1280XLY,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-129XXLBK,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-223BK,3,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-223C,3,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-223M,3,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-223Y,3,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-225XLC,3,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-225XLM,3,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-225XLY,3,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-227XLBK,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-229XLBK,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3213XLBK,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3213XLC,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3213XLM,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3213XLY,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3219XLBK,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3219XLC,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3219XLM,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3219XLY,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3237BK,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3237C,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3237M,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3237Y,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3619XLBK,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3619XLC,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3619XLM,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3619XLY,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-426BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-426C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-426M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-426Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-427BK,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-427C,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-427M,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-427XLBK,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-427XLC,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-427XLM,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-427XLY,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-427Y,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-462XLBK,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-462XLC,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-462XLM,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-462XLY,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-525XLC,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-525XLM,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-525XLY,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-529XLBK,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-900BK,2,20,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-970,8,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-980C,2,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-980M,2,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-980Y,2,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-985C,3,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-985M,3,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-985XXL,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-985Y,3,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-1030,4,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-1050,2,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-1090,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2000,4,14,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2010,4,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-210BK,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-210C,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-210M,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-210Y,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2110,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2120,4,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-230BK,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-230C,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-230M,3,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-230Y,3,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2310,3,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2320,4,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-241BK,2,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2420,2,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2420XXL,1,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2421,4,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-243C,3,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-243M,3,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-245C,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-245M,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-245Y,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-247BK,2,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-247C,3,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-247M,3,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-247Y,3,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248XLBK,2,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248XLC,3,18,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248XLM,3,18,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248XLY,3,18,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-249BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-249C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-249M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-249Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2510XL,2,27,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-325BK,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-325C,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-325M,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-325Y,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-326BK,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-326C,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-326M,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-326Y,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3280,4,22,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3380,4,14,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3390,3,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3410,1,14,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3480,4,14,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3500,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3512,3,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3520,3,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3600XL,4,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3600XXL,4,14,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-423BK,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-423C,3,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-423M,3,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-423Y,3,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-426BK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-426C,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-426M,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-426Y,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-620,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-650,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-910,5,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-B023,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3610,1,0,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3610XL,1,0,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-243BK,2,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-243Y,3,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-321,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-331,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-331BK,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3330,3,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,BT5000VAL,1,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-123BK,1,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-123C,1,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-123M,1,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-123Y,1,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1240VALBP,1,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1280XLVALBP,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-129XLBK,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3239XLBK,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3239XLC,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3239XLM,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3239XLY,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3617BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3617C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3617M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-3617Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-422XLBK,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-422XLC,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-422XLM,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-422XLY,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-462BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-462C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-462M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-462Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC229XLVALBP,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-119,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2411,2,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-241C,2,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-241M,2,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-241Y,2,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-243CMYK,1,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248BK,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248C,2,18,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248M,2,18,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248VAL,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248Y,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2590,2,19,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2590XXL,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-321C,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-321M,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-321Y,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3230,2,22,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-328BK,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-328C,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-328M,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-328Y,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3600,3,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-421BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-421C,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-421M,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-421Y,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1000BK,1,27,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1000C,1,27,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1000M,1,27,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1000Y,1,27,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1100BK,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1100HYBK,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1100HYC,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1100HYM,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1100HYY,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1100VALBP,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-121BK,1,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-121C,1,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-121M,1,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-121Y,1,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1220BK,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1220C,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1220M,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1220Y,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1240RBWBP,1,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1280XLRBWBP,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-970BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-970C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-970M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-970Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-980BK,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-985BK,2,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC1000VALBP,1,27,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC1100HYRBWBP,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC1100RBWBP,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC1100VALBP,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC1220VALBP,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC123RBWBP,1,41,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC125XLBBP,1,17,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC127XLVALBP,1,17,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC223XLVALBP,1,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC970VALBP,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC980VALBP,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC985RBWBP,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC985VALBP,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-130BK,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-130C,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-130M,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-130Y,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-135BK,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-135C,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-135M,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-135Y,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2005,3,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3030,2,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3060,2,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3130,2,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3170,2,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-320BK,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-320C,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-320M,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-320Y,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-321BK,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-329BK,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-329C,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-329M,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-329Y,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-3430,2,14,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-4100,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-5500,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-6300,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-6600,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-8000,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-900BK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-900C,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-900M,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-900Y,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1000/970BK,1,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1000/970C,1,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1000/970M,1,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1000/970Y,1,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-1100,4,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-421XLBK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-421XLC,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-421XLM,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-421XLY,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-426XLBK,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-426XLC,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-426XLM,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-426XLY,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-900M,1,20,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-900Y,1,20,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-980/1100BK,1,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-980/1100C,1,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-980/1100M,1,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-980/1100Y,1,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2000XL,1,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-230,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2410,1,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-242C,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-242K,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-242M,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-242Y,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-243K,1,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-246,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-246M,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-246Y,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-247K,1,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248K,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-248XLK,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-249,4,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-2510,1,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-291K,1,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-320,3,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-320K,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-325,5,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-325K,1,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-326K,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-328,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-328K,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-329,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-329K,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-421,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-423K,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-426K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-900K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-910C,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-910M,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-910Y,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-423,4,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-127XL,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,LC-900C,1,20,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-1700,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-821XL,4,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-821XXL,4,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-241,1,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-245,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Brother,TN-426,4,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-521GY,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-531XLBK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-531XLC,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-531XLGY,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-531XLM,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-531XLY,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-8PC,2,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-8PM,2,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-732,3,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-732H,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-530XLPGBK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV14,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV29C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV29M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV33,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV34BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV34C,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV34M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV34Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV36,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV37,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV39,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV40,3,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV42,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV43,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV45C,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV47BK,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV47C,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV47M,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV47Y,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV48BK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV48C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV48M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV48Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV49BK,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV49C,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV49M,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV49Y,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV50,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV53,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV54BK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV54C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV54M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV54Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV55BK,1,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV55C,1,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV55M,1,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV55Y,1,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV59,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV60,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV64Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-36,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-42,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-42BK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-42C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-42GY,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-42LGY,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-42M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-42PC,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-42PM,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-42Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-65BK,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-65C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-65GY,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-65LGY,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-65M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-65PC,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-65PM,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-65Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-051BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-718C,2,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-718M,2,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-718Y,2,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-732C,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-732Y,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV64BK,1,0,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV64C,1,0,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV64M,1,0,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-37,1,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-40,2,22,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-510BK,2,14,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-512BK,1,14,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-540,3,22,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-540L,1,22,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-545,5,34,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-560,5,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-575,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-585,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-595,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-PG,1,22,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-35BK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9CRCLEAR,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV11,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV12,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV13,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV19BK,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV19C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV19M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV19Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV20BK,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV20C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV20M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV20Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV21BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV21C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV21M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV21Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV22,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV26BK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV26C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV26M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV26Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV27BK,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV28BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV28C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV28M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV28Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV29BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV29Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV30BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV30C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV30M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV30Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV31BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV31C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV31M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV31Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV32,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV35BK,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV38,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV44BK,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV44C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV44M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV44Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV45BK,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV45M,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV45Y,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV51BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,C-EXV19,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-8G,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CLI-8R,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-705,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-706,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-707BK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-707C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-707M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-707Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-710,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-710H,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-711BK,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-711C,2,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-711M,2,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-711Y,2,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-714,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-717C,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-717M,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-717Y,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-723BK,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-723C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-723H,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-723M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-723Y,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-732BK,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-732HBK,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-732M,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-50,1,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29,2,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29CO,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29DGY,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29GY,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29LGY,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29MBK,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29PBK,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29PC,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29PM,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29R,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-29Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72CO,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72GY,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72MBK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72PBK,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72PC,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72PM,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72R,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-72Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9G,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9GY,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9MBK,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9PBK,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9PC,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9PM,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9R,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PGI-9Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-711,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-723HBK,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-510,1,25,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,PG-512,1,25,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-717,3,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Canon,CRG-723,3,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,WFC529R/C579R,8,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T07D240,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T27034010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T27044010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T299140,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T299240,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T299340,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T299440,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T755140,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T01340110,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T03614010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T03704010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T03814A10,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T03904A10,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04224010,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04314010,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04414010,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04424010,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04434010,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04444010,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04454010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04814010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04824010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04834010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04844010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04854010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04864010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T04874010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T048B4010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T048C4010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05014210,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05404010,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05414010,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05424010,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05434010,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05444010,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05474010,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05484010,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05494010,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05914010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05924010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05934010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05944010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05954010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05964010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05974010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05984010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T05994010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T06114010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T06124010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T06134010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T06144010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T06154010,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T06624010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T10014010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T10024010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T10034010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T10044010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T10064010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T162640,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T16324010,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T16334010,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T163640,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T18014010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T18024010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T18034010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T18044010,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T180640,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T181140,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T181240,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T181340,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T181440,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T181640,1,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T24314010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T24324010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T24334010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T24344010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T24354010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T24364010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T26014010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T26114010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T26124010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T26134010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T26144010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T26164010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T26314010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T26324010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T26334010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T26364010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T270540,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T32404010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T32414010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T32424010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T32434010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T32444010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T32474010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T32484010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T32494010,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T335140,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T336140,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T336240,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T336340,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T336440,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T347140,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T347240,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T347340,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T347440,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T693200,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T693400,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T70134010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T70144010,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T74314010,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T755240,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T755340,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T755440,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T756140,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T756240,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T756340,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T756440,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T79024010,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T79124010,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T79134010,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T850100,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T850200,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T850300,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T850400,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T850500,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T850600,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T850700,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T850900,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T02Y140,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T02Y240,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T02Y340,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T02Y440,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T580100,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T580200,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T580400,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T580500,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T580600,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T580700,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Epson,C13T580B00,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,Q6462A,2,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,Q6463A,2,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,Q7563A,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CE273A,3,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CF032A,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CF033A,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CF311A,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,W2033XH,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,Q2673A,1,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,Q2681A,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,Q2682A,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,Q2683A,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CE037A,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CE039A,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CE040A,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CE041A,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CE042A,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CE043A,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CE044A,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+HP,CF322A,1,0,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-114,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-213C/214C/314C,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-213K/214K/314K,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-213M/214M/314M,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-213Y/214Y/314Y,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-217,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-321/TN,4,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-414,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-511,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-512K/513/324C,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-512K/513/324K,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-512K/513/324M,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-512K/513/324Y,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-116,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-118,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-221K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-221M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-221Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-227C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-227K,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-227M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-227Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-321C,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-321K,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-321M,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-321Y,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-323,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-324C,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-324K,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-324M,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-324Y,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-328C,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-328K,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-328M,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-328Y,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-512K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-512Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-514C,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-514K,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-514M,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN514Y,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP49M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP51C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-221C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN-322,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN212C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN212K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN212M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN212Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN318C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN318K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN318M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN318Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN324M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN324Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN415,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN511,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN612M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN614C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN614K,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN614M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN614Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN616C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN616M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TN712,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP38,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP39,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP43,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP50C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP50M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP50Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP51M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP51Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica,TNP64,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica Minolta,TN-211/TN,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Konica Minolta,TN-227K,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-3100,4,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-410,2,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5160C,3,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5160K,3,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5160M,3,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5160Y,3,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-590C,3,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-590K,3,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-590M,3,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-590Y,3,12,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-1260,2,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8335,3,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-3060,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-3150,3,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-3160,3,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-3430,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8335K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8345C,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8345K,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8345M,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8345Y,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-1170,3,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5150C,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5150K,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5150M,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5150Y,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5195C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5195K,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5195M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5195Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5205K,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5380C,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5380K,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5380M,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5380Y,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-6115,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8115C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8115K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8115M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8115Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8325C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8325K,2,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8325M,2,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8325Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8365C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8365K,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8365M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8365Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-1115,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-1125,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-1130,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-1248,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-130,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-140,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-160,3,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-310,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-3110,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-3130,3,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-3190,3,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-320,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-340,3,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-350,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-360,2,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-420,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-450,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-475,2,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-500C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-500K,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-500M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-500Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5135C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5135K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5135M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5135Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5140C,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5140K,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5140M,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5140Y,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5205C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5205M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5205Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5215C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5215K,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5215M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5215Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-560C,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-560K,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-560M,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-560Y,2,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-570C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-570K,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-570M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-570Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-6305,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-6705,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-675,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-685,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-710,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-7105,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-715,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-7205,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-725,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-7300,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8305C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8305K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8305M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8305Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8315C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8315K,2,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8315M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8315Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8505C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8505K,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8505M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8505Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8525K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-865C,2,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-865K,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-865M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-865Y,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8705C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8705K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8705M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8705Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-895C,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-895K,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-895M,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-895Y,2,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-1150,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-3170,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-330,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5370C,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5370K,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5370M,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5370Y,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8325,2,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-160X,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-440,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-510,4,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5290C,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5290K,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5290M,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-5290Y,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-560,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-8315,3,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-865,3,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Kyocera,TK-895,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Lexmark,W84020H,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C404S,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C406S,3,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C4072S,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C504S,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C506L,3,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K404S,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K406S,2,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K4072S,3,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K504S,3,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K506L,3,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M404S,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M406S,2,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M4072S,3,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M504S,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M506L,3,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y404S,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y406S,2,15,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y4072S,3,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y504S,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y506L,3,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D101S,4,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D103L,3,7,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D1042S,4,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D1052L,4,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D1082S,4,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D1092S,3,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D111L,3,19,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D111S,4,19,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D111XL,1,19,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D116L,4,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D117S,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D119S,2,11,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D203E,3,8,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D203L,3,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D204L,3,28,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D205E,4,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D205L,4,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-P404C,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D203U,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C4092S,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C503L,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C505L,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C506S,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C6092S,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C659S,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-C809S,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K4092S,2,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K503L,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K505L,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K506S,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K6092S,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K659S,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-K809S,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M4092S,2,9,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M503L,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M505L,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M506S,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M6092S,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M659S,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-M809S,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-R809,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y4092S,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y503L,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y505L,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y506S,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y6092S,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y659S,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,CLT-Y809S,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D103S,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D1052S,1,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D116S,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D201L,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D201S,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D203S,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D204E,2,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D204S,1,6,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D204U,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D205S,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D2082L,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D2082S,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D304E,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D305L,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D307E,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D358S,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-P1082A,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-D2092L,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Samsung,MLT-R204,1,0,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01628,2,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,006R04361,2,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,006R01452,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,006R01532,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01373,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01370,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01372,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01534,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01294,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01219,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01220,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R02250,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01511,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01512,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01514,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01523,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01524,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R02607,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R02610,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R02611,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01440,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01442,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01625,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R03521,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R02308,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01529,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01410,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,006R01551,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,006R01402,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,006R01146,1,5,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,006R04365,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R02305,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R02722,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R02731,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01473,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01474,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01475,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01476,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01034,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R00688,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01466,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01467,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01468,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01469,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01392,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01393,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01394,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01395,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01594,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01595,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01596,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01597,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R02230,1,13,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01436,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01438,1,10,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R03529,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R03531,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01486,1,2,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R02313,1,1,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R01530,1,4,0.0,0.0,0.0,LOW,,,,UČÍ SA,
+Xerox,106R00586,1,3,0.0,0.0,0.0,LOW,,,,UČÍ SA,

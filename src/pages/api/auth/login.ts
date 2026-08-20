@@ -21,11 +21,25 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (!email || !email.includes("@")) return json({ ok: false, error: "Zadajte platný e-mail." }, 400);
     if (!password) return json({ ok: false, error: "Zadajte heslo." }, 400);
 
-    const verified = await verifyWordPressLogin(email, password);
-    if (!verified) return json({ ok: false, error: "Nesprávny e-mail alebo heslo." }, 401);
-
     const customer = await findWooCustomerByEmail(email);
-    if (!customer) return json({ ok: false, error: "Prihlásenie prebehlo, ale zákaznícky účet sa nenašiel vo WooCommerce." }, 404);
+    if (!customer) {
+      return json({
+        ok: false,
+        code: "ACCOUNT_NOT_REGISTERED",
+        accountNotRegistered: true,
+        error: "Účet s týmto e-mailom na novom webe zatiaľ nie je vytvorený.",
+      }, 404);
+    }
+
+    const verified = await verifyWordPressLogin(email, password);
+    if (!verified) {
+      return json({
+        ok: false,
+        code: "INVALID_CREDENTIALS",
+        accountNotRegistered: false,
+        error: "Nesprávne heslo. Skúste ho zadať znova alebo si obnovte heslo.",
+      }, 401);
+    }
 
     setCustomerCookie(cookies, customer);
 

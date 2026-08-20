@@ -9,7 +9,7 @@ type OpenAiAssistantResult = {
 const OPENAI_ENDPOINT = "https://api.openai.com/v1/responses";
 
 function env(name: string) {
-  return String(process.env[name] || import.meta.env[name] || "").trim();
+  return String(process.env[name] || (import.meta as any).env?.[name] || "").trim();
 }
 
 function numberEnv(name: string, fallback: number, minimum: number, maximum: number) {

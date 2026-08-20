@@ -417,8 +417,13 @@ export function partialPrinterModelMatch(value: unknown, analysis: CatalogQueryA
 
   const aliases = referenceAliases(value, false);
   return analysis.referenceTokens.some((reference) => {
-    if (reference.length < 3 || !/[a-z]/.test(reference) || !/\d/.test(reference)) return false;
-    return [...aliases].some((alias) => alias.length > reference.length && alias.startsWith(reference));
+    if (reference.length < 3 || !/\d/.test(reference)) return false;
+    if (/[a-z]/.test(reference)) return [...aliases].some((alias) => alias.length > reference.length && alias.startsWith(reference));
+    // Pri uvedenej značke je bezpečné doplniť iba písmenovú výbavovú
+    // koncovku modelu: Dell 3110 -> Dell 3110CN. Číselný model bez značky
+    // naďalej nerozširujeme a 301 sa nikdy nesmie zameniť za 3010.
+    if (!analysis.brands.length || !/^\d{3,6}$/.test(reference)) return false;
+    return [...aliases].some((alias) => new RegExp(`^${reference}[a-z]{1,4}$`,'i').test(alias));
   });
 }
 

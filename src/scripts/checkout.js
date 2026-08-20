@@ -2366,6 +2366,46 @@
     document.documentElement.dataset.tmCheckoutReady = "1";
 
     restoreCheckoutSelection();
+    try {
+      const rawHandoff = localStorage.getItem("tm_ai_checkout_handoff_v1");
+      if (rawHandoff) {
+        const h = JSON.parse(rawHandoff);
+        const fresh = Number(h?.createdAt || 0) > Date.now() - 30 * 60 * 1000;
+        if (fresh) {
+          writeInput("email", h.email || "", true);
+          writeInput("phone", h.phone || "", true);
+          writeInput("first_name", h.first_name || "", true);
+          writeInput("last_name", h.last_name || "", true);
+          writeInput("address", h.address || "", true);
+          writeInput("zip", h.zip || "", true);
+          writeInput("city", h.city || "", true);
+          const companyEnabled = document.querySelector("#company_enabled");
+          if (companyEnabled) companyEnabled.checked = Boolean(h.companyEnabled);
+          writeInput("company", h.company || "", true);
+          writeInput("ico", h.ico || "", true);
+          writeInput("dic", h.dic || "", true);
+          writeInput("icdph", h.icdph || "", true);
+          const differentAddress = document.querySelector("#different_address");
+          if (differentAddress) differentAddress.checked = Boolean(h.differentAddress);
+          if (h.differentAddress && h.delivery) {
+            const deliveryParts = String(h.delivery.name || "").trim().split(/\s+/);
+            writeInput("delivery_first_name", deliveryParts.shift() || "", true);
+            writeInput("delivery_last_name", deliveryParts.join(" "), true);
+            writeInput("delivery_street", h.delivery.street || "", true);
+            writeInput("delivery_zip", h.delivery.zip || "", true);
+            writeInput("delivery_city", h.delivery.city || "", true);
+            writeInput("delivery_phone", h.delivery.phone || h.phone || "", true);
+            writeInput("delivery_email", h.email || "", true);
+          }
+          setRadioValue("shipping", h.shipping || "gls_courier");
+          setRadioValue("payment", h.payment || "cod");
+          saveCheckoutSelection();
+        }
+        localStorage.removeItem("tm_ai_checkout_handoff_v1");
+      }
+    } catch {
+      try { localStorage.removeItem("tm_ai_checkout_handoff_v1"); } catch {}
+    }
     restorePickupState();
     if (["gopay", "applepay", "googlepay"].includes(getSelected("payment"))) warmGoPay();
     renderCheckoutSummary();

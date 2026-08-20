@@ -1,4 +1,4 @@
-import { isStrongSecret } from './secret-validation';
+import { isStrongSecret } from './secret-validation.ts';
 
 export function getAdminAccessKey(locals?: any): string {
   const runtime = locals?.runtime?.env || {};

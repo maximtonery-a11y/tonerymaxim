@@ -1,8 +1,8 @@
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { chmod, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { isStrongSecret } from './secret-validation';
-import { portableStoragePath } from './runtime-paths';
+import { isStrongSecret } from './secret-validation.ts';
+import { portableStoragePath } from './runtime-paths.ts';
 
 export const TM_DATA_ROOT = resolve(
   portableStoragePath(process.env.TM_PERSISTENT_DATA_DIR) || join(process.cwd(), '.tm-data')

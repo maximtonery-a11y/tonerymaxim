@@ -516,3 +516,294 @@
 .tm-ai-handoff__continue{background:transparent!important;border:1px solid #cbd9ec!important;color:#17365f!important}
 .tm-ai-handoff.is-success .tm-ai-handoff__continue{background:#fff!important}
 @media(max-width:760px){.tm-ai-handoff{max-height:min(58dvh,440px);overflow:auto}.tm-ai-handoff textarea{min-height:68px}.tm-ai-handoff__close{position:sticky;top:0}}
+
+/* V9 – jeden AI Tomáš: Advisor + Commerce, komfortné UI */
+.tm-ai-assistant__panel{width:min(620px,calc(100vw - 32px));height:min(780px,calc(100vh - 32px));grid-template-rows:auto auto auto 1fr auto}
+.tm-ai-home{padding:14px 16px;border-bottom:1px solid var(--tm-ai-line);background:#f8fafc}.tm-ai-home p{margin:0 0 10px}.tm-ai-home>small{display:block;margin-top:8px;color:var(--tm-ai-muted)}
+.tm-ai-home__actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.tm-ai-home__actions button{display:grid;gap:3px;text-align:left;border:1px solid #d6dfeb;border-radius:13px;background:#fff;padding:12px;color:var(--tm-ai-blue);cursor:pointer}.tm-ai-home__actions button span{font-size:11px;color:var(--tm-ai-muted);font-weight:500}
+.tm-ai-livecart{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;background:#fff8dc;border-bottom:1px solid #f0d46d}.tm-ai-livecart button,.tm-ai-commerce button,.tm-ai-action{border:1px solid #c6d3e3;border-radius:9px;background:#fff;color:var(--tm-ai-blue);padding:8px 10px;font-weight:800;cursor:pointer}
+.tm-ai-commerce{overflow:auto;padding:15px;background:#f8fafc}.tm-ai-commerce__head,.tm-ai-cart-total{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.tm-ai-commerce__head button{border:0;background:transparent;padding:0}.tm-ai-cart-list{display:grid;gap:9px}.tm-ai-cart-item{display:grid;grid-template-columns:1fr auto;gap:8px;border:1px solid #d7e0ec;border-radius:13px;background:#fff;padding:11px}.tm-ai-cart-item small{display:block;color:var(--tm-ai-muted);margin-top:3px}.tm-ai-cart-controls{grid-column:1/-1;display:flex;align-items:center;gap:7px}.tm-ai-cart-controls button{padding:5px 9px}.tm-ai-offer{grid-column:1/-1;background:#fff8dc!important;border-color:#efcf58!important}.tm-ai-cart-total{font-size:17px;padding:12px 2px;margin:0}.tm-ai-commerce__actions{display:flex;flex-wrap:wrap;gap:8px}.tm-ai-commerce__actions .primary{background:var(--tm-ai-blue);color:#fff;border-color:var(--tm-ai-blue)}
+.tm-ai-qty-grid,.tm-ai-set-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}.tm-ai-qty-grid button,.tm-ai-set-grid button{display:grid;gap:3px;text-align:left;border:1px solid #ccd7e5;border-radius:12px;background:#fff;padding:10px;color:var(--tm-ai-blue);cursor:pointer}.tm-ai-qty-grid button span,.tm-ai-set-grid button span{font-size:11px;color:var(--tm-ai-muted)}.tm-ai-qty-grid button em{font-style:normal;color:#9a6700;font-weight:900}.tm-ai-qty-grid button.best{background:#fff8dc;border-color:#e9c94f}.tm-ai-textbutton{border:0;background:transparent;color:#0b4f9c;font-weight:800;cursor:pointer;padding:5px 0}
+.tm-ai-color-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.tm-ai-color-grid button{border:1px solid #ccd7e5;border-radius:9px;background:#fff;padding:8px 4px;font-weight:800;cursor:pointer}.tm-ai-shop-products{display:grid;gap:8px}.tm-ai-shop-products article{border:1px solid #d7e0ec;border-radius:12px;background:#fff;padding:10px}.tm-ai-shop-products small{display:block;color:var(--tm-ai-muted);margin:3px 0 8px}.tm-ai-shop-products article>div{display:flex;justify-content:space-between;align-items:center}.tm-ai-shop-products button{border:0;border-radius:8px;background:var(--tm-ai-blue);color:#fff;padding:7px 10px;font-weight:800;cursor:pointer}
+@media(max-width:760px){.tm-ai-assistant__panel{inset:0!important;width:100vw!important;height:var(--tm-ai-visual-height,100dvh)!important;max-height:none!important;border-radius:0!important}.tm-ai-assistant__head{padding:14px 15px}.tm-ai-assistant__messages{padding:14px}.tm-ai-msg{max-width:98%;font-size:14px}.tm-ai-home__actions{grid-template-columns:1fr}.tm-ai-home__actions button{padding:13px}.tm-ai-assistant__form input,.tm-ai-assistant__form button{height:50px}.tm-ai-qty-grid,.tm-ai-set-grid{grid-template-columns:1fr 1fr}.tm-ai-color-grid{grid-template-columns:1fr 1fr}.tm-ai-assistant.has-keyboard .tm-ai-assistant__panel{height:var(--tm-ai-visual-height,100dvh)!important}}
+.tm-ai-checkout-form{display:grid;gap:9px}.tm-ai-checkout-form label{display:grid;gap:4px;font-size:12px;font-weight:800;color:var(--tm-ai-blue)}.tm-ai-checkout-form input,.tm-ai-checkout-form select{width:100%;height:43px;border:1px solid #cbd7e5;border-radius:9px;background:#fff;padding:0 10px;font:inherit;color:var(--tm-ai-text)}.tm-ai-checkout-row{display:grid;grid-template-columns:120px 1fr;gap:8px}.tm-ai-review{border:1px solid #d7e0ec;border-radius:13px;background:#fff;padding:12px}.tm-ai-review p{margin:0 0 10px}.tm-ai-review small{color:var(--tm-ai-muted)}
+@media(max-width:760px){.tm-ai-checkout-row{grid-template-columns:110px 1fr}.tm-ai-commerce{padding:14px 12px}}
+
+/* V127 – adaptívne okno a nástroje komunikácie */
+@media(min-width:761px){
+  .tm-ai-assistant.is-compact .tm-ai-assistant__panel{width:min(540px,calc(100vw - 40px))!important;height:min(720px,calc(100vh - 40px))!important}
+  .tm-ai-assistant.is-expanded .tm-ai-assistant__panel{width:min(1320px,86vw)!important;height:min(920px,90vh)!important}
+}
+.tm-ai-assistant__panel{grid-template-rows:auto minmax(0,1fr) auto auto!important;position:relative}
+.tm-ai-assistant__head-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.tm-ai-assistant__head-actions>[data-ai-resize]{font-size:18px;font-weight:900}
+.tm-ai-assistant__tools{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid #dce4ee;background:#fff}
+.tm-ai-assistant__tools button{min-height:42px;border:0;border-right:1px solid #e5eaf1;background:#fff;color:#42526b;font:inherit;font-size:11px;font-weight:750;cursor:pointer}
+.tm-ai-assistant__tools button:last-child{border-right:0}.tm-ai-assistant__tools button:hover{background:#f3f7fc;color:#0b4f9c}
+.tm-ai-new-dialog{position:absolute;z-index:20;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100% - 30px));display:grid;gap:9px;padding:20px;border:1px solid #cbd9ec;border-radius:16px;background:#fff;box-shadow:0 24px 70px rgba(8,38,83,.3);color:#081a3a}
+.tm-ai-new-dialog[hidden]{display:none}.tm-ai-new-dialog p{margin:0 0 4px;color:#5d6b82}.tm-ai-new-dialog button{min-height:42px;border:1px solid #cbd9ec;border-radius:10px;background:#fff;color:#17365f;font-weight:850;cursor:pointer}.tm-ai-new-dialog [data-ai-new-all]{border-color:#d94b4b;color:#a31515}.tm-ai-new-dialog [data-ai-new-cancel]{border:0;background:#f2f5f9}
+.tm-ai-handoff{position:absolute;z-index:19;right:14px;bottom:106px;width:min(440px,calc(100% - 28px));max-height:calc(100% - 140px);overflow:auto;box-shadow:0 18px 55px rgba(8,38,83,.22)}
+.tm-ai-msg__feedback{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:8px;padding-top:7px;border-top:1px solid #e7edf5;color:#667085;font-size:10px}.tm-ai-msg__feedback button{width:28px;height:26px;border:1px solid #d9e2ee;border-radius:8px;background:#fff;cursor:pointer}.tm-ai-msg__feedback button:disabled{opacity:.6}
+.tm-ai-msg__sources{margin-top:8px;padding:8px 10px;border-radius:9px;background:#eef5ff;color:#42526b;font-size:10.5px}.tm-ai-msg__sources b{color:#17365f}.tm-ai-msg__sources a{color:#0b5cab;font-weight:800;text-decoration:underline}
+@media(max-width:760px){
+  .tm-ai-assistant__tools{padding-bottom:env(safe-area-inset-bottom,0px)}.tm-ai-assistant__tools button{font-size:10px;padding:0 4px}
+  .tm-ai-assistant__head-actions>[data-ai-resize]{display:none}
+  .tm-ai-handoff{position:absolute;right:8px;bottom:106px;width:calc(100% - 16px);max-height:calc(100% - 130px)}
+  body:has(.checkout-page) .tm-ai-assistant,body:has(.cart-page) .tm-ai-assistant{visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+}
+
+
+/* V10 – schválené UI spodnej časti */
+.tm-ai-assistant__quick{align-items:center!important;gap:8px!important;padding:10px 16px!important;min-height:54px;background:#fff!important}
+.tm-ai-assistant__quick button{appearance:none!important;width:auto!important;min-width:0!important;height:36px!important;min-height:36px!important;max-height:36px!important;aspect-ratio:auto!important;flex:0 0 auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:0 13px!important;border:1px solid #d7e0ec!important;border-radius:999px!important;background:#fff!important;color:#17365f!important;box-shadow:none!important;font-size:12px!important;font-weight:800!important;line-height:1!important;white-space:nowrap!important;transform:none!important}
+.tm-ai-assistant__messages{gap:12px!important;padding:16px!important;background:#f8fafc!important}
+.tm-ai-msg--welcome{display:grid!important;grid-template-columns:42px 1fr;gap:11px;align-items:start;width:100%;max-width:none!important;padding:14px!important;border-radius:16px!important;background:#fff!important}
+.tm-ai-msg__avatar{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--tm-ai-yellow);color:#10284f;font-size:12px;font-weight:950}
+.tm-ai-msg--welcome p{margin:0 0 4px!important}.tm-ai-msg--welcome p:last-child{margin:0!important;color:#42526b}
+.tm-ai-benefits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;border:1px solid #dce4ee;border-radius:16px;background:#fff;overflow:hidden}
+.tm-ai-benefits article{display:grid;grid-template-columns:38px 1fr;gap:9px;align-items:start;min-width:0;padding:13px}.tm-ai-benefits article+article{border-left:1px solid #e5eaf1}
+.tm-ai-benefits__icon{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#eef5ff;color:#1358a5;font-size:16px;font-weight:950}.tm-ai-benefits article:first-child .tm-ai-benefits__icon{background:#eef9ef;color:#15803d}.tm-ai-benefits article:nth-child(3) .tm-ai-benefits__icon{background:#f5f0ff;color:#6d42d8}
+.tm-ai-benefits b{display:block;color:#10284f;font-size:12px;line-height:1.25}.tm-ai-benefits small{display:block;margin-top:4px;color:#667085;font-size:11px;line-height:1.35}
+.tm-ai-color-note{display:flex;align-items:flex-start;gap:8px;width:100%;padding:9px 11px;border:1px solid #cfe0f6;border-radius:11px;background:#eef6ff;color:#24466f;font-size:11px;line-height:1.4}.tm-ai-color-note>span{flex:0 0 18px;display:grid;place-items:center;width:18px;height:18px;border:1px solid #4c8bd6;border-radius:50%;color:#1761b2;font-size:11px;font-weight:900}.tm-ai-color-note p{margin:0!important}
+.tm-ai-assistant__form{padding:12px 16px 14px!important;background:#fff!important}.tm-ai-assistant__form input,.tm-ai-assistant__form button{height:50px!important;border-radius:13px!important}.tm-ai-assistant__form button{min-width:100px}
+@media(min-width:761px){.tm-ai-assistant__panel{width:min(680px,calc(100vw - 40px))!important;height:min(820px,calc(100vh - 40px))!important}.tm-ai-home__actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:760px){.tm-ai-assistant__quick{padding:9px 12px!important}.tm-ai-assistant__quick button,.tm-ai-assistant__quick button:nth-child(n + 4){display:inline-flex!important;height:34px!important;min-height:34px!important;max-height:34px!important;padding:0 11px!important;font-size:11px!important}.tm-ai-assistant__messages{padding:12px!important}.tm-ai-msg--welcome{grid-template-columns:34px 1fr;gap:9px;padding:12px!important}.tm-ai-msg__avatar{width:32px;height:32px}.tm-ai-benefits{grid-template-columns:1fr}.tm-ai-benefits article{grid-template-columns:34px 1fr;padding:10px 11px}.tm-ai-benefits article+article{border-left:0;border-top:1px solid #e5eaf1}.tm-ai-benefits__icon{width:32px;height:32px}.tm-ai-benefits small,.tm-ai-color-note{font-size:10.5px}.tm-ai-assistant__form{padding:9px 10px max(10px,env(safe-area-inset-bottom,0px))!important}}
+
+/* V11 – AI nákupný pracovný modal */
+@media(min-width:761px){
+  .tm-ai-assistant__panel{
+    position:fixed!important;inset:50% auto auto 50%!important;transform:translate(-50%,-50%)!important;
+    width:min(1250px,74vw)!important;height:min(900px,88vh)!important;max-width:none!important;max-height:none!important;
+    grid-template-rows:auto auto auto 1fr auto!important;border-radius:22px!important;
+  }
+  .tm-ai-assistant__head{padding:16px 20px!important}
+  .tm-ai-assistant__identity{display:grid;grid-template-columns:auto 1fr;column-gap:14px;align-items:center;width:100%}
+  .tm-ai-assistant__identity strong{font-size:19px}
+  .tm-ai-assistant__description{margin:0!important}
+  .tm-ai-assistant__disclosure{grid-column:1/-1;max-width:430px;margin-top:10px!important}
+  .tm-ai-home{padding:18px 20px!important}
+  .tm-ai-workspace{min-height:0;display:grid;grid-template-columns:minmax(0,65fr) minmax(300px,35fr);overflow:hidden;background:#f8fafc}
+  .tm-ai-workspace__main{min-width:0;min-height:0;display:grid;grid-template-rows:1fr}
+  .tm-ai-assistant__messages,.tm-ai-commerce{grid-area:1/1;min-height:0;overflow:auto!important}
+  .tm-ai-cartdesk{display:block!important;min-width:0;overflow:auto;border-left:1px solid #dce4ee;background:#fff;padding:18px}
+  .tm-ai-cartdesk__head,.tm-ai-cartdesk__total{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .tm-ai-cartdesk__head{padding-bottom:14px;border-bottom:1px solid #e6ebf1;font-size:17px}
+  .tm-ai-cartdesk__head span{font-size:12px;color:#667085}
+  .tm-ai-cartdesk__items{display:grid;gap:0;margin-top:6px}
+  .tm-ai-cartdesk__items>div{display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid #edf0f4;font-size:12px}
+  .tm-ai-cartdesk__items small{color:#667085}.tm-ai-cartdesk__total{padding:16px 0;font-size:16px}
+  .tm-ai-cartdesk>button{width:100%;border:0;border-radius:11px;background:var(--tm-ai-blue);color:#fff;padding:12px;font-weight:900;cursor:pointer}
+  .tm-ai-cartdesk__empty{color:#667085;font-size:13px;line-height:1.5}
+  .tm-ai-assistant__form{grid-column:1/-1!important}
+  .tm-ai-assistant.is-started .tm-ai-assistant__head{padding:10px 16px!important;align-items:center}
+  .tm-ai-assistant.is-started .tm-ai-assistant__description,.tm-ai-assistant.is-started .tm-ai-assistant__disclosure{display:none!important}
+  .tm-ai-assistant.is-started .tm-ai-assistant__identity{display:block;width:auto}
+  .tm-ai-assistant.is-started .tm-ai-assistant__head strong{font-size:16px}
+  .tm-ai-assistant.is-started .tm-ai-home,.tm-ai-assistant.is-started .tm-ai-assistant__quick{display:none!important}
+  .tm-ai-assistant.is-started .tm-ai-livecart{display:none!important}
+  .tm-ai-assistant.is-started .tm-ai-msg--welcome,.tm-ai-assistant.is-started .tm-ai-benefits,.tm-ai-assistant.is-started .tm-ai-color-note{display:none!important}
+  .tm-ai-assistant.is-started .tm-ai-assistant__messages{padding:20px!important}
+  .tm-ai-assistant.is-started .tm-ai-msg{max-width:82%}
+  .tm-ai-assistant.is-started .tm-ai-product-groups,.tm-ai-assistant.is-started .tm-ai-set-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:760px){
+  .tm-ai-assistant__panel{position:fixed!important;inset:0!important;transform:none!important;width:100%!important;height:var(--tm-ai-visual-height,100dvh)!important;border:0!important;border-radius:0!important;grid-template-rows:auto auto auto 1fr auto!important}
+  .tm-ai-workspace{min-height:0;display:grid;grid-template-columns:1fr;overflow:hidden}
+  .tm-ai-workspace__main{min-height:0;display:grid;grid-template-rows:1fr}
+  .tm-ai-assistant__messages,.tm-ai-commerce{grid-area:1/1;min-height:0;overflow:auto!important}
+  .tm-ai-cartdesk{display:none!important}
+  .tm-ai-assistant.is-started .tm-ai-assistant__head{padding:9px 12px!important;align-items:center}
+  .tm-ai-assistant.is-started .tm-ai-assistant__description,.tm-ai-assistant.is-started .tm-ai-assistant__disclosure,.tm-ai-assistant.is-started .tm-ai-home,.tm-ai-assistant.is-started .tm-ai-assistant__quick{display:none!important}
+  .tm-ai-assistant.is-started .tm-ai-assistant__identity strong{font-size:16px}
+  .tm-ai-assistant.is-started .tm-ai-livecart{padding:7px 11px!important;min-height:42px;background:#fff8dc!important}
+  .tm-ai-assistant.is-started .tm-ai-livecart button{padding:6px 9px!important;font-size:12px}
+  .tm-ai-assistant.is-started .tm-ai-msg--welcome,.tm-ai-assistant.is-started .tm-ai-benefits,.tm-ai-assistant.is-started .tm-ai-color-note{display:none!important}
+  .tm-ai-assistant.is-started .tm-ai-assistant__messages{padding:12px!important}
+  .tm-ai-assistant.is-started .tm-ai-msg{max-width:96%!important}
+  .tm-ai-assistant__form{position:relative;z-index:3;border-top:1px solid #dce4ee}
+}
+
+/* V12 CLEAN UI */
+@media(min-width:761px){
+.tm-ai-assistant__panel{width:min(1280px,88vw)!important;height:min(860px,90vh)!important;grid-template-rows:72px minmax(0,1fr) auto!important;overflow:hidden!important;background:#fff!important}
+.tm-ai-assistant__head{min-height:72px!important;padding:12px 18px!important;background:#fff!important;color:#10284f!important;border-bottom:1px solid #dce4ee!important}.tm-ai-assistant__brand{display:flex;align-items:center;gap:12px}.tm-ai-assistant__brand-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#ffc400;color:#0b2e61;font-weight:950}.tm-ai-assistant__brand>div{display:grid;gap:2px}.tm-ai-assistant__brand strong{font-size:18px!important}.tm-ai-assistant__brand>div span{font-size:12px;color:#53627a}.tm-ai-assistant__head-actions{margin-left:auto;display:flex;gap:8px}.tm-ai-assistant__head-actions>button{position:static!important;width:auto!important;height:40px!important;border:1px solid #d7e0ec!important;border-radius:12px!important;background:#fff!important;color:#10284f!important;padding:0 13px!important}.tm-ai-assistant__head-actions>button[data-ai-close]{width:40px!important;padding:0!important;font-size:23px!important}
+.tm-ai-workspace{display:grid!important;grid-template-columns:minmax(0,2fr) minmax(330px,1fr)!important;min-height:0!important;overflow:hidden!important;background:#fff!important}.tm-ai-workspace__main{display:flex!important;flex-direction:column;min-width:0;min-height:0;overflow:hidden;border-right:1px solid #e2e8f0}
+.tm-ai-home{display:block;padding:20px 24px 14px!important;background:#fff!important;border:0!important}.tm-ai-home__intro{display:flex;align-items:center;gap:11px;padding:14px 16px;border:1px solid #dce4ee;border-radius:14px}.tm-ai-home__intro>div{display:grid;gap:3px}.tm-ai-home__intro strong{font-size:15px}.tm-ai-home__intro span{font-size:13px;color:#53627a}.tm-ai-home__actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;margin-top:14px}.tm-ai-home__actions button{min-height:72px;padding:12px 14px!important;border-radius:13px!important;text-align:left}
+.tm-ai-frequent{margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0}.tm-ai-frequent>b{display:block;margin-bottom:8px}.tm-ai-frequent>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tm-ai-frequent button{display:grid;gap:3px;text-align:left;border:1px solid #d6dfeb;border-radius:11px;background:#fff;padding:10px;color:#173f7a;cursor:pointer}.tm-ai-frequent button small{color:#667085}@media(max-width:760px){.tm-ai-frequent>div{grid-template-columns:1fr}}
+.tm-ai-assistant__messages{display:flex!important;flex-direction:column;flex:1;min-height:0;overflow:auto!important;padding:18px 24px!important;background:#f8fafc!important}.tm-ai-msg{max-width:88%!important}.tm-ai-msg--user{margin-left:auto}.tm-ai-msg--welcome{max-width:560px!important;grid-template-columns:34px 1fr!important;padding:12px!important}.tm-ai-assistant__quick{flex:0 0 auto;padding:9px 18px!important;border-top:1px solid #e5eaf1;background:#fff!important}.tm-ai-commerce{flex:1;min-height:0;overflow:auto!important;padding:20px 24px!important;background:#f8fafc}
+.tm-ai-cartdesk{display:block!important;min-width:0!important;overflow:auto!important;border:0!important;background:#fff!important;padding:22px!important}.tm-ai-cartdesk__head{font-size:17px}.tm-ai-cartdesk__empty{margin-top:18px}.tm-ai-cartdesk__items>div{padding:14px 0!important}.tm-ai-cartdesk__total{font-size:18px!important}.tm-ai-cartdesk>button{min-height:46px}.tm-ai-livecart{display:none!important}.tm-ai-assistant__form{display:flex!important;gap:9px!important;padding:12px 16px!important;border-top:1px solid #dce4ee!important;background:#fff!important}.tm-ai-assistant__form input{flex:1}.tm-ai-assistant.is-started .tm-ai-home,.tm-ai-assistant.is-started .tm-ai-msg--welcome{display:none!important}
+.tm-ai-shop-products{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}.tm-ai-shop-products article{display:flex;flex-direction:column;min-height:155px;padding:14px!important}.tm-ai-shop-products article>div{margin-top:auto}.tm-ai-product-groups,.tm-ai-set-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:760px){
+.tm-ai-assistant__panel{grid-template-rows:60px minmax(0,1fr) auto!important}.tm-ai-assistant__head{min-height:60px!important;padding:8px 10px!important;background:#fff!important;color:#10284f!important;border-bottom:1px solid #dce4ee!important}.tm-ai-assistant__brand{display:flex;align-items:center;gap:9px}.tm-ai-assistant__brand-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#ffc400;color:#0b2e61;font-size:11px;font-weight:950}.tm-ai-assistant__brand>div{display:grid}.tm-ai-assistant__brand strong{font-size:15px!important}.tm-ai-assistant__brand>div span{font-size:10px;color:#667085}.tm-ai-assistant__head-actions{margin-left:auto;display:flex;gap:5px}.tm-ai-assistant__head-actions>button{position:static!important;height:38px!important;border:1px solid #d7e0ec!important;border-radius:10px!important;background:#fff!important;color:#10284f!important;padding:0 8px!important}.tm-ai-assistant__head-actions>button[data-ai-close]{width:38px!important;padding:0!important;font-size:22px!important}
+.tm-ai-workspace{display:block!important;min-height:0!important;overflow:hidden!important}.tm-ai-workspace__main{display:flex!important;flex-direction:column;height:100%;min-height:0;overflow:hidden}.tm-ai-home{padding:14px 12px!important;background:#fff!important}.tm-ai-home__intro{display:flex;align-items:center;gap:9px;padding:11px;border:1px solid #dce4ee;border-radius:12px}.tm-ai-home__intro>div{display:grid;gap:2px}.tm-ai-home__intro strong{font-size:14px}.tm-ai-home__intro span{font-size:11px;color:#667085}.tm-ai-home__actions{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;margin-top:10px}.tm-ai-home__actions button{min-height:58px!important;padding:10px 12px!important}.tm-ai-assistant__messages{display:flex!important;flex-direction:column;flex:1;min-height:0;overflow:auto!important;padding:12px!important;background:#f8fafc!important}.tm-ai-commerce{flex:1;min-height:0;overflow:auto!important;padding:12px!important}.tm-ai-cartdesk{display:none!important}.tm-ai-assistant__form{padding:8px!important;background:#fff!important}.tm-ai-assistant.is-started .tm-ai-home,.tm-ai-assistant.is-started .tm-ai-msg--welcome{display:none!important}.tm-ai-shop-products{grid-template-columns:1fr!important}
+}
+
+/* V113 – ADVICE / DISCOVERY / BUY: košík až po nákupnom úmysle */
+.tm-ai-cartdesk[hidden]{display:none!important}
+@media(min-width:761px){
+  .tm-ai-workspace{grid-template-columns:1fr!important}
+  .tm-ai-workspace__main{border-right:0!important}
+  .tm-ai-assistant.has-ai-cart .tm-ai-workspace{grid-template-columns:minmax(0,2fr) minmax(330px,1fr)!important}
+  .tm-ai-assistant.has-ai-cart .tm-ai-workspace__main{border-right:1px solid #e2e8f0!important}
+  .tm-ai-assistant.has-ai-cart .tm-ai-cartdesk{display:block!important}
+  .tm-ai-assistant:not(.has-ai-cart) .tm-ai-shop-products{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:1040px}
+}
+.tm-ai-discovery{width:100%}
+.tm-ai-discovery__hint{max-width:760px;color:#53627a;font-size:13px;line-height:1.45}
+.tm-ai-product-kind{display:inline-flex;align-self:flex-start;padding:4px 8px;border-radius:999px;background:#eef4fb;color:#174b82;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.02em}
+.tm-ai-card-price{display:block;margin-top:auto;padding-top:14px;font-size:19px;color:#10284f}
+.tm-ai-card-actions{display:grid;grid-template-columns:1fr 1.15fr;gap:8px;margin-top:10px}
+.tm-ai-card-actions a,.tm-ai-card-actions button{display:flex;align-items:center;justify-content:center;min-height:42px;border-radius:10px;font-size:12px;font-weight:850;text-decoration:none}
+.tm-ai-card-actions a{border:1px solid #ccd7e5;background:#fff;color:#123968}
+.tm-ai-card-actions button{border:0;background:#0b3267;color:#fff}
+.tm-ai-discovery__footer{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:14px;padding-top:13px;border-top:1px solid #e0e7ef}
+.tm-ai-discovery__footer>a{font-weight:900;color:#0b4f9c;text-decoration:none}
+.tm-ai-discovery__footer small{max-width:420px;color:#667085;text-align:right;line-height:1.35}
+@media(max-width:760px){
+  .tm-ai-discovery__hint{font-size:12px}.tm-ai-card-actions{grid-template-columns:1fr}.tm-ai-discovery__footer{align-items:flex-start;flex-direction:column}.tm-ai-discovery__footer small{text-align:left}.tm-ai-assistant.has-ai-cart .tm-ai-livecart{display:flex!important}
+}
+
+
+/* V114 – jeden pracovný priestor, bez okna v okne */
+.tm-ai-cartdesk{display:none!important}
+.tm-ai-workspace{display:block!important}
+.tm-ai-workspace__main{width:100%!important;border-right:0!important}
+.tm-ai-assistant.has-ai-cart .tm-ai-workspace{display:block!important;grid-template-columns:none!important}
+.tm-ai-assistant.has-ai-cart .tm-ai-workspace__main{border-right:0!important}
+.tm-ai-assistant.has-ai-cart .tm-ai-cartdesk{display:none!important}
+
+@media(min-width:761px){
+  .tm-ai-assistant__messages,
+  .tm-ai-commerce{padding-left:28px!important;padding-right:28px!important}
+  .tm-ai-discovery{max-width:1120px;margin:0 auto}
+  .tm-ai-shop-products{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .tm-ai-commerce__head,
+  .tm-ai-cart-list,
+  .tm-ai-cart-total,
+  .tm-ai-commerce__actions,
+  .tm-ai-checkout-form,
+  .tm-ai-checkout-note,
+  .tm-ai-review{max-width:900px;margin-left:auto;margin-right:auto}
+  .tm-ai-commerce__head{margin-bottom:18px}
+  .tm-ai-cart-list{display:grid;gap:10px}
+  .tm-ai-cart-item{border:1px solid #dce4ee!important;border-radius:14px!important;background:#fff!important;padding:15px!important}
+  .tm-ai-cart-total{margin-top:14px!important;padding:15px 0!important}
+  .tm-ai-commerce__actions{margin-top:12px!important}
+}
+.tm-ai-buy-hint,.tm-ai-checkout-note{color:#53627a;font-size:13px;line-height:1.45}
+.tm-ai-checkout-note{padding:12px 14px;border-radius:12px;background:#eef5ff}
+.tm-ai-discovery__footer small{max-width:520px}
+
+/* V115 – modrý ToneryMAXIM dizajn, stále benefity */
+.tm-ai-assistant__head{background:linear-gradient(135deg,#082e66,#15579b)!important;color:#fff!important;border-bottom:0!important}
+.tm-ai-assistant__brand strong{color:#fff!important}.tm-ai-assistant__brand>div span{color:#dceaff!important}.tm-ai-assistant__brand-icon{background:#ffc400!important;color:#082e66!important}
+.tm-ai-assistant__head-actions>button{background:rgba(255,255,255,.12)!important;color:#fff!important;border-color:rgba(255,255,255,.35)!important}
+.tm-ai-benefits{display:flex;align-items:center;gap:7px;margin-left:22px;min-width:0}
+.tm-ai-benefits span{display:inline-flex;align-items:center;gap:4px;min-height:34px;padding:6px 9px;border:1px solid rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.10);color:#fff;font-size:11px;white-space:nowrap}
+.tm-ai-benefits b{color:#ffd43b}
+.tm-ai-discovery__footer small{display:inline-flex!important;align-items:center;justify-content:center;min-height:40px;padding:8px 15px!important;border-radius:10px;background:#082e66!important;color:#fff!important;font-size:13px!important;font-weight:900}
+.tm-ai-discovery__footer small b{color:#fff!important}
+@media(max-width:1120px) and (min-width:761px){.tm-ai-benefits span:nth-child(3),.tm-ai-benefits span:nth-child(4){display:none}}
+@media(max-width:760px){
+ .tm-ai-benefits{position:absolute;left:0;right:0;top:60px;margin:0;padding:6px 8px;gap:5px;overflow-x:auto;background:#f4f8fd;border-bottom:1px solid #dce4ee;z-index:3}
+ .tm-ai-benefits span{flex:0 0 auto;min-height:30px;background:#fff;color:#082e66;border-color:#cfe0f3;font-size:10px}.tm-ai-benefits b{color:#15579b}.tm-ai-workspace{padding-top:43px}
+}
+
+.tm-ai-product-card{overflow:hidden!important;padding:0!important;border:2px solid #dce5ef!important}.tm-ai-product-card.is-compatible{border-color:#1689d8!important}.tm-ai-product-card.is-original{border-color:#e6ad00!important}.tm-ai-product-card.is-renovated{border-color:#26a269!important}.tm-ai-card-image{height:110px;background:#fff;border-bottom:1px solid #e6edf5;display:flex;align-items:center;justify-content:center}.tm-ai-card-image img{width:100%;height:100%;object-fit:contain;padding:7px}.tm-ai-card-content{padding:12px;display:flex;flex-direction:column;gap:7px}.tm-ai-card-badges{display:flex;gap:6px;flex-wrap:wrap}.tm-ai-color-badge{font-size:10px;font-weight:800;padding:4px 7px;border-radius:999px;background:#eef3f8}.tm-ai-product-card.is-compatible .tm-ai-product-kind{background:#e5f4ff!important;color:#0069aa!important}.tm-ai-product-card.is-original .tm-ai-product-kind{background:#fff3cc!important;color:#806000!important}.tm-ai-product-card.is-renovated .tm-ai-product-kind{background:#e7f8ee!important;color:#15733f!important}.tm-ai-other-colors{margin-top:10px;padding:10px;border:1px solid #dce5ef;border-radius:12px;background:#fff;display:flex;gap:7px;align-items:center;flex-wrap:wrap}.tm-ai-other-colors button{border:1px solid #b9cce2;background:#fff;color:#082e66;border-radius:999px;padding:7px 11px;font-weight:800}
+
+/* V119 purchase flow */
+.tm-ai-commerce__head>div{display:flex;align-items:baseline;gap:9px}.tm-ai-commerce__head>div small{color:#667085}.tm-ai-back{font-weight:800!important;color:#0b3a75!important}.tm-ai-cart-actions{display:grid!important;grid-template-columns:minmax(190px,.8fr) minmax(260px,1.2fr)!important;gap:12px!important}.tm-ai-cart-actions button{min-height:48px!important;font-size:15px!important}.tm-ai-cart-actions .secondary{background:#fff!important;border:2px solid #0b3a75!important;color:#0b3a75!important}.tm-ai-cart-actions .primary{background:#0b3a75!important;border:2px solid #0b3a75!important;color:#fff!important}.tm-ai-cart-note{margin:12px 0 0;color:#667085;font-size:12px}.tm-ai-cart-controls .remove{margin-left:auto;color:#a11;background:#fff}.tm-ai-empty-cart{display:grid;gap:14px;justify-items:start;padding:20px;background:#fff;border:1px solid #d7e0ec;border-radius:14px}.tm-ai-empty-cart .primary{background:#0b3a75;color:#fff}.tm-ai-purchase-step{border:2px solid #0b3a75;border-radius:14px;background:#fff;padding:14px}
+@media(max-width:760px){.tm-ai-cart-actions{grid-template-columns:1fr!important}.tm-ai-cart-actions .primary{order:-1}.tm-ai-cart-controls{flex-wrap:wrap}.tm-ai-cart-controls .remove{margin-left:0}}
+
+/* V120 – vedený rýchly nákup, pevné benefity a plne rolovateľný pracovný priestor */
+.tm-ai-assistant__panel{display:grid!important;grid-template-rows:auto minmax(0,1fr) auto!important;overflow:hidden!important}
+.tm-ai-assistant__head{position:relative;z-index:10;display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"back brand actions" "benefits benefits benefits";align-items:center;gap:8px 12px;padding:10px 16px 0!important}
+.tm-ai-assistant__back{grid-area:back;width:38px;height:38px;border:1px solid rgba(255,255,255,.35);border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-size:22px;font-weight:900;cursor:pointer}
+.tm-ai-assistant__back[hidden]{display:none!important}.tm-ai-assistant__brand{grid-area:brand;margin:0!important}.tm-ai-assistant__head-actions{grid-area:actions}.tm-ai-assistant__brand>div small{display:block;margin-top:2px;color:#fff4b8;font-size:10px;line-height:1.25}
+.tm-ai-benefits{grid-area:benefits!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));width:calc(100% + 32px);margin:0 -16px!important;padding:7px 16px!important;border:0!important;border-radius:0!important;background:rgba(0,0,0,.14)!important;overflow:visible!important}
+.tm-ai-benefits span{justify-content:center!important;min-height:30px!important;padding:4px 8px!important;border:0!important;border-right:1px solid rgba(255,255,255,.22)!important;border-radius:0!important;background:transparent!important}.tm-ai-benefits span:last-child{border-right:0!important}
+.tm-ai-workspace{min-height:0!important;height:100%!important;overflow:hidden!important;padding:0!important}.tm-ai-workspace__main{display:flex!important;flex-direction:column;height:100%!important;min-height:0!important;overflow:hidden!important}
+.tm-ai-progress{display:grid;grid-template-columns:repeat(3,1fr);flex:0 0 auto;border-bottom:1px solid #dce4ee;background:#fff}.tm-ai-progress span{position:relative;padding:8px;text-align:center;color:#7b8798;font-size:11px;font-weight:850}.tm-ai-progress span:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:transparent}.tm-ai-progress span.is-active{color:#0b3a75}.tm-ai-progress span.is-active:after{background:#ffc400}
+.tm-ai-assistant__messages,.tm-ai-commerce{overscroll-behavior:contain;scrollbar-gutter:stable;touch-action:pan-y;-webkit-overflow-scrolling:touch}.tm-ai-assistant__messages{flex:1!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important}.tm-ai-commerce{flex:1!important;min-height:0!important;overflow-y:auto!important}
+.tm-ai-msg--bot{width:min(100%,1120px)!important;max-width:1120px!important}.tm-ai-msg--bot:not(.tm-ai-msg--welcome){align-self:flex-start}.tm-ai-msg--user{max-width:min(78%,720px)!important}.tm-ai-color-offer,.tm-ai-discovery{width:100%!important}
+.tm-ai-guided-title{display:flex;justify-content:space-between;gap:14px;align-items:end;margin-bottom:12px}.tm-ai-guided-title>b{font-size:17px;color:#10284f}.tm-ai-guided-title>span{color:#667085;font-size:12px}
+.tm-ai-set-list{display:grid;gap:12px}.tm-ai-set-card{padding:14px;border:2px solid #dce5ef;border-radius:14px;background:#fff}.tm-ai-set-card.is-compatible{border-color:#1689d8;background:#f7fcff}.tm-ai-set-card__head{display:flex;align-items:start;justify-content:space-between;gap:12px}.tm-ai-set-card__head>div{display:grid;gap:3px}.tm-ai-set-card__head b{font-size:15px}.tm-ai-set-card__head small{color:#667085}.tm-ai-set-card__head>strong{font-size:18px;color:#10284f}
+.tm-ai-set-toners{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:11px 0}.tm-ai-set-toners span{display:grid;grid-template-columns:46px 1fr;align-items:center;gap:7px;min-width:0;padding:6px;border:1px solid #e0e7ef;border-radius:10px;background:#fff}.tm-ai-set-toners img{width:46px;height:46px;object-fit:contain}.tm-ai-set-toners b{font-size:11px}.tm-ai-set-card>button{width:100%;min-height:42px;border:0;border-radius:10px;background:#0b3267;color:#fff;font-weight:900;cursor:pointer}.tm-ai-set-card.is-compatible>button{background:#087ebf}
+.tm-ai-single-section{margin-top:16px;padding-top:14px;border-top:1px solid #dce4ee}.tm-ai-single-section>b{display:block;margin-bottom:9px}.tm-ai-single-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.tm-ai-single-color{display:grid!important;grid-template-columns:62px 1fr;align-items:center;gap:8px;min-width:0;padding:8px!important;border:1px solid #cbd9e8!important;border-radius:12px!important;background:#fff!important;color:#10284f!important;text-align:left!important;cursor:pointer}.tm-ai-single-color img{width:62px;height:62px;object-fit:contain}.tm-ai-single-color>span{display:grid;gap:2px;min-width:0}.tm-ai-single-color small{overflow:hidden;color:#667085;text-overflow:ellipsis}.tm-ai-single-color strong{color:#0b3a75}
+@media(min-width:761px){.tm-ai-assistant__panel{width:min(1280px,calc(100vw - 48px))!important;height:min(830px,calc(100dvh - 44px))!important}.tm-ai-assistant__messages,.tm-ai-commerce{padding:20px 28px!important}}
+@media(max-width:760px){.tm-ai-assistant__head{grid-template-columns:auto minmax(0,1fr) auto!important;padding:7px 9px 0!important}.tm-ai-assistant__brand>div small{font-size:8.5px}.tm-ai-benefits{position:static!important;width:calc(100% + 18px)!important;margin:0 -9px!important;padding:5px 7px!important;display:flex!important;overflow-x:auto!important}.tm-ai-benefits span{flex:0 0 auto!important;color:#fff!important;font-size:9px!important}.tm-ai-workspace{padding:0!important}.tm-ai-progress span{padding:7px 3px;font-size:10px}.tm-ai-guided-title{display:grid;gap:3px}.tm-ai-set-toners{grid-template-columns:repeat(4,1fr)}.tm-ai-set-toners span{display:grid;grid-template-columns:1fr;justify-items:center;text-align:center}.tm-ai-set-toners img{width:40px;height:40px}.tm-ai-single-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tm-ai-single-color{grid-template-columns:48px 1fr}.tm-ai-single-color img{width:48px;height:48px}.tm-ai-msg--user{max-width:90%!important}}
+
+/* V121 – konverzačné vedenie namiesto katalógu */
+.tm-ai-choice-row,.tm-ai-color-mode{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;width:min(100%,820px)}
+.tm-ai-choice-row button,.tm-ai-color-mode button{min-height:48px;padding:10px 13px;border:1px solid #b9cce2;border-radius:11px;background:#fff;color:#0b3a75;font-weight:900;cursor:pointer;text-align:left}
+.tm-ai-choice-row button:first-child,.tm-ai-color-mode button.primary{border-color:#087ebf;background:#eef9ff}
+.tm-ai-color-mode{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:12px}.tm-ai-color-mode button{display:grid;gap:3px}.tm-ai-color-mode span{color:#667085;font-size:11px;font-weight:600}
+.tm-ai-next-step{width:min(100%,760px);padding:14px;border:1px solid #cbd9e8;border-radius:14px;background:#fff}.tm-ai-next-step p{margin:0 0 11px}.tm-ai-next-step>div{display:grid;grid-template-columns:1fr 1fr;gap:9px}.tm-ai-next-step button{min-height:46px;border:2px solid #0b3a75;border-radius:10px;background:#fff;color:#0b3a75;font-weight:900;cursor:pointer}.tm-ai-next-step button.primary{background:#0b3a75;color:#fff}
+.tm-ai-assistant.is-started .tm-ai-home{display:none!important}.tm-ai-set-list,.tm-ai-single-section{margin-top:12px}
+@media(max-width:760px){.tm-ai-choice-row{grid-template-columns:1fr}.tm-ai-color-mode,.tm-ai-next-step>div{grid-template-columns:1fr}.tm-ai-next-step button.primary{order:-1}}
+
+/* V122 – viditeľné odovzdanie konverzácie pracovníkovi */
+.tm-ai-handoff:not([hidden]){display:block!important;position:absolute;z-index:40;right:20px;bottom:76px;width:min(440px,calc(100% - 40px));max-height:min(620px,calc(100% - 120px));overflow:auto;margin:0!important;padding:16px!important;border:2px solid #0b4f9c!important;background:#fff!important;box-shadow:0 18px 55px rgba(7,32,70,.28)}
+.tm-ai-handoff__head strong:before{content:"👤 ";}.tm-ai-handoff [data-ai-handoff-status]:not(:empty){display:block;padding:8px 10px;border-radius:8px;background:#eef5ff;color:#17365f}
+@media(max-width:760px){.tm-ai-handoff:not([hidden]){position:absolute;left:10px;right:10px;bottom:70px;width:auto;max-height:calc(100% - 140px);padding:13px!important}}
+
+/* V123 – adaptívna veľkosť: poradca je kompaktný, nákup využije pracovný priestor */
+.tm-ai-assistant__panel[hidden]{display:none!important}
+.tm-ai-assistant.is-started .tm-ai-benefits{display:grid!important}
+@media(min-width:761px){
+  .tm-ai-assistant__panel{width:min(900px,calc(100vw - 48px))!important;height:min(680px,calc(100dvh - 44px))!important;transition:width .2s ease,height .2s ease}
+  .tm-ai-assistant.is-advice .tm-ai-assistant__panel{width:min(720px,calc(100vw - 48px))!important;height:min(610px,calc(100dvh - 44px))!important}
+  .tm-ai-assistant.is-shopping .tm-ai-assistant__panel{width:min(1280px,calc(100vw - 48px))!important;height:min(830px,calc(100dvh - 44px))!important}
+  .tm-ai-assistant.is-advice .tm-ai-progress{display:none!important}
+  .tm-ai-assistant.is-advice .tm-ai-assistant__messages{padding:18px 20px!important}
+  .tm-ai-assistant.is-advice .tm-ai-msg{max-width:94%!important}
+  .tm-ai-assistant.is-advice .tm-ai-benefits span{font-size:10px!important;padding-inline:5px!important}
+}
+
+/* V124 – úplná produktová ponuka: sklad, expedícia, web aj rýchly nákup */
+.tm-ai-offer-summary{border:1px solid #bfd4ec;border-left:5px solid #0b4f91;border-radius:14px;padding:14px 16px;background:#f7fbff}
+.tm-ai-offer-summary p{margin:7px 0 0;line-height:1.45}
+.tm-ai-summary-actions{margin-top:10px}.tm-ai-summary-actions a{font-weight:800;color:#074783}
+.tm-ai-offer-section{margin-top:14px}.tm-ai-offer-section h4{margin:0 0 9px;color:#092d5d;font-size:15px}
+.tm-ai-offer-section.is-unavailable{padding-top:12px;border-top:1px solid #d7e1ed}
+.tm-ai-product-card em,.tm-ai-single-color em{font-style:normal;font-weight:800;font-size:12px}
+.tm-ai-product-card em.is-stock,.tm-ai-single-color em.is-stock{color:#087b42}
+.tm-ai-product-card em.is-out{color:#a64034}
+.tm-ai-product-card.is-unavailable{background:#fbfcfe;border-style:dashed}
+.tm-ai-product-card.is-unavailable img{filter:saturate(.75);opacity:.85}
+.tm-ai-single-color{display:grid!important;grid-template-columns:56px minmax(0,1fr);grid-template-rows:auto auto;gap:8px 10px;text-align:left!important;padding:10px!important;background:#fff!important;border:1px solid #c5d7ec!important;border-radius:12px!important;color:#092d5d!important}
+.tm-ai-single-color>img{width:56px;height:56px;object-fit:contain;grid-row:1/3}
+.tm-ai-single-color>span{display:flex;min-width:0;flex-direction:column;gap:2px}.tm-ai-single-color>span small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm-ai-single-color>div{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.tm-ai-single-color>div a,.tm-ai-single-color>div button{font-size:12px;font-weight:800}
+.tm-ai-single-color>div button{border:0;border-radius:8px;background:#0a3c78;color:#fff;padding:7px 9px;cursor:pointer}
+.tm-ai-set-toners>span>span{display:flex;min-width:0;flex-direction:column;gap:2px}.tm-ai-set-toners>span small{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}.tm-ai-set-toners>span em{font-style:normal;color:#087b42;font-size:11px;font-weight:800}
+.tm-ai-set-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.35fr);gap:8px;margin-top:10px}.tm-ai-set-actions button,.tm-ai-set-actions a{display:flex;align-items:center;justify-content:center;min-height:42px;border-radius:10px;font-weight:900;text-align:center}.tm-ai-set-actions button{border:0;background:#0b3d77;color:#fff;cursor:pointer}.tm-ai-set-actions a{border:1px solid #0b3d77;color:#0b3d77;background:#fff;text-decoration:none}
+.tm-ai-single-type{margin-top:14px}.tm-ai-single-type h4{margin:0 0 9px;color:#092d5d;font-size:15px}
+@media(max-width:700px){.tm-ai-single-grid,.tm-ai-shop-products,.tm-ai-set-list{grid-template-columns:1fr!important}.tm-ai-offer-summary{padding:12px}}
+@media(max-width:700px){.tm-ai-set-actions{grid-template-columns:1fr}.tm-ai-set-toners{grid-template-columns:1fr 1fr!important}}
+@media(max-width:760px){
+  .tm-ai-assistant.is-started .tm-ai-benefits{display:flex!important}
+}
+
+/* V124 – rozhodovacia ponuka s cenou za stranu; zľavová tabuľka iba kompatibilné */
+.tm-ai-type-compare{width:100%}.tm-ai-type-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.tm-ai-type-card{position:relative;display:flex;flex-direction:column;gap:10px;min-width:0;padding:14px;border:2px solid #d7e0ec;border-radius:14px;background:#fff}.tm-ai-type-card.is-compatible{border-color:#1689d8;background:#f5fbff}.tm-ai-type-card.is-original{border-color:#e5b628}.tm-ai-type-card.is-renovated{border-color:#35a66f}.tm-ai-type-card>em{align-self:flex-start;padding:5px 8px;border-radius:999px;background:#087ebf;color:#fff;font-size:10px;font-style:normal;font-weight:900}.tm-ai-type-card__product{display:grid;grid-template-columns:60px 1fr;gap:9px;align-items:center;min-height:62px}.tm-ai-type-card__product img{width:60px;height:60px;object-fit:contain;border-radius:8px;background:#fff}.tm-ai-type-card__product>div{display:grid;gap:3px;min-width:0}.tm-ai-type-card__product b{font-size:13px;line-height:1.3}.tm-ai-type-card__product small{color:#667085}.tm-ai-type-card__facts{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.tm-ai-type-card__facts>strong{color:#0b3a75;font-size:20px}.tm-ai-type-card__facts>span{color:#53627a;font-size:11px}.tm-ai-type-card>p{margin:0;color:#53627a;font-size:11px;line-height:1.4}.tm-ai-type-card .tm-ai-type-card__saving{padding:7px 8px;border-radius:8px;background:#e5f6ff;color:#075d91;font-weight:800}.tm-ai-type-card__buy{display:grid;grid-template-columns:86px 1fr;gap:8px;margin-top:auto}.tm-ai-type-card__buy label{display:grid;gap:3px;color:#53627a;font-size:10px;font-weight:800}.tm-ai-type-card__buy input{width:100%;height:38px;border:1px solid #b9c9dc;border-radius:8px;padding:0 8px}.tm-ai-type-card__buy button,.tm-ai-type-card__discounts{min-height:38px;border:0;border-radius:9px;background:#0b3a75;color:#fff;font-weight:900;cursor:pointer}.tm-ai-type-card__discounts{background:#fff;color:#0873b5;border:1px solid #1689d8}.tm-ai-selected-product{display:flex;align-items:start;justify-content:space-between;gap:12px}.tm-ai-selected-product p{margin:0}.tm-ai-selected-product>div{display:grid;gap:2px}.tm-ai-selected-product small{color:#667085}.tm-ai-selected-product>strong{color:#0b3a75;font-size:18px}.tm-ai-cost-note{padding:8px 10px;border-radius:9px;background:#eef5ff;color:#36516f}.tm-ai-simple-qty{display:grid;grid-template-columns:minmax(160px,220px) minmax(180px,260px);gap:10px;align-items:end;margin:12px 0}.tm-ai-simple-qty label{display:grid;gap:5px;font-weight:800}.tm-ai-simple-qty input{height:44px;border:1px solid #b9c9dc;border-radius:9px;padding:0 11px;font-size:16px}.tm-ai-simple-qty button{height:44px;border:0;border-radius:9px;background:#0b3a75;color:#fff;font-weight:900;cursor:pointer}
+@media(max-width:980px){.tm-ai-type-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.tm-ai-type-grid{grid-template-columns:1fr}.tm-ai-type-card__buy,.tm-ai-simple-qty{grid-template-columns:92px 1fr}.tm-ai-type-card__product{grid-template-columns:54px 1fr}.tm-ai-type-card__product img{width:54px;height:54px}}
+
+/* V126: jeden veľký nákupný priestor a úplné údaje pokladne. */
+.tm-ai-commerce.is-focus-stage{padding:18px 24px 28px;background:#f7f9fc}.tm-ai-commerce.is-focus-stage>*{width:100%;max-width:1120px;margin-left:auto;margin-right:auto}.tm-ai-commerce.is-focus-stage .tm-ai-purchase-step{min-height:260px;padding:22px;border:1px solid #cddced;border-radius:16px;background:#fff}.tm-ai-commerce.is-focus-stage .tm-ai-qty-grid button small{display:block;margin-top:5px;color:#52647c}
+.tm-ai-checkout-form{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:16px}.tm-ai-checkout-form fieldset{display:grid;gap:10px;margin:0;padding:16px;border:1px solid #cddced;border-radius:14px;background:#fff}.tm-ai-checkout-form legend{padding:0 7px;font-weight:900;color:var(--tm-ai-blue)}.tm-ai-checkout-form [hidden]{display:none!important}.tm-ai-checkline{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center;gap:8px!important;min-height:38px;padding:7px 10px;border-radius:9px;background:#eef5ff}.tm-ai-checkline input{width:18px!important;height:18px!important;margin:0;padding:0}
+.tm-ai-recommend-badge,.tm-ai-mini-recommend{display:inline-flex;width:max-content;margin-bottom:7px;padding:4px 8px;border-radius:999px;background:#fff0b5;color:#6b4a00;font-size:11px;font-style:normal;font-weight:900}.tm-ai-single-color mark{display:block;width:max-content;margin-top:4px;padding:3px 6px;border-radius:6px;background:#eaf7ee;color:#087b3d;font-size:11px;font-weight:900}.tm-ai-value-advice{display:flex;justify-content:space-between;gap:12px;margin:0 0 14px;padding:12px 14px;border-left:4px solid #ffc400;border-radius:10px;background:#fff8db}.tm-ai-value-advice span{color:#52647c;font-size:12px}.tm-ai-capacity-note,.tm-ai-set-discount{margin:6px 0 10px;color:#52647c;font-size:12px}.tm-ai-set-discount{padding:7px 9px;border-radius:8px;background:#eef5ff;color:#0b4f9c;font-weight:800}
+@media(max-width:760px){.tm-ai-commerce.is-focus-stage{padding:12px}.tm-ai-checkout-form{grid-template-columns:1fr}.tm-ai-checkout-form fieldset{padding:12px}.tm-ai-value-advice{display:block}.tm-ai-value-advice span{display:block;margin-top:5px}}
+
+/* V128: skrytý panel nesmie zaberať druhú pracovnú plochu. */
+.tm-ai-assistant__messages[hidden],.tm-ai-commerce[hidden],.tm-ai-assistant__form[hidden],.tm-ai-assistant__quick[hidden]{display:none!important}
+.tm-ai-single-type h4{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.tm-ai-single-type h4 .tm-ai-recommend-badge{margin:0}.tm-ai-single-color>span>b{line-height:1.3}.tm-ai-single-color>div{grid-column:1/-1}
+
+/* V129: konečné pravidlá manuálnej a automatickej veľkosti. */
+.tm-ai-assistant__panel{grid-template-rows:auto minmax(0,1fr) auto auto!important}
+@media(min-width:761px){
+  .tm-ai-assistant.is-compact .tm-ai-assistant__panel{width:min(720px,calc(100vw - 48px))!important;height:min(650px,calc(100dvh - 44px))!important}
+  .tm-ai-assistant.is-expanded .tm-ai-assistant__panel{width:min(1320px,86vw)!important;height:min(920px,90dvh)!important}
+}

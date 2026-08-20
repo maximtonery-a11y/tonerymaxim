@@ -66,16 +66,64 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
       <FloatingAdvisor />
     </div>
 
+    <div class="account-migration-modal" data-account-migration-modal hidden>
+      <button class="account-migration-modal__backdrop" type="button" data-account-migration-close aria-label="Zavrieť informačné okno"></button>
+      <section class="account-migration-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="account-migration-title" tabindex="-1">
+        <button class="account-migration-modal__close" type="button" data-account-migration-close aria-label="Zavrieť">×</button>
+        <span class="account-migration-modal__eyebrow">Vitajte na novom ToneryMAXIM.sk</span>
+        <h2 id="account-migration-title">Informácia k prihláseniu</h2>
+        <p>Náš e-shop sme presunuli na nový, rýchlejší web plný užitočných výhod. Pôvodné zákaznícke účty sa z technických a bezpečnostných dôvodov neprenášali.</p>
+        <p>Ospravedlňujeme sa za komplikácie pri prihlásení. Nová registrácia zaberie iba chvíľu a <strong>5 % zľava na celý prvý nákup sa vám po registrácii aktivuje automaticky na 30 dní.</strong></p>
+        <ul>
+          <li>prehľad a história objednávok,</li>
+          <li>rýchlejšie nakupovanie a zopakovanie nákupu,</li>
+          <li>správa dodacích a fakturačných údajov,</li>
+          <li>vernostné body a ďalšie zákaznícke výhody.</li>
+        </ul>
+        <div class="account-migration-modal__actions">
+          <a class="tm-btn" href="/registracia" data-account-migration-register>Vytvoriť nový účet</a>
+          <button class="account-migration-modal__retry" type="button" data-account-migration-close>Skúsiť prihlásenie znova</button>
+        </div>
+        <a class="account-migration-modal__reset" href="/zabudnute-heslo">Nie ste si istí? Skúste obnoviť heslo</a>
+      </section>
+    </div>
+
     <script>
       const form = document.querySelector<HTMLFormElement>("[data-login-form]")!;
       const message = document.querySelector<HTMLElement>("[data-auth-message]")!;
       const submit = document.querySelector<HTMLButtonElement>("[data-auth-submit]")!;
+      const migrationModal = document.querySelector<HTMLElement>("[data-account-migration-modal]")!;
+      const migrationDialog = migrationModal?.querySelector<HTMLElement>("[role='dialog']");
+      const migrationRegister = migrationModal?.querySelector<HTMLAnchorElement>("[data-account-migration-register]");
+      let lastFocusedElement: HTMLElement | null = null;
 
       function showMessage(text: string, type = "error") {
         message.hidden = false;
         message.textContent = text;
         message.className = `auth-alert is-${type}`;
       }
+
+      function openMigrationModal(email: string) {
+        lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        if (migrationRegister) migrationRegister.href = `/registracia?email=${encodeURIComponent(email)}`;
+        migrationModal.hidden = false;
+        document.body.classList.add("has-account-migration-modal");
+        requestAnimationFrame(() => migrationDialog?.focus());
+      }
+
+      function closeMigrationModal() {
+        migrationModal.hidden = true;
+        document.body.classList.remove("has-account-migration-modal");
+        lastFocusedElement?.focus();
+      }
+
+      migrationModal?.querySelectorAll<HTMLElement>("[data-account-migration-close]").forEach((button) => {
+        button.addEventListener("click", closeMigrationModal);
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && migrationModal && !migrationModal.hidden) closeMigrationModal();
+      });
 
       form?.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -93,7 +141,14 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
             body: JSON.stringify(data),
           });
           const result = await response.json();
-          if (!response.ok || !result.ok) throw new Error(result.error || "Prihlásenie zlyhalo.");
+          if (!response.ok || !result.ok) {
+            if (result?.code === "ACCOUNT_NOT_REGISTERED" || result?.accountNotRegistered === true) {
+              showMessage("Na novom webe zatiaľ nemáte vytvorený účet. Ponúkame vám novú registráciu s 5 % zľavou.", "info");
+              openMigrationModal(String(data.email || ""));
+              return;
+            }
+            throw new Error(result.error || "Prihlásenie zlyhalo.");
+          }
 
           showMessage("Prihlásenie prebehlo úspešne. Presmerovávam...", "success");
           try { sessionStorage.removeItem("tm_header_account_v1"); } catch {}

@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { TM_DATA_ROOT, readSignedJson, writeSignedJson } from './secure-persistence';
+import { TM_DATA_ROOT, readSignedJson, writeSignedJson } from './secure-persistence.ts';
 
 export type AiUnansweredRecord = {
   created_at: string;

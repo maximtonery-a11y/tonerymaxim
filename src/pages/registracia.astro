@@ -10,6 +10,7 @@ import { readCustomerSession } from "../lib/auth-session";
 
 const session = readCustomerSession(Astro.cookies);
 if (session) return Astro.redirect("/ucet");
+const prefilledEmail = Astro.url.searchParams.get("email")?.trim().slice(0, 254) || "";
 ---
 
 <!doctype html>
@@ -26,7 +27,9 @@ if (session) return Astro.redirect("/ucet");
         <section class="auth-card">
           <img class="auth-logo" src="/images/tonerymaxim-logo-sharp.png" alt="ToneryMaxim" width="1270" height="222" decoding="async" />
           <h1>Registrácia</h1>
-          <p>Vytvorte si účet zdarma a nakupujte tonery rýchlejšie pri každej ďalšej objednávke.</p>
+          <p>Vytvorte si účet zdarma, získajte <strong>5 % zľavu na celý prvý nákup</strong> a nakupujte rýchlejšie pri každej ďalšej objednávke.</p>
+
+          <div class="auth-welcome-discount"><strong>🎁 Vaša 5 % zľava</strong><span>Po registrácii sa aktivuje automaticky a platí 30 dní.</span></div>
 
           <div class="auth-alert" data-auth-message hidden></div>
 
@@ -35,7 +38,7 @@ if (session) return Astro.redirect("/ucet");
               <div class="tm-field"><label for="first-name">Meno</label><input id="first-name" name="firstName" placeholder="Ján" autocomplete="given-name" required /></div>
               <div class="tm-field"><label for="last-name">Priezvisko</label><input id="last-name" name="lastName" placeholder="Novák" autocomplete="family-name" required /></div>
             </div>
-            <div class="tm-field"><label for="reg-email">E-mailová adresa</label><input id="reg-email" name="email" type="email" placeholder="vas@email.sk" autocomplete="email" required /></div>
+            <div class="tm-field"><label for="reg-email">E-mailová adresa</label><input id="reg-email" name="email" type="email" placeholder="vas@email.sk" autocomplete="email" value={prefilledEmail} required /></div>
             <div class="tm-field"><label for="reg-password">Heslo</label><input id="reg-password" name="password" type="password" placeholder="12 až 128 znakov" autocomplete="new-password" required minlength="12" maxlength="128" /></div>
             <div class="tm-field"><label for="reg-password2">Potvrďte heslo</label><input id="reg-password2" name="password2" type="password" placeholder="zopakujte heslo" autocomplete="new-password" required minlength="12" maxlength="128" /></div>
             <label class="tm-check"><input name="consent" type="checkbox" required /> Potvrdzujem, že som sa oboznámil/a so <a href="/ochrana-osobnych-udajov">zásadami ochrany osobných údajov</a>. Údaje účtu spracúvame na jeho vytvorenie a správu, nie na základe marketingového súhlasu.</label>

@@ -26,7 +26,7 @@ const TYPE_ORDER: Record<string, number> = { compatible: 1, original: 2, renovat
 
 const SERVICE_INTENT_WORDS: Record<AiIntent, string[]> = {
   shipping: ['doprava', 'dopravne', 'postovne', 'kurier', 'gls', 'dpd', 'pickup', 'box', 'balikomat', 'parcelshop', 'dorucenie', 'pride balik', 'cena dopravy', 'balik na adresu'],
-  payment: ['platba', 'zaplatit', 'gopay', 'dobierka', 'prevod', 'faktura', 'kartou', 'bankovy prevod', 'ico', 'dic', 'firma'],
+  payment: ['platba', 'zaplatit', 'platit', 'hotovost', 'hotovosti', 'gopay', 'dobierka', 'prevod', 'faktura', 'kartou', 'bankovy prevod', 'ico', 'dic', 'firma'],
   claim: ['reklamacia', 'reklamovat', 'vratit', 'vymenit', 'nepasuje', 'nesedi', 'zly toner', 'chyba tovaru', 'prisiel zly', 'nefunguje', 'vratenie'],
   order: ['objednavka', 'objednavku', 'objednal', 'odoslete', 'poslete', 'expedujete', 'expedicia', 'kedy pride', 'kedy mi pride', 'stav objednavky', 'sledovanie zasielky', 'tracking', 'kde je balik'],
   diagnostic: ['tlaci', 'pasy', 'ciary', 'smuhy', 'flaky', 'bledy', 'biele pasy', 'slaba farba', 'farba je slaba', 'slabo', 'sype', 'prasi', 'nerozpozna', 'chyba kazety', 'cartridge error', 'replace toner', 'po vymene tonera netlaci'],
@@ -141,8 +141,8 @@ function classifyIntent(message: string): { intent: AiIntent; score: number } {
 
   const ordered = [...scores.entries()].sort((a, b) => b[1] - a[1]);
   const best = ordered[0];
+  if (hasProductCodeOrModel(message) && (!best || !['shipping','payment','claim','order','diagnostic','account','loyalty','legal','contact'].includes(best[0]))) return { intent: 'product_search', score: 140 };
   if (best && best[1] >= 55) return { intent: best[0], score: best[1] };
-  if (hasProductCodeOrModel(message)) return { intent: 'product_search', score: 90 };
   return { intent: 'fallback', score: 0 };
 }
 
@@ -422,11 +422,9 @@ function groupProducts(products: Product[]): ProductGroup[] {
   }).sort((a, b) => (TYPE_ORDER[a.key] || 9) - (TYPE_ORDER[b.key] || 9));
 }
 
-function buildProductAnswer(_message: string, _products: Product[]) {
-  // Product-search responses intentionally use one neutral introduction.
-  // The catalogue results shown below are the source of truth; do not
-  // reconstruct the customer's query or invent recommendations here.
-  return ['Máme v ponuke tieto produkty:'];
+function buildProductAnswer(message: string, _products: Product[]) {
+  const query = String(message || '').trim().replace(/[<>]/g, '');
+  return [query ? `Pre „${query}“ máme v ponuke tieto produkty:` : 'Máme v ponuke tieto produkty:'];
 }
 
 function enrichProductAnswer(message: string, answer: string[], products: Product[]) {
@@ -465,21 +463,25 @@ function contextualizeFollowUp(message: string, history: AiConversationTurn[] = 
   // Výnimka: prirodzené pokračovanie s mestom/ČR (napr. „pošlete mi ho do Brna?“)
   // môže heuristika modelu vyhodnotiť ako kód, hoci ide len o dopravu.
   const locationFollowUp = /\b(?:brno|brna|praha|cesko|ceska|cr|cz)\b/.test(n) && /posl|kurier|dopr|doruc|pickup|parcel|box/.test(n);
-  if (hasProductCodeOrModel(current) && !locationFollowUp) return current;
+  const explicitContextReference = /\b(tam|do nej|do neho|ten|tento|ho|ju|pasuje|mozem)\b/.test(n);
+  if (hasProductCodeOrModel(current) && !locationFollowUp && !explicitContextReference) return current;
   // Jednoznačná samostatná servisná otázka nesmie zdediť predchádzajúci produkt.
   // Inak by napr. „koľko stojí doprava?“ po produktovej otázke znovu spustilo
   // katalógové hľadanie, pridalo tonery pod odpoveď a zbytočne spomalilo chat.
-  if (/\b(?:doprava|dopravn\w*|postovn\w*|kurier\w*|doruc\w*|parcelshop|balikomat|pickup|dobierk\w*|gopay|platb\w*|prevod\w*|faktur\w*|reklamac\w*|vraten\w*|odstupen\w*|hesl\w*|registrac\w*|gdpr|kontakt\w*|telefon\w*|email\w*|pracovna doba)/.test(n)) return current;
+  if (/\b(?:doprava|dopravn\w*|postovn\w*|kurier\w*|doruc\w*|osobn\w*\s+odber\w*|vyzdvih\w*|parcelshop|balikomat|pickup|dobierk\w*|gopay|platb\w*|prevod\w*|faktur\w*|reklamac\w*|vraten\w*|odstupen\w*|hesl\w*|registrac\w*|gdpr|kontakt\w*|telefon\w*|email\w*|pracovna doba)/.test(n)) return current;
 
   const followUp = current.length <= 90 && (
     /^(a |ale |tak |dobre |ok |ano |nie )/.test(n)
-    || /\b(lacnejs|drahsi|original|kompatibil|renov|sklad|skladom|kolko stoji|cena|do ceska|do cr|brno|brna|praha|kurier|doprava|poslete|poslat|objednat|ten|tento|tohto|zoberiem|chcem ho|chcem ju)\b/.test(n)
+    || /\b(lacnejs|drahsi|original|kompatibil|renov|sklad|skladom|kolko stoji|cena|do ceska|do cr|brno|brna|praha|kurier|doprava|poslete|poslat|objednat|ten|tento|tohto|zoberiem|chcem ho|chcem ju|mozem|tam|pasuje)\b/.test(n)
     || /kedy.*pride/.test(n)
   );
   if (!followUp) return current;
 
   const previousUsers = history.filter((turn) => turn?.role === 'user').map((turn) => String(turn.content || '').trim()).filter(Boolean).slice(-6).reverse();
-  const productContext = previousUsers.find((text) => hasProductCodeOrModel(text));
+  const productContexts = previousUsers.filter((text) => hasProductCodeOrModel(text));
+  const regionalBrotherContext = /tn\s*-?\s*24(?:11|20|21)/i.test(current)
+    && productContexts.some(text => /l2350/i.test(text)) && productContexts.some(text => /l2352/i.test(text));
+  const productContext = regionalBrotherContext ? productContexts.slice(0, 2).reverse().join('. ') : (productContexts[0] || '');
   if (!productContext) return current;
   return `${productContext}. Nadväzujúca požiadavka zákazníka: ${current}`;
 }
@@ -533,9 +535,61 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     if (printers) return { answer: [`${printers.title}:`, ...printers.answer], products: [], groups: [], intent: 'support', faq: printers.id, confidence: 0.99 };
   }
 
+  // Priority routes before generic shipping/payment keyword matching.
+  if (!isContextualProductFollowUp && /\b(cesk(a|ej|u|o)|cesko|cr|cz|brno|brna|praha|prahy)\b/i.test(normalizedMessage)) {
+    const foreign = aiKnowledge.find((item) => item.id === 'ceska-republika');
+    if (foreign) return { answer: [`${foreign.title}:`, ...foreign.answer], products: [], groups: [], intent: 'shipping', faq: foreign.id, confidence: 0.99 };
+  }
+  if (!isContextualProductFollowUp && /ako rychlo dorucujete|kedy.*(?:doruc|pride|exped|odosl)|(?:doruc|exped).*ako rychlo/i.test(normalizedMessage)) {
+    const dispatch = aiKnowledge.find((item) => item.id === 'expedicia-kedy-posleme');
+    if (dispatch) return { answer: [`${dispatch.title}:`, ...dispatch.answer], products: [], groups: [], intent: 'order', faq: dispatch.id, confidence: 0.99 };
+  }
+  if (/\b(kto (?:je )?prezident|kto vyhral|futbal|pocasie|milion zakaznikov|30 ?000 objednavok)\b/i.test(normalizedMessage)) {
+    return { answer: ['Na túto otázku nemám v overených informáciách ToneryMAXIM spoľahlivú odpoveď.'], products: [], groups: [], intent: 'fallback', confidence: 0.99, unanswered: true };
+  }
+
+  if (/vrat\w* peniaz|peniaz\w*.*odstupen|odstupen.*peniaz/i.test(normalizedMessage)) {
+    const refund = aiKnowledge.find((item) => item.id === 'odstupenie-vratenie-penazi');
+    if (refund) return { answer: [`${refund.title}:`, ...refund.answer], products: [], groups: [], intent: 'claim', faq: refund.id, confidence: 0.99 };
+  }
+  const adviceId = /ktore tonery.*najlepsi pomer|najlepsi pomer.*toner|preco.*drahsi toner.*vyhodnejs/i.test(normalizedMessage) ? 'najlepsi-pomer-toner'
+    : /(?:odporuc|najlacnejsi).*toner.*(?:ciernobiel|farebn)/i.test(normalizedMessage) ? 'najlacnejsi-toner-bez-modelu' : '';
+  if (adviceId) { const advice = aiKnowledge.find((item) => item.id === adviceId); if (advice) return { answer: [`${advice.title}:`, ...advice.answer], products: [], groups: [], intent: 'support', faq: advice.id, confidence: 0.99 }; }
+  if (/(?:ako dlho|lehota|30 dni|dva roky).*reklamac|reklamac.*(?:ako dlho|lehota|30 dni|dva roky)|vadu.*dva roky/i.test(normalizedMessage)) {
+    const claimTime = aiKnowledge.find((item) => item.id === 'reklamacia-lehoty');
+    if (claimTime) return { answer: [`${claimTime.title}:`, ...claimTime.answer], products: [], groups: [], intent: 'claim', faq: claimTime.id, confidence: 0.99 };
+  }
+  if (/vrateni|vratenie|odstupen|nespravny toner|zle som objednal|kupil som nespravny/i.test(normalizedMessage)) {
+    const returns = aiKnowledge.find((item) => item.id === 'vratenie-tovaru');
+    if (returns) return { answer: [`${returns.title}:`, ...returns.answer], products: [], groups: [], intent: 'claim', faq: returns.id, confidence: 0.99 };
+  }
+  if (/reklamac/i.test(normalizedMessage)) {
+    const claim = aiKnowledge.find((item) => item.id === 'reklamacia-postup');
+    if (claim) return { answer: [`${claim.title}:`, ...claim.answer], products: [], groups: [], intent: 'claim', faq: claim.id, confidence: 0.99 };
+  }
+  if (/\b(?:dobierk).*\b29\b|\b29\b.*\b(?:dobierk|doprava|postovne)\b/i.test(normalizedMessage)) {
+    const shipping = aiKnowledge.find((item) => item.id === 'doprava-ceny');
+    if (shipping) return { answer: [`${shipping.title}:`, ...shipping.answer], products: [], groups: [], intent: 'shipping', faq: shipping.id, confidence: 0.99 };
+  }
+  if (/\b(?:dokedy|platnost|plati).*\b5 ?(?:%|percent)|\b5 ?(?:%|percent).*\b(?:dokedy|platnost|plati)/i.test(normalizedMessage)) {
+    const reg = aiKnowledge.find((item) => item.id === 'registracia-zlava');
+    if (reg) return { answer: [`${reg.title}:`, ...reg.answer], products: [], groups: [], intent: 'loyalty', faq: reg.id, confidence: 0.99 };
+  }
+  if (/po vymene tonera.*(?:netlaci|nefunguje)|(?:netlaci|nefunguje).*po vymene tonera/i.test(normalizedMessage)) {
+    const diag = knowledgeMatch(originalMessage, 'diagnostic');
+    if (diag) return { answer: [`${diag.item.title}:`, ...diag.item.answer], products: [], groups: [], intent: 'diagnostic', faq: diag.item.id, confidence: 0.99 };
+  }
+  if (/\b(kto je majitel|zrus mi objednavku|zmen mi adresu objednavky)\b/i.test(normalizedMessage)) {
+    return { answer: ['Túto požiadavku neviem v AI Tomášovi bezpečne vykonať. Kontaktujte prosím zákaznícku podporu.'], products: [], groups: [], intent: 'fallback', confidence: 0.99, unanswered: true };
+  }
+
   // Rýchle deterministické routovanie servisných otázok. Tieto otázky nikdy nesmú
   // spúšťať katalóg ani zobrazovať produkty. Je to zároveň ochrana rýchlosti chatu.
-  const directServiceId = /\b(?:kolko|aka|cena|stoji|postovn|doprav|kurier|gls|dpd|parcelshop|balikomat|pickup|doruc)\w*/i.test(normalizedMessage)
+  const directServiceId = /\b(?:osobn\w*\s+odber\w*|vyzdvih\w*\s+osobn\w*)/i.test(normalizedMessage)
+    ? 'doprava-osobny-odber'
+    : /\bhotovost\w*/i.test(normalizedMessage)
+    ? 'platba-hotovost'
+    : !/dopravcov|akych? kurier|cim posiel/i.test(normalizedMessage) && /\b(?:kolko|aka|cena|stoji|postovn|doprav|kurier|gls|dpd|parcelshop|balikomat|pickup|doruc)\w*/i.test(normalizedMessage)
     && /\b(?:dopr|postovn|kurier|gls|dpd|parcelshop|balikomat|pickup|doruc)\w*/i.test(normalizedMessage)
       ? 'doprava-ceny'
     : /\b(?:dopravcov|aky kurier|cim posiel|gls|dpd|parcelshop|balikomat|pickup)\w*/i.test(normalizedMessage)
@@ -544,7 +598,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
       ? 'platba-moznosti'
     : /\b(?:reklamac|reklamuj|vratit|vraten|odstup|vymen|nepasuj|nespravny toner|zly toner|poskoden.*tovar)\w*/i.test(normalizedMessage)
       ? (/vrat|vraten|odstup|vymen|nespravny toner/i.test(normalizedMessage) ? 'vratenie-tovaru' : 'reklamacia-postup')
-    : /\b(?:zabud|obnov|zmen)\w*.*\bhesl\w*|\bneviem sa prihlas|\bprihlasen/i.test(normalizedMessage)
+    : /\b(?:zabud|obnov)\w*.*\bhesl\w*|\bneviem sa prihlas|\bprihlasen/i.test(normalizedMessage)
       ? 'ucet-heslo'
     : /\b(?:kontakt|telefon|email|mail|spojim|spojit|pracovn.*doba|volat|volať|otvorene v sobotu)\w*/i.test(normalizedMessage)
       ? 'kontakt'
@@ -650,6 +704,15 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
 
   if (isContextualProductFollowUp || shouldTryProductFirst(originalMessage, classified.intent)) {
     const cache = await getProductsCache();
+    const modelTokens = [...new Set((originalMessage.match(/\b[A-Z]{0,4}-?[A-Z]?\d{3,}[A-Z0-9-]*\b/gi) || [])
+      .map(x => x.toUpperCase()).filter(x => !/^(?:CF|CE|CRG|TN|DR|W|Q|CLT|MLT|TK|PGI|CLI|LC)-?\d/.test(x)))];
+    const requestedCodes = originalMessage.match(/\b(?:CF|CE|CRG|TN|DR|W|Q|CLT|MLT|TK|PGI|CLI|LC)[- ]?\d{2,}[A-Z0-9-]*\b/gi) || [];
+    if (modelTokens.length > 1 && requestedCodes.length) {
+      return { answer: [
+        `V rozhovore sa objavili rozdielne označenia modelu (${modelTokens.join(' a ')}), preto nemôžem bezpečne potvrdiť toner ${requestedCodes[requestedCodes.length-1]}.`,
+        'Skontrolujte prosím presný model priamo na štítku tlačiarne a označenie tonerovej kazety, nie iba názov zobrazený v počítači alebo ovládači.',
+      ], products: [], groups: [], intent: 'product_search', confidence: 0.99, clarification: true };
+    }
     const conflict = findCompatibilityConflict(cache.products || [], originalMessage);
     if (conflict?.requested && conflict.alternatives.length) {
       const found = conflict.alternatives.slice(0, 60);

@@ -41,6 +41,22 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     ],
   },
   {
+    id: 'doprava-osobny-odber', intent: 'shipping', title: 'Spôsoby dopravy', priority: 145,
+    triggers: ['osobny odber', 'osobneho odberu', 'vyzdvihnut osobne', 'vyzdvihnutie na predajni', 'mate osobny odber'],
+    answer: [
+      'Momentálne ponúkame doručenie kuriérom GLS alebo DPD, do GLS Balíkomatu / ParcelShopu a do DPD Pickup alebo DPD Pickup Boxu podľa možností zobrazených v pokladni.',
+      'Osobný odber na prevádzke momentálne medzi dostupnými spôsobmi dopravy nie je.',
+    ],
+  },
+  {
+    id: 'platba-hotovost', intent: 'payment', title: 'Platba v hotovosti', priority: 140,
+    triggers: ['mozem platit v hotovosti', 'platba v hotovosti', 'zaplatit v hotovosti', 'hotovost', 'hotovosti'],
+    answer: [
+      'Priamu platbu v hotovosti v pokladni neponúkame.',
+      'Ak chcete zaplatiť až pri prevzatí zásielky, vyberte dobierku. Poplatok za dobierku je 1,20 € s DPH. Spôsob úhrady pri prevzatí sa môže líšiť podľa zvoleného dopravcu a výdajného miesta.',
+    ],
+  },
+  {
     id: 'platba-moznosti', intent: 'payment', title: 'Možnosti platby', priority: 100,
     triggers: ['ako mozem zaplatit', 'chcem platit', 'chcem platit dobierkou', 'moznosti platby', 'platba', 'kartou', 'gopay', 'dobierka', 'prevodom', 'bankovy prevod', 'kolko stoji prevod', 'faktura'],
     answer: [

@@ -13,7 +13,7 @@ import '../styles/ai-sales-assistant.css';
   >
     <span class="tm-ai-assistant__pulse"></span>
     <span class="tm-ai-assistant__icon" aria-hidden="true">AI</span>
-    <span class="tm-ai-assistant__label tm-ai-assistant__label--desktop">AI poradca Tomáš</span>
+    <span class="tm-ai-assistant__label tm-ai-assistant__label--desktop">AI Tomáš</span>
     <span class="tm-ai-assistant__label tm-ai-assistant__label--mobile">AI Tomáš</span>
   </button>
 
@@ -29,34 +29,28 @@ import '../styles/ai-sales-assistant.css';
     hidden
   >
     <header class="tm-ai-assistant__head">
-      <div class="tm-ai-assistant__identity">
-        <strong>AI poradca Tomáš</strong>
-        <span class="tm-ai-assistant__description">Virtuálny poradca ToneryMaxim pre výber, dopravu, platbu, reklamácie a problémy pri tlači.</span>
-        <span class="tm-ai-assistant__disclosure">
-          <b>Upozornenie</b>
-          Komunikujete so systémom umelej inteligencie (AI). Odpovede môžu obsahovať nepresnosti.
-        </span>
-      </div>
-      <button type="button" data-ai-close aria-label="Zavrieť AI poradcu">×</button>
+      <button type="button" class="tm-ai-assistant__back" data-ai-back hidden aria-label="Vrátiť sa na predchádzajúci krok">←</button>
+      <div class="tm-ai-assistant__brand"><span class="tm-ai-assistant__brand-icon">AI</span><div><strong>AI Tomáš</strong><span>AI nákupca a poradca ToneryMAXIM</span><small>AI systém – komunikujete s automatizovaným asistentom, nie s človekom.</small></div></div>
+      <div class="tm-ai-assistant__head-actions"><button type="button" class="tm-ai-assistant__head-cart" data-ai-cart-open-top hidden>🛒 <span data-ai-cart-count-top>0 ks</span> <small data-ai-cart-total-top></small></button><button type="button" data-ai-resize aria-label="Zväčšiť okno" title="Zväčšiť okno">⛶</button><button type="button" data-ai-close aria-label="Zavrieť">×</button></div>
+      <div class="tm-ai-benefits" aria-label="Výhody nákupu v ToneryMAXIM"><span><b>5 %</b> Zľava za registráciu</span><span><b>7 %</b> Na ďalší nákup</span><span><b>★</b> Vernostný program</span><span><b>♡</b> Uloženie tlačiarne a tonerov</span></div>
     </header>
 
-    <div class="tm-ai-assistant__quick" data-ai-quick>
-      <button type="button" data-ai-prompt="CF283A">CF283A</button>
-      <button type="button" data-ai-prompt="Brother DCP-9020CDW">Brother DCP-9020CDW</button>
-      <button type="button" data-ai-prompt="Tlačiareň tlačí pásy">Tlačí pásy</button>
-      <button type="button" data-ai-prompt="Rozdiel kompatibilný originálny renovovaný toner">Kompatibilný / originál</button>
-      <button type="button" data-ai-prompt="Koľko stojí doprava?">Cena dopravy</button>
-      <button type="button" data-ai-prompt="Kedy mi pošlete objednávku?">Odoslanie</button>
-      <button type="button" data-ai-prompt="Toner nepasuje">Toner nepasuje</button>
-    </div>
-
-    <div class="tm-ai-assistant__messages" data-ai-messages>
-      <article class="tm-ai-msg tm-ai-msg--bot">
-        <p><b>Som AI poradca Tomáš, nie človek.</b> Pomôžem vám nájsť správnu náplň alebo všeobecnú informáciu. Nevkladajte meno, adresu, číslo objednávky ani platobné údaje.</p>
-        <p>Napíšte označenie toneru, model tlačiarne alebo otázku k objednávke. Napríklad <b>CF283A</b>, <b>HP 135A</b>, <b>Brother DCP-9020CDW</b>.</p>
-        <p>Alebo sa opýtajte: <b>koľko stojí doprava</b>, <b>kedy pošlete objednávku</b>, <b>tlačí pásy</b>, <b>toner nepasuje</b>.</p>
-      </article>
-    </div>
+    <div class="tm-ai-workspace">
+<main class="tm-ai-workspace__main">
+<div class="tm-ai-progress" data-ai-progress><span class="is-active">1. Výber</span><span>2. Množstvo</span><span>3. Kontrola</span></div>
+<div class="tm-ai-home" data-ai-home>
+<div class="tm-ai-home__intro"><span class="tm-ai-msg__avatar">AI</span><div><strong>Ahoj, som AI Tomáš.</strong><span>Pomôžem vám nájsť správny toner, poradím s výberom a pripravím nákup.</span></div></div>
+<div class="tm-ai-home__actions">
+<button type="button" data-ai-mode="shop"><b>🔎 Nájsť toner</b><span>Podľa modelu tlačiarne alebo kódu toneru</span></button>
+<button type="button" data-ai-mode="advice"><b>💬 Potrebujem poradiť</b><span>Výber, kompatibilita alebo problém s tlačou</span></button>
+<button type="button" data-ai-mode="repeat" data-ai-repeat hidden><b>🔄 Zopakovať nákup</b><span>Pre prihlásených zákazníkov</span></button>
+</div><div class="tm-ai-frequent" data-ai-frequent hidden></div></div>
+<div class="tm-ai-livecart" data-ai-livecart hidden><span>🛒 <b data-ai-cart-count>0 ks</b> <small data-ai-cart-total></small></span><button type="button" data-ai-cart-open>Zobraziť nákup</button></div>
+<div class="tm-ai-assistant__messages" data-ai-messages><article class="tm-ai-msg tm-ai-msg--bot tm-ai-msg--welcome"><span class="tm-ai-msg__avatar">AI</span><div><p><b>Napíšte mi, čo potrebujete.</b></p><p>Napríklad model tlačiarne, označenie toneru alebo otázku.</p></div></article></div>
+<div class="tm-ai-assistant__quick" data-ai-quick hidden><button type="button" data-ai-prompt="Ako vybrať správny toner?">Ako vybrať toner</button><button type="button" data-ai-prompt="Rozdiel kompatibilný originálny renovovaný toner">Kompatibilný / originál</button><button type="button" data-ai-prompt="Tlačiareň tlačí pásy">Problémy s tlačou</button><button type="button" data-ai-prompt="Koľko stojí doprava?">Doprava a platba</button></div>
+<div class="tm-ai-commerce" data-ai-commerce hidden></div>
+</main>
+</div>
 
     <div class="tm-ai-handoff" data-ai-handoff hidden>
       <div class="tm-ai-handoff__head">
@@ -76,10 +70,23 @@ import '../styles/ai-sales-assistant.css';
       </form>
     </div>
 
+    <div class="tm-ai-new-dialog" data-ai-new-dialog hidden role="dialog" aria-modal="true" aria-label="Nová komunikácia">
+      <strong>Začať novú komunikáciu?</strong>
+      <p>Vyberte, či chcete ponechať pripravený nákup.</p>
+      <button type="button" data-ai-new-keep>Nová komunikácia – ponechať košík</button>
+      <button type="button" data-ai-new-all>Začať úplne odznova</button>
+      <button type="button" data-ai-new-cancel>Zrušiť</button>
+    </div>
+
     <form class="tm-ai-assistant__form" data-ai-form>
       <input data-ai-input type="text" autocomplete="off" placeholder="Napíšte model, toner alebo otázku…" />
       <button type="submit">Odoslať</button>
     </form>
+    <nav class="tm-ai-assistant__tools" aria-label="Nástroje komunikácie">
+      <button type="button" data-ai-download>↓ Stiahnuť komunikáciu</button>
+      <button type="button" data-ai-support>✉ Odoslať podpore</button>
+      <button type="button" data-ai-new>↻ Nová komunikácia</button>
+    </nav>
   </div>
 </section>
 
