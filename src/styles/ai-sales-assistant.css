@@ -937,3 +937,21 @@
  .tm-ai-assistant.is-started .tm-ai-assistant__head,.tm-ai-assistant.is-shopping .tm-ai-assistant__head,.tm-ai-assistant.is-advice .tm-ai-assistant__head{grid-template-columns:30px minmax(0,1fr) 32px!important;gap:5px!important;height:74px!important;min-height:74px!important;padding:7px 6px!important}
  .tm-ai-assistant.is-started .tm-ai-assistant__brand,.tm-ai-assistant.is-shopping .tm-ai-assistant__brand,.tm-ai-assistant.is-advice .tm-ai-assistant__brand{grid-template-columns:32px minmax(0,1fr)!important}
 }
+
+/* V134 – čitateľná mobilná hlavička a spodné nástroje bez zásahu do obsahu. */
+@media(max-width:760px){
+ .tm-ai-assistant__brand strong,.tm-ai-assistant.is-started .tm-ai-assistant__brand strong,.tm-ai-assistant.is-shopping .tm-ai-assistant__brand strong,.tm-ai-assistant.is-advice .tm-ai-assistant__brand strong{font-size:17px!important;line-height:19px!important}
+ .tm-ai-assistant__brand>div span,.tm-ai-assistant.is-started .tm-ai-assistant__brand>div span,.tm-ai-assistant.is-shopping .tm-ai-assistant__brand>div span,.tm-ai-assistant.is-advice .tm-ai-assistant__brand>div span{font-size:11.5px!important;line-height:14px!important}
+ .tm-ai-assistant__brand>div small,.tm-ai-assistant.is-started .tm-ai-assistant__brand>div small,.tm-ai-assistant.is-shopping .tm-ai-assistant__brand>div small,.tm-ai-assistant.is-advice .tm-ai-assistant__brand>div small{font-size:10px!important;line-height:12px!important}
+ .tm-ai-assistant__panel{grid-template-rows:78px minmax(0,1fr) 54px 38px!important}
+ .tm-ai-assistant__tools{height:38px!important;min-height:38px!important}
+ .tm-ai-assistant__tools button{height:38px!important;min-height:38px!important;padding:0 5px!important;font-size:11px!important;line-height:1.15!important;font-weight:800!important;letter-spacing:-.01em!important}
+}
+@media(max-width:360px){
+ .tm-ai-assistant__brand strong,.tm-ai-assistant.is-started .tm-ai-assistant__brand strong,.tm-ai-assistant.is-shopping .tm-ai-assistant__brand strong,.tm-ai-assistant.is-advice .tm-ai-assistant__brand strong{font-size:16px!important;line-height:18px!important}
+ .tm-ai-assistant__brand>div span,.tm-ai-assistant.is-started .tm-ai-assistant__brand>div span,.tm-ai-assistant.is-shopping .tm-ai-assistant__brand>div span,.tm-ai-assistant.is-advice .tm-ai-assistant__brand>div span{font-size:10.5px!important;line-height:13px!important}
+ .tm-ai-assistant__brand>div small,.tm-ai-assistant.is-started .tm-ai-assistant__brand>div small,.tm-ai-assistant.is-shopping .tm-ai-assistant__brand>div small,.tm-ai-assistant.is-advice .tm-ai-assistant__brand>div small{font-size:9px!important;line-height:11px!important}
+ .tm-ai-assistant__panel{grid-template-rows:74px minmax(0,1fr) 52px 34px!important}
+ .tm-ai-assistant__tools,.tm-ai-assistant__tools button{height:34px!important;min-height:34px!important}
+ .tm-ai-assistant__tools button{padding:0 3px!important;font-size:9.5px!important;letter-spacing:-.02em!important}
+}
