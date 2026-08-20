@@ -342,6 +342,7 @@
   function cartTotal(){ return state.cart.reduce((n,x)=>n+linePrice(x.product,x.qty),0); }
   function updateLiveCart(){
     if(!liveCart) return; const count=state.cart.reduce((n,x)=>n+x.qty,0);
+    root.classList.toggle('has-ai-cart',count>0);
     liveCart.hidden=count===0; root.querySelector('[data-ai-cart-count]').textContent=`${count} ks`;
     root.querySelector('[data-ai-cart-total]').textContent=`· ${money(cartTotal())}`;
     if(topCart){ topCart.hidden=count===0; topCartCount.textContent=`${count} ks`; topCartTotal.textContent=`· ${money(cartTotal())}`; }
