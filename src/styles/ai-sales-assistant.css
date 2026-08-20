@@ -53,6 +53,62 @@
   .tm-ai-set-toners{grid-template-columns:1fr!important}
 }
 
+/* V132 – hlavička je identická pred otázkou, počas hľadania aj počas nákupu. */
+@media(max-width:760px){
+ .tm-ai-assistant.is-started .tm-ai-assistant__head,
+ .tm-ai-assistant.is-shopping .tm-ai-assistant__head,
+ .tm-ai-assistant.is-advice .tm-ai-assistant__head{
+   display:grid!important;
+   grid-template-columns:34px minmax(0,1fr) 34px!important;
+   grid-template-areas:"back brand actions"!important;
+   align-items:center!important;
+   gap:7px!important;
+   width:100%!important;
+   height:78px!important;
+   min-height:78px!important;
+   padding:7px 9px!important;
+   overflow:hidden!important;
+ }
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand,
+ .tm-ai-assistant.is-shopping .tm-ai-assistant__brand,
+ .tm-ai-assistant.is-advice .tm-ai-assistant__brand{
+   display:grid!important;
+   grid-area:brand!important;
+   grid-template-columns:36px minmax(0,1fr)!important;
+   align-items:center!important;
+   visibility:visible!important;
+   opacity:1!important;
+ }
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand>div,
+ .tm-ai-assistant.is-shopping .tm-ai-assistant__brand>div,
+ .tm-ai-assistant.is-advice .tm-ai-assistant__brand>div,
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand strong,
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand>div span,
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand>div small{
+   display:grid!important;
+   visibility:visible!important;
+   opacity:1!important;
+ }
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand strong{font-size:15px!important}
+ .tm-ai-assistant.is-started .tm-ai-benefits,
+ .tm-ai-assistant.is-shopping .tm-ai-benefits,
+ .tm-ai-assistant.is-advice .tm-ai-benefits,
+ .tm-ai-assistant.is-started .tm-ai-progress,
+ .tm-ai-assistant.is-shopping .tm-ai-progress,
+ .tm-ai-assistant.is-advice .tm-ai-progress{display:none!important}
+ .tm-ai-assistant.is-started .tm-ai-assistant__head-actions,
+ .tm-ai-assistant.is-shopping .tm-ai-assistant__head-actions,
+ .tm-ai-assistant.is-advice .tm-ai-assistant__head-actions{display:flex!important;grid-area:actions!important;visibility:visible!important;opacity:1!important}
+}
+@media(max-width:360px){
+ .tm-ai-assistant.is-started .tm-ai-assistant__head,
+ .tm-ai-assistant.is-shopping .tm-ai-assistant__head,
+ .tm-ai-assistant.is-advice .tm-ai-assistant__head{grid-template-columns:30px minmax(0,1fr) 32px!important;gap:5px!important;height:74px!important;min-height:74px!important;padding:7px 6px!important}
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand,
+ .tm-ai-assistant.is-shopping .tm-ai-assistant__brand,
+ .tm-ai-assistant.is-advice .tm-ai-assistant__brand{grid-template-columns:32px minmax(0,1fr)!important}
+}
+
 .tm-ai-assistant * { box-sizing: border-box; }
 
 .tm-ai-assistant__launcher {
@@ -866,4 +922,18 @@
 }
 @media(max-width:360px){
  .tm-ai-assistant__panel{grid-template-rows:74px minmax(0,1fr) 52px 28px!important}.tm-ai-assistant__head{height:74px!important;min-height:74px!important;grid-template-columns:30px minmax(0,1fr) 32px!important;gap:5px!important;padding-inline:6px!important}.tm-ai-assistant__back{width:30px!important;height:30px!important;min-width:30px!important}.tm-ai-assistant__brand{grid-template-columns:32px minmax(0,1fr)!important;gap:6px!important}.tm-ai-assistant__brand-icon{width:32px!important;height:32px!important;min-width:32px!important}.tm-ai-assistant__brand strong{font-size:14px!important}.tm-ai-assistant__brand>div span{font-size:9px!important}.tm-ai-assistant__brand>div small{font-size:7.5px!important}.tm-ai-assistant__head-actions,.tm-ai-assistant__head-actions>button[data-ai-close]{width:32px!important;min-width:32px!important}.tm-ai-assistant__head-actions>button[data-ai-close]{height:32px!important}.tm-ai-assistant__form{height:52px!important;min-height:52px!important}.tm-ai-assistant__form input,.tm-ai-assistant__form button{height:44px!important;min-height:44px!important}.tm-ai-assistant__tools,.tm-ai-assistant__tools button{height:28px!important;min-height:28px!important}.tm-ai-assistant__tools button{font-size:7.5px!important}.tm-ai-set-toners{grid-template-columns:1fr!important}
+}
+
+/* V132 FINAL – nemenná hlavička vo všetkých stavoch. */
+@media(max-width:760px){
+ .tm-ai-assistant.is-started .tm-ai-assistant__head,.tm-ai-assistant.is-shopping .tm-ai-assistant__head,.tm-ai-assistant.is-advice .tm-ai-assistant__head{display:grid!important;grid-template-columns:34px minmax(0,1fr) 34px!important;grid-template-areas:"back brand actions"!important;align-items:center!important;gap:7px!important;width:100%!important;height:78px!important;min-height:78px!important;padding:7px 9px!important;overflow:hidden!important}
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand,.tm-ai-assistant.is-shopping .tm-ai-assistant__brand,.tm-ai-assistant.is-advice .tm-ai-assistant__brand{display:grid!important;grid-area:brand!important;grid-template-columns:36px minmax(0,1fr)!important;align-items:center!important;visibility:visible!important;opacity:1!important}
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand>div,.tm-ai-assistant.is-shopping .tm-ai-assistant__brand>div,.tm-ai-assistant.is-advice .tm-ai-assistant__brand>div{display:grid!important;visibility:visible!important;opacity:1!important}
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand strong,.tm-ai-assistant.is-started .tm-ai-assistant__brand>div span,.tm-ai-assistant.is-started .tm-ai-assistant__brand>div small{display:block!important;visibility:visible!important;opacity:1!important}.tm-ai-assistant.is-started .tm-ai-assistant__brand strong{font-size:15px!important}
+ .tm-ai-assistant.is-started .tm-ai-benefits,.tm-ai-assistant.is-shopping .tm-ai-benefits,.tm-ai-assistant.is-advice .tm-ai-benefits,.tm-ai-assistant.is-started .tm-ai-progress,.tm-ai-assistant.is-shopping .tm-ai-progress,.tm-ai-assistant.is-advice .tm-ai-progress{display:none!important}
+ .tm-ai-assistant.is-started .tm-ai-assistant__head-actions,.tm-ai-assistant.is-shopping .tm-ai-assistant__head-actions,.tm-ai-assistant.is-advice .tm-ai-assistant__head-actions{display:flex!important;grid-area:actions!important;visibility:visible!important;opacity:1!important}
+}
+@media(max-width:360px){
+ .tm-ai-assistant.is-started .tm-ai-assistant__head,.tm-ai-assistant.is-shopping .tm-ai-assistant__head,.tm-ai-assistant.is-advice .tm-ai-assistant__head{grid-template-columns:30px minmax(0,1fr) 32px!important;gap:5px!important;height:74px!important;min-height:74px!important;padding:7px 6px!important}
+ .tm-ai-assistant.is-started .tm-ai-assistant__brand,.tm-ai-assistant.is-shopping .tm-ai-assistant__brand,.tm-ai-assistant.is-advice .tm-ai-assistant__brand{grid-template-columns:32px minmax(0,1fr)!important}
 }
