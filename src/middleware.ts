@@ -1,20 +1,9 @@
 import { defineMiddleware } from 'astro:middleware';
-import { authSecret } from './lib/runtime-secret';
-import { persistenceSecret } from './lib/secure-persistence';
-import {
-  bodyTooLarge,
-  rateLimitFor,
-  registerBlock,
-  requestId,
-  securityHeaders,
-  shouldBlockTestRoute,
-  validateOrigin,
-  securityStatus,
-} from './lib/security';
+import { randomUUID } from 'node:crypto';
 
 const PRODUCTION_ORIGIN = 'https://www.tonerymaxim.sk';
-const PRODUCTION_HOSTS = new Set(['tonerymaxim.sk', 'www.tonerymaxim.sk']);
 const NOINDEX_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
+const TEST_ROUTES = new Set(['/api/test-woo','/api/auth/test-email','/api/cache-status','/test-produkt','/design/icons-test','/design/product-detail','/design/product-list']);
 const PRIVATE_NOINDEX_PATHS = new Set([
   '/kosik',
   '/pokladna',
@@ -64,63 +53,44 @@ function applyHeaders(response: Response, headersToAdd: Record<string, string>):
   });
 }
 
-let runtimeSecretsValidated = false;
-
-function validateRuntimeSecretsOnce(): void {
-  if (runtimeSecretsValidated) return;
-  // Verejny e-shop zavisi iba od prihlasovacieho a persistencneho tajomstva.
-  // Chybajuci marketingovy/admin/sync kluc nesmie odstavit katalog ani kosik;
-  // prislusny chraneny endpoint si ho overi sam a bez neho vrati 401/503.
-  authSecret();
-  persistenceSecret();
-  const security = securityStatus('production');
-  if (import.meta.env.PROD && security.warnings.length) {
-    console.warn(`[TM security] Volitelne administracne nastavenie: ${security.warnings.join(' ')}`);
-  }
-  runtimeSecretsValidated = true;
+function requestId(request:Request){
+  const incoming=request.headers.get('x-request-id');
+  return incoming&&/^[a-zA-Z0-9._-]{6,100}$/.test(incoming)?incoming:randomUUID();
 }
 
-function isHealthcheckPath(pathname: string): boolean {
-  return pathname === '/api/health' || pathname === '/api/readiness';
-}
-
-function canonicalProductionRedirect(request: Request, url: URL): Response | null {
-  if (!PRODUCTION_HOSTS.has(url.hostname.toLowerCase())) return null;
-  const forwardedProto = String(request.headers.get('x-forwarded-proto') || '').split(',')[0]?.trim().toLowerCase();
-  const secure = forwardedProto ? forwardedProto === 'https' : url.protocol === 'https:';
-  if (secure && url.hostname.toLowerCase() === 'www.tonerymaxim.sk') return null;
-
-  const target = new URL(`${url.pathname}${url.search}`, PRODUCTION_ORIGIN);
-  return new Response(null, {
-    status: 301,
-    headers: {
-      Location: target.toString(),
-      'Cache-Control': 'public, max-age=300',
-    },
-  });
+function securityHeaders(url:URL,id:string):Record<string,string>{
+  return {
+    'X-Content-Type-Options':'nosniff','X-Frame-Options':'SAMEORIGIN','Referrer-Policy':'strict-origin-when-cross-origin',
+    'Permissions-Policy':'camera=(), microphone=(), geolocation=(), payment=(self)','Cross-Origin-Resource-Policy':'same-site',
+    'Cross-Origin-Opener-Policy':'same-origin-allow-popups','X-Request-Id':id,
+    'Content-Security-Policy':"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self' https://gate.gopay.cz https://gw.sandbox.gopay.com; script-src 'self' 'unsafe-inline' https://plugin.gls-slovakia.sk https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com; font-src 'self' data: https://fonts.cdnfonts.com; img-src 'self' data: blob: https:; connect-src 'self' https:; frame-src 'self' https://api.dpd.cz https://plugin.gls-slovakia.sk https://gate.gopay.cz https://gw.sandbox.gopay.com; worker-src 'self' blob:; manifest-src 'self'",
+    ...(url.protocol==='https:'?{'Strict-Transport-Security':'max-age=31536000; includeSubDomains'}:{}),
+  };
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { request, url } = context;
-  const healthcheck = isHealthcheckPath(url.pathname);
-  // Proxy healthcheck musi fungovat aj pocas inicializacie zvysku aplikacie.
-  // Ziadne tajomstva, diskove rate-limity ani workery na tejto vetve.
-  if (healthcheck) return next();
-
-  validateRuntimeSecretsOnce();
-
-  const canonicalRedirect = canonicalProductionRedirect(request, url);
-  if (canonicalRedirect) return canonicalRedirect;
+  // Verejne stranky nesmu zavisiet od reklamnych modulov, analytickych suborov,
+  // background workerov, persistentnych tajomstiev ani konfiguracie Google.
+  // Kanonicku domenu riesia SEO tagy a Coolify; aplikacia nesmie presmerovat
+  // funkcnu domenu na pripadne nenakonfigurovany www router.
   const noIndex = isNoIndexHost(url.hostname);
   const id = requestId(request);
   const commonSecurityHeaders = securityHeaders(url, id);
 
-  if (shouldBlockTestRoute(url.pathname, url.hostname)) {
-    registerBlock('test-route-block', request, url);
+  const local=['localhost','127.0.0.1','::1'].includes(url.hostname.toLowerCase());
+  if (TEST_ROUTES.has(url.pathname) && !local && process.env.TM_ALLOW_TEST_ENDPOINTS!=='1') {
     return applyHeaders(jsonError('Endpoint nie je v produkcii dostupný.', 404), commonSecurityHeaders);
   }
 
+  // Liveness/readiness nesmú čítať diskový rate-limit ani tajomstvá. Skutočné
+  // storefront trasy sa nezávisle overujú produkčným smoke testom.
+  if(url.pathname==='/api/health'||url.pathname==='/api/readiness')return next();
+
   if (url.pathname.startsWith('/api/')) {
+    // Security persistence is imported only for API traffic. Rendering the
+    // storefront therefore cannot fail because of an admin/security secret.
+    const {bodyTooLarge,rateLimitFor,registerBlock,validateOrigin}=await import('./lib/security');
     if (bodyTooLarge(request, 1_000_000)) {
       registerBlock('body-too-large', request, url, 'max=1000000');
       return applyHeaders(jsonError('Požiadavka je príliš veľká.', 413), commonSecurityHeaders);

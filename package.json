@@ -20,6 +20,8 @@
     "test:migration": "node --experimental-strip-types --test scripts/legacy-migration.test.ts && node scripts/migration-gate.test.mjs",
     "test:security": "node --experimental-strip-types --test scripts/security-config.test.ts",
     "test:production": "node --experimental-strip-types --test scripts/production-readiness.test.ts",
+    "test:storefront": "node scripts/storefront-production-smoke.mjs",
+    "test:storefront:load": "node scripts/storefront-load-smoke.mjs",
     "geo:score": "node scripts/geo-ai-score.mjs",
     "release:check": "npm run check && npm test && npm run build && npm audit --omit=dev",
     "release:verify:local": "node scripts/verify-local-catalog.mjs",

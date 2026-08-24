@@ -193,9 +193,9 @@ test("healthcheck nikdy nenačítava katalóg, search index ani background worke
     assert.doesNotMatch(source, /warmSmartSearchIndex|readProductsCache|getProductsCache/);
     assert.match(source, /status:\s*200/);
   }
-  assert.match(middleware, /if\s*\(healthcheck\)\s*return next\(\)/);
-  const requestHandler = middleware.slice(middleware.indexOf('export const onRequest'));
-  assert.ok(requestHandler.indexOf('if (healthcheck) return next()') < requestHandler.indexOf('validateRuntimeSecretsOnce()'));
+  assert.doesNotMatch(middleware, /validateRuntimeSecretsOnce|authSecret\(|persistenceSecret\(/);
+  assert.doesNotMatch(middleware, /canonicalProductionRedirect|Location:\s*target/);
+  assert.match(middleware, /await import\('\.\/lib\/security'\)/);
   assert.match(queue, /WORKER_START_DELAY_MS[\s\S]{0,250}30_000/);
   assert.match(queue, /scheduleAsyncOrderQueue\(WORKER_START_DELAY_MS\)/);
   assert.doesNotMatch(middleware, /ensureEmailQueueStarted|ensureAsyncOrderQueueStarted/);
@@ -206,4 +206,11 @@ test("healthcheck nikdy nenačítava katalóg, search index ani background worke
   assert.match(safeReader, /calculation_mode:'snapshot'/);
   assert.doesNotMatch(safeReader, /getProductsCache|buildCatalogEconomics|readLearningEvents/);
   assert.doesNotMatch(middleware, /ads-intelligence|AdsIntelligence/i);
+});
+
+test("verejný storefront nie je závislý od reklamy, analytiky ani admin tajomstiev", async () => {
+  const middleware = await readFile(new URL("../src/middleware.ts", import.meta.url), "utf8");
+  const publicPart=middleware.slice(0,middleware.indexOf("if (url.pathname.startsWith('/api/'))"));
+  assert.doesNotMatch(publicPart,/from ['"].*(?:google|merchant|analytics)|TM_PERSISTENCE_SECRET|AUTH_SECRET|securityStatus\(/i);
+  assert.doesNotMatch(middleware,/ensureEmailQueueStarted|ensureAsyncOrderQueueStarted|ensureProductsCacheWarmStarted/);
 });
