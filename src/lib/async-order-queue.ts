@@ -19,6 +19,7 @@ const RETRY_DELAY_MS = 30_000;
 const INITIAL_QUEUE_DELAY_MS = Math.max(0, Number(process.env.TM_ASYNC_WOO_INITIAL_DELAY_MS || 500));
 const MAX_DONE_FILES = 500;
 const WORKER_INTERVAL_MS = Math.max(5_000, Number(process.env.TM_ASYNC_ORDER_WORKER_INTERVAL_MS || 15_000));
+const WORKER_START_DELAY_MS = Math.max(5_000, Number(process.env.TM_ASYNC_ORDER_WORKER_START_DELAY_MS || 30_000));
 const WORKER_GLOBAL_KEY = Symbol.for("tm.async-order-worker.started");
 
 type AsyncOrderJob = {
@@ -317,7 +318,9 @@ export function ensureAsyncOrderQueueStarted(): void {
     intervalMs: WORKER_INTERVAL_MS,
   });
 
-  scheduleAsyncOrderQueue(0);
+  // Po starte nechame Node najprv obsluzit healthcheck a verejne poziadavky.
+  // Existujuce objednavky sa nestratia; spracuju sa po kratkom odklade.
+  scheduleAsyncOrderQueue(WORKER_START_DELAY_MS);
 
   const timer = setInterval(() => {
     scheduleAsyncOrderQueue(0);

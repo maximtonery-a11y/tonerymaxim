@@ -83,6 +83,10 @@ function backgroundWorkersEnabled(): boolean {
   return String(process.env.TM_DISABLE_BACKGROUND_WORKERS || '').trim() !== '1';
 }
 
+function isHealthcheckPath(pathname: string): boolean {
+  return pathname === '/api/health' || pathname === '/api/readiness';
+}
+
 function canonicalProductionRedirect(request: Request, url: URL): Response | null {
   if (!PRODUCTION_HOSTS.has(url.hostname.toLowerCase())) return null;
   const forwardedProto = String(request.headers.get('x-forwarded-proto') || '').split(',')[0]?.trim().toLowerCase();
@@ -100,13 +104,18 @@ function canonicalProductionRedirect(request: Request, url: URL): Response | nul
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  const { request, url } = context;
+  const healthcheck = isHealthcheckPath(url.pathname);
+  // Proxy healthcheck musi fungovat aj pocas inicializacie zvysku aplikacie.
+  // Ziadne tajomstva, diskove rate-limity ani workery na tejto vetve.
+  if (healthcheck) return next();
+
   validateRuntimeSecretsOnce();
   if (backgroundWorkersEnabled()) {
     ensureEmailQueueStarted();
     ensureAsyncOrderQueueStarted();
   }
 
-  const { request, url } = context;
   const canonicalRedirect = canonicalProductionRedirect(request, url);
   if (canonicalRedirect) return canonicalRedirect;
   const noIndex = isNoIndexHost(url.hostname);

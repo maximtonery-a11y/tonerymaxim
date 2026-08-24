@@ -182,10 +182,19 @@ test("vlastná analytika neblokuje verejný web samostatným diskovým zápisom 
   assert.match(client, /maxScroll\+25/);
 });
 
-test("readiness zahreje smart-search index pred prijatím návštevnosti", async () => {
+test("healthcheck nikdy nenačítava katalóg, search index ani background workery", async () => {
+  const health = await readFile(new URL("../src/pages/api/health.ts", import.meta.url), "utf8");
   const readiness = await readFile(new URL("../src/pages/api/readiness.ts", import.meta.url), "utf8");
-  assert.match(readiness, /warmSmartSearchIndex/);
-  assert.doesNotMatch(readiness, /127\.0\.0\.1|localhost/);
-  assert.match(readiness, /search_warm:\s*searchWarm/);
-  assert.match(readiness, /const ready = catalogReady && searchWarm/);
+  const middleware = await readFile(new URL("../src/middleware.ts", import.meta.url), "utf8");
+  const queue = await readFile(new URL("../src/lib/async-order-queue.ts", import.meta.url), "utf8");
+
+  for (const source of [health, readiness]) {
+    assert.doesNotMatch(source, /warmSmartSearchIndex|readProductsCache|getProductsCache/);
+    assert.match(source, /status:\s*200/);
+  }
+  assert.match(middleware, /if\s*\(healthcheck\)\s*return next\(\)/);
+  const requestHandler = middleware.slice(middleware.indexOf('export const onRequest'));
+  assert.ok(requestHandler.indexOf('if (healthcheck) return next()') < requestHandler.indexOf('validateRuntimeSecretsOnce()'));
+  assert.match(queue, /WORKER_START_DELAY_MS[\s\S]{0,250}30_000/);
+  assert.match(queue, /scheduleAsyncOrderQueue\(WORKER_START_DELAY_MS\)/);
 });

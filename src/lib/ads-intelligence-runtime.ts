@@ -8,7 +8,7 @@ import { readLearningEvents } from './ads-learning-store.ts';
 import { aggregateLearning } from './ads-learning-engine.ts';
 import { readAdsPurchasePrices } from './ads-purchase-price-store.ts';
 
-let cache: { catalog:any[]; market:ReturnType<typeof loadMarketPretrainingCsv>; economics:ReturnType<typeof buildCatalogEconomics> } | null = null;
+let cache: { catalog:any[]; market:ReturnType<typeof loadMarketPretrainingCsv> } | null = null;
 function resolveExisting(candidates:string[]) { for (const p of candidates) if (fs.existsSync(p)) return p; throw new Error(`Ads Intelligence data missing: ${candidates.join(', ')}`); }
 function baseData(){
   if(cache) return cache;
@@ -16,8 +16,9 @@ function baseData(){
   const marketPath=resolveExisting([path.resolve('data/market-pretraining-sk.csv'),path.resolve('src/data/market-pretraining-sk.csv')]);
   const catalog=JSON.parse(fs.readFileSync(catalogPath,'utf8')).products || [];
   const market=loadMarketPretrainingCsv(marketPath);
-  const economics=buildCatalogEconomics(catalog);
-  cache={catalog,market,economics}; return cache;
+  // Ekonomiku nevytvarame pri nacitani a nedrzime jej druhu kopiu globalne.
+  // Vzdy zavisi od aktualnej DPH a nakupnych cien a pocita sa nizsie iba raz.
+  cache={catalog,market}; return cache;
 }
 export function calculateAdsIntelligence(settings:AdsIntelligenceSettings){
   const {catalog,market}=baseData();
