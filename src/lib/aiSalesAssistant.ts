@@ -833,3 +833,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     clarification: true,
   };
 }
+
+// Spatne kompatibilny verejny nazov pouzivany technickymi a integracnymi
+// testami. Implementacia zostava na jednom mieste.
+export const answerAiSalesQuestion = buildAssistantAnswer;

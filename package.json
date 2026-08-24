@@ -9,6 +9,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "start": "node ./dist/server/entry.mjs",
+    "worker:ads:refresh": "node --experimental-strip-types scripts/run-ads-intelligence-worker.ts",
     "preview": "astro preview --host 0.0.0.0 --port 3000",
     "check": "astro check",
     "test": "npm run test:ads && npm run test:search && npm run test:woo && npm run test:seo && npm run test:migration && npm run test:security && npm run test:production",

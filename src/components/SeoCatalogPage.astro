@@ -349,7 +349,23 @@ const jsonLd = [
           </div>
         )}
 
-        {contentSections.length > 0 && (
+        {productFirst && contentSections.length > 0 && (
+          <section class="seo-content-section seo-printer-content">
+            <div class="wrap seo-content-grid">
+              {contentSections.map((section) => (
+                <article>
+                  <h2>{section.heading}</h2>
+                  {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+                  {section.bullets && section.bullets.length > 0 && (
+                    <ul>{section.bullets.map((bullet) => <li>{bullet}</li>)}</ul>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!productFirst && contentSections.length > 0 && (
           <section class="seo-content-section">
             <div class="wrap seo-content-grid">
               {contentSections.map((section) => (

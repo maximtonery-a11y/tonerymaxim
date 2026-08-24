@@ -106,7 +106,7 @@ export const GET: APIRoute = async ({ request }) => {
     const url = new URL(request.url);
     const date = cleanDate(url.searchParams.get('date'));
     const includeOwner = url.searchParams.get('includeOwner') !== '0';
-    const events = await readAnalyticsEvents(200000);
+    const events = await readAnalyticsEvents(50000);
     const allVisits = buildVisits(events);
     const selected = analyticsForDate(events, date, includeOwner);
 

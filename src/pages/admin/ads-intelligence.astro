@@ -7,7 +7,7 @@ import { readGoogleAdsStatus } from '../../lib/google-ads-readonly';
 const configuredKey=getAdminAccessKey(Astro.locals);
 const adminKey=Astro.url.searchParams.get('key')||'';
 const locked=isAdminLocked({adminKey:configuredKey,suppliedKey:adminKey,hostname:Astro.url.hostname});
-const initial=locked?null:calculateAdsIntelligence(await loadAdsIntelligenceSettings());
+const initial=locked?null:await calculateAdsIntelligence(await loadAdsIntelligenceSettings(),{decisionLimit:500});
 const decisions=(initial?.decisions||[]) as any[];
 const summary=(initial?.summary||{products:0,eligible:0,counts:{},daily_budget:0}) as any;
 const settings=(initial?.settings||{}) as any;
@@ -75,7 +75,8 @@ document.getElementById('save').addEventListener('click',async()=>{const msg=doc
 document.getElementById('reset').addEventListener('click',async()=>{if(!confirm('Obnoviť bezpečné predvolené nastavenia?'))return;const defaults={dailyBudgetEur:30,coldStartCvr:.025,maxCpcAbsolute:1.5,maxActiveProducts:100,scaleDemandThreshold:150,minClicksBeforeLimit:25,minClicksBeforePause:50,marginSafetyHigh:.55,marginSafetyMedium:.40,marginSafetyLow:.25,pauseSpendTargetCpaMultiple:1.25,vatRate:.23,enabled:true};const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json',...adminHeaders},body:JSON.stringify({settings:defaults})});const d=await r.json();if(d.ok){render(d);document.getElementById('saveMsg').textContent='Bezpečné hodnoty obnovené a trvalo uložené.'}});
 document.getElementById('refreshAbix').addEventListener('click',async()=>{const msg=document.getElementById('saveMsg');msg.textContent='Načítavam reálne nákupné ceny z Abix…';try{const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json',...adminHeaders},body:JSON.stringify({action:'refresh_abix'})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Aktualizácia zlyhala');render(d);msg.textContent=`Načítaných ${d.refresh.records} reálnych nákupných cien.`}catch(e){msg.textContent='Abix: '+e.message}});
 document.getElementById('syncGoogleAds').addEventListener('click',async()=>{const msg=document.getElementById('saveMsg');msg.textContent='Sťahujem posledných 30 dní z Google Ads (iba čítanie)…';try{const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json',...adminHeaders},body:JSON.stringify({action:'sync_google_ads'})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Synchronizácia zlyhala');render(d);await loadLearning();msg.textContent=`Google Ads: spracovaných ${d.googleAds.rows||0} riadkov, pridaných ${d.googleAds.importedEvents||0} nových udalostí.`}catch(e){msg.textContent='Google Ads: '+e.message}});
-load().catch(e=>document.getElementById('saveMsg').textContent='API: '+e.message);
+// Prvy vypocet uz prisiel so serverovym HTML. Nevolame ho po otvoreni stranky
+// druhykrat; dalsie nacitanie nastane az po vedomej akcii administratora.
 
 const money=(v)=>`${Number(v||0).toFixed(2)} €`;
 let learningData=[];let decisionById=new Map();

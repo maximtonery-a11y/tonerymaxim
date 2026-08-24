@@ -284,7 +284,11 @@ export function scheduleAsyncOrderQueue(delayMs = 0) {
   queueScheduled = true;
   setTimeout(() => {
     queueScheduled = false;
-    void processAsyncOrderQueue();
+    // Chyba disku alebo WooCommerce vo fronte nikdy nesmie byt unhandled
+    // rejection, ktory by ukoncil hlavny Node proces e-shopu.
+    void processAsyncOrderQueue().catch((error) => {
+      console.error("[TM async order queue] processing failed", (error as Error)?.message || error);
+    });
   }, Math.max(0, delayMs));
 }
 

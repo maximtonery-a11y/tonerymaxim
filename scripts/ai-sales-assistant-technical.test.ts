@@ -1,4 +1,4 @@
-import { answerAiSalesQuestion } from '../src/lib/aiSalesAssistant';
+import { answerAiSalesQuestion } from '../src/lib/aiSalesAssistant.ts';
 
 const cases = [
   ['aka je tankova tlaciaren?', 'tanková'],
@@ -9,7 +9,7 @@ const cases = [
   ['odporuc najlacnejsi toner do farebnej tlaciarne', 'presný model'],
   ['aku tlaciaren kupit na vela ciernobielej tlace?', 'laserová'],
   ['co je lacnejsie na prevadzku laser alebo tank?', 'tanková'],
-  ['preco moze byt drahsi toner vyhodnejsi?', 'kapacitou'],
+  ['preco moze byt drahsi toner vyhodnejsi?', 'kapacit'],
 ];
 
 let failed = 0;

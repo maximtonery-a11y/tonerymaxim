@@ -75,12 +75,15 @@ export type TMVisit = {
 const ANALYTICS_DIR = path.join(TM_DATA_ROOT, 'analytics');
 const EVENTS_FILE = path.join(ANALYTICS_DIR, 'events.jsonl');
 const MAX_BODY_SIZE = 16_000;
-const MAX_READ_BYTES = 24_000_000;
+// Admin analytika cita iba posledny ohraniceny usek. Ani roky nazbieranych
+// udalosti tak nemozu vytvorit nekontrolovany RAM spike v procese e-shopu.
+const MAX_READ_BYTES = 12_000_000;
 const ONLINE_WINDOW_MS = 90_000;
 const SESSION_MAX_MS = 8 * 60 * 60 * 1000;
 const WRITE_BATCH_MS = 500;
 const WRITE_BATCH_MAX = 100;
-const WRITE_QUEUE_MAX = 10_000;
+const WRITE_QUEUE_MAX = 2_000;
+const ANALYTICS_HEAP_GUARD_BYTES = Math.max(96_000_000, Number(process.env.TM_ANALYTICS_HEAP_GUARD_BYTES || 220_000_000));
 let pendingLines: string[] = [];
 let writeTimer: ReturnType<typeof setTimeout> | undefined;
 let writeChain: Promise<void> = Promise.resolve();
@@ -218,6 +221,9 @@ function safeSensitiveMeta(value: unknown): Record<string, unknown> | undefined 
 }
 
 export async function saveAnalyticsEvent(request: Request, payload: unknown): Promise<{ ok: true; ignored?: boolean }> {
+  // Analytika je best-effort. Pri pamatovom tlaku sa udalost zahodi, ale
+  // nakup, kosik, katalog ani prihlasenie pokracuju bez obmedzenia.
+  if (process.memoryUsage().heapUsed >= ANALYTICS_HEAP_GUARD_BYTES) return { ok: true, ignored: true };
   const raw = JSON.stringify(payload ?? {});
   if (raw.length > MAX_BODY_SIZE) throw new Error('Payload je príliš veľký.');
   const data = payload && typeof payload === 'object' ? payload as Record<string, unknown> : {};

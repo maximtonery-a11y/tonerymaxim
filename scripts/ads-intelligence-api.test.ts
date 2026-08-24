@@ -18,11 +18,11 @@ test('Ads Intelligence API odmietne nesprávny admin kľúč',async()=>{
   assert.equal((await GET(context(request))).status,401);
 });
 
-test('oprávnený GET vráti celý prepočet bez cache a bez tajných údajov',async()=>{
+test('oprávnený GET vráti obmedzený prepočet bez cache a bez tajných údajov',async()=>{
   const request=new Request('https://www.tonerymaxim.sk/api/admin/ads-intelligence',{headers:{'x-admin-key':key}});
   const response=await GET(context(request)); const json:any=await response.json();
   assert.equal(response.status,200); assert.equal(response.headers.get('cache-control'),'no-store'); assert.equal(json.ok,true);
-  assert.ok(json.summary.products>7000); assert.equal(json.decisions.length,json.summary.products); assert.equal(json.googleAds.mode,'read-only'); assert.equal(json.googleAds.configured,false);
+  assert.ok(json.summary.products>7000); assert.ok(json.decisions.length<=1000); assert.equal(json.googleAds.mode,'read-only'); assert.equal(json.googleAds.configured,false);
   const serialized=JSON.stringify(json); assert.doesNotMatch(serialized,/GOOGLE_ADS_CLIENT_SECRET|GOOGLE_ADS_REFRESH_TOKEN|developerToken/);
 });
 

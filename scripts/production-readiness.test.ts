@@ -187,6 +187,7 @@ test("healthcheck nikdy nenačítava katalóg, search index ani background worke
   const readiness = await readFile(new URL("../src/pages/api/readiness.ts", import.meta.url), "utf8");
   const middleware = await readFile(new URL("../src/middleware.ts", import.meta.url), "utf8");
   const queue = await readFile(new URL("../src/lib/async-order-queue.ts", import.meta.url), "utf8");
+  const adsRuntime = await readFile(new URL("../src/lib/ads-intelligence-runtime.ts", import.meta.url), "utf8");
 
   for (const source of [health, readiness]) {
     assert.doesNotMatch(source, /warmSmartSearchIndex|readProductsCache|getProductsCache/);
@@ -197,4 +198,12 @@ test("healthcheck nikdy nenačítava katalóg, search index ani background worke
   assert.ok(requestHandler.indexOf('if (healthcheck) return next()') < requestHandler.indexOf('validateRuntimeSecretsOnce()'));
   assert.match(queue, /WORKER_START_DELAY_MS[\s\S]{0,250}30_000/);
   assert.match(queue, /scheduleAsyncOrderQueue\(WORKER_START_DELAY_MS\)/);
+  assert.doesNotMatch(middleware, /ensureEmailQueueStarted|ensureAsyncOrderQueueStarted/);
+  assert.match(queue, /processAsyncOrderQueue\(\)\.catch/);
+  assert.doesNotMatch(adsRuntime, /readFileSync\([^)]*products\.json/);
+  assert.match(adsRuntime, /await getProductsCache\(\)/);
+  const safeReader=adsRuntime.slice(adsRuntime.indexOf('export async function calculateAdsIntelligence('));
+  assert.match(safeReader, /calculation_mode:'snapshot'/);
+  assert.doesNotMatch(safeReader, /getProductsCache|buildCatalogEconomics|readLearningEvents/);
+  assert.doesNotMatch(middleware, /ads-intelligence|AdsIntelligence/i);
 });

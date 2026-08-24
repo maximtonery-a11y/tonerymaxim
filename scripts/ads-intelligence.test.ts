@@ -10,7 +10,7 @@ import { loadMarketPretrainingCsv, findMarketForProduct } from '../src/lib/marke
 import { appendLearningEvents, readLearningEvents } from '../src/lib/ads-learning-store.ts';
 import { aggregateLearning, learnedDecision } from '../src/lib/ads-learning-engine.ts';
 import { sanitizeAdsSettings } from '../src/lib/ads-intelligence-settings.ts';
-import { calculateAdsIntelligence } from '../src/lib/ads-intelligence-runtime.ts';
+import { calculateAdsIntelligenceLive } from '../src/lib/ads-intelligence-runtime.ts';
 
 function product(overrides:Record<string,unknown>={}){
   return {id:1,sku:'SKU-1',slug:'hp-w1420a',name:'HP W1420A kompatibilný toner',price:'36.90',stock_status:'instock',product_type_key:'compatible',product_brand:'HP',categories:[{name:'Tonery'}],...overrides} as any;
@@ -124,8 +124,8 @@ test('learning store odmietne duplicity a neplatné alebo záporné eventy',()=>
   assert.equal(appendLearningEvents([valid]),0);
 });
 
-test('celý reálny katalóg spĺňa finančné a bezpečnostné invarianty',()=>{
-  const result=calculateAdsIntelligence(DEFAULT_ADS_INTELLIGENCE_SETTINGS);
+test('celý reálny katalóg spĺňa finančné a bezpečnostné invarianty',async()=>{
+  const result=await calculateAdsIntelligenceLive(DEFAULT_ADS_INTELLIGENCE_SETTINGS);
   assert.ok(result.summary.products>7_000);
   assert.equal(result.decisions.length,result.summary.products);
   assert.equal(result.decisions.filter(d=>d.allocated_daily_budget>0).length,DEFAULT_ADS_INTELLIGENCE_SETTINGS.maxActiveProducts);

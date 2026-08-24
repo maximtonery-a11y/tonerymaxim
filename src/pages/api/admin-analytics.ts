@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ url, request, locals }) => {
   if (!allowed(url, request, locals)) return json({ ok: false, error: 'Unauthorized' }, 401);
   const date = url.searchParams.get('date') || bratislavaDate(new Date().toISOString());
   const includeOwner = url.searchParams.get('includeOwner') !== '0';
-  const events = await readAnalyticsEvents(120000);
+  const events = await readAnalyticsEvents(50000);
   return json({ ok: true, ...analyticsForDate(events, date, includeOwner) });
 };
 

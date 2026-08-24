@@ -1,6 +1,4 @@
 import { defineMiddleware } from 'astro:middleware';
-import { ensureEmailQueueStarted } from './lib/email-queue';
-import { ensureAsyncOrderQueueStarted } from './lib/async-order-queue';
 import { authSecret } from './lib/runtime-secret';
 import { persistenceSecret } from './lib/secure-persistence';
 import {
@@ -70,17 +68,16 @@ let runtimeSecretsValidated = false;
 
 function validateRuntimeSecretsOnce(): void {
   if (runtimeSecretsValidated) return;
+  // Verejny e-shop zavisi iba od prihlasovacieho a persistencneho tajomstva.
+  // Chybajuci marketingovy/admin/sync kluc nesmie odstavit katalog ani kosik;
+  // prislusny chraneny endpoint si ho overi sam a bez neho vrati 401/503.
   authSecret();
   persistenceSecret();
   const security = securityStatus('production');
-  if (import.meta.env.PROD && !security.ok) {
-    throw new Error(`Produkčné bezpečnostné nastavenie nie je kompletné: ${security.warnings.join(' ')}`);
+  if (import.meta.env.PROD && security.warnings.length) {
+    console.warn(`[TM security] Volitelne administracne nastavenie: ${security.warnings.join(' ')}`);
   }
   runtimeSecretsValidated = true;
-}
-
-function backgroundWorkersEnabled(): boolean {
-  return String(process.env.TM_DISABLE_BACKGROUND_WORKERS || '').trim() !== '1';
 }
 
 function isHealthcheckPath(pathname: string): boolean {
@@ -111,10 +108,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (healthcheck) return next();
 
   validateRuntimeSecretsOnce();
-  if (backgroundWorkersEnabled()) {
-    ensureEmailQueueStarted();
-    ensureAsyncOrderQueueStarted();
-  }
 
   const canonicalRedirect = canonicalProductionRedirect(request, url);
   if (canonicalRedirect) return canonicalRedirect;
