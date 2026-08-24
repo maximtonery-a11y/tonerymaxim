@@ -78,6 +78,43 @@ const MAX_BODY_SIZE = 16_000;
 const MAX_READ_BYTES = 24_000_000;
 const ONLINE_WINDOW_MS = 90_000;
 const SESSION_MAX_MS = 8 * 60 * 60 * 1000;
+const WRITE_BATCH_MS = 500;
+const WRITE_BATCH_MAX = 100;
+const WRITE_QUEUE_MAX = 10_000;
+let pendingLines: string[] = [];
+let writeTimer: ReturnType<typeof setTimeout> | undefined;
+let writeChain: Promise<void> = Promise.resolve();
+
+function flushAnalyticsLines(): Promise<void> {
+  if (writeTimer) clearTimeout(writeTimer);
+  writeTimer = undefined;
+  if (!pendingLines.length) return writeChain;
+  const lines = pendingLines.splice(0, WRITE_BATCH_MAX);
+  writeChain = writeChain.then(async () => {
+    await mkdir(ANALYTICS_DIR, { recursive: true, mode: 0o700 });
+    await appendFile(EVENTS_FILE, lines.join('') , { encoding: 'utf8', mode: 0o600 });
+  }).catch((error) => {
+    console.error('[TM analytics] batch write failed:', error?.message || error);
+  });
+  if (pendingLines.length) {
+    writeTimer = setTimeout(() => { void flushAnalyticsLines(); }, 0);
+    writeTimer.unref?.();
+  }
+  return writeChain;
+}
+
+function enqueueAnalyticsLine(line: string, durable = false): Promise<void> {
+  // Ochrana procesu pri dočasne pomalom disku. Najnovšie udalosti majú
+  // prednosť; objednávkové udalosti sa vždy zapíšu okamžite nižšie.
+  if (pendingLines.length >= WRITE_QUEUE_MAX) pendingLines.splice(0, pendingLines.length - WRITE_QUEUE_MAX + 1);
+  pendingLines.push(line);
+  if (durable || pendingLines.length >= WRITE_BATCH_MAX) return flushAnalyticsLines();
+  if (!writeTimer) {
+    writeTimer = setTimeout(() => { void flushAnalyticsLines(); }, WRITE_BATCH_MS);
+    writeTimer.unref?.();
+  }
+  return Promise.resolve();
+}
 
 function cleanText(value: unknown, max = 500): string {
   return String(value ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
@@ -213,8 +250,12 @@ export async function saveAnalyticsEvent(request: Request, payload: unknown): Pr
     meta,
     sessionId, visitorId: cleanText(data.visitorId, 100), owner: cookieValue(request, 'tm_analytics_owner') === '1', ipHash: ipHash(request),
   };
-  await mkdir(ANALYTICS_DIR, { recursive: true, mode: 0o700 });
-  await appendFile(EVENTS_FILE, encryptPrivateLine(JSON.stringify(event)) + '\n', { encoding: 'utf8', mode: 0o600 });
+  // Bežné heartbeat/scroll/click udalosti zapisujeme v dávkach. Kritické
+  // objednávkové udalosti zostávajú potvrdené až po fyzickom zápise.
+  await enqueueAnalyticsLine(
+    encryptPrivateLine(JSON.stringify(event)) + '\n',
+    eventType === 'order_complete' || eventType === 'order_submit',
+  );
   return { ok: true };
 }
 

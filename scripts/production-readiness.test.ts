@@ -169,6 +169,19 @@ test("Google meranie pokrýva celý nákupný lievik bez dvojitého purchase", a
   assert.match(confirmation, /tmTrackPurchase/);
 });
 
+test("vlastná analytika neblokuje verejný web samostatným diskovým zápisom pre každú udalosť", async () => {
+  const analytics = await readFile(new URL("../src/lib/tm-analytics.ts", import.meta.url), "utf8");
+  const security = await readFile(new URL("../src/lib/security.ts", import.meta.url), "utf8");
+  const client = await readFile(new URL("../public/tm-analytics.js", import.meta.url), "utf8");
+
+  assert.match(analytics, /WRITE_BATCH_MS\s*=\s*500/);
+  assert.match(analytics, /enqueueAnalyticsLine/);
+  assert.doesNotMatch(analytics, /await\s+appendFile\(EVENTS_FILE,\s*encryptPrivateLine/);
+  assert.match(security, /path\s*!==\s*['"]\/api\/analytics['"]/);
+  assert.match(client, /setInterval\(heartbeat,60000\)/);
+  assert.match(client, /maxScroll\+25/);
+});
+
 test("readiness zahreje smart-search index pred prijatím návštevnosti", async () => {
   const readiness = await readFile(new URL("../src/pages/api/readiness.ts", import.meta.url), "utf8");
   assert.match(readiness, /warmSmartSearchIndex/);

@@ -151,14 +151,16 @@ export async function rateLimitFor(path: string, method: string, request: Reques
   const key = `${path}|${method}|${hashIp(ip)}`;
   const current = buckets.get(key);
 
+  const needsImmediatePersistence = method !== 'GET' && path !== '/api/analytics';
+
   if (!current || current.resetAt <= now) {
     buckets.set(key, { count: 1, resetAt: now + matched.rule.windowMs });
-    persistBuckets(method !== 'GET');
+    persistBuckets(needsImmediatePersistence);
     return { ok: true };
   }
 
   current.count += 1;
-  persistBuckets(method !== 'GET');
+  persistBuckets(needsImmediatePersistence);
   if (current.count <= matched.rule.limit) return { ok: true };
 
   const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
