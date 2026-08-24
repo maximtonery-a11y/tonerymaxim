@@ -9,15 +9,15 @@ export const TM_DATA_ROOT = resolve(
 );
 
 function isProduction(): boolean {
-  return Boolean(import.meta.env.PROD || process.env.NODE_ENV === 'production');
+  return Boolean((import.meta as any).env?.PROD || process.env.NODE_ENV === 'production');
 }
 
 function readSecret(): string {
   return String(
     process.env.TM_PERSISTENCE_SECRET ||
-    import.meta.env.TM_PERSISTENCE_SECRET ||
+    (import.meta as any).env?.TM_PERSISTENCE_SECRET ||
     process.env.AUTH_SECRET ||
-    import.meta.env.AUTH_SECRET ||
+    (import.meta as any).env?.AUTH_SECRET ||
     ''
   ).trim();
 }

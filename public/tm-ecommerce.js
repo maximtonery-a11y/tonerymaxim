@@ -41,6 +41,20 @@
     window.dataLayer.push({ event: name, ecommerce: params });
   }
 
+  function emitOwn(name, params) {
+    if (typeof window.tmTrackAnalytics !== 'function') return;
+    var list = Array.isArray(params && params.items) ? params.items : [];
+    var first = list[0] || {};
+    var map = { add_to_cart: 'add_to_cart', remove_from_cart: 'remove_from_cart', begin_checkout: 'checkout_start', purchase: 'order_complete' };
+    var type = map[name];
+    if (!type) return;
+    window.tmTrackAnalytics(type, {
+      value: Number(params && params.value || 0),
+      product: String(first.item_id || first.item_name || '').slice(0, 300),
+      meta: { order_number: String(params && params.transaction_id || '').slice(0, 80), item_id: String(first.item_id || '').slice(0, 100), item_ids: list.slice(0,50).map(function(x){return String(x.item_id||'').slice(0,100)+':' + Math.max(1,Number(x.quantity||1))}).filter(Boolean).join('|').slice(0,500), item_count: String(list.length) }
+    });
+  }
+
   function viewItem() {
     if (!/^\/produkt\//.test(location.pathname)) return false;
     var node = document.getElementById('tm-product-initial-data');
@@ -67,7 +81,7 @@
 
   window.tmTrackEcommerce = function (name, params) {
     if (!name) return;
-    emit(String(name), params || {});
+    emit(String(name), params || {}); emitOwn(String(name), params || {});
   };
 
   window.tmTrackCartAdd = function (raw, quantity) {
@@ -77,6 +91,7 @@
       value: Math.round(product.price * product.quantity * 100) / 100,
       items: [product]
     });
+    emitOwn('add_to_cart', { value: Math.round(product.price * product.quantity * 100) / 100, items: [product] });
   };
 
   window.tmTrackPurchase = function (orderNumber, preview, total) {
@@ -88,12 +103,13 @@
       localStorage.setItem(dedupeKey, new Date().toISOString());
     } catch (_) {}
     var list = items(preview && preview.cart);
-    emit('purchase', {
+    var purchase = {
       transaction_id: transactionId,
       value: Number.isFinite(Number(total)) ? Number(total) : valueOf(list),
       shipping: Number(preview && preview.shipping && preview.shipping.price || 0),
       items: list
-    });
+    };
+    emit('purchase', purchase); emitOwn('purchase', purchase);
   };
 
   function beginCheckout() {
@@ -106,7 +122,8 @@
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, '1');
     } catch (_) {}
-    emit('begin_checkout', { value: valueOf(list), items: list });
+    var checkout = { value: valueOf(list), items: list };
+    emit('begin_checkout', checkout); emitOwn('begin_checkout', checkout);
   }
 
   function trackPageEcommerce() {

@@ -59,7 +59,7 @@ export async function readGoogleAdsStatus(source:any={}):Promise<GoogleAdsSyncSt
   return {...(saved||{}),configured:Boolean(config),mode:'read-only',apiVersion:config?.apiVersion||'v25',customerId:config?.customerId};
 }
 
-async function accessToken(config:GoogleAdsConfig, fetcher:typeof fetch):Promise<string>{
+export async function googleAdsAccessToken(config:GoogleAdsConfig, fetcher:typeof fetch):Promise<string>{
   const body=new URLSearchParams({grant_type:'refresh_token',client_id:config.clientId,client_secret:config.clientSecret,refresh_token:config.refreshToken});
   const response=await fetcher('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body,signal:AbortSignal.timeout(15_000)});
   const json:any=await response.json().catch(()=>({}));
@@ -80,7 +80,7 @@ WHERE segments.date DURING LAST_30_DAYS
   AND metrics.impressions > 0`;
 
 export async function fetchGoogleAdsProductRows(config:GoogleAdsConfig, fetcher:typeof fetch=fetch):Promise<any[]>{
-  const token=await accessToken(config,fetcher);
+  const token=await googleAdsAccessToken(config,fetcher);
   const url=`https://googleads.googleapis.com/${config.apiVersion}/customers/${config.customerId}/googleAds:search`;
   const headers:Record<string,string>={'Content-Type':'application/json',Authorization:`Bearer ${token}`,'developer-token':config.developerToken};
   if(config.loginCustomerId) headers['login-customer-id']=config.loginCustomerId;

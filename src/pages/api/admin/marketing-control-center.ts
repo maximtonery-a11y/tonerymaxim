@@ -1,0 +1,12 @@
+import type { APIRoute } from 'astro';
+import { constantTimeEqual,getAdminAccessKey } from '../../../lib/admin-access.ts';
+import { aggregateLearning } from '../../../lib/ads-learning-engine.ts';
+import { readLearningEvents } from '../../../lib/ads-learning-store.ts';
+import { loadAdsIntelligenceSettings } from '../../../lib/ads-intelligence-settings-store.ts';
+import { readGoogleAdsStatus } from '../../../lib/google-ads-readonly.ts';
+import { marketingControlCenter } from '../../../lib/marketing-control-center.ts';
+import { merchantDiagnostics } from '../../../lib/merchant-diagnostics.ts';
+import { buildVisits,readAnalyticsEvents } from '../../../lib/tm-analytics.ts';
+import { getProductsCache } from '../../../lib/tm-products-cache.ts';
+export const prerender=false;
+export const GET:APIRoute=async({request,url,locals})=>{const expected=getAdminAccessKey(locals),supplied=request.headers.get('x-admin-key')||url.searchParams.get('key')||'';if(!expected||!constantTimeEqual(expected,supplied))return Response.json({ok:false,error:'Unauthorized'},{status:401});try{const [events,cache,settings,google]=await Promise.all([readAnalyticsEvents(200000),getProductsCache(),loadAdsIntelligenceSettings(),readGoogleAdsStatus((locals as any)?.runtime?.env)]),visits=buildVisits(events).filter(v=>Date.parse(v.startedAt)>=Date.now()-30*86400000),learning=aggregateLearning(readLearningEvents()),merchant=merchantDiagnostics(cache.products),center=marketingControlCenter(visits,learning,merchant,google,settings.dailyBudgetEur);return Response.json({ok:true,center},{headers:{'cache-control':'no-store'}})}catch(error:any){return Response.json({ok:false,error:error?.message||'Riadiace centrum sa nepodarilo načítať.'},{status:500})}};
