@@ -7,7 +7,10 @@ const privateNoIndexPaths = new Set([
   "/zabudnute-heslo", "/reset-hesla",
 ]);
 const pathname = Astro.url.pathname;
-const includeAnalytics = !privateNoIndexPaths.has(pathname)
+const analyticsEnabled = String(
+  process.env.TM_ANALYTICS_ENABLED || import.meta.env.TM_ANALYTICS_ENABLED || '',
+).trim().toLowerCase() === 'true';
+const includeAnalytics = analyticsEnabled && !privateNoIndexPaths.has(pathname)
   && !pathname.startsWith("/ucet")
   && !pathname.startsWith("/admin");
 const googleTagId = String(

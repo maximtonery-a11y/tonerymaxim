@@ -9,7 +9,7 @@ type ProductsApiCacheEntry = {
 };
 
 const RESULT_CACHE_TTL_MS = Number(process.env.PRODUCTS_API_CACHE_TTL_MS || import.meta.env.PRODUCTS_API_CACHE_TTL_MS || 60_000);
-const RESULT_CACHE_MAX_ITEMS = Number(process.env.PRODUCTS_API_CACHE_MAX_ITEMS || import.meta.env.PRODUCTS_API_CACHE_MAX_ITEMS || 250);
+const RESULT_CACHE_MAX_ITEMS = Math.min(100, Math.max(20, Number(process.env.PRODUCTS_API_CACHE_MAX_ITEMS || import.meta.env.PRODUCTS_API_CACHE_MAX_ITEMS || 80)));
 
 const globalStore = globalThis as typeof globalThis & {
   __TM_PRODUCTS_API_RESULT_CACHE__?: Map<string, ProductsApiCacheEntry>;
