@@ -1,4 +1,4 @@
-import { mkdir, open, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, open, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TM_PRODUCT_CACHE_ROOT } from './runtime-paths.ts';
 import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, productPrinterValues } from './catalog-query.ts';
@@ -14,6 +14,7 @@ type CacheFile = {
   total: number;
   woo_reported_total?: number;
   details_file?: string;
+  runtime_compact?: boolean;
   products: TmProduct[];
 };
 
@@ -842,11 +843,41 @@ function parseCacheFile(text: string): CacheFile | null {
     // Staršie cache súbory obsahujú kompatibilné aliasy ako dve samostatné
     // JSON polia. Po načítaní zdieľajú jednu hodnotu, čím sa uvoľnia duplicitné
     // objekty bez zmeny verejného tvaru produktu alebo výsledkov vyhľadávania.
-    for (const product of data.products) compactProductAliases(product);
+    if(!data.runtime_compact)for (const product of data.products) {
+      compactProductAliases(product);
+      compactRuntimeProduct(product);
+    }
     return data;
   } catch {
     return null;
   }
+}
+
+function compactRuntimeProduct(product: TmProduct): TmProduct {
+  // Polia attributes a povodny search_text opakovali modely tlaciarni a dalsie
+  // udaje vo viacerych podobach. Pri 7 000+ produktoch zvacsovali JSON na
+  // desiatky MB a po rozbaleni drzali stovky MB RAM. Vsetky udaje potrebne na
+  // hladanie zostavaju v priamych poliach a kompatibilnych tlaciarnach;
+  // kompletne atributy sa ukladaju v detailnom NDJSON zazname.
+  product.search_text = normalize([
+    product.name, product.sku, product.slug, product.product_type_label,
+    product.color, product.capacity, product.warranty,
+    ...(Array.isArray(product.categories) ? product.categories.map((x:any) => typeof x === 'string' ? x : x?.name) : []),
+    ...(Array.isArray(product.compatible_printers) ? product.compatible_printers : []),
+  ].filter(Boolean).join(' '));
+  delete product.attributes;
+  delete product.attributes_all;
+  delete product.printers;
+  // Verejne API tieto spätne kompatibilné aliasy doplní z kanonických polí.
+  // V serverovej cache by inak zbytočne násobili počet vlastností každého
+  // zo 7 000+ objektov.
+  delete product.farba;
+  delete product.kapacita;
+  delete product.yield;
+  delete product.zaruka;
+  delete product.date_modified_gmt;
+  delete product.detail_url;
+  return product;
 }
 
 function runtimeProduct(product: TmProduct): TmProduct {
@@ -855,13 +886,14 @@ function runtimeProduct(product: TmProduct): TmProduct {
   delete compact.short_description_html;
   delete compact.attributes_all;
   delete compact.printers;
-  return compact;
+  return compactRuntimeProduct(compact);
 }
 
 function productDetail(product: TmProduct): TmProduct {
   return {
     description_html: product.description_html || "",
     short_description_html: product.short_description_html || "",
+    attributes: Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [],
   };
 }
 
@@ -895,6 +927,7 @@ async function writeSplitCache(source: CacheFile, oldDetailsFile = ""): Promise<
     ...source,
     version: CACHE_VERSION,
     details_file: detailsFile,
+    runtime_compact: true,
     products,
   };
 
@@ -940,8 +973,9 @@ async function readProductsCacheInternal(): Promise<CacheFile | null> {
 
   for (const file of FALLBACK_CACHE_FILES) {
     try {
-      const text = await readFile(file, "utf8");
-      let data = parseCacheFile(text);
+      const size=(await stat(file)).size;
+      if(size>20_000_000)await compactLargeCacheFile(file);
+      let data = parseCacheFile(await readFile(file, "utf8"));
       if (!data) continue;
       if (data.version === LEGACY_CACHE_VERSION) {
         try {
@@ -958,6 +992,21 @@ async function readProductsCacheInternal(): Promise<CacheFile | null> {
   }
 
   return null;
+}
+
+async function compactLargeCacheFile(file:string):Promise<void>{
+  const marker='"products":[';let mode:'header'|'products'|'suffix'='header';let header='',suffix='',pending='';
+  let object='',objectDepth=0,inString=false,escaped=false,count=0;
+  const temp=`${file}.${process.pid}.compact.tmp`;
+  const handle=await open(file,'r'),output=await open(temp,'w');const decoder=new TextDecoder();const buffer=Buffer.allocUnsafe(64*1024);
+  try{
+    let position=0;
+    while(true){const {bytesRead}=await handle.read(buffer,0,buffer.length,position);if(!bytesRead)break;position+=bytesRead;let chunk=decoder.decode(buffer.subarray(0,bytesRead),{stream:true});
+      if(mode==='header'){pending+=chunk;const at=pending.indexOf(marker);if(at<0){const keep=Math.min(marker.length-1,pending.length);header+=pending.slice(0,pending.length-keep);pending=pending.slice(-keep);continue;}header+=pending.slice(0,at);header+='"runtime_compact":true,"products":[';await output.write(header);chunk=pending.slice(at+marker.length);pending='';mode='products';}
+      for(let i=0;i<chunk.length;i++){const ch=chunk[i];if(mode==='suffix'){suffix+=chunk.slice(i);break;}if(inString){if(objectDepth)object+=ch;if(escaped)escaped=false;else if(ch==='\\')escaped=true;else if(ch==='"')inString=false;continue;}if(ch==='"'){inString=true;if(objectDepth)object+=ch;continue;}if(ch==='{'){objectDepth++;object+=ch;continue;}if(ch==='}'){object+=ch;objectDepth--;if(objectDepth===0){const product=JSON.parse(object) as TmProduct;compactProductAliases(product);compactRuntimeProduct(product);await output.write(`${count++?',':''}${JSON.stringify(product)}`);object='';}continue;}if(objectDepth){object+=ch;continue;}if(ch===']'){mode='suffix';suffix+=chunk.slice(i+1);break;}}
+    }
+    if(mode!=='suffix'||objectDepth!==0)throw new Error('Katalog ma neukoncene pole products.');await output.write(`]${suffix}`);await output.sync();await output.close();await handle.close();await rename(temp,file);
+  }catch(error){await output.close().catch(()=>undefined);await handle.close().catch(()=>undefined);await rm(temp,{force:true}).catch(()=>undefined);throw error;}
 }
 
 export async function readProductsCache(): Promise<CacheFile | null> {
@@ -1294,7 +1343,8 @@ async function loadProductDetail(cache: CacheFile, product: TmProduct): Promise<
     const { bytesRead } = await handle.read(buffer, 0, length, offset);
     if (bytesRead !== length) throw new Error("Neúplný záznam detailu produktu.");
     const detail = JSON.parse(buffer.toString("utf8").trim());
-    const merged = { ...product, ...detail, ...aliases };
+    const mergedAttributes = Array.isArray(detail?.attributes) ? detail.attributes : aliases.attributes_all;
+    const merged = { ...product, ...detail, ...aliases, attributes: mergedAttributes, attributes_all: mergedAttributes };
     detailCache.set(cacheKey, merged);
     while (detailCache.size > 100) {
       const oldest = detailCache.keys().next().value;

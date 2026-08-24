@@ -576,8 +576,20 @@
     state.busy=true; state.lastQuestion=question;trackEvent('question',{question:String(question).slice(0,300)});
     addMessage('user',`<p>${escapeHtml(question)}</p>`); const loading=addMessage('bot','<p>Overujem informácie a katalóg…</p>');
     try{
-      const r=await fetch('/api/ai-tomas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:question,page:location.pathname,state:state.commerceState})});
-      const d=await r.json(); if(!r.ok||!d?.ok)throw new Error(d?.error||'Požiadavka zlyhala.');
+      const payload=JSON.stringify({message:question,page:location.pathname,state:state.commerceState});
+      let r,d;
+      for(let attempt=0;attempt<2;attempt++){
+        r=await fetch('/api/ai-tomas',{method:'POST',headers:{'Content-Type':'application/json'},body:payload});
+        const text=await r.text();
+        try{d=text?JSON.parse(text):null}catch{d=null}
+        if(r.ok&&d?.ok)break;
+        if(attempt===0&&[502,503,504].includes(r.status)){await new Promise(resolve=>setTimeout(resolve,350));continue;}
+        const friendly=[502,503,504].includes(r.status)||!d
+          ?'AI Tomáš je chvíľu nedostupný. E-shop, košík aj objednávka fungujú ďalej; skúste otázku zopakovať.'
+          :(d?.error||'Požiadavku sa nepodarilo dokončiť. Skúste ju zopakovať.');
+        throw new Error(friendly);
+      }
+      if(!r?.ok||!d?.ok)throw new Error('AI Tomáš je chvíľu nedostupný. Skúste otázku zopakovať.');
       const shoppingAction=['ASK_PRODUCT_TYPE','OPEN_QUANTITY','ADD_TO_CART','OPEN_CART','OPEN_CHECKOUT'].includes(d.action?.kind);
       if(d.commerce?.products?.length||shoppingAction){state.mode='shop';setExperience('shop');}
       else autoPanelSize('advice');

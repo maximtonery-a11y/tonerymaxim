@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
 import { randomUUID } from 'node:crypto';
-import { buildAssistantAnswer } from '../../lib/aiSalesAssistant.ts';
 import { normalizeCommerceState } from '../../lib/ai-commerce/domain.ts';
 import { routeCommerceMessage } from '../../lib/ai-commerce/router.ts';
 import { searchCommerce } from '../../lib/ai-commerce/engine.ts';
@@ -44,7 +43,9 @@ export const POST: APIRoute = async ({ request }) => {
       return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'printer_conflict',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
     }
     const needsAdvisor = route.intents.some(x => ['ADVICE','POLICY','HUMAN_ESCALATION','UNKNOWN'].includes(x));
-    const advisorPromise = needsAdvisor ? buildAssistantAnswer(message,page,state.history) : Promise.resolve({
+    // Poradenska znalostna vrstva a produktovy nakupca sa nacitavaju oddelene.
+    // Bezna produktova otazka tak nedrzi v RAM aj cely poradensky modul.
+    const advisorPromise = needsAdvisor ? import('../../lib/aiSalesAssistant.ts').then(({buildAssistantAnswer})=>buildAssistantAnswer(message,page,state.history)) : Promise.resolve({
       answer: route.needsProducts ? ['Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:'] : ['Rozumiem.'],
       products: [], groups: [], intent: 'commerce', confidence: 1, unanswered: false,
     });

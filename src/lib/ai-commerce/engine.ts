@@ -24,10 +24,16 @@ function colorOf(p:any) {
 }
 function familyOf(p:any){const raw=`${p.name||''} ${p.sku||''}`.toUpperCase();let m=raw.match(/\bTN[- ]?(\d{3,4})(?:BK|C|M|Y)\b/);if(m)return`TN${m[1]}`;m=raw.match(/\bCRG[- ]?(\d{3})(H?)(?:BK|C|M|Y)\b/);if(m)return`CRG${m[1]}${m[2]}`;m=raw.match(/\b(?:CF|CE)(\d{2})[0-3]([AX])\b/);if(m)return`HP${m[1]}X${m[2]}`;m=raw.match(/\bCLT[- ]?[KCMY](\d+)([LS])\b/);if(m)return`CLT${m[1]}${m[2]}`;return'';}
 const commerceCache: Map<string,{expires:number,value:any}> = (globalThis as any).__TM_AI_COMMERCE_SEARCH_CACHE__ ||= new Map();
+const commerceInFlight: Map<string,Promise<any>> = (globalThis as any).__TM_AI_COMMERCE_IN_FLIGHT__ ||= new Map();
 export async function searchCommerce(query:string) {
   query=String(query||'').replace(/\bminoltu\b/gi,'Konica Minolta').replace(/\bminolta\b/gi,'Konica Minolta').replace(/Konica\s+Konica\s+Minolta/gi,'Konica Minolta');
   const cacheKey=query.toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
   const cached=commerceCache.get(cacheKey);if(cached&&cached.expires>Date.now())return cached.value;
+  // Pri prvom dotaze po deployi moze prist viac rovnakych poziadaviek naraz.
+  // Jedna spolocna Promise zabrani paralelnemu filtrovaniu celeho katalogu,
+  // ktore predtym kratkodobo nasobilo RAM a mohlo zhodit cely Node proces.
+  const running=commerceInFlight.get(cacheKey);if(running)return running;
+  const operation=(async()=>{
   const result=await resolveCommerceProducts(query);
   const products=result.products.map((product:any)=>({...product,color:colorOf(product),quantity_offers:quantityOffers(product.price,product.type)}));
   const colors=new Set(products.map((p:any)=>p.color).filter(Boolean));
@@ -49,6 +55,9 @@ export async function searchCommerce(query:string) {
   commerceCache.set(cacheKey,{expires:Date.now()+5*60_000,value});
   if(commerceCache.size>500){const oldest=commerceCache.keys().next().value;if(oldest)commerceCache.delete(oldest);}
   return value;
+  })();
+  commerceInFlight.set(cacheKey,operation);
+  try{return await operation;}finally{if(commerceInFlight.get(cacheKey)===operation)commerceInFlight.delete(cacheKey);}
 }
 export function priceCart(items:Array<{product:CommerceProduct;quantity:number}>){
  const lines=items.map(({product,quantity})=>({product,...priceForQuantity(product.price,product.type,quantity)}));
