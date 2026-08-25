@@ -167,7 +167,14 @@ function brandlessQuery(value: string, brands: string[]) {
     const normalizedBrand = normalize(brand);
     const compactBrand = compactKey(brand);
     normalized = normalized.replace(new RegExp(`(^|[^a-z0-9])${normalizedBrand.replace(/\s+/g, "[\\s-]*")}([^a-z0-9]|$)`, "gi"), " ");
-    if (compact.startsWith(compactBrand)) compact = compact.slice(compactBrand.length);
+    if (compact.startsWith(compactBrand)) {
+      compact = compact.slice(compactBrand.length);
+      // Pri zápise bez medzery (HP973, Canon054) hranicový regulárny výraz
+      // značku z normalizovaného textu neodstránil a vznikli dva referenčné
+      // tokeny: hp973 aj 973. Značku odstránime aj pred priamo nadväzujúcim
+      // číslom; detekcia značky už prebehla vyššie.
+      normalized = normalized.replace(new RegExp(`^\\s*${normalizedBrand}(?=\\d)`, "i"), " ");
+    }
   }
 
   return { normalized: normalized.replace(/\s+/g, " ").trim(), compact };
@@ -237,7 +244,13 @@ function referenceMatchStrength(reference: string, aliases: Set<string>, allowFa
   if (aliases.has(reference)) return 3;
 
   if (/^\d{2,6}$/.test(reference)) {
-    if (aliases.has(`${reference}xl`) || aliases.has(`${reference}xxl`)) return 2;
+    // Číselné rodiny atramentov nemajú iba koncovky XL/XXL. Výrobcovia
+    // používajú aj X, E a ďalšie písmenové varianty (napr. HP 973X, 924e).
+    // Číselnú rodinu rozširujeme iba na alias začínajúci presným číslom a
+    // pokračujúci výhradne písmenami. Preto sa 973 nemôže pomýliť s 9730.
+    if ([...aliases].some((alias) => alias.startsWith(reference)
+      && alias.length > reference.length
+      && /^[a-z]{1,4}$/.test(alias.slice(reference.length)))) return 2;
   }
 
   // Rodina spotrebného materiálu sa rozširuje dátovo, bez zoznamu farieb
@@ -291,8 +304,19 @@ function hasExplicitNumberedCartridgeReference(product: CatalogProduct, analysis
   const identity = normalize(productIdentityValue(product))
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
-  const marker = new RegExp(`(?:^|\\s)(?:no|nr)\\s*${reference}(?:\\s*(?:xl|xxl))?(?:\\s|$)`);
+  const marker = new RegExp(`(?:^|\\s)(?:no|nr)\\s*${reference}(?:\\s*[a-z]{1,4})?(?:\\s|$)`);
   return marker.test(identity);
+}
+
+function hasVisibleBrandNumberedFamilyReference(product: CatalogProduct, analysis: CatalogQueryAnalysis) {
+  if (analysis.referenceTokens.length !== 1 || !analysis.brands.length) return false;
+  const reference = analysis.referenceTokens[0];
+  if (!/^\d{2,6}$/.test(reference)) return false;
+  const identity = normalize(productIdentityValue(product)).replace(/[^a-z0-9]+/g, " ").trim();
+  return analysis.brands.some((brand) => {
+    const brandToken = normalize(brand).replace(/[^a-z0-9]+/g, " ").trim();
+    return new RegExp(`(?:^|\\s)${brandToken}\\s*${reference}[a-z]{0,4}(?:\\s|$)`, "i").test(identity);
+  });
 }
 
 export function findExactProductIdentityMatches(products: CatalogProduct[], query: string): ExactCatalogMatch[] {
@@ -323,7 +347,12 @@ export function findExactProductIdentityMatches(products: CatalogProduct[], quer
   // obsahuje explicitný zápis „no. 305“, má pred všeobecným číselným
   // aliasom prednosť a do výsledkov sa nedostanú nesúvisiace tonery.
   const explicitFamilyMatches = matches.filter((match) => hasExplicitNumberedCartridgeReference(match.product, analysis));
-  return explicitFamilyMatches.length ? explicitFamilyMatches : matches;
+  if (!explicitFamilyMatches.length) return matches;
+  // Ak existuje presný zápis „no. 924“, zachováme aj reálne označenie
+  // „HP 924e“. Naopak HP CD973AE sa pri dotaze HP 973 nevydáva za rodinu
+  // 973, pretože medzi značkou a číslom stojí iný katalógový kód.
+  return matches.filter((match) => hasExplicitNumberedCartridgeReference(match.product, analysis)
+    || hasVisibleBrandNumberedFamilyReference(match.product, analysis));
 }
 
 export function printerReferenceMatches(value: unknown, analysis: CatalogQueryAnalysis) {

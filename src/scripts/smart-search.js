@@ -5,7 +5,7 @@
   }
   window.__TM_SMART_SEARCH_MODULE_READY__ = true;
 
-  const CACHE_KEY = "tm_smart_search_v7";
+  const CACHE_KEY = "tm_smart_search_v8";
   const CACHE_TTL = 20 * 60 * 1000;
   // Nášepkávač štartuje od 3 znakov. Krátky debounce iba zlučuje veľmi rýchle
   // údery klávesov; používateľ nemá čakať stovky ms pred samotným requestom.
@@ -245,19 +245,29 @@
     panel.hidden = false;
   }
 
-  async function fetchSuggestions(query, signal) {
+  async function fetchSuggestions(query, signal, retry = true) {
     const cached = sessionRead(query);
     if (cached) return cached;
 
-    const response = await fetch(`/api/smart-search?q=${encodeURIComponent(query)}`, {
-      headers: { Accept: "application/json" },
-      signal,
-      cache: "no-store",
-    });
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || "Vyhľadávanie zlyhalo.");
-    sessionWrite(query, data);
-    return data;
+    try {
+      const response = await fetch(`/api/smart-search?q=${encodeURIComponent(query)}`, {
+        headers: { Accept: "application/json" },
+        signal,
+        cache: "no-store",
+      });
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) throw new Error("Neplatná odpoveď vyhľadávania.");
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.error || "Vyhľadávanie zlyhalo.");
+      sessionWrite(query, data);
+      return data;
+    } catch (error) {
+      // Jednorazové opakovanie pomôže pri krátkom prepnutí/reštarte proxy.
+      // Abort z nového používateľského dotazu sa nikdy neopakuje.
+      if (!retry || signal?.aborted) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 180));
+      return fetchSuggestions(query, signal, false);
+    }
   }
 
   function warmupSearch() {
@@ -371,7 +381,9 @@
         if (mySerial !== serial || input.value.trim() !== query) return;
         controller = new AbortController();
         const requestController = controller;
-        const timeout = setTimeout(() => requestController.abort(), 1800);
+        // Cold-start indexu nesmie na mobilnej sieti skončiť skôr, než server
+        // stihne odpovedať. Warm odpovede zostávajú bežne pod stovkami ms.
+        const timeout = setTimeout(() => requestController.abort(), 4000);
 
         try {
           const data = await fetchSuggestions(query, requestController.signal);
@@ -386,9 +398,7 @@
           if (error?.name === "AbortError") {
             // Timeout alebo nový dotaz nikdy nesmie nechať UI visieť.
             panel.innerHTML = `<div class="tm-smart-empty"><strong>Pokračujte Enterom.</strong><span>Otvoríme kompletné výsledky pre „${esc(query)}“.</span></div>`;
-          } else {
-            panel.innerHTML = `<div class="tm-smart-empty"><strong>Našepkávanie je dočasne nedostupné.</strong><span>Stlačte Enter pre kompletné výsledky.</span></div>`;
-          }
+          } else panel.innerHTML = `<div class="tm-smart-empty"><strong>Pokračujte Enterom.</strong><span>Otvoríme kompletné výsledky pre „${esc(query)}“.</span></div>`;
           panel.hidden = false;
         } finally {
           clearTimeout(timeout);

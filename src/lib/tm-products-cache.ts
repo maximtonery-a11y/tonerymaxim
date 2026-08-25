@@ -1,7 +1,7 @@
 import { mkdir, open, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TM_PRODUCT_CACHE_ROOT } from './runtime-paths.ts';
-import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, productPrinterValues } from './catalog-query.ts';
+import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, productPrinterValues } from './catalog-query.ts';
 import { normalizedCompletenessRatio, requiredProductCount } from './product-cache-policy.ts';
 import { notifyIndexNowAfterProductSync, type IndexNowResult } from './indexnow.ts';
 
@@ -1443,6 +1443,22 @@ function matchesLooseSearch(text: string, query: string) {
   if (text.includes(search)) return true;
   if (compactSearch && compactText.includes(compactSearch)) return true;
 
+  // Spojený zápis značky a rodiny (HP973, HP924) sa v názve produktu môže
+  // nachádzať oddelene a medzi nimi býva ešte katalógový kód. Porovnávame
+  // preto rozpoznanú značku a referenciu samostatne. Platí to všeobecne pre
+  // všetky značky a kódy, nie iba pre konkrétne HP produkty.
+  const analysis = analyzeCatalogQuery(query);
+  if (analysis.hasReference) {
+    const brandMatches = !analysis.brands.length
+      || analysis.brands.every((brandName) => compactText.includes(compactKey(brandName)));
+    const referenceMatches = analysis.referenceTokens.some((reference) => {
+      if (compactText.includes(reference)) return true;
+      if (!/^\d{2,6}$/.test(reference)) return false;
+      return new RegExp(`(?:^|[^0-9])${reference}[a-z]{1,4}(?:[^a-z0-9]|$)`, "i").test(text);
+    });
+    if (brandMatches && referenceMatches) return true;
+  }
+
   const tokens = searchTokens(query);
   if (!tokens.length) return true;
 
@@ -1515,6 +1531,12 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
   const exactPrinterProducts = search && looseCandidates.length
     ? new Set(findExactPrinterModelMatches(looseCandidates, filters.search || "").map((match) => match.product))
     : new Set<TmProduct>();
+  const searchAnalysis = search ? analyzeCatalogQuery(filters.search || "") : null;
+  const hasAlphaNumericModel = Boolean(searchAnalysis?.referenceTokens.some((token) => /[a-z]/.test(token) && /\d/.test(token)));
+  const partialPrinterProducts = search && looseCandidates.length && hasAlphaNumericModel && !exactPrinterProducts.size
+    ? new Set(looseCandidates.filter((product) => productPrinterValues(product)
+      .some((printer) => partialPrinterModelMatch(printer, searchAnalysis!))))
+    : new Set<TmProduct>();
 
   const sourceProducts = search ? looseCandidates : products;
   const filtered = sourceProducts.filter((product) => {
@@ -1546,8 +1568,8 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     if (filters.category && !matchesCategory(product, filters.category)) return false;
     if (printer && !matchesPrinterFilter(product, filters.printer || "")) return false;
     if (search) {
-      const hasStructuredMatches = exactSearchProducts.size > 0 || exactPrinterProducts.size > 0;
-      if (hasStructuredMatches && !exactSearchProducts.has(product) && !exactPrinterProducts.has(product)) return false;
+      const hasStructuredMatches = exactSearchProducts.size > 0 || exactPrinterProducts.size > 0 || partialPrinterProducts.size > 0;
+      if (hasStructuredMatches && !exactSearchProducts.has(product) && !exactPrinterProducts.has(product) && !partialPrinterProducts.has(product)) return false;
       if (!hasStructuredMatches && !matchesLooseSearch(text, search)) return false;
     }
     return true;

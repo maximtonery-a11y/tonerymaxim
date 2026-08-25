@@ -242,6 +242,21 @@ function makeIndexedProduct(product: any, index: number): IndexedProduct {
   const candidateTokens = [...new Set([
     ...tokens,
     ...structuredCodes,
+    // Model tlačiarne musí byť v prefixovom indexe aj ako jeden kompaktný
+    // kód. Vďaka tomu sú MFP4102, MFP 4102 a MFP-4102 rovnaký rýchly dotaz
+    // a nespúšťajú full-scan celého katalógu.
+    ...printers.flatMap((printer) => {
+      const values = [printer.compact];
+      const parts = printer.tokens.map((token) => compactKey(token)).filter(Boolean);
+      for (let start = 0; start < parts.length; start += 1) {
+        let joined = "";
+        for (let end = start; end < Math.min(parts.length, start + 3); end += 1) {
+          joined += parts[end];
+          if (/\d/.test(joined) && /[a-z]/.test(joined)) values.push(joined);
+        }
+      }
+      return values;
+    }),
     compactKey(product.sku || ""),
     compactKey(product.slug || ""),
   ].filter((token) => token && token.length >= 2))];
@@ -672,9 +687,13 @@ export const GET: APIRoute = async ({ url }) => {
 
     const exactProducts = new Set(exactIdentityMatches.map((match) => match.product));
     const exactPrinterProducts = new Set(exactPrinterMatches.map((match) => match.product));
-    const hasStructuredMatches = exactProducts.size > 0 || exactPrinterProducts.size > 0;
+    const hasAlphaNumericModel = queryAnalysis.referenceTokens.some((token) => /[a-z]/.test(token) && /\d/.test(token));
+    const partialPrinterProducts = new Set(hasAlphaNumericModel && !exactPrinterProducts.size
+      ? prefixCandidates.filter((item) => item.printers.some((printer) => partialPrinterModelMatch(printer.title, queryAnalysis))).map((item) => item.product)
+      : []);
+    const hasStructuredMatches = exactProducts.size > 0 || exactPrinterProducts.size > 0 || partialPrinterProducts.size > 0;
     const candidateItems = hasStructuredMatches
-      ? index.items.filter((item) => exactProducts.has(item.product) || exactPrinterProducts.has(item.product))
+      ? index.items.filter((item) => exactProducts.has(item.product) || exactPrinterProducts.has(item.product) || partialPrinterProducts.has(item.product))
       : prefixCandidates;
     const products = findProductSuggestions(candidateItems, query);
     const staticResults = filteredStaticSuggestions(query);
