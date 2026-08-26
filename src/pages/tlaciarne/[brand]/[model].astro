@@ -227,13 +227,54 @@ const quickAnswer = !notFound
   : "";
 const compatibilityAnswer = tonerOems.length
   ? drumOems.length
-    ? `${printerName} používa ${consumableName} ${brandName} ${oemText}. Optický valec je samostatný spotrebný materiál: ${brandName} ${naturalList(drumOems)}. Na stránke uvádzame iba označenia spotrebného materiálu značky ${brandName}.`
-    : `${printerName} používa ${consumableName} ${brandName} ${oemText}. Na stránke uvádzame iba označenia spotrebného materiálu značky ${brandName}.`
+    ? `${printerName} používa ${consumableName} ${brandName} ${oemText}. Optický valec je samostatný spotrebný materiál: ${brandName} ${naturalList(drumOems)}.`
+    : `${printerName} používa ${consumableName} ${brandName} ${oemText}.`
   : quickAnswer;
 const recommendationAnswer = inkBased
   ? inkAdvice
   : recommendation || "Odporúčanie podľa ceny za stranu zobrazíme iba vtedy, keď máme pri porovnávaných tonerových kazetách spoľahlivo uvedenú cenu aj výťažnosť v stranách.";
 const brandOemLinks = [...tonerOems, ...drumOems].map((code) => ({ href: `/oem/${code.toLowerCase()}`, label: `${brandName} ${code}` }));
+
+const availableTypeLabels = [
+  ...(stats.original ? ["originálny"] : []),
+  ...(stats.compatible ? ["kompatibilný"] : []),
+  ...(stats.renovated ? ["renovovaný"] : []),
+];
+const choiceParagraphs: string[] = [];
+if (availableTypeLabels.length > 1) {
+  const available = naturalList(availableTypeLabels.map((label) => `${label} variant`));
+  choiceParagraphs.push(`Pre ${printerName} sú v aktuálnej ponuke dostupné ${available}. Rozdiel medzi nimi nie je v určení pre inú tlačiareň, ale najmä v pôvode kazety, cene a spôsobe jej výroby.`);
+  if (stats.original) choiceParagraphs.push(`Originálny variant pochádza od výrobcu ${brandName}. Je vhodný pre zákazníka, ktorý uprednostňuje spotrebný materiál výrobcu tlačiarne.`);
+  if (stats.compatible) choiceParagraphs.push("Kompatibilný variant je novovyrobená alternatíva určená pre rovnaký model tlačiarne. Pri výbere je rozhodujúce presné označenie kazety a uvedená kompatibilita s tlačiarňou.");
+  if (stats.renovated) choiceParagraphs.push("Renovovaný variant využíva opätovne použitú kazetu, ktorá bola odborne obnovená a znovu naplnená. Ide o inú kategóriu než novovyrobený kompatibilný toner.");
+}
+
+const yieldParagraphs = !inkBased && relevantTonerProducts.some((product) => numericYield(product))
+  ? [
+      "Deklarovaná výťažnosť udáva orientačný počet strán, ktorý možno s kazetou vytlačiť pri podmienkach stanovených výrobcom. Reálny počet vytlačených strán ovplyvňuje najmä pokrytie stránky, typ dokumentov, nastavenie tlače a spôsob používania tlačiarne.",
+      "Pri porovnávaní dvoch tonerov preto nestačí sledovať iba cenu kazety. Ak je pri oboch produktoch známa výťažnosť, užitočnejším údajom je cena za jednu vytlačenú stranu.",
+    ]
+  : [];
+
+const compatibilityParagraphs = tonerOems.length
+  ? [
+      `Pri nákupe pre ${printerName} porovnávajte celé označenie spotrebného materiálu. Podobné názvy tlačiarní alebo kaziet nemusia znamenať vzájomnú kompatibilitu.`,
+      "Ak máte na pôvodnej kazete iné označenie, než je uvedené pri produktoch na tejto stránke, pred objednaním skontrolujte presný model tlačiarne na jej štítku alebo v nastaveniach zariadenia.",
+    ]
+  : [];
+
+const lowerContentSections = [
+  ...(choiceParagraphs.length ? [{ heading: `Ako sa rozhodnúť medzi náplňami pre ${printerName}`, paragraphs: choiceParagraphs }] : []),
+  ...(yieldParagraphs.length ? [{ heading: "Čo znamená výťažnosť tonera", paragraphs: yieldParagraphs }] : []),
+  ...(compatibilityParagraphs.length ? [{ heading: "Na čo si dať pozor pri výbere", paragraphs: compatibilityParagraphs }] : []),
+];
+
+const decisionFaq = [
+  ...(stats.original && stats.compatible ? [{ question: `Aký je rozdiel medzi originálnym a kompatibilným tonerom pre ${printerName}?`, answer: `Originálny toner vyrába ${brandName}. Kompatibilný toner je novovyrobená alternatíva určená pre rovnakú tlačiareň. Pri konkrétnom produkte vždy skontrolujte uvedenú kompatibilitu, kapacitu a cenu.` }] : []),
+  ...(stats.renovated ? [{ question: "Čo znamená renovovaný toner?", answer: "Renovovaný toner využíva opätovne použitú kazetu, ktorá bola odborne obnovená, znovu naplnená a pripravená na ďalšie použitie. Nie je to to isté ako novovyrobený kompatibilný toner." }] : []),
+  ...(!inkBased && relevantTonerProducts.some((product) => numericYield(product)) ? [{ question: "Prečo sa skutočná výťažnosť tonera môže líšiť od uvádzanej hodnoty?", answer: "Uvádzaná výťažnosť je porovnávací údaj stanovený za definovaných podmienok. V praxi ju ovplyvňuje pokrytie stránky, typ tlačených dokumentov, nastavenie tlače aj spôsob používania zariadenia." }] : []),
+  ...(drumOems.length ? [{ question: `Je optický valec pre ${printerName} to isté ako toner?`, answer: `Nie. Pri tomto modeli je optický valec samostatný spotrebný materiál. V katalógu je vedený pod označením ${brandName} ${naturalList(drumOems)}.` }] : []),
+];
 
 const typeFacts = [
   `Všetky: ${stats.total}`,
@@ -256,7 +297,7 @@ const typeFacts = [
     ? "Skontrolujte označenie modelu alebo sa vráťte na výber tlačiarne."
     : quickAnswer}
   products={products}
-  answer={quickAnswer}
+  answer=""
   generatedAt={cache.generated_at}
   breadcrumbs={[
     { name: "Tlačiarne", path: "/tlaciarne" },
@@ -265,42 +306,19 @@ const typeFacts = [
   ]}
   entityFacts={notFound ? [] : typeFacts}
   relatedLinks={[]}
-  faq={notFound ? [] : [
-    { question: inkBased ? `Aké atramentové náplne používa ${printerName}?` : `Aké tonery používa ${printerName}?`, answer: compatibilityAnswer },
-    ...(recommendation ? [{ question: `Ktorý toner pre ${printerName} sa najviac oplatí?`, answer: recommendationAnswer }] : []),
-    ...(stats.compatible > 0 ? [{ question: "Môžem použiť kompatibilný toner namiesto originálneho?", answer: "Áno, ak je konkrétny kompatibilný produkt určený pre tento model tlačiarne. Typ produktu je viditeľne označený pri každej položke." }] : []),
-    
-  ]}
-  contentSections={notFound ? [] : [
-    {
-      heading: inkBased ? `Výber atramentových náplní pre ${printerName}` : `Výber tonera pre ${printerName}`,
-      paragraphs: [compatibilityAnswer, ...(capacityAdvice ? [capacityAdvice] : []), ...(recommendation ? [recommendation] : [])],
-      bullets: inkBased ? ["Skontrolujte presný model tlačiarne.", "Porovnajte označenie atramentovej náplne.", "Vyberte správnu farbu alebo sadu farieb."] : ["Skontrolujte presný model tlačiarne.", "Porovnajte OEM označenie tonerovej kazety.", "Vyberte požadovanú kapacitu tonera."],
-    },
-    {
-      heading: "Ako čítať aktuálnu ponuku",
-      paragraphs: ["Každá produktová karta uvádza typ produktu, cenu s DPH a dostupnosť. Detail produktu dopĺňa výťažnosť, farbu a ďalšie kompatibilné tlačiarne, ak sú tieto údaje v katalógu dostupné."],
-    },
-  ]}
+  faq={notFound ? [] : decisionFaq}
+  contentSections={notFound ? [] : lowerContentSections}
   linkGroups={notFound ? [] : [
-    { heading: `OEM označenia pre ${printerName}`, intro: `Pre túto ${brandName} tlačiareň zobrazujeme iba OEM označenia značky ${brandName}.`, links: brandOemLinks },
-    { heading: `Produkty pre ${printerName}`, intro: "Konkrétne produkty s cenou, dostupnosťou a detailom kompatibility sú uvedené v aktuálnej ponuke.", links: [{ href: "#produkty", label: `Zobraziť ${stats.total} priradených produktov`, count: stats.total }] },
-    { heading: "Relevantné návody", intro: "Postup kontroly modelu, OEM kódu a rozdielov medzi typmi náplní.", links: guideLinks },
-    { heading: `Ďalšie modely ${brandName}`, intro: "Súvisiace modely značky s reálnymi produktmi v katalógu.", links: relatedPrinterLinks },
+    { heading: "Označenia spotrebného materiálu", intro: `Tieto označenia sú v katalógu priradené k modelu ${printerName}. Po otvorení označenia nájdete produkty a ďalšie tlačiarne, pri ktorých sa rovnaká náplň používa.`, links: brandOemLinks },
+    { heading: "Praktické návody", intro: "Doplňujúce informácie k výberu, používaniu a rozdielom medzi jednotlivými druhmi spotrebného materiálu.", links: guideLinks },
+    { heading: `Ďalšie tlačiarne ${brandName}`, intro: "Prechod na ďalšie modely značky s vlastnou ponukou priradeného spotrebného materiálu.", links: relatedPrinterLinks },
   ]}
   schemaEntities={notFound ? [] : [
     { name: printerName, url: canonicalPath },
     { name: brandName, url: printer ? `/znacky/${printer.brand.slug}` : undefined },
     { name: `Tonery pre ${printerName}` },
   ]}
-  expertGuide={geoPriority || geoPilot ? {
-    title: geoAnswer?.question || benchmark?.prompt || `Aké náplne používa ${printerName}?`,
-    summary: quickAnswer,
-    updated: "2026-08-09",
-    author: "Roman Babčan",
-    experience: "17+ rokov skúseností",
-    links: guideLinks,
-  } : undefined}
+  expertGuide={undefined}
   notFound={notFound}
   productFirst={!notFound}
   productTypeFilters={!notFound}
