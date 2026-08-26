@@ -49,6 +49,7 @@ interface Props {
   pagination?: Pagination;
   productFirst?: boolean;
   productTypeFilters?: boolean;
+  compactHero?: boolean;
 }
 
 const {
@@ -74,6 +75,7 @@ const {
   pagination,
   productFirst = false,
   productTypeFilters = false,
+  compactHero = false,
 } = Astro.props;
 
 const SEO_ORIGIN = "https://www.tonerymaxim.sk";
@@ -174,7 +176,7 @@ const jsonLd = [
       <Header />
 
       <main class="seo-catalog-page">
-        <section class="seo-catalog-hero">
+        <section class:list={["seo-catalog-hero", { "seo-printer-hero-compact": compactHero }]}>
           <div class="wrap">
             <nav class="seo-breadcrumbs" aria-label="Drobečková navigácia">
               {breadcrumbItems.map((item, index) => (
@@ -254,7 +256,7 @@ const jsonLd = [
           </section>
         )}
 
-        {productFirst && !notFound && answer && (
+        {productFirst && !compactHero && !notFound && answer && (
           <section class="seo-printer-quick" aria-label="Rýchly súhrn pre výber náplne">
             <div class="wrap seo-printer-quick-inner">
               <div>
