@@ -49,7 +49,6 @@ interface Props {
   pagination?: Pagination;
   productFirst?: boolean;
   productTypeFilters?: boolean;
-  compactHero?: boolean;
 }
 
 const {
@@ -75,7 +74,6 @@ const {
   pagination,
   productFirst = false,
   productTypeFilters = false,
-  compactHero = false,
 } = Astro.props;
 
 const SEO_ORIGIN = "https://www.tonerymaxim.sk";
@@ -176,7 +174,7 @@ const jsonLd = [
       <Header />
 
       <main class="seo-catalog-page">
-        <section class:list={["seo-catalog-hero", { "seo-printer-hero-compact": compactHero }]}>
+        <section class:list={{ "seo-catalog-hero": true, "seo-printer-hero": productFirst }}>
           <div class="wrap">
             <nav class="seo-breadcrumbs" aria-label="Drobečková navigácia">
               {breadcrumbItems.map((item, index) => (
@@ -188,23 +186,23 @@ const jsonLd = [
                 </>
               ))}
             </nav>
-            <p class="eyebrow">{eyebrow}</p>
+            {!productFirst && <p class="eyebrow">{eyebrow}</p>}
             <h1>{heading}</h1>
             <p class="seo-catalog-lead">{intro}</p>
 
             {entityFacts.length > 0 && (
               <ul class="seo-fact-list" aria-label="Dôležité informácie">
                 {entityFacts.map((fact) => {
-                  const match = productTypeFilters ? fact.match(/^(Kompatibilné|Originálne|Renovované):\s*(\d+)/) : null;
-                  const filter = match?.[1] === "Kompatibilné" ? "compatible" : match?.[1] === "Originálne" ? "original" : match?.[1] === "Renovované" ? "renovated" : "";
-                  const selected = filter && Astro.url.searchParams.get("typ") === filter;
-                  const filterHref = filter ? (selected ? `${canonicalPath}#produkty` : `${canonicalPath}?typ=${filter}#produkty`) : "";
+                  const match = productTypeFilters ? fact.match(/^(Všetky|Kompatibilné|Originálne|Renovované):\s*(\d+)/) : null;
+                  const filter = match?.[1] === "Všetky" ? "all" : match?.[1] === "Kompatibilné" ? "compatible" : match?.[1] === "Originálne" ? "original" : match?.[1] === "Renovované" ? "renovated" : "";
+                  const selected = filter === "all" ? !Astro.url.searchParams.get("typ") : Boolean(filter && Astro.url.searchParams.get("typ") === filter);
+                  const filterHref = filter ? (filter === "all" ? `${canonicalPath}#produkty` : (selected ? `${canonicalPath}#produkty` : `${canonicalPath}?typ=${filter}#produkty`)) : "";
                   return <li class:list={{ [`seo-type-${filter}`]: Boolean(filter), "is-active": Boolean(selected) }}>{filter ? <a class="seo-type-filter" href={filterHref} aria-current={selected ? "true" : undefined}>{fact}</a> : fact}</li>;
                 })}
               </ul>
             )}
 
-            {relatedLinks.length > 0 && (
+            {!productFirst && relatedLinks.length > 0 && (
               <nav class="seo-related-links" aria-label="Súvisiace kategórie">
                 {relatedLinks.map((link) => <a href={link.href}>{link.label}</a>)}
               </nav>
@@ -256,21 +254,7 @@ const jsonLd = [
           </section>
         )}
 
-        {productFirst && !compactHero && !notFound && answer && (
-          <section class="seo-printer-quick" aria-label="Rýchly súhrn pre výber náplne">
-            <div class="wrap seo-printer-quick-inner">
-              <div>
-                <strong>{answer}</strong>
-                <a href="#odborne-informacie">Odborné informácie a kontrola kompatibility ↓</a>
-              </div>
-              <dl aria-label="Súhrn ponuky">
-                <div><dt>Produktov</dt><dd>{stats.total}</dd></div>
-                <div><dt>Skladom</dt><dd>{stats.inStock}</dd></div>
-                {stats.minPrice > 0 && <div><dt>Od</dt><dd>{money(stats.minPrice)}</dd></div>}
-              </dl>
-            </div>
-          </section>
-        )}
+
 
         <section class="seo-catalog-products" id="produkty">
           <div class="wrap">
