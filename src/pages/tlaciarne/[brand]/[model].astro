@@ -10,7 +10,8 @@ import {
   productOemCodes,
   productSearchText,
 } from "../../../lib/seo-catalog";
-import { findPrinterGeoPilot } from "../../../data/geo-pilot";
+import { findPrinterGeoPilot, findOemGeoPilot } from "../../../data/geo-pilot";
+import { printerGeoAnswer } from "../../../lib/geo-entity-answer";
 
 
 const KNOWN_PRODUCT_BRANDS = ["HP", "Canon", "Brother", "Epson", "Samsung", "Xerox", "Kyocera", "Lexmark", "OKI", "Ricoh", "Konica Minolta", "Develop", "Sharp", "Panasonic"];
@@ -67,13 +68,11 @@ if (notFound) {
 }
 
 const printerName = printer?.name || "Neznámy model tlačiarne";
+const geoPilot = printer ? findPrinterGeoPilot(printer.name) : undefined;
 const brandName = printer?.brand.name || "Tlačiareň";
 const canonicalPath = printer
   ? `/tlaciarne/${printer.brand.slug}/${printer.slug}`
   : Astro.url.pathname;
-const geoPilot = printer ? findPrinterGeoPilot(printer.name) : undefined;
-const integratedDrum = Boolean(geoPilot && /(?:obsahuje|súčasťou|spojen[ée]|jednej zostave|v jednej kazete).{0,80}(?:valec|drum)|(?:valec|drum).{0,80}(?:obsahuje|súčasťou|spojen[ée]|jednej zostave|v jednej kazete)/i.test(`${geoPilot.productKind} ${geoPilot.selection} ${geoPilot.caution}`));
-
 const typeNames = [
   ...(stats.compatible ? ["kompatibilné"] : []),
   ...(stats.original ? ["originálne"] : []),
@@ -98,6 +97,7 @@ if (imageCandidate) {
     modelImage = undefined;
   }
 }
+const geoAnswer = !notFound ? printerGeoAnswer(printerName, allProducts, geoPilot) : undefined;
 const tonerProducts = allProducts.filter((product) => !isDrum(product));
 const drumProducts = allProducts.filter(isDrum);
 const originalTonerProducts = tonerProducts.filter((product) => product.product_type_key === "original");
@@ -109,9 +109,6 @@ const drumOems = originalDrumOems.length ? originalDrumOems : (printer ? uniqueT
 const relevantTonerProducts = tonerOems.length
   ? tonerProducts.filter((product) => brandOemCodes(product, brandName).some((code) => tonerOems.includes(code)))
   : tonerProducts;
-const relevantDrumProducts = drumOems.length
-  ? drumProducts.filter((product) => brandOemCodes(product, brandName).some((code) => drumOems.includes(code)))
-  : drumProducts;
 const colors = uniqueText(relevantTonerProducts.map((product) => product.color).filter(Boolean), 5);
 const inkBased = relevantTonerProducts.length > 0 && relevantTonerProducts.some(isInkProduct);
 const consumableName = inkBased ? "atramentové náplne" : "tonerové kazety";
@@ -197,38 +194,77 @@ const quickAnswer = !notFound
     ? quickParts.join(" ")
     : `${printerName}: vyberte náplň iba z produktov priradených k tomuto presnému modelu. OEM označenie overte v detaile produktu.`
   : "";
-const normalizedOemSet = (codes: string[]) => [...new Set(codes.map((code) => normText(code).toUpperCase()).filter(Boolean))].sort();
-const sameOemSet = (left: string[], right: string[]) => {
-  const a = normalizedOemSet(left);
-  const b = normalizedOemSet(right);
-  return a.length > 0 && a.length === b.length && a.every((code, index) => code === b[index]);
-};
-const currentTonerOemSet = normalizedOemSet(tonerOems);
-const sharedConsumablePrinterLinks = printer && currentTonerOemSet.length
+// Spodná časť prináša iba informácie, ktoré nie sú vo vrchnom súhrne ani v produktových kartách.
+// Nepoužívame všeobecné poučky o farbách, kapacite, čipoch, baleniach ani typoch produktu.
+// Fakt sa zobrazí len vtedy, keď je viazaný na konkrétne OEM označenie tejto tlačiarne.
+function normalizedCode(value: string): string {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+function mentionsAny(value: string, terms: string[]): boolean {
+  const text = value.toLowerCase();
+  return terms.some((term) => text.includes(term));
+}
+
+const oemKnowledgeFacts = tonerOems.flatMap((code) => {
+  const profile = findOemGeoPilot(code);
+  if (!profile) return [];
+
+  const facts: string[] = [];
+  const aliasMatch = profile.productKind.match(new RegExp(`\\b${brandName.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}\\s+([0-9]{2,3}[A-Z])\\b`, "i"));
+  const alias = aliasMatch?.[1] || "";
+  if (alias && normalizedCode(alias) !== normalizedCode(code)) {
+    facts.push(`${brandName} ${code} sa používa aj pod skráteným označením ${brandName} ${alias}. Obe označenia pomenúvajú tú istú tonerovú kazetu.`);
+  }
+
+  // Upozornenie z OEM profilu použijeme iba vtedy, ak prináša nový konkrétny fakt.
+  // Témy už vysvetlené hore (farba, kapacita, valec) sa pod produktmi neopakujú.
+  const caution = normText(profile.caution);
+  const repeatsTopTopic =
+    (mentionsAny(caution, ["farb", "black", "cyan", "magenta", "yellow"]) && colors.length > 0) ||
+    (mentionsAny(caution, ["kapacit", "výťaž", "vytaz", "štandard", "standard", "vysokokapacit"]) && Boolean(capacityAdvice)) ||
+    (mentionsAny(caution, ["valec", "drum", "zobrazovac"]) && Boolean(drumSentence));
+  if (caution && !repeatsTopTopic && !quickAnswer.toLowerCase().includes(caution.toLowerCase())) {
+    facts.push(`${brandName} ${code}: ${caution}`);
+  }
+  return facts;
+});
+
+const practicalFacts = uniqueText(oemKnowledgeFacts, 6);
+
+// Súvisiace modely zobrazíme iba pri zhode celej sady tonerových OEM kódov.
+// Pri farebnej tlačiarni preto nestačí zhoda jednej farby.
+const normalizedOemSet = (entityProducts: any[], entityBrand: string) => uniqueText(
+  entityProducts
+    .filter((product) => !isDrum(product))
+    .flatMap((product) => brandOemCodes(product, entityBrand)),
+  20,
+).sort();
+const currentOemSet = normalizedOemSet(allProducts, brandName);
+const sameConsumablePrinterLinks = printer && currentOemSet.length
   ? printerEntities(cache.products)
       .filter((entity) => entity.brand.slug === printer.brand.slug && entity.slug !== printer.slug)
-      .map((entity) => {
-        const entityToners = entity.products.filter((product) => !isDrum(product));
-        const entityOriginalToners = entityToners.filter((product) => product.product_type_key === "original");
-        const entitySourceToners = entityOriginalToners.length ? entityOriginalToners : entityToners;
-        const entityOems = uniqueText(entitySourceToners.flatMap((product) => brandOemCodes(product, brandName)), 12);
-        return sameOemSet(currentTonerOemSet, entityOems)
-          ? { href: `/tlaciarne/${entity.brand.slug}/${entity.slug}`, label: entity.name }
-          : null;
+      .filter((entity) => {
+        const candidate = normalizedOemSet(entity.products, entity.brand.name);
+        return candidate.length === currentOemSet.length && candidate.every((code, index) => code === currentOemSet[index]);
       })
-      .filter(Boolean)
-      .slice(0, 12) as Array<{ href: string; label: string }>
+      .slice(0, 12)
+      .map((entity) => ({
+        href: `/tlaciarne/${entity.brand.slug}/${entity.slug}`,
+        label: entity.name,
+        description: `Rovnaké OEM označenia náplní: ${naturalList(currentOemSet)}`,
+      }))
   : [];
 
-// Pod produktmi nič neopakujeme z úvodu ani z produktových kariet.
-// Zobrazíme iba modely, pri ktorých sa zhoduje celá sada relevantných OEM označení náplní.
-const lowerLinkGroups = !notFound && sharedConsumablePrinterLinks.length
-  ? [{
-      heading: "Ďalšie tlačiarne používajúce rovnaké náplne",
-      intro: "Tieto modely používajú rovnakú sadu náplní ako táto tlačiareň.",
-      links: sharedConsumablePrinterLinks,
-    }]
-  : [];
+const contentSections = practicalFacts.length ? [{
+  heading: `Označenia a dôležité upozornenia pre ${printerName}`,
+  paragraphs: practicalFacts,
+}] : [];
+
+const linkGroups = sameConsumablePrinterLinks.length ? [{
+  heading: "Ďalšie tlačiarne s rovnakou sadou náplní",
+  intro: `Nasledujúce modely značky ${brandName} majú v aktuálnom katalógu rovnakú celú sadu OEM označení ako ${printerName}.`,
+  links: sameConsumablePrinterLinks,
+}] : [];
 
 const typeFacts = [
   `Všetky: ${stats.total}`,
@@ -261,8 +297,8 @@ const typeFacts = [
   entityFacts={notFound ? [] : typeFacts}
   relatedLinks={[]}
   faq={[]}
-  contentSections={[]}
-  linkGroups={lowerLinkGroups}
+  contentSections={notFound ? [] : contentSections}
+  linkGroups={notFound ? [] : linkGroups}
   schemaEntities={notFound ? [] : [
     { name: printerName, url: canonicalPath },
     { name: brandName, url: printer ? `/znacky/${printer.brand.slug}` : undefined },
