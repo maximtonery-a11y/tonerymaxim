@@ -9,6 +9,7 @@ import {
   findPrinterEntity,
   topOemLinks,
   topPrinterLinks,
+  productOemCodes,
 } from "../../../lib/seo-catalog";
 import { findPrinterGeoPilot, pilotFaq } from "../../../data/geo-pilot";
 import { geoPrinterPriority } from "../../../data/geo-priorities";
@@ -51,6 +52,17 @@ const relatedPrinterLinks = printer
       .slice(0, 12)
   : [];
 
+const oemCodes = [...new Set(allProducts.flatMap((product) => productOemCodes(product)))].slice(0, 6);
+const capacities = [...new Set(allProducts
+  .map((product: any) => String(product.capacity || product.kapacita || product.yield || product.page_yield || "").replace(/\s+/g, " ").trim())
+  .filter(Boolean))].slice(0, 5);
+const colors = [...new Set(allProducts
+  .map((product: any) => String(product.color || product.farba || "").replace(/\s+/g, " ").trim())
+  .filter(Boolean))].slice(0, 6);
+const oemSummary = oemCodes.length ? oemCodes.join(", ") : "";
+const capacitySummary = capacities.length ? capacities.join(", ") : "";
+const colorSummary = colors.length ? colors.join(", ") : "";
+
 const typeNames = [
   ...(stats.compatible ? ["kompatibilné"] : []),
   ...(stats.original ? ["originálne"] : []),
@@ -60,23 +72,7 @@ const typeNames = [
 const typeSummary = typeNames.length > 1
   ? `${typeNames.slice(0, -1).join(", ")} a ${typeNames.at(-1)}`
   : typeNames[0] || "dostupné";
-
-const uniqueValues = (values: unknown[], limit = 8) => [...new Set(values.map((value) => String(value || "").replace(/\s+/g, " ").trim()).filter(Boolean))].slice(0, limit);
-const naturalList = (values: string[]) => values.length <= 1 ? (values[0] || "") : values.length === 2 ? `${values[0]} a ${values[1]}` : `${values.slice(0, -1).join(", ")} a ${values.at(-1)}`;
-const oemCodes = uniqueValues(allProducts.flatMap(productOemCodes), 8);
-const capacities = uniqueValues(allProducts.map((product: any) => product.capacity || product.kapacita || product.yield || product.page_yield), 6);
-const colors = uniqueValues(allProducts.map((product: any) => product.color || product.farba), 6);
-const productText = allProducts.map((product: any) => `${product.name || ""} ${product.sku || ""}`).join(" ");
-const hasSeparateDrum = !integratedDrum && /\b(valec|drum|image drum|imaging unit|optick)/i.test(productText);
-const tonerCodes = oemCodes.filter((code) => !/^DR/i.test(code));
-const drumCodes = oemCodes.filter((code) => /^DR/i.test(code));
-const primaryCodes = tonerCodes.length ? tonerCodes : oemCodes;
-const codeSummary = primaryCodes.length ? naturalList(primaryCodes.slice(0, 5)) : "";
-const capacitySummary = capacities.length ? naturalList(capacities.slice(0, 3)) : "";
-const colorSummary = colors.length ? naturalList(colors.slice(0, 4)) : "";
-const modelDescription = codeSummary
-  ? `Tonery a náplne pre ${printerName}. OEM ${codeSummary}. ${typeSummary}. Aktuálne ceny, dostupnosť a kompatibilita.`
-  : `Tonery a náplne pre ${printerName}: ${typeSummary}. Aktuálne ceny, dostupnosť, farby a výťažnosť.`;
+const modelDescription = `Tonery pre ${printerName}${oemSummary ? ` – ${oemSummary}` : ""}. ${typeSummary.charAt(0).toUpperCase() + typeSummary.slice(1)} varianty, aktuálne ceny, dostupnosť${capacitySummary ? ` a výťažnosť ${capacitySummary}` : ""}.`;
 const blockedImageTokens = ["no-image", "image-coming-soon", `tm-product-${"place"}holder`, `tm-ink-${"place"}holder`];
 const imageCandidate = products
   .flatMap((product) => [product.image, ...(Array.isArray(product.images) ? product.images : [])])
@@ -93,15 +89,16 @@ if (imageCandidate) {
 }
 const geoAnswer = !notFound ? printerGeoAnswer(printerName, allProducts, geoPilot) : undefined;
 const quickAnswer = !notFound
-  ? (codeSummary
-      ? `${printerName} používa náplne s OEM označením ${codeSummary}.${capacitySummary ? ` Dostupná výťažnosť/kapacita: ${capacitySummary}.` : ""}${hasSeparateDrum && drumCodes.length ? ` Samostatný valec: ${naturalList(drumCodes)}.` : ""}`
-      : (geoAnswer?.answer || `Pre ${printerName} sú nižšie zobrazené všetky aktuálne priradené náplne.`))
+  ? [
+      `${printerName}${oemSummary ? ` používa náplne s označením ${oemSummary}` : ` má v katalógu ${allProducts.length} priradených náplní`}.`,
+      capacitySummary ? `Dostupná výťažnosť/kapacita: ${capacitySummary}.` : "",
+      colorSummary ? `Farby: ${colorSummary}.` : "",
+    ].filter(Boolean).join(" ")
   : "";
 
 const typeFacts = [
-  ...(oemCodes.length ? [`OEM: ${naturalList(oemCodes.slice(0, 4))}`] : []),
+  ...(oemSummary ? [`OEM: ${oemSummary}`] : []),
   ...(capacitySummary ? [`Kapacita: ${capacitySummary}`] : []),
-  ...(colorSummary ? [`Farba: ${colorSummary}`] : []),
   ...(stats.compatible ? [`Kompatibilné: ${stats.compatible}`] : []),
   ...(stats.original ? [`Originálne: ${stats.original}`] : []),
   ...(stats.renovated ? [`Renovované: ${stats.renovated}`] : []),
@@ -119,7 +116,7 @@ const typeFacts = [
   heading={notFound ? "Model tlačiarne sa nenašiel" : `Tonery pre ${printerName}`}
   intro={notFound
     ? "Skontrolujte označenie modelu alebo sa vráťte na výber tlačiarne."
-    : quickAnswer}
+    : `${oemSummary ? `Správne označenie náplne: ${oemSummary}. ` : ""}Vyberte si z aktuálne priradených produktov pre tento model.`}
   products={products}
   answer={quickAnswer}
   generatedAt={cache.generated_at}
@@ -131,27 +128,34 @@ const typeFacts = [
   entityFacts={notFound ? [] : typeFacts}
   relatedLinks={[]}
   faq={notFound ? [] : [
-    { question: geoAnswer?.question || `Ktorá náplň je vhodná pre ${printerName}?`, answer: geoAnswer?.answer || "" },
-    ...(oemCodes.length ? [{ question: `Aké OEM označenie používa ${printerName}?`, answer: `${printerName} má v aktuálnej ponuke priradené náplne s OEM označením ${naturalList(oemCodes)}. Pred objednaním porovnajte celý kód s pôvodnou kazetou.` }] : []),
-    ...(capacities.length ? [{ question: `Akú kapacitu majú náplne pre ${printerName}?`, answer: `Pri aktuálne priradených produktoch sú uvedené kapacity alebo výťažnosti ${naturalList(capacities)}. Presná hodnota závisí od konkrétneho variantu a je uvedená pri produkte.` }] : []),
-    ...(hasSeparateDrum && drumCodes.length ? [{ question: `Používa ${printerName} samostatný valec?`, answer: `V ponuke pre ${printerName} je samostatne vedený valec s označením ${naturalList(drumCodes)}. Toner a valec preto pri výbere rozlišujte podľa OEM kódu.` }] : []),
-    ...(stats.compatible > 0 ? [{ question: "Môžem použiť kompatibilný toner namiesto originálneho?", answer: "Áno, ak je konkrétny kompatibilný produkt určený pre tento model tlačiarne. Typ produktu je viditeľne označený pri každej položke." }] : []),
+    { question: `Aké tonery používa ${printerName}?`, answer: quickAnswer },
+    ...(oemSummary ? [{ question: `Aké OEM označenie mám hľadať pre ${printerName}?`, answer: `V aktuálne priradených produktoch pre ${printerName} sa používajú OEM označenia ${oemSummary}. Pred objednaním odporúčame porovnať kód s pôvodnou kazetou.` }] : []),
+    ...(stats.compatible > 0 ? [{ question: `Môžem do ${printerName} použiť kompatibilný toner?`, answer: `Áno. Na tejto stránke sú zobrazené kompatibilné produkty, ktoré majú ${printerName} uvedený medzi kompatibilnými tlačiarňami. Pred objednaním skontrolujte aj OEM označenie.` }] : []),
+    ...(capacities.length ? [{ question: `Akú výťažnosť majú náplne pre ${printerName}?`, answer: `V aktuálnom katalógu sú pri produktoch pre ${printerName} uvedené tieto kapacity alebo výťažnosti: ${capacitySummary}. Konkrétna hodnota je uvedená pri príslušnom produkte.` }] : []),
     ...(geoPilot ? pilotFaq(printerName, geoPilot) : []),
   ]}
   contentSections={notFound ? [] : [
     {
-      heading: `Výber tonera alebo náplne pre ${printerName}`,
-      paragraphs: [`${printerName} má v aktuálnom katalógu priradené ${allProducts.length} produkty${oemCodes.length ? ` s OEM označeniami ${naturalList(oemCodes)}` : ""}. Rozhodujúci je celý názov modelu a celý OEM kód, pretože podobne pomenované zariadenia ${brandName} nemusia používať rovnakú kazetu.`],
+      heading: `Aké náplne používa ${printerName}?`,
+      paragraphs: [quickAnswer, `Produkty na tejto stránke majú model ${printerName} uvedený medzi kompatibilnými tlačiarňami. Pri výbere je najistejšie porovnať celý model zariadenia a OEM kód pôvodnej kazety.`],
       bullets: [
-        ...(oemCodes.length ? [`OEM kódy v ponuke: ${naturalList(oemCodes)}.`] : []),
-        ...(capacities.length ? [`Kapacity/výťažnosti v ponuke: ${naturalList(capacities)}.`] : []),
-        ...(colors.length ? [`Farby v ponuke: ${naturalList(colors)}.`] : []),
-        ...(hasSeparateDrum && drumCodes.length ? [`Samostatný valec: ${naturalList(drumCodes)}.`] : []),
+        ...(oemSummary ? [`OEM označenia v aktuálnej ponuke: ${oemSummary}.`] : []),
+        ...(capacitySummary ? [`Kapacita alebo výťažnosť v ponuke: ${capacitySummary}.`] : []),
+        ...(colorSummary ? [`Dostupné farby podľa katalógu: ${colorSummary}.`] : []),
       ],
     },
     {
-      heading: "Ako čítať aktuálnu ponuku",
-      paragraphs: ["Každá produktová karta uvádza typ produktu, cenu s DPH a dostupnosť. Detail produktu dopĺňa výťažnosť, farbu a ďalšie kompatibilné tlačiarne, ak sú tieto údaje v katalógu dostupné."],
+      heading: `Kompatibilný alebo originálny toner pre ${printerName}?`,
+      paragraphs: [stats.compatible && stats.original
+        ? `Pre ${printerName} máme v katalógu kompatibilné aj originálne varianty. Kompatibilný toner je určený zákazníkom, ktorí uprednostňujú nižšie náklady na tlač; originálny toner je výrobok značky výrobcu tlačiarne. Pri každej položke vidíte aktuálnu cenu a dostupnosť.`
+        : stats.compatible
+          ? `Pre ${printerName} sú v aktuálnej ponuke kompatibilné náplne. Pri každej položke skontrolujte OEM označenie, kapacitu a dostupnosť.`
+          : `Pre ${printerName} vyberajte z aktuálne dostupných variantov uvedených vyššie. Pri každom produkte je uvedený typ, cena a dostupnosť.`],
+    },
+    {
+      heading: `Ako správne vybrať náplň pre ${printerName}`,
+      paragraphs: [`Najprv overte celý názov modelu ${printerName}. Potom porovnajte OEM označenie kazety${oemSummary ? ` – pri tomto modeli sú v našej aktuálnej ponuke kódy ${oemSummary}` : ""}. Ak existuje viac kapacít, vyberte variant podľa objemu tlače.`],
+      bullets: ["Skontrolujte presný model zo štítku tlačiarne.", "Porovnajte OEM kód pôvodnej kazety.", "Vyberte požadovaný typ, farbu a kapacitu."],
     },
   ]}
   linkGroups={notFound ? [] : [
@@ -176,5 +180,4 @@ const typeFacts = [
   notFound={notFound}
   productFirst={!notFound}
   productTypeFilters={!notFound}
-  compactHero={!notFound}
 />
