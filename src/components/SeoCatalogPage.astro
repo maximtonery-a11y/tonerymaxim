@@ -174,7 +174,7 @@ const jsonLd = [
       <Header />
 
       <main class="seo-catalog-page">
-        <section class:list={{ "seo-catalog-hero": true, "seo-printer-hero": productFirst }}>
+        <section class:list={{ "seo-catalog-hero": true, "seo-catalog-hero--product-first": productFirst }}>
           <div class="wrap">
             <nav class="seo-breadcrumbs" aria-label="Drobečková navigácia">
               {breadcrumbItems.map((item, index) => (
@@ -186,23 +186,23 @@ const jsonLd = [
                 </>
               ))}
             </nav>
-            {!productFirst && <p class="eyebrow">{eyebrow}</p>}
+            <p class="eyebrow">{eyebrow}</p>
             <h1>{heading}</h1>
             <p class="seo-catalog-lead">{intro}</p>
 
             {entityFacts.length > 0 && (
               <ul class="seo-fact-list" aria-label="Dôležité informácie">
                 {entityFacts.map((fact) => {
-                  const match = productTypeFilters ? fact.match(/^(Všetky|Kompatibilné|Originálne|Renovované):\s*(\d+)/) : null;
-                  const filter = match?.[1] === "Všetky" ? "all" : match?.[1] === "Kompatibilné" ? "compatible" : match?.[1] === "Originálne" ? "original" : match?.[1] === "Renovované" ? "renovated" : "";
-                  const selected = filter === "all" ? !Astro.url.searchParams.get("typ") : Boolean(filter && Astro.url.searchParams.get("typ") === filter);
-                  const filterHref = filter ? (filter === "all" ? `${canonicalPath}#produkty` : (selected ? `${canonicalPath}#produkty` : `${canonicalPath}?typ=${filter}#produkty`)) : "";
+                  const match = productTypeFilters ? fact.match(/^(Kompatibilné|Originálne|Renovované):\s*(\d+)/) : null;
+                  const filter = match?.[1] === "Kompatibilné" ? "compatible" : match?.[1] === "Originálne" ? "original" : match?.[1] === "Renovované" ? "renovated" : "";
+                  const selected = filter && Astro.url.searchParams.get("typ") === filter;
+                  const filterHref = filter ? (selected ? `${canonicalPath}#produkty` : `${canonicalPath}?typ=${filter}#produkty`) : "";
                   return <li class:list={{ [`seo-type-${filter}`]: Boolean(filter), "is-active": Boolean(selected) }}>{filter ? <a class="seo-type-filter" href={filterHref} aria-current={selected ? "true" : undefined}>{fact}</a> : fact}</li>;
                 })}
               </ul>
             )}
 
-            {!productFirst && relatedLinks.length > 0 && (
+            {relatedLinks.length > 0 && (
               <nav class="seo-related-links" aria-label="Súvisiace kategórie">
                 {relatedLinks.map((link) => <a href={link.href}>{link.label}</a>)}
               </nav>

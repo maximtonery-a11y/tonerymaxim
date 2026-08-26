@@ -533,27 +533,16 @@
   .seo-printer-details .seo-answer-section,.seo-printer-details .seo-expert-guide{display:block!important}
 }
 
-/* Printer model pages: compact answer-first header. Product list must start on the first viewport. */
-.seo-printer-hero{padding:1rem 0 .8rem;background:#fff}
-.seo-printer-hero .seo-breadcrumbs{margin-bottom:.55rem;font-size:.82rem}
-.seo-printer-hero h1{max-width:none;margin:0 0 .45rem;font-size:clamp(1.65rem,3vw,2.45rem);line-height:1.08;letter-spacing:-.035em}
-.seo-printer-hero .seo-catalog-lead{max-width:1050px;color:#40556d;font-size:1rem;line-height:1.48}
-.seo-printer-hero .seo-fact-list{gap:.45rem;margin-top:.7rem}
-.seo-printer-hero .seo-fact-list li{min-height:34px;padding:.35rem .68rem;font-size:.82rem}
-.seo-catalog-page:has(.seo-printer-hero) .seo-catalog-products{padding-top:1rem}
-.seo-catalog-page:has(.seo-printer-hero) .seo-section-heading{margin-bottom:.7rem}
-.seo-catalog-page:has(.seo-printer-hero) .seo-section-heading .eyebrow{display:none}
-.seo-catalog-page:has(.seo-printer-hero) .seo-section-heading h2{font-size:1.25rem}
-.seo-fact-list li.seo-type-all{border-color:#cbd5e1;background:#fff;color:#334155}
-.seo-fact-list li.seo-type-all::before{background:#64748b}
-@media(max-width:760px){
-  .seo-printer-hero{padding:.65rem 0 .55rem}
-  .seo-printer-hero .seo-breadcrumbs{margin-bottom:.4rem;font-size:.75rem}
-  .seo-printer-hero h1{margin-bottom:.35rem;font-size:clamp(1.35rem,6.5vw,1.8rem);line-height:1.12}
-  .seo-printer-hero .seo-catalog-lead{display:block!important;font-size:.9rem!important;line-height:1.38!important;-webkit-line-clamp:unset!important}
-  .seo-printer-hero .seo-fact-list{gap:.35rem;margin-top:.55rem;padding-bottom:0}
-  .seo-printer-hero .seo-fact-list li{min-height:31px;padding:.3rem .58rem;font-size:.76rem}
-  .seo-catalog-page:has(.seo-printer-hero) .seo-catalog-products{padding-top:.75rem}
-  .seo-catalog-page:has(.seo-printer-hero) .seo-section-heading{margin-bottom:.55rem}
-  .seo-catalog-page:has(.seo-printer-hero) .seo-section-heading h2{font-size:1.08rem}
-}
+/* Compact printer-first header: answer + filters + products without a second hero. */
+.seo-catalog-hero--product-first{padding:1rem 0 1.05rem}
+.seo-catalog-hero--product-first .seo-breadcrumbs{margin-bottom:.55rem;font-size:.82rem}
+.seo-catalog-hero--product-first .eyebrow{margin-bottom:.2rem;font-size:.72rem}
+.seo-catalog-hero--product-first h1{max-width:none;margin:.15rem 0 .45rem;font-size:clamp(1.75rem,3.1vw,2.65rem);line-height:1.08;letter-spacing:-.035em}
+.seo-catalog-hero--product-first .seo-catalog-lead{max-width:1100px;font-size:1rem;line-height:1.45;color:#40546d}
+.seo-catalog-hero--product-first .seo-fact-list{gap:.45rem;margin-top:.7rem}
+.seo-catalog-hero--product-first .seo-fact-list li{min-height:32px;padding:.3rem .65rem;font-size:.8rem}
+.seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-catalog-products{padding-top:1rem}
+.seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-section-heading{margin-bottom:.75rem}
+.seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-section-heading .eyebrow{display:none}
+.seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-section-heading h2{font-size:1.35rem}
+@media(max-width:760px){.seo-catalog-hero--product-first{padding:.7rem 0 .8rem}.seo-catalog-hero--product-first .seo-breadcrumbs{margin-bottom:.4rem;font-size:.76rem}.seo-catalog-hero--product-first .eyebrow{display:none}.seo-catalog-hero--product-first h1{margin:0 0 .35rem;font-size:clamp(1.45rem,7vw,2rem);line-height:1.12}.seo-catalog-hero--product-first .seo-catalog-lead{display:block;font-size:.9rem;line-height:1.38}.seo-catalog-hero--product-first .seo-fact-list{margin-top:.55rem;gap:.35rem}.seo-catalog-hero--product-first .seo-fact-list li{min-height:30px;padding:.28rem .58rem;font-size:.76rem}.seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-catalog-products{padding-top:.75rem}.seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-section-heading{margin-bottom:.55rem}.seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-section-heading h2{font-size:1.15rem}}
