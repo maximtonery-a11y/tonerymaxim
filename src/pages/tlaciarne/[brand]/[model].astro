@@ -40,8 +40,26 @@ function brandOemCodes(product: any, targetBrand: string): string[] {
 function isDrum(product: any): boolean {
   return /\b(valec|drum|image drum|imaging unit|optick|zobrazovac)/i.test(productSearchText(product));
 }
+function formatYieldValue(value: unknown): string {
+  let text = normText(value)
+    .replace(/\s*[x×]\s*/gi, " × ")
+    .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ");
+  if (!text) return "";
+  // Ak zdroj obsahuje iba číslo, doplníme jednotku. Ak ju už obsahuje, nemeníme ju.
+  if (/^\d[\d ]*$/.test(text)) text = `${text} strán`;
+  return text;
+}
 function productYields(products: any[]): string[] {
-  return uniqueText(products.flatMap((product) => [product.page_yield, product.capacity]).filter((value) => /\d/.test(String(value || ""))), 4);
+  return uniqueText(
+    products
+      .flatMap((product) => [product.page_yield, product.capacity])
+      .map(formatYieldValue)
+      .filter((value) => /\d/.test(value)),
+    6,
+  );
+}
+function isInkProduct(product: any): boolean {
+  return /\b(atrament|inkjet|ink|cartridge)\b/i.test(productSearchText(product));
 }
 
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
@@ -125,13 +143,25 @@ const relevantDrumProducts = drumOems.length
 const colors = uniqueText(relevantTonerProducts.map((product) => product.color).filter(Boolean), 5);
 const yields = productYields(relevantTonerProducts);
 const drumYields = productYields(relevantDrumProducts);
-const colorText = colors.length === 1 ? `${colors[0].toLowerCase()} toner` : colors.length > 1 ? `tonery vo farbách ${naturalList(colors.map((x) => x.toLowerCase()))}` : "toner alebo náplň";
 const oemText = naturalList(tonerOems);
-const yieldText = yields.length === 1 ? ` s výťažnosťou ${yields[0]}` : yields.length > 1 ? ` vo variantoch ${naturalList(yields)}` : "";
-const drumText = drumOems.length ? ` Samostatný zobrazovací valec ${brandName} ${naturalList(drumOems)}${drumYields.length === 1 ? ` má výťažnosť ${drumYields[0]}` : ""}.` : "";
+const inkBased = relevantTonerProducts.length > 0 && relevantTonerProducts.every(isInkProduct);
+const consumableName = inkBased ? "atramentové náplne" : "tonerové kazety";
+const colorSentence = colors.length === 1
+  ? ` Farba: ${colors[0].toLowerCase()}.`
+  : colors.length > 1
+    ? ` Farby: ${naturalList(colors.map((x) => x.toLowerCase()))}.`
+    : "";
+const yieldSentence = yields.length === 1
+  ? ` Deklarovaná výťažnosť je približne ${yields[0]}.`
+  : yields.length > 1
+    ? ` Deklarovaná výťažnosť podľa konkrétnej verzie: ${naturalList(yields)}.`
+    : "";
+const drumText = drumOems.length
+  ? ` Samostatný zobrazovací valec: ${brandName} ${naturalList(drumOems)}${drumYields.length === 1 ? `, s deklarovanou výťažnosťou približne ${drumYields[0]}` : drumYields.length > 1 ? `; dostupné výťažnosti: ${naturalList(drumYields)}` : ""}.`
+  : "";
 const quickAnswer = !notFound
   ? tonerOems.length
-    ? `${printerName} používa ${colorText} ${brandName} ${oemText}${yieldText}.${drumText}`
+    ? `${printerName} používa ${consumableName} ${brandName} ${oemText}.${colorSentence}${yieldSentence}${drumText}`
     : `${printerName}: vyberte náplň iba z produktov priradených k tomuto presnému modelu. OEM označenie overte v detaile produktu.`
   : "";
 
