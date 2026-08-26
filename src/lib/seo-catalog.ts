@@ -68,6 +68,20 @@ export const SEO_BRANDS: BrandDefinition[] = [
 
 const OEM_PATTERN = /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CRG|CF|CE|W|Q|TK|MLT|CLT|T)[\s-]*\d{2,6}(?:[\s-]*[A-Z]{1,3})?\b|\b(?:C13T|C13S)[A-Z0-9]{4,12}\b|\b\d{3}R\d{5}\b/gi;
 
+// Derived SEO indexes are expensive to rebuild for every SSR request.
+// Product cache objects are replaced when the catalogue is refreshed, so WeakMap
+// entries automatically follow the lifetime of the corresponding product arrays.
+// This keeps storefront output identical while avoiding repeated normalization,
+// filtering, sorting and entity-index construction under concurrent traffic.
+const productSearchTextCache = new WeakMap<TmProduct, string>();
+const landingProductsCache = new WeakMap<TmProduct[], Map<CatalogLandingKind, TmProduct[]>>();
+const printerEntitiesCache = new WeakMap<TmProduct[], PrinterEntity[]>();
+const oemEntitiesCache = new WeakMap<TmProduct[], OemEntity[]>();
+const catalogStatsCache = new WeakMap<TmProduct[], CatalogStats>();
+const topBrandLinksCache = new WeakMap<TmProduct[], Map<number, EntityLink[]>>();
+const topPrinterLinksCache = new WeakMap<TmProduct[], Map<number, EntityLink[]>>();
+const topOemLinksCache = new WeakMap<TmProduct[], Map<number, EntityLink[]>>();
+
 export function entitySlug(value: unknown): string {
   return normalize(value)
     .replace(/&/g, " a ")
@@ -76,13 +90,16 @@ export function entitySlug(value: unknown): string {
 }
 
 export function productSearchText(product: TmProduct): string {
+  const cached = productSearchTextCache.get(product);
+  if (cached !== undefined) return cached;
+
   const categories = Array.isArray(product.categories)
     ? product.categories.map((item: any) => `${item?.name || ""} ${item?.slug || ""}`).join(" ")
     : "";
   const attributes = Array.isArray(product.attributes_all)
     ? product.attributes_all.map((item: any) => `${item?.name || ""} ${item?.value || ""}`).join(" ")
     : "";
-  return normalize([
+  const text = normalize([
     product.name,
     product.sku,
     product.slug,
@@ -91,6 +108,8 @@ export function productSearchText(product: TmProduct): string {
     product.search_text,
     stripHtml(product.description || product.description_html || product.short_description_html || ""),
   ].join(" "));
+  productSearchTextCache.set(product, text);
+  return text;
 }
 
 export function validIndexableProduct(product: TmProduct): boolean {
@@ -117,6 +136,14 @@ export function isTonerProduct(product: TmProduct): boolean {
 }
 
 export function landingProducts(products: TmProduct[], kind: CatalogLandingKind): TmProduct[] {
+  let byKind = landingProductsCache.get(products);
+  if (!byKind) {
+    byKind = new Map<CatalogLandingKind, TmProduct[]>();
+    landingProductsCache.set(products, byKind);
+  }
+  const cached = byKind.get(kind);
+  if (cached) return cached;
+
   const filtered = products
     .filter(validIndexableProduct)
     .filter((product) => {
@@ -129,7 +156,9 @@ export function landingProducts(products: TmProduct[], kind: CatalogLandingKind)
       if (kind === "ink") return isInkProduct(product);
       return isTonerProduct(product);
     });
-  return sortProducts(filtered);
+  const result = sortProducts(filtered);
+  byKind.set(kind, result);
+  return result;
 }
 
 export function findBrand(slug: unknown): BrandDefinition | null {
@@ -158,6 +187,9 @@ export function printerBrandForName(name: unknown): BrandDefinition | null {
 }
 
 export function printerEntities(products: TmProduct[]): PrinterEntity[] {
+  const cached = printerEntitiesCache.get(products);
+  if (cached) return cached;
+
   const entities = new Map<string, PrinterEntity>();
 
   products.filter(validIndexableProduct).forEach((product) => {
@@ -180,9 +212,11 @@ export function printerEntities(products: TmProduct[]): PrinterEntity[] {
     });
   });
 
-  return [...entities.values()]
+  const result = [...entities.values()]
     .map((entity) => ({ ...entity, products: sortProducts(entity.products) }))
     .sort((left, right) => left.name.localeCompare(right.name, "sk"));
+  printerEntitiesCache.set(products, result);
+  return result;
 }
 
 export function findPrinterEntity(products: TmProduct[], brandSlug: unknown, modelSlug: unknown): PrinterEntity | null {
@@ -215,6 +249,9 @@ export function productOemCodes(product: TmProduct): string[] {
 }
 
 export function oemEntities(products: TmProduct[]): OemEntity[] {
+  const cached = oemEntitiesCache.get(products);
+  if (cached) return cached;
+
   const entities = new Map<string, OemEntity>();
 
   products.filter(validIndexableProduct).forEach((product) => {
@@ -230,9 +267,11 @@ export function oemEntities(products: TmProduct[]): OemEntity[] {
     });
   });
 
-  return [...entities.values()]
+  const result = [...entities.values()]
     .map((entity) => ({ ...entity, products: sortProducts(entity.products) }))
     .sort((left, right) => left.code.localeCompare(right.code, "sk"));
+  oemEntitiesCache.set(products, result);
+  return result;
 }
 
 export function findOemEntity(products: TmProduct[], code: unknown): OemEntity | null {
@@ -242,6 +281,9 @@ export function findOemEntity(products: TmProduct[], code: unknown): OemEntity |
 }
 
 export function catalogStats(products: TmProduct[]): CatalogStats {
+  const cached = catalogStatsCache.get(products);
+  if (cached) return cached;
+
   const valid = products.filter(validIndexableProduct);
   const prices = valid.map((product) => Number(product.price || 0)).filter((price) => price > 0);
   const colors = [...new Set(valid
@@ -253,7 +295,7 @@ export function catalogStats(products: TmProduct[]): CatalogStats {
   const original = valid.filter((product) => product.product_type_key === "original").length;
   const renovated = valid.filter((product) => product.product_type_key === "renovated").length;
 
-  return {
+  const result = {
     total: valid.length,
     inStock: valid.filter((product) => product.stock_status === "instock" && Number(product.stock_quantity ?? 1) > 0).length,
     compatible,
@@ -264,10 +306,16 @@ export function catalogStats(products: TmProduct[]): CatalogStats {
     maxPrice: prices.length ? Math.max(...prices) : 0,
     colors,
   };
+  catalogStatsCache.set(products, result);
+  return result;
 }
 
 export function topBrandLinks(products: TmProduct[], limit = 10): EntityLink[] {
-  return SEO_BRANDS
+  let byLimit = topBrandLinksCache.get(products);
+  if (!byLimit) { byLimit = new Map<number, EntityLink[]>(); topBrandLinksCache.set(products, byLimit); }
+  const cached = byLimit.get(limit);
+  if (cached) return cached;
+  const result = SEO_BRANDS
     .map((brand) => ({ brand, count: brandProducts(products, brand).length }))
     .filter((item) => item.count > 0)
     .sort((left, right) => right.count - left.count || left.brand.name.localeCompare(right.brand.name, "sk"))
@@ -278,10 +326,16 @@ export function topBrandLinks(products: TmProduct[], limit = 10): EntityLink[] {
       count,
       description: `Tonery a náplne pre tlačiarne ${brand.name}`,
     }));
+  byLimit.set(limit, result);
+  return result;
 }
 
 export function topPrinterLinks(products: TmProduct[], limit = 12): EntityLink[] {
-  return printerEntities(products)
+  let byLimit = topPrinterLinksCache.get(products);
+  if (!byLimit) { byLimit = new Map<number, EntityLink[]>(); topPrinterLinksCache.set(products, byLimit); }
+  const cached = byLimit.get(limit);
+  if (cached) return cached;
+  const result = [...printerEntities(products)]
     .sort((left, right) => right.products.length - left.products.length || left.name.localeCompare(right.name, "sk"))
     .slice(0, limit)
     .map((printer) => ({
@@ -290,10 +344,16 @@ export function topPrinterLinks(products: TmProduct[], limit = 12): EntityLink[]
       count: printer.products.length,
       description: `Kompatibilné produkty pre model ${printer.name}`,
     }));
+  byLimit.set(limit, result);
+  return result;
 }
 
 export function topOemLinks(products: TmProduct[], limit = 12): EntityLink[] {
-  return oemEntities(products)
+  let byLimit = topOemLinksCache.get(products);
+  if (!byLimit) { byLimit = new Map<number, EntityLink[]>(); topOemLinksCache.set(products, byLimit); }
+  const cached = byLimit.get(limit);
+  if (cached) return cached;
+  const result = [...oemEntities(products)]
     .sort((left, right) => right.products.length - left.products.length || left.code.localeCompare(right.code, "sk"))
     .slice(0, limit)
     .map((oem) => ({
@@ -302,6 +362,8 @@ export function topOemLinks(products: TmProduct[], limit = 12): EntityLink[] {
       count: oem.products.length,
       description: `Produkty s OEM označením ${oem.code}`,
     }));
+  byLimit.set(limit, result);
+  return result;
 }
 
 export function printerLinksFromNames(allProducts: TmProduct[], names: string[], limit = 16): EntityLink[] {
