@@ -2065,12 +2065,6 @@
 
     localStorage.setItem("tm_last_order_preview", JSON.stringify(orderPreview));
 
-    if (typeof window.tmTrackAnalytics === "function") {
-      window.tmTrackAnalytics("shipping_select", { meta: { label: orderPreview.shipping?.label || orderPreview.shipping?.method || "" } });
-      window.tmTrackAnalytics("payment_select", { meta: { label: orderPreview.payment || "" } });
-      window.tmTrackAnalytics("order_submit", { value: Number(orderPreview.total || 0) });
-    }
-
     const onlinePayments = ["gopay", "applepay", "googlepay"];
     const isOnlinePayment = onlinePayments.includes(orderPreview.payment);
 

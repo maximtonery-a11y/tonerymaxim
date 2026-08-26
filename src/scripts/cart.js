@@ -611,9 +611,6 @@ function formatMoney(value) {
     }
 
     saveCart(cart);
-    if (typeof window.tmTrackCartAdd === "function") {
-      window.tmTrackCartAdd(product, cleanQty(product.qty || 1));
-    }
   }
 
   let addCartDrawerTimer = null;
