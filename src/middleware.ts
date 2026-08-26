@@ -19,7 +19,6 @@ const RATE_RULES: Array<{ match: RegExp; methods: string[]; limit: number; windo
   { match: /^\/api\/(order-create|gopay-create)$/, methods: ['POST'], limit: 30, windowMs: 60_000 },
   { match: /^\/api\/gopay-status$/, methods: ['GET'], limit: 180, windowMs: 60_000 },
   { match: /^\/api\/(smart-search|products|product|printers)$/, methods: ['GET'], limit: 600, windowMs: 60_000 },
-  { match: /^\/api\/analytics$/, methods: ['POST'], limit: 300, windowMs: 60_000 },
   { match: /^\/api\/ai-/, methods: ['POST'], limit: 30, windowMs: 600_000 },
 ];
 
@@ -75,7 +74,14 @@ function apiError(message: string, status: number, extra: Record<string, string>
   });
 }
 
-function finish(response: Response, url: URL): Response {
+function publicCacheable(request: Request, url: URL, response: Response): boolean {
+  if (request.method.toUpperCase() !== 'GET') return false;
+  if (privatePath(url.pathname) || url.pathname.startsWith('/api/')) return false;
+  if (response.status !== 200 || response.headers.has('set-cookie')) return false;
+  return true;
+}
+
+function finish(response: Response, url: URL, request?: Request): Response {
   const headers = new Headers(response.headers);
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'SAMEORIGIN');
@@ -83,6 +89,12 @@ function finish(response: Response, url: URL): Response {
   if (privatePath(url.pathname)) headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
   else if (NOINDEX_HOSTS.has(url.hostname.toLowerCase())) headers.set('X-Robots-Tag', 'noindex, follow');
   if (url.pathname.startsWith('/api/') || privatePath(url.pathname)) headers.set('Cache-Control', 'no-store');
+  else if (request && publicCacheable(request, url, response)) {
+    // Verejny SSR storefront moze kratko cachovat reverzna proxy/CDN.
+    // Znizuje to pocet Node renderov pri spickach a crawleroch, bez cachovania
+    // kosika, pokladne, uctu, adminu alebo odpovedi so Set-Cookie.
+    headers.set('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=60');
+  }
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
@@ -93,7 +105,13 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
     || url.pathname === '/api/health'
     || url.pathname === '/api/readiness'
     || url.pathname === '/api/storefront-check') {
-    return finish(await next(), url);
+    return finish(await next(), url, request);
+  }
+
+  // Stary interny analytics endpoint je po oddeleni systemu tvrdo vypnuty.
+  // Aj stare otvorene taby/browser cache tak uz nemozu zapisovat analytics na disk.
+  if (url.pathname === '/api/analytics') {
+    return apiError('Analytics je v produkcnom e-shope vypnuta.', 410);
   }
 
   if (TEST_ROUTES.has(url.pathname) && !['localhost', '127.0.0.1', '::1'].includes(url.hostname)) {
@@ -104,5 +122,5 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
   if (!originAllowed(request, url)) return apiError('Neplatny povod poziadavky.', 403);
   const rate = rateAllowed(request, url);
   if (!rate.ok) return apiError('Prilis vela poziadaviek.', 429, { 'Retry-After': String(rate.retryAfter) });
-  return finish(await next(), url);
+  return finish(await next(), url, request);
 });
