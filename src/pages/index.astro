@@ -199,23 +199,26 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
 
         <HeroSearch />
 
-        <section class="geo-direct-answer" aria-labelledby="geo-direct-answer-title">
-          <div class="wrap geo-direct-answer-inner">
-            <p class="geo-direct-kicker">Rýchla odpoveď</p>
-            <h2 id="geo-direct-answer-title">Ako vybrať správny toner alebo náplň?</h2>
-            <p><strong>Najistejšie je vyhľadať celý OEM kód kazety alebo presný model tlačiarne.</strong> Potom skontrolujte, či sa zhoduje farba, kapacita a typ produktu – kompatibilný, originálny alebo renovovaný. Podobné číslo kazety samo osebe kompatibilitu nepotvrdzuje.</p>
-            <p>Pri porovnávaní výťažnosti berte počet strán ako štandardizovaný údaj, nie ako zaručený počet výtlačkov. Norma <a href="https://www.iso.org/standard/88924.html" target="_blank" rel="noopener noreferrer">ISO/IEC 19752:2025</a> definuje metódu merania výťažnosti čiernobielych tonerových kaziet; reálna spotreba závisí od obsahu tlače a spôsobu používania.</p>
-            <nav aria-label="Odborné informácie">
-              <a href="/poradna">Odborná poradňa</a>
-              <a href="/faq">Najčastejšie otázky</a>
-              <a href="/autor/roman-babcan">Odborný garant</a>
-            </nav>
-          </div>
-        </section>
-
         <ProductFinder />
         <AccountBenefits />
         <Benefits />
+
+        <section class="geo-guide" aria-label="Odborné informácie o výbere náplne">
+          <div class="wrap">
+            <details class="geo-guide-details">
+              <summary>Ako vybrať správny toner alebo náplň?</summary>
+              <div class="geo-guide-content">
+                <p><strong>Najistejšie je vyhľadať celý OEM kód kazety alebo presný model tlačiarne.</strong> Potom skontrolujte, či sa zhoduje farba, kapacita a typ produktu – kompatibilný, originálny alebo renovovaný. Podobné číslo kazety samo osebe kompatibilitu nepotvrdzuje.</p>
+                <p>Pri porovnávaní výťažnosti berte počet strán ako štandardizovaný údaj, nie ako zaručený počet výtlačkov. Norma <a href="https://www.iso.org/standard/88924.html" target="_blank" rel="noopener noreferrer">ISO/IEC 19752:2025</a> definuje metódu merania výťažnosti čiernobielych tonerových kaziet; reálna spotreba závisí od obsahu tlače a spôsobu používania.</p>
+                <nav aria-label="Súvisiace odborné informácie">
+                  <a href="/poradna">Odborná poradňa</a>
+                  <a href="/faq">Najčastejšie otázky</a>
+                  <a href="/autor/roman-babcan">Odborný garant</a>
+                </nav>
+              </div>
+            </details>
+          </div>
+        </section>
       </main>
 
       <Footer showTrust={false} />
@@ -246,7 +249,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
       });
     </script>
     <style>
-      .geo-direct-answer{padding:18px 0 8px}.geo-direct-answer-inner{max-width:1180px}.geo-direct-answer-inner{border:1px solid #e4e8ef;border-radius:16px;padding:22px 24px;background:#fff}.geo-direct-kicker{margin:0 0 4px;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#54606f}.geo-direct-answer h2{margin:0 0 9px;font-size:1.35rem}.geo-direct-answer p{max-width:1000px;margin:7px 0;line-height:1.6;color:#303844}.geo-direct-answer nav{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}.geo-direct-answer nav a{font-weight:700}.geo-direct-answer a{text-underline-offset:3px}@media(max-width:760px){.geo-direct-answer{padding:12px 14px 4px}.geo-direct-answer-inner{padding:17px 16px;border-radius:13px}.geo-direct-answer h2{font-size:1.13rem}.geo-direct-answer p{font-size:.92rem}.geo-direct-answer nav{gap:10px 14px}}
+      .geo-guide{padding:8px 0 24px}.geo-guide-details{max-width:1180px;margin:0 auto;border-top:1px solid #e4e8ef;border-bottom:1px solid #e4e8ef}.geo-guide-details summary{padding:15px 4px;cursor:pointer;font-weight:800;color:#18304f;list-style-position:inside}.geo-guide-content{padding:0 4px 17px}.geo-guide-content p{max-width:1000px;margin:7px 0;line-height:1.6;color:#475569}.geo-guide-content nav{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}.geo-guide-content nav a{font-weight:700;text-underline-offset:3px}@media(max-width:760px){.geo-guide{display:none!important}}
     </style>
   </body>
 </html>
