@@ -1,0 +1,25 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
+import { breadcrumbJsonLd, websiteJsonLd } from "../lib/seo";
+const origin="https://www.tonerymaxim.sk", canonical=`${origin}/opticke-valce`;
+const faq=[
+  {q:"Je optický valec to isté ako toner?",a:"Nie. Toner obsahuje tlačový prášok, zatiaľ čo optický valec vytvára obraz, ktorý sa prenesie na papier. Pri niektorých kazetách je valec súčasťou tonera, pri iných sa mení samostatne."},
+  {q:"Kedy treba optický valec vymeniť?",a:"Najmä keď tlačiareň výmenu oznámi alebo sa opakovane objavujú pásy, bodky či slabý obraz a príčinou nie je toner. Rozhodujúci je presný model tlačiarne a označenie valca."},
+  {q:"Stačí podobné označenie valca?",a:"Nie. Overte celý OEM kód a presný model tlačiarne. Podobné číslo alebo rovnaká značka kompatibilitu nepotvrdzuje."},
+];
+const jsonLd=[websiteJsonLd(origin),breadcrumbJsonLd(origin,[{name:"Domov",path:"/"},{name:"Optické valce",path:"/opticke-valce"}]),{"@context":"https://schema.org","@type":"FAQPage",mainEntity:faq.map(x=>({"@type":"Question",name:x.q,acceptedAnswer:{"@type":"Answer",text:x.a}}))}];
+---
+<!doctype html><html lang="sk"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><SeoHead title="Optické valce do tlačiarní | ToneryMaxim.sk" description="Optické valce pre laserové tlačiarne. Zistite rozdiel medzi tonerom a valcom a vyberte správny diel podľa OEM kódu alebo modelu tlačiarne." canonical={canonical} jsonLd={jsonLd}/></head><body><div class="page"><Header/><main><InfoPageShell active="/opticke-valce" eyebrow="Spotrebný materiál pre laserové tlačiarne" title="Optické valce do tlačiarní" intro="Optický valec nie je toner. Vyberá sa podľa presného modelu tlačiarne alebo celého OEM označenia.">
+<section class="knowledge-answer"><h2>Čo je optický valec?</h2><p><strong>Optický valec vytvára obraz, ktorý toner prenesie na papier.</strong> V niektorých tlačiarňach je zabudovaný priamo v tonerovej kazete, v iných je samostatným spotrebným dielom s vlastnou životnosťou. Preto ho nemožno zamieňať s tonerom iba podľa vzhľadu alebo značky.</p><a class="primary-pill" href="/produkty?category=opticke-valce&search=optick%C3%A9%20valce">Zobraziť optické valce</a></section>
+<section class="knowledge-grid"><article><h2>Ako vybrať správny valec</h2><ol><li>Zistite celý model tlačiarne.</li><li>Skontrolujte OEM označenie pôvodného valca.</li><li>Overte, či tlačiareň používa samostatný valec.</li><li>Porovnajte životnosť a dostupnosť produktu.</li></ol></article><article><h2>Kedy preveriť výmenu</h2><ul><li>tlačiareň hlási výmenu valca,</li><li>na rovnakom mieste sa opakujú pásy alebo bodky,</li><li>obraz je slabý aj po kontrole tonera,</li><li>valec dosiahol deklarovanú životnosť.</li></ul><p>Chyba tlače nemusí vždy znamenať poškodený valec. Pred objednávkou najskôr overte toner, papier a nastavenie tlače.</p></article></section>
+<section class="knowledge-faq"><h2>Najčastejšie otázky</h2>{faq.map(x=><details><summary>{x.q}</summary><p>{x.a}</p></details>)}</section>
+<p class="knowledge-review">Odborne skontroloval <a href="/autor/roman-babcan">Roman Babčan</a> · aktualizované 27. 8. 2026 · <a href="/ako-overujeme-kompatibilitu">Ako overujeme kompatibilitu</a></p>
+</InfoPageShell></main><Footer showTrust={false}/><FloatingAdvisor/></div></body></html>
+<style>.knowledge-answer,.knowledge-grid article,.knowledge-faq{border:1px solid #dbe8f6;border-radius:20px;background:#fff;padding:25px;margin-bottom:16px}.knowledge-answer h2,.knowledge-grid h2,.knowledge-faq h2{margin:0 0 10px;color:#061735}.knowledge-answer p,.knowledge-grid p,.knowledge-grid li,.knowledge-faq p{color:#40536d;line-height:1.65}.knowledge-answer .primary-pill{display:inline-flex;margin-top:10px}.knowledge-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.knowledge-grid ol,.knowledge-grid ul{padding-left:22px}.knowledge-faq details{border-top:1px solid #e7eef7;padding:13px 0}.knowledge-faq summary{font-weight:850;cursor:pointer}.knowledge-review{color:#64748b;font-size:13px}.knowledge-review a{font-weight:800}@media(max-width:760px){.knowledge-grid{grid-template-columns:1fr}.knowledge-answer,.knowledge-grid article,.knowledge-faq{padding:20px}}</style>
