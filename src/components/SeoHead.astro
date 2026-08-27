@@ -35,7 +35,9 @@ const robots = noindex
   ? 'noindex,follow,max-image-preview:large'
   : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
 const isDefaultImage = image === defaultImage;
-const jsonItems = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const ORGANIZATION_ID = `${PRODUCTION_ORIGIN}/#organization`;
+const jsonItems = (jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [])
+  .filter((item) => item?.['@id'] !== ORGANIZATION_ID);
 const entityJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'OnlineStore',
@@ -47,6 +49,7 @@ const entityJsonLd = {
   image: `${PRODUCTION_ORIGIN}/images/tonerymaxim-social-preview.jpg`,
   email: 'info@tonerymaxim.sk',
   telephone: '+421917859206',
+  sameAs: ['https://obchody.heureka.sk/tonerymaxim-sk/recenze/'],
   taxID: 'SK1020059920',
   identifier: {
     '@type': 'PropertyValue',
@@ -65,6 +68,13 @@ const entityJsonLd = {
     name: 'Slovensko',
   },
   currenciesAccepted: 'EUR',
+  contactPoint: [{
+    '@type': 'ContactPoint',
+    telephone: '+421917859206',
+    email: 'info@tonerymaxim.sk',
+    contactType: 'customer service',
+    availableLanguage: ['sk', 'cs'],
+  }],
   knowsAbout: [
     'tonery do tlačiarní',
     'atramentové náplne',

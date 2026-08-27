@@ -137,6 +137,10 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
 
   <TrustBar />
 </header>
+{includeGoogleTag && (
+  <script is:inline src="/tm-google-tags.js" data-google-tag-id={googleTagId}></script>
+)}
+{includeGoogleTag && <script is:inline src="/tm-ecommerce.js"></script>}
 <script is:inline>
   (() => {
     const RETRY_PARAM = '__tm_assets_retry';

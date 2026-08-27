@@ -44,7 +44,7 @@
     });
   }
 
-  load();
   window.addEventListener('tm:cookies', function (event) { update(event.detail); });
   try { update(JSON.parse(localStorage.getItem('tm_cookie_consent_v10') || 'null')); } catch (_) {}
+  load();
 })();
