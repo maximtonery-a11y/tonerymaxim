@@ -93,7 +93,7 @@ function finish(response: Response, url: URL, request?: Request): Response {
     // Verejny SSR storefront moze kratko cachovat reverzna proxy/CDN.
     // Znizuje to pocet Node renderov pri spickach a crawleroch, bez cachovania
     // kosika, pokladne, uctu, adminu alebo odpovedi so Set-Cookie.
-    headers.set('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=60');
+    headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=3600');
   }
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }

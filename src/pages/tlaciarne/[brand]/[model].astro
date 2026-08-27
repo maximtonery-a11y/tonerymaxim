@@ -194,7 +194,13 @@ function numericYield(product: any): number | null {
 }
 function bestCostPerPage(products: any[]) {
   return products
-    .filter((product) => !isInkProduct(product) && !isDrum(product))
+    .filter((product) => {
+      const text = productSearchText(product);
+      const unavailable = String(product?.stock_status || "").toLowerCase() === "outofstock"
+        || (product?.stock_quantity != null && Number(product.stock_quantity) <= 0);
+      const specialVariant = /\b(?:no[ -]?chip|hatona)\b|bez\s+c(?:ip|ipu)|s\s+oem\s+c(?:ip|ipom)|oem\s+chip/i.test(text);
+      return !isInkProduct(product) && !isDrum(product) && !unavailable && !specialVariant;
+    })
     .map((product) => {
       const pages = numericYield(product);
       const price = Number(product?.price || 0);
