@@ -15,6 +15,9 @@ import { EXPERT_EXPERIENCE, EXPERT_NAME, EXPERT_PATH, expertPersonJsonLd } from 
 type Link = { href: string; label: string };
 type Faq = { question: string; answer: string };
 type ContentSection = { heading: string; paragraphs: string[]; bullets?: string[] };
+type CommerceBenefit = { icon: string; title: string; detail: string; dispatch?: boolean; compatibleOnly?: boolean };
+type TypeComparison = { key: "compatible" | "original" | "renovated"; title: string; description: string; benefit: string; suitable: string };
+type RecommendationCard = { title: string; text: string; href?: string };
 type LinkGroup = { heading: string; intro?: string; links: EntityLink[] };
 type Pagination = { page: number; totalPages: number; pageSize: number; basePath: string };
 type ExpertGuide = {
@@ -49,6 +52,9 @@ interface Props {
   pagination?: Pagination;
   productFirst?: boolean;
   productTypeFilters?: boolean;
+  commerceBenefits?: CommerceBenefit[];
+  typeComparison?: TypeComparison[];
+  recommendationCard?: RecommendationCard;
 }
 
 const {
@@ -74,6 +80,9 @@ const {
   pagination,
   productFirst = false,
   productTypeFilters = false,
+  commerceBenefits = [],
+  typeComparison = [],
+  recommendationCard,
 } = Astro.props;
 
 const SEO_ORIGIN = "https://www.tonerymaxim.sk";
@@ -189,6 +198,20 @@ const jsonLd = [
             <p class="eyebrow">{eyebrow}</p>
             <h1>{heading}</h1>
             <p class="seo-catalog-lead">{intro}</p>
+
+            {productFirst && commerceBenefits.length > 0 && (
+              <ul class="seo-commerce-benefits" aria-label="Výhody nákupu">
+                {commerceBenefits.map((benefit) => (
+                  <li class:list={{ "seo-benefit-compatible": benefit.compatibleOnly }}>
+                    <span class="seo-benefit-icon" aria-hidden="true">{benefit.icon}</span>
+                    <span>
+                      <strong data-tm-dispatch-title={benefit.dispatch ? "" : undefined}>{benefit.title}</strong>
+                      <small data-tm-dispatch-detail={benefit.dispatch ? "" : undefined}>{benefit.detail}</small>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             {entityFacts.length > 0 && (
               <ul class="seo-fact-list" aria-label="Dôležité informácie">
@@ -351,6 +374,43 @@ const jsonLd = [
           </section>
         )}
 
+        {productFirst && typeComparison.length > 0 && (
+          <section class="seo-printer-type-section" aria-labelledby="seo-type-comparison-title">
+            <div class="wrap">
+              <h2 id="seo-type-comparison-title">Aký typ náplne si vybrať?</h2>
+              <p class="seo-printer-section-intro">Rozdiel je najmä vo výrobcovi, cene a spôsobe výroby. Vždy vyberajte produkt určený pre presný model vašej tlačiarne.</p>
+              <div class="seo-type-comparison">
+                {typeComparison.map((item) => (
+                  <article class={`seo-type-card seo-type-card--${item.key}`}>
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                    <dl>
+                      <div><dt>Hlavná výhoda</dt><dd>{item.benefit}</dd></div>
+                      <div><dt>Vhodné pre</dt><dd>{item.suitable}</dd></div>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {productFirst && recommendationCard && (
+          <section class="seo-recommendation-section" aria-labelledby="seo-recommendation-title">
+            <div class="wrap">
+              <article class="seo-recommendation-card">
+                <span aria-hidden="true">★</span>
+                <div>
+                  <p class="eyebrow">Odporúčame</p>
+                  <h2 id="seo-recommendation-title">{recommendationCard.title}</h2>
+                  <p>{recommendationCard.text}</p>
+                </div>
+                {recommendationCard.href && <a href={recommendationCard.href}>Zobraziť odporúčaný toner</a>}
+              </article>
+            </div>
+          </section>
+        )}
+
         {!productFirst && contentSections.length > 0 && (
           <section class="seo-content-section">
             <div class="wrap seo-content-grid">
@@ -428,6 +488,12 @@ const jsonLd = [
 
       window.tmInitSmartSearch?.();
       document.addEventListener("DOMContentLoaded", () => window.tmInitSmartSearch?.());
+
+      import("../scripts/dispatch-message.js").then(({ getDispatchParts }) => {
+        const parts = getDispatchParts();
+        document.querySelectorAll("[data-tm-dispatch-title]").forEach((element) => { element.textContent = parts.title; });
+        document.querySelectorAll("[data-tm-dispatch-detail]").forEach((element) => { element.textContent = parts.detail; });
+      }).catch(() => {});
     </script>
   </body>
 </html>

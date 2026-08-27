@@ -546,3 +546,38 @@
 .seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-section-heading .eyebrow{display:none}
 .seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-section-heading h2{font-size:1.35rem}
 @media(max-width:760px){.seo-catalog-hero--product-first{padding:.7rem 0 .8rem}.seo-catalog-hero--product-first .seo-breadcrumbs{margin-bottom:.4rem;font-size:.76rem}.seo-catalog-hero--product-first .eyebrow{display:none}.seo-catalog-hero--product-first h1{margin:0 0 .35rem;font-size:clamp(1.45rem,7vw,2rem);line-height:1.12}.seo-catalog-hero--product-first .seo-catalog-lead{display:block;font-size:.9rem;line-height:1.38}.seo-catalog-hero--product-first .seo-fact-list{margin-top:.55rem;gap:.35rem}.seo-catalog-hero--product-first .seo-fact-list li{min-height:30px;padding:.28rem .58rem;font-size:.76rem}.seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-catalog-products{padding-top:.75rem}.seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-section-heading{margin-bottom:.55rem}.seo-catalog-page:has(.seo-catalog-hero--product-first) .seo-section-heading h2{font-size:1.15rem}}
+
+/* Printer pages: compact purchase benefits above products. */
+.seo-commerce-benefits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.55rem;margin:.8rem 0 0;padding:0;list-style:none}
+.seo-commerce-benefits li{display:flex;align-items:center;gap:.65rem;min-width:0;padding:.65rem .75rem;border:1px solid #dbe6f2;border-radius:13px;background:rgba(255,255,255,.92);box-shadow:0 5px 16px rgba(11,35,69,.045)}
+.seo-benefit-icon{display:grid;flex:0 0 32px;width:32px;height:32px;place-items:center;border-radius:10px;background:#eaf2ff;color:#0758d8;font-size:.95rem;font-weight:950}
+.seo-benefit-compatible .seo-benefit-icon{background:#e8fbf0;color:#087a3e}
+.seo-commerce-benefits strong,.seo-commerce-benefits small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seo-commerce-benefits strong{color:#0b2345;font-size:.81rem;line-height:1.2}
+.seo-commerce-benefits small{margin-top:.12rem;color:#64748b;font-size:.72rem;line-height:1.2}
+
+/* Printer pages: decision support below products. */
+.seo-printer-type-section{padding:1.75rem 0;border-top:1px solid #dfe8f3;background:#fff}
+.seo-printer-type-section h2{margin:0;font-size:clamp(1.35rem,2.2vw,1.8rem)}
+.seo-printer-section-intro{max-width:850px;margin:.45rem 0 1rem;color:#52627a;line-height:1.55}
+.seo-type-comparison{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.85rem}
+.seo-type-card{padding:1rem;border:1px solid #dbe6f2;border-top:4px solid #94a3b8;border-radius:15px;background:#f8fbff}
+.seo-type-card--compatible{border-top-color:#19a857;background:#f5fff9}
+.seo-type-card--original{border-top-color:#1677e8;background:#f5f9ff}
+.seo-type-card--renovated{border-top-color:#ff7a18;background:#fff9f3}
+.seo-type-card h3{margin:0 0 .45rem;font-size:1.05rem}
+.seo-type-card p{margin:0 0 .75rem;color:#52627a;font-size:.9rem;line-height:1.5}
+.seo-type-card dl,.seo-type-card dl div{margin:0}
+.seo-type-card dl div+div{margin-top:.55rem;padding-top:.55rem;border-top:1px solid rgba(148,163,184,.25)}
+.seo-type-card dt{color:#64748b;font-size:.72rem;font-weight:850;text-transform:uppercase;letter-spacing:.035em}
+.seo-type-card dd{margin:.15rem 0 0;color:#183553;font-size:.86rem;line-height:1.4}
+.seo-recommendation-section{padding:1rem 0 1.75rem;background:#fff}
+.seo-recommendation-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:1rem;padding:1.15rem 1.25rem;border:1px solid #bfe5cf;border-radius:17px;background:linear-gradient(135deg,#f3fff8,#fff);box-shadow:0 8px 24px rgba(25,168,87,.08)}
+.seo-recommendation-card>span{display:grid;width:42px;height:42px;place-items:center;border-radius:13px;background:#19a857;color:#fff;font-size:1.2rem}
+.seo-recommendation-card .eyebrow{margin:0 0 .15rem;color:#087a3e}
+.seo-recommendation-card h2{margin:0;font-size:1.2rem}
+.seo-recommendation-card p:last-child{margin:.3rem 0 0;color:#40546d;line-height:1.5}
+.seo-recommendation-card a{padding:.7rem .9rem;border-radius:10px;background:#0aa354;color:#fff;font-size:.85rem;font-weight:850;text-decoration:none;white-space:nowrap}
+
+@media(max-width:980px){.seo-commerce-benefits{grid-template-columns:repeat(2,minmax(0,1fr))}.seo-type-comparison{grid-template-columns:1fr}}
+@media(max-width:760px){.seo-commerce-benefits{gap:.4rem;margin-top:.65rem}.seo-commerce-benefits li{gap:.45rem;padding:.5rem;border-radius:11px}.seo-benefit-icon{flex-basis:27px;width:27px;height:27px;border-radius:8px;font-size:.78rem}.seo-commerce-benefits strong{font-size:.73rem}.seo-commerce-benefits small{font-size:.66rem}.seo-recommendation-card{grid-template-columns:auto 1fr;padding:1rem}.seo-recommendation-card a{grid-column:1/-1;text-align:center}.seo-printer-type-section{padding:1.35rem 0}}

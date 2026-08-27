@@ -380,6 +380,32 @@ test("printer type filters only expose types that exist", () => {
   assert.match(route, /stats\.renovated \? \[`Renovované:/);
 });
 
+test("printer descriptions contain compact benefits and complete buying guidance", () => {
+  const component = read("src/components/SeoCatalogPage.astro");
+  const route = read("src/pages/tlaciarne/[brand]/[model].astro");
+  const styles = read("src/styles/seo-catalog.css");
+  assert.match(component, /seo-commerce-benefits/);
+  assert.match(component, /seo-type-comparison/);
+  assert.match(component, /seo-recommendation-card/);
+  assert.match(route, /commerceBenefits=\{commerceBenefits\}/);
+  assert.match(route, /typeComparison=\{typeComparison\}/);
+  assert.match(route, /recommendationCard=\{recommendationCard\}/);
+  assert.match(route, /faq=\{printerFaq\}/);
+  assert.match(route, /2–3 ks −10 % · 4\+ ks −25 %/);
+  assert.match(route, /!inkBased && compatibleBest/);
+  assert.match(styles, /\.seo-commerce-benefits/);
+  assert.match(styles, /\.seo-type-comparison/);
+  assert.match(styles, /\.seo-recommendation-card/);
+});
+
+test("ink printer descriptions never calculate or recommend cost per page", () => {
+  const route = read("src/pages/tlaciarne/[brand]/[model].astro");
+  assert.match(route, /const recommendationCard = !inkBased && compatibleBest/);
+  assert.match(route, /const compatibleBest = inkBased \? null/);
+  assert.match(route, /if \(isInkProduct\(product\)\) return null/);
+  assert.match(route, /mainKind === "ink" \? "Výhodnejšia obstarávacia cena/);
+});
+
 test("AI fallback cannot wait ten seconds", () => {
   const ai = read("src/lib/openai-sales-assistant.ts");
   assert.match(ai, /OPENAI_TIMEOUT_MS", 1_200, 600, 1_500/);

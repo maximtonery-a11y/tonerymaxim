@@ -60,7 +60,8 @@ function productYields(products: any[]): string[] {
   );
 }
 function isInkProduct(product: any): boolean {
-  return /\b(atrament|inkjet|ink|cartridge)\b/i.test(productSearchText(product));
+  const text = productSearchText(product);
+  return /\b(atrament|inkjet|ink)\b/i.test(text) || (/\bcartridge\b/i.test(text) && !/\btoner\b/i.test(text));
 }
 function isTonerProduct(product: any): boolean {
   return /\btoner(?:ov|y|a|u|om|mi)?\b/i.test(productSearchText(product)) && !isDrum(product);
@@ -149,7 +150,7 @@ if (imageCandidate) {
   }
 }
 const geoAnswer = !notFound ? printerGeoAnswer(printerName, allProducts, geoPilot) : undefined;
-const tonerProducts = allProducts.filter((product) => !isDrum(product));
+const tonerProducts = allProducts.filter((product) => !isDrum(product) && (isInkProduct(product) || isTonerProduct(product)));
 const drumProducts = allProducts.filter(isDrum);
 const originalTonerProducts = tonerProducts.filter((product) => product.product_type_key === "original");
 const originalDrumProducts = drumProducts.filter((product) => product.product_type_key === "original");
@@ -260,8 +261,6 @@ const quickParts = tonerOems.length
       `${printerName} používa ${consumableName} ${brandName} ${oemText}.`,
       colorSentence,
       drumSentence,
-      capacityAdvice,
-      recommendation,
     ].filter(Boolean)
   : [];
 const quickAnswer = !notFound
@@ -377,6 +376,22 @@ function multipackFacts(sourceProducts: any[], noun: string): string[] {
     ? `V ponuke sú aj viacbalenia ${noun}; rozpoznáte ich podľa označení ${brandName} ${naturalList(codes)}. Pri viacbalení porovnávajte obsah celého balenia, nie cenu jednej samostatnej náplne.`
     : `V ponuke sú aj viacbalenia ${noun}. Pri porovnaní sledujte obsah celého balenia, nie cenu jednej samostatnej náplne.`];
 }
+function capacityFactsFor(sourceProducts: any[]): string[] {
+  const byCode = new Map<string, Set<string>>();
+  for (const product of sourceProducts.filter((item) => !isMultipack(item))) {
+    const values = productYields([product]);
+    if (!values.length) continue;
+    for (const code of brandOemCodes(product, brandName)) {
+      const set = byCode.get(code) || new Set<string>();
+      values.forEach((value) => set.add(value));
+      byCode.set(code, set);
+    }
+  }
+  return [...byCode.entries()].slice(0, 12).map(([code, values]) => {
+    const capacities = naturalList([...values]);
+    return `${brandName} ${code}: deklarovaná kapacita alebo výťažnosť ${capacities}.`;
+  });
+}
 function exactRelatedPrinterLinks() {
   if (!printer) return [];
   const source = mainKind === "ink" ? inkProducts : mainKind === "toner" ? laserTonerProducts : allProducts;
@@ -399,6 +414,18 @@ function exactRelatedPrinterLinks() {
 
 const lowerContentSections: Array<{ heading: string; paragraphs: string[]; bullets?: string[] }> = [];
 if (!notFound && mainKind === "toner") {
+  const capacityFacts = capacityFactsFor(laserTonerProducts);
+  lowerContentSections.push({
+    heading: `Tonery a spotrebný materiál pre ${printerName}`,
+    paragraphs: [
+      tonerOems.length
+        ? `${printerName} používa ${consumableName} ${brandName} ${oemText}. ${colorSentence}`.trim()
+        : `Pre ${printerName} vyberajte toner podľa presného označenia uvedeného pri produkte.`,
+      ...(capacityAdvice ? [capacityAdvice] : []),
+      ...(drumSentence ? [drumSentence] : []),
+    ],
+    bullets: capacityFacts,
+  });
   const aliases = aliasFacts(laserTonerProducts);
   if (aliases.length) lowerContentSections.push({ heading: "Označenia, pod ktorými toner nájdete", paragraphs: aliases });
   const colorMap = colorOemParagraphs(laserTonerProducts);
@@ -416,6 +443,17 @@ if (!notFound && mainKind === "toner") {
   if (packs.length) lowerContentSections.push({ heading: "Viacbalenia tonerov", paragraphs: packs });
 }
 if (!notFound && mainKind === "ink") {
+  const capacityFacts = capacityFactsFor(inkProducts);
+  lowerContentSections.push({
+    heading: `Atramentové náplne pre ${printerName}`,
+    paragraphs: [
+      tonerOems.length
+        ? `${printerName} používa ${consumableName} ${brandName} ${oemText}. ${colorSentence}`.trim()
+        : `Pre ${printerName} vyberajte atramentovú náplň podľa presného označenia a farby uvedenej pri produkte.`,
+      "Kapacitu uvádzame presne v jednotke dostupnej pri konkrétnom produkte, najčastejšie v mililitroch alebo v deklarovanom počte strán.",
+    ],
+    bullets: capacityFacts,
+  });
   const aliases = aliasFacts(inkProducts);
   if (aliases.length) lowerContentSections.push({ heading: "Označenia atramentových náplní", paragraphs: aliases });
   const colorMap = colorOemParagraphs(inkProducts);
@@ -440,8 +478,51 @@ if (!notFound && mainKind === "other") {
   if (extra.length || codes.length) lowerContentSections.push({
     heading: `Spotrebný materiál pre ${printerName}`,
     paragraphs: extra.length ? extra : [`Pre tento model je v katalógu priradený spotrebný materiál ${brandName} ${naturalList(codes)}. Pri výbere sa riaďte presným označením uvedeným pri produkte.`],
+    bullets: capacityFactsFor(allProducts),
   });
 }
+
+if (!notFound) lowerContentSections.push({
+  heading: "Výhody nákupu na ToneryMaxim.sk",
+  paragraphs: ["Pri výbere aj objednávke zobrazujeme aktuálne údaje priradené ku konkrétnemu produktu."],
+  bullets: [
+    "Overená kompatibilita s presným modelom tlačiarne.",
+    ...(stats.compatible ? ["Na kompatibilné náplne získate zľavu 10 % pri nákupe 2–3 kusov a 25 % pri nákupe 4 a viac kusov."] : []),
+    "Doprava zdarma pri hodnote objednávky od 29 €.",
+    "Skladový tovar objednaný v pracovný deň do 15:00 spravidla expedujeme v ten istý deň; po 15:00, cez víkend alebo sviatok najbližší pracovný deň.",
+    "Pri každom produkte uvádzame aktuálnu cenu, skladovú dostupnosť a dostupné technické parametre.",
+  ],
+});
+
+const typeComparison = [
+  ...(stats.compatible ? [{ key: "compatible" as const, title: "Kompatibilná náplň", description: "Nová náplň od iného výrobcu než je výrobca tlačiarne, určená pre rovnaký model.", benefit: mainKind === "ink" ? "Výhodnejšia obstarávacia cena než pri originálnej náplni." : "Najvýhodnejšia cena a pri spoľahlivej výťažnosti často najnižšia cena za stranu.", suitable: "Bežnú aj pravidelnú tlač s dôrazom na úsporu." }] : []),
+  ...(stats.original ? [{ key: "original" as const, title: "Originálna náplň", description: `Náplň vyrobená priamo výrobcom tlačiarne ${brandName}.`, benefit: "Originálne prevedenie a parametre výrobcu tlačiarne.", suitable: "Zákazníkov, ktorí uprednostňujú originálny OEM produkt." }] : []),
+  ...(stats.renovated ? [{ key: "renovated" as const, title: "Renovovaná náplň", description: "Odborne obnovená kazeta využívajúca pôvodné telo už použitej kazety.", benefit: "Opätovné využitie kazety a menšie množstvo odpadu.", suitable: "Zákazníkov, ktorí preferujú renovované riešenie." }] : []),
+];
+
+const commerceBenefits = [
+  ...(stats.compatible ? [{ icon: "%", title: "Na kompatibilné náplne", detail: "2–3 ks −10 % · 4+ ks −25 %", compatibleOnly: true }] : []),
+  { icon: "🚚", title: "Expedujeme", detail: "najbližší pracovný deň", dispatch: true },
+  { icon: "📦", title: "Doprava zdarma", detail: "pri nákupe od 29 €" },
+  { icon: "✓", title: "Overená kompatibilita", detail: `pre ${printerName}` },
+];
+
+const recommendationCard = !inkBased && compatibleBest ? {
+  title: "Najvýhodnejšia voľba podľa ceny za stranu",
+  text: `Kompatibilný ${brandName} ${productPrimaryOem(compatibleBest.product) || "toner"} má deklarovanú výťažnosť približne ${compatibleBest.pages.toLocaleString("sk-SK")} strán a pri aktuálnej cene vychádza približne na ${compatibleBest.cpp.toFixed(4).replace(".", ",")} € za stranu.`,
+  href: compatibleBest.product?.detail_url || compatibleBest.product?.url || (compatibleBest.product?.slug ? `/produkt/${encodeURIComponent(String(compatibleBest.product.slug))}` : undefined),
+} : undefined;
+
+const printerFaq = !notFound ? [
+  {
+    question: mainKind === "ink" ? `Aké atramentové náplne používa ${printerName}?` : mainKind === "toner" ? `Aký toner používa ${printerName}?` : `Aký spotrebný materiál používa ${printerName}?`,
+    answer: tonerOems.length ? `${printerName} používa ${consumableName} ${brandName} ${oemText}.` : `Správne produkty sú uvedené v ponuke pre presný model ${printerName}.`,
+  },
+  ...(capacityAdvice ? [{ question: "Aký je rozdiel medzi štandardnou a vysokou kapacitou?", answer: `${capacityAdvice} Vyššia kapacita je vhodná najmä pri pravidelnej tlači.` }] : []),
+  ...(drumOems.length ? [{ question: `Je ${brandName} ${naturalList(drumOems)} toner?`, answer: `Nie. ${brandName} ${naturalList(drumOems)} je optický valec a pri tomto modeli ide o samostatný spotrebný materiál, nie tonerovú kazetu.` }] : []),
+  ...(stats.compatible ? [{ question: "Na ktoré produkty platí množstevná zľava?", answer: "Zľava platí na kompatibilné náplne: 10 % pri nákupe 2–3 kusov a 25 % pri nákupe 4 a viac kusov. Na originálne a renovované produkty sa táto množstevná zľava nevzťahuje." }] : []),
+  { question: "Kedy objednávku odošlete?", answer: "Skladový tovar objednaný v pracovný deň do 15:00 spravidla expedujeme v ten istý deň. Po 15:00, cez víkend alebo sviatok ho spravidla expedujeme najbližší pracovný deň." },
+] : [];
 const exactPrinterLinks = exactRelatedPrinterLinks();
 const lowerLinkGroups = exactPrinterLinks.length ? [{
   heading: mainKind === "ink" ? "Ďalšie tlačiarne s rovnakou sadou atramentových náplní" : mainKind === "toner" ? "Ďalšie tlačiarne s rovnakou sadou tonerov" : "Ďalšie tlačiarne s rovnakým spotrebným materiálom",
@@ -479,7 +560,7 @@ const typeFacts = [
   ]}
   entityFacts={notFound ? [] : typeFacts}
   relatedLinks={[]}
-  faq={[]}
+  faq={printerFaq}
   contentSections={lowerContentSections}
   linkGroups={lowerLinkGroups}
   schemaEntities={notFound ? [] : [
@@ -491,4 +572,7 @@ const typeFacts = [
   notFound={notFound}
   productFirst={!notFound}
   productTypeFilters={!notFound}
+  commerceBenefits={commerceBenefits}
+  typeComparison={typeComparison}
+  recommendationCard={recommendationCard}
 />
