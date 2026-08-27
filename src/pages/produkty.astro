@@ -35,13 +35,16 @@ const title = query ? `${query} – tonery a náplne | ToneryMaxim.sk` : `Tonery
 const description = query ? `Výsledky pre ${query}. Porovnajte kompatibilné, originálne a renovované tonery a náplne.` : `Vyhľadajte toner alebo náplň podľa označenia, značky či modelu tlačiarne. Kompatibilné, originálne a renovované produkty na jednom mieste${initialPage > 1 ? ` – strana ${initialPage}` : ""}.`;
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname) || hasFilters;
 const canonicalPath = !hasFilters && initialPage > 1 ? `/produkty?page=${initialPage}` : "/produkty";
-// Ak zákazník hľadá presný model tlačiarne, pošleme ho na plnohodnotnú
+// Ak zákazník hľadá alebo vyberie presný model tlačiarne, pošleme ho na plnohodnotnú
 // stránku modelu. Tá obsahuje produkty aj odborný popis; obyčajný výsledok
 // /produkty?s=... by popis tlačiarne nemal kde zobraziť.
-if (query && !requestedCategory && !clean("brand") && !clean("type") && !clean("color") && !clean("stock") && !clean("printer")) {
+const printerSelection = clean("printer");
+const redirectCandidate = printerSelection || query;
+const mayRedirectPrinter = Boolean(printerSelection) || Boolean(query && !requestedCategory && !clean("brand") && !clean("type") && !clean("color") && !clean("stock"));
+if (redirectCandidate && mayRedirectPrinter) {
   try {
     const cache = await getProductsCache();
-    const wanted = normalize(query).replace(/[^a-z0-9]+/g, "");
+    const wanted = normalize(redirectCandidate).replace(/[^a-z0-9]+/g, "");
     const entities = printerEntities(cache.products);
     let exactPrinter = entities.find((entity) =>
       normalize(entity.name).replace(/[^a-z0-9]+/g, "") === wanted
@@ -49,7 +52,7 @@ if (query && !requestedCategory && !clean("brand") && !clean("type") && !clean("
     // Znesie aj marketingový názov navyše (napr. „Canon i-SENSYS MF655Cdw“ vs. „Canon MF655Cdw“),
     // ale presmeruje iba pri jednej jednoznačnej zhode.
     if (!exactPrinter) {
-      const tokens = normalize(query).split(/[^a-z0-9]+/).filter((token) => token.length >= 2);
+      const tokens = normalize(redirectCandidate).split(/[^a-z0-9]+/).filter((token) => token.length >= 2);
       if (tokens.some((token) => /\d/.test(token))) {
         const candidates = entities.filter((entity) => {
           const name = normalize(entity.name);
@@ -59,7 +62,9 @@ if (query && !requestedCategory && !clean("brand") && !clean("type") && !clean("
       }
     }
     if (exactPrinter) {
-      return Astro.redirect(`/tlaciarne/${exactPrinter.brand.slug}/${exactPrinter.slug}`, 302);
+      const type = clean("type");
+      const typeSuffix = ["compatible", "original", "renovated"].includes(type) ? `?typ=${type}#produkty` : "";
+      return Astro.redirect(`/tlaciarne/${exactPrinter.brand.slug}/${exactPrinter.slug}${typeSuffix}`, 302);
     }
   } catch {
     // Pri dočasnom probléme cache ponecháme pôvodné produktové vyhľadávanie.

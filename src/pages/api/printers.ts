@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { compactKey, getProductsCache, jsonResponse, normalize } from "../../lib/tm-products-cache.ts";
 import { productPrinterValues } from "../../lib/catalog-query.ts";
 import { consumablePrinterFamilyKey } from "../../lib/printer-model-family.ts";
+import { entitySlug } from "../../lib/seo-catalog.ts";
 
 export const prerender = false;
 
@@ -66,6 +67,15 @@ function printerBrand(printer: string) {
   return BRANDS.find((brand) => text.includes(normalize(brand))) || "";
 }
 
+function printerPageUrl(title: string, detectedBrand = "") {
+  const brand = detectedBrand || printerBrand(title);
+  const slug = brandSlug(brand);
+  const model = entitySlug(title);
+  return slug && model && /\d/.test(title)
+    ? `/tlaciarne/${slug}/${model}`
+    : `/produkty?printer=${encodeURIComponent(title)}`;
+}
+
 export function buildPrinterIndex(products: any[], selectedBrand = "") {
   const map = new Map<string, PrinterItem>();
   for (const product of products) {
@@ -95,7 +105,7 @@ export function buildPrinterIndex(products: any[], selectedBrand = "") {
         // Napr. Phaser 3020 má prednosť pred 3020B a 3020BI.
         if (compactKey(printer.title).length < compactKey(existing.title).length) {
           existing.title = printer.title;
-          existing.url = `/produkty?printer=${encodeURIComponent(printer.title)}`;
+          existing.url = printerPageUrl(printer.title, printer.brand);
         }
         continue;
       }
@@ -103,7 +113,7 @@ export function buildPrinterIndex(products: any[], selectedBrand = "") {
         title: printer.title,
         brand: printer.brand,
         product_count: 1,
-        url: `/produkty?printer=${encodeURIComponent(printer.title)}`,
+        url: printerPageUrl(printer.title, printer.brand),
       });
     }
   }

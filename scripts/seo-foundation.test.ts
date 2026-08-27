@@ -406,6 +406,26 @@ test("ink printer descriptions never calculate or recommend cost per page", () =
   assert.match(route, /mainKind === "ink" \? "Výhodnejšia obstarávacia cena/);
 });
 
+test("all printer entry points lead to the canonical printer page", () => {
+  const printerApi = read("src/pages/api/printers.ts");
+  const finder = read("src/scripts/printer-finder.js");
+  const catalog = read("src/scripts/catalog.js");
+  const accountApi = read("src/pages/api/account/saved-printers.ts");
+  const accountUi = read("src/scripts/account-ui.js");
+  const smartApi = read("src/pages/api/smart-search.ts");
+  const smartUi = read("src/scripts/smart-search.js");
+  const products = read("src/pages/produkty.astro");
+
+  for (const source of [printerApi, finder, catalog, accountApi, accountUi, smartApi]) {
+    assert.match(source, /\/tlaciarne\//, "vstupná cesta nemá kanonický odkaz na tlačiareň");
+  }
+  assert.match(products, /const printerSelection = clean\("printer"\)/);
+  assert.match(products, /Astro\.redirect\(`\/tlaciarne\//);
+  assert.match(smartUi, /window\.location\.href = `\/produkty\?s=/);
+  assert.doesNotMatch(finder, /return `\/produkty\?printer=/);
+  assert.doesNotMatch(catalog, /return `\/produkty\?printer=/);
+});
+
 test("AI fallback cannot wait ten seconds", () => {
   const ai = read("src/lib/openai-sales-assistant.ts");
   assert.match(ai, /OPENAI_TIMEOUT_MS", 1_200, 600, 1_500/);

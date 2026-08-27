@@ -123,8 +123,12 @@
     return "produktov";
   }
 
-  function printerUrl(title) {
-    return `/produkty?printer=${encodeURIComponent(title)}`;
+  function printerUrl(title, brand) {
+    const brandSlug = normalize(brand).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    const modelSlug = normalize(title).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return brandSlug && modelSlug && /\d/.test(title)
+      ? `/tlaciarne/${brandSlug}/${modelSlug}`
+      : `/produkty?printer=${encodeURIComponent(title)}`;
   }
 
   const printerImages = {
@@ -311,7 +315,7 @@
         const title = isMobileRoot ? mobilePrinterTitle(printer.title, brand) : printer.title;
         const hasImageClass = image ? " has-printer-image" : "";
         return `
-          <a href="${printerUrl(printer.title)}" class="printer-popular-card${hasImageClass}">
+          <a href="${escapeHtml(printer.url || printerUrl(printer.title, brand))}" class="printer-popular-card${hasImageClass}">
             ${image ? `
               <span class="printer-popular-image" aria-hidden="true">
                 <img src="${image}" alt="" loading="lazy" decoding="async">
@@ -357,7 +361,8 @@
       const target = selectedPrinter || input.value.trim();
       if (!target) return;
       event.preventDefault();
-      window.location.href = printerUrl(target);
+      const match = printers.find((printer) => compactKey(printer.title) === compactKey(target));
+      window.location.href = match?.url || printerUrl(target, brand);
     });
 
     suggestions?.addEventListener("click", (event) => {
@@ -365,7 +370,8 @@
       if (!button) return;
       const target = button.dataset.printerChoice || "";
       if (!target) return;
-      window.location.href = printerUrl(target);
+      const match = printers.find((printer) => compactKey(printer.title) === compactKey(target));
+      window.location.href = match?.url || printerUrl(target, brand);
     });
 
     clearButton?.addEventListener("click", () => {
@@ -380,7 +386,8 @@
     submitButton?.addEventListener("click", () => {
       const target = selectedPrinter || input?.value?.trim();
       if (!target) return;
-      window.location.href = printerUrl(target);
+      const match = printers.find((printer) => compactKey(printer.title) === compactKey(target));
+      window.location.href = match?.url || printerUrl(target, brand);
     });
 
     root.querySelector("[data-open-brand-list]")?.addEventListener("click", () => {

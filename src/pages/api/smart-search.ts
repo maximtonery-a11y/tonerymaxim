@@ -622,8 +622,11 @@ function makeProductGroups(items: any[], query: string, exactPrinterQuery = fals
     const count = items.filter((item) => item.type === type).length;
     if (!count) return null;
     const label = TYPE_LABEL[type] || "Ostatné";
-    const queryParameter = exactPrinterQuery ? "printer" : "s";
-    return { title: `${label} (${count})`, subtitle: `${count} produkt${count === 1 ? "" : count < 5 ? "y" : "ov"} · zobraziť`, url: `/produkty?${queryParameter}=${encodeURIComponent(query)}&type=${encodeURIComponent(type)}`, type, count };
+    const printerBrand = exactPrinterQuery ? printerBrandForName(query) : null;
+    const url = printerBrand
+      ? `/tlaciarne/${printerBrand.slug}/${entitySlug(query)}?typ=${encodeURIComponent(type)}#produkty`
+      : `/produkty?s=${encodeURIComponent(query)}&type=${encodeURIComponent(type)}`;
+    return { title: `${label} (${count})`, subtitle: `${count} produkt${count === 1 ? "" : count < 5 ? "y" : "ov"} · zobraziť`, url, type, count };
   }).filter(Boolean);
 }
 

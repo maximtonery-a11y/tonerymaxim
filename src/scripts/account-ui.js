@@ -33,6 +33,20 @@
       .replace(/[\u0300-\u036f]/g, '');
   }
 
+  function entitySlug(value) {
+    return normalize(value)
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function printerPageUrl(title, brand = '') {
+    const brandSlug = entitySlug(brand || printerBrandFromTitle(title));
+    const modelSlug = entitySlug(title);
+    return brandSlug && modelSlug
+      ? `/tlaciarne/${brandSlug}/${modelSlug}`
+      : `/produkty?printer=${encodeURIComponent(title)}`;
+  }
+
   function productUrl(product) {
     if (product?.detail_url) return product.detail_url;
     if (product?.slug) return `/produkt/${product.slug}`;
@@ -316,7 +330,7 @@
         title,
         brand: item.brand || printerBrandFromTitle(title),
         product_count: Number(item.product_count || item.productCount || 0),
-        url: item.url || `/produkty?printer=${encodeURIComponent(title)}`,
+        url: item.url || printerPageUrl(title, item.brand),
       });
     }
     return [...map.values()];
@@ -393,7 +407,7 @@
 
     const brand = printer.brand || printerBrandFromTitle(title);
     const count = Number(printer.product_count || 0);
-    const url = printer.url || `/produkty?printer=${encodeURIComponent(title)}`;
+    const url = printer.url || printerPageUrl(title, brand);
 
     const article = document.createElement('article');
     article.className = 'saved-printer-mini';

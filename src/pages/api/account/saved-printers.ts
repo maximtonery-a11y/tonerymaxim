@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { compactKey, getProductsCache, normalize } from "../../../lib/tm-products-cache";
 import { readCustomerSession } from "../../../lib/auth-session";
+import { entitySlug, printerBrandForName } from "../../../lib/seo-catalog";
 import {
   getSavedPrintersFromCustomer,
   getWooCustomerById,
@@ -59,11 +60,14 @@ async function findPrinter(query: string): Promise<SavedPrinter | null> {
       if (current) {
         current.product_count = Number(current.product_count || 0) + 1;
       } else {
+        const brand = printerBrandForName(title);
         map.set(key, {
           title,
           brand: printerBrand(title),
           product_count: 1,
-          url: `/produkty?printer=${encodeURIComponent(title)}`,
+          url: brand
+            ? `/tlaciarne/${brand.slug}/${entitySlug(title)}`
+            : `/produkty?printer=${encodeURIComponent(title)}`,
         });
       }
     }

@@ -13,7 +13,6 @@
   const DEBOUNCE_MS = 90;
 
   const memory = new Map();
-  const catalogInflight = new Map();
   let warmupStarted = false;
 
   function normalize(value) {
@@ -285,42 +284,13 @@
     start();
   }
 
-  function prefetchCatalog(query) {
-    const key = cacheKey(query);
-    if (catalogInflight.has(key)) return catalogInflight.get(key);
-
-    const promise = fetch(`/api/products?search=${encodeURIComponent(query)}&per_page=12&page=1`, {
-      headers: { Accept: "application/json" },
-      priority: "low",
-    })
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok || !data?.ok) throw new Error(data?.error || "Katalóg sa nepodarilo pripraviť.");
-        return data;
-      })
-      .catch((error) => {
-        catalogInflight.delete(key);
-        throw error;
-      });
-
-    catalogInflight.set(key, promise);
-    return promise;
-  }
-
   function goToSearch(input) {
     const query = input.value.trim();
     if (!query) return;
 
-    if (window.location.pathname === "/produkty") {
-      window.dispatchEvent(new CustomEvent("tm:catalog-search", {
-        detail: { query, catalogPromise: prefetchCatalog(query) },
-      }));
-      return;
-    }
-
-    // Mimo katalógu pošli iba jeden request: samotnú navigáciu. Prednačítanie
-    // API aj HTML tu kedysi bežalo súčasne s navigáciou a na slabšom serveri
-    // mohlo krátkodobo preťažiť Astro proces, čo proxy zobrazila ako 502.
+    // Formulár vždy prejde cez serverovú routu. Presný model tlačiarne sa tam
+    // presmeruje na kanonickú stránku /tlaciarne/značka/model s popisom.
+    // Obyčajný produktový dotaz zostane na /produkty.
     window.location.href = `/produkty?s=${encodeURIComponent(query)}`;
   }
 

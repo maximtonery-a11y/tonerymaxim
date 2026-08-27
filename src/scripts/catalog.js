@@ -544,8 +544,22 @@ import { getDispatchParts } from "./dispatch-message.js";
   }
 
   function printerProductsUrl(printer) {
+    const clean = String(printer || "").replace(/\s+/g, " ").trim();
+    const normalized = clean.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+    const brands = [
+      ["konica minolta", "konica-minolta"], ["hewlett packard", "hp"], ["brother", "brother"],
+      ["samsung", "samsung"], ["lexmark", "lexmark"], ["panasonic", "panasonic"], ["toshiba", "toshiba"],
+      ["philips", "philips"], ["pantum", "pantum"], ["kyocera", "kyocera"], ["xerox", "xerox"],
+      ["canon", "canon"], ["epson", "epson"], ["ricoh", "ricoh"], ["sharp", "sharp"],
+      ["utax", "utax"], ["dell", "dell"], ["oki", "oki"], ["ibm", "ibm"], ["hp", "hp"],
+    ];
+    const brand = brands.find(([name]) => normalized === name || normalized.startsWith(`${name} `));
+    if (brand && /\d/.test(clean)) {
+      const slug = clean.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      return `/tlaciarne/${brand[1]}/${slug}`;
+    }
     const url = new URL("/produkty", window.location.origin);
-    url.searchParams.set("printer", printer);
+    url.searchParams.set("printer", clean);
     return `${url.pathname}?${url.searchParams.toString()}`;
   }
 
@@ -1076,10 +1090,9 @@ import { getDispatchParts } from "./dispatch-message.js";
 
     document.querySelector("[data-catalog-form]")?.addEventListener("submit", (event) => {
       event.preventDefault();
-      currentPage = 1;
-      currentSearch = document.querySelector("[data-catalog-search]").value.trim();
-      currentPrinter = "";
-      loadProducts();
+      const query = document.querySelector("[data-catalog-search]").value.trim();
+      if (!query) return;
+      window.location.href = `/produkty?s=${encodeURIComponent(query)}`;
     });
 
     document.querySelector("[data-active-filters]")?.addEventListener("click", (event) => {
