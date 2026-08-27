@@ -15,7 +15,7 @@ import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
 import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 import SeoHead from "../components/SeoHead.astro";
-import { organizationJsonLd } from "../lib/seo";
+import { organizationJsonLd, websiteJsonLd } from "../lib/seo";
 
 const SEO_ORIGIN = 'https://www.tonerymaxim.sk';
 const title = "Tonery a náplne do tlačiarní | ToneryMaxim.sk";
@@ -28,7 +28,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <SeoHead title={title} description={description} noindex={noindex} jsonLd={[organizationJsonLd(SEO_ORIGIN), { "@context": "https://schema.org", "@type": "WebSite", "@id": `${SEO_ORIGIN}/#website`, url: SEO_ORIGIN, name: "ToneryMaxim.sk", potentialAction: { "@type": "SearchAction", target: `${SEO_ORIGIN}/produkty?s={search_term_string}`, "query-input": "required name=search_term_string" } }]} />
+    <SeoHead title={title} description={description} noindex={noindex} jsonLd={[organizationJsonLd(SEO_ORIGIN), websiteJsonLd(SEO_ORIGIN)]} />
   </head>
 
   <body class="home-page">
@@ -198,6 +198,21 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
         </section>
 
         <HeroSearch />
+
+        <section class="geo-direct-answer" aria-labelledby="geo-direct-answer-title">
+          <div class="wrap geo-direct-answer-inner">
+            <p class="geo-direct-kicker">Rýchla odpoveď</p>
+            <h2 id="geo-direct-answer-title">Ako vybrať správny toner alebo náplň?</h2>
+            <p><strong>Najistejšie je vyhľadať celý OEM kód kazety alebo presný model tlačiarne.</strong> Potom skontrolujte, či sa zhoduje farba, kapacita a typ produktu – kompatibilný, originálny alebo renovovaný. Podobné číslo kazety samo osebe kompatibilitu nepotvrdzuje.</p>
+            <p>Pri porovnávaní výťažnosti berte počet strán ako štandardizovaný údaj, nie ako zaručený počet výtlačkov. Norma <a href="https://www.iso.org/standard/88924.html" target="_blank" rel="noopener noreferrer">ISO/IEC 19752:2025</a> definuje metódu merania výťažnosti čiernobielych tonerových kaziet; reálna spotreba závisí od obsahu tlače a spôsobu používania.</p>
+            <nav aria-label="Odborné informácie">
+              <a href="/poradna">Odborná poradňa</a>
+              <a href="/faq">Najčastejšie otázky</a>
+              <a href="/autor/roman-babcan">Odborný garant</a>
+            </nav>
+          </div>
+        </section>
+
         <ProductFinder />
         <AccountBenefits />
         <Benefits />
@@ -230,5 +245,8 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
         if (event.key === 'Escape') setMenu(false);
       });
     </script>
+    <style>
+      .geo-direct-answer{padding:18px 0 8px}.geo-direct-answer-inner{max-width:1180px}.geo-direct-answer-inner{border:1px solid #e4e8ef;border-radius:16px;padding:22px 24px;background:#fff}.geo-direct-kicker{margin:0 0 4px;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#54606f}.geo-direct-answer h2{margin:0 0 9px;font-size:1.35rem}.geo-direct-answer p{max-width:1000px;margin:7px 0;line-height:1.6;color:#303844}.geo-direct-answer nav{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}.geo-direct-answer nav a{font-weight:700}.geo-direct-answer a{text-underline-offset:3px}@media(max-width:760px){.geo-direct-answer{padding:12px 14px 4px}.geo-direct-answer-inner{padding:17px 16px;border-radius:13px}.geo-direct-answer h2{font-size:1.13rem}.geo-direct-answer p{font-size:.92rem}.geo-direct-answer nav{gap:10px 14px}}
+    </style>
   </body>
 </html>

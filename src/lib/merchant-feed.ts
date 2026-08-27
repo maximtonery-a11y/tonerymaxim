@@ -4,6 +4,8 @@ import { getProductsCache, type TmProduct } from "./tm-products-cache.ts";
 
 const PRODUCTION_ORIGIN = "https://www.tonerymaxim.sk";
 const GOOGLE_PRODUCT_CATEGORY = "356";
+const GOOGLE_PRODUCT_CATEGORY_DRUMS = "5259";
+const GOOGLE_PRODUCT_CATEGORY_CONSUMABLES = "5258";
 const PLACEHOLDER_IMAGE = /placeholder|no-image|image-coming-soon|tm-product-placeholder|tm-ink-placeholder/i;
 
 export type MerchantFeedConfig = {
@@ -122,6 +124,49 @@ function productTypeName(productType: MerchantProductType, materialType: Merchan
   return `ToneryMaxim > ${type} > ${material}`;
 }
 
+
+function cleanFeedText(value: unknown, max = 150): string {
+  return String(value || "").replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function printerBrandFromMerchantProduct(product: { name: string; oemCodes: string[] }): string {
+  const primary = product.oemCodes[0] || "";
+  if (!primary) return "";
+  const name = cleanFeedText(product.name, 150);
+  const index = name.toUpperCase().indexOf(primary.toUpperCase());
+  if (index < 0) return "";
+  return cleanFeedText(name.slice(0, index)
+    .replace(/^(?:kompatibiln(?:ý|y|á|a|é|e)|renovovan(?:ý|y|á|a|é|e)|origináln(?:y|ý|a|á|e|é))\s+/i, "")
+    .replace(/^(?:toner|atramentová náplň|atramentova napln|optický valec|opticky valec|spotrebný materiál)\s+pre\s+/i, "")
+    .replace(/\bpre\s*$/i, "").trim(), 50);
+}
+
+function optimizedMerchantTitle(product: { name: string; productType: MerchantProductType; materialType: MerchantMaterialType; oemCodes: string[]; color: string }): string {
+  const primary = cleanFeedText(product.oemCodes[0], 40);
+  const printerBrand = printerBrandFromMerchantProduct(product);
+  if (!primary || !printerBrand) return cleanFeedText(product.name, 150);
+  const type = { compatible: "kompatibilný", original: "originálny", renovated: "renovovaný", product: "" }[product.productType];
+  const material = { toner: "toner", ink: "atramentová náplň", drum: "optický valec", component: "spotrebný materiál" }[product.materialType];
+  const color = cleanFeedText(product.color, 40);
+  return cleanFeedText([printerBrand, primary, type, material, color ? `– ${color}` : ""].filter(Boolean).join(" "), 150);
+}
+
+function optimizedMerchantDescription(product: { description: string; productType: MerchantProductType; materialType: MerchantMaterialType; oemCodes: string[]; name: string; color: string }): string {
+  const primary = cleanFeedText(product.oemCodes[0], 40);
+  const exactIdentity = primary ? `Presná OEM referencia kompatibility: ${primary}.` : "";
+  return cleanFeedText([optimizedMerchantTitle(product), exactIdentity, product.description].filter(Boolean).join(" "), 5_000);
+}
+
+function googleProductCategory(materialType: MerchantMaterialType): string {
+  if (materialType === "toner" || materialType === "ink") return GOOGLE_PRODUCT_CATEGORY;
+  if (materialType === "drum") return GOOGLE_PRODUCT_CATEGORY_DRUMS;
+  return GOOGLE_PRODUCT_CATEGORY_CONSUMABLES;
+}
+
+function optimizedProductType(productType: MerchantProductType, materialType: MerchantMaterialType, printerBrand: string): string {
+  return [productTypeName(productType, materialType), printerBrand].filter(Boolean).join(" > ");
+}
+
 function shippingXml(price: number, config: MerchantFeedConfig): string[] {
   const shippingPrice = price >= config.freeShippingFrom ? 0 : config.shippingPrice;
   return [
@@ -208,11 +253,15 @@ export function buildMerchantFeed(
 
   const items = products.map((product) => {
     const labels = product.labels.slice(0, 5);
+    const printerBrand = printerBrandFromMerchantProduct(product);
+    const feedTitle = optimizedMerchantTitle(product);
+    const feedDescription = optimizedMerchantDescription(product);
+    const exactOemCodes = product.oemCodes.slice(0, 1);
     return [
       "    <item>",
       `      <g:id>${xml(product.id)}</g:id>`,
-      `      <g:title>${xml(product.name)}</g:title>`,
-      `      <g:description>${xml(product.description)}</g:description>`,
+      `      <g:title>${xml(feedTitle)}</g:title>`,
+      `      <g:description>${xml(feedDescription)}</g:description>`,
       `      <g:link>${xml(product.url)}</g:link>`,
       `      <g:image_link>${xml(product.image)}</g:image_link>`,
       ...product.additionalImages
@@ -222,15 +271,15 @@ export function buildMerchantFeed(
       "      <g:availability>in_stock</g:availability>",
       "      <g:condition>new</g:condition>",
       `      <g:price>${product.price.toFixed(2)} EUR</g:price>`,
-      `      <g:google_product_category>${GOOGLE_PRODUCT_CATEGORY}</g:google_product_category>`,
-      `      <g:product_type>${xml(productTypeName(product.productType, product.materialType))}</g:product_type>`,
+      `      <g:google_product_category>${googleProductCategory(product.materialType)}</g:google_product_category>`,
+      `      <g:product_type>${xml(optimizedProductType(product.productType, product.materialType, printerBrand))}</g:product_type>`,
       ...(product.brand ? [`      <g:brand>${xml(product.brand)}</g:brand>`] : []),
       ...(product.gtin ? [`      <g:gtin>${xml(product.gtin)}</g:gtin>`] : []),
       ...(product.mpn ? [`      <g:mpn>${xml(product.mpn)}</g:mpn>`] : []),
       `      <g:identifier_exists>${product.identifierExists ? "yes" : "no"}</g:identifier_exists>`,
       ...(product.color ? [`      <g:color>${xml(product.color)}</g:color>`] : []),
       ...product.excludedDestinations.map((destination) => `      <g:excluded_destination>${xml(destination)}</g:excluded_destination>`),
-      ...product.oemCodes.slice(0, 8).flatMap((code) => [
+      ...exactOemCodes.flatMap((code) => [
         "      <g:product_detail>",
         "        <g:section_name>Kompatibilita</g:section_name>",
         "        <g:attribute_name>OEM kód náplne</g:attribute_name>",

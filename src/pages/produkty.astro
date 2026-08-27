@@ -8,7 +8,7 @@ import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import SeoHead from "../components/SeoHead.astro";
 import CatalogInitialRows from "../components/CatalogInitialRows.astro";
 import { breadcrumbJsonLd } from "../lib/seo";
-import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductsCache, isSpecialChipVariantProduct, normalize } from "../lib/tm-products-cache";
+import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductsCache, isSpecialChipVariantProduct, limitedSpecialChipVariants, normalize } from "../lib/tm-products-cache";
 import { printerEntities } from "../lib/seo-catalog";
 
 const rawQuery = String(Astro.url.searchParams.get("s") || Astro.url.searchParams.get("search") || "").trim();
@@ -119,7 +119,9 @@ try {
     attributes_all: Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [],
   });
   const products = mainFiltered.slice(start, start + 12).map(slim);
-  const special_variants = specialVariantsRaw.map(slim);
+  // UI zobrazuje najviac 8 odkazov z každej špeciálnej skupiny. Posielať
+  // stovky skrytých produktov nafukovalo /produkty takmer na 1 MB.
+  const special_variants = limitedSpecialChipVariants(specialVariantsRaw, 8).map(slim);
   initialCatalog = {
     ok: true,
     source: "server-products-cache",

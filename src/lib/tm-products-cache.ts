@@ -72,6 +72,7 @@ const WOO_FIELDS = [
 
 const globalStore = globalThis as typeof globalThis & {
   __TM_PRODUCTS_FILE_CACHE__?: CacheFile;
+  __TM_PUBLIC_PRODUCTS_CACHE__?: CacheFile;
   __TM_PRODUCTS_LOOKUP_INDEX__?: {
     generatedAt: string;
     byId: Map<string, TmProduct>;
@@ -909,19 +910,8 @@ async function writeSplitCache(source: CacheFile, oldDetailsFile = ""): Promise<
   const detailsPath = path.join(CACHE_DIR, detailsFile);
   const detailsTmp = `${detailsPath}.tmp`;
   const cacheTmp = `${CACHE_FILE}.${stamp}.tmp`;
-  const detailLines: string[] = [];
   let offset = 0;
-
-  const products = source.products.map((product) => {
-    const line = `${JSON.stringify(productDetail(product))}\n`;
-    const length = Buffer.byteLength(line);
-    detailLines.push(line);
-    const compact = runtimeProduct(product);
-    compact._detail_offset = offset;
-    compact._detail_length = length;
-    offset += length;
-    return compact;
-  });
+  const products: TmProduct[] = [];
 
   const next: CacheFile = {
     ...source,
@@ -931,12 +921,38 @@ async function writeSplitCache(source: CacheFile, oldDetailsFile = ""): Promise<
     products,
   };
 
+  let detailHandle: Awaited<ReturnType<typeof open>> | undefined;
   try {
-    await writeFile(detailsTmp, detailLines.join(""), "utf8");
+    detailHandle = await open(detailsTmp, "w");
+    let chunk = "";
+    for (const product of source.products) {
+      const line = `${JSON.stringify(productDetail(product))}\n`;
+      const length = Buffer.byteLength(line);
+      const compact = runtimeProduct(product);
+      compact._detail_offset = offset;
+      compact._detail_length = length;
+      offset += length;
+      products.push(compact);
+      chunk += line;
+      // Detailný NDJSON zapisujeme po menších blokoch. Pôvodné join() držalo
+      // počas dennej synchronizácie ďalšiu úplnú kópiu detailov v pamäti.
+      if (Buffer.byteLength(chunk) >= 512 * 1024) {
+        await detailHandle.write(chunk, undefined, "utf8");
+        chunk = "";
+      }
+    }
+    if (chunk) await detailHandle.write(chunk, undefined, "utf8");
+    await detailHandle.sync();
+    await detailHandle.close();
+    detailHandle = undefined;
+
+    // Metadáta vytvárame až po naplnení kompaktného poľa produktov.
+    next.products = products;
     await rename(detailsTmp, detailsPath);
     await writeFile(cacheTmp, JSON.stringify(next), "utf8");
     await rename(cacheTmp, CACHE_FILE);
   } catch (error) {
+    await detailHandle?.close().catch(() => undefined);
     await rm(detailsTmp, { force: true }).catch(() => undefined);
     await rm(cacheTmp, { force: true }).catch(() => undefined);
     throw error;
@@ -1171,7 +1187,12 @@ async function fetchAllWooProducts() {
     reportedTotal = result.total || reportedTotal;
 
     if (!result.products.length) break;
-    all.push(...result.products);
+    // Woo odpoveď obsahuje veľké HTML popisy, meta_data a atribúty. Ak by sme
+    // držali všetkých ~7 400 surových záznamov až do konca synchronizácie a
+    // až potom vytvorili runtime produkty, webový proces má naraz starú cache,
+    // celý surový katalóg aj nový katalóg a môže prekročiť 512 MB. Každú stranu
+    // preto normalizujeme hneď a surovú odpoveď necháme uvoľniť.
+    all.push(...result.products.map(mapProduct));
 
     if (reportedTotalPages && page >= reportedTotalPages) break;
     if (!reportedTotalPages && result.products.length < WOO_SYNC_PER_PAGE) break;
@@ -1223,7 +1244,7 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
     throw new Error(message);
   }
 
-  const products = sortProducts(enrichProductsFromRelated(raw.products.map(mapProduct)));
+  const products = sortProducts(enrichProductsFromRelated(raw.products));
   const fullNext: CacheFile = {
     ok: true,
     version: CACHE_VERSION,
@@ -1236,6 +1257,9 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
   const next = await writeSplitCache(fullNext, current?.details_file);
 
   globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
+  delete globalStore.__TM_PUBLIC_PRODUCTS_CACHE__;
+  delete globalStore.__TM_PRODUCTS_LOOKUP_INDEX__;
+  globalStore.__TM_PRODUCT_DETAILS_CACHE__?.clear();
   const indexNow = await notifyIndexNowAfterProductSync(current?.products || [], products)
     .catch((error: any): IndexNowResult => ({
       attempted: 0,
@@ -1275,9 +1299,18 @@ function isHiddenRenovationService(product: TmProduct) {
 }
 
 function publicCatalogCache(cache: CacheFile): CacheFile {
+  const current = globalStore.__TM_PUBLIC_PRODUCTS_CACHE__;
+  if (current?.generated_at === cache.generated_at) return current;
   const products = cache.products.filter((product) => !isHiddenRenovationService(product));
-  if (products.length === cache.products.length) return cache;
-  return { ...cache, total: products.length, products };
+  const result = products.length === cache.products.length
+    ? cache
+    : { ...cache, total: products.length, products };
+  // Rovnaké pole produktov musí používať každá SSR/API požiadavka. Na toto
+  // pole sú naviazané WeakMap indexy filtrov, tlačiarní, OEM a SEO štatistík.
+  // Predtým sa pri každom requeste vytváralo nové pole, čím sa všetky indexy
+  // znovu prepočítavali a pri súbehu prudko rástla RAM aj čas odpovede.
+  globalStore.__TM_PUBLIC_PRODUCTS_CACHE__ = result;
+  return result;
 }
 
 export async function getProductsCache() {
@@ -1479,10 +1512,32 @@ function isRenovationServiceProduct(product: TmProduct) {
 }
 
 export function isSpecialChipVariantProduct(product: TmProduct) {
+  return Boolean(specialChipVariantKey(product));
+}
+
+export function specialChipVariantKey(product: TmProduct): "no-chip" | "oem-chip" | "hatona" | "" {
   const type = String(product.product_type_key || "");
-  if (type !== "compatible" && type !== "renovated") return false;
+  if (type !== "compatible" && type !== "renovated") return "";
   const text = normalize(`${product.name || ""} ${product.slug || ""}`);
-  return /bez[ -]?cip|no[ -]?chip|oem[ -]?cip|hatona/.test(text);
+  if (/bez[ -]?cip|no[ -]?chip/.test(text)) return "no-chip";
+  if (/oem[ -]?cip/.test(text)) return "oem-chip";
+  if (/hatona/.test(text)) return "hatona";
+  return "";
+}
+
+export function limitedSpecialChipVariants(products: TmProduct[], perGroup = 8): TmProduct[] {
+  const limit = Math.max(0, Math.min(20, Math.floor(perGroup)));
+  if (!limit) return [];
+  const counts = new Map<string, number>();
+  const result: TmProduct[] = [];
+  for (const product of products) {
+    const key = specialChipVariantKey(product);
+    if (!key || (counts.get(key) || 0) >= limit) continue;
+    counts.set(key, (counts.get(key) || 0) + 1);
+    result.push(product);
+    if (counts.size === 3 && [...counts.values()].every((count) => count >= limit)) break;
+  }
+  return result;
 }
 
 export function explicitlyRequestsSpecialChipVariant(searchValue: unknown) {

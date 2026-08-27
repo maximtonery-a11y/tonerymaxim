@@ -10,7 +10,7 @@
   // Nášepkávač štartuje od 3 znakov. Krátky debounce iba zlučuje veľmi rýchle
   // údery klávesov; používateľ nemá čakať stovky ms pred samotným requestom.
   const MIN_QUERY_LENGTH = 3;
-  const DEBOUNCE_MS = 90;
+  const DEBOUNCE_MS = 55;
 
   const memory = new Map();
   let warmupStarted = false;

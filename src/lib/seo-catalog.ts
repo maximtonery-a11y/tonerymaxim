@@ -93,6 +93,15 @@ export function productSearchText(product: TmProduct): string {
   const cached = productSearchTextCache.get(product);
   if (cached !== undefined) return cached;
 
+  // Runtime katalóg už obsahuje normalizovaný search_text s názvom, SKU,
+  // kategóriou, parametrami a kompatibilnými tlačiarňami. Jeho opätovné
+  // skladanie vytváralo pri 7 000+ produktoch druhú veľkú sadu reťazcov v RAM.
+  const runtimeText = String(product.search_text || "").trim();
+  if (runtimeText) {
+    productSearchTextCache.set(product, runtimeText);
+    return runtimeText;
+  }
+
   const categories = Array.isArray(product.categories)
     ? product.categories.map((item: any) => `${item?.name || ""} ${item?.slug || ""}`).join(" ")
     : "";
@@ -223,19 +232,40 @@ export function findPrinterEntity(products: TmProduct[], brandSlug: unknown, mod
   const brand = findBrand(brandSlug);
   const wantedModel = entitySlug(modelSlug);
   if (!brand || !wantedModel) return null;
-  const entities = printerEntities(products);
-  const exact = entities.find((entity) => entity.brand.slug === brand.slug && entity.slug === wantedModel) || null;
-  if (!exact || !["xerox", "samsung"].includes(brand.slug)) return exact;
+  let exactName = "";
+  const exactProducts = new Map<string, TmProduct>();
 
-  const familyProducts = new Map<string, TmProduct>();
-  entities
-    .filter((entity) => entity.brand.slug === brand.slug && sameConsumablePrinterFamily(exact.name, entity.name))
-    .forEach((entity) => entity.products.forEach((product) => {
+  // Detail jedného modelu nesmie kvôli jednej zhode zostavovať a triediť
+  // globálny index všetkých tisícov tlačiarní. Priamo prejdeme kompaktné
+  // priradenia produktov a ponecháme iba požadovaný model.
+  for (const product of products) {
+    if (!validIndexableProduct(product)) continue;
+    const names = Array.isArray(product.compatible_printers)
+      ? product.compatible_printers
+      : Array.isArray(product.printers) ? product.printers : [];
+    for (const rawName of names) {
+      const name = String(rawName || "").replace(/\s+/g, " ").trim();
+      if (entitySlug(name) !== wantedModel || printerBrandForName(name)?.slug !== brand.slug) continue;
+      exactName ||= name;
       const key = String(product.id || product.slug || product.sku || "");
-      if (key) familyProducts.set(key, product);
-    }));
+      if (key) exactProducts.set(key, product);
+      break;
+    }
+  }
+  if (!exactName) return null;
 
-  return { ...exact, products: sortProducts([...familyProducts.values()]) };
+  if (!["xerox", "samsung"].includes(brand.slug)) {
+    return { brand, name: exactName, slug: wantedModel, products: sortProducts([...exactProducts.values()]) };
+  }
+
+  const familyProducts = new Map(exactProducts);
+  for (const product of products) {
+    const names = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
+    if (!names.some((name: unknown) => printerBrandForName(name)?.slug === brand.slug && sameConsumablePrinterFamily(exactName, String(name || "")))) continue;
+    const key = String(product.id || product.slug || product.sku || "");
+    if (key) familyProducts.set(key, product);
+  }
+  return { brand, name: exactName, slug: wantedModel, products: sortProducts([...familyProducts.values()]) };
 }
 
 function normalizeOemCode(value: unknown): string {

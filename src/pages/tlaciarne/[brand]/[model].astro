@@ -4,11 +4,10 @@ export const prerender = false;
 import SeoCatalogPage from "../../../components/SeoCatalogPage.astro";
 import { getProductsCache } from "../../../lib/tm-products-cache";
 import {
-  brandProducts,
   catalogStats,
+  entitySlug,
   findPrinterEntity,
-  topPrinterLinks,
-  printerEntities,
+  printerBrandForName,
   productOemCodes,
   productSearchText,
 } from "../../../lib/seo-catalog";
@@ -119,12 +118,6 @@ const rawGuideLinks = geoPilot?.adviceLinks?.length ? geoPilot.adviceLinks : DEF
 const guideLinks = integratedDrum
   ? rawGuideLinks.filter((link) => !/valec|drum/i.test(`${link.href} ${link.label}`))
   : rawGuideLinks;
-const relatedPrinterLinks = printer
-  ? topPrinterLinks(brandProducts(cache.products, printer.brand), 24)
-      .filter((link) => link.href !== canonicalPath)
-      .slice(0, 12)
-  : [];
-
 const typeNames = [
   ...(stats.compatible ? ["kompatibilné"] : []),
   ...(stats.original ? ["originálne"] : []),
@@ -395,21 +388,21 @@ function capacityFactsFor(sourceProducts: any[]): string[] {
 function exactRelatedPrinterLinks() {
   if (!printer) return [];
   const source = mainKind === "ink" ? inkProducts : mainKind === "toner" ? laserTonerProducts : allProducts;
-  const current = oemsFor(source, 24).sort();
-  if (!current.length) return [];
-  const signature = current.join("|");
-  return printerEntities(cache.products)
-    .filter((entity) => entity.brand.slug === printer.brand.slug && entity.slug !== printer.slug)
-    .filter((entity) => {
-      const candidateSource = entity.products.filter((product) => {
-        const kind = consumableKind(product);
-        return mainKind === "ink" ? kind === "ink" : mainKind === "toner" ? kind === "toner" : true;
-      });
-      const candidate = uniqueText(candidateSource.flatMap((product) => brandOemCodes(product, brandName)), 24).sort();
-      return candidate.length === current.length && candidate.join("|") === signature;
-    })
+  const candidates = new Map<string, { name: string; count: number }>();
+  for (const product of source) {
+    const names = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
+    for (const rawName of names) {
+      const name = normText(rawName);
+      const slug = entitySlug(name);
+      if (!slug || slug === printer.slug || printerBrandForName(name)?.slug !== printer.brand.slug) continue;
+      const current = candidates.get(slug);
+      candidates.set(slug, { name, count: (current?.count || 0) + 1 });
+    }
+  }
+  return [...candidates.entries()]
+    .sort(([, left], [, right]) => right.count - left.count || left.name.localeCompare(right.name, "sk"))
     .slice(0, 12)
-    .map((entity) => ({ href: `/tlaciarne/${entity.brand.slug}/${entity.slug}`, label: entity.name }));
+    .map(([slug, item]) => ({ href: `/tlaciarne/${printer.brand.slug}/${slug}`, label: item.name }));
 }
 
 const lowerContentSections: Array<{ heading: string; paragraphs: string[]; bullets?: string[] }> = [];
@@ -526,7 +519,7 @@ const printerFaq = !notFound ? [
 const exactPrinterLinks = exactRelatedPrinterLinks();
 const lowerLinkGroups = exactPrinterLinks.length ? [{
   heading: mainKind === "ink" ? "Ďalšie tlačiarne s rovnakou sadou atramentových náplní" : mainKind === "toner" ? "Ďalšie tlačiarne s rovnakou sadou tonerov" : "Ďalšie tlačiarne s rovnakým spotrebným materiálom",
-  intro: "Tieto modely majú v katalógu zhodnú celú sadu relevantných OEM označení.",
+  intro: "Tieto modely používajú rovnaký spotrebný materiál z aktuálnej ponuky.",
   links: exactPrinterLinks,
 }] : [];
 

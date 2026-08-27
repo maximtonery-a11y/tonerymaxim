@@ -194,10 +194,11 @@ function searchableValue(product: any) {
   // Indexujeme iba identitu produktu, kategórie, štruktúrované atribúty a
   // kompatibilné tlačiarne. Výrazne to zrýchli cold/warm index bez straty
   // relevantných tonerových, OEM a modelových zhôd.
-  return `${product.name || ""} ${product.sku || ""} ${product.slug || ""} ${categories} ${attributes} ${printers}`;
+  return String(product.search_text || "").trim()
+    || `${product.name || ""} ${product.sku || ""} ${product.slug || ""} ${categories} ${attributes} ${printers}`;
 }
 
-function makeIndexedProduct(product: any, index: number): IndexedProduct {
+function makeIndexedProduct(product: any, index: number, printerIntern: Map<string, IndexedPrinter>): IndexedProduct {
   const searchValue = searchableValue(product);
   // Niektoré staršie Woo záznamy majú viac modelov uložených v jednej hodnote
   // oddelenej čiarkami. V našepkávači musia byť samostatnými tlačiarňami.
@@ -208,17 +209,23 @@ function makeIndexedProduct(product: any, index: number): IndexedProduct {
   const printers = printerNames
     .map((printer: any) => {
       const title = String(printer || "").trim();
-      return {
+      const key = compactKey(title);
+      const existing = printerIntern.get(key);
+      if (existing) return existing;
+      const indexed = {
         title,
-        key: compactKey(title),
+        key,
         text: normalize(title),
-        compact: compactKey(title),
+        compact: key,
         tokens: uniqueWords(title),
       };
+      if (key) printerIntern.set(key, indexed);
+      return indexed;
     })
     .filter((printer) => printer.title);
 
-  const tokens = uniqueWords(searchValue);
+  const identityValue = `${product.name || ""} ${product.sku || ""} ${product.slug || ""} ${product.mpn || ""} ${printerNames.join(" ")}`;
+  const tokens = uniqueWords(identityValue);
   // Prefix index musí poznať aj celé reálne katalógové kódy (OEM/MPN/atribúty),
   // nie iba tokeny rozdelené na pomlčkách. Napr. TN-247BK sa pri words() rozdelí
   // na "tn" + "247bk"; bez celého "tn247bk" bucket pre dotaz TN247 neexistoval
@@ -266,7 +273,7 @@ function makeIndexedProduct(product: any, index: number): IndexedProduct {
     index,
     brand: productBrand(product),
     text: normalize(searchValue),
-    compact: compactKey(searchValue),
+    compact: compactKey(identityValue),
     tokens,
     printers,
     candidateTokens,
@@ -305,13 +312,8 @@ function getSearchIndex(cache: any): SearchIndexCache {
   const currentIndex = globalStore.__TM_SMART_SEARCH_INDEX__;
   if (currentIndex && currentIndex.generatedAt === cache.generated_at) return currentIndex;
 
-  const items = sortProducts(cache.products).map((product, index) => makeIndexedProduct(product, index));
   const printerMap = new Map<string, IndexedPrinter>();
-  for (const item of items) {
-    for (const printer of item.printers) {
-      if (!printerMap.has(printer.key)) printerMap.set(printer.key, printer);
-    }
-  }
+  const items = sortProducts(cache.products).map((product, index) => makeIndexedProduct(product, index, printerMap));
   const printers = [...printerMap.values()];
   const prefixMap = buildPrefixMap(items);
   const codes = new Map<string, string>();

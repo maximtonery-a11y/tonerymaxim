@@ -34,6 +34,9 @@ export function organizationJsonLd(origin: string) {
     name: SEO_COMPANY.brand,
     legalName: SEO_COMPANY.name,
     url: origin,
+    sameAs: [
+      'https://obchody.heureka.sk/tonerymaxim-sk/recenze/',
+    ],
     logo: absoluteUrl(origin, '/favicon.svg'),
     email: SEO_COMPANY.email,
     telephone: SEO_COMPANY.phone,

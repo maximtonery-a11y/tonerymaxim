@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductsCache, isSpecialChipVariantProduct, jsonResponse, type TmProduct } from "../../lib/tm-products-cache";
+import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductsCache, isSpecialChipVariantProduct, jsonResponse, limitedSpecialChipVariants, type TmProduct } from "../../lib/tm-products-cache";
 
 export const prerender = false;
 
@@ -143,7 +143,7 @@ export const GET: APIRoute = async ({ url }) => {
       count: products.length,
       total: mainFiltered.length,
       total_pages: Math.max(1, Math.ceil(mainFiltered.length / perPage)),
-      special_variants: specialVariants.map(slimProduct),
+      special_variants: limitedSpecialChipVariants(specialVariants, 8).map(slimProduct),
       filters: { search, brand, category, type, color, stock, printer },
       sorted_by: "compatible-original-renovated",
       products,

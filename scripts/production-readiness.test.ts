@@ -81,6 +81,22 @@ test("prvé načítanie katalógu neblokuje zastaraný pevný odhad počtu produ
   assert.equal(productCompletenessRatio(6421, 6421), 1);
 });
 
+test("storefront chráni pamäť a neposiela skryté stovky variantov", async () => {
+  const cache = await readFile(new URL("../src/lib/tm-products-cache.ts", import.meta.url), "utf8");
+  const productsPage = await readFile(new URL("../src/pages/produkty.astro", import.meta.url), "utf8");
+  const productsApi = await readFile(new URL("../src/pages/api/products.ts", import.meta.url), "utf8");
+  const printerPage = await readFile(new URL("../src/pages/tlaciarne/[brand]/[model].astro", import.meta.url), "utf8");
+  const search = await readFile(new URL("../src/pages/api/smart-search.ts", import.meta.url), "utf8");
+
+  assert.match(cache, /__TM_PUBLIC_PRODUCTS_CACHE__/);
+  assert.match(cache, /result\.products\.map\(mapProduct\)/);
+  assert.doesNotMatch(cache, /detailLines\.join/);
+  assert.match(productsPage, /limitedSpecialChipVariants\(specialVariantsRaw, 8\)/);
+  assert.match(productsApi, /limitedSpecialChipVariants\(specialVariants, 8\)/);
+  assert.doesNotMatch(printerPage, /printerEntities\(cache\.products\)/);
+  assert.match(search, /printerIntern/);
+});
+
 test("produkčné premenné z Coolify majú prednosť pred hodnotami vloženými pri builde", async () => {
   const runtimeConfiguredFiles = [
     "../src/lib/tm-products-cache.ts",
