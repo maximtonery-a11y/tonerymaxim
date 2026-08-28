@@ -40,7 +40,10 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
 
             <div class="tm-field">
               <label for="login-password">Heslo</label>
-              <input id="login-password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+              <div class="tm-password-control">
+                <input id="login-password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
+                <button type="button" class="tm-password-toggle" data-password-toggle aria-controls="login-password" aria-label="Zobraziť heslo" aria-pressed="false"><span aria-hidden="true">◉</span><b>Zobraziť</b></button>
+              </div>
             </div>
 
             <div class="auth-row">
@@ -65,6 +68,8 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
       <Footer />
       <FloatingAdvisor />
     </div>
+
+    <script is:inline src="/password-visibility.js"></script>
 
     <div class="account-migration-modal" data-account-migration-modal hidden>
       <button class="account-migration-modal__backdrop" type="button" data-account-migration-close aria-label="Zavrieť informačné okno"></button>

@@ -11,6 +11,16 @@ type RawCartItem = {
   quantity?: number | string;
 };
 
+class CheckoutCartError extends Error {
+  status: number;
+
+  constructor(message: string, status = 409) {
+    super(message);
+    this.name = "CheckoutCartError";
+    this.status = status;
+  }
+}
+
 function money(value: unknown) {
   const number = typeof value === "number" ? value : Number(String(value ?? "").replace(/\s/g, "").replace("€", "").replace(",", "."));
   return Number.isFinite(number) && number > 0 ? Math.round(number * 100) / 100 : 0;
@@ -96,7 +106,7 @@ export function discountedLine(item: NormalizedCartItem) {
 export async function normalizeSecureCheckoutCart(rawCart: unknown): Promise<NormalizedCartItem[]> {
   const input = Array.isArray(rawCart) ? rawCart : [];
   if (!input.length) return [];
-  if (input.length > 30) throw new Error("Košík obsahuje príliš veľa rôznych položiek.");
+  if (input.length > 30) throw new CheckoutCartError("Košík obsahuje príliš veľa rôznych položiek.", 400);
 
   const cache = await getProductsCache();
   const products = Array.isArray(cache?.products) ? cache.products : [];
@@ -105,12 +115,12 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown): Promise<Nor
     const item = (raw || {}) as RawCartItem;
     const product = resolveProduct(item, index);
     const requested = skuFromItem(item) || productIdFromItem(item) || "neznámy produkt";
-    if (!product) throw new Error(`Produkt sa nenašiel alebo už nie je dostupný: ${requested}`);
+    if (!product) throw new CheckoutCartError(`Produkt sa nenašiel alebo už nie je dostupný: ${requested}`);
     return { item, cached: product, requested };
   });
   const ids = [...new Set(resolved.map(({ cached }) => Number(cached.id)).filter((id) => Number.isInteger(id) && id > 0))];
   if (ids.length !== new Set(resolved.map(({ cached }) => String(cached.id))).size) {
-    throw new Error("Niektorý produkt nemá platné ID a nemožno overiť jeho dostupnosť.");
+    throw new CheckoutCartError("Niektorý produkt nemá platné ID a nemožno overiť jeho dostupnosť.");
   }
   const liveProducts = await wooRequest<any[]>("/products", {
     query: { include: ids.join(","), per_page: Math.min(100, ids.length), status: "publish" },
@@ -121,17 +131,17 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown): Promise<Nor
 
   for (const { item, cached, requested } of resolved) {
     const live = liveById.get(String(cached.id));
-    if (!live) throw new Error(`Produkt už nie je publikovaný alebo dostupný: ${cached.name || requested}`);
+    if (!live) throw new CheckoutCartError(`Produkt už nie je publikovaný alebo dostupný: ${cached.name || requested}`);
     const product = { ...cached, ...live };
     if (!isPurchasable(product)) {
-      throw new Error(`Produkt nie je dostupný na objednanie: ${product.name || requested}`);
+      throw new CheckoutCartError(`Produkt nie je dostupný na objednanie: ${product.name || requested}`);
     }
     const qty = normalizeQty(item.qty ?? item.quantity ?? 1);
     const totalRequested = (requestedById.get(String(product.id)) || 0) + qty;
     requestedById.set(String(product.id), totalRequested);
     const stockQuantity = Number(product.stock_quantity);
     if (product.manage_stock === true && Number.isFinite(stockQuantity) && stockQuantity >= 0 && totalRequested > stockQuantity) {
-      throw new Error(`Na sklade nie je požadované množstvo produktu ${product.name || requested}. Dostupné množstvo: ${stockQuantity} ks.`);
+      throw new CheckoutCartError(`Na sklade nie je požadované množstvo produktu ${product.name || requested}. Dostupné množstvo: ${stockQuantity} ks.`);
     }
 
     result.push({

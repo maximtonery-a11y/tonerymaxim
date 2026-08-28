@@ -38,14 +38,16 @@ const billing = getBilling(wooCustomer);
           <h2>Zmena hesla</h2>
           <div class="auth-alert" data-password-message hidden></div>
           <form class="account-add-printer-form" data-password-form>
-            <label class="tm-field"><span>Aktuálne heslo</span><input class="account-input" name="current_password" type="password" autocomplete="current-password" required /></label>
-            <label class="tm-field"><span>Nové heslo</span><input class="account-input" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
-            <label class="tm-field"><span>Potvrdenie nového hesla</span><input class="account-input" name="password2" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
+            <label class="tm-field"><span>Aktuálne heslo</span><div class="tm-password-control"><input id="profile-current-password" class="account-input" name="current_password" type="password" autocomplete="current-password" required /><button type="button" class="tm-password-toggle" data-password-toggle aria-controls="profile-current-password" aria-label="Zobraziť heslo" aria-pressed="false"><span aria-hidden="true">◉</span><b>Zobraziť</b></button></div></label>
+            <label class="tm-field"><span>Nové heslo</span><div class="tm-password-control"><input id="profile-new-password" class="account-input" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /><button type="button" class="tm-password-toggle" data-password-toggle aria-controls="profile-new-password" aria-label="Zobraziť heslo" aria-pressed="false"><span aria-hidden="true">◉</span><b>Zobraziť</b></button></div></label>
+            <label class="tm-field"><span>Potvrdenie nového hesla</span><div class="tm-password-control"><input id="profile-new-password2" class="account-input" name="password2" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /><button type="button" class="tm-password-toggle" data-password-toggle aria-controls="profile-new-password2" aria-label="Zobraziť heslo" aria-pressed="false"><span aria-hidden="true">◉</span><b>Zobraziť</b></button></div></label>
             <button class="tm-btn" type="submit" data-password-submit>Zmeniť heslo</button>
           </form>
         </section>
       </div>
     </AccountShell>
+
+    <script is:inline src="/password-visibility.js"></script>
 
     <script>
       function showMessage(el: HTMLElement, text: string, type = "error") {

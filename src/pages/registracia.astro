@@ -39,8 +39,8 @@ const prefilledEmail = Astro.url.searchParams.get("email")?.trim().slice(0, 254)
               <div class="tm-field"><label for="last-name">Priezvisko</label><input id="last-name" name="lastName" placeholder="Novák" autocomplete="family-name" required /></div>
             </div>
             <div class="tm-field"><label for="reg-email">E-mailová adresa</label><input id="reg-email" name="email" type="email" placeholder="vas@email.sk" autocomplete="email" value={prefilledEmail} required /></div>
-            <div class="tm-field"><label for="reg-password">Heslo</label><input id="reg-password" name="password" type="password" placeholder="12 až 128 znakov" autocomplete="new-password" required minlength="12" maxlength="128" /></div>
-            <div class="tm-field"><label for="reg-password2">Potvrďte heslo</label><input id="reg-password2" name="password2" type="password" placeholder="zopakujte heslo" autocomplete="new-password" required minlength="12" maxlength="128" /></div>
+            <div class="tm-field"><label for="reg-password">Heslo</label><div class="tm-password-control"><input id="reg-password" name="password" type="password" placeholder="12 až 128 znakov" autocomplete="new-password" required minlength="12" maxlength="128" /><button type="button" class="tm-password-toggle" data-password-toggle aria-controls="reg-password" aria-label="Zobraziť heslo" aria-pressed="false"><span aria-hidden="true">◉</span><b>Zobraziť</b></button></div></div>
+            <div class="tm-field"><label for="reg-password2">Potvrďte heslo</label><div class="tm-password-control"><input id="reg-password2" name="password2" type="password" placeholder="zopakujte heslo" autocomplete="new-password" required minlength="12" maxlength="128" /><button type="button" class="tm-password-toggle" data-password-toggle aria-controls="reg-password2" aria-label="Zobraziť heslo" aria-pressed="false"><span aria-hidden="true">◉</span><b>Zobraziť</b></button></div></div>
             <label class="tm-check"><input name="consent" type="checkbox" required /> Potvrdzujem, že som sa oboznámil/a so <a href="/ochrana-osobnych-udajov">zásadami ochrany osobných údajov</a>. Údaje účtu spracúvame na jeho vytvorenie a správu, nie na základe marketingového súhlasu.</label>
             <button class="tm-btn" type="submit" data-auth-submit>Zaregistrovať sa</button>
           </form>
@@ -60,6 +60,8 @@ const prefilledEmail = Astro.url.searchParams.get("email")?.trim().slice(0, 254)
       <Footer />
       <FloatingAdvisor />
     </div>
+
+    <script is:inline src="/password-visibility.js"></script>
 
     <script>
       const form = document.querySelector<HTMLFormElement>("[data-register-form]")!;

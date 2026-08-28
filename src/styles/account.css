@@ -2422,3 +2422,39 @@
 .account-migration-modal__retry{padding:12px 8px;border:0;background:transparent;color:#175f9d;font:inherit;font-weight:850;cursor:pointer}
 .account-migration-modal__reset{display:block;width:fit-content;margin-top:16px;color:#566f87;font-size:13px;font-weight:750}
 @media(max-width:620px){.account-migration-modal{align-items:end;padding:0}.account-migration-modal__dialog{width:100%;max-height:92vh;padding:30px 21px 24px;border-radius:25px 25px 0 0}.account-migration-modal h2{font-size:24px}.account-migration-modal__actions{display:grid}.account-migration-modal__actions .tm-btn{width:100%}.auth-welcome-discount{align-items:flex-start;flex-direction:column;gap:4px}}
+.tm-password-control {
+  position: relative;
+  width: 100%;
+}
+
+.tm-password-control > input {
+  width: 100%;
+  padding-right: 108px !important;
+}
+
+.tm-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #0864c7;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.tm-password-toggle:hover,
+.tm-password-toggle:focus-visible {
+  background: #eef6ff;
+  outline: 2px solid transparent;
+}
+
+.tm-password-toggle b { font-weight: 850; }
