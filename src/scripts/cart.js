@@ -244,6 +244,47 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     return number;
   }
 
+  function stockLimit(item) {
+    if (String(item?.stock_status || "instock").toLowerCase() !== "instock") return null;
+    const raw = item?.stock_quantity;
+    if (raw === null || raw === undefined || String(raw).trim() === "") return null;
+    const value = Number(raw);
+    return Number.isFinite(value) && value >= 0 ? Math.floor(value) : null;
+  }
+
+  function showStockLimitNotice(item, limit) {
+    let notice = document.querySelector("[data-cart-stock-limit-notice]");
+    if (!notice) {
+      notice = document.createElement("div");
+      notice.dataset.cartStockLimitNotice = "";
+      notice.setAttribute("role", "alert");
+      notice.setAttribute("aria-live", "assertive");
+      Object.assign(notice.style, {
+        position: "fixed", left: "50%", bottom: "24px", zIndex: "2147483640",
+        transform: "translateX(-50%)", width: "min(520px, calc(100vw - 32px))",
+        padding: "14px 18px", borderRadius: "14px", background: "#fff2f2",
+        border: "1px solid #efb7b7", boxShadow: "0 14px 40px rgba(8,34,74,.22)",
+        color: "#b42318", fontWeight: "800", textAlign: "center",
+      });
+      document.body.appendChild(notice);
+    }
+    const name = String(item?.name || "Tento produkt").trim();
+    notice.textContent = limit > 0
+      ? `${name}: môžete objednať maximálne ${limit} ks, pretože viac momentálne nie je na sklade.`
+      : `${name} momentálne nie je na sklade.`;
+    notice.hidden = false;
+    window.clearTimeout(Number(notice.dataset.hideTimer || 0));
+    notice.dataset.hideTimer = String(window.setTimeout(() => { notice.hidden = true; }, 6000));
+  }
+
+  function limitedQty(item, value, notify = false) {
+    const requested = cleanQty(value);
+    const limit = stockLimit(item);
+    if (limit === null || requested <= limit) return requested;
+    if (notify) showStockLimitNotice(item, limit);
+    return Math.max(0, limit);
+  }
+
 
   function esc(value) {
     return String(value ?? "")
@@ -360,6 +401,8 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       if (needsData && !product) product = await fetchProductBySku(item.sku);
 
       const merged = product ? mergeProductData(item, product) : { ...item, url: productUrl(item), capacity: productCapacity(item) };
+      const availableQty = limitedQty(merged, merged.qty, true);
+      if (availableQty > 0) merged.qty = availableQty;
       hydrated.push(merged);
 
       if (JSON.stringify(merged) !== JSON.stringify(item)) changed = true;
@@ -576,9 +619,19 @@ function formatMoney(value) {
     if (!sku) return;
 
     const existing = cart.find((item) => item.sku === sku);
+    const requestedAddition = cleanQty(product.qty || 1);
+    const previousQty = existing ? cleanQty(existing.qty) : 0;
 
     if (existing) {
-      existing.qty = cleanQty(existing.qty) + cleanQty(product.qty || 1);
+      const stockSource = {
+        ...existing,
+        stock_status: product.stock_status || existing.stock_status || "instock",
+        stock_quantity: product.stock_quantity ?? existing.stock_quantity ?? null,
+      };
+      const requestedTotal = cleanQty(existing.qty) + requestedAddition;
+      const acceptedTotal = limitedQty(stockSource, requestedTotal, true);
+      if (acceptedTotal <= cleanQty(existing.qty)) return { added: 0, limited: true };
+      existing.qty = acceptedTotal;
       if (!existing.product_type_key && (product.product_type_key || product.productTypeKey || product.type)) {
         existing.product_type_key = product.product_type_key || product.productTypeKey || product.type || "";
       }
@@ -597,6 +650,8 @@ function formatMoney(value) {
       existing.stock_quantity = product.stock_quantity ?? existing.stock_quantity ?? null;
       existing.stock_text = product.stock_text || existing.stock_text || "";
     } else {
+      const acceptedQty = limitedQty(product, requestedAddition, true);
+      if (acceptedQty < 1) return { added: 0, limited: true };
       cart.push({
         sku,
         name: product.name || "Produkt",
@@ -604,7 +659,7 @@ function formatMoney(value) {
         image: product.image || "",
         url: productUrl(product),
         slug: product.slug || "",
-        qty: cleanQty(product.qty || 1),
+        qty: acceptedQty,
         product_type_key: product.product_type_key || product.productTypeKey || product.type || "",
         product_type_label: product.product_type_label || product.productTypeLabel || "",
         series_pack_key: product.series_pack_key || product.seriesPackKey || "",
@@ -620,9 +675,12 @@ function formatMoney(value) {
     }
 
     saveCart(cart);
+    const savedItem = cart.find((item) => item.sku === sku);
+    const actualAdded = Math.max(0, cleanQty(savedItem?.qty) - previousQty);
     if (typeof window.tmTrackCartAdd === "function") {
-      window.tmTrackCartAdd(product, cleanQty(product.qty || 1));
+      window.tmTrackCartAdd(product, actualAdded);
     }
+    return { added: actualAdded, limited: actualAdded < requestedAddition };
   }
 
   let addCartDrawerTimer = null;
@@ -748,14 +806,19 @@ function formatMoney(value) {
   }
 
   function updateQty(sku, qty) {
+    let result = { qty: cleanQty(qty), limited: false };
     const cart = readCart().map((item) => {
       if (item.sku === sku) {
-        return { ...item, qty: cleanQty(qty) };
+        const requested = cleanQty(qty);
+        const accepted = limitedQty(item, requested, true);
+        result = { qty: Math.max(1, accepted), limited: accepted < requested };
+        return { ...item, qty: result.qty };
       }
       return item;
     });
 
     saveCart(cart);
+    return result;
   }
 
   function removeFromCart(sku) {
@@ -803,6 +866,8 @@ function formatMoney(value) {
 
     cart.forEach((item) => {
       const qty = cleanQty(item.qty);
+      const maxQty = stockLimit(item);
+      const qtyMax = maxQty === null ? 99 : Math.max(1, maxQty);
       const itemTotal = Number(item.price || 0) * qty;
       const itemDiscountRate = quantityDiscountRate(item);
       const itemDiscount = Math.round(itemTotal * itemDiscountRate * 100) / 100;
@@ -835,8 +900,8 @@ function formatMoney(value) {
         <div class="cart-item-quantity">
           <div class="qty-control">
             <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" aria-label="Znížiť množstvo">−</button>
-            <input type="number" min="1" max="99" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" aria-label="Množstvo" />
-            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" aria-label="Zvýšiť množstvo">+</button>
+            <input type="number" min="1" max="${qtyMax}" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" aria-label="Množstvo" />
+            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" aria-label="Zvýšiť množstvo"${maxQty !== null && qty >= maxQty ? ' aria-disabled="true"' : ""}>+</button>
           </div>
         </div>
 
