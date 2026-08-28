@@ -235,6 +235,7 @@ async function lineItems(source: CheckoutOrderSource, taxRateId: number) {
         { key: "tm_gross_line_total", value: finalGross.toFixed(2) },
         { key: "tm_gross_line_discount", value: lineDiscountGross.toFixed(2) },
         { key: "tm_quantity_discount_rate", value: String(discountRate(item)) },
+        { key: "tm_loyalty_reward", value: item.loyalty_reward === true ? "yes" : "no" },
       ],
     };
 

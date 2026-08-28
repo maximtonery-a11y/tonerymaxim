@@ -1,3 +1,5 @@
+import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-cart.js";
+
 (() => {
   if (window.__TM_CHECKOUT_INIT__) return;
   window.__TM_CHECKOUT_INIT__ = true;
@@ -12,18 +14,7 @@
   let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
 
   function syncPaperReward(reward) {
-    const available = Math.max(0, Math.floor(Number(reward?.availablePacks || 0)));
-    const cart = readCart().filter((item) => item?.loyalty_reward !== true);
-    if (available > 0 && cart.length > 0) {
-      cart.push({
-        id: String(reward.sku || "9999999999999"), productId: "", product_id: "",
-        sku: String(reward.sku || "9999999999999"),
-        name: String(reward.name || "Vernostná odmena – Kancelársky papier A4, 80 g, 500 hárkov"),
-        price: 0.01, qty: available, image: "",
-        url: "/produkt/kancelarsky-papier-a4-80g-500-harkov",
-        stock_status: "instock", stock_quantity: null, loyalty_reward: true,
-      });
-    }
+    const cart = syncPaperRewardCart(readCart(), reward);
     localStorage.setItem("tm_cart_v1", JSON.stringify(cart));
   }
 
@@ -590,9 +581,9 @@
           items = Object.values(parsed);
         }
 
-        const normalized = items
+        const normalized = collapsePaperRewardCart(items
           .map((item, index) => normalizeCartItem(item, index))
-          .filter(Boolean);
+          .filter(Boolean));
 
         if (normalized.length > 0) {
           localStorage.setItem("tm_cart_v1", JSON.stringify(normalized));

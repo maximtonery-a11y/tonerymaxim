@@ -1,4 +1,5 @@
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
+import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } from "./paper-reward-cart.js";
 
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
@@ -11,21 +12,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
 
   function syncPaperReward(reward) {
-    const available = Math.max(0, Math.floor(Number(reward?.availablePacks || 0)));
-    const cart = readCart().filter((item) => item?.loyalty_reward !== true);
-    if (available > 0 && cart.length > 0) {
-      cart.push({
-        sku: String(reward.sku || "9999999999999"),
-        name: String(reward.name || "Vernostná odmena – Kancelársky papier A4, 80 g, 500 hárkov"),
-        price: 0.01,
-        qty: available,
-        image: "",
-        url: "/produkt/kancelarsky-papier-a4-80g-500-harkov",
-        stock_status: "instock",
-        loyalty_reward: true,
-      });
-    }
-    saveCart(cart);
+    saveCart(syncPaperRewardCart(readCart(), reward));
   }
 
   async function loadLoyalty() {
@@ -243,7 +230,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     try {
       const raw = localStorage.getItem(CART_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      return collapsePaperRewardCart(Array.isArray(parsed) ? parsed : []);
     } catch {
       return [];
     }
@@ -638,7 +625,8 @@ function formatMoney(value) {
 
     if (!sku) return;
 
-    const existing = cart.find((item) => item.sku === sku);
+    const incomingReward = isPaperRewardCartItem(product);
+    const existing = cart.find((item) => item.sku === sku && isPaperRewardCartItem(item) === incomingReward);
     const requestedAddition = cleanQty(product.qty || 1);
     const previousQty = existing ? cleanQty(existing.qty) : 0;
 
@@ -695,7 +683,7 @@ function formatMoney(value) {
     }
 
     saveCart(cart);
-    const savedItem = cart.find((item) => item.sku === sku);
+    const savedItem = cart.find((item) => item.sku === sku && isPaperRewardCartItem(item) === incomingReward);
     const actualAdded = Math.max(0, cleanQty(savedItem?.qty) - previousQty);
     if (typeof window.tmTrackCartAdd === "function") {
       window.tmTrackCartAdd(product, actualAdded);
@@ -825,10 +813,10 @@ function formatMoney(value) {
     addCartDrawerTimer = window.setTimeout(() => hideAddCartDrawer(), 10000);
   }
 
-  function updateQty(sku, qty) {
+  function updateQty(sku, qty, rewardItem = false) {
     let result = { qty: cleanQty(qty), limited: false };
     const cart = readCart().map((item) => {
-      if (item.sku === sku) {
+      if (item.sku === sku && isPaperRewardCartItem(item) === Boolean(rewardItem)) {
         const requested = cleanQty(qty);
         const accepted = limitedQty(item, requested, true);
         result = { qty: Math.max(1, accepted), limited: accepted < requested };
@@ -841,8 +829,8 @@ function formatMoney(value) {
     return result;
   }
 
-  function removeFromCart(sku) {
-    saveCart(readCart().filter((item) => item.sku !== sku));
+  function removeFromCart(sku, rewardItem = false) {
+    saveCart(readCart().filter((item) => item.sku !== sku || isPaperRewardCartItem(item) !== Boolean(rewardItem)));
   }
 
   function clearCart() {
@@ -885,7 +873,7 @@ function formatMoney(value) {
     if (mobileSticky) mobileSticky.hidden = false;
 
     cart.forEach((item) => {
-      const isPaperReward = item.loyalty_reward === true;
+      const isPaperReward = isPaperRewardCartItem(item);
       const qty = cleanQty(item.qty);
       const maxQty = stockLimit(item);
       const qtyMax = maxQty === null ? 99 : Math.max(1, maxQty);
@@ -897,6 +885,7 @@ function formatMoney(value) {
       const row = document.createElement("article");
       row.className = "cart-item";
       row.dataset.sku = item.sku;
+      row.dataset.rewardItem = String(isPaperReward);
 
       row.innerHTML = `
         <a class="cart-item-image" href="${esc(productUrl(item))}">
@@ -918,9 +907,9 @@ function formatMoney(value) {
 
         <div class="cart-item-quantity">
           <div class="qty-control">
-            <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" aria-label="Znížiť množstvo" ${isPaperReward ? "disabled" : ""}>−</button>
-            <input type="number" min="1" max="${qtyMax}" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" aria-label="Množstvo" ${isPaperReward ? "disabled" : ""}/>
-            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" aria-label="Zvýšiť množstvo" ${isPaperReward ? "disabled" : (maxQty !== null && qty >= maxQty ? 'aria-disabled="true"' : "")}>+</button>
+            <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Znížiť množstvo" ${isPaperReward ? "disabled" : ""}>−</button>
+            <input type="number" min="1" max="${qtyMax}" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Množstvo" ${isPaperReward ? "disabled" : ""}/>
+            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Zvýšiť množstvo" ${isPaperReward ? "disabled" : (maxQty !== null && qty >= maxQty ? 'aria-disabled="true"' : "")}>+</button>
           </div>
         </div>
 
@@ -1150,21 +1139,21 @@ function formatMoney(value) {
     const sku = cartButton.dataset.sku;
 
     if (action === "remove") {
-      removeFromCart(sku);
+      removeFromCart(sku, cartButton.dataset.rewardItem === "true");
       renderCartPage();
       return;
     }
 
     if (action === "minus") {
       const item = readCart().find((cartItem) => cartItem.sku === sku);
-      updateQty(sku, cleanQty(item?.qty || 1) - 1);
+      updateQty(sku, cleanQty(item?.qty || 1) - 1, cartButton.dataset.rewardItem === "true");
       renderCartPage();
       return;
     }
 
     if (action === "plus") {
       const item = readCart().find((cartItem) => cartItem.sku === sku);
-      updateQty(sku, cleanQty(item?.qty || 1) + 1);
+      updateQty(sku, cleanQty(item?.qty || 1) + 1, cartButton.dataset.rewardItem === "true");
       renderCartPage();
       return;
     }
@@ -1179,7 +1168,7 @@ function formatMoney(value) {
     const input = event.target.closest('input[data-cart-action="input"]');
     if (!input) return;
 
-    updateQty(input.dataset.sku, input.value);
+    updateQty(input.dataset.sku, input.value, input.dataset.rewardItem === "true");
     renderCartPage();
   });
 

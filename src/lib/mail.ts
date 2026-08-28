@@ -3,6 +3,7 @@ import { join } from "node:path";
 import nodemailer from "nodemailer";
 import { BANK_TRANSFER_DETAILS, bankTransferVariableSymbol, isBankPrepaidPayment } from "./bank-details";
 import { isAwaitingBankPaymentStatus } from "./order-statuses";
+import { STOREFRONT_ORIGIN } from "./storefront-url";
 
 function env(name: string): string {
   const runtimeValue = typeof process !== "undefined" ? process.env?.[name] : undefined;
@@ -214,7 +215,7 @@ function bankPaymentHtml(orderNumber: unknown, total: unknown): string {
 }
 
 function siteUrl(): string {
-  return (env("PUBLIC_SITE_URL") || env("SITE_URL") || "https://tonerymaxim.sk").replace(/\/$/, "");
+  return STOREFRONT_ORIGIN;
 }
 
 function legalAttachments() {

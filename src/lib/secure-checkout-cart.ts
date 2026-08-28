@@ -1,7 +1,12 @@
 import type { NormalizedCartItem } from "./checkout-order";
 import { getProductsCache, compactKey, type TmProduct } from "./tm-products-cache";
 import { wooRequest } from "./woo-client";
-import { LOYALTY_PAPER_PRICE, LOYALTY_PAPER_SKU, type getCustomerLoyalty } from "./loyalty";
+import {
+  LOYALTY_PAPER_PRICE,
+  LOYALTY_PAPER_PRODUCT_SKU,
+  LOYALTY_PAPER_REWARD_SKU,
+  type getCustomerLoyalty,
+} from "./loyalty";
 
 type RawCartItem = {
   id?: string | number;
@@ -11,6 +16,9 @@ type RawCartItem = {
   qty?: number | string;
   quantity?: number | string;
   loyalty_reward?: boolean;
+  name?: string;
+  title?: string;
+  price?: number | string;
 };
 
 class CheckoutCartError extends Error {
@@ -43,6 +51,19 @@ function productIdFromItem(item: RawCartItem) {
 
 function skuFromItem(item: RawCartItem) {
   return String(item.sku || "").trim();
+}
+
+function isRequestedPaperReward(item: RawCartItem) {
+  if (item?.loyalty_reward === true) return true;
+  const name = String(item?.name || item?.title || "").trim().toLowerCase();
+  const price = money(item?.price);
+  return name.startsWith("vernostná odmena")
+    || skuFromItem(item) === LOYALTY_PAPER_REWARD_SKU
+    || (skuFromItem(item) === LOYALTY_PAPER_PRODUCT_SKU && price > 0 && price <= LOYALTY_PAPER_PRICE);
+}
+
+export function cartRequestsPaperReward(rawCart: unknown) {
+  return Array.isArray(rawCart) && rawCart.some((item) => isRequestedPaperReward((item || {}) as RawCartItem));
 }
 
 function productKey(product: TmProduct) {
@@ -116,14 +137,14 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
   const cache = await getProductsCache();
   const products = Array.isArray(cache?.products) ? cache.products : [];
   const index = indexProducts(products);
-  const requestedReward = input.some((raw: any) => raw?.loyalty_reward === true);
-  const regularInput = input.filter((raw: any) => raw?.loyalty_reward !== true);
+  const requestedReward = cartRequestsPaperReward(input);
+  const regularInput = input.filter((raw: any) => !isRequestedPaperReward(raw));
   const rewardPacks = requestedReward && options.customerId
     ? Math.max(0, Math.floor(Number(options.loyalty?.paperReward?.availablePacks || 0)))
     : 0;
   if (!regularInput.length) return [];
   const secureInput: RawCartItem[] = [...regularInput];
-  if (rewardPacks > 0) secureInput.push({ sku: LOYALTY_PAPER_SKU, qty: rewardPacks, loyalty_reward: true });
+  if (rewardPacks > 0) secureInput.push({ sku: LOYALTY_PAPER_PRODUCT_SKU, qty: rewardPacks, loyalty_reward: true });
   const resolved = secureInput.map((raw) => {
     const item = (raw || {}) as RawCartItem;
     const product = resolveProduct(item, index);
@@ -146,7 +167,7 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
     const live = liveById.get(String(cached.id));
     if (!live) throw new CheckoutCartError(`Produkt už nie je publikovaný alebo dostupný: ${cached.name || requested}`);
     const product = { ...cached, ...live };
-    const isReward = item.loyalty_reward === true && String(product.sku || "").trim() === LOYALTY_PAPER_SKU;
+    const isReward = item.loyalty_reward === true && String(product.sku || "").trim() === LOYALTY_PAPER_PRODUCT_SKU;
     if (!isPurchasable(product)) {
       throw new CheckoutCartError(`Produkt nie je dostupný na objednanie: ${product.name || requested}`);
     }
@@ -162,8 +183,8 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
       id: String(product.id || ""),
       productId: product.id,
       product_id: product.id,
-      sku: String(product.sku || ""),
-      name: String(product.name || product.sku || product.id || "Produkt").slice(0, 160),
+      sku: isReward ? LOYALTY_PAPER_REWARD_SKU : String(product.sku || ""),
+      name: String(isReward ? options.loyalty?.paperReward?.name : (product.name || product.sku || product.id || "Produkt")).slice(0, 160),
       price: isReward ? LOYALTY_PAPER_PRICE : money(product.price),
       qty,
       product_type_key: String(product.product_type_key || ""),

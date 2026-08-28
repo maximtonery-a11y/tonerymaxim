@@ -1,3 +1,5 @@
+import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-cart.js";
+
 (function () {
   const root = document.querySelector('[data-ai-sales-assistant]');
   if (!root || root.dataset.ready === '1') return;
@@ -347,16 +349,16 @@
   const WEB_CART_KEY = 'tm_cart_v1';
   const cleanCartQty = value => Math.max(1,Math.min(99,parseInt(value,10)||1));
   function webCartProduct(product,qty){
-    return {id:String(product?.id||product?.sku||product?.name||''),productId:String(product?.id||''),product_id:String(product?.id||''),sku:String(product?.sku||''),name:String(product?.name||'Produkt'),price:Number(product?.price||0),qty:cleanCartQty(qty),image:String(product?.image||''),url:String(product?.url||product?.detail_url||''),slug:String(product?.slug||''),color:String(product?.color||product?.farba||''),capacity:product?.capacity||product?.yield||product?.page_yield||'',stock_status:String(product?.stock_status||'instock'),stock_quantity:product?.stock_quantity??null,stock_text:String(product?.stock_text||''),product_type_key:String(product?.product_type_key||product?.productTypeKey||product?.type||''),product_type_label:String(product?.product_type_label||product?.productTypeLabel||'')};
+    return {id:String(product?.id||product?.sku||product?.name||''),productId:String(product?.id||''),product_id:String(product?.id||''),sku:String(product?.sku||''),name:String(product?.name||'Produkt'),price:Number(product?.price||0),qty:cleanCartQty(qty),image:String(product?.image||''),url:String(product?.url||product?.detail_url||''),slug:String(product?.slug||''),color:String(product?.color||product?.farba||''),capacity:product?.capacity||product?.yield||product?.page_yield||'',stock_status:String(product?.stock_status||'instock'),stock_quantity:product?.stock_quantity??null,stock_text:String(product?.stock_text||''),product_type_key:String(product?.product_type_key||product?.productTypeKey||product?.type||''),product_type_label:String(product?.product_type_label||product?.productTypeLabel||''),loyalty_reward:isPaperRewardCartItem(product)};
   }
   function readWebCart(){
-    try{const value=JSON.parse(localStorage.getItem(WEB_CART_KEY)||'[]');return Array.isArray(value)?value:[];}catch{return[];}
+    try{const value=JSON.parse(localStorage.getItem(WEB_CART_KEY)||'[]');return collapsePaperRewardCart(Array.isArray(value)?value:[]);}catch{return[];}
   }
   function hydrateSharedCart(){
     state.cart=readWebCart().map(item=>({product:{...item,id:item.productId||item.product_id||item.id||item.sku},qty:cleanCartQty(item.qty)}));
   }
   function syncSharedCart(){
-    const cart=state.cart.map(({product,qty})=>webCartProduct(product,qty));
+    const cart=collapsePaperRewardCart(state.cart.map(({product,qty})=>webCartProduct(product,qty)));
     try{
       if(window.ToneryMaximCart&&typeof window.ToneryMaximCart.saveCart==='function')window.ToneryMaximCart.saveCart(cart);
       else localStorage.setItem(WEB_CART_KEY,JSON.stringify(cart));
@@ -382,7 +384,7 @@
     if(topCart){ topCart.hidden=count===0; topCartCount.textContent=`${count} ks`; topCartTotal.textContent=`· ${money(cartTotal())}`; }
     syncSharedCart();saveCommerceSession();
   }
-  function addCommerceItem(product,qty=1){ const k=cartKey(product),x=state.cart.find(i=>cartKey(i.product)===k); if(x)x.qty+=qty;else state.cart.push({product,qty}); updateLiveCart(); }
+  function addCommerceItem(product,qty=1){ if(isPaperRewardCartItem(product))return;const k=cartKey(product),x=state.cart.find(i=>cartKey(i.product)===k&&!isPaperRewardCartItem(i.product));if(x)x.qty+=qty;else state.cart.push({product,qty}); updateLiveCart(); }
   function askNextStep(){
     setProgress(2);
     const count=state.cart.reduce((n,x)=>n+x.qty,0);
@@ -418,7 +420,7 @@
     setExperience('shop');
     setProgress(3);
     messages.hidden=true; form.hidden=true; if(quick)quick.hidden=true; commerce.hidden=false;commerce.classList.add('is-focus-stage');
-    commerce.innerHTML=`<div class="tm-ai-commerce__head"><button class="tm-ai-back" data-c-back>← Späť k ponuke</button><div><b>Váš nákup</b><small>${state.cart.reduce((n,x)=>n+x.qty,0)} ks</small></div></div>${state.cart.length?`<div class="tm-ai-cart-list">${state.cart.map((x,i)=>`<div class="tm-ai-cart-item"><div><strong>${escapeHtml(x.product.name)}</strong><small>${escapeHtml(x.product.sku||'')}${discount(x.product,x.qty)?` · zľava ${discount(x.product,x.qty)} %`:''}</small></div><b>${money(linePrice(x.product,x.qty))}</b><div class="tm-ai-cart-controls"><button aria-label="Znížiť množstvo" data-c-minus="${i}">−</button><strong>${x.qty} ks</strong><button aria-label="Zvýšiť množstvo" data-c-plus="${i}">+</button><button class="remove" data-c-remove="${i}">Odstrániť</button></div>${aiType(x.product)==='compatible'&&x.qty<4?`<button class="tm-ai-offer" data-c-offer="${i}" data-q="${x.qty===1?2:4}">💡 Výhodnejšie: ${x.qty===1?'2 ks so zľavou 10 %':'4 ks so zľavou 25 %'} · ${money(unitPrice(x.product,x.qty===1?2:4))}/ks</button>`:''}</div>`).join('')}</div><div class="tm-ai-cart-total"><span>Spolu za tovar</span><b>${money(cartTotal())}</b></div><div class="tm-ai-commerce__actions tm-ai-cart-actions"><button class="primary" data-c-checkout>Pokračovať v rýchlom nákupe →</button><button class="secondary" data-c-web>Dokončiť objednávku na webe</button><button class="secondary" data-c-more>＋ Pridať ďalší produkt</button></div><p class="tm-ai-cart-note">Môžete pokračovať s AI alebo prejsť do bežného košíka. Položky aj množstvá zostanú rovnaké.</p>`:'<div class="tm-ai-empty-cart"><b>Váš nákup je zatiaľ prázdny.</b><button class="primary" data-c-more>Nájsť toner</button></div>'}`;
+    commerce.innerHTML=`<div class="tm-ai-commerce__head"><button class="tm-ai-back" data-c-back>← Späť k ponuke</button><div><b>Váš nákup</b><small>${state.cart.reduce((n,x)=>n+x.qty,0)} ks</small></div></div>${state.cart.length?`<div class="tm-ai-cart-list">${state.cart.map((x,i)=>{const reward=isPaperRewardCartItem(x.product);return`<div class="tm-ai-cart-item"><div><strong>${escapeHtml(x.product.name)}</strong><small>${escapeHtml(x.product.sku||'')}${reward?' · automatická vernostná odmena':discount(x.product,x.qty)?` · zľava ${discount(x.product,x.qty)} %`:''}</small></div><b>${money(linePrice(x.product,x.qty))}</b><div class="tm-ai-cart-controls">${reward?`<strong>${x.qty} ks</strong>`:`<button aria-label="Znížiť množstvo" data-c-minus="${i}">−</button><strong>${x.qty} ks</strong><button aria-label="Zvýšiť množstvo" data-c-plus="${i}">+</button><button class="remove" data-c-remove="${i}">Odstrániť</button>`}</div>${!reward&&aiType(x.product)==='compatible'&&x.qty<4?`<button class="tm-ai-offer" data-c-offer="${i}" data-q="${x.qty===1?2:4}">💡 Výhodnejšie: ${x.qty===1?'2 ks so zľavou 10 %':'4 ks so zľavou 25 %'} · ${money(unitPrice(x.product,x.qty===1?2:4))}/ks</button>`:''}</div>`}).join('')}</div><div class="tm-ai-cart-total"><span>Spolu za tovar</span><b>${money(cartTotal())}</b></div><div class="tm-ai-commerce__actions tm-ai-cart-actions"><button class="primary" data-c-checkout>Pokračovať v rýchlom nákupe →</button><button class="secondary" data-c-web>Dokončiť objednávku na webe</button><button class="secondary" data-c-more>＋ Pridať ďalší produkt</button></div><p class="tm-ai-cart-note">Môžete pokračovať s AI alebo prejsť do bežného košíka. Položky aj množstvá zostanú rovnaké.</p>`:'<div class="tm-ai-empty-cart"><b>Váš nákup je zatiaľ prázdny.</b><button class="primary" data-c-more>Nájsť toner</button></div>'}`;
     commerce.scrollTop=0;
     commerce.querySelector('[data-c-back]')?.addEventListener('click',commerceBack); commerce.querySelector('[data-c-more]')?.addEventListener('click',()=>{commerceBack();state.mode='shop';input.focus()});
     commerce.querySelectorAll('[data-c-minus]').forEach(b=>b.onclick=()=>{const i=+b.dataset.cMinus;state.cart[i].qty=Math.max(1,state.cart[i].qty-1);updateLiveCart();renderCart()});

@@ -4,7 +4,7 @@ import { savePendingGoPayOrder } from "../../lib/checkout-order";
 import { enqueueAsyncWooOrder, scheduleAsyncOrderQueue } from "../../lib/async-order-queue";
 import { getCustomerLoyalty } from "../../lib/loyalty";
 import { validateCheckoutCoupon } from "../../lib/coupons";
-import { normalizeSecureCheckoutCart, discountRate, discountedLine } from "../../lib/secure-checkout-cart";
+import { cartRequestsPaperReward, normalizeSecureCheckoutCart, discountRate, discountedLine } from "../../lib/secure-checkout-cart";
 import { CheckoutProfiler } from "../../lib/checkout-profiler";
 import { nextTmOrderNumber } from "../../lib/order-number";
 import { getOrCreateOrderNumber } from "../../lib/order-idempotency";
@@ -67,7 +67,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     profiler.mark("session");
     const body = await profiler.measure("request.json", () => request.json().catch(() => ({})));
     const checkout = validateCheckoutRequest(body, new Set(Object.keys(PAYMENT)));
-    const needsLoyalty = Boolean(session?.id) && (body?.loyalty?.apply || (Array.isArray(body.cart) && body.cart.some((item: any) => item?.loyalty_reward === true)));
+    const needsLoyalty = Boolean(session?.id) && (body?.loyalty?.apply || cartRequestsPaperReward(body?.cart));
     const loyalty = needsLoyalty
       ? await profiler.measure("loyalty-load", () => getCustomerLoyalty(session!.id))
       : null;

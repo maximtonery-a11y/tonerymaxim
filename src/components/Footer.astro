@@ -1,7 +1,6 @@
 ---
 import "../styles/footer.css";
 import CookieConsent from "./CookieConsent.astro";
-import LegacyShopPanel from "./LegacyShopPanel.astro";
 
 const { showTrust = true } = Astro.props;
 
@@ -82,7 +81,6 @@ const shippingLogos = [
       <a href="/partneri-a-tretie-strany">Partneri a tretie strany</a>
       <a href="/cookies">Informácie o cookies</a>
       <a href="/cookies#nastavenia" data-open-cookie-settings>Nastavenia cookies</a>
-      <a href="https://www.tonerymaxim.info" target="_blank" rel="noopener noreferrer">Pôvodný e-shop ↗</a>
     </nav>
 
     <div class="footer-contact-box">
@@ -135,13 +133,11 @@ const shippingLogos = [
       <a href="/reklamacie">Reklamácie</a>
       <a href="/reklamacia-online">Reklamácia online</a>
       <a href="/odstupenie-od-zmluvy">Odstúpenie</a>
-      <a href="https://www.tonerymaxim.info" target="_blank" rel="noopener noreferrer">Pôvodný e-shop ↗</a>
     </div>
   </div>
 </footer>
 
 <CookieConsent />
-<LegacyShopPanel />
 
 <script>
   function formatSkNumber(value: unknown) {

@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { createWooCustomer, findWooCustomerByEmail, TONERYMAXIM_META_DATA } from "../../../lib/woo-client";
 import { setCustomerCookie } from "../../../lib/auth-session";
 import { sendWelcomeEmail } from "../../../lib/mail";
+import { STOREFRONT_ORIGIN } from "../../../lib/storefront-url";
 
 export const prerender = false;
 
@@ -16,13 +17,6 @@ function json(data: unknown, status = 200) {
     status,
     headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
   });
-}
-
-function siteUrlFromRequest(request: Request): string {
-  const configured = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || process.env.TM_SITE_URL
-    || import.meta.env.PUBLIC_SITE_URL || import.meta.env.SITE_URL || import.meta.env.TM_SITE_URL;
-  if (typeof configured === "string" && configured.trim()) return configured.trim().replace(/\/$/, "");
-  return new URL(request.url).origin;
 }
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -65,7 +59,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       await sendWelcomeEmail({
         email,
         firstName,
-        siteUrl: siteUrlFromRequest(request),
+        siteUrl: STOREFRONT_ORIGIN,
       });
     } catch (mailError) {
       emailSent = false;

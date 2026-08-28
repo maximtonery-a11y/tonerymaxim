@@ -10,7 +10,8 @@ export const LOYALTY_META_USED = "tm_loyalty_used_orders";
 export const LOYALTY_META_LIFETIME = "tm_loyalty_lifetime_points";
 export const LOYALTY_META_PAPER_CLAIMED = "tm_loyalty_paper_claimed_packs";
 export const LOYALTY_META_PAPER_ORDERS = "tm_loyalty_paper_reward_orders";
-export const LOYALTY_PAPER_SKU = "9999999999999";
+export const LOYALTY_PAPER_PRODUCT_SKU = "9999999999999";
+export const LOYALTY_PAPER_REWARD_SKU = "TM-LOYALTY-PAPER-REWARD";
 export const LOYALTY_PAPER_PRICE = 0.01;
 const paperRewardClaimLocks = new Map<number, Promise<void>>();
 
@@ -98,7 +99,7 @@ export async function getCustomerLoyalty(customerId: number) {
       ...paper,
       claimedPacks: synced.claimedPacks,
       availablePacks: Math.max(0, paper.earnedPacks - synced.claimedPacks),
-      sku: LOYALTY_PAPER_SKU,
+      sku: LOYALTY_PAPER_REWARD_SKU,
       price: LOYALTY_PAPER_PRICE,
       name: "Vernostná odmena – Kancelársky papier A4, 80 g, 500 hárkov",
     },
