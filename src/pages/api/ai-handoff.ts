@@ -4,6 +4,7 @@ import { sendMail } from '../../lib/mail.ts';
 export const prerender = false;
 const TARGET = 'info@tonerymaxim.sk';
 const attempts = new Map<string, { count: number; reset: number }>();
+const MAX_ATTEMPT_BUCKETS = 1000;
 
 function clean(value: unknown, max = 500) { return String(value || '').replace(/[<>]/g, '').trim().slice(0, max); }
 function esc(value: string) { return value.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c] || c)); }
@@ -14,7 +15,15 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   try {
     const key = String(clientAddress || request.headers.get('x-forwarded-for') || 'unknown').split(',')[0].trim();
     const now = Date.now(); const current = attempts.get(key);
-    if (!current || current.reset < now) attempts.set(key, { count: 1, reset: now + 15 * 60_000 });
+    if (!current || current.reset < now) {
+      for (const [attemptKey, value] of attempts) if (value.reset < now) attempts.delete(attemptKey);
+      while (attempts.size >= MAX_ATTEMPT_BUCKETS) {
+        const oldestKey = attempts.keys().next().value;
+        if (typeof oldestKey !== 'string') break;
+        attempts.delete(oldestKey);
+      }
+      attempts.set(key, { count: 1, reset: now + 15 * 60_000 });
+    }
     else { current.count += 1; if (current.count > 5) return new Response(JSON.stringify({ ok:false, error:'Príliš veľa požiadaviek. Skúste neskôr.' }), { status:429, headers:{'Content-Type':'application/json'} }); }
 
     const body = await request.json().catch(() => ({}));

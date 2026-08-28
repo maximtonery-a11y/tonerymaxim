@@ -11,7 +11,9 @@ function request(path){return new Promise((resolve,reject)=>{const start=perform
 try{
   for(let i=0;i<50&&!logs.includes('Server listening');i++)await delay(100);
   if(!logs.includes('Server listening'))throw new Error(logs||'server sa nespustil');
-  const paths=['/','/kosik','/pokladna'];const results=[];
+  // Zatazovy test musi pokryt aj cestu, na ktorej sa v produkcii objavila 502,
+  // a lahky healthcheck pouzivany reverznou proxy.
+  const paths=['/','/kosik','/pokladna','/prihlasenie','/tlaciarne','/api/health'];const results=[];
   for(let batch=0;batch<50;batch++)results.push(...await Promise.all(Array.from({length:20},(_,i)=>request(paths[(batch*20+i)%paths.length]))));
   if(results.some(r=>r.status!==200))throw new Error(`HTTP chyby: ${results.filter(r=>r.status!==200).length}`);
   await delay(150);

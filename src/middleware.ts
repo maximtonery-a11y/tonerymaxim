@@ -13,6 +13,7 @@ const ORIGIN_EXEMPT = new Set(['/api/gopay-notify']);
 
 type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
+const MAX_RATE_BUCKETS = 5_000;
 const RATE_RULES: Array<{ match: RegExp; methods: string[]; limit: number; windowMs: number }> = [
   { match: /^\/api\/auth\/login$/, methods: ['POST'], limit: 30, windowMs: 60_000 },
   { match: /^\/api\/auth\/(register|forgot-password|reset-password)$/, methods: ['POST'], limit: 15, windowMs: 600_000 },
@@ -55,16 +56,37 @@ function rateAllowed(request: Request, url: URL): { ok: true } | { ok: false; re
   const key = `${url.pathname}|${method}|${clientIp(request)}`;
   const current = buckets.get(key);
   if (!current || current.resetAt <= now) {
-    buckets.set(key, { count: 1, resetAt: now + rule.windowMs });
-    if (buckets.size > 10_000) for (const [bucketKey, bucket] of buckets) {
-      if (bucket.resetAt <= now) buckets.delete(bucketKey);
+    // IP adresy a query parametre od botov nesmu vytvorit neobmedzenu Map.
+    // Najprv odstranime expirovane zaznamy a pri plnom limite najstarsi.
+    if (buckets.size >= MAX_RATE_BUCKETS) {
+      for (const [bucketKey, bucket] of buckets) {
+        if (bucket.resetAt <= now) buckets.delete(bucketKey);
+      }
+      while (buckets.size >= MAX_RATE_BUCKETS) {
+        const oldestKey = buckets.keys().next().value;
+        if (typeof oldestKey !== 'string') break;
+        buckets.delete(oldestKey);
+      }
     }
+    buckets.set(key, { count: 1, resetAt: now + rule.windowMs });
     return { ok: true };
   }
   current.count += 1;
   return current.count <= rule.limit
     ? { ok: true }
     : { ok: false, retryAfter: Math.max(1, Math.ceil((current.resetAt - now) / 1000)) };
+}
+
+function temporaryUnavailable(): Response {
+  const body = `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="8"><title>Stránku načítavame | ToneryMaxim.sk</title><style>body{margin:0;background:#f5f8fc;color:#071d41;font:16px/1.5 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}.box{width:min(520px,calc(100% - 40px));padding:32px;border:1px solid #dce7f4;border-radius:24px;background:#fff;box-shadow:0 18px 50px #0b2b5520;text-align:center}.spin{width:38px;height:38px;margin:0 auto 18px;border:4px solid #dce7f4;border-top-color:#0a8be8;border-radius:50%;animation:s .8s linear infinite}@keyframes s{to{transform:rotate(360deg)}}h1{font-size:26px;margin:0 0 10px}p{color:#53657c;margin:0 0 20px}a{display:inline-block;padding:12px 20px;border-radius:999px;background:#071d41;color:#fff;text-decoration:none;font-weight:750}</style></head><body><main class="box"><div class="spin" aria-hidden="true"></div><h1>Stránku práve načítavame</h1><p>Nastala krátka technická prestávka. Stránka sa automaticky obnoví o niekoľko sekúnd.</p><a href="javascript:location.reload()">Obnoviť stránku (F5)</a></main></body></html>`;
+  return new Response(body, {
+    status: 503,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'Retry-After': '8',
+    },
+  });
 }
 
 function apiError(message: string, status: number, extra: Record<string, string> = {}): Response {
@@ -105,7 +127,12 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
     || url.pathname === '/api/health'
     || url.pathname === '/api/readiness'
     || url.pathname === '/api/storefront-check') {
-    return finish(await next(), url, request);
+    try {
+      return finish(await next(), url, request);
+    } catch (error) {
+      console.error('[TM storefront] SSR request failed', url.pathname, error instanceof Error ? error.message : error);
+      return finish(temporaryUnavailable(), url, request);
+    }
   }
 
   // Stary interny analytics endpoint je po oddeleni systemu tvrdo vypnuty.
@@ -122,5 +149,10 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
   if (!originAllowed(request, url)) return apiError('Neplatny povod poziadavky.', 403);
   const rate = rateAllowed(request, url);
   if (!rate.ok) return apiError('Prilis vela poziadaviek.', 429, { 'Retry-After': String(rate.retryAfter) });
-  return finish(await next(), url, request);
+  try {
+    return finish(await next(), url, request);
+  } catch (error) {
+    console.error('[TM API] request failed', url.pathname, error instanceof Error ? error.message : error);
+    return apiError('Sluzba je docasne nedostupna. Skuste poziadavku zopakovat.', 503, { 'Retry-After': '8' });
+  }
 });

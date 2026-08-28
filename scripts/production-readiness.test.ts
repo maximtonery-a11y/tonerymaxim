@@ -224,6 +224,24 @@ test("healthcheck nikdy nenačítava katalóg, search index ani background worke
   assert.doesNotMatch(middleware, /ads-intelligence|AdsIntelligence/i);
 });
 
+test("SSR proces ma pevne limity pamate, timeout Woo API a bezpecnu 503 odpoved", async () => {
+  const middleware = await readFile(new URL("../src/middleware.ts", import.meta.url), "utf8");
+  const woo = await readFile(new URL("../src/lib/woo-client.ts", import.meta.url), "utf8");
+  const security = await readFile(new URL("../src/lib/security.ts", import.meta.url), "utf8");
+  const aiEvents = await readFile(new URL("../src/pages/api/ai-events.ts", import.meta.url), "utf8");
+  const aiHandoff = await readFile(new URL("../src/pages/api/ai-handoff.ts", import.meta.url), "utf8");
+
+  assert.match(middleware, /MAX_RATE_BUCKETS\s*=\s*5_000/);
+  assert.match(middleware, /function temporaryUnavailable/);
+  assert.match(middleware, /Retry-After['"]?:\s*['"]8['"]/);
+  assert.match(woo, /WOO_REQUEST_TIMEOUT_MS/);
+  assert.match(woo, /signal:\s*AbortSignal\.timeout\(WOO_REQUEST_TIMEOUT_MS\)/);
+  assert.match(woo, /WOO_ACCOUNT_CACHE_MAX_ITEMS\s*=\s*500/);
+  assert.match(security, /MAX_RATE_BUCKETS\s*=\s*5_000/);
+  assert.match(aiEvents, /MAX_ATTEMPT_BUCKETS\s*=\s*1000/);
+  assert.match(aiHandoff, /MAX_ATTEMPT_BUCKETS\s*=\s*1000/);
+});
+
 test("storefront middleware nepouziva diskovu analytiku ani perzistentny rate-limit", async () => {
   const middleware = await readFile(new URL("../src/middleware.ts", import.meta.url), "utf8");
   const header = await readFile(new URL("../src/components/Header.astro", import.meta.url), "utf8");

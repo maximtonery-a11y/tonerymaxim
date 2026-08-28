@@ -16,6 +16,7 @@ type RateRule = { limit: number; windowMs: number };
 type Bucket = { count: number; resetAt: number };
 
 const buckets = new Map<string, Bucket>();
+const MAX_RATE_BUCKETS = 5_000;
 const RATE_STATE_PATH = join(TM_DATA_ROOT, 'security', 'rate-limit.json');
 let rateStateLoaded = false;
 let rateStateLock: Promise<void> = Promise.resolve();
@@ -75,7 +76,7 @@ async function loadPersistentBuckets(): Promise<void> {
   if (rateStateLoaded) return;
   const saved = await readSignedJson<Record<string, Bucket>>(RATE_STATE_PATH);
   const now = Date.now();
-  if (saved) for (const [key, value] of Object.entries(saved)) {
+  if (saved) for (const [key, value] of Object.entries(saved).slice(-MAX_RATE_BUCKETS)) {
     if (Number(value?.resetAt || 0) > now && Number(value?.count || 0) > 0) buckets.set(key, value);
   }
   rateStateLoaded = true;
@@ -154,6 +155,12 @@ export async function rateLimitFor(path: string, method: string, request: Reques
   const needsImmediatePersistence = method !== 'GET' && path !== '/api/analytics';
 
   if (!current || current.resetAt <= now) {
+    for (const [bucketKey, bucket] of buckets) if (bucket.resetAt <= now) buckets.delete(bucketKey);
+    while (buckets.size >= MAX_RATE_BUCKETS) {
+      const oldestKey = buckets.keys().next().value;
+      if (typeof oldestKey !== 'string') break;
+      buckets.delete(oldestKey);
+    }
     buckets.set(key, { count: 1, resetAt: now + matched.rule.windowMs });
     persistBuckets(needsImmediatePersistence);
     return { ok: true };

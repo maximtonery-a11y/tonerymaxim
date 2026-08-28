@@ -2,6 +2,9 @@ import { createHmac } from "node:crypto";
 
 const WOO_ACCOUNT_CACHE_TTL_MS = Number(process.env.ACCOUNT_CACHE_TTL_MS || import.meta.env.ACCOUNT_CACHE_TTL_MS || 60_000);
 const WOO_ACCOUNT_ORDERS_CACHE_TTL_MS = Number(process.env.ACCOUNT_ORDERS_CACHE_TTL_MS || import.meta.env.ACCOUNT_ORDERS_CACHE_TTL_MS || 60_000);
+const WOO_REQUEST_TIMEOUT_MS = Math.min(60_000, Math.max(3_000, Number(process.env.WOO_REQUEST_TIMEOUT_MS || import.meta.env.WOO_REQUEST_TIMEOUT_MS || 20_000)));
+const WOO_ACCOUNT_CACHE_MAX_ITEMS = 500;
+const WOO_ACCOUNT_ORDERS_CACHE_MAX_ITEMS = 300;
 
 type CacheEntry<T> = { value: T; expiresAt: number };
 const wooCustomerCache = new Map<number, CacheEntry<WooCustomer | null>>();
@@ -21,7 +24,16 @@ function getCached<T>(cache: Map<string | number, CacheEntry<T>>, key: string | 
   return entry.value;
 }
 
-function setCached<T>(cache: Map<string | number, CacheEntry<T>>, key: string | number, value: T, ttlMs: number): T {
+function setCached<T>(cache: Map<string | number, CacheEntry<T>>, key: string | number, value: T, ttlMs: number, maxItems = 300): T {
+  const now = Date.now();
+  for (const [cacheKey, entry] of cache) {
+    if (entry.expiresAt <= now) cache.delete(cacheKey);
+  }
+  while (cache.size >= maxItems) {
+    const oldestKey = cache.keys().next().value;
+    if (oldestKey === undefined) break;
+    cache.delete(oldestKey);
+  }
   cache.set(key, { value, expiresAt: Date.now() + ttlMs });
   return value;
 }
@@ -105,6 +117,7 @@ export async function wooRequest<T = any>(endpoint: string, options: WooRequestO
       ...getToneryMaximWordPressHeaders(method),
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
+    signal: AbortSignal.timeout(WOO_REQUEST_TIMEOUT_MS),
   });
 
   const text = await response.text();
@@ -236,10 +249,10 @@ export async function getWooCustomerById(customerId: number): Promise<WooCustome
 
   try {
     const customer = await wooRequest<WooCustomer>(`/customers/${customerId}`);
-    return setCached(wooCustomerCache, customerId, customer, cacheTtl(WOO_ACCOUNT_CACHE_TTL_MS, 60_000));
+    return setCached(wooCustomerCache, customerId, customer, cacheTtl(WOO_ACCOUNT_CACHE_TTL_MS, 60_000), WOO_ACCOUNT_CACHE_MAX_ITEMS);
   } catch (error: any) {
     if (error?.status === 404) {
-      return setCached(wooCustomerCache, customerId, null, 10_000);
+      return setCached(wooCustomerCache, customerId, null, 10_000, WOO_ACCOUNT_CACHE_MAX_ITEMS);
     }
     throw error;
   }
@@ -252,7 +265,7 @@ export async function updateWooCustomer(customerId: number, body: Record<string,
     method: "PUT",
     body,
   });
-  setCached(wooCustomerCache, customerId, customer, cacheTtl(WOO_ACCOUNT_CACHE_TTL_MS, 60_000));
+  setCached(wooCustomerCache, customerId, customer, cacheTtl(WOO_ACCOUNT_CACHE_TTL_MS, 60_000), WOO_ACCOUNT_CACHE_MAX_ITEMS);
   return customer;
 }
 
@@ -272,7 +285,7 @@ export async function getWooCustomerOrders(customerId: number, perPage = 20): Pr
     },
   });
 
-  return setCached(wooCustomerOrdersCache, key, Array.isArray(orders) ? orders : [], cacheTtl(WOO_ACCOUNT_ORDERS_CACHE_TTL_MS, 60_000));
+  return setCached(wooCustomerOrdersCache, key, Array.isArray(orders) ? orders : [], cacheTtl(WOO_ACCOUNT_ORDERS_CACHE_TTL_MS, 60_000), WOO_ACCOUNT_ORDERS_CACHE_MAX_ITEMS);
 }
 
 
