@@ -96,12 +96,12 @@ export const GET: APIRoute = async ({ url }) => {
     const requestedCategory = cleanParam(url.searchParams.get("category"));
     const legacyComponentSearch = ["ostatné komponenty", "ostatne komponenty", "komponent"].includes(rawSearch.toLowerCase());
     const search = requestedCategory === "ostatne-komponenty" && legacyComponentSearch ? "" : rawSearch;
-    // Textové vyhľadávanie je vždy globálne. Žiadny starý URL/filter stav
-    // (farba, typ, značka, sklad, kategória ani tlačiareň) nesmie obmedziť
-    // výsledky nového dotazu. Filtre sa uplatnia iba bez textového searchu.
+    // Nový textový dotaz je globálny a nesmie zdediť staré filtre. Klient ich
+    // pri novom hľadaní vyčistí. Typ však po následnom vedomom kliknutí musí
+    // zostať aktívny aj nad výsledkami hľadania (napr. CE285 + Originálne).
     const brand = search ? "" : requestedBrand;
     const category = search ? "" : requestedCategory;
-    const type = search ? "" : cleanParam(url.searchParams.get("type"));
+    const type = cleanParam(url.searchParams.get("type"));
     const color = search ? "" : cleanParam(url.searchParams.get("color"));
     const stock = search ? "" : cleanParam(url.searchParams.get("stock"));
     const printer = search ? "" : cleanParam(url.searchParams.get("printer"));
