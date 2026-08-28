@@ -4,11 +4,28 @@
 
   const CART_KEYS = ["tm_cart_v1", "tonerymaxim_cart", "cart", "tm_cart"];
   let tmLoyalty = { ok: false, points: 0, discountValue: 0 };
+  let tmLoyaltyLoadPromise = null;
   const TM_LOYALTY_MIN_DISCOUNT = 0.2;
   // Vernostná zľava je pre prihláseného zákazníka predvolene zapnutá.
   // Hodnota "0" vznikne iba po jeho vedomom odškrtnutí voľby.
   let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") !== "0";
   let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
+
+  function syncPaperReward(reward) {
+    const available = Math.max(0, Math.floor(Number(reward?.availablePacks || 0)));
+    const cart = readCart().filter((item) => item?.loyalty_reward !== true);
+    if (available > 0 && cart.length > 0) {
+      cart.push({
+        id: String(reward.sku || "9999999999999"), productId: "", product_id: "",
+        sku: String(reward.sku || "9999999999999"),
+        name: String(reward.name || "Vernostná odmena – Kancelársky papier A4, 80 g, 500 hárkov"),
+        price: 0.01, qty: available, image: "",
+        url: "/produkt/kancelarsky-papier-a4-80g-500-harkov",
+        stock_status: "instock", stock_quantity: null, loyalty_reward: true,
+      });
+    }
+    localStorage.setItem("tm_cart_v1", JSON.stringify(cart));
+  }
 
   let goPayWarmupStarted = false;
   function warmGoPay() {
@@ -33,6 +50,7 @@
       if (response.status === 401) {
         tmLoyalty = { ok: false, points: 0, discountValue: 0 };
         tmLoyaltyApply = false;
+        syncPaperReward(null);
         renderCheckoutSummary();
         return;
       }
@@ -45,6 +63,7 @@
         points: Number(data.points || 0),
         discountValue: Number(data.discountValue || 0),
       };
+      syncPaperReward(data.paperReward);
       if (tmLoyalty.discountValue < TM_LOYALTY_MIN_DISCOUNT) tmLoyaltyApply = false;
       else if (localStorage.getItem("tm_loyalty_apply") === null) {
         localStorage.setItem("tm_loyalty_apply", "1");
@@ -547,6 +566,7 @@
       series_pack_key: String(item.series_pack_key || item.seriesPackKey || ""),
       series_pack_label: String(item.series_pack_label || item.seriesPackLabel || ""),
       series_pack_discount_rate: Number(item.series_pack_discount_rate || item.seriesPackDiscountRate || 0),
+      loyalty_reward: item.loyalty_reward === true,
     };
   }
 
@@ -1730,6 +1750,9 @@
   async function submitOrder(event) {
     event?.preventDefault?.();
     if (tmOrderSubmitting) return;
+    // Rýchle kliknutie po otvorení pokladne nesmie predbehnúť načítanie
+    // automatickej vernostnej odmeny.
+    if (tmLoyaltyLoadPromise) await tmLoyaltyLoadPromise.catch(() => {});
     const status = document.querySelector("[data-order-status]");
     renderCheckoutSummary();
 
@@ -2145,7 +2168,7 @@
     restorePickupState();
     if (["gopay", "applepay", "googlepay"].includes(getSelected("payment"))) warmGoPay();
     renderCheckoutSummary();
-    loadLoyalty();
+    tmLoyaltyLoadPromise = loadLoyalty();
     autoLoadBestCoupon();
     updateVisibility();
     setupPickupWidgets();

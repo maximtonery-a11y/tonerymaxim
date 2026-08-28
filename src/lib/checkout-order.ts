@@ -4,12 +4,13 @@ import { TM_CACHE_ROOT } from './runtime-paths';
 import { readSignedJson, writeSignedJson, TM_DATA_ROOT } from "./secure-persistence";
 import { wooRequest } from "./woo-client";
 import { sendOrderAdminCopyEmail, sendOrderConfirmationEmail } from "./mail";
-import { reserveLoyaltyDiscount } from "./loyalty";
+import { claimPaperReward, reserveLoyaltyDiscount } from "./loyalty";
 import { grantThankYouCoupon, markCouponUsed, thankYouCouponCode, type CouponResult } from "./coupons";
 import { registerIssuedCoupon } from "./coupon-registry";
 import { CheckoutProfiler } from "./checkout-profiler";
 import { sendHeurekaVerifiedOrder } from "./heureka-verified";
 import { withOrderIdempotency } from "./order-idempotency";
+import { canClaimPaperReward } from "./loyalty-rules";
 
 export type NormalizedCartItem = {
   id: string;
@@ -21,6 +22,7 @@ export type NormalizedCartItem = {
   qty: number;
   product_type_key?: string;
   product_type_label?: string;
+  loyalty_reward?: boolean;
 };
 
 export type CheckoutOrderSource = {
@@ -42,6 +44,7 @@ export type CheckoutOrderSource = {
   paymentPrice: number;
   loyaltyDiscount?: number;
   loyaltyPointsUsed?: number;
+  loyaltyPaperPacks?: number;
   coupon?: CouponResult | null;
   originalSubtotal?: number;
   quantityDiscount?: number;
@@ -344,7 +347,8 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     { key: "tm_payment_code", value: source.paymentCode || "" },
     { key: "tm_payment_title", value: payment.title || source.paymentLabel || "" },
     { key: "tm_loyalty_discount", value: money(source.loyaltyDiscount).toFixed(2) },
-    { key: "tm_loyalty_points_used", value: String(source.loyaltyPointsUsed || "") },
+        { key: "tm_loyalty_points_used", value: String(source.loyaltyPointsUsed || "") },
+    { key: "tm_loyalty_paper_packs", value: String(source.loyaltyPaperPacks || "") },
     { key: "tm_coupon_code", value: String(source.coupon?.code || "") },
     { key: "tm_coupon_type", value: String(source.coupon?.type || "") },
     { key: "tm_coupon_discount", value: money(source.coupon?.discount).toFixed(2) },
@@ -552,6 +556,22 @@ async function findExistingWooOrder(source: CheckoutOrderSource): Promise<any | 
   }) || null;
 }
 
+async function ensurePaperRewardClaim(source: CheckoutOrderSource, orderId: number | string, profiler?: CheckoutProfiler) {
+  const customerId = Number(source.customerId || 0);
+  const expectedPacks = Math.max(0, Math.floor(Number(source.loyaltyPaperPacks || 0)));
+  if (customerId < 1 || expectedPacks < 1 || !orderId) return;
+  // Pri GoPay objednávka vo Woo vzniká už v stave pending. Odmenu spotrebujeme
+  // až po potvrdenej platbe, nie po opustenej alebo zamietnutej platbe.
+  if (!canClaimPaperReward(source.paymentCode, source.paymentState)) return;
+  const run = () => claimPaperReward(customerId, orderId, expectedPacks);
+  const rewardClaim = profiler
+    ? await profiler.measure("loyalty-paper-claim", run)
+    : await run();
+  if (rewardClaim.claimed !== expectedPacks) {
+    throw new Error("Papierovú vernostnú odmenu sa nepodarilo bezpečne priradiť k objednávke.");
+  }
+}
+
 async function createWooOrderFromCheckoutInternal(source: CheckoutOrderSource, options: {
   gopayPayment?: GoPayPayment;
   customerNote?: string;
@@ -639,6 +659,14 @@ async function createWooOrderFromCheckoutInternal(source: CheckoutOrderSource, o
     }
   }
 
+  const rewardSource = {
+    ...source,
+    paymentState: String(options.gopayPayment?.state || source.paymentState || ""),
+  };
+  await ensurePaperRewardClaim(rewardSource, order.id, profiler).catch((error) => {
+    throw new Error(`Papierovú vernostnú odmenu sa nepodarilo zaevidovať: ${error?.message || error}`);
+  });
+
   if (source.heurekaConsent === true && customerEmail) {
     const heureka = await profiler.measure("heureka-verified-order", () => sendHeurekaVerifiedOrder(source, Number(order?.id || 0))).catch((error) => {
       console.error("Heureka Overené zákazníkmi error:", error?.message || error);
@@ -701,6 +729,7 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
   const result = await withOrderIdempotency(key, async () => {
     const existing = await findExistingWooOrder(source);
     if (existing?.id) {
+      await ensurePaperRewardClaim(source, existing.id);
       return {
         ok: true,
         status: 200,
@@ -805,6 +834,7 @@ async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
       wooOrderNumber: paidUpdate?.orderNumber || source.wooOrderNumber || String(source.wooOrderId),
       processedAt: new Date().toISOString(),
     };
+    await ensurePaperRewardClaim(updated, paidUpdate?.orderId || source.wooOrderId);
     await savePendingGoPayOrder(updated);
     return paidUpdate || {
       created: false,
@@ -898,6 +928,9 @@ export async function syncWooGoPayPaymentState(source: CheckoutOrderSource, paym
     orderNumber = String(woo?.number || orderNumber);
     updatedSource.wooOrderId = orderId;
     updatedSource.wooOrderNumber = orderNumber;
+    if (["PAID", "AUTHORIZED"].includes(state)) {
+      await ensurePaperRewardClaim(updatedSource, orderId);
+    }
   }
 
   await savePendingGoPayOrder(updatedSource);

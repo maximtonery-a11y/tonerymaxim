@@ -16,7 +16,8 @@ const wooCustomer = await getWooCustomerById(customer.id);
 const reward = getWelcomeReward(wooCustomer);
 const welcomeCode = welcomeCouponCode(customer.id);
 const loyalty = await getCustomerLoyalty(customer.id);
-const points = loyalty.points;
+const paperReward = loyalty.paperReward;
+const cyclePoints = paperReward.cyclePoints;
 const activeCoupons = await getCustomerActiveCoupons(customer.id);
 const visibleCoupons = [
   ...(reward.active ? [{ code: welcomeCode, label: "Uvítacia zľava 5 %", detail: `Na celý sortiment · platí do ${formatDate(reward.expires)}`, href: "/produkty" }] : []),
@@ -100,13 +101,13 @@ const visibleCoupons = [
         <div class="account-panel-head">
           <div>
             <h2>Odmeny za vernostné body</h2>
-            <p class="account-muted">Aktuálne máte {points} bodov.</p>
+            <p class="account-muted">Cyklus {paperReward.cycle}: získaných {cyclePoints} z 1 000 bodov. Použitie bodov na zľavu postup neznižuje.</p>
           </div>
         </div>
         <div class="reward-milestones">
-          <div class="reward-milestone"><div><strong>500 bodov</strong><span>1× kancelársky papier (500 listov)</span></div><small>{points >= 500 ? "dostupné" : `chýba ${500 - points} bodov`}</small></div>
-          <div class="reward-milestone"><div><strong>750 bodov</strong><span>2× kancelársky papier (1000 listov)</span></div><small>{points >= 750 ? "dostupné" : `chýba ${750 - points} bodov`}</small></div>
-          <div class="reward-milestone"><div><strong>1000 bodov</strong><span>3× kancelársky papier (1500 listov)</span></div><small>{points >= 1000 ? "dostupné" : `chýba ${1000 - points} bodov`}</small></div>
+          <div class="reward-milestone"><div><strong>500 bodov</strong><span>1× kancelársky papier (500 listov)</span></div><small>{cyclePoints >= 500 ? "získané" : `chýba ${500 - cyclePoints} bodov`}</small></div>
+          <div class="reward-milestone"><div><strong>800 bodov</strong><span>2× kancelársky papier (1000 listov)</span></div><small>{cyclePoints >= 800 ? "získané" : `chýba ${800 - cyclePoints} bodov`}</small></div>
+          <div class="reward-milestone"><div><strong>1000 bodov</strong><span>3× kancelársky papier (1500 listov)</span></div><small>{`chýba ${1000 - cyclePoints} bodov`}</small></div>
         </div>
       </section>
     </AccountShell>

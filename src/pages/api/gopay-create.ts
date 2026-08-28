@@ -67,7 +67,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     profiler.mark("session");
     const body = await profiler.measure("request.json", () => request.json().catch(() => ({})));
     const checkout = validateCheckoutRequest(body, new Set(Object.keys(PAYMENT)));
-    const cart = await profiler.measure("normalize-cart", () => normalizeSecureCheckoutCart(body.cart));
+    const needsLoyalty = Boolean(session?.id) && (body?.loyalty?.apply || (Array.isArray(body.cart) && body.cart.some((item: any) => item?.loyalty_reward === true)));
+    const loyalty = needsLoyalty
+      ? await profiler.measure("loyalty-load", () => getCustomerLoyalty(session!.id))
+      : null;
+    const cart = await profiler.measure("normalize-cart", () => normalizeSecureCheckoutCart(body.cart, { customerId: session?.id, loyalty }));
 
     if (cart.length === 0) {
       return new Response(JSON.stringify({
@@ -103,9 +107,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
     let loyaltyDiscount = 0;
     if (session?.id && body?.loyalty?.apply) {
-      const loyalty = await profiler.measure("loyalty-load", () => getCustomerLoyalty(session.id));
+      const currentLoyalty = loyalty || await profiler.measure("loyalty-load", () => getCustomerLoyalty(session.id));
       const requested = Math.max(0, Math.round(Number(body?.loyalty?.discount || 0) * 10) / 10);
-      loyaltyDiscount = Math.min(requested, loyalty.discountValue, Math.max(0, Math.round((subtotal - couponDiscount) * 100) / 100));
+      loyaltyDiscount = Math.min(requested, currentLoyalty.discountValue, Math.max(0, Math.round((subtotal - couponDiscount) * 100) / 100));
     }
     const goodsAfterDiscounts = Math.max(0, Math.round((subtotal - couponDiscount - loyaltyDiscount) * 100) / 100);
     const shippingPrice = goodsAfterDiscounts >= 29 ? 0 : shipping.price;
@@ -258,6 +262,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       coupon,
       loyaltyDiscount,
       loyaltyPointsUsed: loyaltyDiscount * 100,
+      loyaltyPaperPacks: cart.filter((item) => item.loyalty_reward).reduce((sum, item) => sum + Number(item.qty || 0), 0),
       originalSubtotal: Math.round(originalSubtotal * 100) / 100,
       quantityDiscount,
       subtotal: Math.round(subtotal * 100) / 100,

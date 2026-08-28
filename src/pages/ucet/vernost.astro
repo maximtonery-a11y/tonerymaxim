@@ -13,6 +13,13 @@ const points = loyalty.points;
 const history = loyalty.history;
 const discountValue = loyalty.discountValue;
 const discountValueLabel = discountValue.toFixed(2).replace(".", ",");
+const paperReward = loyalty.paperReward;
+const cyclePoints = paperReward.cyclePoints;
+const nextRewardText = cyclePoints < 500
+  ? `Do odmeny „1× kancelársky papier“ vám chýba ešte ${500 - cyclePoints} bodov.`
+  : cyclePoints < 800
+    ? `Do odmeny „2× kancelársky papier“ vám chýba ešte ${800 - cyclePoints} bodov.`
+    : `Do odmeny „3× kancelársky papier“ vám chýba ešte ${1000 - cyclePoints} bodov.`;
 ---
 
 <!doctype html>
@@ -30,9 +37,9 @@ const discountValueLabel = discountValue.toFixed(2).replace(".", ",");
           <h2>{points} bodov</h2>
           <p>{points > 0 ? <>Vaše body majú aktuálnu hodnotu <strong>{discountValueLabel} €</strong> pri ďalšom nákupe.</> : <>Body získate po vybavení objednávky.</>}</p>
           <div class="loyalty-progress" aria-label="Postup k ďalšej odmene">
-            <span style={`width: ${Math.min(100, Math.round((points / 1000) * 100))}%`}></span>
+            <span style={`width: ${Math.min(100, Math.round((cyclePoints / 1000) * 100))}%`}></span>
           </div>
-          <small>{points >= 500 ? "Dosiahli ste hranicu pre odmenu." : `Do odmeny „1× kancelársky papier“ vám chýba ešte ${500 - points} bodov.`}</small>
+          <small>{paperReward.availablePacks > 0 ? `${paperReward.availablePacks}× papier sa automaticky pridá k najbližšej objednávke za 0,01 € za balík.` : nextRewardText}</small>
         </div>
         <div class="loyalty-value-card">
           <span>Hodnota zľavy</span>
@@ -55,7 +62,7 @@ const discountValueLabel = discountValue.toFixed(2).replace(".", ",");
         <article class="account-list-card loyalty-rule-card">
           <span class="account-stat-icon">🎁</span>
           <h3>Odmeny navyše</h3>
-          <p>Za body získate kancelársky papier k objednávke.</p>
+          <p>Odmeny sa počítajú zo všetkých získaných bodov, aj keď body použijete ako zľavu.</p>
         </article>
       </section>
 
@@ -64,21 +71,21 @@ const discountValueLabel = discountValue.toFixed(2).replace(".", ",");
           <div class="account-panel-head">
             <div>
               <h2>Najbližšie odmeny</h2>
-              <p class="account-muted">Míľniky vernostného programu.</p>
+              <p class="account-muted">Cyklus {paperReward.cycle}: získaných {cyclePoints} z 1 000 bodov.</p>
             </div>
           </div>
           <div class="reward-milestones">
             <div class="reward-milestone">
               <div><strong>500 bodov</strong><span>1× kancelársky papier (500 listov)</span></div>
-              <small>{points >= 500 ? "dostupné" : `chýba ${500 - points} bodov`}</small>
+              <small>{cyclePoints >= 500 ? "získané" : `chýba ${500 - cyclePoints} bodov`}</small>
             </div>
             <div class="reward-milestone">
-              <div><strong>750 bodov</strong><span>2× kancelársky papier (1000 listov)</span></div>
-              <small>{points >= 750 ? "dostupné" : `chýba ${750 - points} bodov`}</small>
+              <div><strong>800 bodov</strong><span>2× kancelársky papier (1000 listov)</span></div>
+              <small>{cyclePoints >= 800 ? "získané" : `chýba ${800 - cyclePoints} bodov`}</small>
             </div>
             <div class="reward-milestone">
               <div><strong>1000 bodov</strong><span>3× kancelársky papier (1500 listov)</span></div>
-              <small>{points >= 1000 ? "dostupné" : `chýba ${1000 - points} bodov`}</small>
+              <small>{`chýba ${1000 - cyclePoints} bodov`}</small>
             </div>
           </div>
         </section>

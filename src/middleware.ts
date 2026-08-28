@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { ensureTonerCareWorkerStarted } from './lib/toner-care';
 
 const NOINDEX_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
 const PRIVATE_PATHS = new Set([
@@ -121,6 +122,11 @@ function finish(response: Response, url: URL, request?: Request): Response {
 }
 
 export const onRequest = defineMiddleware(async ({ request, url }, next) => {
+  // Healthcheck zostáva úplne ľahký. Prvá bežná požiadavka spustí neblokujúci
+  // denný worker; globálny zámok zabráni ďalším časovačom v tom istom procese.
+  if (!['/api/health', '/api/readiness', '/api/storefront-check'].includes(url.pathname)) {
+    ensureTonerCareWorkerStarted();
+  }
   // Storefront, kosik, pokladna a healthcheck nemaju ziadnu zavislost od
   // Ads, Merchant, Analytics, ich klucov ani ich diskoveho uloziska.
   if (!url.pathname.startsWith('/api/')

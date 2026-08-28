@@ -6,14 +6,16 @@ import {
   type SavedPrinter,
   type WooCustomer,
 } from "./woo-client";
+import { shouldSendTonerCareReminder } from "./toner-care-rules";
+export { daysUntil, shouldSendTonerCareReminder } from "./toner-care-rules";
 
 const DEFAULT_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_START_DELAY_MS = 3 * 60 * 1000;
 const MAX_CUSTOMER_PAGES = 500;
 
-let started = false;
 let running = false;
 let timer: NodeJS.Timeout | null = null;
+const WORKER_GLOBAL_KEY = Symbol.for("tm.toner-care-worker.started");
 
 function env(name: string): string {
   return String(process.env[name] || import.meta.env[name] || "").trim();
@@ -59,14 +61,6 @@ function preferenceLabel(value: SavedPrinter["preferred_type"]): string {
 
 function reminderKey(printer: SavedPrinter): string {
   return [printer.title, printer.installed_at, printer.expected_replacement_at].join("|");
-}
-
-function daysUntil(value: string): number | null {
-  const due = safeDate(value);
-  if (!due) return null;
-  const today = new Date();
-  const start = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-  return Math.ceil((due.getTime() - start) / 86_400_000);
 }
 
 function customerName(customer: WooCustomer): string {
@@ -137,8 +131,7 @@ async function processCustomer(customer: WooCustomer): Promise<number> {
 
   for (const printer of printers) {
     if (!printer.care_enabled || !printer.installed_at || !printer.expected_replacement_at) continue;
-    const remaining = daysUntil(printer.expected_replacement_at);
-    if (remaining === null || remaining > 21 || remaining < -7) continue;
+    if (!shouldSendTonerCareReminder(printer.expected_replacement_at)) continue;
 
     const key = reminderKey(printer);
     if (printer.customer_reminder_sent_for !== key && customer.email) {
@@ -192,8 +185,9 @@ export async function runTonerCareScan(): Promise<{ customers: number; notificat
 }
 
 export function ensureTonerCareWorkerStarted(): void {
-  if (started || String(env("TM_TONER_CARE_ENABLED") || "1") === "0") return;
-  started = true;
+  const globalState = globalThis as typeof globalThis & { [WORKER_GLOBAL_KEY]?: boolean };
+  if (globalState[WORKER_GLOBAL_KEY] || String(env("TM_TONER_CARE_ENABLED") || "1") === "0") return;
+  globalState[WORKER_GLOBAL_KEY] = true;
   const intervalMs = Math.max(60 * 60 * 1000, Number(env("TM_TONER_CARE_INTERVAL_MS") || DEFAULT_INTERVAL_MS));
   const startDelayMs = Math.max(30_000, Number(env("TM_TONER_CARE_START_DELAY_MS") || DEFAULT_START_DELAY_MS));
 

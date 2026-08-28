@@ -10,6 +10,24 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") !== "0";
   let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
 
+  function syncPaperReward(reward) {
+    const available = Math.max(0, Math.floor(Number(reward?.availablePacks || 0)));
+    const cart = readCart().filter((item) => item?.loyalty_reward !== true);
+    if (available > 0 && cart.length > 0) {
+      cart.push({
+        sku: String(reward.sku || "9999999999999"),
+        name: String(reward.name || "Vernostná odmena – Kancelársky papier A4, 80 g, 500 hárkov"),
+        price: 0.01,
+        qty: available,
+        image: "",
+        url: "/produkt/kancelarsky-papier-a4-80g-500-harkov",
+        stock_status: "instock",
+        loyalty_reward: true,
+      });
+    }
+    saveCart(cart);
+  }
+
   async function loadLoyalty() {
     try {
       const response = await fetch("/api/account/loyalty", {
@@ -20,6 +38,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       if (response.status === 401) {
         tmLoyalty = { ok: false, points: 0, discountValue: 0 };
         tmLoyaltyApply = false;
+        syncPaperReward(null);
         renderCartPage();
         return;
       }
@@ -32,6 +51,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         points: Number(data.points || 0),
         discountValue: Number(data.discountValue || 0),
       };
+      syncPaperReward(data.paperReward);
       if (tmLoyalty.discountValue < TM_LOYALTY_MIN_DISCOUNT) tmLoyaltyApply = false;
       else if (localStorage.getItem("tm_loyalty_apply") === null) {
         localStorage.setItem("tm_loyalty_apply", "1");
@@ -865,6 +885,7 @@ function formatMoney(value) {
     if (mobileSticky) mobileSticky.hidden = false;
 
     cart.forEach((item) => {
+      const isPaperReward = item.loyalty_reward === true;
       const qty = cleanQty(item.qty);
       const maxQty = stockLimit(item);
       const qtyMax = maxQty === null ? 99 : Math.max(1, maxQty);
@@ -890,18 +911,16 @@ function formatMoney(value) {
           <a class="cart-item-title" href="${esc(productUrl(item))}">${esc(item.name)}</a>
           <div class="cart-item-sku">SKU: ${esc(item.sku)}</div>
           ${cartItemMetaHtml(item)}
-          <button class="cart-remove" type="button" data-cart-action="remove" data-sku="${esc(item.sku)}">
-            Odstrániť
-          </button>
+          ${isPaperReward ? `<strong class="cart-line-discount">Automatická vernostná odmena</strong>` : `<button class="cart-remove" type="button" data-cart-action="remove" data-sku="${esc(item.sku)}">Odstrániť</button>`}
         </div>
 
         <div class="cart-item-price">${formatMoney(item.price)}</div>
 
         <div class="cart-item-quantity">
           <div class="qty-control">
-            <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" aria-label="Znížiť množstvo">−</button>
-            <input type="number" min="1" max="${qtyMax}" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" aria-label="Množstvo" />
-            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" aria-label="Zvýšiť množstvo"${maxQty !== null && qty >= maxQty ? ' aria-disabled="true"' : ""}>+</button>
+            <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" aria-label="Znížiť množstvo" ${isPaperReward ? "disabled" : ""}>−</button>
+            <input type="number" min="1" max="${qtyMax}" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" aria-label="Množstvo" ${isPaperReward ? "disabled" : ""}/>
+            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" aria-label="Zvýšiť množstvo" ${isPaperReward ? "disabled" : (maxQty !== null && qty >= maxQty ? 'aria-disabled="true"' : "")}>+</button>
           </div>
         </div>
 
@@ -1172,7 +1191,9 @@ function formatMoney(value) {
     // Globálny header používa tento modul na počítadlo košíka, ale drahé
     // zákaznícke API patria iba na stránku košíka. Pokladňa má vlastný modul.
     if (cartPage) {
-      loadLoyalty();
+      // Odmenu načítame pred hydratáciou. Inak mohla pomalšia hydratácia
+      // uložiť staršiu kópiu košíka a práve pridanú odmenu znovu odstrániť.
+      await loadLoyalty();
       autoLoadBestCoupon();
       const changed = await hydrateCartProducts();
       if (changed) { renderCartPage(); refreshDispatchMessages(document); }

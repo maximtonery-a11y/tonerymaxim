@@ -1,6 +1,7 @@
 import type { NormalizedCartItem } from "./checkout-order";
 import { getProductsCache, compactKey, type TmProduct } from "./tm-products-cache";
 import { wooRequest } from "./woo-client";
+import { LOYALTY_PAPER_PRICE, LOYALTY_PAPER_SKU, type getCustomerLoyalty } from "./loyalty";
 
 type RawCartItem = {
   id?: string | number;
@@ -9,6 +10,7 @@ type RawCartItem = {
   sku?: string;
   qty?: number | string;
   quantity?: number | string;
+  loyalty_reward?: boolean;
 };
 
 class CheckoutCartError extends Error {
@@ -103,7 +105,10 @@ export function discountedLine(item: NormalizedCartItem) {
   };
 }
 
-export async function normalizeSecureCheckoutCart(rawCart: unknown): Promise<NormalizedCartItem[]> {
+export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
+  customerId?: number;
+  loyalty?: Awaited<ReturnType<typeof getCustomerLoyalty>> | null;
+} = {}): Promise<NormalizedCartItem[]> {
   const input = Array.isArray(rawCart) ? rawCart : [];
   if (!input.length) return [];
   if (input.length > 30) throw new CheckoutCartError("Košík obsahuje príliš veľa rôznych položiek.", 400);
@@ -111,7 +116,15 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown): Promise<Nor
   const cache = await getProductsCache();
   const products = Array.isArray(cache?.products) ? cache.products : [];
   const index = indexProducts(products);
-  const resolved = input.map((raw) => {
+  const requestedReward = input.some((raw: any) => raw?.loyalty_reward === true);
+  const regularInput = input.filter((raw: any) => raw?.loyalty_reward !== true);
+  const rewardPacks = requestedReward && options.customerId
+    ? Math.max(0, Math.floor(Number(options.loyalty?.paperReward?.availablePacks || 0)))
+    : 0;
+  if (!regularInput.length) return [];
+  const secureInput: RawCartItem[] = [...regularInput];
+  if (rewardPacks > 0) secureInput.push({ sku: LOYALTY_PAPER_SKU, qty: rewardPacks, loyalty_reward: true });
+  const resolved = secureInput.map((raw) => {
     const item = (raw || {}) as RawCartItem;
     const product = resolveProduct(item, index);
     const requested = skuFromItem(item) || productIdFromItem(item) || "neznámy produkt";
@@ -133,6 +146,7 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown): Promise<Nor
     const live = liveById.get(String(cached.id));
     if (!live) throw new CheckoutCartError(`Produkt už nie je publikovaný alebo dostupný: ${cached.name || requested}`);
     const product = { ...cached, ...live };
+    const isReward = item.loyalty_reward === true && String(product.sku || "").trim() === LOYALTY_PAPER_SKU;
     if (!isPurchasable(product)) {
       throw new CheckoutCartError(`Produkt nie je dostupný na objednanie: ${product.name || requested}`);
     }
@@ -150,10 +164,11 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown): Promise<Nor
       product_id: product.id,
       sku: String(product.sku || ""),
       name: String(product.name || product.sku || product.id || "Produkt").slice(0, 160),
-      price: money(product.price),
+      price: isReward ? LOYALTY_PAPER_PRICE : money(product.price),
       qty,
       product_type_key: String(product.product_type_key || ""),
       product_type_label: String(product.product_type_label || ""),
+      loyalty_reward: isReward,
     });
   }
 

@@ -359,8 +359,12 @@ test("kategória komponentov je doplnkom troch hlavných skupín a odkazy neprid
     "src/pages/tlaciarne.astro",
     "src/pages/tlaciarne/[brand].astro",
   ].map(read).join("\n");
-  assert.match(links, /\/produkty\?category=ostatne-komponenty/);
+  assert.match(links, /\/komponenty-do-tlaciarni/);
   assert.doesNotMatch(links, /ostatne-komponenty&(search|s)=|s=ostatné komponenty|search=komponent/);
+
+  const componentLanding = read("src/pages/komponenty-do-tlaciarni.astro");
+  assert.match(componentLanding, /canonical=`\$\{origin\}\/komponenty-do-tlaciarni`/);
+  assert.match(componentLanding, /\/produkty\?category=ostatne-komponenty/);
 });
 
 
