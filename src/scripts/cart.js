@@ -1103,9 +1103,12 @@ function formatMoney(value) {
     refreshCartCounters();
     renderCartPage();
     refreshDispatchMessages(document);
-    loadLoyalty();
-    autoLoadBestCoupon();
-    if (document.querySelector("[data-cart-list]")) {
+    const cartPage = document.querySelector("[data-cart-list]");
+    // Globálny header používa tento modul na počítadlo košíka, ale drahé
+    // zákaznícke API patria iba na stránku košíka. Pokladňa má vlastný modul.
+    if (cartPage) {
+      loadLoyalty();
+      autoLoadBestCoupon();
       const changed = await hydrateCartProducts();
       if (changed) { renderCartPage(); refreshDispatchMessages(document); }
     }

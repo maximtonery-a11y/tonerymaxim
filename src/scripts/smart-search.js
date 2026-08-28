@@ -279,9 +279,13 @@
         priority: 'low',
       }).catch(() => {});
     };
-    // Index začni zohrievať okamžite. requestIdleCallback vedel warmup odložiť
-    // až o 800 ms, takže prvý používateľský dotaz mohol predbehnúť index.
-    start();
+    // Warmup nesmie súperiť s prvým vykreslením ani s ďalším kliknutím.
+    // Server index skladá po dávkach, toto oneskorenie navyše chráni slabší VPS.
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(start, { timeout: 2500 });
+    } else {
+      window.setTimeout(start, 1500);
+    }
   }
 
   function goToSearch(input) {

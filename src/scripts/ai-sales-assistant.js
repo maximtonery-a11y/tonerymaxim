@@ -31,6 +31,7 @@
   const SESSION_KEY = 'tm_ai_tomas_state_v1';
   function readSavedState(){ try { const x=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); return x&&typeof x==='object'?x:{}; } catch { return {}; } }
   const saved=readSavedState();
+  let customerProfileLoadStarted = false;
   const state = { busy: false, history: Array.isArray(saved.history)?saved.history.slice(-20):[], lastQuestion: saved.lastProductQuery||'', mode: saved.uiMode||'auto', size: saved.uiSize==='expanded'?'expanded':'compact', manualSize:Boolean(saved.uiManualSize), cart: Array.isArray(saved.uiCart)?saved.uiCart:[], offerSets:Array.isArray(saved.uiOfferSets)?saved.uiOfferSets:[], offerSingles:Array.isArray(saved.uiOfferSingles)?saved.uiOfferSingles:[], profile: null, started: Boolean(saved.uiStarted),
     commerceState: {version:1,sessionId:saved.sessionId||'',history:Array.isArray(saved.history)?saved.history.slice(-20):[],currentPrinter:saved.currentPrinter||null,currentProductId:saved.currentProductId||null,selectedProductId:saved.selectedProductId||null,currentColor:saved.currentColor||null,currentType:saved.currentType||null,cart:Array.isArray(saved.cart)?saved.cart:[],checkoutDraft:saved.checkoutDraft||{},lastProductQuery:saved.lastProductQuery||null,lastIntent:saved.lastIntent||null,pendingQuestion:saved.pendingQuestion||null} };
   function saveCommerceSession(){
@@ -72,6 +73,10 @@
 
   function openPanel() {
     if (document.querySelector('.tm-cookie-consent.tm-cookie-is-open')) return;
+    if (!customerProfileLoadStarted) {
+      customerProfileLoadStarted = true;
+      loadCustomerProfile();
+    }
     panel.hidden = false;
     toggle.hidden = true;
     toggle.setAttribute('aria-expanded', 'true');
@@ -666,7 +671,6 @@
     closePanel();
   });
   back?.addEventListener('click',goBack);
-  loadCustomerProfile();
   updateLiveCart();
   const onCheckoutPage=/^\/(?:kosik|pokladna)(?:\/|$)/i.test(location.pathname);
   if(saved.resumeOpen&&!onCheckoutPage){

@@ -21,6 +21,10 @@ const MAX_PREFIX_BUCKET = Number(process.env.SMART_SEARCH_MAX_PREFIX_BUCKET || i
 
 const globalStore = globalThis as typeof globalThis & {
   __TM_SMART_SEARCH_INDEX__?: SearchIndexCache;
+  __TM_SMART_SEARCH_INDEX_BUILD__?: {
+    generatedAt: string;
+    promise: Promise<SearchIndexCache>;
+  };
   __TM_SMART_SEARCH_RESULT_CACHE__?: Map<string, ResultCacheEntry>;
 };
 
@@ -290,10 +294,19 @@ function addPrefix(prefixMap: Map<string, number[]>, prefix: string, index: numb
   if (current[current.length - 1] !== index && current.length < MAX_PREFIX_BUCKET) current.push(index);
 }
 
-function buildPrefixMap(items: IndexedProduct[]) {
+// Malá dávka drží najdlhší CPU úsek hlboko pod timeoutom reverznej proxy
+// aj na slabšom VPS. Celkový index je rovnaký, medzi dávkami iba pustíme I/O.
+const INDEX_BUILD_BATCH_SIZE = 25;
+
+function yieldToRequests() {
+  return new Promise<void>((resolve) => setImmediate(resolve));
+}
+
+async function buildPrefixMap(items: IndexedProduct[]) {
   const prefixMap = new Map<string, number[]>();
 
-  for (const item of items) {
+  for (let itemIndex = 0; itemIndex < items.length; itemIndex += 1) {
+    const item = items[itemIndex];
     for (const token of item.candidateTokens || []) {
       const compact = compactKey(token);
       if (compact.length < 2) continue;
@@ -303,21 +316,25 @@ function buildPrefixMap(items: IndexedProduct[]) {
       // Modelové kódy ľudia často zadávajú bez začiatku alebo s pomlčkou, preto pridáme aj celý kompaktný token.
       if (/\d/.test(compact)) addPrefix(prefixMap, compact, item.index);
     }
+    if ((itemIndex + 1) % INDEX_BUILD_BATCH_SIZE === 0) await yieldToRequests();
   }
 
   return prefixMap;
 }
 
-function getSearchIndex(cache: any): SearchIndexCache {
-  const currentIndex = globalStore.__TM_SMART_SEARCH_INDEX__;
-  if (currentIndex && currentIndex.generatedAt === cache.generated_at) return currentIndex;
-
+async function buildSearchIndex(cache: any): Promise<SearchIndexCache> {
   const printerMap = new Map<string, IndexedPrinter>();
-  const items = sortProducts(cache.products).map((product, index) => makeIndexedProduct(product, index, printerMap));
+  const sortedProducts = sortProducts(cache.products);
+  const items: IndexedProduct[] = [];
+  for (let index = 0; index < sortedProducts.length; index += 1) {
+    items.push(makeIndexedProduct(sortedProducts[index], index, printerMap));
+    if ((index + 1) % INDEX_BUILD_BATCH_SIZE === 0) await yieldToRequests();
+  }
   const printers = [...printerMap.values()];
-  const prefixMap = buildPrefixMap(items);
+  const prefixMap = await buildPrefixMap(items);
   const codes = new Map<string, string>();
-  for (const item of items) {
+  for (let itemIndex = 0; itemIndex < items.length; itemIndex += 1) {
+    const item = items[itemIndex];
     const product = item.product || {};
     const attrs = Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [];
     const rawValues = [product.sku, product.mpn, product.name, ...attrs.flatMap((attribute: any) => [attribute?.value, ...(attribute?.values || []), ...(attribute?.options || [])])].filter(Boolean);
@@ -335,6 +352,7 @@ function getSearchIndex(cache: any): SearchIndexCache {
         if (!codes.has(key)) codes.set(key, clean);
       }
     }
+    if ((itemIndex + 1) % INDEX_BUILD_BATCH_SIZE === 0) await yieldToRequests();
   }
   // Kandidátske tokeny sú potrebné iba počas zostavenia prefixovej mapy.
   // Ich ďalšie držanie v RAM zdvojuje časť vyhľadávacieho indexu.
@@ -345,9 +363,25 @@ function getSearchIndex(cache: any): SearchIndexCache {
   return nextIndex;
 }
 
+async function getSearchIndex(cache: any): Promise<SearchIndexCache> {
+  const currentIndex = globalStore.__TM_SMART_SEARCH_INDEX__;
+  if (currentIndex && currentIndex.generatedAt === cache.generated_at) return currentIndex;
+
+  const activeBuild = globalStore.__TM_SMART_SEARCH_INDEX_BUILD__;
+  if (activeBuild && activeBuild.generatedAt === cache.generated_at) return activeBuild.promise;
+
+  const promise = buildSearchIndex(cache).finally(() => {
+    if (globalStore.__TM_SMART_SEARCH_INDEX_BUILD__?.promise === promise) {
+      delete globalStore.__TM_SMART_SEARCH_INDEX_BUILD__;
+    }
+  });
+  globalStore.__TM_SMART_SEARCH_INDEX_BUILD__ = { generatedAt: cache.generated_at, promise };
+  return promise;
+}
+
 export async function warmSmartSearchIndex() {
   const cache = await getProductsCache();
-  const index = getSearchIndex(cache);
+  const index = await getSearchIndex(cache);
   return { generatedAt: index.generatedAt, products: index.items.length, printers: index.printers.length };
 }
 
@@ -675,7 +709,7 @@ export const GET: APIRoute = async ({ url }) => {
 
   try {
     const cache = await getProductsCache();
-    const index = getSearchIndex(cache);
+    const index = await getSearchIndex(cache);
     if (q === "__tm_warm__") {
       return jsonResponse({ ok: true, query: "", warmed: true, printers: [], productGroups: [], products: [], brands: [], categories: [] }, 200, "private, max-age=30");
     }
