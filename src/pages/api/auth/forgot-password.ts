@@ -15,12 +15,7 @@ function json(data: unknown, status = 200) {
   });
 }
 
-function siteUrlFromRequest(request: Request): string {
-  const configured = process.env.PUBLIC_SITE_URL || process.env.SITE_URL || process.env.TM_SITE_URL
-    || import.meta.env.PUBLIC_SITE_URL || import.meta.env.SITE_URL || import.meta.env.TM_SITE_URL;
-  if (typeof configured === "string" && configured.trim()) return configured.trim().replace(/\/$/, "");
-  return new URL(request.url).origin;
-}
+const PASSWORD_RESET_SITE_URL = "https://www.tonerymaxim.sk";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -39,7 +34,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
 
       const token = await makePasswordResetToken(customer.id, email);
-      const resetUrl = `${siteUrlFromRequest(request)}/reset-hesla?token=${encodeURIComponent(token)}`;
+      const resetUrl = `${PASSWORD_RESET_SITE_URL}/reset-hesla?token=${encodeURIComponent(token)}`;
       await sendPasswordResetEmail({ email, resetUrl });
     }
 

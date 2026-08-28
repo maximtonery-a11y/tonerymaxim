@@ -348,10 +348,7 @@
     try{const value=JSON.parse(localStorage.getItem(WEB_CART_KEY)||'[]');return Array.isArray(value)?value:[];}catch{return[];}
   }
   function hydrateSharedCart(){
-    const merged=new Map();
-    readWebCart().forEach(item=>{const product={...item,id:item.productId||item.product_id||item.id||item.sku};const key=cartKey(product);if(key)merged.set(key,{product,qty:cleanCartQty(item.qty)});});
-    state.cart.forEach(item=>{const key=cartKey(item.product);if(!key)return;const existing=merged.get(key);merged.set(key,{product:{...(existing?.product||{}),...item.product},qty:Math.max(existing?.qty||0,cleanCartQty(item.qty))});});
-    state.cart=[...merged.values()];
+    state.cart=readWebCart().map(item=>({product:{...item,id:item.productId||item.product_id||item.id||item.sku},qty:cleanCartQty(item.qty)}));
   }
   function syncSharedCart(){
     const cart=state.cart.map(({product,qty})=>webCartProduct(product,qty));
@@ -364,6 +361,14 @@
     }catch(error){console.error('[AI Tomas cart sync]',error);}
   }
   hydrateSharedCart();
+  window.addEventListener('tm:cart-synced',event=>{
+    if(event.detail?.source!=='storefront'||!Array.isArray(event.detail.cart))return;
+    state.cart=event.detail.cart.map(item=>({product:{...item,id:item.productId||item.product_id||item.id||item.sku},qty:cleanCartQty(item.qty)}));
+    const count=state.cart.reduce((sum,item)=>sum+item.qty,0);
+    if(liveCart){liveCart.hidden=count===0;root.querySelector('[data-ai-cart-count]').textContent=`${count} ks`;root.querySelector('[data-ai-cart-total]').textContent=`· ${money(cartTotal())}`;}
+    if(topCart){topCart.hidden=count===0;topCartCount.textContent=`${count} ks`;topCartTotal.textContent=`· ${money(cartTotal())}`;}
+    saveCommerceSession();
+  });
   function cartTotal(){ return state.cart.reduce((n,x)=>n+linePrice(x.product,x.qty),0); }
   function updateLiveCart(){
     if(!liveCart) return; const count=state.cart.reduce((n,x)=>n+x.qty,0);

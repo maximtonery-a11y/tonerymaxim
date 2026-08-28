@@ -226,6 +226,9 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   function saveCart(cart) {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
     refreshCartCounters();
+    window.dispatchEvent(new CustomEvent("tm:cart-synced", {
+      detail: { cart, count: cartCount(cart), source: "storefront" },
+    }));
   }
 
   function cleanQty(value) {
