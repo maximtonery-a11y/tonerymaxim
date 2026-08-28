@@ -4,7 +4,10 @@
 
   const CART_KEYS = ["tm_cart_v1", "tonerymaxim_cart", "cart", "tm_cart"];
   let tmLoyalty = { ok: false, points: 0, discountValue: 0 };
-  let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") === "1";
+  const TM_LOYALTY_MIN_DISCOUNT = 0.2;
+  // Vernostná zľava je pre prihláseného zákazníka predvolene zapnutá.
+  // Hodnota "0" vznikne iba po jeho vedomom odškrtnutí voľby.
+  let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") !== "0";
   let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
 
   let goPayWarmupStarted = false;
@@ -42,7 +45,10 @@
         points: Number(data.points || 0),
         discountValue: Number(data.discountValue || 0),
       };
-      if (tmLoyalty.discountValue <= 0) tmLoyaltyApply = false;
+      if (tmLoyalty.discountValue < TM_LOYALTY_MIN_DISCOUNT) tmLoyaltyApply = false;
+      else if (localStorage.getItem("tm_loyalty_apply") === null) {
+        localStorage.setItem("tm_loyalty_apply", "1");
+      }
       renderCheckoutSummary();
     } catch {
       tmLoyalty = { ok: false, points: 0, discountValue: 0 };
@@ -54,7 +60,7 @@
   function loyaltyDiscountForTotal(total) {
     if (!tmLoyaltyApply || !tmLoyalty.ok) return 0;
     const discount = Math.round(Math.min(Number(tmLoyalty.discountValue || 0), Math.max(0, Number(total || 0))) * 100) / 100;
-    return discount >= 0.2 ? discount : 0;
+    return discount >= TM_LOYALTY_MIN_DISCOUNT ? discount : 0;
   }
 
 
