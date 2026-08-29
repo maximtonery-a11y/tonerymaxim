@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { findWooCustomerByEmail, verifyWordPressLogin } from "../../../lib/woo-client";
 import { setCustomerCookie } from "../../../lib/auth-session";
+import { markMissingRegistrationCompleted, recordMissingRegistrationAttempt } from "../../../lib/missing-registration";
 
 export const prerender = false;
 
@@ -23,6 +24,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const customer = await findWooCustomerByEmail(email);
     if (!customer) {
+      await recordMissingRegistrationAttempt(email).catch((error) => {
+        console.error("ToneryMaxim missing registration record failed:", error instanceof Error ? error.message : error);
+      });
       return json({
         ok: false,
         code: "ACCOUNT_NOT_REGISTERED",
@@ -40,6 +44,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         error: "Nesprávne heslo. Skúste ho zadať znova alebo si obnovte heslo.",
       }, 401);
     }
+
+    await markMissingRegistrationCompleted(email).catch(() => undefined);
 
     setCustomerCookie(cookies, customer);
 

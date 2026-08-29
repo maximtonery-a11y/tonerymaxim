@@ -173,10 +173,11 @@ export const aiKnowledge: AiKnowledgeItem[] = [
   },
   {
     id: 'ucet-heslo', intent: 'account', title: 'Účet a zabudnuté heslo', priority: 85,
-    triggers: ['zabudol som heslo', 'zabudnute heslo', 'obnovit heslo', 'obnovim heslo', 'neviem sa prihlasit', 'ucet', 'registracia', 'prihlasenie', 'obnova hesla', 'chcem sa zaregistrovat'],
+    triggers: ['zabudol som heslo', 'zabudnute heslo', 'obnovit heslo', 'obnovim heslo', 'neviem sa prihlasit', 'nejde mi prihlasenie', 'prihlasenie nefunguje', 'nespravne meno alebo heslo', 'nespravny email alebo heslo', 'nespravne heslo', 'zle heslo', 'ucet', 'registracia', 'prihlasenie', 'obnova hesla', 'chcem sa zaregistrovat'],
     answer: [
-      'Ak ste zabudli heslo, použite stránku Zabudnuté heslo a zadajte e-mail použitý pri registrácii.',
-      'Ak e-mail nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.',
+      'Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo.',
+      'Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu.',
+      'Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.',
     ],
   },
   {

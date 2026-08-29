@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { buildAssistantAnswer } from '../../lib/aiSalesAssistant';
 import { saveAiUnanswered } from '../../lib/ai-unanswered';
+import { advisorLinks } from '../../lib/ai-advisor-links';
 
 export const prerender = false;
 
@@ -54,7 +55,7 @@ export const POST: APIRoute = async ({ request }) => {
       void saveAiUnanswered({ message, page, intent: result.intent, confidence, kind }).catch(() => undefined);
     }
 
-    return new Response(JSON.stringify({ ok: true, ...result }), {
+    return new Response(JSON.stringify({ ok: true, ...result, sources: advisorLinks(result) }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',

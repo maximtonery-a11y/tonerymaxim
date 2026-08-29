@@ -1,0 +1,47 @@
+---
+import { getAdminAccessKey, isAdminLocked } from '../../lib/admin-access';
+import { readMissingRegistrationSummary } from '../../lib/missing-registration';
+
+export const prerender = false;
+const adminKey = getAdminAccessKey(Astro.locals);
+const suppliedKey = Astro.url.searchParams.get('key') || '';
+const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostname, allowLocal: true });
+const summary = locked ? null : await readMissingRegistrationSummary();
+const dt = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'short', timeStyle: 'short' });
+const dashboardUrl = `/admin/dashboard${suppliedKey ? `?key=${encodeURIComponent(suppliedKey)}` : ''}`;
+---
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>Nenájdené účty | ToneryMAXIM</title>
+  <style>
+    :root{font-family:Inter,system-ui,sans-serif;color:#081a3a;background:#f4f8ff}*{box-sizing:border-box}body{margin:0;padding:24px}main{max-width:1250px;margin:auto}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}h1{font-size:clamp(30px,5vw,50px);margin:0 0 8px;letter-spacing:-.04em}p{color:#5d6b82;line-height:1.5}.back{display:inline-flex;padding:11px 16px;border-radius:12px;background:#071d41;color:#fff;text-decoration:none;font-weight:850}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{background:#fff;border:1px solid #dbe6f6;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 14px 38px #0a21470d}.stat strong{display:block;font-size:34px;margin-top:6px}.bad{color:#c5251b}.warn{color:#a35b00}.ok{color:#087b43}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #e7edf6;vertical-align:top}th{font-size:11px;text-transform:uppercase;color:#66748b}.email{font-weight:850}.badge{display:inline-flex;padding:5px 8px;border-radius:999px;background:#fff3d7;color:#905000;font-size:12px;font-weight:850}.registered{background:#e9f8f0;color:#087b43}.empty{text-align:center;padding:25px;color:#718096}.locked{max-width:650px;margin:80px auto;text-align:center}@media(max-width:760px){body{padding:14px}.top{display:block}.back{margin-top:10px}.stats{grid-template-columns:1fr}table,thead,tbody,tr,th,td{display:block}thead{display:none}tr{padding:10px 0;border-bottom:1px solid #e7edf6}td{border:0;padding:4px 0}}
+  </style>
+</head>
+<body><main>
+{locked || !summary ? (
+  <section class="card locked"><h1>Nenájdené účty</h1><p>Prehľad je chránený. Otvor ho cez Live Dashboard alebo s platným parametrom <strong>?key=...</strong>.</p></section>
+) : (
+  <>
+    <div class="top"><div><h1>Nenájdené účty</h1><p>Zákazníci, ktorým sa pri prihlásení zobrazil informačný modal o novej registrácii.</p></div><a class="back" href={dashboardUrl}>← Live Dashboard</a></div>
+    <section class="stats">
+      <article class="card stat"><span>Bez registrácie po 24 h</span><strong class="bad">{summary.abandoned.length}</strong></article>
+      <article class="card stat"><span>Ešte čakáme 24 h</span><strong class="warn">{summary.recent.length}</strong></article>
+      <article class="card stat"><span>Následne zaregistrovaní</span><strong class="ok">{summary.registered.length}</strong></article>
+    </section>
+    <section class="card"><h2>Bez registrácie po 24 hodinách</h2><p>Ide o zákazníkov, pri ktorých od posledného neúspešného prihlásenia nebola dokončená nová registrácia.</p>
+      {summary.abandoned.length ? <table><thead><tr><th>E-mail</th><th>Prvý pokus</th><th>Posledný pokus</th><th>Pokusy</th><th>Stav</th></tr></thead><tbody>{summary.abandoned.map((item)=><tr><td class="email">{item.email}</td><td>{dt.format(new Date(item.firstAttemptAt))}</td><td>{dt.format(new Date(item.lastAttemptAt))}</td><td>{item.attempts}×</td><td><span class="badge">bez registrácie</span></td></tr>)}</tbody></table> : <div class="empty">Zatiaľ tu nie je žiadny zákazník.</div>}
+    </section>
+    <section class="card"><h2>Posledných 24 hodín</h2><p>Títo zákazníci ešte majú čas dokončiť registráciu a zatiaľ sa nepočítajú medzi odídených.</p>
+      {summary.recent.length ? <table><thead><tr><th>E-mail</th><th>Posledný pokus</th><th>Pokusy</th><th>Stav</th></tr></thead><tbody>{summary.recent.map((item)=><tr><td class="email">{item.email}</td><td>{dt.format(new Date(item.lastAttemptAt))}</td><td>{item.attempts}×</td><td><span class="badge">čakáme</span></td></tr>)}</tbody></table> : <div class="empty">Žiadne nové pokusy.</div>}
+    </section>
+    <section class="card"><h2>Následne zaregistrovaní</h2>
+      {summary.registered.length ? <table><thead><tr><th>E-mail</th><th>Prvý pokus</th><th>Registrácia</th><th>Stav</th></tr></thead><tbody>{summary.registered.map((item)=><tr><td class="email">{item.email}</td><td>{dt.format(new Date(item.firstAttemptAt))}</td><td>{item.registeredAt ? dt.format(new Date(item.registeredAt)) : '—'}</td><td><span class="badge registered">zaregistrovaný</span></td></tr>)}</tbody></table> : <div class="empty">Zatiaľ žiadna následná registrácia.</div>}
+    </section>
+    <p>Záznamy sa uchovávajú najviac 30 dní. Heslá, IP adresy ani obsah relácie sa do tohto prehľadu neukladajú.</p>
+  </>
+)}
+</main></body></html>

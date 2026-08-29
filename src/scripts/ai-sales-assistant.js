@@ -137,7 +137,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   }
   function appendSources(item,sources){
     if(!item||!Array.isArray(sources)||!sources.length)return;
-    const box=document.createElement('div');box.className='tm-ai-msg__sources';box.innerHTML=`<b>Overené informácie:</b> ${sources.slice(0,3).map(source=>`<a href="${escapeHtml(source.url||'/faq')}" data-ai-source>${escapeHtml(source.label||'Viac informácií')}</a>`).join(' · ')}`;item.appendChild(box);
+    const box=document.createElement('div');box.className='tm-ai-msg__sources';box.innerHTML=`<b>Priame odkazy:</b> ${sources.slice(0,3).map(source=>`<a href="${escapeHtml(source.url||'/faq')}" data-ai-source>${escapeHtml(source.label||'Viac informácií')}</a>`).join(' · ')}`;item.appendChild(box);
   }
   if(saved.uiMessages){
     messages.innerHTML=saved.uiMessages;
@@ -299,6 +299,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
 
       const data = await response.json();
       loading.innerHTML = `${textToHtml(data.answer || 'Nenašiel som presnú odpoveď.')}${renderGroups(data.groups)}`;
+      appendSources(loading,data.sources);
       state.history.push({ role: 'user', content: question });
       state.history.push({ role: 'assistant', content: Array.isArray(data.answer) ? data.answer.join(' ') : String(data.answer || '') });
       if (state.history.length > 20) state.history = state.history.slice(-20);

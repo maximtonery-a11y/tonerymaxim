@@ -3,6 +3,7 @@ import { createWooCustomer, findWooCustomerByEmail, TONERYMAXIM_META_DATA } from
 import { setCustomerCookie } from "../../../lib/auth-session";
 import { sendWelcomeEmail } from "../../../lib/mail";
 import { STOREFRONT_ORIGIN } from "../../../lib/storefront-url";
+import { markMissingRegistrationCompleted } from "../../../lib/missing-registration";
 
 export const prerender = false;
 
@@ -53,6 +54,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         { key: "tm_loyalty_history", value: "[]" },
       ],
     });
+
+    await markMissingRegistrationCompleted(email).catch(() => undefined);
 
     let emailSent = true;
     try {

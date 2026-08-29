@@ -11,6 +11,12 @@ const TEST_ROUTES = new Set([
   '/design/icons-test', '/design/product-detail', '/design/product-list',
 ]);
 const ORIGIN_EXEMPT = new Set(['/api/gopay-notify']);
+const TRUSTED_REQUEST_ORIGINS = new Set([
+  'https://tonerymaxim.sk',
+  'https://www.tonerymaxim.sk',
+  'https://tonerymaxim.info',
+  'https://www.tonerymaxim.info',
+]);
 
 type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
@@ -46,7 +52,14 @@ function originAllowed(request: Request, url: URL): boolean {
     }
     return ['same-origin', 'same-site'].includes(String(request.headers.get('sec-fetch-site') || '').toLowerCase());
   }
-  try { return new URL(origin || referer || '').host === url.host; } catch { return false; }
+  try {
+    const source = new URL(origin || referer || '');
+    if (TRUSTED_REQUEST_ORIGINS.has(source.origin)) return true;
+    const localHosts = new Set(['localhost', '127.0.0.1', '::1']);
+    return localHosts.has(source.hostname) && localHosts.has(url.hostname) && source.port === url.port;
+  } catch {
+    return false;
+  }
 }
 
 function rateAllowed(request: Request, url: URL): { ok: true } | { ok: false; retryAfter: number } {

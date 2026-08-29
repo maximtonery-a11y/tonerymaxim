@@ -29,6 +29,7 @@ const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostna
       h1 { margin:0; font-size:clamp(28px,4vw,48px); letter-spacing:-.055em; }
       .subtitle { margin:4px 0 0; color:#65728a; }
       .live { display:flex; align-items:center; gap:9px; padding:9px 13px; background:#fff; border:1px solid #dce7f4; border-radius:999px; font-weight:900; box-shadow:0 8px 24px rgba(9,32,70,.07); }
+      .admin-link { display:inline-flex; margin-top:10px; padding:9px 13px; border-radius:12px; background:#071d41; color:#fff; text-decoration:none; font-weight:900; }
       .dot { width:9px; height:9px; border-radius:50%; background:#16a765; box-shadow:0 0 0 6px rgba(22,167,101,.12); }
       .grid { display:grid; gap:14px; }
       .metrics { grid-template-columns:repeat(6,minmax(0,1fr)); }
@@ -86,7 +87,7 @@ const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostna
       <main class="shell" data-key={suppliedKey}>
         <div class="topbar">
           <div class="brand"><div class="logo">TM</div><div><h1>Live Dashboard</h1><p class="subtitle">Návštevnosť, objednávky, výkon, fronty a bezpečnosť v jednom prehľade.</p></div></div>
-          <div class="live"><span class="dot"></span><span id="refresh-label">Načítavam...</span></div>
+          <div><div class="live"><span class="dot"></span><span id="refresh-label">Načítavam...</span></div><a class="admin-link" href={`/admin/nezaregistrovani${suppliedKey ? `?key=${encodeURIComponent(suppliedKey)}` : ''}`}>Nenájdené účty →</a></div>
         </div>
         <div id="error" class="errorbox"></div>
 

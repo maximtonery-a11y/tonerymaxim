@@ -598,7 +598,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
       ? 'platba-moznosti'
     : /\b(?:reklamac|reklamuj|vratit|vraten|odstup|vymen|nepasuj|nespravny toner|zly toner|poskoden.*tovar)\w*/i.test(normalizedMessage)
       ? (/vrat|vraten|odstup|vymen|nespravny toner/i.test(normalizedMessage) ? 'vratenie-tovaru' : 'reklamacia-postup')
-    : /\b(?:zabud|obnov)\w*.*\bhesl\w*|\bneviem sa prihlas|\bprihlasen/i.test(normalizedMessage)
+    : /\b(?:zabud|obnov)\w*.*\bhesl\w*|\b(?:neviem|nemozem|neda|nejde)\w*(?:\s+\w+){0,3}\s+prihlas\w*|\bprihlas\w*.*(?:nejde|nefung|problem|chyba)|\b(?:nespravn|zle|neplatn)\w*(?:\s+\w+){0,3}\s+(?:meno|email|e-mail|hesl)\w*|\b(?:meno|email|e-mail|hesl)\w*(?:\s+\w+){0,3}\s+(?:nespravn|zle|neplatn)\w*/i.test(normalizedMessage)
       ? 'ucet-heslo'
     : /\b(?:kontakt|telefon|email|mail|spojim|spojit|pracovn.*doba|volat|volať|otvorene v sobotu)\w*/i.test(normalizedMessage)
       ? 'kontakt'

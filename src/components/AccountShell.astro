@@ -62,6 +62,7 @@ const navItems = [
 
         <form method="post" action="/api/auth/logout" data-account-logout-form>
           <button class="account-logout" type="submit">↪ Odhlásiť sa</button>
+          <p data-account-logout-error role="alert" hidden></p>
         </form>
       </aside>
 
@@ -87,8 +88,34 @@ const navItems = [
 <script>
   import "../scripts/account-ui.js";
 
-  document.querySelector('[data-account-logout-form]')?.addEventListener('submit', () => {
-    try { sessionStorage.removeItem('tm_header_account_v1'); } catch {}
+  document.querySelector<HTMLFormElement>('[data-account-logout-form]')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    const errorBox = form.querySelector<HTMLElement>('[data-account-logout-error]');
+    if (button?.disabled) return;
+    if (button) button.disabled = true;
+    if (errorBox) errorBox.hidden = true;
+
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: '{}',
+        cache: 'no-store',
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result?.ok !== true) throw new Error(result?.error || 'Odhlásenie zlyhalo.');
+      try { sessionStorage.removeItem('tm_header_account_v1'); } catch {}
+      window.location.assign('/prihlasenie?logout=1');
+    } catch (error) {
+      if (button) button.disabled = false;
+      if (errorBox) {
+        errorBox.textContent = error instanceof Error ? error.message : 'Odhlásenie zlyhalo. Skúste to znova.';
+        errorBox.hidden = false;
+      }
+    }
   });
 
   const accountLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".account-nav-link[href]"));

@@ -4,6 +4,7 @@ import { normalizeCommerceState } from '../../lib/ai-commerce/domain.ts';
 import { routeCommerceMessage } from '../../lib/ai-commerce/router.ts';
 import { searchCommerce } from '../../lib/ai-commerce/engine.ts';
 import { saveAiUnanswered } from '../../lib/ai-unanswered.ts';
+import { advisorLinks } from '../../lib/ai-advisor-links.ts';
 
 export const prerender = false;
 const clean = (v: unknown, max=500) => String(v || '').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);
@@ -12,17 +13,6 @@ function requestedType(message:string){const n=normalized(message);return /origi
 function requestedColor(message:string){const n=normalized(message);return /cier|black|\bbk\b/.test(n)?'black':/cyan|azur/.test(n)?'cyan':/magenta|purpur/.test(n)?'magenta':/yellow|zlt/.test(n)?'yellow':null;}
 function requestedQuantity(message:string){const n=normalized(message);const digit=n.match(/\b(\d{1,2})\s*(?:ks|kus|kusy|kusov)?\b/);if(digit)return Math.min(99,Math.max(1,Number(digit[1])));const words:Record<string,number>={jeden:1,jednu:1,jedno:1,dva:2,dve:2,tri:3,styri:4,pat:5};for(const [w,q] of Object.entries(words))if(new RegExp(`\\b${w}\\b`).test(n))return q;return null;}
 function upsertCart(state:any,product:any,quantity:number){const key=String(product.id);const found=state.cart.find((x:any)=>String(x.id)===key||String(x.sku)===String(product.sku));if(found)found.quantity=Math.min(99,Number(found.quantity||1)+quantity);else state.cart.push({id:key,sku:String(product.sku||''),quantity});}
-function advisorSources(advisor:any){
-  const intent=String(advisor?.intent||'');const faq=String(advisor?.faq||'');
-  if(intent==='shipping'||intent==='payment'||/doprava|platba/.test(faq))return[{label:'Doprava a platba',url:'/doprava-a-platba'}];
-  if(intent==='claim'||/reklamac|vraten|odstup/.test(faq))return[{label:'Reklamácie a vrátenie',url:'/reklamacie'}];
-  if(intent==='loyalty'||/vernost|registracia/.test(faq))return[{label:'Vernostný program',url:'/vernostny-program'},{label:'Výhody registrácie',url:'/vyhody-registracie'}];
-  if(intent==='legal')return[{label:'Ochrana osobných údajov',url:'/ochrana-osobnych-udajov'}];
-  if(intent==='contact'||faq==='kontakt')return[{label:'Kontakt',url:'/kontakt'}];
-  if(intent==='support'||intent==='diagnostic')return[{label:'Odborná poradňa',url:'/poradna'}];
-  return [];
-}
-
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json().catch(() => ({}));
@@ -57,7 +47,7 @@ export const POST: APIRoute = async ({ request }) => {
     const needsHandoff=wantsHuman||advisor?.unanswered===true;
     if(wantsHuman)advisor={...advisor,answer:['Rozumiem. Odovzdám vašu otázku pracovníkovi ToneryMAXIM. Doplňte telefón alebo e-mail; spolu s otázkou odošlem aj stručný kontext tejto konverzácie.'],products:[],groups:[],intent:'handoff',confidence:1,unanswered:false,handoffSuggested:true};
     else if(needsHandoff)advisor={...advisor,handoffSuggested:true};
-    advisor={...advisor,sources:advisorSources(advisor)};
+    advisor={...advisor,sources:advisorLinks(advisor)};
     state.lastIntent=route.intents[0] || 'UNKNOWN';
     const previousQuery=state.lastProductQuery;
     const isNewProduct=Boolean(route.productQuery&&previousQuery&&normalized(route.productQuery)!==normalized(previousQuery)&&route.intents.some(x=>['PRODUCT_SEARCH','PRINTER_SEARCH'].includes(x)));

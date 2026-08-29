@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildAssistantAnswer } from '../src/lib/aiSalesAssistant.ts';
+import { advisorLinks } from '../src/lib/ai-advisor-links.ts';
 
 process.env.OPENAI_ASSISTANT_ENABLED = '0';
 
@@ -14,6 +15,7 @@ const cases = [
   ['Koľko stojí dobierka?', 'payment', 'Možnosti platby'],
   ['Som firma, dostanem faktúru?', 'payment', 'Faktúra'],
   ['Zabudol som heslo.', 'account', 'Účet'],
+  ['Píše mi, že mám nesprávne meno alebo heslo.', 'account', 'Prihlasuje sa e-mailovou adresou'],
   ['Môžem nakúpiť bez registrácie?', 'loyalty', 'Registrácia'],
   ['Ako funguje 5 % zľava po registrácii?', 'loyalty', 'Registrácia'],
   ['Ako funguje 7 % odmena?', 'loyalty', '7 %'],
@@ -77,6 +79,8 @@ const broadCases = [
   ['Dá sa platiť kartou?', 'payment'], ['Môžem zaplatiť prevodom?', 'payment'], ['Chcem platiť na dobierku', 'payment'],
   ['Nakupujem na IČO', 'payment'], ['Som škola, môžeme platiť prevodom?', 'payment'],
   ['Neviem sa prihlásiť', 'account'], ['Ako obnovím heslo?', 'account'],
+  ['Píše mi, že mám nesprávne meno alebo heslo', 'account'], ['Nesprávny e-mail alebo heslo', 'account'],
+  ['Nejde mi prihlásenie', 'account'], ['Prihlásenie nefunguje, čo mám robiť?', 'account'],
   ['Musím mať účet?', 'loyalty'], ['Čo dostanem za registráciu?', 'loyalty'], ['Máte vernostný program?', 'loyalty'],
   ['Čo sú vernostné body?', 'loyalty'], ['Koľko je 100 bodov?', 'loyalty'], ['Dostanem po nákupe 7 %?', 'loyalty'],
   ['Doručíte mi to do Brna?', 'shipping'], ['A čo doprava do Prahy?', 'shipping'], ['Posielate na CZ?', 'shipping'],
@@ -171,4 +175,17 @@ test('konflikt L2350DW vs TN2421 upozorní na kontrolu fyzického štítku a ton
   assert.match(answer, /kazet/i);
   assert.match(answer, /HL-L2352DW/i);
   assert.match(answer, /počítač|Windows|ovládač/i);
+});
+
+test('servisné odpovede ponúkajú iba bezpečné interné odkazy', async () => {
+  assert.deepEqual(advisorLinks({ intent: 'account', faq: 'ucet-heslo' }), [
+    { label: 'Obnoviť heslo', url: '/zabudnute-heslo' },
+    { label: 'Prejsť na prihlásenie', url: '/prihlasenie' },
+  ]);
+  assert.equal(advisorLinks({ intent: 'claim', faq: 'reklamacia-postup' })[0]?.url, '/reklamacia-online');
+  assert.equal(advisorLinks({ intent: 'loyalty', faq: 'registracia-zlava' })[0]?.url, '/registracia');
+  for (const link of advisorLinks({ intent: 'account', faq: 'ucet-heslo' })) {
+    assert.match(link.url, /^\/[a-z0-9/_-]+$/);
+    assert.doesNotMatch(link.url, /\.info|https?:/i);
+  }
 });
