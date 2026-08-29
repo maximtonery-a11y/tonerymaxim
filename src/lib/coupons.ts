@@ -1,6 +1,7 @@
 import { getCustomerMeta, getWooCustomerById, updateWooCustomer, welcomeCouponCode, wooRequest } from "./woo-client";
 import type { NormalizedCartItem } from "./checkout-order";
 import { getIssuedCoupon, markIssuedCouponUsed, registerIssuedCoupon } from "./coupon-registry";
+import { CALENDAR_SOURCE, calendarDiscountRate } from "./calendar-catalog";
 
 export type CouponType = "welcome5" | "thankyou7" | "marketing";
 export type CouponScope = "all" | "compatible";
@@ -53,6 +54,7 @@ function compatibleItem(item: NormalizedCartItem) {
 }
 
 function lineDiscountRate(item: NormalizedCartItem) {
+  if (String(item.source || "") === CALENDAR_SOURCE) return calendarDiscountRate(item.qty);
   if (!compatibleItem(item)) return 0;
   if (item.qty >= 4) return 0.25;
   if (item.qty >= 2) return 0.1;

@@ -7,6 +7,7 @@ import {
   LOYALTY_PAPER_REWARD_SKU,
   type getCustomerLoyalty,
 } from "./loyalty";
+import { CALENDAR_SOURCE, calendarDiscountRate, getCalendarProducts } from "./calendar-catalog";
 
 type RawCartItem = {
   id?: string | number;
@@ -19,6 +20,7 @@ type RawCartItem = {
   name?: string;
   title?: string;
   price?: number | string;
+  source?: string;
 };
 
 class CheckoutCartError extends Error {
@@ -110,6 +112,7 @@ export function isCompatibleDiscountItem(item: NormalizedCartItem) {
 }
 
 export function discountRate(item: NormalizedCartItem) {
+  if (String(item.source || "") === CALENDAR_SOURCE) return calendarDiscountRate(item.qty);
   if (!isCompatibleDiscountItem(item)) return 0;
   if (item.qty >= 4) return 0.25;
   if (item.qty >= 2) return 0.10;
@@ -134,9 +137,6 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
   if (!input.length) return [];
   if (input.length > 30) throw new CheckoutCartError("Košík obsahuje príliš veľa rôznych položiek.", 400);
 
-  const cache = await getProductsCache();
-  const products = Array.isArray(cache?.products) ? cache.products : [];
-  const index = indexProducts(products);
   const requestedReward = cartRequestsPaperReward(input);
   const regularInput = input.filter((raw: any) => !isRequestedPaperReward(raw));
   const rewardPacks = requestedReward && options.customerId
@@ -145,7 +145,15 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
   if (!regularInput.length) return [];
   const secureInput: RawCartItem[] = [...regularInput];
   if (rewardPacks > 0) secureInput.push({ sku: LOYALTY_PAPER_PRODUCT_SKU, qty: rewardPacks, loyalty_reward: true });
-  const resolved = secureInput.map((raw) => {
+  const calendarProducts = secureInput.some((item) => String(item?.source || "") === CALENDAR_SOURCE)
+    ? await getCalendarProducts()
+    : [];
+  const calendarBySku = new Map(calendarProducts.map((product) => [product.sku, product]));
+  const wooInput = secureInput.filter((item) => String(item?.source || "") !== CALENDAR_SOURCE);
+  const cache = wooInput.length ? await getProductsCache() : null;
+  const products = Array.isArray(cache?.products) ? cache.products : [];
+  const index = indexProducts(products);
+  const resolved = wooInput.map((raw) => {
     const item = (raw || {}) as RawCartItem;
     const product = resolveProduct(item, index);
     const requested = skuFromItem(item) || productIdFromItem(item) || "neznámy produkt";
@@ -156,12 +164,34 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
   if (ids.length !== new Set(resolved.map(({ cached }) => String(cached.id))).size) {
     throw new CheckoutCartError("Niektorý produkt nemá platné ID a nemožno overiť jeho dostupnosť.");
   }
-  const liveProducts = await wooRequest<any[]>("/products", {
-    query: { include: ids.join(","), per_page: Math.min(100, ids.length), status: "publish" },
-  });
+  const liveProducts = ids.length
+    ? await wooRequest<any[]>("/products", {
+      query: { include: ids.join(","), per_page: Math.min(100, ids.length), status: "publish" },
+    })
+    : [];
   const liveById = new Map((Array.isArray(liveProducts) ? liveProducts : []).map((product) => [String(product.id), product]));
   const requestedById = new Map<string, number>();
   const result: NormalizedCartItem[] = [];
+
+  for (const item of secureInput.filter((raw) => String(raw?.source || "") === CALENDAR_SOURCE)) {
+    const sku = skuFromItem(item);
+    const product = calendarBySku.get(sku);
+    if (!product) throw new CheckoutCartError(`Kalendár sa nenašiel alebo už nie je dostupný: ${sku || "neznámy produkt"}`);
+    if (!product.availability.inStock) {
+      throw new CheckoutCartError(`Kalendár je momentálne vypredaný. Dostupnosť môžete overiť pri produkte: ${product.name}`);
+    }
+    const qty = normalizeQty(item.qty ?? item.quantity ?? 1);
+    result.push({
+      id: `calendar:${product.sku}`,
+      sku: product.sku,
+      name: product.name,
+      price: product.price,
+      qty,
+      product_type_key: "calendar",
+      product_type_label: product.category || "Kalendár 2027",
+      source: CALENDAR_SOURCE,
+    });
+  }
 
   for (const { item, cached, requested } of resolved) {
     const live = liveById.get(String(cached.id));

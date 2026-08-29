@@ -226,6 +226,7 @@ export function sitemapIndexResponse(request?: Request): Response {
     { path: "/sitemap-brands.xml" },
     { path: "/sitemap-printers.xml" },
     { path: "/sitemap-oem.xml" },
+    { path: "/kalendare/sitemap.xml" },
   ]);
   return xmlResponse(body, request);
 }

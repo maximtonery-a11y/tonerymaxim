@@ -536,6 +536,10 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
 
     if (!name || price <= 0) return null;
 
+    const source = String(item.source || "");
+    const isCalendarItem = source === "kalendare-2027";
+    const stockStatus = String(item.stock_status || item.stockStatus || "instock");
+
     return {
       id: String(item.product_id || item.productId || item.id || item.sku || item.code || name),
       productId: String(item.productId || item.product_id || item.id || ""),
@@ -547,17 +551,22 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
       image: item.image || item.img || item.thumbnail || "",
       url: productUrl(item),
       slug: String(item.slug || ""),
-      color: firstFilled(item.color, item.farba),
-      capacity: productCapacity(item),
-      stock_status: String(item.stock_status || item.stockStatus || "instock"),
-      stock_quantity: item.stock_quantity ?? item.stockQuantity ?? null,
-      stock_text: String(item.stock_text || item.stockText || ""),
-      product_type_key: String(item.product_type_key || item.productTypeKey || item.type || ""),
-      product_type_label: String(item.product_type_label || item.productTypeLabel || ""),
+      color: isCalendarItem ? "" : firstFilled(item.color, item.farba),
+      capacity: isCalendarItem ? "" : productCapacity(item),
+      stock_status: stockStatus,
+      stock_quantity: isCalendarItem ? null : (item.stock_quantity ?? item.stockQuantity ?? null),
+      stock_text: isCalendarItem
+        ? (stockStatus === "outofstock" ? "Nie je skladom" : (stockStatus === "onbackorder" ? "Na objednávku" : "Skladom"))
+        : String(item.stock_text || item.stockText || ""),
+      product_type_key: isCalendarItem ? "" : String(item.product_type_key || item.productTypeKey || item.type || ""),
+      product_type_label: isCalendarItem ? "" : String(item.product_type_label || item.productTypeLabel || ""),
       series_pack_key: String(item.series_pack_key || item.seriesPackKey || ""),
       series_pack_label: String(item.series_pack_label || item.seriesPackLabel || ""),
       series_pack_discount_rate: Number(item.series_pack_discount_rate || item.seriesPackDiscountRate || 0),
       loyalty_reward: item.loyalty_reward === true,
+      // Zdroj musí zostať zachovaný až po serverovú validáciu. Bez neho by sa
+      // kalendár hľadal vo WooCommerce katalógu tonerov a objednávka by zlyhala.
+      source,
     };
   }
 
@@ -625,6 +634,12 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
   }
 
   function quantityDiscountRate(item) {
+    if (String(item?.source || "") === "kalendare-2027") {
+      const qty = cleanQty(item.qty);
+      if (qty >= 21) return 0.15;
+      if (qty >= 3) return 0.05;
+      return 0;
+    }
     if (!isCompatibleDiscountItem(item)) return 0;
     const qty = cleanQty(item.qty);
     if (qty >= 4) return 0.25;

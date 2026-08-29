@@ -19,7 +19,7 @@
     "test:seo": "node --experimental-strip-types --test scripts/seo-foundation.test.ts",
     "test:migration": "node --experimental-strip-types --test scripts/legacy-migration.test.ts && node scripts/migration-gate.test.mjs",
     "test:security": "node --experimental-strip-types --test scripts/security-config.test.ts",
-    "test:production": "node --experimental-strip-types --test scripts/production-readiness.test.ts",
+    "test:production": "node --experimental-strip-types --test scripts/production-readiness.test.ts scripts/calendar-integration.test.ts",
     "test:storefront": "node scripts/storefront-production-smoke.mjs",
     "test:storefront:load": "node scripts/storefront-load-smoke.mjs",
     "geo:score": "node scripts/geo-ai-score.mjs",

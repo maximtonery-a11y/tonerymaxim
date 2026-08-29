@@ -11,6 +11,7 @@ import { CheckoutProfiler } from "./checkout-profiler";
 import { sendHeurekaVerifiedOrder } from "./heureka-verified";
 import { withOrderIdempotency } from "./order-idempotency";
 import { canClaimPaperReward } from "./loyalty-rules";
+import { CALENDAR_SOURCE, calendarDiscountRate } from "./calendar-catalog";
 
 export type NormalizedCartItem = {
   id: string;
@@ -23,6 +24,7 @@ export type NormalizedCartItem = {
   product_type_key?: string;
   product_type_label?: string;
   loyalty_reward?: boolean;
+  source?: string;
 };
 
 export type CheckoutOrderSource = {
@@ -105,6 +107,7 @@ function isCompatibleDiscountItem(item: NormalizedCartItem) {
 }
 
 function discountRate(item: NormalizedCartItem) {
+  if (String(item.source || "") === CALENDAR_SOURCE) return calendarDiscountRate(item.qty);
   if (!isCompatibleDiscountItem(item)) return 0;
   if (item.qty >= 4) return 0.25;
   if (item.qty >= 2) return 0.10;
@@ -216,7 +219,9 @@ async function lineItems(source: CheckoutOrderSource, taxRateId: number) {
     const originalTax = money(originalGross - originalNet);
     const finalTax = money(finalGross - finalNet);
     const lineDiscountGross = money(originalGross - finalGross);
-    const productId = numericProductId(item) || await resolveProductIdBySku(item.sku);
+    const productId = String(item.source || "") === CALENDAR_SOURCE
+      ? 0
+      : numericProductId(item) || await resolveProductIdBySku(item.sku);
 
     const line: Record<string, any> = {
       name: item.name,
@@ -231,6 +236,7 @@ async function lineItems(source: CheckoutOrderSource, taxRateId: number) {
         { key: "sku", value: item.sku || "" },
         { key: "product_type_key", value: item.product_type_key || "" },
         { key: "product_type_label", value: item.product_type_label || "" },
+        { key: "tm_catalog_source", value: item.source || "tonerymaxim" },
         { key: "tm_gross_line_subtotal", value: originalGross.toFixed(2) },
         { key: "tm_gross_line_total", value: finalGross.toFixed(2) },
         { key: "tm_gross_line_discount", value: lineDiscountGross.toFixed(2) },

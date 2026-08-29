@@ -1,0 +1,3242 @@
+[
+  {
+    "sku": "NK-01-27",
+    "name": "Nástenný kalendár Slovensko 2027",
+    "category": "Nástenné kalendáre",
+    "price": 5.03,
+    "format": "340 × 460 mm",
+    "description": "Elegantný nástenný kalendár približuje krásu a jedinečnosť slovenskej krajiny. Odkrýva čarovné zákutia Slovenska v každom ročnom období. Kalendár obsahuje mesačné kalendárium, slovenské mená, štátne sviatky a fázy Mesiaca.\n\nObjednávky už od 1 ks.",
+    "variant": "",
+    "image_key": "NK-01",
+    "image": "/images/nk-01-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 5.03
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 4.78
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 4.28
+      }
+    ],
+    "slug": "nastenny-kalendar-slovensko-2027",
+    "gallery": [
+      "/gallery-v4/nk-01-27-1.jpg",
+      "/gallery-v4/nk-01-27-2.jpg",
+      "/gallery-v4/nk-01-27-3.jpg",
+      "/gallery-v4/nk-01-27-4.jpg",
+      "/gallery-v4/nk-01-27-5.jpg",
+      "/gallery-v4/nk-01-27-6.jpg",
+      "/gallery-v4/nk-01-27-7.jpg",
+      "/gallery-v4/nk-01-27-8.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (340 × 40 mm) od 30 ks.",
+    "ean": "8588001623135",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 4.09,
+    "technical_info": "Formát: 340 × 460 mm. Vario špirála, natieraný lesklý papier, 7 listov. Cena za 1 ks výrobku.",
+    "weight": "240 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-02-27",
+    "name": "Nástenný kalendár Tatry 2027",
+    "category": "Nástenné kalendáre",
+    "price": 5.03,
+    "format": "340 × 460 mm",
+    "description": "Krása našich veľhôr je zachytená v tatranských impresiách. Odhaľte všetky doteraz nepoznané podoby majestátnych Tatier v mesačnom nástennom kalendári so slovenskými a českými menami a štátnymi sviatkami oboch krajín.\n\nObjednávky už od 1 ks.",
+    "variant": "",
+    "image_key": "NK-02",
+    "image": "/images/nk-02-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 5.03
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 4.78
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 4.28
+      }
+    ],
+    "slug": "nastenny-kalendar-tatry-2027",
+    "gallery": [
+      "/gallery-v4/nk-02-27-1.jpg",
+      "/gallery-v4/nk-02-27-2.jpg",
+      "/gallery-v4/nk-02-27-3.jpg",
+      "/gallery-v4/nk-02-27-4.jpg",
+      "/gallery-v4/nk-02-27-5.jpg",
+      "/gallery-v4/nk-02-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (340 × 40 mm) od 30 ks.",
+    "ean": "8588001623104",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 4.09,
+    "technical_info": "Formát: 340 × 460 mm. Vario špirála, natieraný lesklý papier, 7 listov. Cena za 1 ks výrobku.",
+    "weight": "240 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-03-27",
+    "name": "Nástenný kalendár Poľovník 2027",
+    "category": "Nástenné kalendáre",
+    "price": 5.12,
+    "format": "340 × 460 mm",
+    "description": "Mesačný kalendár, ktorý očarí každého milovníka prírody. Fascinujúce zábery voľne žijúcich zvierat z našich lesov s podrobnými informáciami o dobe lovu, fázami Mesiaca, východmi a západmi Slnka a Mesiaca. Obsahuje slovenské a české mená a štátne sviatky.\n\nObjednávky už od 1 ks.",
+    "variant": "",
+    "image_key": "NK-03",
+    "image": "/images/nk-03-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 5.12
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 4.86
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 4.35
+      }
+    ],
+    "slug": "nastenny-kalendar-polovnik-2027",
+    "gallery": [
+      "/gallery-v4/nk-03-27-1.jpg",
+      "/gallery-v4/nk-03-27-2.jpg",
+      "/gallery-v4/nk-03-27-3.jpg",
+      "/gallery-v4/nk-03-27-4.jpg",
+      "/gallery-v4/nk-03-27-5.jpg",
+      "/gallery-v4/nk-03-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (340 × 40 mm) od 30 ks.",
+    "ean": "8588001623036",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 4.16,
+    "technical_info": "Formát: 340 × 460 mm. Vario špirála, natieraný lesklý papier, 7 listov. Cena za 1 ks výrobku.",
+    "weight": "240 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-04-27",
+    "name": "Nástenný kalendár Ženy 2027",
+    "category": "Nástenné kalendáre",
+    "price": 5.89,
+    "format": "340 × 460 mm",
+    "description": "Elegantný nástenný kalendár v glamour štýle oslavuje ženskú krásu v jej prirodzenej, vkusnej a nadčasovej podobe. Zvodné ženské krivky slovenských a českých modeliek potešia nejedno mužské oko. Kalendár obsahuje mesačné kalendárium.\n\nObjednávky už od 1 ks.",
+    "variant": "",
+    "image_key": "NK-04",
+    "image": "/images/nk-04-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 5.89
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 5.6
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 5.01
+      }
+    ],
+    "slug": "nastenny-kalendar-zeny-2027",
+    "gallery": [
+      "/gallery-v4/nk-04-27-1.jpg",
+      "/gallery-v4/nk-04-27-2.jpg",
+      "/gallery-v4/nk-04-27-3.jpg",
+      "/gallery-v4/nk-04-27-4.jpg",
+      "/gallery-v4/nk-04-27-5.jpg",
+      "/gallery-v4/nk-04-27-6.jpg",
+      "/gallery-v4/nk-04-27-7.jpg",
+      "/gallery-v4/nk-04-27-8.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (340 × 40 mm) od 30 ks.",
+    "ean": "8588001623197",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 4.79,
+    "technical_info": "Formát: 340 × 460 mm. Vario špirála, natieraný lesklý papier, 7 listov. Cena za 1 ks výrobku.",
+    "weight": "240 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-05-1-27",
+    "name": "Trojmesačný kalendár 2027 – Lúka",
+    "category": "Nástenné kalendáre",
+    "price": 4.29,
+    "format": "300 × 465 mm",
+    "description": "Prehľadný dvanásťlistový trojmesačný nástenný kalendár s jednou špirálou je veľmi populárny a žiadaný. Má posuvné okienko pre lepšiu orientáciu v mesiaci, kalendárium so slovenskými a českými menami a sviatkami, a tiež sviatkami krajín EÚ. Vhodný aj pre organizácie a spoločnosti. Ponúka možnosť umiestnenia vlastnej grafiky namiesto obrázku na vrchný lash, či potlač podložky. Na druhej strane vrchného lashu nájdete kompletný prehľad sviatkov vo všetkých krajinách EÚ.\n\nObjednávky už od 1 ks.",
+    "variant": "Lúka",
+    "image_key": "NK-05-1",
+    "image": "/gallery-v4/nk-05-2-27-12.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 4.29
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 4.08
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.65
+      }
+    ],
+    "slug": "trojmesacny-kalendar-2027-luka",
+    "gallery": [
+      "/gallery-v4/nk-05-2-27-12.jpg",
+      "/gallery-v4/nk-05-3-27-3.jpg",
+      "/gallery-v4/nk-05-3-27-16.jpg",
+      "/gallery-v4/nk-05-4-27-7.jpg",
+      "/gallery-v4/nk-05-1-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks. Možnosť tlače vlastného lashu (300 × 160 mm) od 30 ks.",
+    "ean": "8588001623166",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 3.49,
+    "technical_info": "Formát: 300 × 465 mm. Vario špirála, ofsetový papier, 12 listov. Cena za 1 ks výrobku.",
+    "weight": "227 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-05-2-27",
+    "name": "Trojmesačný kalendár 2027 – Hory",
+    "category": "Nástenné kalendáre",
+    "price": 4.29,
+    "format": "300 × 465 mm",
+    "description": "Prehľadný dvanásťlistový trojmesačný nástenný kalendár s jednou špirálou je veľmi populárny a žiadaný. Má posuvné okienko pre lepšiu orientáciu v mesiaci, kalendárium so slovenskými a českými menami a sviatkami, a tiež sviatkami krajín EÚ. Vhodný aj pre organizácie a spoločnosti. Ponúka možnosť umiestnenia vlastnej grafiky namiesto obrázku na vrchný lash, či potlač podložky. Na druhej strane vrchného lashu nájdete kompletný prehľad sviatkov vo všetkých krajinách EÚ.\n\nObjednávky už od 1 ks.",
+    "variant": "Hory",
+    "image_key": "NK-05-2",
+    "image": "/gallery-v4/nk-05-2-27-2.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 4.29
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 4.08
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.65
+      }
+    ],
+    "slug": "trojmesacny-kalendar-2027-hory",
+    "gallery": [
+      "/gallery-v4/nk-05-2-27-2.jpg",
+      "/gallery-v4/nk-05-3-27-11.jpg",
+      "/gallery-v4/nk-05-4-27-15.jpg",
+      "/gallery-v4/nk-05-2-27-5.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks. Možnosť tlače vlastného lashu (300 × 160 mm) od 30 ks.",
+    "ean": "8588001623029",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 3.49,
+    "technical_info": "Formát: 300 × 465 mm. Vario špirála, ofsetový papier, 12 listov. Cena za 1 ks výrobku.",
+    "weight": "227 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-05-3-27",
+    "name": "Trojmesačný kalendár 2027 – More",
+    "category": "Nástenné kalendáre",
+    "price": 4.29,
+    "format": "300 × 465 mm",
+    "description": "Prehľadný dvanásťlistový trojmesačný nástenný kalendár s jednou špirálou je veľmi populárny a žiadaný. Má posuvné okienko pre lepšiu orientáciu v mesiaci, kalendárium so slovenskými a českými menami a sviatkami, a tiež sviatkami krajín EÚ. Vhodný aj pre organizácie a spoločnosti. Ponúka možnosť umiestnenia vlastnej grafiky namiesto obrázku na vrchný lash, či potlač podložky. Na druhej strane vrchného lashu nájdete kompletný prehľad sviatkov vo všetkých krajinách EÚ.\n\nObjednávky už od 1 ks.",
+    "variant": "More",
+    "image_key": "NK-05-3",
+    "image": "/gallery-v4/nk-05-4-27-4.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 4.29
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 4.08
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.65
+      }
+    ],
+    "slug": "trojmesacny-kalendar-2027-more",
+    "gallery": [
+      "/gallery-v4/nk-05-4-27-4.jpg",
+      "/gallery-v4/nk-05-3-27-13.jpg",
+      "/gallery-v4/nk-05-2-27-17.jpg",
+      "/gallery-v4/nk-05-4-27-8.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks. Možnosť tlače vlastného lashu (300 × 160 mm) od 30 ks.",
+    "ean": "8588001623098",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 3.49,
+    "technical_info": "Formát: 300 × 465 mm. Vario špirála, ofsetový papier, 12 listov. Cena za 1 ks výrobku.",
+    "weight": "227 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-05-4-27",
+    "name": "Trojmesačný kalendár 2027 – Biely",
+    "category": "Nástenné kalendáre",
+    "price": 4.29,
+    "format": "300 × 465 mm",
+    "description": "Prehľadný dvanásťlistový trojmesačný nástenný kalendár s jednou špirálou je veľmi populárny a žiadaný. Má posuvné okienko pre lepšiu orientáciu v mesiaci, kalendárium so slovenskými a českými menami a sviatkami, a tiež sviatkami krajín EÚ. Vhodný aj pre organizácie a spoločnosti. Ponúka možnosť umiestnenia vlastnej grafiky namiesto obrázku na vrchný lash, či potlač podložky. Na druhej strane vrchného lashu nájdete kompletný prehľad sviatkov vo všetkých krajinách EÚ.\n\nObjednávky už od 1 ks.",
+    "variant": "Biely",
+    "image_key": "NK-05-4",
+    "image": "/gallery-v4/nk-05-2-27-10.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 4.29
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 4.08
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.65
+      }
+    ],
+    "slug": "trojmesacny-kalendar-2027-biely",
+    "gallery": [
+      "/gallery-v4/nk-05-2-27-10.jpg",
+      "/gallery-v4/nk-05-3-27-1.jpg",
+      "/gallery-v4/nk-05-4-27-14.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks. Možnosť tlače vlastného lashu (300 × 160 mm) od 30 ks.",
+    "ean": "8588001623456",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 3.49,
+    "technical_info": "Formát: 300 × 465 mm. Vario špirála, ofsetový papier, 12 listov. Cena za 1 ks výrobku.",
+    "weight": "227 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-06-27",
+    "name": "Nástenný kalendár Kvety 2027",
+    "category": "Nástenné kalendáre",
+    "price": 4.29,
+    "format": "320 × 310 mm",
+    "description": "Očarujúci nástenný kalendár Kvety poteší krásou, farebnosťou a dokonalosťou kvetov. Každý mesiac prináša krátky citát na zamyslenie. Obsahuje mesačné kalendárium so slovenskými menami, štátnymi sviatkami a fázami Mesiaca.\n\nObjednávky už od 1 ks.",
+    "variant": "",
+    "image_key": "NK-06",
+    "image": "/images/nk-06-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 4.29
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 4.08
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.65
+      }
+    ],
+    "slug": "nastenny-kalendar-kvety-2027",
+    "gallery": [
+      "/gallery-v4/nk-06-27-1.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (320 × 40 mm) od 30 ks.",
+    "ean": "8588001623173",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 3.49,
+    "technical_info": "Formát: 320 × 310 mm. Vario špirála, natieraný lesklý papier, 7 listov. Cena za 1 ks výrobku.",
+    "weight": "153 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-07-27",
+    "name": "Nástenný kalendár Rozkvitnutý svet 2027",
+    "category": "Nástenné kalendáre",
+    "price": 4.29,
+    "format": "320 × 310 mm",
+    "description": "Spoznajte s nami ďalšie krásne miesta na zemi, tentokrát v záplave rozkvitnutých kvetov. Zároveň si prečítajte zaujímavosť o zobrazenom kúsku sveta. Mesačný nástenný kalendár obsahuje slovenské a české mená, štátne sviatky oboch krajín a fázy Mesiaca.\n\nObjednávky už od 1 ks.",
+    "variant": "",
+    "image_key": "NK-07",
+    "image": "/images/nk-07-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 4.29
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 4.08
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.65
+      }
+    ],
+    "slug": "nastenny-kalendar-rozkvitnuty-svet-2027",
+    "gallery": [
+      "/gallery-v4/nk-07-27-1.jpg",
+      "/gallery-v4/nk-07-27-2.jpg",
+      "/gallery-v4/nk-07-27-3.jpg",
+      "/gallery-v4/nk-07-27-4.jpg",
+      "/gallery-v4/nk-07-27-5.jpg",
+      "/gallery-v4/nk-07-27-6.jpg",
+      "/gallery-v4/nk-07-27-7.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (320 × 40 mm) od 30 ks.",
+    "ean": "8588001623227",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 3.49,
+    "technical_info": "Formát: 320 × 310 mm. Vario špirála, natieraný lesklý papier, 7 listov. Cena za 1 ks výrobku.",
+    "weight": "153 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-08-27",
+    "name": "Nástenný kalendár Gazdinka 2027",
+    "category": "Nástenné kalendáre",
+    "price": 2.57,
+    "format": "210 × 150 mm",
+    "description": "Milujete tradičnú slovenskú kuchyňu, ale radi vyskúšate aj niečo nové? Inšpirujte sa nástenným dvojtýždňovým kalendárom s receptami jedál a praktickými radami do kuchyne. Kalendárium obsahuje slovenské a české mená, sviatky oboch krajín a fázy Mesiaca. Objednávky už od 1 ks.",
+    "variant": "",
+    "image_key": "NK-08",
+    "image": "/images/nk-08-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.57
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.44
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.18
+      }
+    ],
+    "slug": "nastenny-kalendar-gazdinka-2027",
+    "gallery": [
+      "/gallery-v4/nk-08-27-1.jpg",
+      "/gallery-v4/nk-08-27-2.jpg",
+      "/gallery-v4/nk-08-27-3.jpg",
+      "/gallery-v4/nk-08-27-4.jpg",
+      "/gallery-v4/nk-08-27-5.jpg",
+      "/gallery-v4/nk-08-27-6.jpg"
+    ],
+    "print_info": "Bez možnosti potlače.",
+    "ean": "8588001623111",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.09,
+    "technical_info": "Formát: 210 × 150 mm. Vario špirála, natieraný lesklý papier, 64 strán. Cena za 1 ks výrobku.",
+    "weight": "107 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-09-27",
+    "name": "Nástenný kalendár Katolícky 2027",
+    "category": "Nástenné kalendáre",
+    "price": 1.96,
+    "format": "165 × 235 mm",
+    "description": "Nástenný mesačný kalendár s náboženskou tematikou, vzácnymi maľbami, vitrážami z chrámov a kostolov sveta. Obsahuje popisy diel a bohaté cirkevné i svetské kalendárium. Objednávky už od 1 ks.",
+    "variant": "",
+    "image_key": "NK-09",
+    "image": "/images/nk-09-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 1.96
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 1.86
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.67
+      }
+    ],
+    "slug": "nastenny-kalendar-katolicky-2027",
+    "gallery": [
+      "/gallery-v4/nk-09-27-1.jpg",
+      "/gallery-v4/nk-09-27-2.jpg",
+      "/gallery-v4/nk-09-27-3.jpg",
+      "/gallery-v4/nk-09-27-4.jpg",
+      "/gallery-v4/nk-09-27-5.jpg",
+      "/gallery-v4/nk-09-27-6.jpg",
+      "/gallery-v4/nk-09-27-7.jpg"
+    ],
+    "print_info": "Bez možnosti potlače.",
+    "ean": "8588001623876",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.59,
+    "technical_info": "Formát: 165 × 235 mm. Väzba V1, natieraný lesklý papier, 28 strán. Cena za 1 ks výrobku.",
+    "weight": "72 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-10-1-27",
+    "name": "3-špirálový kalendár 2027 – Krajina",
+    "category": "Nástenné kalendáre",
+    "price": 7,
+    "format": "3 × 300 × 195 mm",
+    "description": "Veľmi praktický nástenný 3-špirálový trojmesačný kalendár možno poskladať na menší formát a vložiť do obálky. Má posuvné okienko pre lepšiu orientáciu v mesiaci, kalendárium so slovenskými a českými menami a sviatkami v krajinách EÚ. Kalendár je vhodný aj pre organizácie a spoločnosti. Ponúka možnosť umiestnenia vlastnej grafiky namiesto obrázku na vrchný lash, či potlač podložky. Na druhej strane vrchného lashu nájdete kompletný prehľad sviatkov v krajinách EÚ. Objednávky už od 1 ks.",
+    "variant": "Krajina",
+    "image_key": "NK-10-1",
+    "image": "/gallery-v4/nk-10-3-27-5.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 6.65
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 5.95
+      }
+    ],
+    "slug": "3-spiralovy-kalendar-2027-krajina",
+    "gallery": [
+      "/gallery-v4/nk-10-3-27-5.jpg",
+      "/gallery-v4/nk-10-3-27-8.jpg",
+      "/gallery-v4/nk-10-3-27-2.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky 1 až 3-krát (300 × 40 mm) od 30 ks. Možnosť tlače vlastného lashu (300 × 160 mm) od 30 ks.",
+    "ean": "8588001623937",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 5.69,
+    "technical_info": "Formát: 3 × 300 × 195 mm. 3 × vario špirála, ofsetový papier, 3 × 12 listov. Cena za 1 ks výrobku.",
+    "weight": "295 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-10-2-27",
+    "name": "3-špirálový kalendár 2027 – Pobrežie",
+    "category": "Nástenné kalendáre",
+    "price": 7,
+    "format": "3 × 300 × 195 mm",
+    "description": "Veľmi praktický nástenný 3-špirálový trojmesačný kalendár možno poskladať na menší formát a vložiť do obálky. Má posuvné okienko pre lepšiu orientáciu v mesiaci, kalendárium so slovenskými a českými menami a sviatkami v krajinách EÚ. Kalendár je vhodný aj pre organizácie a spoločnosti. Ponúka možnosť umiestnenia vlastnej grafiky namiesto obrázku na vrchný lash, či potlač podložky. Na druhej strane vrchného lashu nájdete kompletný prehľad sviatkov v krajinách EÚ. Objednávky už od 1 ks.",
+    "variant": "Pobrežie",
+    "image_key": "NK-10-2",
+    "image": "/gallery-v4/nk-10-3-27-9.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 6.65
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 5.95
+      }
+    ],
+    "slug": "3-spiralovy-kalendar-2027-pobrezie",
+    "gallery": [
+      "/gallery-v4/nk-10-3-27-9.jpg",
+      "/gallery-v4/nk-10-3-27-6.jpg",
+      "/gallery-v4/nk-10-2-27-3.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky 1 až 3-krát (300 × 40 mm) od 30 ks. Možnosť tlače vlastného lashu (300 × 160 mm) od 30 ks.",
+    "ean": "8588001623722",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 5.69,
+    "technical_info": "Formát: 3 × 300 × 195 mm. 3 × vario špirála, ofsetový papier, 3 × 12 listov. Cena za 1 ks výrobku.",
+    "weight": "295 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-10-3-27",
+    "name": "3-špirálový kalendár 2027 – Biely",
+    "category": "Nástenné kalendáre",
+    "price": 7,
+    "format": "3 × 300 × 195 mm",
+    "description": "Veľmi praktický nástenný 3-špirálový trojmesačný kalendár možno poskladať na menší formát a vložiť do obálky. Má posuvné okienko pre lepšiu orientáciu v mesiaci, kalendárium so slovenskými a českými menami a sviatkami v krajinách EÚ. Kalendár je vhodný aj pre organizácie a spoločnosti. Ponúka možnosť umiestnenia vlastnej grafiky namiesto obrázku na vrchný lash, či potlač podložky. Na druhej strane vrchného lashu nájdete kompletný prehľad sviatkov v krajinách EÚ. Objednávky už od 1 ks.",
+    "variant": "Biely",
+    "image_key": "NK-10-3",
+    "image": "/gallery-v4/nk-10-3-27-1.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 6.65
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 5.95
+      }
+    ],
+    "slug": "3-spiralovy-kalendar-2027-biely",
+    "gallery": [
+      "/gallery-v4/nk-10-3-27-1.jpg",
+      "/gallery-v4/nk-10-1-27-4.jpg",
+      "/gallery-v4/nk-10-2-27-7.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky 1 až 3-krát (300 × 40 mm) od 30 ks. Možnosť tlače vlastného lashu (300 × 160 mm) od 30 ks.",
+    "ean": "8588001623746",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 5.69,
+    "technical_info": "Formát: 3 × 300 × 195 mm. 3 × vario špirála, ofsetový papier, 3 × 12 listov. Cena za 1 ks výrobku.",
+    "weight": "295 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-11-27",
+    "name": "Nástenný kalendár Slovenský folklór 2027",
+    "category": "Nástenné kalendáre",
+    "price": 6.88,
+    "format": "340 × 460 mm",
+    "description": "Kto miluje tradičnú slovenskú kultúru a folklór, určite siahne po nástennom kalendári Slovenský folklór. Nájdete v ňom krásu slovenských krojov v spojení s krásou slovenských žien. Kalendárium je doplnené o ľudové zvyky a pranostiky a o termíny najvýznamnejších folklórnych festivalov. Objednávky už od 1 ks.",
+    "variant": "",
+    "image_key": "NK-11",
+    "image": "/images/nk-11-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 6.88
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 6.54
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 5.85
+      }
+    ],
+    "slug": "nastenny-kalendar-slovensky-folklor-2027",
+    "gallery": [
+      "/gallery-v4/nk-11-27-1.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (340 × 40 mm) od 30 ks.",
+    "ean": "8588001623913",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 5.59,
+    "technical_info": "Formát: 340 × 460 mm. Vario špirála, natieraný lesklý papier, 7 listov. Cena za 1 ks výrobku.",
+    "weight": "240 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "NK-12-27",
+    "name": "Nástenný kalendár Rodinný 2027",
+    "category": "Nástenné kalendáre",
+    "price": 3.4,
+    "format": "115 × 425 mm",
+    "description": "Štýlový a rozmerovo úsporný nástenný kalendár vám pomôže mať všetky dôležité udalosti pod kontrolou. Prehľadne zladíte program celej rodiny, aby ste už na nič nezabudli. Kalendár ponúka slovenské mesačné kalendárium, školské prázdniny, dôležité sviatky a priestor na poznámky. Objednávky už od 1 ks.",
+    "variant": "",
+    "image_key": "NK-12",
+    "image": "/images/nk-12-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 3.4
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 3.23
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.89
+      }
+    ],
+    "slug": "nastenny-kalendar-rodinny-2027",
+    "gallery": [
+      "/gallery-v4/nk-12-27-1.jpg",
+      "/gallery-v4/nk-12-27-2.jpg",
+      "/gallery-v4/nk-12-27-3.jpg",
+      "/gallery-v4/nk-12-27-4.jpg",
+      "/gallery-v4/nk-12-27-5.jpg",
+      "/gallery-v4/nk-12-27-6.jpg",
+      "/gallery-v4/nk-12-27-7.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (115 × 40 mm) od 30 ks.",
+    "ean": "8588001623951",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.76,
+    "technical_info": "Formát: 115 × 425 mm. Vario špirála, natieraný lesklý papier, 7 listov. Cena za 1 ks výrobku.",
+    "weight": "75 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-01-27",
+    "name": "Stolový kalendár Slovensko 2027",
+    "category": "Stolové kalendáre",
+    "price": 2.82,
+    "format": "300 × 120 mm",
+    "description": "Týždenný stĺpcový kalendár s hodinovým delením, daňovými pripomienkami, fázami Mesiaca, východmi a západmi Slnka, štátnymi sviatkami všetkých krajín EÚ, školskými prázdninami, slovenskými a českými menami (plus netradičné mená).",
+    "variant": "",
+    "image_key": "SK-01",
+    "image": "/images/sk-01-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.82
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.68
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.4
+      }
+    ],
+    "slug": "stolovy-kalendar-slovensko-2027",
+    "gallery": [
+      "/gallery-v4/sk-01-27-1.jpg",
+      "/gallery-v4/sk-01-27-2.jpg",
+      "/gallery-v4/sk-01-27-3.jpg",
+      "/gallery-v4/sk-01-27-4.jpg",
+      "/gallery-v4/sk-01-27-5.jpg",
+      "/gallery-v4/sk-01-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623050",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.29,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 64 strán. Cena za 1 ks výrobku.",
+    "weight": "160 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-02-27",
+    "name": "Stolový kalendár Vysoké Tatry 2027",
+    "category": "Stolové kalendáre",
+    "price": 2.82,
+    "format": "300 × 120 mm",
+    "description": "Stolový kalendár Vysoké Tatry 2027 s fotografiami slovenských veľhôr a prehľadným týždenným kalendáriom.",
+    "variant": "",
+    "image_key": "SK-02",
+    "image": "/images/sk-02-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.82
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.68
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.4
+      }
+    ],
+    "slug": "stolovy-kalendar-vysoke-tatry-2027",
+    "gallery": [
+      "/gallery-v4/sk-02-27-1.jpg",
+      "/gallery-v4/sk-02-27-2.jpg",
+      "/gallery-v4/sk-02-27-3.jpg",
+      "/gallery-v4/sk-02-27-4.jpg",
+      "/gallery-v4/sk-02-27-5.jpg",
+      "/gallery-v4/sk-02-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623043",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.29,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 64 strán. Cena za 1 ks výrobku.",
+    "weight": "160 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-03-27",
+    "name": "Stolový kalendár Poľovník 2027",
+    "category": "Stolové kalendáre",
+    "price": 3.31,
+    "format": "300 × 120 mm",
+    "description": "Stolový týždňový kalendár Poľovník s originálnymi fotografiami divých zvierat, doplnený piktogramami o love poľovnej zveri. Stĺpcové kalendárium s hodinovým delením, fázami Mesiaca, východmi a západmi Slnka, mesačnými kalendáriami a štátnymi sviatkami krajín EÚ.",
+    "variant": "",
+    "image_key": "SK-03",
+    "image": "/images/sk-03-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 3.31
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 3.14
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.81
+      }
+    ],
+    "slug": "stolovy-kalendar-polovnik-2027",
+    "gallery": [
+      "/gallery-v4/sk-03-27-1.jpg",
+      "/gallery-v4/sk-03-27-2.jpg",
+      "/gallery-v4/sk-03-27-3.jpg",
+      "/gallery-v4/sk-03-27-4.jpg",
+      "/gallery-v4/sk-03-27-5.jpg",
+      "/gallery-v4/sk-03-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623203",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.69,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 64 strán. Cena za 1 ks výrobku.",
+    "weight": "160 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-04-27",
+    "name": "Stolový kalendár Autá 2027",
+    "category": "Stolové kalendáre",
+    "price": 3.06,
+    "format": "300 × 120 mm",
+    "description": "Stolový kalendár Autá 2027 pripomína ikony ciest minulosti – klasiku, ktorá nestarne. Obsahuje stĺpcové kalendárium so slovenskými a českými menami, fázami Mesiaca, východmi a západmi Slnka, mesačnými kalendáriami a štátnymi sviatkami krajín EÚ.",
+    "variant": "",
+    "image_key": "SK-04",
+    "image": "/images/sk-04-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 3.06
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.91
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.6
+      }
+    ],
+    "slug": "stolovy-kalendar-auta-2027",
+    "gallery": [
+      "/gallery-v4/sk-04-27-1.jpg",
+      "/gallery-v4/sk-04-27-2.jpg",
+      "/gallery-v4/sk-04-27-3.jpg",
+      "/gallery-v4/sk-04-27-4.jpg",
+      "/gallery-v4/sk-04-27-5.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623210",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.49,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 64 strán. Cena za 1 ks výrobku.",
+    "weight": "160 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-05-27",
+    "name": "Stolový kalendár Kuchárka 2027",
+    "category": "Stolové kalendáre",
+    "price": 2.82,
+    "format": "300 × 120 mm",
+    "description": "Stolový týždenný stĺpcový kalendár Kuchárka s obrázkami a receptami jedál, doplnený o fázy Mesiaca, východy a západy Slnka, slovenské a české mená a štátne sviatky krajín EÚ.",
+    "variant": "",
+    "image_key": "SK-05",
+    "image": "/images/sk-05-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.82
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.68
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.4
+      }
+    ],
+    "slug": "stolovy-kalendar-kucharka-2027",
+    "gallery": [
+      "/gallery-v4/sk-05-27-1.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623012",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.29,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 64 strán. Cena za 1 ks výrobku.",
+    "weight": "160 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-06-27",
+    "name": "Stolový kalendár Koláčiky 2027",
+    "category": "Stolové kalendáre",
+    "price": 2.29,
+    "format": "300 × 120 mm",
+    "description": "Výber najlepších a nenáročných sladkých i slaných koláčikov. Dvojtýždňový stolový kalendár s receptami a informáciami pre alergikov. V riadkovom kalendáriu nájdete slovenské a české mená, sviatky okolitých krajín a východy a západy Slnka.",
+    "variant": "",
+    "image_key": "SK-06",
+    "image": "/images/sk-06-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.29
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.18
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.95
+      }
+    ],
+    "slug": "stolovy-kalendar-kolaciky-2027",
+    "gallery": [
+      "/gallery-v4/sk-06-27-1.jpg",
+      "/gallery-v4/sk-06-27-2.jpg",
+      "/gallery-v4/sk-06-27-3.jpg",
+      "/gallery-v4/sk-06-27-4.jpg",
+      "/gallery-v4/sk-06-27-5.jpg",
+      "/gallery-v4/sk-06-27-6.jpg",
+      "/gallery-v4/sk-06-27-7.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623067",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.86,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 32 strán. Cena za 1 ks výrobku.",
+    "weight": "121 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-07-27",
+    "name": "Stolový kalendár Lunárny 2027",
+    "category": "Stolové kalendáre",
+    "price": 3.89,
+    "format": "285 × 130 mm",
+    "description": "Lunárny kalendár je pomocníkom a radcom pre zdravie, domácnosť a záhradu. Týždňový stĺpcový kalendár obsahuje východy a západy Slnka a Mesiaca, znamenia zverokruhu a slovenské mená a sviatky.",
+    "variant": "",
+    "image_key": "SK-07",
+    "image": "/images/sk-07-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 3.89
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 3.7
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.31
+      }
+    ],
+    "slug": "stolovy-kalendar-lunarny-2027",
+    "gallery": [
+      "/gallery-v4/sk-07-27-1.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (285 × 35 mm) od 30 ks.",
+    "ean": "9788081543616",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 3.16,
+    "technical_info": "Formát: 285 × 130 mm. Vario špirála, ofsetový papier, 62 strán. Cena za 1 ks výrobku.",
+    "weight": "153 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-08-27",
+    "name": "Stolový kalendár Pracovný veľký 2027",
+    "category": "Stolové kalendáre",
+    "price": 2.41,
+    "format": "300 × 120 mm",
+    "description": "Najpredávanejší stolový kalendár, veľmi prehľadný a vhodný pre aktívnych ľudí. Týždňový stĺpcový kalendár s hodinovým delením, daňovými pripomienkami, mesačnými kalendáriami, fázami Mesiaca, východmi a západmi Slnka, štátnymi sviatkami krajín EÚ a školskými prázdninami.",
+    "variant": "",
+    "image_key": "SK-08",
+    "image": "/images/sk-08-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.41
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.29
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.05
+      }
+    ],
+    "slug": "stolovy-kalendar-pracovny-velky-2027",
+    "gallery": [
+      "/gallery-v4/sk-08-27-1.jpg",
+      "/gallery-v4/sk-08-27-2.jpg",
+      "/gallery-v4/sk-08-27-3.jpg",
+      "/gallery-v4/sk-08-27-4.jpg",
+      "/gallery-v4/sk-08-27-5.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623081",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.96,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, ofsetový papier, 64 strán. Cena za 1 ks výrobku.",
+    "weight": "160 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-09-27",
+    "name": "Stolový kalendár Pracovný malý 2027",
+    "category": "Stolové kalendáre",
+    "price": 2.29,
+    "format": "210 × 150 mm",
+    "description": "Variant pracovného kalendára s riadkovým kalendáriom. Obsah je identický s veľkým pracovným kalendárom, vrátane daňových pripomienok, mesačných kalendárií, fáz Mesiaca, východov a západov Slnka, štátnych sviatkov krajín EÚ a školských prázdnin.",
+    "variant": "",
+    "image_key": "SK-09",
+    "image": "/images/sk-09-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.29
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.18
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.95
+      }
+    ],
+    "slug": "stolovy-kalendar-pracovny-maly-2027",
+    "gallery": [
+      "/gallery-v4/sk-09-27-1.jpg",
+      "/gallery-v4/sk-09-27-2.jpg",
+      "/gallery-v4/sk-09-27-3.jpg",
+      "/gallery-v4/sk-09-27-4.jpg",
+      "/gallery-v4/sk-09-27-5.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (210 × 35 mm) od 30 ks.",
+    "ean": "8588001623241",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.86,
+    "technical_info": "Formát: 210 × 150 mm. Vario špirála, ofsetový papier, 64 strán. Cena za 1 ks výrobku.",
+    "weight": "130 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-10-27",
+    "name": "Stolový Minikalendár 2027",
+    "category": "Stolové kalendáre",
+    "price": 1.43,
+    "format": "75 × 105 mm",
+    "description": "Mini variant pracovného kalendára pre minimalistov. Šikovný a praktický týždňový kalendár malých rozmerov, vrátane východov a západov Slnka, fáz Mesiaca, slovenského kalendária, štátnych sviatkov susediacich krajín EÚ a školských prázdnin.",
+    "variant": "",
+    "image_key": "SK-10",
+    "image": "/images/sk-10-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 1.43
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 1.36
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.22
+      }
+    ],
+    "slug": "stolovy-minikalendar-2027",
+    "gallery": [
+      "/gallery-v4/sk-10-27-1.jpg",
+      "/gallery-v4/sk-10-27-2.jpg",
+      "/gallery-v4/sk-10-27-3.jpg",
+      "/gallery-v4/sk-10-27-4.jpg",
+      "/gallery-v4/sk-10-27-5.jpg",
+      "/gallery-v4/sk-10-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (75 × 25 mm) od 50 ks.",
+    "ean": "8588001623814",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.16,
+    "technical_info": "Formát: 75 × 105 mm. Vario špirála, ofsetový papier, 64 strán. Cena za 1 ks výrobku.",
+    "weight": "33 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-11-27",
+    "name": "Stolový kalendár Katolícky 2027",
+    "category": "Stolové kalendáre",
+    "price": 2.29,
+    "format": "220 × 165 mm",
+    "description": "Stolový dvojtýždňový kalendár s náboženskou tematikou zachytenou na maľbách, mozaikách, reliéfoch a freskách. Obsahuje bohaté cirkevné a svetské kalendárium, slovenské mená a štátne sviatky.",
+    "variant": "",
+    "image_key": "SK-11",
+    "image": "/images/sk-11-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.29
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.18
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.95
+      }
+    ],
+    "slug": "stolovy-kalendar-katolicky-2027",
+    "gallery": [
+      "/gallery-v4/sk-11-27-1.jpg",
+      "/gallery-v4/sk-11-27-2.jpg",
+      "/gallery-v4/sk-11-27-3.jpg",
+      "/gallery-v4/sk-11-27-4.jpg",
+      "/gallery-v4/sk-11-27-5.jpg",
+      "/gallery-v4/sk-11-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (220 × 35 mm) od 30 ks.",
+    "ean": "8588001623869",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.86,
+    "technical_info": "Formát: 220 × 165 mm. Vario špirála, natieraný lesklý papier, 32 strán. Cena za 1 ks výrobku.",
+    "weight": "117 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-12-27",
+    "name": "Stolový kalendár Rybársky 2027",
+    "category": "Stolové kalendáre",
+    "price": 3.64,
+    "format": "300 × 120 mm",
+    "description": "Praktický rybársky dvojtýždňový stolový kalendár s aktivitou rýb na celý rok, zákonnými lovnými mierami najbežnejších rýb a časom ich individuálnej ochrany. Obsahuje prehľad celoročne chránených rýb a denný čas lovu rýb podľa typov vôd.",
+    "variant": "",
+    "image_key": "SK-12",
+    "image": "/images/sk-12-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 3.64
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 3.46
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.09
+      }
+    ],
+    "slug": "stolovy-kalendar-rybarsky-2027",
+    "gallery": [
+      "/gallery-v4/sk-12-27-1.jpg",
+      "/gallery-v4/sk-12-27-2.jpg",
+      "/gallery-v4/sk-12-27-3.jpg",
+      "/gallery-v4/sk-12-27-4.jpg",
+      "/gallery-v4/sk-12-27-5.jpg",
+      "/gallery-v4/sk-12-27-6.jpg",
+      "/gallery-v4/sk-12-27-7.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623890",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.96,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 32 strán. Cena za 1 ks výrobku.",
+    "weight": "121 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-13-27",
+    "name": "Stolový kalendár Huby 2027",
+    "category": "Stolové kalendáre",
+    "price": 3.64,
+    "format": "300 × 120 mm",
+    "description": "Hubársky dvojtýždňový stolový kalendár predstavuje hubárske úlovky zo slovenských lesov a lúk aj s názvom huby, piktogramom jedlá, nejedlá alebo jedovatá a časom ich výskytu.",
+    "variant": "",
+    "image_key": "SK-13",
+    "image": "/images/sk-13-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 3.64
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 3.46
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.09
+      }
+    ],
+    "slug": "stolovy-kalendar-huby-2027",
+    "gallery": [
+      "/gallery-v4/sk-13-27-1.jpg",
+      "/gallery-v4/sk-13-27-2.jpg",
+      "/gallery-v4/sk-13-27-3.jpg",
+      "/gallery-v4/sk-13-27-4.jpg",
+      "/gallery-v4/sk-13-27-5.jpg",
+      "/gallery-v4/sk-13-27-6.jpg",
+      "/gallery-v4/sk-13-27-7.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623920",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.96,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 32 strán. Cena za 1 ks výrobku.",
+    "weight": "121 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-14-27",
+    "name": "Stolový kalendár Motivačný 2027",
+    "category": "Stolové kalendáre",
+    "price": 3.64,
+    "format": "300 × 120 mm",
+    "description": "Motivačný kalendár pre každého, kto sa rád zamyslí a spomalí. Dvojtýždňový stolový kalendár s citátmi, slovenskými menami, štátnymi sviatkami, východmi a západmi Slnka, znameniami zverokruhu a fázami Mesiaca.",
+    "variant": "",
+    "image_key": "SK-14",
+    "image": "/images/sk-14-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 3.64
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 3.46
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.09
+      }
+    ],
+    "slug": "stolovy-kalendar-motivacny-2027",
+    "gallery": [
+      "/gallery-v4/sk-14-27-1.jpg",
+      "/gallery-v4/sk-14-27-2.jpg",
+      "/gallery-v4/sk-14-27-3.jpg",
+      "/gallery-v4/sk-14-27-4.jpg",
+      "/gallery-v4/sk-14-27-5.jpg",
+      "/gallery-v4/sk-14-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623944",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.96,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 32 strán. Cena za 1 ks výrobku.",
+    "weight": "121 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-15-27",
+    "name": "Stolový kalendár Plánovací MAXI 2027",
+    "category": "Stolové kalendáre",
+    "price": 2.9,
+    "format": "300 × 140 mm",
+    "description": "Plnofarebná obálka a zväčšený formát. Týždenný stĺpcový kalendár s hodinovým delením až do 20-tej hodiny, daňovými pripomienkami, fondom pracovného času, mesačnými kalendáriami, fázami Mesiaca, sviatkami a školskými prázdninami.",
+    "variant": "",
+    "image_key": "SK-15",
+    "image": "/images/sk-15-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.9
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.76
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.47
+      }
+    ],
+    "slug": "stolovy-kalendar-planovaci-maxi-2027",
+    "gallery": [
+      "/gallery-v4/sk-15-27-1.jpg",
+      "/gallery-v4/sk-15-27-2.jpg",
+      "/gallery-v4/sk-15-27-3.jpg",
+      "/gallery-v4/sk-15-27-4.jpg",
+      "/gallery-v4/sk-15-27-5.jpg",
+      "/gallery-v4/sk-15-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 45 mm) od 30 ks.",
+    "ean": "8588001623982",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.36,
+    "technical_info": "Formát: 300 × 140 mm. Vario špirála, ofsetový papier, 64 strán. Cena za 1 ks výrobku.",
+    "weight": "187 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-16-27",
+    "name": "Stolový kalendár Recepty starej mamy 2027",
+    "category": "Stolové kalendáre",
+    "price": 2.78,
+    "format": "300 × 120 mm",
+    "description": "Stolový dvojtýždňový kalendár prináša slané aj sladké recepty našich starých mám. Okrem receptov ponúka slovenské a české mená, štátne sviatky, pamätné dni, školské prázdniny, východy a západy Slnka a fázy Mesiaca.",
+    "variant": "",
+    "image_key": "SK-16",
+    "image": "/images/sk-16-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.78
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.64
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.36
+      }
+    ],
+    "slug": "stolovy-kalendar-recepty-starej-mamy-2027",
+    "gallery": [
+      "/gallery-v4/sk-16-27-1.jpg",
+      "/gallery-v4/sk-16-27-2.jpg",
+      "/gallery-v4/sk-16-27-3.jpg",
+      "/gallery-v4/sk-16-27-4.jpg",
+      "/gallery-v4/sk-16-27-5.jpg",
+      "/gallery-v4/sk-16-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623968",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.26,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 32 strán. Cena za 1 ks výrobku.",
+    "weight": "121 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-17-27",
+    "name": "Stolový kalendár Školský 2026/2027",
+    "category": "Stolové kalendáre",
+    "price": 4.29,
+    "format": "300 × 170 mm",
+    "description": "Netradičný kalendár s témou ŠKOLA na obdobie školského roka od augusta do júla. Týždňový stolový kalendár má prehľadné stĺpcové kalendárium a poznámky pre viacerých členov rodiny, rozvrh hodín a užitočné školské informácie.",
+    "variant": "",
+    "image_key": "SK-17",
+    "image": "/images/sk-17-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 4.29
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 4.08
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 3.65
+      }
+    ],
+    "slug": "stolovy-kalendar-skolsky-2026-2027",
+    "gallery": [
+      "/gallery-v4/sk-17-27-1.jpg",
+      "/gallery-v4/sk-17-27-2.jpg",
+      "/gallery-v4/sk-17-27-3.jpg",
+      "/gallery-v4/sk-17-27-4.jpg",
+      "/gallery-v4/sk-17-27-5.jpg",
+      "/gallery-v4/sk-17-27-6.jpg",
+      "/gallery-v4/sk-17-27-7.jpg",
+      "/gallery-v4/sk-17-27-8.jpg",
+      "/gallery-v4/sk-17-27-9.jpg",
+      "/gallery-v4/sk-17-27-10.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 40 mm) od 30 ks.",
+    "ean": "8588001623999",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 3.49,
+    "technical_info": "Formát: 300 × 170 mm. Vario špirála, ofsetový papier, 66 strán. Cena za 1 ks výrobku.",
+    "weight": "230 g",
+    "availability": {
+      "raw": "Neznáma dostupnosť",
+      "inStock": false,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-18-27",
+    "name": "Stolový kalendár Tipy a triky pre dom, byt a záhradu 2027",
+    "category": "Stolové kalendáre",
+    "price": 3.43,
+    "format": "300 × 120 mm",
+    "description": "Dvojtýždňový kalendár prináša zaujímavé tipy, triky, nápady a inšpirácie pre byt, dom a záhradu. Obsahuje riadkové kalendárium so slovenskými a českými menami, štátnymi sviatkami okolitých krajín, východmi a západmi Slnka a fázami Mesiaca.",
+    "variant": "",
+    "image_key": "SK-18",
+    "image": "/images/sk-18-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 3.43
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 3.26
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.92
+      }
+    ],
+    "slug": "stolovy-kalendar-tipy-a-triky-pre-dom-byt-a-zahradu-2027",
+    "gallery": [
+      "/gallery-v4/sk-18-27-1.jpg",
+      "/gallery-v4/sk-18-27-2.jpg",
+      "/gallery-v4/sk-18-27-3.jpg",
+      "/gallery-v4/sk-18-27-4.jpg",
+      "/gallery-v4/sk-18-27-5.jpg",
+      "/gallery-v4/sk-18-27-6.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623883",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.79,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 32 strán. Cena za 1 ks výrobku.",
+    "weight": "121 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "SK-19-27",
+    "name": "Stolový kalendár Zvyky a tradície 2027",
+    "category": "Stolové kalendáre",
+    "price": 3.43,
+    "format": "300 × 120 mm",
+    "description": "Ľudové zvyky a tradície sú naším národným pokladom. Dvojtýždňové riadkové kalendárium so slovenskými menami a sviatkami, východmi a západmi Slnka a fázami Mesiaca.",
+    "variant": "",
+    "image_key": "SK-19",
+    "image": "/images/sk-19-27.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 3.43
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 3.26
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.92
+      }
+    ],
+    "slug": "stolovy-kalendar-zvyky-a-tradicie-2027",
+    "gallery": [
+      "/gallery-v4/sk-19-27-1.jpg"
+    ],
+    "print_info": "Možnosť potlače na presah podložky (300 × 35 mm) od 30 ks.",
+    "ean": "8588001623616",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 2.79,
+    "technical_info": "Formát: 300 × 120 mm. Vario špirála, natieraný lesklý papier, 32 strán. Cena za 1 ks výrobku.",
+    "weight": "121 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-01-1-27",
+    "name": "Denný diár Manager 2027 – čierny",
+    "category": "Diáre",
+    "price": 7.86,
+    "format": "A5",
+    "description": "Obľúbený denný diár v pestrej farebnej škále vo formáte A5 s bohatým obsahom. Kvalitný diár s hodinovým delením obsahuje slovenské a české kalendárium, anglický preklad mesiacov a dní, prehľadný a plánovací kalendár, školské prázdniny, informácie o štátnych sviatkoch všetkých krajín EÚ, adresár. Ponúka dostatočný priestor pre písanie poznámok a pripomienok.",
+    "variant": "čierny",
+    "image_key": "D-01",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7.86
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 7.47
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 6.68
+      }
+    ],
+    "slug": "denny-diar-manager-2027-cierny",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-01-1-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-8.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-9.jpg"
+    ],
+    "print_info": "Možnosť potlače / razby loga na obale od 30 ks.",
+    "ean": "8588001623234",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 6.39,
+    "technical_info": "Formát: A5. Matná obálka s razbou roku. Tvrdá šitá väzba V8, 336 strán. Cena za 1 ks výrobku.",
+    "pages": "336 strán",
+    "binding": "Tvrdá šitá väzba V8, razba roku",
+    "weight": "382 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-01-2-27",
+    "name": "Denný diár Manager 2027 – modrý",
+    "category": "Diáre",
+    "price": 7.86,
+    "format": "A5",
+    "description": "Obľúbený denný diár v pestrej farebnej škále vo formáte A5 s bohatým obsahom. Kvalitný diár s hodinovým delením obsahuje slovenské a české kalendárium, anglický preklad mesiacov a dní, prehľadný a plánovací kalendár, školské prázdniny, informácie o štátnych sviatkoch všetkých krajín EÚ, adresár. Ponúka dostatočný priestor pre písanie poznámok a pripomienok.",
+    "variant": "modrý",
+    "image_key": "D-01",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7.86
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 7.47
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 6.68
+      }
+    ],
+    "slug": "denny-diar-manager-2027-modry",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-01-6-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-8.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-9.jpg"
+    ],
+    "print_info": "Možnosť potlače / razby loga na obale od 30 ks.",
+    "ean": "8588001623531",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 6.39,
+    "technical_info": "Formát: A5. Matná obálka s razbou roku. Tvrdá šitá väzba V8, 336 strán. Cena za 1 ks výrobku.",
+    "pages": "336 strán",
+    "binding": "Tvrdá šitá väzba V8, razba roku",
+    "weight": "382 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-01-3-27",
+    "name": "Denný diár Manager 2027 – zelený",
+    "category": "Diáre",
+    "price": 7.86,
+    "format": "A5",
+    "description": "Obľúbený denný diár v pestrej farebnej škále vo formáte A5 s bohatým obsahom. Kvalitný diár s hodinovým delením obsahuje slovenské a české kalendárium, anglický preklad mesiacov a dní, prehľadný a plánovací kalendár, školské prázdniny, informácie o štátnych sviatkoch všetkých krajín EÚ, adresár. Ponúka dostatočný priestor pre písanie poznámok a pripomienok.",
+    "variant": "zelený",
+    "image_key": "D-01",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7.86
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 7.47
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 6.68
+      }
+    ],
+    "slug": "denny-diar-manager-2027-zeleny",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-01-3-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-8.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-9.jpg"
+    ],
+    "print_info": "Možnosť potlače / razby loga na obale od 30 ks.",
+    "ean": "8588001623562",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 6.39,
+    "technical_info": "Formát: A5. Matná obálka s razbou roku. Tvrdá šitá väzba V8, 336 strán. Cena za 1 ks výrobku.",
+    "pages": "336 strán",
+    "binding": "Tvrdá šitá väzba V8, razba roku",
+    "weight": "382 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-01-4-27",
+    "name": "Denný diár Manager 2027 – bordový",
+    "category": "Diáre",
+    "price": 7.86,
+    "format": "A5",
+    "description": "Obľúbený denný diár v pestrej farebnej škále vo formáte A5 s bohatým obsahom. Kvalitný diár s hodinovým delením obsahuje slovenské a české kalendárium, anglický preklad mesiacov a dní, prehľadný a plánovací kalendár, školské prázdniny, informácie o štátnych sviatkoch všetkých krajín EÚ, adresár. Ponúka dostatočný priestor pre písanie poznámok a pripomienok.",
+    "variant": "bordový",
+    "image_key": "D-01",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7.86
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 7.47
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 6.68
+      }
+    ],
+    "slug": "denny-diar-manager-2027-bordovy",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-01-4-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-8.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-9.jpg"
+    ],
+    "print_info": "Možnosť potlače / razby loga na obale od 30 ks.",
+    "ean": "8588001623548",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 6.39,
+    "technical_info": "Formát: A5. Matná obálka s razbou roku. Tvrdá šitá väzba V8, 336 strán. Cena za 1 ks výrobku.",
+    "pages": "336 strán",
+    "binding": "Tvrdá šitá väzba V8, razba roku",
+    "weight": "382 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-01-5-27",
+    "name": "Denný diár Manager 2027 – strieborný",
+    "category": "Diáre",
+    "price": 7.86,
+    "format": "A5",
+    "description": "Obľúbený denný diár v pestrej farebnej škále vo formáte A5 s bohatým obsahom. Kvalitný diár s hodinovým delením obsahuje slovenské a české kalendárium, anglický preklad mesiacov a dní, prehľadný a plánovací kalendár, školské prázdniny, informácie o štátnych sviatkoch všetkých krajín EÚ, adresár. Ponúka dostatočný priestor pre písanie poznámok a pripomienok.",
+    "variant": "strieborný",
+    "image_key": "D-01",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7.86
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 7.47
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 6.68
+      }
+    ],
+    "slug": "denny-diar-manager-2027-strieborny",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-01-5-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-8.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-9.jpg"
+    ],
+    "print_info": "Možnosť potlače / razby loga na obale od 30 ks.",
+    "ean": "8588001623517",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 6.39,
+    "technical_info": "Formát: A5. Matná obálka s razbou roku. Tvrdá šitá väzba V8, 336 strán. Cena za 1 ks výrobku.",
+    "pages": "336 strán",
+    "binding": "Tvrdá šitá väzba V8, razba roku",
+    "weight": "382 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-01-6-27",
+    "name": "Denný diár Manager 2027 – tmavomodrý",
+    "category": "Diáre",
+    "price": 7.86,
+    "format": "A5",
+    "description": "Obľúbený denný diár v pestrej farebnej škále vo formáte A5 s bohatým obsahom. Kvalitný diár s hodinovým delením obsahuje slovenské a české kalendárium, anglický preklad mesiacov a dní, prehľadný a plánovací kalendár, školské prázdniny, informácie o štátnych sviatkoch všetkých krajín EÚ, adresár. Ponúka dostatočný priestor pre písanie poznámok a pripomienok.",
+    "variant": "tmavomodrý",
+    "image_key": "D-01",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7.86
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 7.47
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 6.68
+      }
+    ],
+    "slug": "denny-diar-manager-2027-tmavomodry",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-01-2-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-8.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-9.jpg"
+    ],
+    "print_info": "Možnosť potlače / razby loga na obale od 30 ks.",
+    "ean": "8588001623500",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 6.39,
+    "technical_info": "Formát: A5. Matná obálka s razbou roku. Tvrdá šitá väzba V8, 336 strán. Cena za 1 ks výrobku.",
+    "pages": "336 strán",
+    "binding": "Tvrdá šitá väzba V8, razba roku",
+    "weight": "382 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-01-7-27",
+    "name": "Denný diár Manager 2027 – platinový",
+    "category": "Diáre",
+    "price": 7.86,
+    "format": "A5",
+    "description": "Obľúbený denný diár v pestrej farebnej škále vo formáte A5 s bohatým obsahom. Kvalitný diár s hodinovým delením obsahuje slovenské a české kalendárium, anglický preklad mesiacov a dní, prehľadný a plánovací kalendár, školské prázdniny, informácie o štátnych sviatkoch všetkých krajín EÚ, adresár. Ponúka dostatočný priestor pre písanie poznámok a pripomienok.",
+    "variant": "platinový",
+    "image_key": "D-01",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7.86
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 7.47
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 6.68
+      }
+    ],
+    "slug": "denny-diar-manager-2027-platinovy",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-01-7-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-8.jpg",
+      "/gallery-v4/diary-shared/d-01-interior-9.jpg"
+    ],
+    "print_info": "Možnosť potlače / razby loga na obale od 30 ks.",
+    "ean": "8588001623432",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 6.39,
+    "technical_info": "Formát: A5. Matná obálka s razbou roku. Tvrdá šitá väzba V8, 336 strán. Cena za 1 ks výrobku.",
+    "pages": "336 strán",
+    "binding": "Tvrdá šitá väzba V8, razba roku",
+    "weight": "382 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-02-2-27",
+    "name": "Týždenný diár Top Manager 2027 – čierny",
+    "category": "Diáre",
+    "price": 8.6,
+    "format": "165 × 245 mm (B5)",
+    "description": "Týždenný diár s listami z krémového papiera a s hodinovým delením obsahuje slovenské a české kalendárium, anglický preklad mesiacov a dní, prehľadný a plánovací kalendár, školské prázdniny, informácie o štátnych sviatkoch všetkých krajín EÚ a adresár. Ponúka dostatočný priestor pre písanie poznámok a pripomienok.",
+    "variant": "čierny",
+    "image_key": "D-02",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 8.6
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 8.17
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 7.31
+      }
+    ],
+    "slug": "tyzdenny-diar-top-manager-2027-cierny",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-02-2-27-cover-correct.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-8.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-9.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-10.jpg"
+    ],
+    "print_info": "Možnosť potlače / razby loga na obale od 30 ks.",
+    "ean": "8588001623371",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 6.99,
+    "technical_info": "Formát: 165 × 245 mm (B5). Tvrdá šitá väzba V8, razba roku, 128 strán. Cena za 1 ks výrobku.",
+    "pages": "128 strán",
+    "binding": "Tvrdá šitá väzba V8, razba roku",
+    "weight": "310 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-02-1-27",
+    "name": "Týždenný diár Top Manager 2027 – modrý",
+    "category": "Diáre",
+    "price": 8.6,
+    "format": "165 × 245 mm (B5)",
+    "description": "Týždenný diár s listami z krémového papiera a s hodinovým delením obsahuje slovenské a české kalendárium, anglický preklad mesiacov a dní, prehľadný a plánovací kalendár, školské prázdniny, informácie o štátnych sviatkoch všetkých krajín EÚ a adresár. Ponúka dostatočný priestor pre písanie poznámok a pripomienok.",
+    "variant": "modrý",
+    "image_key": "D-02",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 8.6
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 8.17
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 7.31
+      }
+    ],
+    "slug": "tyzdenny-diar-top-manager-2027-modry",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-02-1-27-cover-correct.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-8.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-9.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-10.jpg"
+    ],
+    "print_info": "Možnosť potlače / razby loga na obale od 30 ks.",
+    "ean": "8588001623838",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 6.99,
+    "technical_info": "Formát: 165 × 245 mm (B5). Tvrdá šitá väzba V8, razba roku, 128 strán. Cena za 1 ks výrobku.",
+    "pages": "128 strán",
+    "binding": "Tvrdá šitá väzba V8, razba roku",
+    "weight": "310 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-02-3-27",
+    "name": "Týždenný diár Top Manager 2027 – platinový",
+    "category": "Diáre",
+    "price": 8.6,
+    "format": "165 × 245 mm (B5)",
+    "description": "Týždenný diár s listami z krémového papiera a s hodinovým delením obsahuje slovenské a české kalendárium, anglický preklad mesiacov a dní, prehľadný a plánovací kalendár, školské prázdniny, informácie o štátnych sviatkoch všetkých krajín EÚ a adresár. Ponúka dostatočný priestor pre písanie poznámok a pripomienok.",
+    "variant": "platinový",
+    "image_key": "D-02",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 8.6
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 8.17
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 7.31
+      }
+    ],
+    "slug": "tyzdenny-diar-top-manager-2027-platinovy",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-02-3-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-8.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-9.jpg",
+      "/gallery-v4/diary-shared/d-02-interior-10.jpg"
+    ],
+    "print_info": "Možnosť potlače / razby loga na obale od 30 ks.",
+    "ean": "8588001623395",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 6.99,
+    "technical_info": "Formát: 165 × 245 mm (B5). Tvrdá šitá väzba V8, razba roku, 128 strán. Cena za 1 ks výrobku.",
+    "pages": "128 strán",
+    "binding": "Tvrdá šitá väzba V8, razba roku",
+    "weight": "310 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-03-1-27",
+    "name": "Minidiár týždenný 2027 - čierny",
+    "category": "Diáre",
+    "price": 2.2,
+    "format": "90 × 165 mm",
+    "description": "Vreckový, či kabelkový diár s prehľadným týždňom na každej strane. Obsahuje slovenské a české kalendárium, prehľadný aj plánovací kalendár, informácie o školských prázdninách. Nájdete v ňom priestor pre písanie poznámok a pripomienok, adresár či informácie o štátnych sviatkoch v susediacich krajinách EÚ.",
+    "variant": "čierny",
+    "image_key": "D-03",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.2
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.09
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.87
+      }
+    ],
+    "slug": "mini-diar-tyzdenny-2027-cierny",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-03-1-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-8.jpg"
+    ],
+    "print_info": "Možnosť dotlače loga na obale od 30 ks.",
+    "ean": "8588001623180",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.79,
+    "technical_info": "Formát: 90 × 165 mm. PVC obal, väzba V1, 72 strán. Cena za 1 ks výrobku.",
+    "pages": "72 strán",
+    "binding": "PVC obal, väzba V1",
+    "weight": "60 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-03-2-27",
+    "name": "Minidiár týždenný 2027 - modrý",
+    "category": "Diáre",
+    "price": 2.2,
+    "format": "90 × 165 mm",
+    "description": "Vreckový, či kabelkový diár s prehľadným týždňom na každej strane. Obsahuje slovenské a české kalendárium, prehľadný aj plánovací kalendár, informácie o školských prázdninách. Nájdete v ňom priestor pre písanie poznámok a pripomienok, adresár či informácie o štátnych sviatkoch v susediacich krajinách EÚ.",
+    "variant": "modrý",
+    "image_key": "D-03",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.2
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.09
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.87
+      }
+    ],
+    "slug": "mini-diar-tyzdenny-2027-modry",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-03-2-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-8.jpg"
+    ],
+    "print_info": "Možnosť dotlače loga na obale od 30 ks.",
+    "ean": "8588001623258",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.79,
+    "technical_info": "Formát: 90 × 165 mm. PVC obal, väzba V1, 72 strán. Cena za 1 ks výrobku.",
+    "pages": "72 strán",
+    "binding": "PVC obal, väzba V1",
+    "weight": "60 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-03-3-27",
+    "name": "Minidiár týždenný 2027 - bordový",
+    "category": "Diáre",
+    "price": 2.2,
+    "format": "90 × 165 mm",
+    "description": "Vreckový, či kabelkový diár s prehľadným týždňom na každej strane. Obsahuje slovenské a české kalendárium, prehľadný aj plánovací kalendár, informácie o školských prázdninách. Nájdete v ňom priestor pre písanie poznámok a pripomienok, adresár či informácie o štátnych sviatkoch v susediacich krajinách EÚ.",
+    "variant": "bordový",
+    "image_key": "D-03",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.2
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.09
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.87
+      }
+    ],
+    "slug": "mini-diar-tyzdenny-2027-bordovy",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-03-3-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-8.jpg"
+    ],
+    "print_info": "Možnosť dotlače loga na obale od 30 ks.",
+    "ean": "8588001623272",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.79,
+    "technical_info": "Formát: 90 × 165 mm. PVC obal, väzba V1, 72 strán. Cena za 1 ks výrobku.",
+    "pages": "72 strán",
+    "binding": "PVC obal, väzba V1",
+    "weight": "60 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-03-4-27",
+    "name": "Minidiár týždenný 2027 - sivý",
+    "category": "Diáre",
+    "price": 2.2,
+    "format": "90 × 165 mm",
+    "description": "Vreckový, či kabelkový diár s prehľadným týždňom na každej strane. Obsahuje slovenské a české kalendárium, prehľadný aj plánovací kalendár, informácie o školských prázdninách. Nájdete v ňom priestor pre písanie poznámok a pripomienok, adresár či informácie o štátnych sviatkoch v susediacich krajinách EÚ.",
+    "variant": "sivý",
+    "image_key": "D-03",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.2
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.09
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.87
+      }
+    ],
+    "slug": "mini-diar-tyzdenny-2027-sivy",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-03-4-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-03-interior-8.jpg"
+    ],
+    "print_info": "Možnosť dotlače loga na obale od 30 ks.",
+    "ean": "8588001623296",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.79,
+    "technical_info": "Formát: 90 × 165 mm. PVC obal, väzba V1, 72 strán. Cena za 1 ks výrobku.",
+    "pages": "72 strán",
+    "binding": "PVC obal, väzba V1",
+    "weight": "60 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-04-1-27",
+    "name": "Minidiár mesačný 2027 - čierny",
+    "category": "Diáre",
+    "price": 1.46,
+    "format": "80 × 155 mm",
+    "description": "Kabelkový diár s prehľadným mesiacom na dvojstrane. V mini diári nájdete aj priestor pre písanie poznámok a pripomienok, adresár. Obsahuje slovenské mená, štátne sviatky a fázy Mesiaca.",
+    "variant": "čierny",
+    "image_key": "D-04",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 1.46
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 1.39
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.24
+      }
+    ],
+    "slug": "mini-diar-mesacny-2027-cierny",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-04-1-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-8.jpg"
+    ],
+    "print_info": "Možnosť dotlače loga na obale od 30 ks.",
+    "ean": "8588001623579",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.19,
+    "technical_info": "Formát: 80 × 155 mm. PVC obal, väzba V1, 40 strán. Cena za 1 ks výrobku.",
+    "pages": "40 strán",
+    "binding": "PVC obal, väzba V1",
+    "weight": "35 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "D-04-2-27",
+    "name": "Minidiár mesačný 2027 - modrý",
+    "category": "Diáre",
+    "price": 1.46,
+    "format": "80 × 155 mm",
+    "description": "Kabelkový diár s prehľadným mesiacom na dvojstrane. V mini diári nájdete aj priestor pre písanie poznámok a pripomienok, adresár. Obsahuje slovenské mená, štátne sviatky a fázy Mesiaca.",
+    "variant": "modrý",
+    "image_key": "D-04",
+    "image": "",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 1.46
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 1.39
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.24
+      }
+    ],
+    "slug": "mini-diar-mesacny-2027-modry",
+    "gallery": [
+      "/gallery-v4/diary-covers/d-04-2-27-cover.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-1.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-2.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-3.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-4.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-5.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-6.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-7.jpg",
+      "/gallery-v4/diary-shared/d-04-interior-8.jpg"
+    ],
+    "print_info": "Možnosť dotlače loga na obale od 30 ks.",
+    "ean": "8588001623739",
+    "vo_balenie": "20 ks",
+    "price_no_vat": 1.19,
+    "technical_info": "Formát: 80 × 155 mm. PVC obal, väzba V1, 40 strán. Cena za 1 ks výrobku.",
+    "pages": "40 strán",
+    "binding": "PVC obal, väzba V1",
+    "weight": "35 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "PP-01",
+    "name": "Pracovná podložka bez kalendária",
+    "category": "Ostatné",
+    "price": 7.33,
+    "format": "520 × 390 mm",
+    "description": "Univerzálna pracovná stolová podložka s týždenným plánovaním na akýkoľvek rok. Praktická pomôcka, ktorá chráni váš stôl a zároveň nahrádza kalendár, či poskytuje priestor na poznámky.",
+    "variant": "",
+    "image_key": "PP-01",
+    "image": "/images/pp-01.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7.33
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 6.96
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 6.23
+      }
+    ],
+    "slug": "stolova-pracovna-podlozka-bez-kalendaria",
+    "gallery": [
+      "/gallery-v4/pp-01-1.jpg"
+    ],
+    "print_info": "Možnosť potlače na záložku (520 × 55 mm) od 30 ks.",
+    "ean": "8588001623128",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 5.96,
+    "technical_info": "Formát: 520 × 390 mm. Lepená väzba, ofsetový papier, 25 trhacích listov. Cena za 1 ks výrobku.",
+    "weight": "480 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "PP-02-27",
+    "name": "Pracovná podložka s kalendáriom 2027",
+    "category": "Ostatné",
+    "price": 7.33,
+    "format": "520 × 390 mm",
+    "description": "Stolová pracovná podložka s týždenným plánovaním a prehľadným kalendáriom na celý aktuálny rok. Praktická pomôcka, ktorá chráni váš stôl a zároveň nahrádza kalendár, či poskytuje priestor na poznámky.",
+    "variant": "",
+    "image_key": "PP-02",
+    "image": "/images/pp-02.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 7.33
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 6.96
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 6.23
+      }
+    ],
+    "slug": "stolova-pracovna-podlozka-s-kalendariom-2027",
+    "gallery": [
+      "/gallery-v4/pp-02-1.jpg"
+    ],
+    "print_info": "Možnosť potlače na záložku (520 × 55 mm) od 30 ks.",
+    "ean": "8588001623159",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 5.96,
+    "technical_info": "Formát: 520 × 390 mm. Lepená väzba, ofsetový papier, 25 trhacích listov. Cena za 1 ks výrobku.",
+    "weight": "480 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "PP-03",
+    "name": "Podložka pod myš \"Myšpad\"",
+    "category": "Ostatné",
+    "price": 2.45,
+    "format": "210 × 210 mm",
+    "description": "Veľmi obľúbená a účelná pracovná pomôcka - podložka pod myš a zároveň poznámkový blok s možnosťou týždenného plánovania.",
+    "variant": "",
+    "image_key": "PP-03",
+    "image": "/images/pp-03.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.45
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.33
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 2.08
+      }
+    ],
+    "slug": "podlozka-pod-mys-myspad",
+    "gallery": [
+      "/gallery-v4/pp-03-1.jpg"
+    ],
+    "print_info": "Bez možnosti potlače.",
+    "ean": "8588001623821",
+    "vo_balenie": "10 ks",
+    "price_no_vat": 1.99,
+    "technical_info": "Formát: 210 × 210 mm. Lepená väzba, ofsetový papier, 52 trhacích listov. Cena za 1 ks výrobku.",
+    "weight": "190 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "PP-04-27",
+    "name": "Ročná plánovacia MAPA 2027",
+    "category": "Ostatné",
+    "price": 2.33,
+    "format": "680 × 480 mm",
+    "description": "Praktická novinka na stenu, ktorá vám poskytne celý rok prehľadne na jednom mieste. Rýchlo si naplánujete dôležité termíny, dovolenky aj osobné ciele. Ideálny pomocník do kancelárie aj domácnosti pre každého, kto chce mať veci pod kontrolou.",
+    "variant": "",
+    "image_key": "PP-04",
+    "image": "/images/pp-04.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 2.33
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 2.21
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 1.98
+      }
+    ],
+    "slug": "rocna-planovacia-mapa-2027",
+    "gallery": [
+      "/gallery-v4/pp-04-1.jpg"
+    ],
+    "print_info": "Bez možnosti potlače.",
+    "ean": "8588008840924",
+    "vo_balenie": "1 ks",
+    "price_no_vat": 1.89,
+    "technical_info": "Formát: 680 × 480 mm. Orez, natieraný matný papier, 1 list. Cena za 1 ks výrobku.",
+    "weight": "66 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "PF-01",
+    "name": "PF Vianočná guľa 2027",
+    "category": "PF pohľadnice",
+    "price": 0.6,
+    "format": "105 × 148 mm",
+    "description": "Jednolistová PF pohľadnica s vianočným motívom a predtlačeným prianím „Veselé Vianoce a šťastný nový rok“ v štyroch jazykoch (SK, EN, DE, FR). Vhodná do štandardnej obálky C6.",
+    "variant": "",
+    "image_key": "PF-01",
+    "image": "/images/pf-01.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 0.6
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 0.57
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 0.51
+      }
+    ],
+    "slug": "pf-vianocna-gula-2027",
+    "gallery": [
+      "/gallery-v4/pf-01-1.jpg",
+      "/gallery-v4/pf-01-2.jpg"
+    ],
+    "print_info": "Bez individuálnej firemnej potlače; hotová PF pohľadnica podľa vyhotovenia.",
+    "ean": "",
+    "vo_balenie": "25 ks",
+    "price_no_vat": 0.49,
+    "technical_info": "Formát: A6 (105 × 148 mm). Jednolistová s textom. Cena za 1 ks výrobku.",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "PF-02",
+    "name": "PF Zimná krajina",
+    "category": "PF pohľadnice",
+    "price": 0.97,
+    "format": "210 × 100 mm",
+    "description": "Dvojlistová PF pohľadnica s motívom zasneženej zimnej krajiny. Vo vnútri je predtlačené dvojjazyčné prianie „Veselé Vianoce a šťastný nový rok“ v slovenskom a anglickom jazyku. Vhodná do bezokienkovej obálky DL.",
+    "variant": "",
+    "image_key": "PF-02",
+    "image": "/images/pf-02.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 0.97
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 0.92
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 0.82
+      }
+    ],
+    "slug": "pf-zimna-krajina",
+    "gallery": [
+      "/gallery-v4/pf-02-1.jpg",
+      "/gallery-v4/pf-02-2.jpg"
+    ],
+    "print_info": "Bez individuálnej firemnej potlače; hotová PF pohľadnica podľa vyhotovenia.",
+    "ean": "8588001623593",
+    "vo_balenie": "25 ks",
+    "price_no_vat": 0.79,
+    "technical_info": "Formát: 210 × 100 mm. Dvojlistová s textom. V rozloženom stave 210 × 200 mm. Cena za 1 ks výrobku.",
+    "weight": "12 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "PF-03",
+    "name": "PF Vianočné svetlo",
+    "category": "PF pohľadnice",
+    "price": 0.97,
+    "format": "105 × 148 mm",
+    "description": "Dvojlistová pohľadnica s vianočným motívom a predtlačeným slovenským prianím. Vhodná do štandardnej obálky C6.",
+    "variant": "",
+    "image_key": "PF-03",
+    "image": "/images/pf-03.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 0.97
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 0.92
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 0.82
+      }
+    ],
+    "slug": "pf-vianocne-svetlo",
+    "gallery": [
+      "/gallery-v4/pf-03-1.jpg",
+      "/gallery-v4/pf-03-2.jpg"
+    ],
+    "print_info": "Bez individuálnej firemnej potlače; hotová PF pohľadnica podľa vyhotovenia.",
+    "ean": "8588001623586",
+    "vo_balenie": "25 ks",
+    "price_no_vat": 0.79,
+    "technical_info": "Formát: A6 (148 × 105 mm). Dvojlistová s textom. V rozloženom stave 148 × 210 mm. Cena za 1 ks výrobku.",
+    "weight": "10 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "PF-04",
+    "name": "PF Vianočný strom",
+    "category": "PF pohľadnice",
+    "price": 0.97,
+    "format": "148 × 105 mm",
+    "description": "Dvojlistová pohľadnica bez textu. Vhodná do štandardnej obálky C6.",
+    "variant": "",
+    "image_key": "PF-04",
+    "image": "/images/pf-04.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 0.97
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 0.92
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 0.82
+      }
+    ],
+    "slug": "pf-vianocny-strom",
+    "gallery": [
+      "/gallery-v4/pf-04-1.jpg",
+      "/gallery-v4/pf-04-2.jpg"
+    ],
+    "print_info": "Bez individuálnej firemnej potlače; hotová PF pohľadnica podľa vyhotovenia.",
+    "ean": "8588001623609",
+    "vo_balenie": "25 ks",
+    "price_no_vat": 0.79,
+    "technical_info": "Formát: A6 (105 × 148 mm). Dvojlistová bez textu. V rozloženom stave 210 × 148 mm. Cena za 1 ks výrobku.",
+    "weight": "10 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "PF-05",
+    "name": "PF Biele Vianoce",
+    "category": "PF pohľadnice",
+    "price": 0.6,
+    "format": "148 × 105 mm",
+    "description": "Jednolistová pohľadnica s predtlačeným slovenským prianím. Vhodná do štandardnej obálky C6.",
+    "variant": "",
+    "image_key": "PF-05",
+    "image": "/images/pf-05.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 0.6
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 0.57
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 0.51
+      }
+    ],
+    "slug": "pf-biele-vianoce",
+    "gallery": [
+      "/gallery-v4/pf-05-1.jpg",
+      "/gallery-v4/pf-05-2.jpg"
+    ],
+    "print_info": "Bez individuálnej firemnej potlače; hotová PF pohľadnica podľa vyhotovenia.",
+    "ean": "",
+    "vo_balenie": "25 ks",
+    "price_no_vat": 0.49,
+    "technical_info": "Formát: A6 (148 × 105 mm). Jednolistová s textom. Cena za 1 ks výrobku.",
+    "weight": "5 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  },
+  {
+    "sku": "PF-06",
+    "name": "PF Vianočné medovníky",
+    "category": "PF pohľadnice",
+    "price": 0.6,
+    "format": "148 × 105 mm",
+    "description": "Jednolistová PF pohľadnica s motívom ozdobených medovníkov. Druhá, čistá strana je pripravená pre vaše osobné prianie. Vhodná do štandardnej obálky C6.",
+    "variant": "",
+    "image_key": "PF-06",
+    "image": "/images/pf-06.jpg",
+    "price_tiers": [
+      {
+        "min_qty": 1,
+        "max_qty": 2,
+        "discount": 0,
+        "unit_price": 0.6
+      },
+      {
+        "min_qty": 3,
+        "max_qty": 20,
+        "discount": 5,
+        "unit_price": 0.57
+      },
+      {
+        "min_qty": 21,
+        "max_qty": null,
+        "discount": 15,
+        "unit_price": 0.51
+      }
+    ],
+    "slug": "pf-vianocne-medovniky",
+    "gallery": [
+      "/gallery-v4/pf-06-1.jpg"
+    ],
+    "print_info": "Bez individuálnej firemnej potlače; hotová PF pohľadnica bez textu.",
+    "ean": "",
+    "vo_balenie": "25 ks",
+    "price_no_vat": 0.49,
+    "technical_info": "Formát: A6 (148 × 105 mm). Jednolistová bez textu. Cena za 1 ks výrobku.",
+    "weight": "5 g",
+    "availability": {
+      "raw": "Skladom",
+      "inStock": true,
+      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "source": "pressgroup.sk"
+    }
+  }
+]

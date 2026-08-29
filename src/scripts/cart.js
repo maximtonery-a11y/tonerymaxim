@@ -389,7 +389,9 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
       const response = await fetch(`/api/products?search=${encodeURIComponent(wanted)}&per_page=24`, { cache: "no-store" });
       const data = await response.json();
       if (!response.ok || !data?.ok || !Array.isArray(data.products)) return null;
-      return data.products.find((product) => String(product?.sku || "").trim() === wanted) || data.products[0] || null;
+      // Fuzzy výsledok nesmie byť použitý pre inú SKU. Inak by položka mohla
+      // prevziať sklad alebo dostupnosť úplne iného produktu.
+      return data.products.find((product) => String(product?.sku || "").trim() === wanted) || null;
     } catch {
       return null;
     }
@@ -403,6 +405,38 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
     const hydrated = [];
 
     for (const item of cart) {
+      // Kalendáre majú vlastný katalóg a vlastnú serverovú kontrolu skladu.
+      // Nikdy ich nedohľadávame medzi tonermi cez hlavné /api/products.
+      if (String(item?.source || "") === "kalendare-2027") {
+        const calendarStockStatus = String(item?.stock_status || "instock").toLowerCase();
+        const calendarItem = {
+          ...item,
+          url: productUrl(item),
+          // Staršia verzia košíka mohla kalendár omylom obohatiť údajmi tonera.
+          // Pri kalendári preto odstránime iba tonerové atribúty; sklad a cenu
+          // pri objednávke aj tak autoritatívne overuje serverový katalóg.
+          color: "",
+          farba: "",
+          capacity: "",
+          kapacita: "",
+          yield: "",
+          page_yield: "",
+          pageYield: "",
+          pages: "",
+          ml: "",
+          volume: "",
+          product_type_key: "",
+          product_type_label: "",
+          stock_quantity: null,
+          stock_text: calendarStockStatus === "outofstock"
+            ? "Nie je skladom"
+            : (calendarStockStatus === "onbackorder" ? "Na objednávku" : "Skladom"),
+        };
+        hydrated.push(calendarItem);
+        if (JSON.stringify(calendarItem) !== JSON.stringify(item)) changed = true;
+        continue;
+      }
+
       const needsData = !productCapacity(item) || !item.url || item.url === "#" || !item.stock_text || !item.stock_quantity;
       let product = findProductInSessionCache(item.sku);
       if (needsData && !product) product = await fetchProductBySku(item.sku);
@@ -459,6 +493,13 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
   }
 
   function cartItemMetaHtml(item) {
+    if (String(item?.source || "") === "kalendare-2027") {
+      return `
+        <div class="cart-item-meta" aria-label="Dostupnosť produktu">
+          <span class="cart-stock ${stockClass(item)}"><i></i>${esc(stockText(item))}</span>
+        </div>
+      `;
+    }
     const warranty = String(item?.warranty || item?.zaruka || "24 mesiacov").trim();
     return `
       <div class="cart-item-meta" aria-label="Parametre produktu">
@@ -502,6 +543,12 @@ function formatMoney(value) {
   }
 
   function quantityDiscountRate(item) {
+    if (String(item?.source || "") === "kalendare-2027") {
+      const qty = cleanQty(item.qty);
+      if (qty >= 21) return 0.15;
+      if (qty >= 3) return 0.05;
+      return 0;
+    }
     if (!isCompatibleDiscountItem(item)) return 0;
     const qty = cleanQty(item.qty);
     if (qty >= 4) return 0.25;
@@ -657,6 +704,7 @@ function formatMoney(value) {
       existing.stock_status = product.stock_status || existing.stock_status || "instock";
       existing.stock_quantity = product.stock_quantity ?? existing.stock_quantity ?? null;
       existing.stock_text = product.stock_text || existing.stock_text || "";
+      if (product.source) existing.source = String(product.source);
     } else {
       const acceptedQty = limitedQty(product, requestedAddition, true);
       if (acceptedQty < 1) return { added: 0, limited: true };
@@ -679,6 +727,7 @@ function formatMoney(value) {
         stock_status: product.stock_status || "instock",
         stock_quantity: product.stock_quantity ?? null,
         stock_text: product.stock_text || "",
+        source: String(product.source || ""),
       });
     }
 
