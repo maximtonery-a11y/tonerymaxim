@@ -203,6 +203,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
       stock_status: product.stock_status || 'instock',
       stock_quantity: product.stock_quantity || null,
       stock_text: product.stock_text || '',
+      source: product.source || '',
     };
   }
 
@@ -343,14 +344,14 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
 
 
   const money = (n) => Number(n || 0).toLocaleString('sk-SK',{style:'currency',currency:'EUR'});
-  const discount = (p,q) => String(p?.type || p?.product_type_key || '').toLowerCase()==='compatible' ? (q>=4?25:(q>=2?10:0)) : 0;
+  const discount = (p,q) => String(p?.source||'')==='kalendare-2027' ? (q>=21?15:(q>=3?5:0)) : String(p?.type || p?.product_type_key || '').toLowerCase()==='compatible' ? (q>=4?25:(q>=2?10:0)) : 0;
   const unitPrice = (p,q) => Number(p?.price||0)*(1-discount(p,q)/100);
   const linePrice = (p,q) => unitPrice(p,q)*q;
   const cartKey = p => String(p?.sku || p?.id || p?.name || '').trim().toLowerCase();
   const WEB_CART_KEY = 'tm_cart_v1';
   const cleanCartQty = value => Math.max(1,Math.min(99,parseInt(value,10)||1));
   function webCartProduct(product,qty){
-    return {id:String(product?.id||product?.sku||product?.name||''),productId:String(product?.id||''),product_id:String(product?.id||''),sku:String(product?.sku||''),name:String(product?.name||'Produkt'),price:Number(product?.price||0),qty:cleanCartQty(qty),image:String(product?.image||''),url:String(product?.url||product?.detail_url||''),slug:String(product?.slug||''),color:String(product?.color||product?.farba||''),capacity:product?.capacity||product?.yield||product?.page_yield||'',stock_status:String(product?.stock_status||'instock'),stock_quantity:product?.stock_quantity??null,stock_text:String(product?.stock_text||''),product_type_key:String(product?.product_type_key||product?.productTypeKey||product?.type||''),product_type_label:String(product?.product_type_label||product?.productTypeLabel||''),loyalty_reward:isPaperRewardCartItem(product)};
+    return {id:String(product?.id||product?.sku||product?.name||''),productId:String(product?.id||''),product_id:String(product?.id||''),sku:String(product?.sku||''),name:String(product?.name||'Produkt'),price:Number(product?.price||0),qty:cleanCartQty(qty),image:String(product?.image||''),url:String(product?.url||product?.detail_url||''),slug:String(product?.slug||''),color:String(product?.color||product?.farba||''),capacity:product?.capacity||product?.yield||product?.page_yield||'',stock_status:String(product?.stock_status||'instock'),stock_quantity:product?.stock_quantity??null,stock_text:String(product?.stock_text||''),product_type_key:String(product?.product_type_key||product?.productTypeKey||product?.type||''),product_type_label:String(product?.product_type_label||product?.productTypeLabel||''),source:String(product?.source||''),loyalty_reward:isPaperRewardCartItem(product)};
   }
   function readWebCart(){
     try{const value=JSON.parse(localStorage.getItem(WEB_CART_KEY)||'[]');return collapsePaperRewardCart(Array.isArray(value)?value:[]);}catch{return[];}

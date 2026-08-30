@@ -7,6 +7,7 @@ const component=readFileSync(new URL('../src/components/FloatingAdvisor.astro',i
 const ui=readFileSync(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
 const css=readFileSync(new URL('../src/styles/ai-sales-assistant.css',import.meta.url),'utf8');
 const api=readFileSync(new URL('../src/pages/api/ai-tomas.ts',import.meta.url),'utf8');
+const links=readFileSync(new URL('../src/lib/ai-advisor-links.ts',import.meta.url),'utf8');
 const admin=readFileSync(new URL('../src/pages/admin/ai-tomas-unanswered.astro',import.meta.url),'utf8');
 
 test('osobný odber je servisná otázka aj po produktovej konverzácii',async()=>{
@@ -45,7 +46,8 @@ test('veľkosť, rozhovor a košík sa ukladajú a nová komunikácia chráni ko
 
 test('odpovede majú hodnotenie, zdroje, podporu a stiahnutie',()=>{
   for(const token of ['attachFeedback','appendSources','/api/ai-events','/api/ai-handoff','AI-Tomas-komunikacia-'])assert.ok(ui.includes(token),token);
-  assert.match(api,/Doprava a platba/);
+  assert.match(api,/advisorLinks/);
+  assert.match(links,/Doprava a platba/);
   assert.match(api,/saveAiUnanswered/);
 });
 

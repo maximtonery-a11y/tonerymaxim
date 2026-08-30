@@ -184,6 +184,15 @@ const singleOriginalProducts = singleTonerProducts.filter((product) => product.p
 const baseProducts = singleOriginalProducts.length ? singleOriginalProducts : singleTonerProducts;
 const baseOems = printer ? uniqueText(baseProducts.flatMap((product) => brandOemCodes(product, brandName)), 8) : [];
 const oemText = naturalList(baseOems.length ? baseOems : tonerOems);
+const metaOems = (baseOems.length ? baseOems : tonerOems).slice(0, 4);
+const metaOemText = naturalList(metaOems);
+const printerTitleBase = metaOemText ? `${pageHeading} – ${brandName} ${metaOemText}` : pageHeading;
+const printerTitle = `${printerTitleBase.length > 68 ? pageHeading : printerTitleBase} | ToneryMaxim.sk`;
+modelDescription = inkBased
+  ? `Atramentové náplne pre ${printerName}${metaOemText ? `: ${brandName} ${metaOemText}` : ""}. ${typeSummary.charAt(0).toUpperCase()}${typeSummary.slice(1)} varianty, aktuálne ceny a dostupnosť.`
+  : laserBased
+    ? `Tonery pre ${printerName}${metaOemText ? `: ${brandName} ${metaOemText}` : ""}. ${typeSummary.charAt(0).toUpperCase()}${typeSummary.slice(1)} varianty, aktuálne ceny a dostupnosť.`
+    : `Spotrebný materiál pre ${printerName}. Aktuálne ceny, dostupnosť a parametre priradených produktov.`;
 function numericYield(product: any): number | null {
   if (isInkProduct(product)) return null; // atramenty: nikdy neporovnávame strany a ml v jednom výpočte
   const raw = normText(product?.page_yield || product?.capacity).replace(/\s/g, "");
@@ -538,7 +547,7 @@ const typeFacts = [
 ---
 
 <SeoCatalogPage
-  title={notFound ? "Model tlačiarne sa nenašiel | ToneryMaxim.sk" : `${pageHeading} | ToneryMaxim.sk`}
+  title={notFound ? "Model tlačiarne sa nenašiel | ToneryMaxim.sk" : printerTitle}
   description={notFound
     ? "Požadovaný model tlačiarne sa v katalógu nenašiel."
     : modelDescription}

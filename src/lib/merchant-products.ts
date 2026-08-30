@@ -1,6 +1,8 @@
 import type { TmProduct } from "./tm-products-cache.ts";
 import { compactKey, stripHtml } from "./tm-products-cache.ts";
 import { cleanGtin, cleanMpn, cleanProductBrand } from "./product-identifiers.ts";
+import { publicationEligibleProduct } from "./product-publication-policy.ts";
+import { buildProductSeo } from "./catalog-seo-text.ts";
 
 export type MerchantProductType = "compatible" | "original" | "renovated" | "product";
 export type MerchantMaterialType = "toner" | "ink" | "drum" | "component";
@@ -73,7 +75,7 @@ function materialType(product: TmProduct): MerchantMaterialType | null {
 
   if (/atrament|\bink\b|inkjet|cartridge|napln/.test(text)) return "ink";
   if (/optick.*valec|fotovalec|\bdrum\b/.test(text)) return "drum";
-  if (/toner/.test(text)) return "toner";
+  if (/toner|\bc\s*-?\s*exv\s*\d+|\b(?:crg|cf|ce|cb|cc|q|w)\s*-?\s*\d{2,5}[a-z]*/.test(text)) return "toner";
   if (/zapek|fuser|transfer|prenosov|odpadov|maintenance|paska|belt|valec|komponent|spotrebny material/.test(text)) return "component";
   return null;
 }
@@ -151,11 +153,12 @@ function oemFamilyLabel(codes: string[]): string {
   return `oem-${compactKey(family || primary)}`.slice(0, 100);
 }
 
-function productTypeLabel(type: MerchantProductType): string {
+function productTypeLabel(type: MerchantProductType, material: MerchantMaterialType): string {
+  const feminine = material === "ink";
   return {
-    compatible: "Kompatibilný",
-    original: "Originálny",
-    renovated: "Renovovaný",
+    compatible: feminine ? "Kompatibilná" : "Kompatibilný",
+    original: feminine ? "Originálna" : "Originálny",
+    renovated: feminine ? "Renovovaná" : "Renovovaný",
     product: "",
   }[type];
 }
@@ -169,32 +172,13 @@ function materialLabel(material: MerchantMaterialType): string {
   }[material];
 }
 
-function merchantTitle(product: TmProduct, type: MerchantProductType, material: MerchantMaterialType): string {
-  // Pri alternatívach dávame Googlu na začiatok názvu presný OEM kód, pre ktorý
-  // je výrobok určený. OEM kód zostáva iba textovým signálom – neposielame ho
-  // ako MPN/GTIN kompatibilného výrobku.
-  if (type !== "compatible" && type !== "renovated") return cleanText(product.name, 150);
-
-  const sourceName = cleanText(product.name, 150);
-  const brand = cleanText(product.product_brand, 40);
-  const beforeType = sourceName
-    .replace(/\b(?:kompatibiln(?:ý|y|á|a|é|e)|renovovan(?:ý|y|á|a|é|e))\b.*$/i, "")
-    .trim();
-  const withoutBrand = brand && beforeType.toLowerCase().startsWith(brand.toLowerCase())
-    ? beforeType.slice(brand.length).trim()
-    : beforeType;
-  const primary = withoutBrand.match(/^[A-Z0-9][A-Z0-9._/-]*\d[A-Z0-9._/-]*/i)?.[0] || "";
-  const alternate = withoutBrand.match(/\((?:no\.?\s*)?([A-Z0-9][A-Z0-9._/-]*\d[A-Z0-9._/-]*)\)/i)?.[1] || "";
-  if (!primary) return sourceName;
-
-  const codes = unique([primary, alternate], 2).join(" / ");
-  const color = cleanText(product.color || product.farba, 40);
-  return cleanText([
-    `${productTypeLabel(type)} ${materialLabel(material)} pre`,
-    brand,
-    codes,
-    color ? `– ${color}` : "",
-  ].filter(Boolean).join(" "), 150);
+function merchantTitle(product: TmProduct, allProducts?: TmProduct[]): string {
+  // Rovnaký kanonický názov používame na produktovej stránke aj vo feedoch.
+  // Google tak nedostane všeobecný názov odlišný od organického výsledku.
+  return cleanText(
+    buildProductSeo(product, allProducts).title.replace(/\s*\|\s*ToneryMaxim\.sk\s*$/i, ""),
+    150,
+  );
 }
 
 function description(product: TmProduct, type: MerchantProductType, material: MerchantMaterialType): string {
@@ -212,8 +196,8 @@ function description(product: TmProduct, type: MerchantProductType, material: Me
   // sa pri dostatočne dlhom short_description vracal iba všeobecný text
   // (farba, kapacita, záruka), takže Google strácal hlavný signál kompatibility.
   return cleanText([
-    product.name,
-    `${productTypeLabel(type)} ${materialLabel(material)}`.trim(),
+    buildProductSeo(product).description,
+    `${productTypeLabel(type, material)} ${materialLabel(material)}`.trim(),
     compatibility,
     shortDescription,
     longDescription,
@@ -254,7 +238,8 @@ function identifiers(product: TmProduct, type: MerchantProductType) {
   };
 }
 
-export function toMerchantProduct(product: TmProduct, origin: string): MerchantProduct | null {
+export function toMerchantProduct(product: TmProduct, origin: string, allProducts?: TmProduct[]): MerchantProduct | null {
+  if (!publicationEligibleProduct(product)) return null;
   const productType = String(product.product_type_key || "") as MerchantProductType;
   if (!SUPPORTED_PRODUCT_TYPES.has(productType)) return null;
 
@@ -270,7 +255,7 @@ export function toMerchantProduct(product: TmProduct, origin: string): MerchantP
 
   return {
     id: stableId(product),
-    name: merchantTitle(product, productType, material),
+    name: merchantTitle(product, allProducts),
     slug: cleanText(product.slug, 300),
     url: landingPage(origin, product),
     image: images[0] || "",
@@ -303,7 +288,7 @@ export function buildMerchantProducts(products: TmProduct[], origin: string): Me
   const seenIds = new Set<string>();
   const seenUrls = new Set<string>();
   return products
-    .map((product) => toMerchantProduct(product, origin))
+    .map((product) => toMerchantProduct(product, origin, products))
     .filter((product): product is MerchantProduct => Boolean(product))
     .filter((product) => {
       if (!product.id || !product.url || seenIds.has(product.id) || seenUrls.has(product.url)) return false;

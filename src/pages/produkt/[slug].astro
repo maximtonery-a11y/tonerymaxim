@@ -9,7 +9,8 @@ import Footer from "../../components/Footer.astro";
 import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import SeoHead from "../../components/SeoHead.astro";
 import { getProductFromCache, stripHtml } from "../../lib/tm-products-cache";
-import { breadcrumbJsonLd, organizationJsonLd, productDescription, productJsonLd, absoluteUrl, websiteJsonLd } from "../../lib/seo";
+import { buildProductSeo } from "../../lib/catalog-seo-text";
+import { breadcrumbJsonLd, organizationJsonLd, productJsonLd, absoluteUrl, websiteJsonLd } from "../../lib/seo";
 import { printerBrandForName, printerLinksFromNames, productOemCodes, validIndexableProduct } from "../../lib/seo-catalog";
 
 const { slug } = Astro.params;
@@ -42,30 +43,26 @@ if (!product) {
     },
   });
 }
-const productTitleParts = [
-  String(product.name || '').trim(),
-  String(product.color || '').trim(),
-  String(product.sku || '').trim(),
-].filter(Boolean);
-const baseProductTitle = productTitleParts.join(' – ');
-const duplicateTitleCount = cache?.products?.filter((item: any) => {
-  const itemTitle = [
-    String(item.name || '').trim(),
-    String(item.color || '').trim(),
-    String(item.sku || '').trim(),
-  ].filter(Boolean).join(' – ');
-  return itemTitle === baseProductTitle;
-}).length || 0;
-const uniqueProductTitle = duplicateTitleCount > 1
-  ? `${baseProductTitle} – ID ${product.id}`
-  : baseProductTitle;
 const SEO_ORIGIN = 'https://www.tonerymaxim.sk';
-const title = `${uniqueProductTitle} | ToneryMaxim.sk`;
-const description = productDescription(product);
+const productSeo = buildProductSeo(product, cache?.products || []);
+const title = productSeo.title;
+const description = productSeo.description;
 const canonical = `${SEO_ORIGIN}/produkt/${encodeURIComponent(product.slug)}`;
 const image = absoluteUrl(SEO_ORIGIN, product.image || product.images?.[0] || '/favicon.svg');
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname)
   || !validIndexableProduct(product);
+const productStructuredData = noindex
+  ? [organizationJsonLd(SEO_ORIGIN), websiteJsonLd(SEO_ORIGIN)]
+  : [
+      organizationJsonLd(SEO_ORIGIN),
+      websiteJsonLd(SEO_ORIGIN),
+      productJsonLd(SEO_ORIGIN, product),
+      breadcrumbJsonLd(SEO_ORIGIN, [
+        { name: "Domov", path: "/" },
+        { name: "Produkty", path: "/produkty" },
+        { name: product.name, path: "/produkt/" + product.slug },
+      ]),
+    ];
 const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
 const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.price || 0));
 const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
@@ -110,7 +107,7 @@ const initialProductJson = JSON.stringify(product)
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <SeoHead title={title} description={description} canonical={canonical} image={image} type="product" noindex={noindex} jsonLd={[organizationJsonLd(SEO_ORIGIN), websiteJsonLd(SEO_ORIGIN), productJsonLd(SEO_ORIGIN, product), breadcrumbJsonLd(SEO_ORIGIN, [{ name: "Domov", path: "/" }, { name: "Produkty", path: "/produkty" }, { name: product.name, path: `/produkt/${product.slug}` }])]} />
+    <SeoHead title={title} description={description} canonical={canonical} image={image} type="product" noindex={noindex} jsonLd={productStructuredData} />
   </head>
 
   <body class="product-detail-body">

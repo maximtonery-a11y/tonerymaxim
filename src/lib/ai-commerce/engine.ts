@@ -1,5 +1,6 @@
 import { resolveCommerceProducts, type CommerceProduct } from './catalog.ts';
 import { quantityOffers, priceForQuantity } from './pricing.ts';
+import { isCalendarQuery, searchCalendarProducts } from '../calendar-ai-catalog.ts';
 
 export const AI_COMMERCE_VERSION = '9.0';
 export const commerceCapabilities = {
@@ -34,7 +35,7 @@ export async function searchCommerce(query:string) {
   // ktore predtym kratkodobo nasobilo RAM a mohlo zhodit cely Node proces.
   const running=commerceInFlight.get(cacheKey);if(running)return running;
   const operation=(async()=>{
-  const result=await resolveCommerceProducts(query);
+  const result=isCalendarQuery(query)?await searchCalendarProducts(query):await resolveCommerceProducts(query);
   const products=result.products.map((product:any)=>({...product,color:colorOf(product),quantity_offers:quantityOffers(product.price,product.type)}));
   const colors=new Set(products.map((p:any)=>p.color).filter(Boolean));
   const isColorPrinter=['black','cyan','magenta','yellow'].filter(c=>colors.has(c)).length>=3;

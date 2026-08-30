@@ -1,6 +1,7 @@
 import type { TmProduct } from "./tm-products-cache";
 import { compactKey, stripHtml } from "./tm-products-cache";
 import { cleanGtin, cleanMpn, cleanProductBrand } from "./product-identifiers";
+import { publicationEligibleProduct } from "./product-publication-policy.ts";
 
 export type AdsProduct = {
   id: string;
@@ -173,6 +174,7 @@ function priceBucket(price: number): string {
 }
 
 export function toAdsProduct(product: TmProduct, origin: string): AdsProduct | null {
+  if (!publicationEligibleProduct(product)) return null;
   if (product.product_type_key !== "compatible") return null;
 
   const type = materialType(product);

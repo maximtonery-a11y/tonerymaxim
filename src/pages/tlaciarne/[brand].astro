@@ -58,9 +58,6 @@ const canonicalPath = brand ? `/tlaciarne/${brand.slug}` : Astro.url.pathname;
 const title = notFound ? "Značka tlačiarne sa nenašla | ToneryMaxim.sk" : `Tonery a náplne do tlačiarní ${selectedBrand} | ToneryMaxim.sk`;
 const description = notFound ? "Požadovaná značka tlačiarne sa v katalógu nenašla." : `Vyberte model tlačiarne ${selectedBrand} a nájdite kompatibilný alebo originálny toner, atrament či optický valec.`;
 const noindex = notFound || ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname);
-const generatedDate = cache.generated_at && !Number.isNaN(new Date(cache.generated_at).getTime())
-  ? new Intl.DateTimeFormat("sk-SK", { dateStyle: "medium" }).format(new Date(cache.generated_at))
-  : "";
 const faqItems = [
   {
     question: `Ako nájdem správnu náplň pre tlačiareň ${selectedBrand}?`,
@@ -89,7 +86,6 @@ const jsonLd = [
     inLanguage: "sk-SK",
     isPartOf: { "@id": `${SEO_ORIGIN}/#website` },
     provider: { "@id": `${SEO_ORIGIN}/#organization` },
-    ...(cache.generated_at ? { dateModified: cache.generated_at } : {}),
     about: { "@type": "Brand", name: selectedBrand },
     mainEntity: {
       "@type": "ItemList",
@@ -277,7 +273,6 @@ const jsonLd = [
                 V týchto modeloch je spolu <strong>{brandProducts.length} jedinečných tonerov a náplní</strong>, z ktorých je aktuálne <strong>{inStockProducts} skladom</strong>.
                 Najspoľahlivejší výber získate podľa celého názvu modelu a OEM označenia pôvodnej kazety.
               </p>
-              {generatedDate && <small>Produktové údaje aktualizované: {generatedDate}</small>}
             </article>
 
             <div class="printer-geo-faq">

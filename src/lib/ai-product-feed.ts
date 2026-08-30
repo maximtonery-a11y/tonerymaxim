@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { getProductsCache, stripHtml, type TmProduct } from "./tm-products-cache.ts";
+import { publicationEligibleProduct, resolvedPublicationBrand } from "./product-publication-policy.ts";
 
 const ORIGIN = "https://www.tonerymaxim.sk";
 
@@ -36,7 +37,7 @@ function printers(product: TmProduct): string[] {
 }
 
 export function buildAiProductFeed(products: TmProduct[], generatedAt: string): string {
-  const items = products.map((product) => {
+  const items = products.filter(publicationEligibleProduct).map((product) => {
     const id = text(product.id || product.sku || product.slug, 100);
     const name = text(product.name, 300);
     const url = productUrl(product);
@@ -60,6 +61,7 @@ export function buildAiProductFeed(products: TmProduct[], generatedAt: string): 
       `      <tm:stock_status>${xml(product.stock_status || "")}</tm:stock_status>`,
       `      <tm:product_type>${xml(product.product_type_key || "product")}</tm:product_type>`,
       `      <tm:product_type_label>${xml(product.product_type_label || "")}</tm:product_type_label>`,
+      ["      <tm:brand>", xml(resolvedPublicationBrand(product)), "</tm:brand>"].join(""),
       ...(product.color ? [`      <tm:color>${xml(product.color)}</tm:color>`] : []),
       ...(product.capacity ? [`      <tm:capacity>${xml(product.capacity)}</tm:capacity>`] : []),
       ...(product.warranty ? [`      <tm:warranty>${xml(product.warranty)}</tm:warranty>`] : []),
@@ -95,7 +97,7 @@ export async function aiProductFeedResponse(request?: Request): Promise<Response
       "X-Content-Type-Options": "nosniff",
       "X-Robots-Tag": "noindex, nofollow",
       "ETag": etag,
-      "X-AI-Product-Feed-Items": String(cache.products.length),
+      "X-AI-Product-Feed-Items": String(cache.products.filter(publicationEligibleProduct).length),
       "X-AI-Product-Feed-Generated-At": cache.generated_at,
     });
     if (request?.headers.get("if-none-match")?.split(",").map((value) => value.trim()).includes(etag)) {

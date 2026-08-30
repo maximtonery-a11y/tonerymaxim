@@ -14,6 +14,7 @@ import { findOemGeoPilot, pilotFaq } from "../../data/geo-pilot";
 import { geoOemPriority } from "../../data/geo-priorities";
 import { benchmarkForPath, DEFAULT_GEO_GUIDES } from "../../data/geo-benchmark-content";
 import { oemGeoAnswer } from "../../lib/geo-entity-answer";
+import { buildCodeSeo, skCount } from "../../lib/catalog-seo-text";
 
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const oem = findOemEntity(cache.products, Astro.params.code);
@@ -36,32 +37,33 @@ const guideLinks = geoPilot?.adviceLinks?.length ? geoPilot.adviceLinks : DEFAUL
 const printerFacts = oem?.printers.slice(0, 6) || [];
 const printerLinks = oem ? printerLinksFromNames(cache.products, oem.printers, 16) : [];
 const geoAnswer = !notFound ? oemGeoAnswer(code, products, oem?.printers || [], geoPilot) : undefined;
+const codeSeo = !notFound ? buildCodeSeo(code, products, oem?.printers || []) : undefined;
 const relatedOemLinks = oem
   ? topOemLinks(products, 16).filter((link) => link.href !== canonicalPath).slice(0, 8)
   : [];
 ---
 
 <SeoCatalogPage
-  title={notFound ? "OEM označenie sa nenašlo | ToneryMaxim.sk" : `${code} toner alebo náplň | ToneryMaxim.sk`}
+  title={notFound ? "Označenie sa nenašlo | ToneryMaxim.sk" : codeSeo!.title}
   description={notFound
-    ? "Požadované OEM označenie sa v katalógu nenašlo."
-    : `Produkty s označením ${code}: kompatibilné, originálne a renovované možnosti, cena s DPH, dostupnosť a podporované tlačiarne.`}
+    ? "Požadované označenie sa v katalógu nenašlo."
+    : codeSeo!.description}
   canonicalPath={canonicalPath}
-  eyebrow={notFound ? "Neznáme označenie" : "Vyhľadanie podľa OEM kódu"}
-  heading={notFound ? "OEM označenie sa nenašlo" : `${code} toner alebo náplň`}
+  eyebrow={notFound ? "Neznáme označenie" : "Vyhľadanie podľa označenia produktu"}
+  heading={notFound ? "Označenie sa nenašlo" : codeSeo!.heading}
   intro={notFound
     ? "Skontrolujte označenie kazety alebo použite hlavné vyhľadávanie."
-    : `Táto stránka zobrazuje produkty, pri ktorých sa v názve alebo SKU nachádza presné OEM označenie ${code}. Pred objednaním skontrolujte model tlačiarne.`}
+    : codeSeo!.intro}
   products={products}
-  answer={notFound ? "" : geoAnswer?.answer || ""}
+  answer={notFound ? "" : codeSeo!.description}
   generatedAt={cache.generated_at}
   breadcrumbs={[
-    { name: "OEM označenia", path: "/tonery" },
+    { name: "Označenia produktov", path: "/tonery" },
     { name: code, path: canonicalPath },
   ]}
   entityFacts={notFound ? [] : [
-    `OEM kód ${code}`,
-    `${oem?.products.length || 0} produktov`,
+    `Označenie ${code}`,
+    skCount(oem?.products.length || 0, "produkt", "produkty", "produktov"),
     ...(printerFacts.length ? [`Pre modely: ${printerFacts.join(", ")}`] : []),
   ]}
   relatedLinks={[
@@ -71,24 +73,24 @@ const relatedOemLinks = oem
     { href: "/tlaciarne", label: "Vybrať podľa tlačiarne" },
   ]}
   faq={notFound ? [] : [
-    { question: geoAnswer?.question || `Čo znamená označenie ${code}?`, answer: geoAnswer?.answer || "" },
+    { question: `Čo znamená označenie ${code}?`, answer: `Označenie ${code} sa nachádza pri produktoch zobrazených na tejto stránke. Pred objednaním porovnajte celý kód, typ produktu a presný model tlačiarne.` },
     { question: `Sú všetky produkty ${code} navzájom rovnaké?`, answer: "Nie. Produkty sa môžu líšiť farbou, kapacitou, typom balenia alebo tým, či ide o originálnu, kompatibilnú alebo renovovanú verziu." },
     ...(geoPilot ? pilotFaq(code, geoPilot) : []),
   ]}
   contentSections={notFound ? [] : [
     ...(geoPriority ? [{
       heading: geoAnswer?.question || benchmark?.prompt || `Čo je ${code} a pre ktoré tlačiarne je určený?`,
-      paragraphs: [geoAnswer?.answer || `Na stránke sú produkty s označením ${code} v aktuálnom katalógu ToneryMaxim.sk.`],
+      paragraphs: [`Na stránke sú produkty s označením ${code} v aktuálnom katalógu ToneryMaxim.sk. Označenie automaticky nepovažujeme za oficiálny OEM kód výrobcu.`],
       bullets: [...(geoAnswer?.bullets || []), `Aktuálne produktov: ${stats.total}.`, `Skladom: ${stats.inStock}.`, `Evidované tlačiarne: ${oem?.printers.length || 0}.`],
     }] : []),
     ...(geoPilot ? [{
-      heading: `Odborný výber pre OEM ${code}`,
+      heading: `Odborný výber pre označenie ${code}`,
       paragraphs: [geoPilot.selection, geoPilot.caution],
       bullets: [`Typ produktu: ${geoPilot.productKind}.`, "Porovnajte kód znak po znaku.", "V detaile potvrďte presný model tlačiarne, farbu a kapacitu."],
     }] : []),
     {
       heading: `Ako správne porovnať produkty ${code}`,
-      paragraphs: [`OEM označenie ${code} zúži výber na relevantnú produktovú rodinu. Pred objednaním ešte porovnajte celý názov kazety, farbu, prípadnú koncovku XL a presný model tlačiarne.`],
+      paragraphs: [`Označenie ${code} zúži výber na relevantné produkty. Pred objednaním ešte porovnajte celý názov, typ spotrebného materiálu, farbu, kapacitu a presný model tlačiarne.`],
       bullets: ["Kód porovnajte znak po znaku.", "Pri multipacku skontrolujte počet a farby kaziet.", "Kompatibilitu potvrďte v detaile konkrétneho produktu."],
     },
     {
@@ -98,22 +100,15 @@ const relatedOemLinks = oem
   ]}
   linkGroups={notFound ? [] : [
     { heading: `Tlačiarne podporujúce ${code}`, intro: "Zoznam vzniká z kompatibilných tlačiarní uvedených pri produktoch v katalógu.", links: printerLinks },
-    { heading: `Produkty s označením ${code}`, intro: "Konkrétne produkty s cenou, dostupnosťou a detailom kompatibility sú uvedené v aktuálnej ponuke.", links: [{ href: "#produkty", label: `Zobraziť ${stats.total} produktov rodiny ${code}`, count: stats.total }] },
-    { heading: "Relevantné návody", intro: "Postup kontroly OEM kódu, modelu tlačiarne a typu spotrebného materiálu.", links: guideLinks },
+    { heading: `Produkty s označením ${code}`, intro: "Konkrétne produkty s cenou, dostupnosťou a detailom kompatibility sú uvedené v aktuálnej ponuke.", links: [{ href: "#produkty", label: `Zobraziť ${skCount(stats.total, "produkt", "produkty", "produktov")} s označením ${code}`, count: stats.total }] },
+    { heading: "Relevantné návody", intro: "Postup kontroly označenia, modelu tlačiarne a typu spotrebného materiálu.", links: guideLinks },
     { heading: "Súvisiace značky tlačiarní", intro: "Pokračujte na ponuku podľa značky zariadenia.", links: topBrandLinks(products, 8) },
-    { heading: "Súvisiace OEM označenia", intro: "Niektoré produkty obsahujú viac relevantných označení alebo variantov.", links: relatedOemLinks },
+    { heading: "Súvisiace označenia", intro: "Niektoré produkty obsahujú viac relevantných označení alebo variantov.", links: relatedOemLinks },
   ]}
   schemaEntities={notFound ? [] : [
-    { name: `OEM ${code}`, url: canonicalPath },
+    { name: `Označenie ${code}`, url: canonicalPath },
     ...printerLinks.slice(0, 8).map((link) => ({ name: link.label, url: link.href })),
   ]}
-  expertGuide={geoPriority || geoPilot ? {
-    title: geoAnswer?.question || benchmark?.prompt || `Ako správne vybrať ${code}`,
-    summary: geoAnswer?.answer || `${geoPilot?.selection || "Výber vychádza z aktuálneho katalógu."} ${geoPilot?.caution || "Pred objednaním potvrďte celý OEM kód a model tlačiarne."}`,
-    updated: "2026-08-09",
-    author: "Roman Babčan",
-    experience: "17+ rokov skúseností",
-    links: guideLinks,
-  } : undefined}
+  expertGuide={undefined}
   notFound={notFound}
 />

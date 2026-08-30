@@ -26,6 +26,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const add = (x: AiIntent) => { if (!intents.includes(x)) intents.push(x); };
   if (/(clovek|operator|predajca|zavolajte|kontaktujte ma)/.test(n)) add('HUMAN_ESCALATION');
   if (productCode.test(message) || knownProductAlias) add('PRODUCT_SEARCH');
+  if (/\b(kalendar|kalendare|kalendara|kalendary|diar|diare|planovac|pf|novorocn)\w*\b/.test(n)) add('PRODUCT_SEARCH');
   if (explicitConsumableSearch&&generalReference) add('PRODUCT_SEARCH');
   if (printer.test(message)) add('PRINTER_SEARCH');
   if (shortPrinter) add('PRINTER_SEARCH');
@@ -41,6 +42,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (!serviceQuestion && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (/(ten|ho|ich|do nej|a original|a kompatibil|a renov|originalny|kompatibilny|renovovany|renovovanu|renovovany|repasovany|je skladom|kolko stran|chcem|zoberiem|pridaj|\bkus(?:y|ov)?\b|\bks\b|kosik|pokladn)/.test(n) || pendingAnswer)) add('FOLLOW_UP');
   if (!intents.length) add('UNKNOWN');
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];
-  const query = serviceQuestion ? null : knownProductAlias || message.match(productCode)?.[0] || (explicitConsumableSearch&&generalReference?message:null) || message.match(printer)?.[0] || (shortPrinter ? `${brand || ''} ${shortPrinter}`.trim() : null) || (intents.includes('FOLLOW_UP') ? state.lastProductQuery : null);
+  const calendarQuery=/\b(kalendar|kalendare|kalendara|kalendary|diar|diare|planovac|pf|novorocn)\w*\b/.test(n)?message:null;
+  const query = serviceQuestion ? null : calendarQuery || knownProductAlias || message.match(productCode)?.[0] || (explicitConsumableSearch&&generalReference?message:null) || message.match(printer)?.[0] || (shortPrinter ? `${brand || ''} ${shortPrinter}`.trim() : null) || (intents.includes('FOLLOW_UP') ? state.lastProductQuery : null);
   return { intents, productQuery: query || null, needsProducts: Boolean(query) && intents.some(x => ['PRODUCT_SEARCH','PRINTER_SEARCH','COMPATIBILITY','PRODUCT_COMPARE','COLOR_TYPE_FILTER','BUY_INTENT','FOLLOW_UP'].includes(x)) };
 }

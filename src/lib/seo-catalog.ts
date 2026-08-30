@@ -1,7 +1,8 @@
-import { normalize, sortProducts, stripHtml, type TmProduct } from "./tm-products-cache";
+import { normalize, sortProducts, stripHtml, type TmProduct } from "./tm-products-cache.ts";
 import { sameConsumablePrinterFamily } from "./printer-model-family.ts";
+import { publicationEligibleProduct } from "./product-publication-policy.ts";
 
-export type { TmProduct } from "./tm-products-cache";
+export type { TmProduct } from "./tm-products-cache.ts";
 
 export type CatalogLandingKind = "toners" | "ink" | "compatible" | "original" | "renovated";
 
@@ -75,8 +76,11 @@ const OEM_PATTERN = /\b(?:TN|DR|LC|CLI|PGI|PG|CL|CRG|CF|CE|W|Q|TK|MLT|CLT|T)[\s-
 // filtering, sorting and entity-index construction under concurrent traffic.
 const productSearchTextCache = new WeakMap<TmProduct, string>();
 const landingProductsCache = new WeakMap<TmProduct[], Map<CatalogLandingKind, TmProduct[]>>();
+const brandProductsCache = new WeakMap<TmProduct[], Map<string, TmProduct[]>>();
 const printerEntitiesCache = new WeakMap<TmProduct[], PrinterEntity[]>();
+const printerEntityLookupCache = new WeakMap<TmProduct[], Map<string, PrinterEntity | null>>();
 const oemEntitiesCache = new WeakMap<TmProduct[], OemEntity[]>();
+const oemEntityLookupCache = new WeakMap<TmProduct[], Map<string, OemEntity>>();
 const catalogStatsCache = new WeakMap<TmProduct[], CatalogStats>();
 const topBrandLinksCache = new WeakMap<TmProduct[], Map<number, EntityLink[]>>();
 const topPrinterLinksCache = new WeakMap<TmProduct[], Map<number, EntityLink[]>>();
@@ -131,6 +135,7 @@ export function validIndexableProduct(product: TmProduct): boolean {
     String(product.slug || "").trim()
     && String(product.name || "").trim()
     && Number(product.price || 0) > 0
+    && publicationEligibleProduct(product)
   );
 }
 
@@ -183,11 +188,21 @@ function startsWithAlias(text: string, aliases: string[]): boolean {
 }
 
 export function brandProducts(products: TmProduct[], brand: BrandDefinition): TmProduct[] {
-  return sortProducts(
+  let byBrand = brandProductsCache.get(products);
+  if (!byBrand) {
+    byBrand = new Map<string, TmProduct[]>();
+    brandProductsCache.set(products, byBrand);
+  }
+  const cached = byBrand.get(brand.slug);
+  if (cached) return cached;
+
+  const result = sortProducts(
     products
       .filter(validIndexableProduct)
       .filter((product) => startsWithAlias(productSearchText(product), brand.aliases)),
   );
+  byBrand.set(brand.slug, result);
+  return result;
 }
 
 export function printerBrandForName(name: unknown): BrandDefinition | null {
@@ -200,6 +215,7 @@ export function printerEntities(products: TmProduct[]): PrinterEntity[] {
   if (cached) return cached;
 
   const entities = new Map<string, PrinterEntity>();
+  const productIdsByEntity = new Map<string, Set<string>>();
 
   products.filter(validIndexableProduct).forEach((product) => {
     const printers = Array.isArray(product.compatible_printers)
@@ -216,7 +232,13 @@ export function printerEntities(products: TmProduct[]): PrinterEntity[] {
 
       const key = `${brand.slug}/${slug}`;
       const current = entities.get(key) || { brand, name, slug, products: [] };
-      if (!current.products.some((item) => String(item.id) === String(product.id))) current.products.push(product);
+      const productId = String(product.id || product.slug || product.sku || "");
+      const productIds = productIdsByEntity.get(key) || new Set<string>();
+      if (productId && !productIds.has(productId)) {
+        productIds.add(productId);
+        current.products.push(product);
+      }
+      productIdsByEntity.set(key, productIds);
       entities.set(key, current);
     });
   });
@@ -225,6 +247,9 @@ export function printerEntities(products: TmProduct[]): PrinterEntity[] {
     .map((entity) => ({ ...entity, products: sortProducts(entity.products) }))
     .sort((left, right) => left.name.localeCompare(right.name, "sk"));
   printerEntitiesCache.set(products, result);
+  const lookup = printerEntityLookupCache.get(products) || new Map<string, PrinterEntity | null>();
+  for (const entity of result) lookup.set(`${entity.brand.slug}/${entity.slug}`, entity);
+  printerEntityLookupCache.set(products, lookup);
   return result;
 }
 
@@ -232,6 +257,13 @@ export function findPrinterEntity(products: TmProduct[], brandSlug: unknown, mod
   const brand = findBrand(brandSlug);
   const wantedModel = entitySlug(modelSlug);
   if (!brand || !wantedModel) return null;
+  const lookupKey = `${brand.slug}/${wantedModel}`;
+  let lookup = printerEntityLookupCache.get(products);
+  if (!lookup) {
+    lookup = new Map<string, PrinterEntity | null>();
+    printerEntityLookupCache.set(products, lookup);
+  }
+  if (lookup.has(lookupKey)) return lookup.get(lookupKey) || null;
   let exactName = "";
   const exactProducts = new Map<string, TmProduct>();
 
@@ -252,10 +284,15 @@ export function findPrinterEntity(products: TmProduct[], brandSlug: unknown, mod
       break;
     }
   }
-  if (!exactName) return null;
+  if (!exactName) {
+    lookup.set(lookupKey, null);
+    return null;
+  }
 
   if (!["xerox", "samsung"].includes(brand.slug)) {
-    return { brand, name: exactName, slug: wantedModel, products: sortProducts([...exactProducts.values()]) };
+    const result = { brand, name: exactName, slug: wantedModel, products: sortProducts([...exactProducts.values()]) };
+    lookup.set(lookupKey, result);
+    return result;
   }
 
   const familyProducts = new Map(exactProducts);
@@ -265,7 +302,9 @@ export function findPrinterEntity(products: TmProduct[], brandSlug: unknown, mod
     const key = String(product.id || product.slug || product.sku || "");
     if (key) familyProducts.set(key, product);
   }
-  return { brand, name: exactName, slug: wantedModel, products: sortProducts([...familyProducts.values()]) };
+  const result = { brand, name: exactName, slug: wantedModel, products: sortProducts([...familyProducts.values()]) };
+  lookup.set(lookupKey, result);
+  return result;
 }
 
 function normalizeOemCode(value: unknown): string {
@@ -283,31 +322,54 @@ export function oemEntities(products: TmProduct[]): OemEntity[] {
   if (cached) return cached;
 
   const entities = new Map<string, OemEntity>();
+  const productIdsByEntity = new Map<string, Set<string>>();
+  const printersByEntity = new Map<string, Set<string>>();
 
   products.filter(validIndexableProduct).forEach((product) => {
     productOemCodes(product).forEach((code) => {
       const slug = code.toLowerCase();
       const current = entities.get(slug) || { code, slug, products: [], printers: [] };
-      if (!current.products.some((item) => String(item.id) === String(product.id))) current.products.push(product);
+      const productId = String(product.id || product.slug || product.sku || "");
+      const productIds = productIdsByEntity.get(slug) || new Set<string>();
+      if (productId && !productIds.has(productId)) {
+        productIds.add(productId);
+        current.products.push(product);
+      }
+      productIdsByEntity.set(slug, productIds);
 
       const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
-      current.printers.push(...printers.map(String));
-      current.printers = [...new Set(current.printers.map((item) => item.replace(/\s+/g, " ").trim()).filter(Boolean))].slice(0, 80);
+      const printerSet = printersByEntity.get(slug) || new Set<string>();
+      for (const printer of printers) {
+        if (printerSet.size >= 80) break;
+        const name = String(printer || "").replace(/\s+/g, " ").trim();
+        if (name) printerSet.add(name);
+      }
+      printersByEntity.set(slug, printerSet);
       entities.set(slug, current);
     });
   });
 
   const result = [...entities.values()]
-    .map((entity) => ({ ...entity, products: sortProducts(entity.products) }))
+    .map((entity) => ({
+      ...entity,
+      products: sortProducts(entity.products),
+      printers: [...(printersByEntity.get(entity.slug) || [])],
+    }))
     .sort((left, right) => left.code.localeCompare(right.code, "sk"));
   oemEntitiesCache.set(products, result);
+  oemEntityLookupCache.set(products, new Map(result.map((entity) => [entity.slug, entity])));
   return result;
 }
 
 export function findOemEntity(products: TmProduct[], code: unknown): OemEntity | null {
   const wanted = normalizeOemCode(code).toLowerCase();
   if (!wanted) return null;
-  return oemEntities(products).find((entity) => entity.slug === wanted) || null;
+  let lookup = oemEntityLookupCache.get(products);
+  if (!lookup) {
+    oemEntities(products);
+    lookup = oemEntityLookupCache.get(products);
+  }
+  return lookup?.get(wanted) || null;
 }
 
 export function catalogStats(products: TmProduct[]): CatalogStats {
@@ -430,7 +492,6 @@ export function collectionJsonLd(
     description,
     url,
     isPartOf: { "@id": `${origin}/#website` },
-    dateModified: options.generatedAt || undefined,
     about: options.about?.map((entity) => ({
       "@type": "Thing",
       name: entity.name,

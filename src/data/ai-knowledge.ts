@@ -14,6 +14,65 @@ export const AI_CONTACT_FALLBACK = [
 
 export const aiKnowledge: AiKnowledgeItem[] = [
   {
+    id: 'sortiment-prehlad', intent: 'support', title: 'Čo predáva ToneryMAXIM', priority: 190,
+    triggers: ['co predavate', 'co robite', 'comu sa venujete', 'kto ste', 'co je tonerymaxim', 'ake sluzby ponukate', 'co mate v ponuke', 'aky mate sortiment', 'co sa tu da kupit', 's cim mi vies poradit', 'co ponukate', 'predstav ponuku'],
+    answer: [
+      'ToneryMAXIM predáva tonery, atramentové náplne a ďalší spotrebný materiál pre tlačiarne. Správny produkt viem vyhľadať podľa presného modelu tlačiarne alebo označenia náplne.',
+      'V sezónnej ponuke Kalendáre MAXIM sú aj kalendáre a diáre 2027, plánovače a PF pohľadnice. Pri vybraných produktoch je možné preveriť firemnú potlač.',
+      'Napíšte, čo hľadáte, napríklad „toner pre Brother HL-L2352DW“, „nástenný kalendár Tatry“ alebo „diár 2027“.',
+    ],
+  },
+  {
+    id: 'kalendare-sortiment', intent: 'support', title: 'Ponuka kalendárov a diárov 2027', priority: 170,
+    triggers: ['ake kalendare mate', 'kalendare 2027', 'mate kalendare', 'mate diare', 'nastenne kalendare', 'stolove kalendare', 'trojmesacne kalendare', 'planovace', 'pf pohladnice'],
+    answer: [
+      'Aktuálna ponuka zahŕňa nástenné a stolové kalendáre, trojmesačné kalendáre, diáre, plánovače, podložky a PF pohľadnice na rok 2027.',
+      'Konkrétne produkty, ceny a dostupnosť vždy overujem v aktuálnom kalendárovom katalógu. Výber môžem zúžiť podľa typu, motívu, rozmeru, využitia alebo ceny.',
+    ],
+  },
+  {
+    id: 'kalendare-mnozstvo-zlavy', intent: 'support', title: 'Množstevné ceny kalendárov', priority: 175,
+    triggers: ['od kolkych kusov kalendar', 'kolko kusov kalendara', 'zlava na kalendare', 'mnozstevna zlava kalendare', 'cena pri 3 kusoch kalendara', 'cena pri 21 kusoch kalendara', 'jeden kalendar'],
+    answer: [
+      'Bežný kalendár alebo diár môžete objednať už od 1 ks.',
+      'Pri 3–20 ks rovnakého produktu je jednotková cena automaticky nižšia o 5 %. Pri 21 a viac ks rovnakého produktu je zľava 15 %.',
+      'Zľava sa posudzuje pre rovnaký produkt; rôzne kalendáre sa na dosiahnutie množstva nesčítavajú.',
+    ],
+  },
+  {
+    id: 'kalendare-potlac', intent: 'support', title: 'Kalendáre s firemnou potlačou', priority: 175,
+    triggers: ['potlac kalendara', 'logo na kalendar', 'firemny kalendar', 'kalendare s logom', 'vlastna grafika kalendar', 'personalizovany kalendar', 'minimalne mnozstvo potlac'],
+    answer: [
+      'Firemnú potlač alebo personalizáciu je možné preveriť iba pri vybraných kalendároch a diároch. Minimálne množstvo, plocha potlače a podmienky sa líšia podľa konkrétneho produktu.',
+      'Pošlite názov alebo kód produktu, množstvo, požadovaný termín a logo či grafiku v čo najvyššej kvalite na info@tonerymaxim.sk. Po kontrole dostanete potvrdenie možností a ceny.',
+      'AI Tomáš nesmie sám prisľúbiť realizáciu, termín ani cenu zákazkovej potlače bez individuálneho potvrdenia.',
+    ],
+  },
+  {
+    id: 'kalendare-dodanie', intent: 'shipping', title: 'Dodanie kalendárov', priority: 160,
+    triggers: ['kedy pride kalendar', 'ako rychlo poslete kalendar', 'dodanie kalendara', 'doprava kalendarov', 'osobny odber kalendarov'],
+    answer: [
+      'Skladové kalendáre odosielame podľa aktuálnej dostupnosti uvedenej pri produkte. Pri zákazkovej potlači sa termín výroby a odoslania potvrdzuje individuálne.',
+      'Kalendáre doručujeme kuriérom GLS alebo DPD, cez GLS Balíkomat/ParcelShop alebo DPD Pickup/Pickup Box. Osobný odber pri kalendárovom e-shope neponúkame.',
+    ],
+  },
+  {
+    id: 'kalendare-vratenie-potlac', intent: 'claim', title: 'Vrátenie kalendára a tovaru s potlačou', priority: 170,
+    triggers: ['vratit kalendar', 'reklamovat kalendar', 'poskodeny kalendar', 'vratit kalendar s potlacou', 'odstupenie kalendar s logom'],
+    answer: [
+      'Ak kalendár prišiel poškodený alebo chybný, čo najskôr nás kontaktujte a uveďte číslo objednávky; vhodné je priložiť fotografie poškodenia a obalu.',
+      'Tovar vyrobený alebo upravený podľa osobitných požiadaviek zákazníka, napríklad s vlastnou potlačou, má odlišný režim odstúpenia od zmluvy. Rozhodujú aktuálne obchodné podmienky a konkrétny prípad.',
+    ],
+  },
+  {
+    id: 'nezavisle-vseobecne-otazky', intent: 'fallback', title: 'Otázky mimo ponuky ToneryMAXIM', priority: 120,
+    triggers: ['ake bude pocasie', 'kto je prezident', 'vysledok futbalu', 'napis mi basen', 'povedz vtip', 'kolko je hodin'],
+    answer: [
+      'Som nákupný poradca e-shopu ToneryMAXIM. Spoľahlivo odpovedám na otázky o našich produktoch, kompatibilite, nákupe, doprave, platbe, účte a reklamáciách.',
+      'Na všeobecné otázky mimo e-shopu nemám pripojený overený zdroj, preto si odpoveď nebudem vymýšľať.',
+    ],
+  },
+  {
     id: 'expedicia-kedy-posleme', intent: 'order', title: 'Kedy odošleme objednávku', priority: 120,
     triggers: ['kedy mi poslete objednavku', 'kedy odoslete objednavku', 'kedy bude odoslana objednavka', 'kedy posielate balik', 'kedy expedujete', 'objednavka odoslanie', 'odoslanie objednavky', 'kedy mi pride objednavka', 'kedy mi pride balik', 'dorucenie objednavky', 'ako rychlo dorucujete', 'rychlost dorucenia'],
     answer: [
@@ -311,8 +370,8 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     ],
   },
   {
-    id: 'cookies-nastavenie', intent: 'legal', title: 'Cookies a súhlas', priority: 105,
-    triggers: ['ako vypnem cookies', 'odmietnut cookies', 'nastavenie cookies', 'analyticke cookies', 'marketingove cookies', 'musim prijat cookies'],
+    id: 'cookies-nastavenie', intent: 'legal', title: 'Cookies a súhlas', priority: 220,
+    triggers: ['co robite s cookies', 'ako pouzivate cookies', 'ako vypnem cookies', 'odmietnut cookies', 'nastavenie cookies', 'analyticke cookies', 'marketingove cookies', 'musim prijat cookies'],
     answer: [
       'Nevyhnutné úložiská používame na fungovanie košíka, účtu, bezpečnosti a objednávky. Analytické a marketingové technológie sa aktivujú až po súhlase.',
       'Odmietnutie voliteľných cookies neobmedzí nákup. Súhlas môžete neskôr zmeniť cez Nastavenia cookies v pätičke alebo v prehliadači.',

@@ -307,14 +307,26 @@ test("landing pages majú dátovú odpoveď, obsah a interné entity", () => {
   }
 });
 
-test("dynamické landing pages používajú iba entity z aktuálneho katalógu", () => {
+test("dynamické landing pages používajú iba entity z aktuálneho katalógu a nepredstierajú dátum článku", () => {
   const source = read("src/lib/seo-catalog.ts");
   assert.match(source, /export function catalogStats/);
   assert.match(source, /export function topBrandLinks/);
   assert.match(source, /export function topPrinterLinks/);
   assert.match(source, /export function topOemLinks/);
   assert.match(source, /export function printerLinksFromNames/);
-  assert.match(source, /dateModified: options\.generatedAt/);
+  assert.doesNotMatch(source, /dateModified: options\.generatedAt/);
+});
+
+test("produktové a kódové SEO texty vznikajú z presných katalógových údajov", () => {
+  const helper = read("src/lib/catalog-seo-text.ts");
+  const product = read("src/pages/produkt/[slug].astro");
+  const oem = read("src/pages/oem/[code].astro");
+  assert.match(helper, /export function buildProductSeo/);
+  assert.match(helper, /export function buildCodeSeo/);
+  assert.match(helper, /export function skCount/);
+  assert.match(product, /buildProductSeo\(product(?:,\s*cache\?\.products\s*\|\|\s*\[\])?\)/);
+  assert.match(oem, /Označenie automaticky nepovažujeme za oficiálny OEM kód výrobcu/);
+  assert.doesNotMatch(oem, /expertGuide=\{geoPriority/);
 });
 
 test("detail produktu odkazuje na OEM, tlačiareň a značku", () => {

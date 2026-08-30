@@ -823,7 +823,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   return {
     answer: [
       'Na túto otázku nemám v overených informáciách spoľahlivú odpoveď, preto si nechcem nič vymýšľať.',
-      'Rád poradím s výberom toneru alebo náplne, kompatibilitou, dopravou, platbou, reklamáciou, účtom alebo problémom s tlačou. Pri inej otázke nás môžete kontaktovať na info@tonerymaxim.sk alebo +421 917 859 206.',
+      'Rád poradím s výberom toneru, náplne, kalendára alebo diára, kompatibilitou, dopravou, platbou, reklamáciou, účtom alebo problémom s tlačou. Pri inej otázke nás môžete kontaktovať na info@tonerymaxim.sk alebo +421 917 859 206.',
     ],
     products: [],
     groups: [],

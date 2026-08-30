@@ -10,6 +10,8 @@ interface Props {
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
+import { normalizeCanonical, normalizeSeoDescription, normalizeSeoTitle } from "../lib/seo-snippet.ts";
+
 const PRODUCTION_ORIGIN = 'https://www.tonerymaxim.sk';
 const PREVIEW_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
 const requestHostname = Astro.url.hostname.toLowerCase();
@@ -21,8 +23,8 @@ const defaultSocialUrl = new URL(Astro.url.pathname, socialOrigin).toString();
 const defaultImage = new URL('/images/tonerymaxim-social-preview.jpg', socialOrigin).toString();
 
 const {
-  title,
-  description,
+  title: rawTitle,
+  description: rawDescription,
   canonical = defaultCanonical,
   socialUrl = defaultSocialUrl,
   image = defaultImage,
@@ -30,6 +32,10 @@ const {
   noindex = false,
   jsonLd,
 } = Astro.props;
+
+const title = normalizeSeoTitle(rawTitle);
+const description = normalizeSeoDescription(rawDescription);
+const normalizedCanonical = normalizeCanonical(canonical, defaultCanonical, PRODUCTION_ORIGIN);
 
 const robots = noindex
   ? 'noindex,follow,max-image-preview:large'
@@ -94,7 +100,7 @@ const safeJson = (value: Record<string, unknown>) => JSON.stringify(value)
 <title>{title}</title>
 <meta name="description" content={description} />
 <meta name="robots" content={robots} />
-<link rel="canonical" href={canonical} />
+<link rel="canonical" href={normalizedCanonical} />
 <link rel="alternate" type="text/plain" href={`${PRODUCTION_ORIGIN}/llms.txt`} title="ToneryMaxim.sk pre AI asistentov" />
 <meta property="og:locale" content="sk_SK" />
 <meta property="og:type" content={type} />

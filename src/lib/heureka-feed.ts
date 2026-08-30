@@ -1,12 +1,13 @@
 import { createHash } from "node:crypto";
-import { cleanGtin, cleanProductBrand } from "./product-identifiers";
-import { getProductsCache, stripHtml, type TmProduct } from "./tm-products-cache";
+import { cleanGtin, cleanProductBrand } from "./product-identifiers.ts";
+import { getProductsCache, stripHtml, type TmProduct } from "./tm-products-cache.ts";
+import { publicationEligibleProduct, resolvedPublicationBrand } from "./product-publication-policy.ts";
 
 const ORIGIN = "https://www.tonerymaxim.sk";
 const PLACEHOLDER_IMAGE = /placeholder|no-image|image-coming-soon|tm-product-placeholder|tm-ink-placeholder/i;
 
 function envNumber(name: string, fallback: number, minimum: number, maximum: number) {
-  const raw = String(process.env[name] || import.meta.env[name] || "").trim().replace(",", ".");
+  const raw = String(process.env[name] || import.meta.env?.[name] || "").trim().replace(",", ".");
   const value = Number(raw);
   return Number.isFinite(value) ? Math.min(maximum, Math.max(minimum, value)) : fallback;
 }
@@ -89,6 +90,7 @@ export function buildHeurekaFeed(products: TmProduct[]) {
   const seen = new Set<string>();
 
   const included = products.filter((product) => {
+    if (!publicationEligibleProduct(product)) return false;
     const id = itemId(product);
     const price = Number(product.price || 0);
     const url = productUrl(product);
@@ -106,7 +108,7 @@ export function buildHeurekaFeed(products: TmProduct[]) {
     const description = text(stripHtml(product.description_html || product.short_description_html || product.description || name), 10_000);
     const image = imageUrl(product);
     const price = Number(product.price).toFixed(2);
-    const manufacturer = cleanProductBrand(product.product_brand || product.manufacturer_name);
+    const manufacturer = cleanProductBrand(resolvedPublicationBrand(product));
     const ean = cleanGtin(product.gtin);
     const validEan = ean.length === 13 ? ean : "";
     const type = "new";

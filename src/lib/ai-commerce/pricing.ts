@@ -5,8 +5,9 @@ export function isCompatibleType(type: unknown) {
 }
 
 export function quantityDiscount(type: unknown, quantity: number) {
-  if (!isCompatibleType(type)) return 0;
   const q = Math.max(1, Math.floor(Number(quantity) || 1));
+  if (String(type || '').toLowerCase() === 'calendar') return q >= 21 ? 15 : q >= 3 ? 5 : 0;
+  if (!isCompatibleType(type)) return 0;
   if (q >= 4) return 25;
   if (q >= 2) return 10;
   return 0;
@@ -22,7 +23,7 @@ export function priceForQuantity(price: number, type: unknown, quantity: number)
 }
 
 export function quantityOffers(price: number, type: unknown): QuantityOffer[] {
-  const quantities = isCompatibleType(type) ? [1, 2, 3, 4] : [1, 2, 3, 4];
+  const quantities = String(type || '').toLowerCase() === 'calendar' ? [1, 3, 21] : [1, 2, 3, 4];
   return quantities.map(quantity => {
     const p = priceForQuantity(price, type, quantity);
     return { ...p, label: p.discountPercent ? `${quantity} ks – zľava ${p.discountPercent} %` : `${quantity} ks` };

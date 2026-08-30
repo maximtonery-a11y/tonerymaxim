@@ -1,5 +1,6 @@
-import { compactKey, stripHtml, type TmProduct } from './tm-products-cache';
+import { compactKey, type TmProduct } from './tm-products-cache';
 import { cleanGtin, cleanMpn, cleanProductBrand, gtinSchemaProperty } from './product-identifiers';
+import { buildProductSeo } from './catalog-seo-text';
 
 export const SEO_SITE_NAME = 'ToneryMaxim.sk';
 export const SEO_COMPANY = {
@@ -21,9 +22,7 @@ export function absoluteUrl(origin: string, value: unknown): string {
 }
 
 export function productDescription(product: TmProduct): string {
-  const base = stripHtml(product.description || product.short_description_html || product.description_html || '');
-  const fallback = `${product.name}. ${product.product_type_detail_label || 'Toner alebo náplň do tlačiarne'}${product.sku ? `, označenie ${product.sku}` : ''}. Cena s DPH, dostupnosť a kompatibilné tlačiarne na ToneryMaxim.sk.`;
-  return (base || fallback).replace(/\s+/g, ' ').trim().slice(0, 160);
+  return buildProductSeo(product).description;
 }
 
 export function organizationJsonLd(origin: string) {
@@ -154,6 +153,8 @@ export function productJsonLd(origin: string, product: TmProduct) {
     sku: product.sku || undefined,
     image,
     url,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    isPartOf: { '@id': `${origin}/#website` },
     brand: brand ? { '@type': 'Brand', name: brand } : undefined,
     ...(gtinProperty ? { [gtinProperty]: gtin } : {}),
     mpn: mpn || undefined,
@@ -180,9 +181,11 @@ export function productJsonLd(origin: string, product: TmProduct) {
 }
 
 export function breadcrumbJsonLd(origin: string, items: Array<{ name: string; path: string }>) {
+  const pageUrl = absoluteUrl(origin, items.at(-1)?.path || '/');
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
     itemListElement: items.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: absoluteUrl(origin, item.path) })),
   };
 }

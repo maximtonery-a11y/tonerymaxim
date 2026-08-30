@@ -2,7 +2,7 @@ import { getProductsCache, compactKey } from '../tm-products-cache.ts';
 import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, productPrinterValues } from '../catalog-query.ts';
 
 export type CommerceProduct = {
-  id: number; sku: string; name: string; price: number; stock_status: string;
+  id: number | string; sku: string; name: string; price: number; stock_status: string;
   stock_quantity: number | null; type: string; image: string; url: string;
   color: string; capacity: string; compatible_printers: string[]; purchasable: boolean;
 };
