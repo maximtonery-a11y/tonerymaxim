@@ -1,6 +1,6 @@
 import bundledProducts from "../data/calendar-products.json";
-import { CALENDAR_SOURCE, calendarDiscountRate } from "./calendar-pricing";
-export { CALENDAR_SOURCE, calendarDiscountRate };
+import { CALENDAR_SOURCE, calendarDiscountRate, calendarDiscountedUnitPrice } from "./calendar-pricing";
+export { CALENDAR_SOURCE, calendarDiscountRate, calendarDiscountedUnitPrice };
 
 export type CalendarProduct = {
   sku: string;
@@ -19,6 +19,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 const FAILURE_CACHE_TTL_MS = 60 * 1000;
 const MAX_CATALOG_BYTES = 2_000_000;
 let cachedProducts: CalendarProduct[] = normalizeProducts(bundledProducts);
+const bundledProductSkus = new Set(cachedProducts.map((product) => product.sku));
 let cacheExpiresAt = 0;
 let refreshPromise: Promise<CalendarProduct[]> | null = null;
 
@@ -57,6 +58,10 @@ function normalizeProducts(value: unknown): CalendarProduct[] {
 
 function catalogUrl() {
   return String(process.env.TM_CALENDAR_CATALOG_URL || "").trim();
+}
+
+export function isBundledCalendarSku(value: unknown) {
+  return bundledProductSkus.has(String(value || "").trim());
 }
 
 function allowedCatalogUrl(value: string) {

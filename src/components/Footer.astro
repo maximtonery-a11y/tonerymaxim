@@ -1,6 +1,7 @@
 ---
 import "../styles/footer.css";
 import CookieConsent from "./CookieConsent.astro";
+import LegacyShopPanel from "./LegacyShopPanel.astro";
 
 const { showTrust = true } = Astro.props;
 
@@ -138,6 +139,7 @@ const shippingLogos = [
 </footer>
 
 <CookieConsent />
+<LegacyShopPanel />
 
 <script>
   function formatSkNumber(value: unknown) {

@@ -5,6 +5,19 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
   window.__TM_CHECKOUT_INIT__ = true;
 
   const CART_KEYS = ["tm_cart_v1", "tonerymaxim_cart", "cart", "tm_cart"];
+
+  function isCalendarCartItem(item) {
+    const source = String(item?.source || "").trim();
+    const id = String(item?.id ?? item?.productId ?? item?.product_id ?? "").trim().toLowerCase();
+    const url = String(item?.url || item?.href || "").trim();
+    let calendarUrl = false;
+    try {
+      calendarUrl = new URL(url || "/", window.location.origin).pathname.startsWith("/kalendare/");
+    } catch {
+      calendarUrl = false;
+    }
+    return source === "kalendare-2027" || id.startsWith("calendar:") || calendarUrl;
+  }
   let tmLoyalty = { ok: false, points: 0, discountValue: 0 };
   let tmLoyaltyLoadPromise = null;
   const TM_LOYALTY_MIN_DISCOUNT = 0.2;
@@ -537,7 +550,7 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
     if (!name || price <= 0) return null;
 
     const source = String(item.source || "");
-    const isCalendarItem = source === "kalendare-2027";
+    const isCalendarItem = isCalendarCartItem(item);
     const stockStatus = String(item.stock_status || item.stockStatus || "instock");
 
     return {
@@ -566,7 +579,7 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
       loyalty_reward: item.loyalty_reward === true,
       // Zdroj musí zostať zachovaný až po serverovú validáciu. Bez neho by sa
       // kalendár hľadal vo WooCommerce katalógu tonerov a objednávka by zlyhala.
-      source,
+      source: isCalendarItem ? "kalendare-2027" : source,
     };
   }
 
@@ -634,7 +647,7 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
   }
 
   function quantityDiscountRate(item) {
-    if (String(item?.source || "") === "kalendare-2027") {
+    if (isCalendarCartItem(item)) {
       const qty = cleanQty(item.qty);
       if (qty >= 21) return 0.15;
       if (qty >= 3) return 0.05;
@@ -645,6 +658,18 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
     if (qty >= 4) return 0.25;
     if (qty >= 2) return 0.10;
     return 0;
+  }
+
+  function quantityLineDiscount(item) {
+    const qty = cleanQty(item.qty);
+    const original = Math.round(Number(item.price || 0) * qty * 100) / 100;
+    const rate = quantityDiscountRate(item);
+    if (isCalendarCartItem(item) && rate > 0) {
+      const discountedUnit = Math.round(Number(item.price || 0) * (1 - rate) * 100) / 100;
+      const final = Math.round(discountedUnit * qty * 100) / 100;
+      return Math.max(0, Math.round((original - final) * 100) / 100);
+    }
+    return Math.round(original * rate * 100) / 100;
   }
 
   function normalizeSeriesText(value) {
@@ -741,8 +766,7 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
     const totals = (cart || []).reduce((acc, item) => {
       const qty = cleanQty(item.qty);
       const lineOriginal = Number(item.price || 0) * qty;
-      const rate = quantityDiscountRate(item);
-      const lineDiscount = Math.round(lineOriginal * rate * 100) / 100;
+      const lineDiscount = quantityLineDiscount(item);
       acc.subtotal += lineOriginal;
       acc.discount += lineDiscount;
       return acc;

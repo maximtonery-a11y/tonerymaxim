@@ -11,7 +11,7 @@ import { CheckoutProfiler } from "./checkout-profiler";
 import { sendHeurekaVerifiedOrder } from "./heureka-verified";
 import { withOrderIdempotency } from "./order-idempotency";
 import { canClaimPaperReward } from "./loyalty-rules";
-import { CALENDAR_SOURCE, calendarDiscountRate } from "./calendar-catalog";
+import { CALENDAR_SOURCE, calendarDiscountRate, calendarDiscountedUnitPrice } from "./calendar-catalog";
 
 export type NormalizedCartItem = {
   id: string;
@@ -116,6 +116,9 @@ function discountRate(item: NormalizedCartItem) {
 
 function discountedLineTotal(item: NormalizedCartItem) {
   const original = money(item.price * item.qty);
+  if (String(item.source || "") === CALENDAR_SOURCE) {
+    return money(calendarDiscountedUnitPrice(item.price, item.qty) * item.qty);
+  }
   const discount = money(original * discountRate(item));
   return money(Math.max(0, original - discount));
 }

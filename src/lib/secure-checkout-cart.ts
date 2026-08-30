@@ -7,7 +7,7 @@ import {
   LOYALTY_PAPER_REWARD_SKU,
   type getCustomerLoyalty,
 } from "./loyalty";
-import { CALENDAR_SOURCE, calendarDiscountRate, getCalendarProducts } from "./calendar-catalog";
+import { CALENDAR_SOURCE, calendarDiscountRate, calendarDiscountedUnitPrice, getCalendarProducts, isBundledCalendarSku } from "./calendar-catalog";
 
 type RawCartItem = {
   id?: string | number;
@@ -21,6 +21,8 @@ type RawCartItem = {
   title?: string;
   price?: number | string;
   source?: string;
+  url?: string;
+  href?: string;
 };
 
 class CheckoutCartError extends Error {
@@ -53,6 +55,14 @@ function productIdFromItem(item: RawCartItem) {
 
 function skuFromItem(item: RawCartItem) {
   return String(item.sku || "").trim();
+}
+
+export function isCalendarCartItem(item: RawCartItem) {
+  const source = String(item?.source || "").trim();
+  const id = String(item?.id ?? item?.productId ?? item?.product_id ?? "").trim().toLowerCase();
+  return source === CALENDAR_SOURCE
+    || id.startsWith("calendar:")
+    || isBundledCalendarSku(skuFromItem(item));
 }
 
 function isRequestedPaperReward(item: RawCartItem) {
@@ -121,6 +131,14 @@ export function discountRate(item: NormalizedCartItem) {
 
 export function discountedLine(item: NormalizedCartItem) {
   const original = money(item.price * item.qty);
+  if (String(item.source || "") === CALENDAR_SOURCE) {
+    const final = money(calendarDiscountedUnitPrice(item.price, item.qty) * item.qty);
+    return {
+      original,
+      discount: money(original - final),
+      final,
+    };
+  }
   const discount = Math.round(original * discountRate(item) * 100) / 100;
   return {
     original,
@@ -145,11 +163,12 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
   if (!regularInput.length) return [];
   const secureInput: RawCartItem[] = [...regularInput];
   if (rewardPacks > 0) secureInput.push({ sku: LOYALTY_PAPER_PRODUCT_SKU, qty: rewardPacks, loyalty_reward: true });
-  const calendarProducts = secureInput.some((item) => String(item?.source || "") === CALENDAR_SOURCE)
+  const calendarInput = secureInput.filter(isCalendarCartItem);
+  const calendarProducts = calendarInput.length
     ? await getCalendarProducts()
     : [];
   const calendarBySku = new Map(calendarProducts.map((product) => [product.sku, product]));
-  const wooInput = secureInput.filter((item) => String(item?.source || "") !== CALENDAR_SOURCE);
+  const wooInput = secureInput.filter((item) => !isCalendarCartItem(item));
   const cache = wooInput.length ? await getProductsCache() : null;
   const products = Array.isArray(cache?.products) ? cache.products : [];
   const index = indexProducts(products);
@@ -173,7 +192,7 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
   const requestedById = new Map<string, number>();
   const result: NormalizedCartItem[] = [];
 
-  for (const item of secureInput.filter((raw) => String(raw?.source || "") === CALENDAR_SOURCE)) {
+  for (const item of calendarInput) {
     const sku = skuFromItem(item);
     const product = calendarBySku.get(sku);
     if (!product) throw new CheckoutCartError(`Kalendár sa nenašiel alebo už nie je dostupný: ${sku || "neznámy produkt"}`);

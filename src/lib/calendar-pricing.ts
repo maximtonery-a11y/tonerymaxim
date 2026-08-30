@@ -6,3 +6,9 @@ export function calendarDiscountRate(quantity: unknown) {
   if (qty >= 3) return 0.05;
   return 0;
 }
+
+export function calendarDiscountedUnitPrice(price: unknown, quantity: unknown) {
+  const amount = Number(price);
+  if (!Number.isFinite(amount) || amount <= 0) return 0;
+  return Math.round(amount * (1 - calendarDiscountRate(quantity)) * 100) / 100;
+}

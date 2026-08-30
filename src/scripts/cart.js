@@ -4,6 +4,19 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
 
+  function isCalendarCartItem(item) {
+    const source = String(item?.source || "").trim();
+    const id = String(item?.id ?? item?.productId ?? item?.product_id ?? "").trim().toLowerCase();
+    const url = String(item?.url || item?.href || "").trim();
+    let calendarUrl = false;
+    try {
+      calendarUrl = new URL(url || "/", window.location.origin).pathname.startsWith("/kalendare/");
+    } catch {
+      calendarUrl = false;
+    }
+    return source === "kalendare-2027" || id.startsWith("calendar:") || calendarUrl;
+  }
+
   let tmLoyalty = { ok: false, points: 0, discountValue: 0 };
   const TM_LOYALTY_MIN_DISCOUNT = 0.2;
   // Vernostná zľava je pre prihláseného zákazníka predvolene zapnutá.
@@ -407,10 +420,11 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
     for (const item of cart) {
       // Kalendáre majú vlastný katalóg a vlastnú serverovú kontrolu skladu.
       // Nikdy ich nedohľadávame medzi tonermi cez hlavné /api/products.
-      if (String(item?.source || "") === "kalendare-2027") {
+      if (isCalendarCartItem(item)) {
         const calendarStockStatus = String(item?.stock_status || "instock").toLowerCase();
         const calendarItem = {
           ...item,
+          source: "kalendare-2027",
           url: productUrl(item),
           // Staršia verzia košíka mohla kalendár omylom obohatiť údajmi tonera.
           // Pri kalendári preto odstránime iba tonerové atribúty; sklad a cenu
@@ -493,7 +507,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
   }
 
   function cartItemMetaHtml(item) {
-    if (String(item?.source || "") === "kalendare-2027") {
+    if (isCalendarCartItem(item)) {
       return `
         <div class="cart-item-meta" aria-label="Dostupnosť produktu">
           <span class="cart-stock ${stockClass(item)}"><i></i>${esc(stockText(item))}</span>
@@ -543,7 +557,7 @@ function formatMoney(value) {
   }
 
   function quantityDiscountRate(item) {
-    if (String(item?.source || "") === "kalendare-2027") {
+    if (isCalendarCartItem(item)) {
       const qty = cleanQty(item.qty);
       if (qty >= 21) return 0.15;
       if (qty >= 3) return 0.05;
@@ -554,6 +568,18 @@ function formatMoney(value) {
     if (qty >= 4) return 0.25;
     if (qty >= 2) return 0.10;
     return 0;
+  }
+
+  function quantityLineDiscount(item) {
+    const qty = cleanQty(item.qty);
+    const original = Math.round(Number(item.price || 0) * qty * 100) / 100;
+    const rate = quantityDiscountRate(item);
+    if (isCalendarCartItem(item) && rate > 0) {
+      const discountedUnit = Math.round(Number(item.price || 0) * (1 - rate) * 100) / 100;
+      const final = Math.round(discountedUnit * qty * 100) / 100;
+      return Math.max(0, Math.round((original - final) * 100) / 100);
+    }
+    return Math.round(original * rate * 100) / 100;
   }
 
   function normalizeSeriesText(value) {
@@ -650,8 +676,7 @@ function formatMoney(value) {
     const totals = (cart || []).reduce((acc, item) => {
       const qty = cleanQty(item.qty);
       const lineOriginal = Number(item.price || 0) * qty;
-      const rate = quantityDiscountRate(item);
-      const lineDiscount = Math.round(lineOriginal * rate * 100) / 100;
+      const lineDiscount = quantityLineDiscount(item);
       acc.subtotal += lineOriginal;
       acc.discount += lineDiscount;
       return acc;
@@ -928,7 +953,7 @@ function formatMoney(value) {
       const qtyMax = maxQty === null ? 99 : Math.max(1, maxQty);
       const itemTotal = Number(item.price || 0) * qty;
       const itemDiscountRate = quantityDiscountRate(item);
-      const itemDiscount = Math.round(itemTotal * itemDiscountRate * 100) / 100;
+      const itemDiscount = quantityLineDiscount(item);
       const itemFinal = Math.max(0, itemTotal - itemDiscount);
 
       const row = document.createElement("article");
