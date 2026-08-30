@@ -7,12 +7,27 @@ import { priceForQuantity, quantityOffers } from '../src/lib/ai-commerce/pricing
 import { buildAssistantAnswer } from '../src/lib/aiSalesAssistant.ts';
 
 test('kalendárové otázky smerujú do živého katalógu', () => {
-  for (const question of ['Aké kalendáre máte?', 'Hľadám diár 2027', 'Máte nástenný kalendár Tatry?', 'Chcem PF pohľadnice']) {
+  for (const question of ['Aké kalendáre máte?', 'Aké kalendáre máte v ponuke?', 'Hľadám diár 2027', 'Máte nástenný kalendár Tatry?', 'Chcem PF pohľadnice']) {
     assert.equal(isCalendarQuery(question), true, question);
     const route = routeCommerceMessage(question, emptyCommerceState());
     assert.equal(route.needsProducts, true, question);
     assert.match(String(route.productQuery), /.+/);
   }
+});
+
+test('presná produkčná otázka dostane poradenskú odpoveď aj produkty', async () => {
+  const question = 'aké kalendáre máte v ponuke?';
+  const route = routeCommerceMessage(question, emptyCommerceState());
+  assert.ok(route.intents.includes('ADVICE'));
+  assert.equal(route.needsProducts, true);
+
+  const [advisor, catalogue] = await Promise.all([
+    buildAssistantAnswer(question),
+    searchCalendarProducts(question),
+  ]);
+  assert.match(advisor.answer.join(' '), /nástenné.*stolové.*diáre/i);
+  assert.ok(catalogue.products.length > 0);
+  assert.ok(catalogue.products.every((product) => product.source === 'kalendare-2027'));
 });
 
 test('kalendáre majú vlastné množstevné zľavy', () => {

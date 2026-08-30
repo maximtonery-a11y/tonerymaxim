@@ -109,7 +109,7 @@ function asProduct(row: CalendarRow) {
 export async function searchCalendarProducts(query: string) {
   const rows = await loadRows();
   const n = normalize(query);
-  const ignored = new Set(['ake','aky','aku','mate','predavate','ponukate','chcem','hladam','potrebujem','kalendar','kalendare','kalendara','prosim','ukaz','mi','v','na','do','pre','s','so','a','alebo']);
+  const ignored = new Set(['ake','aky','aku','mate','predavate','ponukate','ponuke','sortiment','chcem','hladam','potrebujem','kalendar','kalendare','kalendara','prosim','ukaz','mi','v','vo','na','do','pre','s','so','a','aj','alebo']);
   const aliases: Record<string, string> = { psami: 'psy', psov: 'psy', psiky: 'psy', mackami: 'macky', maciek: 'macky', tatrach: 'tatry' };
   const tokens = n.split(' ').filter((token) => token.length > 1 && !ignored.has(token) && !/^202[6-9]$/.test(token)).map((token) => aliases[token] || token);
   const generic = tokens.length === 0 || tokens.every((token) => /^202[6-9]$/.test(token));

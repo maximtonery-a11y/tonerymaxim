@@ -6,6 +6,9 @@ const printer = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|r
 
 export function routeCommerceMessage(message: string, state: CommerceState) {
   const n = norm(message); const intents: AiIntent[] = [];
+  const calendarQuestion = /\b(kalendar|kalendare|kalendara|kalendary|diar|diare|planovac|pf|novorocn)\w*\b/.test(n);
+  const calendarInformationQuestion = calendarQuestion
+    && /\b(ake|aky|aku|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(n);
   // Častý prepis kódu Samsung MLT-D111S: písmeno S zákazník zadá ako 1.
   // Alias je úmyselne úzky, aby sme neopravovali iné modelové čísla naslepo.
   const knownProductAlias = /^\s*(?:samsung\s+|mlt[- ]?)?d[- ]?111(?:s|1)\s*$/i.test(message)
@@ -26,7 +29,11 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const add = (x: AiIntent) => { if (!intents.includes(x)) intents.push(x); };
   if (/(clovek|operator|predajca|zavolajte|kontaktujte ma)/.test(n)) add('HUMAN_ESCALATION');
   if (productCode.test(message) || knownProductAlias) add('PRODUCT_SEARCH');
-  if (/\b(kalendar|kalendare|kalendara|kalendary|diar|diare|planovac|pf|novorocn)\w*\b/.test(n)) add('PRODUCT_SEARCH');
+  if (calendarQuestion) add('PRODUCT_SEARCH');
+  // Všeobecná otázka na kalendárový sortiment potrebuje súčasne overenú
+  // poradenskú odpoveď aj živé produkty. Bez ADVICE sa načítal iba katalóg
+  // a pri nečakanom prázdnom výsledku sa zobrazila tonerová výzva.
+  if (calendarInformationQuestion) add('ADVICE');
   if (explicitConsumableSearch&&generalReference) add('PRODUCT_SEARCH');
   if (printer.test(message)) add('PRINTER_SEARCH');
   if (shortPrinter) add('PRINTER_SEARCH');
@@ -42,7 +49,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (!serviceQuestion && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (/(ten|ho|ich|do nej|a original|a kompatibil|a renov|originalny|kompatibilny|renovovany|renovovanu|renovovany|repasovany|je skladom|kolko stran|chcem|zoberiem|pridaj|\bkus(?:y|ov)?\b|\bks\b|kosik|pokladn)/.test(n) || pendingAnswer)) add('FOLLOW_UP');
   if (!intents.length) add('UNKNOWN');
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];
-  const calendarQuery=/\b(kalendar|kalendare|kalendara|kalendary|diar|diare|planovac|pf|novorocn)\w*\b/.test(n)?message:null;
+  const calendarQuery=calendarQuestion?message:null;
   const query = serviceQuestion ? null : calendarQuery || knownProductAlias || message.match(productCode)?.[0] || (explicitConsumableSearch&&generalReference?message:null) || message.match(printer)?.[0] || (shortPrinter ? `${brand || ''} ${shortPrinter}`.trim() : null) || (intents.includes('FOLLOW_UP') ? state.lastProductQuery : null);
   return { intents, productQuery: query || null, needsProducts: Boolean(query) && intents.some(x => ['PRODUCT_SEARCH','PRINTER_SEARCH','COMPATIBILITY','PRODUCT_COMPARE','COLOR_TYPE_FILTER','BUY_INTENT','FOLLOW_UP'].includes(x)) };
 }
