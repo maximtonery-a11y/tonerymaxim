@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { calendarDiscountRate, calendarDiscountedUnitPrice } from "../src/lib/calendar-pricing.ts";
+import { calendarWooLineReference } from "../src/lib/calendar-woo-line.ts";
 
 test("množstevná zľava kalendára má presné hranice 1–2, 3–20 a 21+", () => {
   for (const [qty, expected] of [[1, 0], [2, 0], [3, 0.05], [20, 0.05], [21, 0.15], [99, 0.15]] as const) {
@@ -65,7 +66,26 @@ test("server rozpozná kalendár aj keď staršia položka stratila source", asy
 test("kalendár bez Woo produktu zostáva oddeleným manuálnym objednávkovým riadkom", async () => {
   const source = await readFile(new URL("../src/lib/checkout-order.ts", import.meta.url), "utf8");
   assert.match(source, /String\(item\.source \|\| ""\) === CALENDAR_SOURCE\s*\? 0/);
+  assert.match(source, /calendarWooLineReference\(item, CALENDAR_SOURCE\)/);
   assert.match(source, /tm_catalog_source/);
+});
+
+test("kalendárový Woo riadok má povinné SKU a tonerový riadok zostáva nezmenený", () => {
+  assert.deepEqual(
+    calendarWooLineReference(
+      { source: "kalendare-2027", sku: " NK-03-27 ", name: "Nástenný kalendár Poľovník 2027" },
+      "kalendare-2027",
+    ),
+    { sku: "NK-03-27" },
+  );
+  assert.equal(
+    calendarWooLineReference({ source: "tonerymaxim", sku: "15048", name: "Brother TN-2421" }, "kalendare-2027"),
+    null,
+  );
+  assert.throws(
+    () => calendarWooLineReference({ source: "kalendare-2027", sku: "", name: "Kalendár" }, "kalendare-2027"),
+    /SKU kalendára je povinné/,
+  );
 });
 
 test("tonerová zľava zostáva v pôvodných hraniciach 2 ks a 4 ks", async () => {

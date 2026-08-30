@@ -12,6 +12,7 @@ import { sendHeurekaVerifiedOrder } from "./heureka-verified";
 import { withOrderIdempotency } from "./order-idempotency";
 import { canClaimPaperReward } from "./loyalty-rules";
 import { CALENDAR_SOURCE, calendarDiscountRate, calendarDiscountedUnitPrice } from "./calendar-catalog";
+import { calendarWooLineReference } from "./calendar-woo-line";
 
 export type NormalizedCartItem = {
   id: string;
@@ -248,8 +249,13 @@ async function lineItems(source: CheckoutOrderSource, taxRateId: number) {
       ],
     };
 
-    if (productId > 0) line.product_id = productId;
-    else if (!item.sku) throw new Error(`ID produktu alebo SKU je povinné: ${item.name}`);
+    if (productId > 0) {
+      line.product_id = productId;
+    } else {
+      const calendarReference = calendarWooLineReference(item, CALENDAR_SOURCE);
+      if (calendarReference) Object.assign(line, calendarReference);
+      else if (!item.sku) throw new Error(`ID produktu alebo SKU je povinné: ${item.name}`);
+    }
 
     lines.push(line);
   }
