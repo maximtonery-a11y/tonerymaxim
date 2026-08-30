@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { calendarDiscountRate, calendarDiscountedUnitPrice } from "../src/lib/calendar-pricing.ts";
 import { calendarWooLineReference } from "../src/lib/calendar-woo-line.ts";
+import { customerProfileUpdateFromOrder } from "../src/lib/checkout-customer-rules.ts";
+import { orderLineGrossTotal } from "../src/lib/order-display.ts";
 
 test("množstevná zľava kalendára má presné hranice 1–2, 3–20 a 21+", () => {
   for (const [qty, expected] of [[1, 0], [2, 0], [3, 0.05], [20, 0.05], [21, 0.15], [99, 0.15]] as const) {
@@ -86,6 +88,46 @@ test("kalendárový Woo riadok má povinné SKU a tonerový riadok zostáva nezm
     () => calendarWooLineReference({ source: "kalendare-2027", sku: "", name: "Kalendár" }, "kalendare-2027"),
     /SKU kalendára je povinné/,
   );
+});
+
+test("objednávka prihláseného zákazníka pripraví úplnú fakturačnú adresu pre účet", () => {
+  const update = customerProfileUpdateFromOrder({
+    billing: { firstName: "Test", lastName: "Objednávka", address: "Tajov 265", city: "Tajov", zip: "97634" },
+    delivery: { differentAddress: false },
+    contact: { email: "test@example.sk", phone: "+421900000000" },
+  } as any);
+  assert.equal(update.first_name, "Test");
+  assert.equal(update.billing.address_1, "Tajov 265");
+  assert.equal(update.billing.postcode, "97634");
+  assert.equal(update.billing.phone, "+421900000000");
+  assert.equal("shipping" in update, false);
+});
+
+test("odlišná dodacia adresa pre Woo neobsahuje nepodporovaný e-mail", () => {
+  const update = customerProfileUpdateFromOrder({
+    billing: { firstName: "Test", lastName: "Objednávka", address: "Tajov 265", city: "Tajov", zip: "97634" },
+    delivery: {
+      differentAddress: true,
+      firstName: "Iné",
+      lastName: "Miesto",
+      address: "Hlavná 1",
+      city: "Bratislava",
+      zip: "81101",
+      phone: "+421911111111",
+      email: "shipping@example.sk",
+    },
+    contact: { email: "billing@example.sk", phone: "+421900000000" },
+  } as any);
+  assert.equal(update.shipping?.address_1, "Hlavná 1");
+  assert.equal(update.shipping?.postcode, "81101");
+  assert.equal(update.shipping?.phone, "+421911111111");
+  assert.equal("email" in (update.shipping || {}), false);
+  assert.equal(update.billing.email, "billing@example.sk");
+});
+
+test("história účtu zobrazuje cenu položky vrátane Woo DPH", () => {
+  assert.equal(orderLineGrossTotal({ total: "4.09", total_tax: "0.94" }), 5.03);
+  assert.equal(orderLineGrossTotal({ total: "9.80", total_tax: "2.26" }), 12.06);
 });
 
 test("tonerová zľava zostáva v pôvodných hraniciach 2 ks a 4 ks", async () => {

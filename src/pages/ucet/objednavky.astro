@@ -5,6 +5,7 @@ import "../../styles/account.css";
 import { readCustomerSession, setCustomerCookie } from "../../lib/auth-session";
 import { getWooCustomerById, getWooCustomerOrders } from "../../lib/woo-client";
 import { customerToSession, formatDate, formatMoney, orderNumber, orderStatusLabel, safeText } from "../../lib/account-data";
+import { orderLineGrossTotal } from "../../lib/order-display";
 import AccountShell from "../../components/AccountShell.astro";
 
 const session = readCustomerSession(Astro.cookies);
@@ -45,7 +46,7 @@ function vatFromGross(value: unknown) { const gross = moneyNumber(value); return
                 {(order.line_items || []).slice(0, 6).map((item) => (
                   <div class="order-item">
                     <span>{safeText(item.name)} × {item.quantity || 1}</span>
-                    <strong>{formatMoney(item.total, order.currency || "EUR")} s DPH</strong>
+                    <strong>{formatMoney(orderLineGrossTotal(item), order.currency || "EUR")} s DPH</strong>
                   </div>
                 ))}
               </div>

@@ -2,7 +2,7 @@ import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { TM_CACHE_ROOT } from './runtime-paths';
 import { readSignedJson, writeSignedJson, TM_DATA_ROOT } from "./secure-persistence";
-import { wooRequest } from "./woo-client";
+import { updateWooCustomer, wooRequest } from "./woo-client";
 import { sendOrderAdminCopyEmail, sendOrderConfirmationEmail } from "./mail";
 import { claimPaperReward, reserveLoyaltyDiscount } from "./loyalty";
 import { grantThankYouCoupon, markCouponUsed, thankYouCouponCode, type CouponResult } from "./coupons";
@@ -12,6 +12,7 @@ import { sendHeurekaVerifiedOrder } from "./heureka-verified";
 import { withOrderIdempotency } from "./order-idempotency";
 import { canClaimPaperReward } from "./loyalty-rules";
 import { CALENDAR_SOURCE, calendarDiscountRate, calendarDiscountedUnitPrice } from "./calendar-catalog";
+import { customerProfileUpdateFromOrder } from "./checkout-customer-rules";
 import { calendarWooLineReference } from "./calendar-woo-line";
 
 export type NormalizedCartItem = {
@@ -643,6 +644,12 @@ async function createWooOrderFromCheckoutInternal(source: CheckoutOrderSource, o
       meta_data: orderMeta({ ...source, paymentState: String(options.gopayPayment?.state || source.paymentState || "") }, paymentId, isCompany, payment),
     },
   }));
+
+  if (customerId > 0) {
+    await profiler.measure("woo-update-customer-address", () =>
+      updateWooCustomer(customerId, customerProfileUpdateFromOrder(source)),
+    ).catch((error) => console.error("Woo customer address update error:", error?.message || error));
+  }
 
   if (source.coupon?.ok) {
     await profiler.measure("coupon-mark-used", () => markCouponUsed(Number(source.customerId) || undefined, source.coupon || undefined, order.id)).catch((error) => console.error("Coupon used meta error:", error?.message || error));
