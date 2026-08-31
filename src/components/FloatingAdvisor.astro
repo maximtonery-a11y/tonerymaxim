@@ -1,5 +1,7 @@
 ---
 import '../styles/ai-sales-assistant.css';
+import { quickPromptsForPath } from '../lib/ai-quick-prompts';
+const quickPrompts = quickPromptsForPath(Astro.url.pathname);
 ---
 
 <section class="tm-ai-assistant" data-ai-sales-assistant aria-live="polite">
@@ -16,6 +18,14 @@ import '../styles/ai-sales-assistant.css';
     <span class="tm-ai-assistant__label tm-ai-assistant__label--desktop">AI Tomáš</span>
     <span class="tm-ai-assistant__label tm-ai-assistant__label--mobile">AI Tomáš</span>
   </button>
+
+  <aside class="tm-ai-nudge" data-ai-nudge hidden aria-label="Tip od AI Tomáša">
+    <button type="button" class="tm-ai-nudge__close" data-ai-nudge-close aria-label="Zavrieť tip">×</button>
+    <button type="button" class="tm-ai-nudge__question" data-ai-nudge-question data-ai-prompt={quickPrompts[0]?.question || 'Ako vám môžem pomôcť?'}>
+      <b>Môžem pomôcť?</b>
+      <span>{quickPrompts[0]?.label || 'Opýtajte sa AI Tomáša'}</span>
+    </button>
+  </aside>
 
 
 
@@ -47,7 +57,7 @@ import '../styles/ai-sales-assistant.css';
 </div><div class="tm-ai-frequent" data-ai-frequent hidden></div></div>
 <div class="tm-ai-livecart" data-ai-livecart hidden><span>🛒 <b data-ai-cart-count>0 ks</b> <small data-ai-cart-total></small></span><button type="button" data-ai-cart-open>Zobraziť nákup</button></div>
 <div class="tm-ai-assistant__messages" data-ai-messages><article class="tm-ai-msg tm-ai-msg--bot tm-ai-msg--welcome"><span class="tm-ai-msg__avatar">AI</span><div><p><b>Napíšte mi, čo potrebujete.</b></p><p>Napríklad model tlačiarne, označenie toneru alebo otázku.</p></div></article></div>
-<div class="tm-ai-assistant__quick" data-ai-quick hidden><button type="button" data-ai-prompt="Ako vybrať správny toner?">Ako vybrať toner</button><button type="button" data-ai-prompt="Rozdiel kompatibilný originálny renovovaný toner">Kompatibilný / originál</button><button type="button" data-ai-prompt="Tlačiareň tlačí pásy">Problémy s tlačou</button><button type="button" data-ai-prompt="Koľko stojí doprava?">Doprava a platba</button></div>
+<div class="tm-ai-assistant__quick" data-ai-quick hidden>{quickPrompts.map(prompt => <button type="button" data-ai-prompt={prompt.question}>{prompt.label}</button>)}</div>
 <div class="tm-ai-commerce" data-ai-commerce hidden></div>
 </main>
 </div>

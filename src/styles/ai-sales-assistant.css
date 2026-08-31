@@ -11,6 +11,11 @@
   z-index: 9999;
   font-family: inherit;
 }
+.tm-ai-nudge{position:absolute;right:0;bottom:70px;width:230px;padding:10px 34px 10px 12px;border:1px solid #c8d8eb;border-radius:14px;background:#fff;box-shadow:0 10px 30px rgba(8,38,83,.16);color:var(--tm-ai-text)}
+.tm-ai-nudge__question{display:grid;gap:2px;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.tm-ai-nudge__question b{color:var(--tm-ai-blue);font-size:14px}.tm-ai-nudge__question span{font-size:12px;line-height:1.35;color:var(--tm-ai-muted)}
+.tm-ai-nudge__close{position:absolute;right:7px;top:6px;width:26px;height:26px;border:0;border-radius:50%;background:#eef3f9;color:#53627a;font-size:18px;cursor:pointer}
+.tm-ai-order-verify{display:grid;gap:9px}.tm-ai-order-verify p{margin:0}.tm-ai-order-verify label{display:grid;gap:4px;color:#475467;font-size:12px;font-weight:800}.tm-ai-order-verify input{width:100%;height:42px;border:1px solid #b9c9dc;border-radius:9px;padding:0 10px;font-size:15px}.tm-ai-order-verify button{height:42px;border:0;border-radius:9px;background:var(--tm-ai-blue);color:#fff;font-weight:900;cursor:pointer}.tm-ai-order-verify small{min-height:18px;color:#a32d2d}
+@media(max-width:760px){.tm-ai-nudge{position:fixed;right:12px;bottom:78px;width:min(250px,calc(100vw - 24px))}.tm-ai-assistant.is-open .tm-ai-nudge{display:none!important}}
 
 /* V131 – finálne mobilné rozloženie AI Tomáša. */
 .tm-ai-assistant .tm-ai-livecart[hidden],

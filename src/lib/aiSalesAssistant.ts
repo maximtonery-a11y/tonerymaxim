@@ -188,7 +188,7 @@ function isGenericConsumableSelectionRequest(message: string) {
   if (!/\b(?:toner\w*|napln\w*|atrament\w*|kazet\w*|cartridge\w*|ink\w*)\b/.test(text)) return false;
   if (!/\b(?:mate|predavate|ponukate|hladam|potrebujem|chcem|kupit|zhanam|je|su)\b/.test(text)) return false;
   // Informačné, diagnostické a reklamačné otázky majú vlastnú odpoveď.
-  if (/\b(?:co je|co znamena|aky je rozdiel|ako funguje|preco|pasy|ciary|smuhy|bled|sype|prasi|nerozpozna|nefunguje|reklamac|vratit|nepasuje|pokaz)\w*/.test(text)) return false;
+  if (/\b(?:co je|co znamena|aky je rozdiel|ako funguje|preco|pasy|ciary|smuhy|bled|sype|prasi|nerozpozna|nefunguje|reklamac|vratit|vymen|nepasuje|pokaz|original|kompatibil|renov|repas)\w*/.test(text)) return false;
   return true;
 }
 
@@ -530,7 +530,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   // Jednoznačné obchodné témy routujeme priamo, aby ich všeobecné slová ako „nákup“ neprebili.
   const normalizedMessage = normalize(originalMessage);
 
-  if (isGenericConsumableSelectionRequest(rawMessage)) {
+  if (!isContextualProductFollowUp && isGenericConsumableSelectionRequest(rawMessage)) {
     return {
       answer: [
         'Áno, tonery a náplne máme v ponuke.',

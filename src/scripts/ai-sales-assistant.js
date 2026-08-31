@@ -14,6 +14,9 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   const input = root.querySelector('[data-ai-input]');
   const messages = root.querySelector('[data-ai-messages]');
   const quick = root.querySelector('[data-ai-quick]');
+  const nudge = root.querySelector('[data-ai-nudge]');
+  const nudgeClose = root.querySelector('[data-ai-nudge-close]');
+  const nudgeQuestion = root.querySelector('[data-ai-nudge-question]');
   const handoff = root.querySelector('[data-ai-handoff]');
   const handoffForm = root.querySelector('[data-ai-handoff-form]');
   const handoffQuestion = root.querySelector('[data-ai-handoff-question]');
@@ -31,6 +34,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   const newDialog = root.querySelector('[data-ai-new-dialog]');
 
   const SESSION_KEY = 'tm_ai_tomas_state_v1';
+  const NUDGE_KEY = 'tm_ai_tomas_nudge_v1';
   function readSavedState(){ try { const x=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); return x&&typeof x==='object'?x:{}; } catch { return {}; } }
   const saved=readSavedState();
   let customerProfileLoadStarted = false;
@@ -83,6 +87,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     toggle.hidden = true;
     toggle.setAttribute('aria-expanded', 'true');
     root.classList.add('is-open');
+    if(nudge)nudge.hidden=true;
     if(!state.started)setExperience('home');
     document.documentElement.classList.add('tm-ai-open');
     setPanelSize(state.size);
@@ -589,9 +594,26 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
       loading.innerHTML='<p>Produkty sa teraz nepodarilo načítať. Skúste to znova.</p>';
     }
   }
+  function renderGuestOrderVerification(box){
+    box.innerHTML='<form class="tm-ai-order-verify" data-ai-order-verify><p><b>Bezpečné overenie objednávky</b></p><p>Zadajte údaje použité v objednávke.</p><label>Číslo objednávky<input name="orderNumber" inputmode="numeric" autocomplete="off" required maxlength="12"></label><label>E-mail<input name="email" type="email" autocomplete="email" required maxlength="160"></label><label>PSČ<input name="postcode" autocomplete="postal-code" required maxlength="20"></label><button type="submit">Overiť stav</button><small data-ai-order-error aria-live="polite"></small></form>';
+    const verify=box.querySelector('[data-ai-order-verify]');
+    verify?.addEventListener('submit',async event=>{event.preventDefault();const button=verify.querySelector('button'),error=verify.querySelector('[data-ai-order-error]'),formData=new FormData(verify);button.disabled=true;error.textContent='Overujem…';
+      try{const r=await fetch('/api/ai-order-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderNumber:formData.get('orderNumber'),email:formData.get('email'),postcode:formData.get('postcode')})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Overenie sa nepodarilo.');const order=d.order;box.innerHTML=`<p><b>Objednávka ${escapeHtml(order.number)}</b></p><p>Stav: <b>${escapeHtml(order.statusLabel)}</b></p>${order.shipping?`<p>Doprava: ${escapeHtml(order.shipping)}</p>`:''}${order.tracking?`<p>Sledovanie zásielky: ${escapeHtml(order.tracking)}</p>`:''}`;}
+      catch(err){error.textContent=err?.message||'Overenie sa nepodarilo.';button.disabled=false;}
+    });
+  }
   async function unifiedAsk(question){
     if(state.mode==='auto')state.mode=looksLikeShopping(question)?'shop':'advice';
     beginSession(); if(!question||state.busy)return;
+    if(/\b(?:kde|stav|sleduj|tracking|doruc|odoslan)\w*.*\b(?:objednavk|tracking|zasielk)\w*|\b(?:objednavk|zasielk)\w*.*\b(?:kde|stav|tracking|doruc|odoslan)\w*/i.test(question)){
+      state.busy=true;state.lastQuestion=question;addMessage('user',`<p>${escapeHtml(question)}</p>`);const loading=addMessage('bot','<p>Bezpečne overujem stav objednávky…</p>');
+      try{const r=await fetch('/api/ai-order-status',{method:'GET',cache:'no-store'});const d=await r.json();
+        if(r.status===401){renderGuestOrderVerification(loading);return;}
+        if(!r.ok||!d.ok)throw new Error('Stav objednávky sa nepodarilo načítať.');
+        if(!d.orders?.length){loading.innerHTML='<p>Vo vašom účte som nenašiel žiadnu objednávku.</p>';return;}
+        const order=d.orders[0];loading.innerHTML=`<p><b>Objednávka ${escapeHtml(order.number)}</b></p><p>Stav: <b>${escapeHtml(order.statusLabel)}</b>${order.date?` · ${escapeHtml(new Date(order.date).toLocaleDateString('sk-SK'))}`:''}</p>${order.shipping?`<p>Doprava: ${escapeHtml(order.shipping)}</p>`:''}${order.tracking?`<p>Sledovanie zásielky: ${escapeHtml(order.tracking)}</p>`:''}`;
+      }catch(err){loading.innerHTML=`<p>${escapeHtml(err?.message||'Stav objednávky sa nepodarilo načítať.')}</p>`;}finally{state.busy=false;}return;
+    }
     if(/(zopak|ako naposledy|posledn.*objedn)/i.test(question)){
       addMessage('user',`<p>${escapeHtml(question)}</p>`);const ps=state.profile?.lastOrder?.products||[];
       if(!state.profile){addMessage('bot','<p>Poslednú objednávku môžem načítať iba prihlásenému zákazníkovi. Prihláste sa a skúste to znova.</p>');return;}
@@ -682,6 +704,24 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     openPanel();
   }
   root.querySelectorAll('[data-ai-mode]').forEach(b=>b.addEventListener('click',()=>{state.mode=b.dataset.aiMode;beginSession();messages.hidden=false;form.hidden=false;if(quick)quick.hidden=state.mode!=='advice';input.placeholder=state.mode==='shop'?'Napíšte toner alebo model tlačiarne…':'Napíšte otázku alebo čo potrebujete…';input.focus()}));
+
+  nudgeClose?.addEventListener('click',()=>{
+    nudge.hidden=true;
+    try{sessionStorage.setItem(NUDGE_KEY,'dismissed');}catch{}
+    trackEvent('nudge_dismissed');
+  });
+  nudgeQuestion?.addEventListener('click',()=>{
+    const question=nudgeQuestion.dataset.aiPrompt||'';
+    nudge.hidden=true;
+    try{sessionStorage.setItem(NUDGE_KEY,'used');}catch{}
+    openPanel();state.mode='advice';beginSession();messages.hidden=false;form.hidden=false;
+    unifiedAsk(question);trackEvent('nudge_used',{question});
+  });
+  try{
+    if(nudge&&!state.started&&!sessionStorage.getItem(NUDGE_KEY)){
+      window.setTimeout(()=>{if(panel.hidden&&!document.hidden)nudge.hidden=false;},8000);
+    }
+  }catch{}
 
   quick.addEventListener('click', (event) => {
     const button = event.target.closest('[data-ai-prompt]');

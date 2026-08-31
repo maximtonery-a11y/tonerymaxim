@@ -1,5 +1,5 @@
-import { getProductsCache, compactKey } from '../tm-products-cache.ts';
-import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, productPrinterValues } from '../catalog-query.ts';
+import { filterProducts, getProductsCache } from '../tm-products-cache.ts';
+import { findExactPrinterModelMatches, findExactProductIdentityMatches, productPrinterValues } from '../catalog-query.ts';
 
 export type CommerceProduct = {
   id: number | string; sku: string; name: string; price: number; stock_status: string;
@@ -72,44 +72,20 @@ export async function resolveCommerceProducts(query: string) {
   // AI musí poznať aj platné produkty, ktoré momentálne nie sú skladom. Iba tak
   // vie podať úplnú ponuku a ponúknuť zistenie dostupnosti. Do košíka sa naďalej
   // smú dostať len skladové produkty (kontroluje UI aj serverová validácia).
-  const products = (cache.products || []).filter(isValidOffer);
-  const looksLikeConsumableName=/\b(?:toner|napln|náplň|atrament|cartridge|kazeta)\b/i.test(query);
-  const looksLikePrinterQuery=!looksLikeConsumableName&&/\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|utax|konica|minolta)\b/i.test(query)&&/\d{3,}/.test(query)&&!/\b(?:CF|CE|CRG|TN|DR|CLT|MLT|TK|PGI|CLI|LC)[- ]?\d/i.test(query);
-  const exact = looksLikePrinterQuery ? [] : findExactProductIdentityMatches(products, query).map(m => m.product).filter(p => !isPrinterDevice(p));
-  let printer = exact.length ? [] : findExactPrinterModelMatches(products, query).map(m => m.product);
+  // Rovnaký výber produktov používa stránka /produkty aj API /api/products.
+  // AI už nesmie udržiavať vlastný zoznam prefixov (ten napr. nepoznal CL-586),
+  // preto zdieľa celý katalógový parser a filter s hlavným vyhľadávaním.
+  const products = filterProducts(cache.products || [], { search: query })
+    .filter(isValidOffer)
+    .filter((product: any) => !isPrinterDevice(product));
+  const exact = findExactProductIdentityMatches(products, query).map(m => m.product);
+  const printer = exact.length ? [] : findExactPrinterModelMatches(products, query).map(m => m.product);
   const isConsumable = (p:any) => {
     const text=`${p?.name||''} ${p?.product_type_label||''}`.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     return !isPrinterDevice(p) && !/\b(valec|optick|drum|fuser|fixac|prenosov.*pas|transfer.*belt|odpadov)/i.test(text);
   };
-  // Zákazníci bežne vynechajú koncovku modelu (napr. Kyocera P2040
-  // namiesto P2040dn/P2040dw). Presné hľadanie zostáva prvé; bezpečný
-  // alfanumerický prefix použijeme iba vtedy, keď presná zhoda neexistuje.
-  if (!exact.length) {
-    const analysis = analyzeCatalogQuery(query);
-    let partial = products.filter((product: any) => productPrinterValues(product).some((model) => partialPrinterModelMatch(model, analysis)));
-    const minoltaModel=query.match(/(?:konica\s+minolta|minolta)\D{0,30}(\d{3,5})/i)?.[1];
-    if(minoltaModel){
-      const byInflectedMinolta=products.filter((product:any)=>productPrinterValues(product).some(model=>/\b(?:konica\s+)?minolta\b/i.test(model)&&new RegExp(`\\b${minoltaModel}(?:[a-z]{0,3})?\\b`,'i').test(model)));
-      partial=[...new Map([...partial,...byInflectedMinolta].map((p:any)=>[String(p.id),p])).values()];
-    }
-    if (partial.some(isConsumable)) {
-      // Scórované presné hľadanie môže vrátiť iba časť produktovej rodiny.
-      // Bezpečné zhody rovnakého modelu preto doplníme, aby AI videla všetky
-      // typy a farby vrátane momentálne nedostupných variantov.
-      printer = [...new Map([...printer,...partial].map((p:any)=>[String(p.id),p])).values()];
-    }
-  }
-  let found = exact.length ? exact : printer;
-  if (!exact.length && printer.length) {
-    const consumables = printer.filter(isConsumable);
-    if (consumables.length) found = consumables;
-  }
-  const code = String(query).match(/\b(?:CF|CE|CRG|TN|DR|W|Q|CLT|MLT|TK|PGI|CLI|LC)[- ]?\d{2,}[A-Z0-9-]*\b/i)?.[0];
-  if (code) {
-    const wanted = compactKey(code);
-    const family = products.filter((p: any) => compactKey(`${p.sku || ''} ${p.name || ''}`).includes(wanted));
-    if (family.length) found = family;
-  }
+  const consumables = products.filter(isConsumable);
+  const found = consumables.length ? consumables : products;
   const unique = [...new Map(found.map((p: any) => [String(p.id), p])).values()]
     .sort((a: any, b: any) => {
       const order: Record<string, number> = { compatible: 1, original: 2, renovated: 3 };
@@ -118,5 +94,5 @@ export async function resolveCommerceProducts(query: string) {
     })
     .slice(0, 40)
     .map(asCommerceProduct);
-  return { products: unique, source: exact.length ? 'product' : printer.length ? 'printer' : 'none' };
+  return { products: unique, source: exact.length ? 'product' : printer.length ? 'printer' : unique.length ? 'product' : 'none' };
 }

@@ -1,4 +1,5 @@
 import type { AiIntent, CommerceState } from './domain.ts';
+import { analyzeCatalogQuery } from '../catalog-query.ts';
 
 const norm = (v: unknown) => String(v || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const productCode = /\b(?:cf|ce|crg|tn|dr|w|q|clt|mlt|tk|pgi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*\b/i;
@@ -6,6 +7,11 @@ const printer = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|r
 
 export function routeCommerceMessage(message: string, state: CommerceState) {
   const n = norm(message); const intents: AiIntent[] = [];
+  const catalogQuery = analyzeCatalogQuery(message);
+  const explicitReference = message.match(/\b(?=[A-Z0-9_-]{4,}\b)(?=[A-Z0-9_-]*[A-Z])(?=[A-Z0-9_-]*\d)[A-Z0-9]+(?:[-_][A-Z0-9]+)*\b/i)?.[0] || null;
+  const sharedCatalogReference = Boolean(explicitReference) || (
+    catalogQuery.brands.length > 0 && catalogQuery.referenceTokens.some(token => /^\d{2,6}[a-z]{0,4}$/i.test(token))
+  );
   const calendarQuestion = /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn)\w*\b/.test(n);
   const calendarInformationQuestion = calendarQuestion
     && /\b(ake|aky|aku|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(n);
@@ -17,19 +23,18 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // Service questions must be routable at any point of a shopping flow.  In
   // particular, a pending quantity/type question must never turn "can I pay
   // cash?" into a product follow-up using the previous catalogue query.
-  const serviceQuestion = /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|doprava|doruc\w*|kurier\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklamac\w*|vraten\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|otvarac\w*|pracovn\w*\s+doba)\b/.test(n);
+  const serviceQuestion = /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|doprava|doruc\w*|kurier\w*|objednavk\w*|stav\w*\s+objednavk\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklamac\w*|vraten\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|otvarac\w*|pracovn\w*\s+doba)\b/.test(n);
   const pendingAnswer = state.pendingQuestion === 'quantity'
     ? /^(?:\s*(?:\d{1,2}|jeden|jednu|jedno|dva|dve|tri|styri|pat)\s*(?:ks|kus|kusy|kusov)?\s*)$/.test(n)
     : state.pendingQuestion === 'product_type'
       ? /\b(original|renov|repas|kompatibil)\w*\b/.test(n)
       : false;
   const explicitConsumableSearch=/(?:hladam|potrebujem|chcem|najdi|mate|toner|napln|atrament)/.test(n)&&/(?:toner|napln|atrament)/.test(n);
-  const generalReference=message.match(/\b(?=[A-Z0-9_-]{4,}\b)(?=[A-Z0-9_-]*[A-Z])(?=[A-Z0-9_-]*\d)[A-Z0-9]+(?:[-_][A-Z0-9]+)*\b/i)?.[0]||null;
-  const genericConsumableQuestion=explicitConsumableSearch&&!generalReference&&!productCode.test(message)&&!printer.test(message);
+  const genericConsumableQuestion=explicitConsumableSearch&&!sharedCatalogReference&&!printer.test(message);
   const shortPrinter = state.currentPrinter && !productCode.test(message) ? message.match(/\b[A-Z]{1,4}[- ]?\d{3,}[A-Z0-9-]*\b/i)?.[0] : null;
   const add = (x: AiIntent) => { if (!intents.includes(x)) intents.push(x); };
   if (/(clovek|operator|predajca|zavolajte|kontaktujte ma)/.test(n)) add('HUMAN_ESCALATION');
-  if (productCode.test(message) || knownProductAlias) add('PRODUCT_SEARCH');
+  if (sharedCatalogReference || knownProductAlias) add('PRODUCT_SEARCH');
   if (calendarQuestion) add('PRODUCT_SEARCH');
   // Všeobecná otázka na kalendárový sortiment potrebuje súčasne overenú
   // poradenskú odpoveď aj živé produkty. Bez ADVICE sa načítal iba katalóg
@@ -38,7 +43,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // Všeobecný dopyt bez modelu/kódu potrebuje vysvetľujúcu otázku, nie
   // COLOR_TYPE_FILTER s prázdnou odpoveďou ani náhodný výpis katalógu.
   if (genericConsumableQuestion) add('ADVICE');
-  if (explicitConsumableSearch&&generalReference) add('PRODUCT_SEARCH');
+  if (explicitConsumableSearch&&sharedCatalogReference) add('PRODUCT_SEARCH');
   if (printer.test(message)) add('PRINTER_SEARCH');
   if (shortPrinter) add('PRINTER_SEARCH');
   if (/(pasuje|kompatibil|do (nej|tlaciarne)|aky toner)/.test(n)) add('COMPATIBILITY');
@@ -54,6 +59,6 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (!intents.length) add('UNKNOWN');
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];
   const calendarQuery=calendarQuestion?message:null;
-  const query = serviceQuestion ? null : calendarQuery || knownProductAlias || message.match(productCode)?.[0] || (explicitConsumableSearch&&generalReference?message:null) || message.match(printer)?.[0] || (shortPrinter ? `${brand || ''} ${shortPrinter}`.trim() : null) || (intents.includes('FOLLOW_UP') ? state.lastProductQuery : null);
+  const query = serviceQuestion ? null : calendarQuery || knownProductAlias || (sharedCatalogReference ? message : null) || message.match(printer)?.[0] || (shortPrinter ? `${brand || ''} ${shortPrinter}`.trim() : null) || (intents.includes('FOLLOW_UP') ? state.lastProductQuery : null);
   return { intents, productQuery: query || null, needsProducts: Boolean(query) && intents.some(x => ['PRODUCT_SEARCH','PRINTER_SEARCH','COMPATIBILITY','PRODUCT_COMPARE','COLOR_TYPE_FILTER','BUY_INTENT','FOLLOW_UP'].includes(x)) };
 }

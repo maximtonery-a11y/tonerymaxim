@@ -47,9 +47,13 @@ export const POST: APIRoute = async ({ request }) => {
     let commerce:any = resolved[1];
     if (calendarRoute && commerce?.source === 'calendar' && Array.isArray(commerce.products) && commerce.products.length) {
       const count = commerce.products.length;
+      const diaryOverview = /\b(?:diar|diare)\w*\b/.test(normalized(message))
+        && /\b(ake|aky|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(normalized(message));
       advisor = {
         ...advisor,
-        answer: [`V aktuálnej ponuke som našiel ${count} ${count === 1 ? 'vhodný produkt' : count < 5 ? 'vhodné produkty' : 'vhodných produktov'}. Nižšie zobrazujem iba výsledky z katalógu kalendárov a diárov.`],
+        answer: [diaryOverview
+          ? `V ponuke máme denné, týždenné aj mesačné minidiáre v rôznych farbách. Nižšie zobrazujem ${count} aktuálne dostupných možností; výber môžete spresniť typom alebo farbou.`
+          : `V aktuálnej ponuke som našiel ${count} ${count === 1 ? 'vhodný produkt' : count < 5 ? 'vhodné produkty' : 'vhodných produktov'}. Nižšie zobrazujem iba výsledky z katalógu kalendárov a diárov.`],
         products: [], groups: [], intent: 'calendar_search', confidence: 1, unanswered: false, handoffSuggested: false,
       };
     }
@@ -72,7 +76,7 @@ export const POST: APIRoute = async ({ request }) => {
     if(route.needsProducts&&candidates.length&&availableTypes.length>1&&!isColorPrinter&&!type&&!state.currentType){
       const savedQty=requestedQuantity(message);state.pendingQuestion='product_type';state.checkoutDraft={...(state.checkoutDraft||{}),guidedQuantity:savedQty||null};
       const options=[availableTypes.includes('compatible')?'kompatibilný':null,availableTypes.includes('original')?'originálny':null,availableTypes.includes('renovated')?'renovovaný':null].filter(Boolean);
-      const answer=`Našiel som správnu produktovú rodinu. Chcete ${options.join(', ').replace(/, ([^,]*)$/, ' alebo $1')} toner?`;
+      const answer=`Pre ${clean(route.productQuery || message, 120)} máme v ponuke ${options.join(', ').replace(/, ([^,]*)$/, ' alebo $1')} toner. Ktorý typ preferujete?`;
       state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
       const optionProducts=availableTypes.map(productType=>candidates.filter((p:any)=>canBuy(p)&&p.type===productType).sort((a:any,b:any)=>Number(a.price||0)-Number(b.price||0))[0]).filter(Boolean);
       return Response.json({ok:true,route,advisor:{...advisor,answer:[answer]},commerce:null,state,action:{kind:'ASK_PRODUCT_TYPE',options:availableTypes,products:optionProducts}},{headers:{'Cache-Control':'no-store'}});
