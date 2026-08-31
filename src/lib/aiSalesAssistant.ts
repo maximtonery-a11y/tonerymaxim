@@ -175,6 +175,23 @@ function isTonerRequest(message: string) {
   return /\btoner(y|u|om|ov)?\b/.test(text) || /\b(tn|cf|ce|crg|w|q|mlt|clt|tk)\s*-?\s*\d{2,}/.test(text);
 }
 
+function isCalendarTopic(message: string) {
+  const text = normalize(message);
+  // „kalendat“ je častý preklep na mobilnej klávesnici. Nová kalendárová
+  // otázka musí vždy ukončiť predchádzajúci tonerový kontext.
+  return /\b(?:kalendar\w*|kalendat\w*|kaledar\w*|kalemdar\w*|kalndar\w*|calendar\w*|diar\w*|minidiar\w*|planovac\w*|pf\b|novorocn\w*)/.test(text);
+}
+
+function isGenericConsumableSelectionRequest(message: string) {
+  const text = normalize(message);
+  if (hasProductCodeOrModel(message)) return false;
+  if (!/\b(?:toner\w*|napln\w*|atrament\w*|kazet\w*|cartridge\w*|ink\w*)\b/.test(text)) return false;
+  if (!/\b(?:mate|predavate|ponukate|hladam|potrebujem|chcem|kupit|zhanam|je|su)\b/.test(text)) return false;
+  // Informačné, diagnostické a reklamačné otázky majú vlastnú odpoveď.
+  if (/\b(?:co je|co znamena|aky je rozdiel|ako funguje|preco|pasy|ciary|smuhy|bled|sype|prasi|nerozpozna|nefunguje|reklamac|vratit|nepasuje|pokaz)\w*/.test(text)) return false;
+  return true;
+}
+
 function nonTonerPart(product: Product) {
   return /optick|valec|drum|fuser|fixac|zapekac|atrament|prenosov.*pas|transfer.*belt/i.test(normalize(`${product.name || ''} ${product.product_type_label || ''}`));
 }
@@ -459,6 +476,10 @@ function contextualizeFollowUp(message: string, history: AiConversationTurn[] = 
   const n = normalize(current);
   if (!current || !history.length) return current;
 
+  // Kalendáre a diáre sú samostatný katalóg. Pri prechode z tonerov nesmieme
+  // pripojiť starý model tlačiarne ani OEM kód k novej otázke.
+  if (isCalendarTopic(current)) return current;
+
   // Ak zákazník zadal nový konkrétny model/OEM, starý kontext sa nesmie miešať.
   // Výnimka: prirodzené pokračovanie s mestom/ČR (napr. „pošlete mi ho do Brna?“)
   // môže heuristika modelu vyhodnotiť ako kód, hoci ide len o dopravu.
@@ -508,6 +529,16 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
 
   // Jednoznačné obchodné témy routujeme priamo, aby ich všeobecné slová ako „nákup“ neprebili.
   const normalizedMessage = normalize(originalMessage);
+
+  if (isGenericConsumableSelectionRequest(rawMessage)) {
+    return {
+      answer: [
+        'Áno, tonery a náplne máme v ponuke.',
+        'Aby som vybral správny produkt, napíšte prosím presný model tlačiarne alebo celé označenie tonera či náplne.'
+      ],
+      products: [], groups: [], intent: 'product_search', confidence: 1, unanswered: false, clarification: true,
+    };
+  }
 
   // Jasné požiadavky mimo schopností asistenta nesmú byť omylom klasifikované podľa slov ako e-mail či faktúra.
   if ((/\b(napis|napiste|vytvor|urob)\b.*\b(email|mail|basen|basnick|zivotopis)\b/i.test(normalizedMessage)
@@ -613,6 +644,18 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   const sellMatch = normalizedMessage.match(/\b(?:predavate|mate|ponukate)\s+(.{2,80}?)(?:\?|$)/i);
   if (sellMatch && !hasProductCodeOrModel(originalMessage) && !['shipping', 'payment', 'claim', 'order', 'diagnostic', 'account', 'loyalty', 'legal', 'contact'].includes(classified.intent)) {
     const rawWanted = String(sellMatch[1] || '').replace(/\b(?:v ponuke|na sklade|skladom|do tlaciarni|do tlaciarne)\b/gi, ' ').trim();
+    // Samotné „máte tonery/náplne?“ nie je bezpečný produktový dopyt.
+    // Zobrazenie prvých položiek katalógu pôsobilo ako odporúčanie náhodných
+    // produktov, ktoré nemusia pasovať do zákazníkovej tlačiarne.
+    if (/\b(?:toner\w*|napln\w*|atrament\w*|kazet\w*|cartridge\w*|ink\w*)\b/.test(normalizedMessage)) {
+      return {
+        answer: [
+          'Áno, tonery a náplne máme v ponuke.',
+          'Aby som vybral správny produkt, napíšte prosím presný model tlačiarne alebo celé označenie tonera či náplne.'
+        ],
+        products: [], groups: [], intent: 'product_search', confidence: 1, unanswered: false, clarification: true,
+      };
+    }
     const wantedWords = words(rawWanted).filter((w) => !['produkt', 'produkty', 'tovar'].includes(w));
     if (wantedWords.length) {
       const cache = await getProductsCache();

@@ -7,10 +7,10 @@ import { priceForQuantity, quantityOffers } from '../src/lib/ai-commerce/pricing
 import { buildAssistantAnswer } from '../src/lib/aiSalesAssistant.ts';
 import { POST as aiTomasPost } from '../src/pages/api/ai-tomas.ts';
 
-async function askAiTomas(message: string) {
+async function askAiTomas(message: string, state?: any) {
   const request = new Request('http://localhost/api/ai-tomas', {
     method: 'POST', headers: { 'Content-Type':'application/json' },
-    body: JSON.stringify({ message, page:'/' }),
+    body: JSON.stringify({ message, page:'/', state }),
   });
   const response = await aiTomasPost({ request } as any);
   assert.equal(response.status, 200);
@@ -163,4 +163,27 @@ test('AI Tomáš vie predstaviť celý sortiment a nehovorí iba o toneroch', as
   assert.match(answer, /toner/i);
   assert.match(answer, /kalendár/i);
   assert.equal(result.unanswered, undefined);
+});
+
+test('všeobecná otázka na tonery si vypýta model alebo označenie a nezobrazí náhodné produkty', async () => {
+  for (const question of ['Máte tonery na sklade?', 'Máte kompatibilné tonery?', 'Ponúkate náplne?']) {
+    const result = await askAiTomas(question);
+    assert.match(result.advisor.answer.join(' '), /presný model tlačiarne.*označenie tonera|presný model tlačiarne.*označenie.*náplne/i, question);
+    assert.deepEqual(result.advisor.products, [], question);
+    assert.deepEqual(result.advisor.groups, [], question);
+    assert.equal(result.commerce, null, question);
+    assert.equal(result.action, null, question);
+  }
+});
+
+test('prechod z toneru na kalendár zahodí starý tonerový kontext', async () => {
+  const toner = await askAiTomas('Máte na sklade tonery do HP P1102?');
+  const calendar = await askAiTomas('a kalendat stolovy Slovensko mate?', toner.state);
+  assert.equal(calendar.route.needsProducts, true);
+  assert.match(String(calendar.route.productQuery), /kalendat.*stolovy.*slovensko/i);
+  assert.equal(calendar.commerce?.source, 'calendar');
+  assert.ok(calendar.commerce?.products?.length > 0);
+  assert.ok(calendar.commerce.products.every((product: any) => product.source === 'kalendare-2027'));
+  assert.ok(calendar.commerce.products.every((product: any) => !/CE285|P1102|toner/i.test(`${product.sku} ${product.name}`)));
+  assert.doesNotMatch(calendar.advisor.answer.join(' '), /nadväzujúca požiadavka|P1102|tonerov do/i);
 });

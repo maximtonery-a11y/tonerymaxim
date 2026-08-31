@@ -6,7 +6,7 @@ const printer = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|r
 
 export function routeCommerceMessage(message: string, state: CommerceState) {
   const n = norm(message); const intents: AiIntent[] = [];
-  const calendarQuestion = /\b(kalendar|kalendare|kalendara|kalendary|diar|diare|minidiar|planovac|pf|novorocn)\w*\b/.test(n);
+  const calendarQuestion = /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn)\w*\b/.test(n);
   const calendarInformationQuestion = calendarQuestion
     && /\b(ake|aky|aku|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(n);
   // Častý prepis kódu Samsung MLT-D111S: písmeno S zákazník zadá ako 1.
@@ -25,6 +25,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
       : false;
   const explicitConsumableSearch=/(?:hladam|potrebujem|chcem|najdi|mate|toner|napln|atrament)/.test(n)&&/(?:toner|napln|atrament)/.test(n);
   const generalReference=message.match(/\b(?=[A-Z0-9_-]{4,}\b)(?=[A-Z0-9_-]*[A-Z])(?=[A-Z0-9_-]*\d)[A-Z0-9]+(?:[-_][A-Z0-9]+)*\b/i)?.[0]||null;
+  const genericConsumableQuestion=explicitConsumableSearch&&!generalReference&&!productCode.test(message)&&!printer.test(message);
   const shortPrinter = state.currentPrinter && !productCode.test(message) ? message.match(/\b[A-Z]{1,4}[- ]?\d{3,}[A-Z0-9-]*\b/i)?.[0] : null;
   const add = (x: AiIntent) => { if (!intents.includes(x)) intents.push(x); };
   if (/(clovek|operator|predajca|zavolajte|kontaktujte ma)/.test(n)) add('HUMAN_ESCALATION');
@@ -34,6 +35,9 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // poradenskú odpoveď aj živé produkty. Bez ADVICE sa načítal iba katalóg
   // a pri nečakanom prázdnom výsledku sa zobrazila tonerová výzva.
   if (calendarInformationQuestion) add('ADVICE');
+  // Všeobecný dopyt bez modelu/kódu potrebuje vysvetľujúcu otázku, nie
+  // COLOR_TYPE_FILTER s prázdnou odpoveďou ani náhodný výpis katalógu.
+  if (genericConsumableQuestion) add('ADVICE');
   if (explicitConsumableSearch&&generalReference) add('PRODUCT_SEARCH');
   if (printer.test(message)) add('PRINTER_SEARCH');
   if (shortPrinter) add('PRINTER_SEARCH');

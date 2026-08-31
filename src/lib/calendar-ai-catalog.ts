@@ -67,7 +67,7 @@ async function loadRows() {
 
 export function isCalendarQuery(query: string) {
   const n = normalize(query);
-  return /\b(kalendar|kalendare|kalendara|kalendary|diar|diare|minidiar|planovac|pf|novorocn)\w*\b/.test(n)
+  return /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn)\w*\b/.test(n)
     || /\b(nastenn|stolov|trojmesac|trojspiral|rodinn|pracovn)\w*\b/.test(n) && /\b202[6-9]\b/.test(n);
 }
 
@@ -109,7 +109,7 @@ function asProduct(row: CalendarRow) {
 export async function searchCalendarProducts(query: string) {
   const rows = await loadRows();
   const n = normalize(query);
-  const ignored = new Set(['ake','aky','aku','mate','predavate','ponukate','ponuke','sortiment','chcem','hladam','potrebujem','kalendar','kalendare','kalendara','diar','diare','diara','prosim','ukaz','mi','v','vo','na','do','pre','s','so','a','aj','alebo']);
+  const ignored = new Set(['ake','aky','aku','mate','predavate','ponukate','ponuke','sortiment','chcem','hladam','potrebujem','kalendar','kalendare','kalendara','kalendat','kaledar','kalemdar','kalndar','calendar','diar','diare','diara','prosim','ukaz','mi','v','vo','na','do','pre','s','so','a','aj','alebo']);
   const aliases: Record<string, string> = { psami: 'psy', psov: 'psy', psiky: 'psy', mackami: 'macky', maciek: 'macky', tatrach: 'tatry' };
   const canonicalToken = (token: string) => {
     const aliased = aliases[token] || token;
