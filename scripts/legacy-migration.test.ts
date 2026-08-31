@@ -60,7 +60,9 @@ test("lokálny Migration Gate vypína workery a pred testom pripraví jednu cach
   assert.match(runner, /TM_PERSISTENCE_SECRET:\s*strongOr/);
   assert.match(runner, /SYNC_SECRET:\s*strongOr/);
   assert.match(runner, /ADMIN_API_SECRET:\s*strongOr/);
-  assert.doesNotMatch(middleware, /ensureEmailQueueStarted|ensureAsyncOrderQueueStarted/);
+  assert.match(middleware, /ensureEmailQueueStarted/);
+  assert.doesNotMatch(middleware, /ensureAsyncOrderQueueStarted/);
+  assert.match(middleware, /TM_DISABLE_BACKGROUND_WORKERS/);
   assert.match(cache, /__TM_PRODUCTS_SYNC_PROMISE__/);
   assert.match(cache, /if \(activeSync\) return activeSync/);
 });

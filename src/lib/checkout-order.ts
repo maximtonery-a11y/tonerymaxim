@@ -363,6 +363,9 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     { key: "tm_payment_amount_cents", value: String(source.amountCents || "") },
     { key: "tm_payment_code", value: source.paymentCode || "" },
     { key: "tm_payment_title", value: payment.title || source.paymentLabel || "" },
+    // Fronta stavových e-mailov musí poznať východiskový stav už pri vytvorení.
+    // Inak prvú skutočnú zmenu iba inicializuje a zákazníkovi nič neodošle.
+    { key: "_tm_email_queue_observed_status", value: payment.status },
     { key: "tm_loyalty_discount", value: money(source.loyaltyDiscount).toFixed(2) },
         { key: "tm_loyalty_points_used", value: String(source.loyaltyPointsUsed || "") },
     { key: "tm_loyalty_paper_packs", value: String(source.loyaltyPaperPacks || "") },
@@ -589,6 +592,52 @@ async function ensurePaperRewardClaim(source: CheckoutOrderSource, orderId: numb
   }
 }
 
+async function finalizeCheckoutBenefits(
+  source: CheckoutOrderSource,
+  orderId: number | string,
+  visibleOrderNumber: string,
+  profiler?: CheckoutProfiler,
+) {
+  if (!orderId || !canClaimPaperReward(source.paymentCode, source.paymentState)) return;
+  const measured = async <T>(name: string, work: () => Promise<T>): Promise<T> => profiler
+    ? profiler.measure(name, work)
+    : work();
+
+  if (source.coupon?.ok) {
+    await measured("coupon-mark-used", () => markCouponUsed(Number(source.customerId) || undefined, source.coupon || undefined, orderId))
+      .catch((error) => console.error("Coupon used meta error:", error?.message || error));
+  }
+
+  const rewardCode = thankYouCouponCode(visibleOrderNumber);
+  await measured("coupon-register-thank-you", () => registerIssuedCoupon({
+    code: rewardCode,
+    sourceOrderId: orderId,
+    sourceOrderNumber: visibleOrderNumber,
+    customerId: Number(source.customerId) || undefined,
+  })).catch((error) => console.error("Thank you coupon registry error:", error?.message || error));
+
+  if (Number(source.customerId || 0) > 0) {
+    await measured("coupon-grant-thank-you", () => grantThankYouCoupon(Number(source.customerId), orderId, visibleOrderNumber))
+      .catch((error) => console.error("Thank you coupon grant error:", error?.message || error));
+  }
+
+  if (Number(source.customerId || 0) > 0 && money(source.loyaltyDiscount) > 0) {
+    const used = await measured("loyalty-reserve", () => reserveLoyaltyDiscount(Number(source.customerId), orderId, source.loyaltyDiscount)).catch((error) => {
+      console.error("Loyalty discount reserve error:", error?.message || error);
+      return { discount: 0, pointsUsed: 0 };
+    });
+    if (used.pointsUsed > 0) {
+      await measured("woo-update-loyalty-meta", () => wooRequest<any>(`/orders/${orderId}`, {
+        method: "PUT",
+        body: { meta_data: [
+          { key: "tm_loyalty_discount", value: used.discount.toFixed(2) },
+          { key: "tm_loyalty_points_used", value: String(used.pointsUsed) },
+        ] },
+      })).catch((error) => console.error("Woo loyalty meta update error:", error?.message || error));
+    }
+  }
+}
+
 async function createWooOrderFromCheckoutInternal(source: CheckoutOrderSource, options: {
   gopayPayment?: GoPayPayment;
   customerNote?: string;
@@ -651,41 +700,16 @@ async function createWooOrderFromCheckoutInternal(source: CheckoutOrderSource, o
     ).catch((error) => console.error("Woo customer address update error:", error?.message || error));
   }
 
-  if (source.coupon?.ok) {
-    await profiler.measure("coupon-mark-used", () => markCouponUsed(Number(source.customerId) || undefined, source.coupon || undefined, order.id)).catch((error) => console.error("Coupon used meta error:", error?.message || error));
-  }
-
-  if (order?.id) {
-    const visibleOrderNumber = String(source.orderNumber || order.number || order.id);
-    const rewardCode = thankYouCouponCode(visibleOrderNumber);
-    await profiler.measure("coupon-register-thank-you", () => registerIssuedCoupon({ code: rewardCode, sourceOrderId: order.id, sourceOrderNumber: visibleOrderNumber, customerId: Number(source.customerId) || undefined })).catch((error) => console.error("Thank you coupon registry error:", error?.message || error));
-    if (Number(source.customerId || 0) > 0) {
-      await profiler.measure("coupon-grant-thank-you", () => grantThankYouCoupon(Number(source.customerId), order.id, visibleOrderNumber)).catch((error) => console.error("Thank you coupon grant error:", error?.message || error));
-    }
-  }
-
-  if (Number(source.customerId || 0) > 0 && money(source.loyaltyDiscount) > 0) {
-    const used = await profiler.measure("loyalty-reserve", () => reserveLoyaltyDiscount(Number(source.customerId), order.id, source.loyaltyDiscount)).catch((error) => {
-      console.error("Loyalty discount reserve error:", error?.message || error);
-      return { discount: 0, pointsUsed: 0 };
-    });
-    if (used.pointsUsed > 0) {
-      await profiler.measure("woo-update-billing-email", () => wooRequest<any>(`/orders/${order.id}`, {
-        method: "PUT",
-        body: {
-          meta_data: [
-            { key: "tm_loyalty_discount", value: used.discount.toFixed(2) },
-            { key: "tm_loyalty_points_used", value: String(used.pointsUsed) },
-          ],
-        },
-      })).catch((error) => console.error("Woo loyalty meta update error:", error?.message || error));
-    }
-  }
-
   const rewardSource = {
     ...source,
     paymentState: String(options.gopayPayment?.state || source.paymentState || ""),
   };
+  await finalizeCheckoutBenefits(
+    rewardSource,
+    order.id,
+    String(source.orderNumber || order.number || order.id),
+    profiler,
+  );
   await ensurePaperRewardClaim(rewardSource, order.id, profiler).catch((error) => {
     throw new Error(`Papierovú vernostnú odmenu sa nepodarilo zaevidovať: ${error?.message || error}`);
   });
@@ -857,6 +881,11 @@ async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
       wooOrderNumber: paidUpdate?.orderNumber || source.wooOrderNumber || String(source.wooOrderId),
       processedAt: new Date().toISOString(),
     };
+    await finalizeCheckoutBenefits(
+      updated,
+      paidUpdate?.orderId || source.wooOrderId,
+      String(updated.orderNumber || updated.wooOrderNumber || source.wooOrderId),
+    );
     await ensurePaperRewardClaim(updated, paidUpdate?.orderId || source.wooOrderId);
     await savePendingGoPayOrder(updated);
     return paidUpdate || {

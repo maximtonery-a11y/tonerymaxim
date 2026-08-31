@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { mkdir, rm, stat } from 'node:fs/promises';
-import { TM_DATA_ROOT, readSignedJson, writeSignedJson } from './secure-persistence';
+import { TM_DATA_ROOT, readSignedJson, writeSignedJson } from './secure-persistence.ts';
 
 export type OrderIdempotencyResult = {
   ok: boolean;
@@ -34,7 +34,16 @@ export async function withOrderIdempotency<T extends OrderIdempotencyResult>(key
       const cached = await readSignedJson<T>(resultFile);
       if (cached) return cached;
       const info = await stat(lockDir).catch(() => null);
-      if (info && Date.now() - info.mtimeMs > STALE_MS) await rm(lockDir, { recursive: true, force: true }).catch(() => undefined);
+      if (info && Date.now() - info.mtimeMs > STALE_MS) {
+        // Po páde procesu nevieme dokázať, či už externý GoPay/Woo side-effect
+        // prebehol. Checkout zámok preto nikdy automaticky neopakujeme.
+        if (id.startsWith('checkout-submit-')) {
+          const error = new Error('Predchádzajúce odoslanie objednávky nemá potvrdený výsledok. Skontrolujte objednávky alebo kontaktujte podporu.');
+          (error as Error & { status?: number }).status = 409;
+          throw error;
+        }
+        await rm(lockDir, { recursive: true, force: true }).catch(() => undefined);
+      }
       await sleep(25);
     }
   }

@@ -214,7 +214,9 @@ test("healthcheck nikdy nenačítava katalóg, search index ani background worke
   assert.doesNotMatch(middleware, /validateRuntimeSecretsOnce|persistenceSecret|authSecret/);
   assert.match(queue, /WORKER_START_DELAY_MS[\s\S]{0,250}30_000/);
   assert.match(queue, /scheduleAsyncOrderQueue\(WORKER_START_DELAY_MS\)/);
-  assert.doesNotMatch(middleware, /ensureEmailQueueStarted|ensureAsyncOrderQueueStarted/);
+  assert.match(middleware, /ensureEmailQueueStarted/);
+  assert.doesNotMatch(middleware, /ensureAsyncOrderQueueStarted/);
+  assert.match(middleware, /TM_DISABLE_BACKGROUND_WORKERS/);
   assert.match(queue, /processAsyncOrderQueue\(\)\.catch/);
   assert.doesNotMatch(adsRuntime, /readFileSync\([^)]*products\.json/);
   assert.match(adsRuntime, /await getProductsCache\(\)/);

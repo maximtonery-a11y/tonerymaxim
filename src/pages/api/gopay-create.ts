@@ -11,6 +11,7 @@ import { getOrCreateOrderNumber } from "../../lib/order-idempotency";
 import { getEnv as env, getGoPayAccessToken, getGoPayHost } from "../../lib/gopay-client";
 import { validateCheckoutRequest } from "../../lib/checkout-validation";
 import { makePaymentAccessToken, paymentReturnUrl } from "../../lib/payment-access";
+import { withCheckoutSubmission } from "../../lib/checkout-submission";
 
 export const prerender = false;
 
@@ -46,7 +47,7 @@ function toCents(value: unknown) {
   return Number.isFinite(number) ? Math.round(number * 100) : 0;
 }
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+const handlePost: APIRoute = async ({ request, cookies }) => {
   const profiler = new CheckoutProfiler("gopay-create");
   try {
     const goid = env("GOPAY_GOID");
@@ -165,7 +166,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const token = await profiler.measure("gopay-oauth-token", () => getGoPayAccessToken("payment-create"));
     const requestId = String(body?.requestId || request.headers.get("x-tm-idempotency-key") || "").trim();
     const orderNumber = requestId
-      ? await getOrCreateOrderNumber(`gopay-${requestId}`, nextTmOrderNumber)
+      ? await getOrCreateOrderNumber(`checkout-number-${requestId}`, nextTmOrderNumber)
       : await nextTmOrderNumber();
     const accessToken = makePaymentAccessToken(orderNumber);
 
@@ -318,4 +319,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       headers: { "Content-Type": "application/json; charset=utf-8" },
     });
   }
+};
+
+export const POST: APIRoute = async (context) => {
+  const body = await context.request.clone().json().catch(() => ({}));
+  const requestId = String(body?.requestId || context.request.headers.get("x-tm-idempotency-key") || "").trim();
+  return withCheckoutSubmission(requestId, "gopay", body, async () => handlePost(context));
 };

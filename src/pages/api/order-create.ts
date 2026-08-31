@@ -9,6 +9,7 @@ import { CheckoutProfiler } from "../../lib/checkout-profiler";
 import { nextTmOrderNumber } from "../../lib/order-number";
 import { getOrCreateOrderNumber } from "../../lib/order-idempotency";
 import { validateCheckoutRequest } from "../../lib/checkout-validation";
+import { withCheckoutSubmission } from "../../lib/checkout-submission";
 
 const SHIPPING: Record<string, { label: string; price: number }> = {
   dpd_courier: { label: "DPD kuriér na adresu", price: 3.9 },
@@ -26,7 +27,7 @@ const PAYMENT: Record<string, { label: string; price: number }> = {
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+const handlePost: APIRoute = async ({ request, cookies }) => {
   const profiler = new CheckoutProfiler("order-create");
   try {
     const session = readCustomerSession(cookies);
@@ -78,7 +79,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const total = Math.max(0, Math.round((subtotal + shippingPrice + paymentPrice - couponDiscount - loyaltyDiscount) * 100) / 100);
     const requestId = String(body?.requestId || request.headers.get("x-tm-idempotency-key") || "").trim();
     const orderNumber = requestId
-      ? await getOrCreateOrderNumber(`order-${requestId}`, nextTmOrderNumber)
+      ? await getOrCreateOrderNumber(`checkout-number-${requestId}`, nextTmOrderNumber)
       : await nextTmOrderNumber();
 
     const orderSource = {
@@ -155,4 +156,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       headers: { "Content-Type": "application/json; charset=utf-8" },
     });
   }
+};
+
+export const POST: APIRoute = async (context) => {
+  const body = await context.request.clone().json().catch(() => ({}));
+  const requestId = String(body?.requestId || context.request.headers.get("x-tm-idempotency-key") || "").trim();
+  return withCheckoutSubmission(requestId, "order", body, async () => handlePost(context));
 };

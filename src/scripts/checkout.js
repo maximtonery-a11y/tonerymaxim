@@ -1765,6 +1765,9 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
       button.disabled = disabled;
       button.setAttribute("aria-busy", disabled ? "true" : "false");
     });
+    document.querySelectorAll('[name="shipping"], [name="payment"]').forEach((control) => {
+      control.disabled = disabled;
+    });
   }
 
   function setSubmitProgress(visible, message = "Prosím, chvíľu počkajte a nezatvárajte túto stránku.") {

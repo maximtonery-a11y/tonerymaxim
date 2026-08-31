@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { ensureTonerCareWorkerStarted } from './lib/toner-care';
+import { ensureEmailQueueStarted } from './lib/email-queue';
 
 const NOINDEX_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
 const PRIVATE_PATHS = new Set([
@@ -139,6 +140,7 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
   // denný worker; globálny zámok zabráni ďalším časovačom v tom istom procese.
   if (!['/api/health', '/api/readiness', '/api/storefront-check'].includes(url.pathname)) {
     ensureTonerCareWorkerStarted();
+    if (process.env.TM_DISABLE_BACKGROUND_WORKERS !== '1') ensureEmailQueueStarted();
   }
   // Storefront, kosik, pokladna a healthcheck nemaju ziadnu zavislost od
   // Ads, Merchant, Analytics, ich klucov ani ich diskoveho uloziska.
