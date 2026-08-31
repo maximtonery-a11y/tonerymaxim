@@ -5,14 +5,71 @@ import { emptyCommerceState } from '../src/lib/ai-commerce/domain.ts';
 import { isCalendarQuery, resetCalendarCatalogForTests, searchCalendarProducts } from '../src/lib/calendar-ai-catalog.ts';
 import { priceForQuantity, quantityOffers } from '../src/lib/ai-commerce/pricing.ts';
 import { buildAssistantAnswer } from '../src/lib/aiSalesAssistant.ts';
+import { POST as aiTomasPost } from '../src/pages/api/ai-tomas.ts';
+
+async function askAiTomas(message: string) {
+  const request = new Request('http://localhost/api/ai-tomas', {
+    method: 'POST', headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ message, page:'/' }),
+  });
+  const response = await aiTomasPost({ request } as any);
+  assert.equal(response.status, 200);
+  return response.json() as Promise<any>;
+}
 
 test('kalendárové otázky smerujú do živého katalógu', () => {
-  for (const question of ['Aké kalendáre máte?', 'Aké kalendáre máte v ponuke?', 'Hľadám diár 2027', 'Máte nástenný kalendár Tatry?', 'Chcem PF pohľadnice']) {
+  for (const question of ['Aké kalendáre máte?', 'Aké kalendáre máte v ponuke?', 'Hľadám diár 2027', 'Máte týždenné diáre?', 'Máte minidiáre?', 'Máte nástenný kalendár Tatry?', 'Chcem PF pohľadnice']) {
     assert.equal(isCalendarQuery(question), true, question);
     const route = routeCommerceMessage(question, emptyCommerceState());
     assert.equal(route.needsProducts, true, question);
     assert.match(String(route.productQuery), /.+/);
   }
+});
+
+test('kalendárové vyhľadávanie neprimieša produkt iba podľa marketingového popisu', async () => {
+  resetCalendarCatalogForTests();
+  try {
+    const result = await searchCalendarProducts('kalendár Slovensko máte?');
+    assert.deepEqual(result.products.map((product) => product.sku).sort(), ['NK-01-27','SK-01-27']);
+  } finally {
+    resetCalendarCatalogForTests();
+  }
+});
+
+test('diárové podkategórie sa rozpoznajú aj v prirodzenom tvare', async () => {
+  for (const question of ['máte týždenné diáre?', 'máte mesačné diáre?', 'máte minidiáre?']) {
+    const route = routeCommerceMessage(question, emptyCommerceState());
+    assert.equal(route.needsProducts, true, question);
+    assert.ok(route.intents.includes('PRODUCT_SEARCH'), question);
+  }
+  const monthly = await searchCalendarProducts('máte mesačné diáre?');
+  assert.ok(monthly.products.length > 0);
+  assert.ok(monthly.products.every((product) => /diár/i.test(product.name)));
+});
+
+test('prírodný motív nevydá kalendár iba pre slovo prirodzene v popise', async () => {
+  const result = await searchCalendarProducts('aký nástenný kalendár s prírodou máte?');
+  assert.ok(result.products.length > 0);
+  assert.ok(result.products.every((product) => !/Ženy/i.test(product.name)));
+  assert.ok(result.products.every((product) => /Nástenné/i.test(product.category)));
+});
+
+test('jednotný endpoint neprotirečí katalógu a neotvorí zbytočne človeka', async () => {
+  const result = await askAiTomas('kalendár Slovensko máte?');
+  assert.equal(result.advisor.unanswered, false);
+  assert.equal(result.advisor.handoffSuggested, false);
+  assert.equal(result.action?.kind, undefined);
+  assert.deepEqual(result.commerce.products.map((product: any) => product.sku).sort(), ['NK-01-27','SK-01-27']);
+  assert.doesNotMatch(result.advisor.answer.join(' '), /nemám.*spoľahlivú odpoveď|model tlačiarne/i);
+});
+
+test('neznámy kalendárový motív dostane kalendárové spresnenie bez handoffu', async () => {
+  const result = await askAiTomas('máte kalendár s motívom ponorky?');
+  assert.equal(result.action.kind, 'CLARIFY_PRODUCT');
+  assert.equal(result.advisor.unanswered, false);
+  assert.equal(result.advisor.handoffSuggested, false);
+  assert.match(result.advisor.answer.join(' '), /nástenný.*stolový.*minidiár/i);
+  assert.doesNotMatch(result.advisor.answer.join(' '), /model tlačiarne|kód toneru/i);
 });
 
 test('presná produkčná otázka dostane poradenskú odpoveď aj produkty', async () => {

@@ -5,6 +5,7 @@ import { routeCommerceMessage } from '../../lib/ai-commerce/router.ts';
 import { searchCommerce } from '../../lib/ai-commerce/engine.ts';
 import { saveAiUnanswered } from '../../lib/ai-unanswered.ts';
 import { advisorLinks } from '../../lib/ai-advisor-links.ts';
+import { isCalendarQuery } from '../../lib/calendar-ai-catalog.ts';
 
 export const prerender = false;
 const clean = (v: unknown, max=500) => String(v || '').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);
@@ -20,6 +21,7 @@ export const POST: APIRoute = async ({ request }) => {
     const state = normalizeCommerceState(body?.state); if (!state.sessionId) state.sessionId=randomUUID();
     const route = routeCommerceMessage(message,state);
     const page = clean(body?.page,300) || '/';
+    const calendarRoute = Boolean(route.productQuery && isCalendarQuery(route.productQuery));
     const correction=/\b(nie|pise|model|oprava|spravne)\b/.test(normalized(message));
     if (correction && state.currentPrinter && route.intents.includes('PRINTER_SEARCH') && route.productQuery && normalized(route.productQuery)!==normalized(state.currentPrinter)) {
       state.checkoutDraft={...(state.checkoutDraft||{}),printerConflict:{previous:state.currentPrinter,candidate:route.productQuery}};
@@ -32,7 +34,7 @@ export const POST: APIRoute = async ({ request }) => {
       state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
       return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'printer_conflict',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
     }
-    const needsAdvisor = route.intents.some(x => ['ADVICE','POLICY','HUMAN_ESCALATION','UNKNOWN'].includes(x));
+    const needsAdvisor = !calendarRoute && route.intents.some(x => ['ADVICE','POLICY','HUMAN_ESCALATION','UNKNOWN'].includes(x));
     // Poradenska znalostna vrstva a produktovy nakupca sa nacitavaju oddelene.
     // Bezna produktova otazka tak nedrzi v RAM aj cely poradensky modul.
     const advisorPromise = needsAdvisor ? import('../../lib/aiSalesAssistant.ts').then(({buildAssistantAnswer})=>buildAssistantAnswer(message,page,state.history)) : Promise.resolve({
@@ -43,6 +45,14 @@ export const POST: APIRoute = async ({ request }) => {
     const resolved = await Promise.all([advisorPromise,commercePromise]);
     let advisor:any = resolved[0];
     let commerce:any = resolved[1];
+    if (calendarRoute && commerce?.source === 'calendar' && Array.isArray(commerce.products) && commerce.products.length) {
+      const count = commerce.products.length;
+      advisor = {
+        ...advisor,
+        answer: [`V aktuálnej ponuke som našiel ${count} ${count === 1 ? 'vhodný produkt' : count < 5 ? 'vhodné produkty' : 'vhodných produktov'}. Nižšie zobrazujem iba výsledky z katalógu kalendárov a diárov.`],
+        products: [], groups: [], intent: 'calendar_search', confidence: 1, unanswered: false, handoffSuggested: false,
+      };
+    }
     const wantsHuman=route.intents.includes('HUMAN_ESCALATION');
     const needsHandoff=wantsHuman||advisor?.unanswered===true;
     if(wantsHuman)advisor={...advisor,answer:['Rozumiem. Odovzdám vašu otázku pracovníkovi ToneryMAXIM. Doplňte telefón alebo e-mail; spolu s otázkou odošlem aj stručný kontext tejto konverzácie.'],products:[],groups:[],intent:'handoff',confidence:1,unanswered:false,handoffSuggested:true};
@@ -85,7 +95,10 @@ export const POST: APIRoute = async ({ request }) => {
       action=state.cart.length?{kind:'OPEN_CHECKOUT'}:{kind:'OPEN_CART'};advisor={...advisor,answer:[state.cart.length?'Môžeme pokračovať ku kontrole nákupu, adresy, dopravy a platby.':'Nákup je zatiaľ prázdny. Najprv vyberte produkt.']};
     }
     if(!action&&route.needsProducts&&commerce&&!(commerce.products||[]).length){
-      advisor={...advisor,answer:['Podľa zadaného označenia som nenašiel bezpečnú zhodu. Napíšte, prosím, celý model tlačiarne zo štítku alebo presný kód toneru.'],products:[],groups:[],unanswered:false};
+      const answer = calendarRoute
+        ? 'V aktuálnom katalógu som nenašiel presnú zhodu. Skúste uviesť typ (nástenný, stolový, denný, týždenný, mesačný alebo minidiár), motív alebo kód produktu.'
+        : 'Podľa zadaného označenia som nenašiel bezpečnú zhodu. Napíšte, prosím, celý model tlačiarne zo štítku alebo presný kód toneru.';
+      advisor={...advisor,answer:[answer],products:[],groups:[],intent:calendarRoute?'calendar_search':advisor?.intent,confidence:calendarRoute?1:advisor?.confidence,unanswered:false,handoffSuggested:false};
       action={kind:'CLARIFY_PRODUCT'};
     }
     if(!action&&needsHandoff)action={kind:'OPEN_HANDOFF',reason:wantsHuman?'customer_request':'unanswered'};

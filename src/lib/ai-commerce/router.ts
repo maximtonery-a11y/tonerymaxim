@@ -6,7 +6,7 @@ const printer = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|r
 
 export function routeCommerceMessage(message: string, state: CommerceState) {
   const n = norm(message); const intents: AiIntent[] = [];
-  const calendarQuestion = /\b(kalendar|kalendare|kalendara|kalendary|diar|diare|planovac|pf|novorocn)\w*\b/.test(n);
+  const calendarQuestion = /\b(kalendar|kalendare|kalendara|kalendary|diar|diare|minidiar|planovac|pf|novorocn)\w*\b/.test(n);
   const calendarInformationQuestion = calendarQuestion
     && /\b(ake|aky|aku|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(n);
   // Častý prepis kódu Samsung MLT-D111S: písmeno S zákazník zadá ako 1.

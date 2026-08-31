@@ -67,7 +67,7 @@ async function loadRows() {
 
 export function isCalendarQuery(query: string) {
   const n = normalize(query);
-  return /\b(kalendar|kalendare|kalendara|kalendary|diar|diare|planovac|pf|novorocn)\b/.test(n)
+  return /\b(kalendar|kalendare|kalendara|kalendary|diar|diare|minidiar|planovac|pf|novorocn)\w*\b/.test(n)
     || /\b(nastenn|stolov|trojmesac|trojspiral|rodinn|pracovn)\w*\b/.test(n) && /\b202[6-9]\b/.test(n);
 }
 
@@ -109,29 +109,57 @@ function asProduct(row: CalendarRow) {
 export async function searchCalendarProducts(query: string) {
   const rows = await loadRows();
   const n = normalize(query);
-  const ignored = new Set(['ake','aky','aku','mate','predavate','ponukate','ponuke','sortiment','chcem','hladam','potrebujem','kalendar','kalendare','kalendara','prosim','ukaz','mi','v','vo','na','do','pre','s','so','a','aj','alebo']);
+  const ignored = new Set(['ake','aky','aku','mate','predavate','ponukate','ponuke','sortiment','chcem','hladam','potrebujem','kalendar','kalendare','kalendara','diar','diare','diara','prosim','ukaz','mi','v','vo','na','do','pre','s','so','a','aj','alebo']);
   const aliases: Record<string, string> = { psami: 'psy', psov: 'psy', psiky: 'psy', mackami: 'macky', maciek: 'macky', tatrach: 'tatry' };
-  const tokens = n.split(' ').filter((token) => token.length > 1 && !ignored.has(token) && !/^202[6-9]$/.test(token)).map((token) => aliases[token] || token);
+  const canonicalToken = (token: string) => {
+    const aliased = aliases[token] || token;
+    if (/^tyzden/.test(aliased)) return 'tyzden';
+    if (/^mesac/.test(aliased)) return 'mesac';
+    if (/^denn/.test(aliased)) return 'denn';
+    if (/^minidiar/.test(aliased)) return 'minidiar';
+    if (/^nastenn/.test(aliased)) return 'nastenn';
+    if (/^stolov/.test(aliased)) return 'stolov';
+    if (/^prirod/.test(aliased)) return 'prirod';
+    return aliased;
+  };
+  const tokens = n.split(' ').filter((token) => token.length > 1 && !ignored.has(token) && !/^202[6-9]$/.test(token)).map(canonicalToken);
   const generic = tokens.length === 0 || tokens.every((token) => /^202[6-9]$/.test(token));
-  const scored = rows.map((row) => {
+  const wantsDiary = /\b(?:diar|diare|minidiar)\w*\b/.test(n);
+  const wantsNature = tokens.includes('prirod');
+  const isNatureTheme = (row: CalendarRow) => /\b(slovensko|tatry|polovnik|kvety|rozkvitnut|luka|hory|more|krajina|pobrezie|huby|rybarsk)\w*\b/.test(normalize(row.name));
+  const scopedRows = wantsDiary
+    ? rows.filter((row) => /\b(?:diar|minidiar)\w*\b/.test(normalize(`${row.name} ${row.category || ''}`)))
+    : wantsNature ? rows.filter(isNatureTheme) : rows;
+  const scored = scopedRows.map((row) => {
     const identity = normalize(`${row.name} ${row.sku} ${row.category} ${row.variant || ''} ${row.format || ''}`);
     const detail = normalize(`${identity} ${row.description || ''} ${row.technical_info || ''} ${row.print_info || ''}`);
     let score = generic ? 20 : 0;
     let missed = 0;
+    let identityMissed = 0;
     for (const token of tokens) {
-      if (normalize(row.sku) === token) score += 300;
+      if (token === 'prirod' && isNatureTheme(row)) score += 70;
+      else if (normalize(row.sku) === token) score += 300;
       else if (identity.includes(token)) score += 70;
-      else if (detail.includes(token)) score += 25;
-      else missed += 1;
+      else {
+        identityMissed += 1;
+        if (detail.includes(token)) score += 25;
+        else missed += 1;
+      }
     }
     if (row?.availability?.inStock === true) score += 8;
-    return { row, score, missed };
+    return { row, score, missed, identityMissed };
   }).filter((item) => generic || (item.score > 0 && item.missed === 0))
     .sort((a, b) => b.score - a.score || Number(a.row.price || 0) - Number(b.row.price || 0));
 
+  // Ak názov/SKU/kategória obsahuje všetky hľadané výrazy, neprimiešavame
+  // produkty, kde sa slovo objavilo iba v marketingovom popise (napr.
+  // „Slovensko“ v popise PF pohľadnice).
+  const strict = !generic ? scored.filter((item) => item.identityMissed === 0) : [];
+  const relevant = strict.length ? strict : scored;
+
   const selected = generic
-    ? [...new Map(scored.map((item) => [String(item.row.category || ''), item])).values()].slice(0, 12)
-    : scored.slice(0, 40);
+    ? [...new Map(relevant.map((item) => [String(item.row.category || ''), item])).values()].slice(0, 12)
+    : relevant.slice(0, 40);
   return { products: selected.map((item) => asProduct(item.row)), source: 'calendar' as const };
 }
 

@@ -554,9 +554,9 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     }
     return '';
   }
-  function aiTypeLabel(p){ const t=aiType(p); return t==='original'?'Originálny':t==='renovated'?'Renovovaný':'Kompatibilný'; }
+  function aiTypeLabel(p){ if(p?.source==='kalendare-2027'||p?.product_type_key==='calendar')return p?.product_type_label||'Kalendár 2027';const t=aiType(p); return t==='original'?'Originálny':t==='renovated'?'Renovovaný':'Kompatibilný'; }
   function aiColorLabel(c){ return ({black:'BK / čierny',cyan:'C / cyan',magenta:'M / magenta',yellow:'Y / žltý'})[c]||''; }
-  function productTypeLabel(p){ return p.type==='original'?'Originál':p.type==='renovated'?'Renovovaný':'Kompatibilný'; }
+  function productTypeLabel(p){ if(p?.source==='kalendare-2027'||p?.product_type_key==='calendar')return p?.product_type_label||'Kalendár 2027';return p.type==='original'?'Originál':p.type==='renovated'?'Renovovaný':'Kompatibilný'; }
   function pickRecommendedProducts(products){
     const order=['compatible','original','renovated']; const picked=[];
     order.forEach(type=>{const p=products.find(x=>x.type===type);if(p)picked.push(p)});
