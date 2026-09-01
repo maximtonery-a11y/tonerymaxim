@@ -36,7 +36,42 @@ test('všeobecná otázka na kalendáre ide živej AI bez náhodných produktov'
     assert.equal(result.commerce, null, question);
     assert.equal(result.advisor.products.length, 0, question);
     assert.match(result.advisor.answer.join(' '), /nástenné.*stolové.*Hľadáte konkrétny kalendár/is, question);
-    assert.deepEqual(result.advisor.sources.map((source:any)=>source.label), ['Nástenné kalendáre','Stolové kalendáre']);
+    assert.deepEqual(result.advisor.sources, [{ label:'Celá ponuka kalendárov a diárov', url:'/kalendare/' }]);
+  }
+});
+
+test('prirodzené pokračovanie „stolové hľadám“ vráti stolové produkty a nie poradňu', async () => {
+  for (const question of ['stolové hľadám, aké máte?', 'ukážte mi stolové', 'aké nástenné máte?']) {
+    assert.equal(isCalendarQuery(question), true, question);
+    assert.equal(isGeneralCalendarQuestion(question), false, question);
+    const route = routeCommerceMessage(question, emptyCommerceState());
+    assert.equal(route.needsProducts, true, question);
+    const result = await askAiTomas(question);
+    assert.equal(result.commerce?.source, 'calendar', question);
+    assert.ok(result.commerce?.products?.length > 0, question);
+    if (/stolov/i.test(question)) assert.ok(result.commerce.products.every((p:any) => /Stolové/i.test(p.category)), question);
+    if (/nástenn/i.test(question)) assert.ok(result.commerce.products.every((p:any) => /Nástenné/i.test(p.category)), question);
+    assert.deepEqual(result.advisor.sources, [{ label:'Celá ponuka kalendárov a diárov', url:'/kalendare/' }]);
+    assert.doesNotMatch(result.advisor.answer.join(' '), /Konkrétne produkty.*overujem|Odborná poradňa/i);
+  }
+});
+
+test('všeobecný nákupný záujem svojvoľne nevyberie prvý kalendár', async () => {
+  for (const question of ['Chcem stolový kalendár.', 'Chcem nástenný kalendár.', 'Chcem stolový kalendár s prírodou.']) {
+    const result = await askAiTomas(question);
+    assert.equal(result.commerce?.source, 'calendar', question);
+    assert.ok(result.commerce?.products?.length > 1, question);
+    assert.equal(result.action, null, question);
+    assert.equal(result.state.selectedProductId, null, question);
+    assert.match(result.advisor.answer.join(' '), /motív|rozmer/i, question);
+  }
+});
+
+test('kalendárové zdroje neobsahujú vymyslenú hash kategóriu ani tonerovú poradňu', async () => {
+  for (const question of ['Aké kalendáre máte?', 'stolové hľadám, aké máte?']) {
+    const result = await askAiTomas(question);
+    const links = JSON.stringify(result.advisor.sources || []);
+    assert.doesNotMatch(links, /#\/kategoria|\/poradna/);
   }
 });
 

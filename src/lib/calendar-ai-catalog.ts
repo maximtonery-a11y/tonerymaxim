@@ -68,7 +68,9 @@ async function loadRows() {
 export function isCalendarQuery(query: string) {
   const n = normalize(query);
   return /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn)\w*\b/.test(n)
-    || /\b(nastenn|stolov|trojmesac|trojspiral|rodinn|pracovn)\w*\b/.test(n) && /\b202[6-9]\b/.test(n);
+    // Zákazník prirodzene nadväzuje aj bez slova „kalendár“:
+    // „stolové hľadám, aké máte?“ alebo „ukážte nástenné“.
+    || /\b(nastenn|stolov|trojmesac|trojspiral)\w*\b/.test(n);
 }
 
 const CALENDAR_OVERVIEW_WORDS = new Set([
@@ -90,8 +92,10 @@ export function isGeneralCalendarQuestion(query: string) {
 }
 
 export const calendarOverviewLinks = [
-  { label: 'Nástenné kalendáre', url: '/kalendare/#/kategoria/nastenne-kalendare' },
-  { label: 'Stolové kalendáre', url: '/kalendare/#/kategoria/stolove-kalendare' },
+  // Kalendárová SPA zatiaľ nemá stabilné verejné URL podkategórií.
+  // Preto nikdy neskladáme hash adresy odhadom. Jediný bezpečný prehľadový
+  // odkaz je skutočná vstupná stránka; konkrétne výsledky majú vlastné URL.
+  { label: 'Celá ponuka kalendárov a diárov', url: '/kalendare/' },
 ];
 
 export const calendarOverviewFacts = [
@@ -139,7 +143,8 @@ export async function searchCalendarProducts(query: string) {
   const rows = await loadRows();
   const n = normalize(query);
   const ignored = new Set(['ake','aky','aku','mate','predavate','ponukate','ponuke','sortiment','chcem','hladam','potrebujem','kalendar','kalendare','kalendara','kalendat','kaledar','kalemdar','kalndar','calendar','diar','diare','diara','prosim','ukaz','mi','v','vo','na','do','pre','s','so','a','aj','alebo',
-    'dakujem','dobry','den','mozete','povedat','vediet','opytat','je','to','mozne','presnu','informaciu','viete','poradit','ide','o','nakup','pytam','sa','ako','zakaznik','odpovedzte','strucne','spisovne','pomoc']);
+    'dakujem','dobry','den','mozete','povedat','vediet','opytat','je','to','mozne','presnu','informaciu','viete','poradit','ide','o','nakup','pytam','sa','ako','zakaznik','odpovedzte','strucne','spisovne','pomoc',
+    'ukazte','ukazete','zobrazte','zobrazite','ponuknite','vyberte']);
   const aliases: Record<string, string> = { psami: 'psy', psov: 'psy', psiky: 'psy', mackami: 'macky', maciek: 'macky', tatrach: 'tatry' };
   const canonicalToken = (token: string) => {
     const aliased = aliases[token] || token;

@@ -75,11 +75,17 @@ export const POST: APIRoute = async ({ request }) => {
       const optionCount = count === 1 ? '1 aktuálne dostupnú možnosť' : count < 5 ? `${count} aktuálne dostupné možnosti` : `${count} aktuálne dostupných možností`;
       const diaryOverview = /\b(?:diar|diare)\w*\b/.test(normalized(message))
         && /\b(ake|aky|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(normalized(message));
+      const tableCalendarOverview = /\bstolov\w*\b/.test(normalized(message));
+      const wallCalendarOverview = /\bnastenn\w*\b/.test(normalized(message));
       advisor = {
         ...advisor,
         answer: [diaryOverview
           ? `V ponuke máme denné a týždenné diáre aj mesačné minidiáre v rôznych farbách. Nižšie zobrazujem ${optionCount}; výber môžete spresniť typom alebo farbou.`
-          : `V aktuálnej ponuke som našiel ${count} ${count === 1 ? 'vhodný produkt' : count < 5 ? 'vhodné produkty' : 'vhodných produktov'}. Nižšie zobrazujem iba výsledky z katalógu kalendárov a diárov.`],
+          : tableCalendarOverview
+            ? `Máme viacero stolových kalendárov na rok 2027. Nižšie zobrazujem ${optionCount}. Hľadáte konkrétny motív, rozmer alebo cenovú úroveň?`
+            : wallCalendarOverview
+              ? `Máme viacero nástenných kalendárov na rok 2027. Nižšie zobrazujem ${optionCount}. Hľadáte konkrétny motív alebo rozmer?`
+              : `V aktuálnej ponuke som našiel ${count} ${count === 1 ? 'vhodný produkt' : count < 5 ? 'vhodné produkty' : 'vhodných produktov'}.`],
         products: [], groups: [], intent: 'calendar_search', confidence: 1, unanswered: false, handoffSuggested: false,
       };
     }
@@ -108,15 +114,19 @@ export const POST: APIRoute = async ({ request }) => {
       return Response.json({ok:true,route,advisor:{...advisor,answer:[answer]},commerce:null,state,action:{kind:'ASK_PRODUCT_TYPE',options:availableTypes,products:optionProducts}},{headers:{'Cache-Control':'no-store'}});
     }
     if(state.currentType&&commerce){candidates=candidates.filter((p:any)=>p.type===state.currentType);commerce={...commerce,products:candidates,presentation:{...(commerce.presentation||{}),sets:(commerce.presentation?.sets||[]).filter((s:any)=>s.type===state.currentType)}};}
+    // Slovo „chcem“ ešte neznamená, že zákazník vybral konkrétny kalendár.
+    // Ak katalóg vrátil viac možností, necháme ich zobrazené a pýtame sa na
+    // motív/rozmer. Nikdy svojvoľne neotvoríme množstvo prvého výsledku.
+    const ambiguousCalendarSelection = calendarRoute && candidates.filter(canBuy).length > 1;
     const selected=candidates.find((p:any)=>canBuy(p)&&String(p.id)===String(state.selectedProductId||state.currentProductId||''))
       || candidates.find((p:any)=>canBuy(p)&&(!state.currentType||p.type===state.currentType)&&(!state.currentColor||p.color===state.currentColor))
       || candidates.find(canBuy) || null;
-    if(selected){state.currentProductId=String(selected.id);if(type||color||route.intents.includes('BUY_INTENT'))state.selectedProductId=String(selected.id);}
+    if(selected&&!ambiguousCalendarSelection){state.currentProductId=String(selected.id);if(type||color||route.intents.includes('BUY_INTENT'))state.selectedProductId=String(selected.id);}
     const n=normalized(message);const qty=requestedQuantity(message);let action:any=null;
     if(wasPendingQuantity&&qty&&selected){state.pendingQuestion=null;upsertCart(state,selected,qty);action={kind:'ADD_TO_CART',product:selected,quantity:qty};advisor={...advisor,answer:[`Pridal som ${qty} ks produktu ${selected.name} do nákupu.`]};commerce=null;}
     else if(wasPendingType&&type&&selected){const guidedQty=Number(qty||(state.checkoutDraft as any)?.guidedQuantity||0);state.checkoutDraft={...(state.checkoutDraft||{}),guidedQuantity:null};if(guidedQty>0){state.pendingQuestion=null;upsertCart(state,selected,guidedQty);action={kind:'ADD_TO_CART',product:selected,quantity:guidedQty};advisor={...advisor,answer:[`Vybral som ${selected.name} a pridal ${guidedQty} ks do nákupu.`]};}else{state.pendingQuestion='quantity';action={kind:'OPEN_QUANTITY',product:selected};advisor={...advisor,answer:[`Vybral som ${selected.name}. Koľko kusov potrebujete?`]};}commerce=null;}
     const explicitAdd=/\b(pridaj|zoberiem|kupim|objednaj|daj mi)\b/.test(n)||(/\bchcem\b/.test(n)&&(/\b(kupit|ho|ju|ich|kus|ks|dva|dve|tri|styri|pat)\b/.test(n)));
-    if(!action&&route.intents.includes('BUY_INTENT')&&selected){
+    if(!action&&route.intents.includes('BUY_INTENT')&&selected&&!ambiguousCalendarSelection){
       if(explicitAdd||qty){const amount=qty||1;const already=state.cart.some((x:any)=>String(x.id)===String(selected.id));if(!already||qty){upsertCart(state,selected,amount);action={kind:'ADD_TO_CART',product:selected,quantity:amount};advisor={...advisor,answer:[`Pridal som ${amount} ks produktu ${selected.name} do nákupu.`]};}else{action={kind:'OPEN_CART'};advisor={...advisor,answer:['Tento produkt už v nákupe máte. Otváram aktuálny nákup.']};}}
       else{state.pendingQuestion='quantity';action={kind:'OPEN_QUANTITY',product:selected};advisor={...advisor,answer:[`Vybrali ste ${selected.name}. Zvoľte množstvo.`]};}
     } else if(route.intents.includes('CART')) {

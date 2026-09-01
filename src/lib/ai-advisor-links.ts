@@ -8,9 +8,16 @@ export function advisorLinks(advisor: { intent?: unknown; faq?: unknown; sources
 
   if (intent === 'calendar_overview' && Array.isArray(advisor?.sources)) {
     return (advisor.sources as any[]).filter((source) =>
-      source && typeof source.label === 'string' && /^\/kalendare\/#\/kategoria\/(?:nastenne|stolove)-kalendare$/.test(String(source.url || ''))
-    ).slice(0, 2).map((source) => ({ label: source.label, url: source.url }));
+      source && typeof source.label === 'string' && String(source.url || '') === '/kalendare/'
+    ).slice(0, 1).map((source) => ({ label: source.label, url: source.url }));
   }
+
+  // Kalendárová odpoveď nesmie nikdy spadnúť na tonerovú poradňu.
+  // Produkty majú vlastné, katalógom dodané URL; tento odkaz je iba bezpečný
+  // vstup do celej ponuky.
+  if (intent === 'calendar_search') return [
+    { label: 'Celá ponuka kalendárov a diárov', url: '/kalendare/' },
+  ];
 
   if (faq === 'ucet-heslo') return [
     { label: 'Obnoviť heslo', url: '/zabudnute-heslo' },

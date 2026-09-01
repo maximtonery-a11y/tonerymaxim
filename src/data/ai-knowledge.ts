@@ -27,7 +27,7 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     triggers: ['ake kalendare mate', 'kalendare 2027', 'mate kalendare', 'mate diare', 'nastenne kalendare', 'stolove kalendare', 'trojmesacne kalendare', 'planovace', 'pf pohladnice'],
     answer: [
       'Aktuálna ponuka zahŕňa nástenné a stolové kalendáre, trojmesačné kalendáre, diáre, plánovače, podložky a PF pohľadnice na rok 2027.',
-      'Konkrétne produkty, ceny a dostupnosť vždy overujem v aktuálnom kalendárovom katalógu. Výber môžem zúžiť podľa typu, motívu, rozmeru, využitia alebo ceny.',
+      'Napíšte, či hľadáte nástenný alebo stolový kalendár a aký motív či rozmer uprednostňujete. Môžete uviesť aj približnú cenu.',
     ],
   },
   {
