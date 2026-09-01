@@ -1,14 +1,12 @@
-const labels: Record<string, string> = {
-  pending: 'Čaká na platbu', processing: 'Spracováva sa', 'on-hold': 'Pozastavená',
-  completed: 'Dokončená', cancelled: 'Zrušená', refunded: 'Refundovaná', failed: 'Neúspešná',
-};
+import { getOrderStatusLabel, normalizeOrderStatus } from './order-statuses.ts';
 
 export function publicOrderStatus(order: any) {
-  const status = String(order?.status || '').toLowerCase();
+  const status = normalizeOrderStatus(order?.status);
+  const knownLabel = getOrderStatusLabel(status);
   return {
     number: publicOrderNumber(order).replace(/[^a-z0-9._/-]/gi, '').slice(0, 40),
     status,
-    statusLabel: labels[status] || 'Stav sa overuje',
+    statusLabel: knownLabel && knownLabel !== status ? knownLabel : 'Stav sa overuje',
     date: String(order?.date_created || '').slice(0, 32),
     shipping: String(order?.shipping_lines?.[0]?.method_title || '').slice(0, 100),
     tracking: extractTracking(order?.meta_data),

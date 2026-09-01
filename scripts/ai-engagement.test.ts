@@ -121,6 +121,23 @@ test('TM číslo objednávky z meta údajov má prednosť pred interným Woo č�
   assert.match(endpoint, /search:email/);
 });
 
+test('AI používa rovnaké slovenské stavy objednávok ako administrácia', () => {
+  const cases = [
+    ['pending', 'Čaká na platbu'], ['on-hold', 'Čaká na úhradu'],
+    ['processing', 'Spracováva sa'], ['completed', 'Dokončená'],
+    ['shipped', 'Expedovaná'], ['expedovana', 'Expedovaná'],
+    ['wc-expedovana', 'Expedovaná'], ['tm-await-pay', 'Čaká na úhradu'],
+    ['tm-paid', 'Uhradená'], ['tm-processing', 'Spracováva sa'],
+    ['tm-shipped', 'Expedovaná'], ['tm-returned', 'Vrátená'],
+    ['cancelled', 'Zrušená'], ['refunded', 'Refundovaná'], ['failed', 'Neúspešná'],
+  ] as const;
+  for (const [status, label] of cases) {
+    const result = publicOrderStatus({ number:'300936', status });
+    assert.equal(result.statusLabel, label, status);
+  }
+  assert.equal(publicOrderStatus({ number:'300936', status:'custom-unknown' }).statusLabel, 'Stav sa overuje');
+});
+
 test('rýchle otázky sú viditeľné hneď a kalendárový odkaz nejde do tonerov', async () => {
   const [component, client] = await Promise.all([
     readFile(new URL('../src/components/FloatingAdvisor.astro', import.meta.url), 'utf8'),
