@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
 import { normalizeCommerceState } from '../src/lib/ai-commerce/domain.ts';
+import { productCapacity, productColor } from '../src/lib/ai-commerce/catalog.ts';
+import { familyOf } from '../src/lib/ai-commerce/engine.ts';
 
 test('UI používa jednotný endpoint a persistentný state',async()=>{
  const js=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
@@ -37,4 +39,23 @@ test('po servisnej otázke možno pokračovať množstvom aj novým produktom',(
  const product=routeCommerceMessage('hľadám toner CRG054H',state);
  assert.equal(product.needsProducts,true);
  assert.match(String(product.productQuery),/CRG054H/i);
+});
+
+test('kompaktná cache zachová farby, kapacitu a Epson rodinu náplní',()=>{
+ const fixtures=[
+  {name:'Epson T9081XL',sku:'T9081XL',color:'Čierna',capacity:'5 000 strán'},
+  {name:'Epson T9082XL',sku:'T9082XL',color:'Azúrová',capacity:'4 000 strán'},
+  {name:'Epson T9083XL',sku:'T9083XL',color:'Purpurová',capacity:'4 000 strán'},
+  {name:'Epson T9084XL',sku:'T9084XL',color:'Žltá',capacity:'4 000 strán'},
+ ];
+ assert.deepEqual(fixtures.map(productColor),['black','cyan','magenta','yellow']);
+ assert.equal(productCapacity(fixtures[0]),'5 000 strán');
+ assert.deepEqual(new Set(fixtures.map(familyOf)),new Set(['EPSON-T908XL']));
+});
+
+test('prirodzená požiadavka na WF-6090 routuje iba čistý model tlačiarne',()=>{
+ const route=routeCommerceMessage('Hľadám náplne do tlačiarne Epson WF-6090',normalizeCommerceState({}));
+ assert.equal(route.needsProducts,true);
+ assert.equal(route.productQuery,'Epson WF-6090');
+ assert.ok(route.intents.includes('PRINTER_SEARCH'));
 });

@@ -409,23 +409,19 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   function askNextStep(){
     setProgress(2);
     const count=state.cart.reduce((n,x)=>n+x.qty,0);
-    const a=addMessage('bot',`<div class="tm-ai-next-step"><p><b>Nákup má ${count} ks. Čo chcete urobiť ďalej?</b></p><div><button type="button" data-ai-next-more>＋ Pridať ďalší toner</button><button type="button" class="primary" data-ai-next-review>Skontrolovať nákup →</button></div></div>`);
-    a.querySelector('[data-ai-next-more]').onclick=()=>{setProgress(1);state.mode='shop';input.value='';input.placeholder='Napíšte ďalší toner alebo model tlačiarne…';input.focus();};
+    const a=addMessage('bot',`<div class="tm-ai-next-step"><p><b>Nákup má ${count} ks. Čo chcete urobiť ďalej?</b></p><div><button type="button" data-ai-next-more>＋ Pridať ďalší produkt</button><button type="button" class="primary" data-ai-next-review>Skontrolovať nákup →</button></div></div>`);
+    a.querySelector('[data-ai-next-more]').onclick=()=>{setProgress(1);state.mode='shop';input.value='';input.placeholder='Napíšte ďalší produkt alebo model tlačiarne…';input.focus();};
     a.querySelector('[data-ai-next-review]').onclick=renderCart;
   }
   function renderTypeQuestion(action){
-    const labels={compatible:'Kompatibilný',original:'Originálny',renovated:'Renovovaný'};
+    const labels={compatible:'Kompatibilné',original:'Originálne',renovated:'Renovované'};
     const options=Array.isArray(action?.options)?action.options:[];
     if(!options.length)return;
-    const products=Array.isArray(action?.products)?action.products:[];
+    const counts=action?.counts&&typeof action.counts==='object'?action.counts:{};
+    const material=escapeHtml(action?.material||'produkty');
     const reason={compatible:'Najlepší pomer ceny a výťažnosti. Rovnaká kompatibilita s uvedenou tlačiarňou.',original:'Originálna náplň výrobcu tlačiarne.',renovated:'Repasovaná originálna kazeta – ekologickejšia voľba.'};
-    const cards=options.map(type=>{
-      const p=products.find(x=>aiType(x)===type)||null;if(!p)return`<article class="tm-ai-type-card is-${type}"><b>${labels[type]||type}</b><button type="button" data-ai-type-more="${type}">Vybrať</button></article>`;
-      const capacity=parseCapacity(p),per100=capacity&&Number(p.price)>0?Number(p.price)/capacity*100:0,img=aiImage(p);
-      return `<article class="tm-ai-type-card is-${type}">${type==='compatible'?'<em>Odporúčame – najvýhodnejší</em>':''}<div class="tm-ai-type-card__product">${img?`<img src="${escapeHtml(img)}" alt="${escapeHtml(p.name)}" loading="lazy">`:''}<div><b>${escapeHtml(p.name)}</b><small>${escapeHtml(p.sku||'')}</small></div></div><div class="tm-ai-type-card__facts"><strong>${money(p.price)}</strong>${capacity?`<span>${capacity.toLocaleString('sk-SK')} strán</span>`:''}${per100?`<span><b>${money(per100)}</b> / 100 strán</span>`:''}</div><p>${reason[type]}</p>${type==='compatible'?'<p class="tm-ai-type-card__saving">Pri 2 ks zľava 10 % · pri 4 ks zľava 25 %</p>':''}<div class="tm-ai-type-card__buy"><label>Počet <input type="number" min="1" max="99" value="1" data-ai-type-qty="${type}"></label><button type="button" data-ai-type-add="${type}">Pridať do nákupu</button></div>${type==='compatible'?`<button type="button" class="tm-ai-type-card__discounts" data-ai-type-more="${type}">Zobraziť množstvá a zľavy</button>`:''}</article>`;
-    }).join('');
-    const a=addMessage('bot',`<div class="tm-ai-type-compare"><div class="tm-ai-guided-title"><b>Porovnajte dostupné možnosti</b><span>Cena a kapacita sú z aktuálneho katalógu.</span></div><div class="tm-ai-type-grid">${cards}</div></div>`);
-    a.querySelectorAll('[data-ai-type-add]').forEach(b=>b.onclick=()=>{const type=b.dataset.aiTypeAdd,qty=Math.max(1,Math.min(99,Number(a.querySelector(`[data-ai-type-qty="${type}"]`)?.value||1)));unifiedAsk(`${labels[type]} ${qty} ks`)});
+    const cards=options.map(type=>`<article class="tm-ai-type-card is-${type}">${type==='compatible'?'<em>Odporúčame – najvýhodnejší</em>':''}<b>${labels[type]||type}</b><small>${Number(counts[type]||0)} ${material} skladom</small><p>${reason[type]||''}</p>${type==='compatible'?'<p class="tm-ai-type-card__saving">Pri 2 ks zľava 10 % · pri 4 ks zľava 25 %</p>':''}<button type="button" data-ai-type-more="${type}">Zobraziť ponuku</button></article>`).join('');
+    const a=addMessage('bot',`<div class="tm-ai-type-compare"><div class="tm-ai-guided-title"><b>Najprv vyberte typ</b><span>Potom zobrazím všetky vhodné farby, kapacity a sady.</span></div><div class="tm-ai-type-grid">${cards}</div></div>`);
     a.querySelectorAll('[data-ai-type-more]').forEach(b=>b.onclick=()=>unifiedAsk(labels[b.dataset.aiTypeMore]));
   }
   function openCommerceStage(html,step=2){autoPanelSize('products');setExperience('shop');setProgress(step);messages.hidden=true;form.hidden=true;if(quick)quick.hidden=true;commerce.hidden=false;commerce.classList.add('is-focus-stage');commerce.innerHTML=html;commerce.scrollTop=0;}
@@ -462,8 +458,9 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   }
   function setChooser(set){
     const compatible=set.type==='compatible';
-    const option=(q)=>{const rate=compatible?(q>=4?25:q>=2?10:0):0,base=Number(set.totalPrice||set.products.reduce((n,p)=>n+Number(p.price||0),0)),per=base*(1-rate/100);return `<button type="button" data-ai-set-q="${q}" ${q===4&&compatible?'class="best"':''}><b>${q} ${q===1?'sada':'sady'}</b><span>${q*4} tonerov · ${money(per)}/sada</span><small>Spolu ${money(per*q)}</small>${rate?`<em>−${rate} %</em>`:''}</button>`};
-    openCommerceStage(`<div class="tm-ai-commerce__head"><button data-ai-q-back>← Späť na ponuku</button><b>Vyberte množstvo sád</b></div><div class="tm-ai-purchase-step"><p><b>${escapeHtml(set.label||'Sada 4 tonerov')}</b></p>${compatible?'<p class="tm-ai-cost-note">Zľava na každý kompatibilný toner: 2–3 sady −10 %, 4 a viac sád −25 %.</p>':''}<div class="tm-ai-qty-grid">${[1,2,3,4].map(option).join('')}</div></div>`,2);
+    const ink=isInkOffer(set.products),items=ink?'náplní':'tonerov',discountTarget=ink?'každú kompatibilnú náplň':'každý kompatibilný toner';
+    const option=(q)=>{const rate=compatible?(q>=4?25:q>=2?10:0):0,base=Number(set.totalPrice||set.products.reduce((n,p)=>n+Number(p.price||0),0)),per=base*(1-rate/100);return `<button type="button" data-ai-set-q="${q}" ${q===4&&compatible?'class="best"':''}><b>${q} ${q===1?'sada':'sady'}</b><span>${q*4} ${items} · ${money(per)}/sada</span><small>Spolu ${money(per*q)}</small>${rate?`<em>−${rate} %</em>`:''}</button>`};
+    openCommerceStage(`<div class="tm-ai-commerce__head"><button data-ai-q-back>← Späť na ponuku</button><b>Vyberte množstvo sád</b></div><div class="tm-ai-purchase-step"><p><b>${escapeHtml(set.label||`Sada 4 ${items}`)}</b></p>${compatible?`<p class="tm-ai-cost-note">Zľava na ${discountTarget}: 2–3 sady −10 %, 4 a viac sád −25 %.</p>`:''}<div class="tm-ai-qty-grid">${[1,2,3,4].map(option).join('')}</div></div>`,2);
     commerce.querySelector('[data-ai-q-back]').onclick=commerceBack;
     commerce.querySelectorAll('[data-ai-set-q]').forEach(b=>b.onclick=()=>{const q=Number(b.dataset.aiSetQ);state.commerceState.pendingQuestion=null;set.products.forEach(p=>addCommerceItem(p,q));renderCart();});
   }
@@ -491,7 +488,8 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
             const capacities=set.products.map(parseCapacity).filter(Boolean);
             const minCapacity=capacities.length?Math.min(...capacities):0;
             const setPage=minCapacity?Number(set.totalPrice)/minCapacity:0;
-            return `<article class="tm-ai-set-card is-${set.type}${set===recommended?' is-recommended':''}">${set===recommended?'<span class="tm-ai-recommend-badge">Odporúčame – najlepší pomer cena/strana</span>':''}<div class="tm-ai-set-card__head"><div><b>${escapeHtml(set.label||labels[set.type])}</b><small>4 tonery: BK + C + M + Y · skladom${setPage?` · ${setPage.toLocaleString('sk-SK',{minimumFractionDigits:4,maximumFractionDigits:4})} €/farebná strana`:''}</small></div><strong>${money(set.totalPrice)}</strong></div><div class="tm-ai-set-toners">${set.products.map(p=>`<span>${aiImage(p)?`<img src="${escapeHtml(aiImage(p))}" alt="${escapeHtml(p.name)}" loading="lazy">`:''}<span><b>${escapeHtml(aiColorLabel(aiColor(p)).split(' / ')[0])}</b><small>${escapeHtml(p.name||p.sku||'Toner')}</small><em>${aiStockLabel(p)}${costPerPage(p)?` · ${costPerPageText(p)}`:''}</em></span></span>`).join('')}</div>${compatible?'<p class="tm-ai-set-discount">Zľava na každú farbu v sade: 2–3 sady −10 % · 4 a viac sád −25 %</p>':''}<div class="tm-ai-set-actions"><button type="button" data-ai-set="${i}">⚡ Rýchly nákup s AI</button><a href="${escapeHtml(webResultsUrl(set.products))}">Zobraziť na webe</a></div></article>`;
+            const itemLabel=isInkOffer(set.products)?'náplne':'tonery';
+            return `<article class="tm-ai-set-card is-${set.type}${set===recommended?' is-recommended':''}">${set===recommended?'<span class="tm-ai-recommend-badge">Odporúčame – najlepší pomer cena/strana</span>':''}<div class="tm-ai-set-card__head"><div><b>${escapeHtml(set.label||labels[set.type])}</b><small>4 ${itemLabel}: BK + C + M + Y · skladom${setPage?` · ${setPage.toLocaleString('sk-SK',{minimumFractionDigits:4,maximumFractionDigits:4})} €/farebná strana`:''}</small></div><strong>${money(set.totalPrice)}</strong></div><div class="tm-ai-set-toners">${set.products.map(p=>`<span>${aiImage(p)?`<img src="${escapeHtml(aiImage(p))}" alt="${escapeHtml(p.name)}" loading="lazy">`:''}<span><b>${escapeHtml(aiColorLabel(aiColor(p)).split(' / ')[0])}</b><small>${escapeHtml(p.name||p.sku||(isInkOffer([p])?'Náplň':'Toner'))}</small><em>${aiStockLabel(p)}${costPerPage(p)?` · ${costPerPageText(p)}`:''}</em></span></span>`).join('')}</div>${compatible?'<p class="tm-ai-set-discount">Zľava na každú farbu v sade: 2–3 sady −10 % · 4 a viac sád −25 %</p>':''}<div class="tm-ai-set-actions"><button type="button" data-ai-set="${i}">⚡ Rýchly nákup s AI</button><a href="${escapeHtml(webResultsUrl(set.products))}">Zobraziť na webe</a></div></article>`;
           }).join('');
           return [type,cards];
         }));
@@ -544,6 +542,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     return (products||[]).filter(p=>!isExcludedAiProduct(p));
   }
   function aiText(v){ return v==null?'':String(v); }
+  function isInkOffer(products){return (Array.isArray(products)?products:[products]).some(p=>/atrament|\bink\b|cartridge|kazet/i.test(`${aiText(p?.name)} ${aiText(p?.product_type_label)}`));}
   function parseCapacity(p){const raw=aiText(p?.capacity);const m=raw.replace(/\s/g,'').match(/(\d{2,7})/);const n=m?Number(m[1]):0;return Number.isFinite(n)&&n>0?n:0;}
   function costPerPage(p){const capacity=parseCapacity(p),price=Number(p?.price||0);return capacity&&price>0?price/capacity:0;}
   function costPerPageText(p){const value=costPerPage(p);return value?`${value.toLocaleString('sk-SK',{minimumFractionDigits:4,maximumFractionDigits:4})} €/strana`:'';}
@@ -739,7 +738,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     const button = event.target.closest('[data-ai-prompt]');
     if (!button) return;
     input.value = '';
-    askAssistant(button.dataset.aiPrompt || button.textContent.trim());
+    unifiedAsk(button.dataset.aiPrompt || button.textContent.trim());
   });
 
   form.addEventListener('submit', (event) => {

@@ -18,6 +18,7 @@ const cases = [
   'TN2421',
   'Brother DCP-L2532DW',
   'HP M110w',
+  'Epson WF-6090',
 ];
 
 test('AI používa rovnaké katalógové zhody ako vyhľadávanie', async () => {
@@ -54,4 +55,71 @@ test('servisné čísla a všeobecná tonerová otázka nespustia katalóg', () 
     assert.equal(route.needsProducts, false, query);
     assert.equal(route.productQuery, null, query);
   }
+});
+
+test('Epson WF-6090 najprv vyžiada typ a potom zobrazí celú kompatibilnú ponuku',async()=>{
+ const firstResponse=await aiTomasPost({request:new Request('http://localhost/api/ai-tomas',{
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({message:'Hľadám náplne do tlačiarne Epson WF-6090',page:'/'})
+ })} as any);
+ assert.equal(firstResponse.status,200);
+ const first=await firstResponse.json() as any;
+ assert.equal(first.route.productQuery,'Epson WF-6090');
+ assert.equal(first.action?.kind,'ASK_PRODUCT_TYPE');
+ assert.deepEqual(first.action.options,['compatible','original']);
+ assert.equal(first.commerce,null);
+ assert.match(first.advisor.answer.join(' '),/kompatibilné.*originálne.*atramentové náplne/i);
+
+ const secondResponse=await aiTomasPost({request:new Request('http://localhost/api/ai-tomas',{
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({message:'Kompatibilné',page:'/',state:first.state})
+ })} as any);
+ assert.equal(secondResponse.status,200);
+ const second=await secondResponse.json() as any;
+ assert.equal(second.action,null);
+ assert.equal(second.state.currentType,'compatible');
+ assert.ok(second.commerce?.products?.length>=4);
+ assert.ok(second.commerce.products.every((product:any)=>product.type==='compatible'));
+ assert.deepEqual(new Set(second.commerce.products.map((product:any)=>product.color)),new Set(['black','cyan','magenta','yellow']));
+ assert.ok(second.commerce.presentation.sets.some((set:any)=>set.type==='compatible'&&set.products.length===4));
+ assert.equal(second.state.cart.length,0,'výber typu nesmie automaticky vložiť náhodný produkt');
+
+ const originalResponse=await aiTomasPost({request:new Request('http://localhost/api/ai-tomas',{
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({message:'Originálne',page:'/',state:first.state})
+ })} as any);
+ const original=await originalResponse.json() as any;
+ assert.equal(originalResponse.status,200);
+ assert.ok(original.commerce?.products?.length>=4);
+ assert.ok(original.commerce.products.every((product:any)=>product.type==='original'));
+ assert.deepEqual(new Set(original.commerce.products.map((product:any)=>product.color)),new Set(['black','cyan','magenta','yellow']));
+ assert.ok(original.commerce.presentation.sets.some((set:any)=>set.type==='original'&&set.products.length===4));
+ assert.equal(original.state.cart.length,0);
+});
+
+test('jednociferné historické modely tlačiarní sa nestratia',()=>{
+ for(const model of ['Canon imagePRESS C1','Konica Minolta Page Pro 8','HP LaserJet 5L','Lexmark 3X']){
+  const route=routeCommerceMessage(`Hľadám náplne do tlačiarne ${model}`,emptyCommerceState());
+  assert.equal(route.needsProducts,true,model);
+  assert.ok(route.productQuery,model);
+ }
+});
+
+test('presné interné SKU nájde presný produkt a číslo v SKU nie je množstvo',async()=>{
+ const response=await aiTomasPost({request:new Request('http://localhost/api/ai-tomas',{
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({message:'GI-41-KOM-14045',page:'/'})
+ })} as any);
+ assert.equal(response.status,200);
+ const body=await response.json() as any;
+ assert.equal(body.action,null);
+ assert.equal(body.state.cart.length,0);
+ assert.ok(body.commerce?.products?.some((product:any)=>product.sku==='GI-41-KOM-14045'));
+ assert.ok(body.commerce.products.every((product:any)=>product.sku==='GI-41-KOM-14045'));
+});
+
+test('presné SKU optického valca sa neodfiltruje ako tonerová rodina',async()=>{
+ const result=await resolveCommerceProducts('DR-1050-KOM-13968');
+ assert.deepEqual(result.products.map(product=>product.sku),['DR-1050-KOM-13968']);
+ assert.match(result.products[0].name,/optický valec/i);
 });

@@ -530,7 +530,17 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   // Jednoznačné obchodné témy routujeme priamo, aby ich všeobecné slová ako „nákup“ neprebili.
   const normalizedMessage = normalize(originalMessage);
 
-  if (!isContextualProductFollowUp && isGenericConsumableSelectionRequest(rawMessage)) {
+  if (/\bporad\w*\b/.test(normalizedMessage) && /\b(?:nakup|toner|napln|produkt)\w*\b/.test(normalizedMessage)) {
+    const selection = aiKnowledge.find((item) => item.id === 'vyber-toneru');
+    if (selection) return { answer: [`${selection.title}:`, ...selection.answer], products: [], groups: [], intent: 'support', faq: selection.id, confidence: 0.99 };
+  }
+  if (/\b(?:lacnejs\w*\s+alternativ\w*|alternativ\w*\s+original\w*|lacnejs\w*.*original\w*)\b/.test(normalizedMessage)) {
+    const alternatives = aiKnowledge.find((item) => item.id === 'kompatibilny-original-renovovany');
+    if (alternatives) return { answer: [`${alternatives.title}:`, ...alternatives.answer, 'Napíšte presný model tlačiarne alebo kód originálnej náplne a zobrazím vhodné lacnejšie možnosti.'], products: [], groups: [], intent: 'compatibility', faq: alternatives.id, confidence: 0.99 };
+  }
+
+  const asksPrinterTechnologyCost = /(?:laser|tank|atrament).*?(?:najlacnejs|cena za stranu|naklad|prevadzk)/.test(normalize(rawMessage));
+  if (!isContextualProductFollowUp && isGenericConsumableSelectionRequest(rawMessage) && !asksPrinterTechnologyCost) {
     return {
       answer: [
         'Áno, tonery a náplne máme v ponuke.',
@@ -727,7 +737,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
       ? 'recyklacia-tonerov'
     : /\bbod(y|ov|ov)?\b|vernost/i.test(normalizedMessage)
     ? 'vernost-body'
-    : /bez registracie|musim (mat )?ucet|co dostanem za registrac|vyhoda registrac|chcem sa zaregistrovat/i.test(normalizedMessage)
+    : /bez registracie|bez uctu|musim (mat )?ucet|co dostanem za registrac|vyhoda registrac|chcem sa zaregistrovat/i.test(normalizedMessage)
       ? 'registracia-zlava'
       : '';
   if (directKnowledgeId) {
