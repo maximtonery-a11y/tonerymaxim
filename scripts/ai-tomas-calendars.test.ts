@@ -47,6 +47,17 @@ test('diárové podkategórie sa rozpoznajú aj v prirodzenom tvare', async () =
   assert.ok(monthly.products.every((product) => /diár/i.test(product.name)));
 });
 
+test('všeobecná otázka na diáre vráti druhy ponuky, nie jediný náhodný variant', async () => {
+  for (const question of ['Máte v ponuke diáre?', 'Aké máte diáre v ponuke?']) {
+    const result = await searchCalendarProducts(question);
+    const names = result.products.map((product) => product.name).join(' ');
+    assert.ok(result.products.length >= 3, `${question}: ${result.products.length}`);
+    assert.match(names, /Denný diár/i);
+    assert.match(names, /Týždenný diár/i);
+    assert.match(names, /Minidiár/i);
+  }
+});
+
 test('prírodný motív nevydá kalendár iba pre slovo prirodzene v popise', async () => {
   const result = await searchCalendarProducts('aký nástenný kalendár s prírodou máte?');
   assert.ok(result.products.length > 0);

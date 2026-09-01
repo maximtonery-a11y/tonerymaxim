@@ -34,7 +34,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   const newDialog = root.querySelector('[data-ai-new-dialog]');
 
   const SESSION_KEY = 'tm_ai_tomas_state_v1';
-  const NUDGE_KEY = 'tm_ai_tomas_nudge_v1';
+  const NUDGE_KEY = 'tm_ai_tomas_nudge_v2';
   function readSavedState(){ try { const x=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); return x&&typeof x==='object'?x:{}; } catch { return {}; } }
   const saved=readSavedState();
   let customerProfileLoadStarted = false;
@@ -570,6 +570,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   }
   function webResultsUrl(products){
     const p=products[0]||{}; const term=state.lastQuestion||p.sku||p.name||'';
+    if(p?.source==='kalendare-2027'||p?.product_type_key==='calendar')return '/kalendare/';
     return `/produkty?s=${encodeURIComponent(term)}`;
   }
   function renderCommerceProductList(products,title){
@@ -762,7 +763,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   function resetConversation(keepCart){
     const kept=keepCart?state.cart:[];state.history=[];state.lastQuestion='';state.mode='auto';state.started=false;state.offerSets=[];state.offerSingles=[];state.cart=kept;
     state.commerceState={version:1,sessionId:'',history:[],currentPrinter:null,currentProductId:null,selectedProductId:null,currentColor:null,currentType:null,cart:kept.map(x=>({id:x.product?.id||'',sku:x.product?.sku||'',quantity:x.qty})),checkoutDraft:{},lastProductQuery:null,lastIntent:null,pendingQuestion:null};
-    messages.innerHTML=initialMessagesHtml;messages.hidden=false;form.hidden=false;commerce.hidden=true;commerce.innerHTML='';home.hidden=false;back.hidden=true;quick.hidden=true;root.classList.remove('is-started');setExperience('home');setProgress(1);hideHandoff();closeNewDialog();updateLiveCart();state.manualSize=false;setPanelSize('compact');saveCommerceSession();trackEvent('new_conversation',{keptCart:keepCart,cartItems:kept.length});input.focus();
+    messages.innerHTML=initialMessagesHtml;messages.hidden=false;form.hidden=false;commerce.hidden=true;commerce.innerHTML='';home.hidden=false;back.hidden=true;quick.hidden=false;root.classList.remove('is-started');setExperience('home');setProgress(1);hideHandoff();closeNewDialog();updateLiveCart();state.manualSize=false;setPanelSize('compact');saveCommerceSession();trackEvent('new_conversation',{keptCart:keepCart,cartItems:kept.length});input.focus();
   }
   newButton?.addEventListener('click',()=>{if(!newDialog)return;newDialog.hidden=false;autoPanelSize('checkout');});
   newDialog?.querySelector('[data-ai-new-keep]')?.addEventListener('click',()=>resetConversation(true));

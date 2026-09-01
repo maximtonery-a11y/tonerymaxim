@@ -109,7 +109,8 @@ function asProduct(row: CalendarRow) {
 export async function searchCalendarProducts(query: string) {
   const rows = await loadRows();
   const n = normalize(query);
-  const ignored = new Set(['ake','aky','aku','mate','predavate','ponukate','ponuke','sortiment','chcem','hladam','potrebujem','kalendar','kalendare','kalendara','kalendat','kaledar','kalemdar','kalndar','calendar','diar','diare','diara','prosim','ukaz','mi','v','vo','na','do','pre','s','so','a','aj','alebo']);
+  const ignored = new Set(['ake','aky','aku','mate','predavate','ponukate','ponuke','sortiment','chcem','hladam','potrebujem','kalendar','kalendare','kalendara','kalendat','kaledar','kalemdar','kalndar','calendar','diar','diare','diara','prosim','ukaz','mi','v','vo','na','do','pre','s','so','a','aj','alebo',
+    'dakujem','dobry','den','mozete','povedat','vediet','opytat','je','to','mozne','presnu','informaciu','viete','poradit','ide','o','nakup','pytam','sa','ako','zakaznik','odpovedzte','strucne','spisovne','pomoc']);
   const aliases: Record<string, string> = { psami: 'psy', psov: 'psy', psiky: 'psy', mackami: 'macky', maciek: 'macky', tatrach: 'tatry' };
   const canonicalToken = (token: string) => {
     const aliased = aliases[token] || token;
@@ -157,8 +158,18 @@ export async function searchCalendarProducts(query: string) {
   const strict = !generic ? scored.filter((item) => item.identityMissed === 0) : [];
   const relevant = strict.length ? strict : scored;
 
+  const diaryKind = (row: CalendarRow) => {
+    const identity = normalize(`${row.name || ''} ${row.category || ''} ${row.format || ''}`);
+    if (/\bminidiar\w*\b|\bmesac\w*\b/.test(identity)) return 'minidiar';
+    if (/\bdenn\w*\b/.test(identity)) return 'denny-diar';
+    if (/\btyzden\w*\b/.test(identity)) return 'tyzdenny-diar';
+    return String(row.category || row.sku || 'diar');
+  };
+  const genericKey = (item: { row: CalendarRow }) => wantsDiary
+    ? diaryKind(item.row)
+    : String(item.row.category || item.row.sku || 'calendar');
   const selected = generic
-    ? [...new Map(relevant.map((item) => [String(item.row.category || ''), item])).values()].slice(0, 12)
+    ? [...new Map(relevant.map((item) => [genericKey(item), item])).values()].slice(0, 12)
     : relevant.slice(0, 40);
   return { products: selected.map((item) => asProduct(item.row)), source: 'calendar' as const };
 }

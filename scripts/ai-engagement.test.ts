@@ -109,3 +109,14 @@ test('aktívna bublina je nenásilná a sama neotvára AI panel', async () => {
   assert.match(script, /sessionStorage\.setItem\(NUDGE_KEY,'dismissed'\)/);
   assert.doesNotMatch(script, /setTimeout\([^)]*openPanel/);
 });
+
+test('rýchle otázky sú viditeľné hneď a kalendárový odkaz nejde do tonerov', async () => {
+  const [component, client] = await Promise.all([
+    readFile(new URL('../src/components/FloatingAdvisor.astro', import.meta.url), 'utf8'),
+    readFile(new URL('../src/scripts/ai-sales-assistant.js', import.meta.url), 'utf8'),
+  ]);
+  assert.match(component, /data-ai-quick aria-label="Najčastejšie otázky"/);
+  assert.doesNotMatch(component, /data-ai-quick hidden/);
+  assert.match(client, /product_type_key==='calendar'\)return '\/kalendare\/'/);
+  assert.match(client, /tm_ai_tomas_nudge_v2/);
+});

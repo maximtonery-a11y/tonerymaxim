@@ -47,12 +47,13 @@ export const POST: APIRoute = async ({ request }) => {
     let commerce:any = resolved[1];
     if (calendarRoute && commerce?.source === 'calendar' && Array.isArray(commerce.products) && commerce.products.length) {
       const count = commerce.products.length;
+      const optionCount = count === 1 ? '1 aktuálne dostupnú možnosť' : count < 5 ? `${count} aktuálne dostupné možnosti` : `${count} aktuálne dostupných možností`;
       const diaryOverview = /\b(?:diar|diare)\w*\b/.test(normalized(message))
         && /\b(ake|aky|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(normalized(message));
       advisor = {
         ...advisor,
         answer: [diaryOverview
-          ? `V ponuke máme denné, týždenné aj mesačné minidiáre v rôznych farbách. Nižšie zobrazujem ${count} aktuálne dostupných možností; výber môžete spresniť typom alebo farbou.`
+          ? `V ponuke máme denné a týždenné diáre aj mesačné minidiáre v rôznych farbách. Nižšie zobrazujem ${optionCount}; výber môžete spresniť typom alebo farbou.`
           : `V aktuálnej ponuke som našiel ${count} ${count === 1 ? 'vhodný produkt' : count < 5 ? 'vhodné produkty' : 'vhodných produktov'}. Nižšie zobrazujem iba výsledky z katalógu kalendárov a diárov.`],
         products: [], groups: [], intent: 'calendar_search', confidence: 1, unanswered: false, handoffSuggested: false,
       };

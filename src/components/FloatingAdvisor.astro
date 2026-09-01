@@ -57,7 +57,7 @@ const quickPrompts = quickPromptsForPath(Astro.url.pathname);
 </div><div class="tm-ai-frequent" data-ai-frequent hidden></div></div>
 <div class="tm-ai-livecart" data-ai-livecart hidden><span>🛒 <b data-ai-cart-count>0 ks</b> <small data-ai-cart-total></small></span><button type="button" data-ai-cart-open>Zobraziť nákup</button></div>
 <div class="tm-ai-assistant__messages" data-ai-messages><article class="tm-ai-msg tm-ai-msg--bot tm-ai-msg--welcome"><span class="tm-ai-msg__avatar">AI</span><div><p><b>Napíšte mi, čo potrebujete.</b></p><p>Napríklad model tlačiarne, označenie toneru alebo otázku.</p></div></article></div>
-<div class="tm-ai-assistant__quick" data-ai-quick hidden>{quickPrompts.map(prompt => <button type="button" data-ai-prompt={prompt.question}>{prompt.label}</button>)}</div>
+<div class="tm-ai-assistant__quick" data-ai-quick aria-label="Najčastejšie otázky">{quickPrompts.map(prompt => <button type="button" data-ai-prompt={prompt.question}>{prompt.label}</button>)}</div>
 <div class="tm-ai-commerce" data-ai-commerce hidden></div>
 </main>
 </div>
