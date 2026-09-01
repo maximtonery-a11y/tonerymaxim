@@ -70,11 +70,12 @@ const quickPrompts = quickPromptsForPath(Astro.url.pathname);
       <p>Zanechajte kontakt a otázku. Pošleme ju pracovníkovi ToneryMAXIM.</p>
       <form data-ai-handoff-form>
         <textarea data-ai-handoff-question rows="3" maxlength="1500" placeholder="Vaša otázka" required></textarea>
-        <input data-ai-handoff-phone type="tel" autocomplete="tel" placeholder="Telefón (voliteľné)" />
-        <input data-ai-handoff-email type="email" autocomplete="email" placeholder="E-mail (voliteľné)" />
+        <p class="tm-ai-handoff__contact-note"><b>Kam vám máme odpovedať?</b> Zadajte aspoň telefón alebo e-mail.</p>
+        <input data-ai-handoff-phone type="tel" autocomplete="tel" placeholder="Telefón (zadajte telefón alebo e-mail)" aria-label="Telefón – zadajte telefón alebo e-mail" />
+        <input data-ai-handoff-email type="email" autocomplete="email" placeholder="E-mail (zadajte telefón alebo e-mail)" aria-label="E-mail – zadajte telefón alebo e-mail" />
         <label class="tm-ai-handoff__consent"><input data-ai-handoff-consent type="checkbox" required /> Súhlasím, aby ma ToneryMAXIM kontaktoval k tejto otázke.</label>
         <input data-ai-handoff-hp type="text" tabindex="-1" autocomplete="off" aria-hidden="true" class="tm-ai-handoff__hp" />
-        <button type="submit">Poslať otázku človeku</button>
+        <button type="submit" class="tm-ai-handoff__submit">Poslať otázku pracovníkovi</button>
         <button type="button" class="tm-ai-handoff__continue" data-ai-handoff-continue>Pokračovať s AI Tomášom</button>
         <span data-ai-handoff-status aria-live="polite"></span>
       </form>

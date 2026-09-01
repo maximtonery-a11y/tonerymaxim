@@ -1,4 +1,5 @@
 import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-cart.js";
+import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
 
 (function () {
   const root = document.querySelector('[data-ai-sales-assistant]');
@@ -171,7 +172,11 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     handoff.hidden=false;handoff.classList.remove('is-success');handoff.dataset.reason=reason;
     const generic=/\b(clovek|človek|operator|pracovnik|pracovník|kontaktujte ma|hovorit s|hovoriť s)\b/i.test(question);
     if(handoffQuestion)handoffQuestion.value=generic?'':question;
-    if(handoffStatus)handoffStatus.textContent=reason==='unanswered'?'AI Tomáš si nie je odpoveďou istý. Otázku môžete odovzdať pracovníkovi.':'Doplňte kontakt a otázku pre pracovníka.';
+    if(handoffStatus)handoffStatus.textContent=reason==='unanswered'
+      ?'AI Tomáš si nie je odpoveďou istý. Otázku môžete odovzdať pracovníkovi.'
+      :reason==='product_availability'
+        ?'Produkt nie je skladom. Zadajte telefón alebo e-mail a pracovník overí dostupnosť.'
+        :'Zadajte telefón alebo e-mail a otázku pre pracovníka.';
     requestAnimationFrame(()=>handoff.scrollIntoView({behavior:'smooth',block:'center'}));
     autoPanelSize('checkout');trackEvent('handoff_open',{reason});
   }
@@ -462,7 +467,9 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   }
   function quantityChooser(product){
     const calendar=isCalendarProduct(product),compatible=aiType(product)==='compatible',discounted=calendar||compatible;
-    const capacity=parseCapacity(product),per100=capacity&&Number(product.price)>0?Number(product.price)/capacity*100:0;
+    // Pri kalendároch a diároch číslo strán nie je tlačová kapacita. Nesmie sa
+    // preto zobrazovať ako „kapacita“ ani prepočítavať na cenu za stranu.
+    const capacity=calendar?0:parseCapacity(product);
     const quantities=calendar?[1,3,21]:[1,2,3,4];
     const chooser=discounted?`<p>Vyberte množstvo a využite zľavu:</p><div class="tm-ai-qty-grid">${quantities.map(q=>`<button type="button" data-ai-q="${q}" ${q===(calendar?21:4)?'class="best"':''}><b>${q} ks</b><span>${money(unitPrice(product,q))}/ks</span>${discount(product,q)?`<em>−${discount(product,q)} %</em>`:''}</button>`).join('')}</div>`:`<div class="tm-ai-simple-qty"><label>Koľko kusov chcete kúpiť?<input type="number" min="1" max="99" value="1" data-ai-simple-qty></label><button type="button" data-ai-simple-add>Pridať do nákupu</button></div>`;
     openCommerceStage(`<div class="tm-ai-commerce__head"><button data-ai-q-back>← Späť na ponuku</button><b>Vyberte množstvo</b></div><div class="tm-ai-purchase-step"><div class="tm-ai-selected-product"><div><p><b>${escapeHtml(product.name)}</b></p><small>${escapeHtml(product.sku||'')}</small></div><strong>${money(product.price)}</strong></div>${capacity?`<p class="tm-ai-cost-note">Kapacita ${capacity.toLocaleString('sk-SK')} strán · <b>${costPerPageText(product)}</b></p>`:''}${chooser}</div>`,2);
@@ -524,23 +531,36 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
 
   function productOfferCard(p,index,unavailable=false){
     const img=aiImage(p),color=aiColor(p),type=aiType(p),href=aiText(p?.url)||`/produkty?s=${encodeURIComponent(aiText(p?.sku)||aiText(p?.name))}`;
-    return `<article class="tm-ai-product-card is-${type}${unavailable?' is-unavailable':''}">${img?`<div class="tm-ai-card-image"><img src="${escapeHtml(img)}" alt="${escapeHtml(aiText(p?.name))}" loading="lazy"></div>`:''}<div class="tm-ai-card-content"><div class="tm-ai-card-badges"><span class="tm-ai-product-kind">${aiTypeLabel(p)}</span>${color?`<span class="tm-ai-color-badge">${aiColorLabel(color)}</span>`:''}</div><strong>${escapeHtml(aiText(p?.name)||'Toner')}</strong><small>${escapeHtml(aiText(p?.sku))}</small><em class="${unavailable?'is-out':'is-stock'}">${aiStockLabel(p)}</em><b>${money(Number(p?.price||0))}</b><div class="tm-ai-card-actions">${unavailable?`<button type="button" data-ai-availability="${index}">Zistiť dostupnosť</button>`:`<button type="button" data-ai-buy="${index}">⚡ Rýchly nákup s AI</button>`}<a href="${escapeHtml(href)}">Zobraziť na webe</a></div></div></article>`;
+    const calendar=isCalendarProduct(p);
+    return `<article class="tm-ai-product-card is-${type}${calendar?' is-calendar':''}${unavailable?' is-unavailable':''}">${img?`<div class="tm-ai-card-image"><img src="${escapeHtml(img)}" alt="${escapeHtml(aiText(p?.name))}" loading="lazy"></div>`:''}<div class="tm-ai-card-content"><div class="tm-ai-card-badges"><span class="tm-ai-product-kind">${aiTypeLabel(p)}</span>${color?`<span class="tm-ai-color-badge">${aiColorLabel(color)}</span>`:''}</div><strong>${escapeHtml(aiText(p?.name)||'Toner')}</strong><small>${escapeHtml(aiText(p?.sku))}</small><em class="${unavailable?'is-out':'is-stock'}">${aiStockLabel(p)}</em><b>${money(Number(p?.price||0))}</b><div class="tm-ai-card-actions">${unavailable?`<button type="button" data-ai-availability="${index}">Zistiť dostupnosť</button>`:`<button type="button" data-ai-buy="${index}">⚡ Rýchly nákup s AI</button>`}<a href="${escapeHtml(href)}">Zobraziť na webe</a></div></div></article>`;
   }
   function wireAvailability(box,products){
-    box.querySelectorAll('[data-ai-availability]').forEach(btn=>btn.onclick=()=>{const p=products[Number(btn.dataset.aiAvailability)];openHandoff(`Prosím zistite dostupnosť produktu ${p?.name||''} (${p?.sku||''}).`,'product_availability');});
+    box.querySelectorAll('[data-ai-availability]').forEach(btn=>btn.onclick=()=>{
+      const p=products[Number(btn.dataset.aiAvailability)];
+      addMessage('bot',`<p><b>${escapeHtml(p?.name||'Produkt')} momentálne nie je skladom.</b></p><p>Dostupnosť musí overiť pracovník. Zadajte telefón alebo e-mail; otázku odošleme až po vašom súhlase.</p>`);
+      openHandoff(`Prosím zistite dostupnosť produktu ${p?.name||''} (${p?.sku||''}).`,'product_availability');
+    });
   }
 
   function renderSafeProducts(products,title,allProducts=products){
     const list=Array.isArray(products)?products.filter(Boolean):[];
     if(!list.length){ addMessage('bot','<p>Pre túto voľbu momentálne nemám vhodný toner.</p>'); return; }
+    const calendarList=list.some(isCalendarProduct);
     const chosen=[];
-    ['compatible','original','renovated'].forEach(t=>{const p=list.find(x=>aiType(x)===t);if(p)chosen.push(p)});
-    for(const p of list){if(chosen.length>=3)break;if(!chosen.includes(p))chosen.push(p)}
+    if(calendarList){
+      // Katalóg pri všeobecnej otázke o diároch vracia po jednom zástupcovi
+      // pre denný, týždenný, mesačný a minidiár. Všetky štyri musia zostať
+      // viditeľné; tonerové pravidlo „max. 3 odporúčania“ tu neplatí.
+      for(const p of list){if(chosen.length>=4)break;if(!chosen.includes(p))chosen.push(p)}
+    }else{
+      ['compatible','original','renovated'].forEach(t=>{const p=list.find(x=>aiType(x)===t);if(p)chosen.push(p)});
+      for(const p of list){if(chosen.length>=3)break;if(!chosen.includes(p))chosen.push(p)}
+    }
     const inStock=chosen.filter(isAiInStock),out=chosen.filter(p=>!isAiInStock(p));
     const ordered=[...inStock,...out];
     const cards=ordered.slice(0,6).map((p,i)=>productOfferCard(p,i,!isAiInStock(p))).join('');
     const colors=['cyan','magenta','yellow'].filter(c=>allProducts.some(p=>aiColor(p)===c));
-    const box=addMessage('bot',`<div class="tm-ai-discovery"><p><b>${escapeHtml(title)}</b></p><div class="tm-ai-shop-products">${cards}</div>${colors.length?`<div class="tm-ai-other-colors"><b>Ostatné farby:</b>${colors.map(c=>`<button type="button" data-ai-more-color="${c}">${aiColorLabel(c)}</button>`).join('')}</div>`:''}<div class="tm-ai-discovery__footer"><a href="${webResultsUrl(allProducts)}">Zobraziť kompletnú ponuku na webe →</a><small><b>⚡ Rýchly nákup s AI Tomášom</b></small></div></div>`);
+    const box=addMessage('bot',`<div class="tm-ai-discovery${calendarList?' is-calendar-list':''}"><p><b>${escapeHtml(title)}</b></p><div class="tm-ai-shop-products">${cards}</div>${colors.length?`<div class="tm-ai-other-colors"><b>Ostatné farby:</b>${colors.map(c=>`<button type="button" data-ai-more-color="${c}">${aiColorLabel(c)}</button>`).join('')}</div>`:''}<div class="tm-ai-discovery__footer"><a href="${webResultsUrl(allProducts)}">Zobraziť kompletnú ponuku na webe →</a><small><b>⚡ Rýchly nákup s AI Tomášom</b></small></div></div>`);
     box.querySelectorAll('[data-ai-buy]').forEach(btn=>btn.onclick=()=>quantityChooser(ordered[Number(btn.dataset.aiBuy)]));
     wireAvailability(box,ordered);
     box.querySelectorAll('[data-ai-more-color]').forEach(btn=>btn.onclick=()=>renderSafeProducts(allProducts.filter(p=>aiColor(p)===btn.dataset.aiMoreColor),`Možnosti pre ${aiColorLabel(btn.dataset.aiMoreColor)}`,allProducts));
@@ -640,7 +660,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   async function unifiedAsk(question){
     if(state.mode==='auto')state.mode=looksLikeShopping(question)?'shop':'advice';
     beginSession(); if(!question||state.busy)return;
-    if(/\b(?:kde|stav|sleduj|tracking|doruc|odoslan)\w*.*\b(?:objednavk|tracking|zasielk)\w*|\b(?:objednavk|zasielk)\w*.*\b(?:kde|stav|tracking|doruc|odoslan)\w*/i.test(question)){
+    if(isOrderStatusQuestion(question)){
       state.busy=true;state.lastQuestion=question;addMessage('user',`<p>${escapeHtml(question)}</p>`);const loading=addMessage('bot','<p>Bezpečne overujem stav objednávky…</p>');
       try{const r=await fetch('/api/ai-order-status',{method:'GET',cache:'no-store'});const d=await r.json();
         if(r.status===401){renderGuestOrderVerification(loading);return;}
@@ -807,8 +827,8 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     const phone = handoffPhone?.value.trim() || '';
     const email = handoffEmail?.value.trim() || '';
     if (!question) { if (handoffStatus) handoffStatus.textContent = 'Napíšte otázku pre pracovníka.'; return; }
-    if (!phone && !email) { if (handoffStatus) handoffStatus.textContent = 'Zadajte telefón alebo e-mail.'; return; }
-    if (!handoffConsent?.checked) { if (handoffStatus) handoffStatus.textContent = 'Potvrďte súhlas s kontaktovaním.'; return; }
+    if (!phone && !email) { if (handoffStatus) handoffStatus.textContent = 'Chýba kontakt: zadajte telefón alebo e-mail.'; handoffPhone?.focus(); return; }
+    if (!handoffConsent?.checked) { if (handoffStatus) handoffStatus.textContent = 'Pred odoslaním potvrďte súhlas s kontaktovaním.'; handoffConsent?.focus(); return; }
     const button = handoffForm.querySelector('button[type="submit"]');
     if (button) button.disabled = true;
     if (handoffStatus) handoffStatus.textContent = 'Odosielam…';

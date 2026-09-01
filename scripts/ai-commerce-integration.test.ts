@@ -5,6 +5,7 @@ import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
 import { normalizeCommerceState } from '../src/lib/ai-commerce/domain.ts';
 import { productCapacity, productColor } from '../src/lib/ai-commerce/catalog.ts';
 import { familyOf } from '../src/lib/ai-commerce/engine.ts';
+import { isOrderStatusQuestion } from '../src/lib/ai-order-question.ts';
 
 test('UI používa jednotný endpoint a persistentný state',async()=>{
  const js=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
@@ -65,4 +66,42 @@ test('explicitné krátke číselné SKU sa dá vyhľadať bez zámeny za objedn
  assert.equal(route.needsProducts,true);
  assert.equal(route.productQuery,'276');
  assert.ok(route.intents.includes('BUY_INTENT'));
+});
+
+test('diáre zobrazia všetky štyri typy a rýchly nákup bez tonerovej kapacity',async()=>{
+ const js=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
+ const css=await readFile(new URL('../src/styles/ai-sales-assistant.css',import.meta.url),'utf8');
+ assert.match(js,/if\(calendarList\)[\s\S]*chosen\.length>=4/);
+ assert.match(js,/const capacity=calendar\?0:parseCapacity\(product\)/);
+ assert.match(js,/is-calendar-list/);
+ assert.match(css,/is-calendar-list[\s\S]*repeat\(4,minmax\(0,1fr\)\)/);
+ assert.match(js,/data-ai-buy/);
+ assert.match(js,/quantityChooser\(ordered\[Number\(btn\.dataset\.aiBuy\)\]\)/);
+});
+
+test('zisťovanie dostupnosti jasne vyžaduje telefón alebo e-mail',async()=>{
+ const [component,js]=await Promise.all([
+  readFile(new URL('../src/components/FloatingAdvisor.astro',import.meta.url),'utf8'),
+  readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8'),
+ ]);
+ assert.doesNotMatch(component,/Telefón \(voliteľné\)|E-mail \(voliteľné\)/);
+ assert.match(component,/Zadajte aspoň telefón alebo e-mail/);
+ assert.match(js,/reason==='product_availability'/);
+ assert.match(js,/Produkt nie je skladom\. Zadajte telefón alebo e-mail/);
+ assert.match(js,/Chýba kontakt: zadajte telefón alebo e-mail/);
+ assert.match(js,/Pred odoslaním potvrďte súhlas s kontaktovaním/);
+});
+
+test('slovenské otázky na stav objednávky vždy otvoria bezpečné overenie',()=>{
+ const questions=[
+  'V akom stave je moja objednávka?',
+  'Kde je moja objednávka?',
+  'Bola už objednávka odoslaná?',
+  'Kedy bude zásielka doručená?',
+  'Chcem sledovať zásielku.',
+  'Čo je s mojím balíkom?',
+  'Je moja objednávka vybavená?',
+ ];
+ for(const question of questions)assert.equal(isOrderStatusQuestion(question),true,question);
+ for(const question of ['Ako vytvorím objednávku?','Koľko stojí doprava?','Chcem objednať toner.'])assert.equal(isOrderStatusQuestion(question),false,question);
 });

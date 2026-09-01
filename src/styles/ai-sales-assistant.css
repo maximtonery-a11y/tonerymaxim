@@ -615,6 +615,7 @@
 .tm-ai-handoff__head strong{margin:0}
 .tm-ai-handoff__close{flex:0 0 34px!important;width:34px!important;min-height:34px!important;padding:0!important;border-radius:50%!important;background:#e7eef8!important;color:#17365f;font-size:23px;line-height:1;cursor:pointer}
 .tm-ai-handoff textarea{width:100%;min-height:76px;max-height:150px;resize:vertical;border:1px solid #cbd9ec;border-radius:9px;padding:9px 10px;font:inherit;line-height:1.35;background:#fff;color:#081a3a}
+.tm-ai-handoff__contact-note{margin:2px 0 0!important;padding:8px 10px;border-radius:9px;background:#eef5ff;color:#17365f!important}.tm-ai-handoff__contact-note b{display:inline!important;font-size:12px!important}.tm-ai-handoff__submit{background:#0b3267!important;color:#fff!important}.tm-ai-handoff__submit:hover{background:#082750!important}.tm-ai-handoff__submit:focus-visible{outline:3px solid #ffc400;outline-offset:2px}
 .tm-ai-handoff__continue{background:transparent!important;border:1px solid #cbd9ec!important;color:#17365f!important}
 .tm-ai-handoff.is-success .tm-ai-handoff__continue{background:#fff!important}
 @media(max-width:760px){.tm-ai-handoff{max-height:min(58dvh,440px);overflow:auto}.tm-ai-handoff textarea{min-height:68px}.tm-ai-handoff__close{position:sticky;top:0}}
@@ -874,6 +875,12 @@
 .tm-ai-product-card em.is-out{color:#a64034}
 .tm-ai-product-card.is-unavailable{background:#fbfcfe;border-style:dashed}
 .tm-ai-product-card.is-unavailable img{filter:saturate(.75);opacity:.85}
+.tm-ai-discovery.is-calendar-list .tm-ai-shop-products{grid-template-columns:repeat(4,minmax(0,1fr))!important;max-width:none!important}
+.tm-ai-product-card.is-calendar .tm-ai-card-image{height:82px}
+.tm-ai-product-card.is-calendar .tm-ai-card-content{padding:10px;gap:4px}
+.tm-ai-product-card.is-calendar .tm-ai-card-content>strong{min-height:2.5em;font-size:13px;line-height:1.25}
+.tm-ai-product-card.is-calendar .tm-ai-card-actions{grid-template-columns:1fr;margin-top:6px}
+.tm-ai-product-card.is-calendar .tm-ai-card-actions button{order:-1;min-height:40px}
 .tm-ai-single-color{display:grid!important;grid-template-columns:56px minmax(0,1fr);grid-template-rows:auto auto;gap:8px 10px;text-align:left!important;padding:10px!important;background:#fff!important;border:1px solid #c5d7ec!important;border-radius:12px!important;color:#092d5d!important}
 .tm-ai-single-color>img{width:56px;height:56px;object-fit:contain;grid-row:1/3}
 .tm-ai-single-color>span{display:flex;min-width:0;flex-direction:column;gap:2px}.tm-ai-single-color>span small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -882,7 +889,8 @@
 .tm-ai-set-toners>span>span{display:flex;min-width:0;flex-direction:column;gap:2px}.tm-ai-set-toners>span small{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}.tm-ai-set-toners>span em{font-style:normal;color:#087b42;font-size:11px;font-weight:800}
 .tm-ai-set-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.35fr);gap:8px;margin-top:10px}.tm-ai-set-actions button,.tm-ai-set-actions a{display:flex;align-items:center;justify-content:center;min-height:42px;border-radius:10px;font-weight:900;text-align:center}.tm-ai-set-actions button{border:0;background:#0b3d77;color:#fff;cursor:pointer}.tm-ai-set-actions a{border:1px solid #0b3d77;color:#0b3d77;background:#fff;text-decoration:none}
 .tm-ai-single-type{margin-top:14px}.tm-ai-single-type h4{margin:0 0 9px;color:#092d5d;font-size:15px}
-@media(max-width:700px){.tm-ai-single-grid,.tm-ai-shop-products,.tm-ai-set-list{grid-template-columns:1fr!important}.tm-ai-offer-summary{padding:12px}}
+@media(max-width:900px) and (min-width:701px){.tm-ai-discovery.is-calendar-list .tm-ai-shop-products{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:700px){.tm-ai-single-grid,.tm-ai-shop-products,.tm-ai-set-list,.tm-ai-discovery.is-calendar-list .tm-ai-shop-products{grid-template-columns:1fr!important}.tm-ai-offer-summary{padding:12px}.tm-ai-product-card.is-calendar{display:grid!important;grid-template-columns:82px 1fr}.tm-ai-product-card.is-calendar .tm-ai-card-image{height:100%;min-height:150px;border-right:1px solid #e6edf5;border-bottom:0}.tm-ai-product-card.is-calendar .tm-ai-card-content>strong{min-height:0}}
 @media(max-width:700px){.tm-ai-set-actions{grid-template-columns:1fr}.tm-ai-set-toners{grid-template-columns:1fr 1fr!important}}
 @media(max-width:760px){
   .tm-ai-assistant.is-started .tm-ai-benefits{display:flex!important}
