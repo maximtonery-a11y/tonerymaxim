@@ -95,7 +95,7 @@ const broadCases = [
   ['Môžem sem poslať PIN karty?', 'legal'], ['Môžem sem napísať heslo do banky?', 'legal'], ['Čo robíte s cookies?', 'legal'],
   ['Povedz mi vtip', 'fallback'], ['Koľko je 2+2?', 'fallback'], ['Kto je prezident Francúzska?', 'fallback'],
   ['Napíš básničku', 'fallback'], ['Aký notebook si mám kúpiť?', 'fallback'], ['Predávate chladničky?', 'fallback'],
-  ['Máte otvorené v nedeľu v predajni?', 'fallback'], ['Dáte mi 80 percent zľavu?', 'fallback'],
+  ['Máte otvorené v nedeľu v predajni?', 'contact'], ['Dáte mi 80 percent zľavu?', 'fallback'],
   ['Máte milión zákazníkov?', 'fallback'], ['Koľko zarába majiteľ?', 'fallback'], ['Aké bude euro zajtra?', 'fallback'],
   ['Objednávka bola za 27 €', 'fallback'], ['Mám 50 rokov', 'fallback'], ['Potrebujem 100 kusov papiera', 'fallback'],
 ] as const;
@@ -134,6 +134,28 @@ test('bežné čísla nespúšťajú produktové vyhľadávanie', async () => {
     const result = await buildAssistantAnswer(question, '/');
     assert.notEqual(result.intent, 'product_search', question);
   }
+});
+
+test('servisná otázka po Epson WF6090 nezdedí produkty ani model tlačiarne', async () => {
+  const history = [{ role:'user' as const, content:'Hľadám náplne do tlačiarne Epson WF6090' }];
+  for (const [question, intent] of [
+    ['Ako môžem reklamovať chybný toner?', 'claim'],
+    ['Kedy mi príde objednávka?', 'order'],
+    ['Kde vás nájdem a kedy máte otvorené?', 'contact'],
+  ] as const) {
+    const result = await buildAssistantAnswer(question, '/', history);
+    assert.equal(result.intent, intent, question);
+    assert.deepEqual(result.products || [], [], question);
+    assert.doesNotMatch(result.answer.join(' '), /Nadväzujúca|WF6090/i, question);
+  }
+});
+
+test('pruhy pri tlači smerujú na čistenie a diagnostiku pásov, nie nerozpoznaný toner', async () => {
+  const result = await buildAssistantAnswer('Tlačiareň tlačí pruhy.', '/');
+  assert.equal(result.intent, 'diagnostic');
+  assert.equal(result.faq, 'tlaci-pasy');
+  assert.match(result.answer.join(' '), /pás|čiar|pruh/i);
+  assert.doesNotMatch(result.answer.join(' '), /nerozpozná toner/i);
 });
 
 const extraRegressionCases = [

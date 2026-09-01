@@ -27,15 +27,15 @@ const TYPE_ORDER: Record<string, number> = { compatible: 1, original: 2, renovat
 const SERVICE_INTENT_WORDS: Record<AiIntent, string[]> = {
   shipping: ['doprava', 'dopravne', 'postovne', 'kurier', 'gls', 'dpd', 'pickup', 'box', 'balikomat', 'parcelshop', 'dorucenie', 'pride balik', 'cena dopravy', 'balik na adresu'],
   payment: ['platba', 'zaplatit', 'platit', 'hotovost', 'hotovosti', 'gopay', 'dobierka', 'prevod', 'faktura', 'kartou', 'bankovy prevod', 'ico', 'dic', 'firma'],
-  claim: ['reklamacia', 'reklamovat', 'vratit', 'vymenit', 'nepasuje', 'nesedi', 'zly toner', 'chyba tovaru', 'prisiel zly', 'nefunguje', 'vratenie'],
+  claim: ['reklamacia', 'reklamovat', 'reklamujem', 'vratit', 'vymenit', 'nepasuje', 'nesedi', 'zly toner', 'chyba tovaru', 'prisiel zly', 'nefunguje', 'vratenie'],
   order: ['objednavka', 'objednavku', 'objednal', 'odoslete', 'poslete', 'expedujete', 'expedicia', 'kedy pride', 'kedy mi pride', 'stav objednavky', 'sledovanie zasielky', 'tracking', 'kde je balik'],
-  diagnostic: ['tlaci', 'pasy', 'ciary', 'smuhy', 'flaky', 'bledy', 'biele pasy', 'slaba farba', 'farba je slaba', 'slabo', 'sype', 'prasi', 'nerozpozna', 'chyba kazety', 'cartridge error', 'replace toner', 'po vymene tonera netlaci'],
+  diagnostic: ['tlaci', 'pasy', 'pruhy', 'ciary', 'smuhy', 'flaky', 'bledy', 'biele pasy', 'slaba farba', 'farba je slaba', 'slabo', 'sype', 'prasi', 'nerozpozna', 'chyba kazety', 'cartridge error', 'replace toner', 'po vymene tonera netlaci'],
   compatibility: ['kompatibilny', 'originalny', 'renovovany', 'renovovany toner', 'repasovany', 'alternativa', 'alternativny', 'lacnejsi ako original', 'rozdiel', 'zaruka', 'poskodi', 'pokazit tlaciaren'],
   support: ['ako najdem', 'aky toner', 'spravny toner', 'model tlaciarne', 'oznacenie tonera', 'kde najdem oznacenie', 'co zadat', 'toner alebo atrament'],
   account: ['ucet', 'prihlasenie', 'registracia', 'heslo', 'zabudnute heslo', 'nakup bez registracie', 'bez registracie', 'profil', 'adresa v ucte', 'ulozene tlaciarne', 'ulozene produkty', 'historia objednavok'],
   loyalty: ['vernost', 'vernostny', 'body', 'bodov', '1 bod', '7 %', '7%', '7 percent', '5 %', '5%', '5 percent', 'odmena', 'registracie', 'registraciu', 'zlava za registraciu', 'zlava po registracii'],
   legal: ['gdpr', 'cookies', 'osobne udaje', 'obchodne podmienky', 'vop', 'predavajuci', 'prevadzkovatel', 'ico', 'sidlo'],
-  contact: ['kontakt', 'telefon', 'mail', 'email', 'pracovna doba', 'cislo'],
+  contact: ['kontakt', 'telefon', 'mail', 'email', 'pracovna doba', 'otvaracie hodiny', 'otvorene', 'kde vas najdem', 'adresa', 'sidlo', 'cislo'],
   product_search: [], fallback: [], empty: [],
 };
 
@@ -489,7 +489,7 @@ function contextualizeFollowUp(message: string, history: AiConversationTurn[] = 
   // Jednoznačná samostatná servisná otázka nesmie zdediť predchádzajúci produkt.
   // Inak by napr. „koľko stojí doprava?“ po produktovej otázke znovu spustilo
   // katalógové hľadanie, pridalo tonery pod odpoveď a zbytočne spomalilo chat.
-  if (/\b(?:doprava|dopravn\w*|postovn\w*|kurier\w*|doruc\w*|osobn\w*\s+odber\w*|vyzdvih\w*|parcelshop|balikomat|pickup|dobierk\w*|gopay|platb\w*|prevod\w*|faktur\w*|reklamac\w*|vraten\w*|odstupen\w*|hesl\w*|registrac\w*|gdpr|kontakt\w*|telefon\w*|email\w*|pracovna doba)/.test(n)) return current;
+  if (/\b(?:doprava|dopravn\w*|postovn\w*|kurier\w*|doruc\w*|zasielk\w*|balik\w*|objednavk\w*|exped\w*|odosl\w*|osobn\w*\s+odber\w*|vyzdvih\w*|parcelshop|balikomat|pickup|dobierk\w*|gopay|platb\w*|prevod\w*|faktur\w*|reklam\w*|vraten\w*|odstup\w*|hesl\w*|registrac\w*|gdpr|kontakt\w*|telefon\w*|e-?mail\w*|otvoren\w*|otvarac\w*|pracovna doba|adres\w*|sidlo)/.test(n)) return current;
 
   const followUp = current.length <= 90 && (
     /^(a |ale |tak |dobre |ok |ano |nie )/.test(n)
@@ -529,6 +529,21 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
 
   // Jednoznačné obchodné témy routujeme priamo, aby ich všeobecné slová ako „nákup“ neprebili.
   const normalizedMessage = normalize(originalMessage);
+
+  // Najčastejšie diagnostické problémy musia mať deterministickú odpoveď.
+  // Všeobecné slovo „tlačí“ samo osebe nesmie prebiť konkrétne „pruhy“ a
+  // vybrať nesúvisiacu radu pre nerozpoznaný toner.
+  const directDiagnosticId = /\b(?:pas|pasy|pruh|pruhy|ciar|ciary|smuh|smuhy)\w*\b/.test(normalizedMessage)
+    ? 'tlaci-pasy'
+    : /\b(?:bled|slab)\w*\b.*\b(?:tlac|vytlac|farb)\w*\b|\b(?:tlac|vytlac|farb)\w*\b.*\b(?:bled|slab)\w*\b/.test(normalizedMessage)
+      ? 'bledy-vytlacok'
+      : /\b(?:nerozpozna|nepozna|chyba kazety|cartridge error|replace toner)\b/.test(normalizedMessage)
+        ? 'tlaciaren-nepozna-toner'
+        : '';
+  if (directDiagnosticId) {
+    const diagnostic = aiKnowledge.find((item) => item.id === directDiagnosticId);
+    if (diagnostic) return { answer: [`${diagnostic.title}:`, ...diagnostic.answer], products: [], groups: [], intent: 'diagnostic', faq: diagnostic.id, confidence: 0.99 };
+  }
 
   if (/\bporad\w*\b/.test(normalizedMessage) && /\b(?:nakup|toner|napln|produkt)\w*\b/.test(normalizedMessage)) {
     const selection = aiKnowledge.find((item) => item.id === 'vyber-toneru');
@@ -604,7 +619,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     const returns = aiKnowledge.find((item) => item.id === 'vratenie-tovaru');
     if (returns) return { answer: [`${returns.title}:`, ...returns.answer], products: [], groups: [], intent: 'claim', faq: returns.id, confidence: 0.99 };
   }
-  if (/reklamac/i.test(normalizedMessage)) {
+  if (/reklam/i.test(normalizedMessage)) {
     const claim = aiKnowledge.find((item) => item.id === 'reklamacia-postup');
     if (claim) return { answer: [`${claim.title}:`, ...claim.answer], products: [], groups: [], intent: 'claim', faq: claim.id, confidence: 0.99 };
   }
@@ -637,11 +652,12 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
       ? 'doprava-dopravcovia'
     : /\b(?:plat|zaplat|dobierk|gopay|bankov.*prevod|prevodom|kartou)\w*/i.test(normalizedMessage)
       ? 'platba-moznosti'
-    : /\b(?:reklamac|reklamuj|vratit|vraten|odstup|vymen|nepasuj|nespravny toner|zly toner|poskoden.*tovar)\w*/i.test(normalizedMessage)
+    : /\b(?:reklam|vratit|vraten|odstup|vymen|nepasuj|nespravny toner|zly toner|poskoden.*tovar)\w*/i.test(normalizedMessage)
       ? (/vrat|vraten|odstup|vymen|nespravny toner/i.test(normalizedMessage) ? 'vratenie-tovaru' : 'reklamacia-postup')
     : /\b(?:zabud|obnov)\w*.*\bhesl\w*|\b(?:neviem|nemozem|neda|nejde)\w*(?:\s+\w+){0,3}\s+prihlas\w*|\bprihlas\w*.*(?:nejde|nefung|problem|chyba)|\b(?:nespravn|zle|neplatn)\w*(?:\s+\w+){0,3}\s+(?:meno|email|e-mail|hesl)\w*|\b(?:meno|email|e-mail|hesl)\w*(?:\s+\w+){0,3}\s+(?:nespravn|zle|neplatn)\w*/i.test(normalizedMessage)
       ? 'ucet-heslo'
-    : /\b(?:kontakt|telefon|email|mail|spojim|spojit|pracovn.*doba|volat|volať|otvorene v sobotu)\w*/i.test(normalizedMessage)
+    : /\b(?:kontakt|telefon|email|mail|spojim|spojit|pracovn.*doba|volat|volať|otvoren\w*|otvarac\w*|sidlo)\w*/i.test(normalizedMessage)
+      || /\bkde\s+vas\s+najd\w*|\b(?:aka|kde)\w*.*\b(?:vasa|vasu|firmy)\s+adres\w*/i.test(normalizedMessage)
       ? 'kontakt'
       : '';
   if (directServiceId) {

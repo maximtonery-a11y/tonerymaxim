@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { quickPromptsForPath } from '../src/lib/ai-quick-prompts.ts';
 import { readFile } from 'node:fs/promises';
-import { isOrderStatusQuestion, publicOrderStatus } from '../src/lib/ai-order-status.ts';
+import { isOrderStatusQuestion, publicOrderNumber, publicOrderStatus } from '../src/lib/ai-order-status.ts';
 import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
 import { emptyCommerceState } from '../src/lib/ai-commerce/domain.ts';
 
@@ -112,6 +112,15 @@ test('aktívna bublina je nenásilná a sama neotvára AI panel', async () => {
   assert.doesNotMatch(script, /setTimeout\([^)]*openPanel/);
 });
 
+test('TM číslo objednávky z meta údajov má prednosť pred interným Woo číslom', async () => {
+  const wooOrder = { id:51664, number:'51664', status:'processing', meta_data:[{key:'tm_order_number',value:'300942'},{key:'gopay_order_number',value:'300941'}] };
+  assert.equal(publicOrderNumber(wooOrder), '300942');
+  assert.equal(publicOrderStatus(wooOrder).number, '300942');
+  const endpoint = await readFile(new URL('../src/pages/api/ai-order-status.ts', import.meta.url), 'utf8');
+  assert.match(endpoint, /publicOrderNumber\(item\) === orderNumber/);
+  assert.match(endpoint, /search:email/);
+});
+
 test('rýchle otázky sú viditeľné hneď a kalendárový odkaz nejde do tonerov', async () => {
   const [component, client] = await Promise.all([
     readFile(new URL('../src/components/FloatingAdvisor.astro', import.meta.url), 'utf8'),
@@ -121,4 +130,12 @@ test('rýchle otázky sú viditeľné hneď a kalendárový odkaz nejde do toner
   assert.doesNotMatch(component, /data-ai-quick hidden/);
   assert.match(client, /product_type_key==='calendar'\)return '\/kalendare\/'/);
   assert.match(client, /tm_ai_tomas_nudge_v2/);
+});
+
+test('UI zachová model tlačiarne v odkaze a pre kalendáre použije správne zľavové prahy', async () => {
+  const client = await readFile(new URL('../src/scripts/ai-sales-assistant.js', import.meta.url), 'utf8');
+  assert.match(client, /commerceState\?\.lastProductQuery\|\|state\.lastQuestion/);
+  assert.match(client, /calendar\?\[1,3,21\]:\[1,2,3,4\]/);
+  assert.match(client, /3 ks so zľavou 5 %/);
+  assert.match(client, /21 ks so zľavou 15 %/);
 });

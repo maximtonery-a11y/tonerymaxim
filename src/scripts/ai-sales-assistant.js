@@ -363,7 +363,8 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
 
 
   const money = (n) => Number(n || 0).toLocaleString('sk-SK',{style:'currency',currency:'EUR'});
-  const discount = (p,q) => String(p?.source||'')==='kalendare-2027' ? (q>=21?15:(q>=3?5:0)) : String(p?.type || p?.product_type_key || '').toLowerCase()==='compatible' ? (q>=4?25:(q>=2?10:0)) : 0;
+  const isCalendarProduct = p => String(p?.source||'')==='kalendare-2027' || String(p?.product_type_key||'').toLowerCase()==='calendar';
+  const discount = (p,q) => isCalendarProduct(p) ? (q>=21?15:(q>=3?5:0)) : String(p?.type || p?.product_type_key || '').toLowerCase()==='compatible' ? (q>=4?25:(q>=2?10:0)) : 0;
   const unitPrice = (p,q) => Number(p?.price||0)*(1-discount(p,q)/100);
   const linePrice = (p,q) => unitPrice(p,q)*q;
   const cartKey = p => String(p?.sku || p?.id || p?.name || '').trim().toLowerCase();
@@ -437,7 +438,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     setExperience('shop');
     setProgress(3);
     messages.hidden=true; form.hidden=true; if(quick)quick.hidden=true; commerce.hidden=false;commerce.classList.add('is-focus-stage');
-    commerce.innerHTML=`<div class="tm-ai-commerce__head"><button class="tm-ai-back" data-c-back>← Späť k ponuke</button><div><b>Váš nákup</b><small>${state.cart.reduce((n,x)=>n+x.qty,0)} ks</small></div></div>${state.cart.length?`<div class="tm-ai-cart-list">${state.cart.map((x,i)=>{const reward=isPaperRewardCartItem(x.product);return`<div class="tm-ai-cart-item"><div><strong>${escapeHtml(x.product.name)}</strong><small>${escapeHtml(x.product.sku||'')}${reward?' · automatická vernostná odmena':discount(x.product,x.qty)?` · zľava ${discount(x.product,x.qty)} %`:''}</small></div><b>${money(linePrice(x.product,x.qty))}</b><div class="tm-ai-cart-controls">${reward?`<strong>${x.qty} ks</strong>`:`<button aria-label="Znížiť množstvo" data-c-minus="${i}">−</button><strong>${x.qty} ks</strong><button aria-label="Zvýšiť množstvo" data-c-plus="${i}">+</button><button class="remove" data-c-remove="${i}">Odstrániť</button>`}</div>${!reward&&aiType(x.product)==='compatible'&&x.qty<4?`<button class="tm-ai-offer" data-c-offer="${i}" data-q="${x.qty===1?2:4}">💡 Výhodnejšie: ${x.qty===1?'2 ks so zľavou 10 %':'4 ks so zľavou 25 %'} · ${money(unitPrice(x.product,x.qty===1?2:4))}/ks</button>`:''}</div>`}).join('')}</div><div class="tm-ai-cart-total"><span>Spolu za tovar</span><b>${money(cartTotal())}</b></div><div class="tm-ai-commerce__actions tm-ai-cart-actions"><button class="primary" data-c-checkout>Pokračovať v rýchlom nákupe →</button><button class="secondary" data-c-web>Dokončiť objednávku na webe</button><button class="secondary" data-c-more>＋ Pridať ďalší produkt</button></div><p class="tm-ai-cart-note">Môžete pokračovať s AI alebo prejsť do bežného košíka. Položky aj množstvá zostanú rovnaké.</p>`:'<div class="tm-ai-empty-cart"><b>Váš nákup je zatiaľ prázdny.</b><button class="primary" data-c-more>Nájsť toner</button></div>'}`;
+    commerce.innerHTML=`<div class="tm-ai-commerce__head"><button class="tm-ai-back" data-c-back>← Späť k ponuke</button><div><b>Váš nákup</b><small>${state.cart.reduce((n,x)=>n+x.qty,0)} ks</small></div></div>${state.cart.length?`<div class="tm-ai-cart-list">${state.cart.map((x,i)=>{const reward=isPaperRewardCartItem(x.product),offer=nextQuantityOffer(x.product,x.qty);return`<div class="tm-ai-cart-item"><div><strong>${escapeHtml(x.product.name)}</strong><small>${escapeHtml(x.product.sku||'')}${reward?' · automatická vernostná odmena':discount(x.product,x.qty)?` · zľava ${discount(x.product,x.qty)} %`:''}</small></div><b>${money(linePrice(x.product,x.qty))}</b><div class="tm-ai-cart-controls">${reward?`<strong>${x.qty} ks</strong>`:`<button aria-label="Znížiť množstvo" data-c-minus="${i}">−</button><strong>${x.qty} ks</strong><button aria-label="Zvýšiť množstvo" data-c-plus="${i}">+</button><button class="remove" data-c-remove="${i}">Odstrániť</button>`}</div>${!reward&&offer?`<button class="tm-ai-offer" data-c-offer="${i}" data-q="${offer.quantity}">💡 Výhodnejšie: ${offer.label} · ${money(unitPrice(x.product,offer.quantity))}/ks</button>`:''}</div>`}).join('')}</div><div class="tm-ai-cart-total"><span>Spolu za tovar</span><b>${money(cartTotal())}</b></div><div class="tm-ai-commerce__actions tm-ai-cart-actions"><button class="primary" data-c-checkout>Pokračovať v rýchlom nákupe →</button><button class="secondary" data-c-web>Dokončiť objednávku na webe</button><button class="secondary" data-c-more>＋ Pridať ďalší produkt</button></div><p class="tm-ai-cart-note">Môžete pokračovať s AI alebo prejsť do bežného košíka. Položky aj množstvá zostanú rovnaké.</p>`:'<div class="tm-ai-empty-cart"><b>Váš nákup je zatiaľ prázdny.</b><button class="primary" data-c-more>Nájsť toner</button></div>'}`;
     commerce.scrollTop=0;
     commerce.querySelector('[data-c-back]')?.addEventListener('click',commerceBack); commerce.querySelector('[data-c-more]')?.addEventListener('click',()=>{commerceBack();state.mode='shop';input.focus()});
     commerce.querySelectorAll('[data-c-minus]').forEach(b=>b.onclick=()=>{const i=+b.dataset.cMinus;state.cart[i].qty=Math.max(1,state.cart[i].qty-1);updateLiveCart();renderCart()});
@@ -447,10 +448,23 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     commerce.querySelector('[data-c-checkout]')?.addEventListener('click',prepareHandoff);
     commerce.querySelector('[data-c-web]')?.addEventListener('click',()=>{syncSharedCart();saveCommerceSession();closePanel();location.href='/kosik';});
   }
+  function nextQuantityOffer(product,qty){
+    if(isCalendarProduct(product)){
+      if(qty<3)return{quantity:3,label:'3 ks so zľavou 5 %'};
+      if(qty<21)return{quantity:21,label:'21 ks so zľavou 15 %'};
+      return null;
+    }
+    if(aiType(product)==='compatible'){
+      if(qty<2)return{quantity:2,label:'2 ks so zľavou 10 %'};
+      if(qty<4)return{quantity:4,label:'4 ks so zľavou 25 %'};
+    }
+    return null;
+  }
   function quantityChooser(product){
-    const compatible=aiType(product)==='compatible';
+    const calendar=isCalendarProduct(product),compatible=aiType(product)==='compatible',discounted=calendar||compatible;
     const capacity=parseCapacity(product),per100=capacity&&Number(product.price)>0?Number(product.price)/capacity*100:0;
-    const chooser=compatible?`<p>Vyberte množstvo a využite zľavu:</p><div class="tm-ai-qty-grid">${[1,2,3,4].map(q=>`<button type="button" data-ai-q="${q}" ${q===4?'class="best"':''}><b>${q} ks</b><span>${money(unitPrice(product,q))}/ks</span>${discount(product,q)?`<em>−${discount(product,q)} %</em>`:''}</button>`).join('')}</div>`:`<div class="tm-ai-simple-qty"><label>Koľko kusov chcete kúpiť?<input type="number" min="1" max="99" value="1" data-ai-simple-qty></label><button type="button" data-ai-simple-add>Pridať do nákupu</button></div>`;
+    const quantities=calendar?[1,3,21]:[1,2,3,4];
+    const chooser=discounted?`<p>Vyberte množstvo a využite zľavu:</p><div class="tm-ai-qty-grid">${quantities.map(q=>`<button type="button" data-ai-q="${q}" ${q===(calendar?21:4)?'class="best"':''}><b>${q} ks</b><span>${money(unitPrice(product,q))}/ks</span>${discount(product,q)?`<em>−${discount(product,q)} %</em>`:''}</button>`).join('')}</div>`:`<div class="tm-ai-simple-qty"><label>Koľko kusov chcete kúpiť?<input type="number" min="1" max="99" value="1" data-ai-simple-qty></label><button type="button" data-ai-simple-add>Pridať do nákupu</button></div>`;
     openCommerceStage(`<div class="tm-ai-commerce__head"><button data-ai-q-back>← Späť na ponuku</button><b>Vyberte množstvo</b></div><div class="tm-ai-purchase-step"><div class="tm-ai-selected-product"><div><p><b>${escapeHtml(product.name)}</b></p><small>${escapeHtml(product.sku||'')}</small></div><strong>${money(product.price)}</strong></div>${capacity?`<p class="tm-ai-cost-note">Kapacita ${capacity.toLocaleString('sk-SK')} strán · <b>${costPerPageText(product)}</b></p>`:''}${chooser}</div>`,2);
     commerce.querySelector('[data-ai-q-back]').onclick=commerceBack;
     commerce.querySelectorAll('[data-ai-q]').forEach(b=>b.onclick=()=>{const q=+b.dataset.aiQ;state.commerceState.pendingQuestion=null;addCommerceItem(product,q);renderCart();});
@@ -582,7 +596,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     return picked.slice(0,3);
   }
   function webResultsUrl(products){
-    const p=products[0]||{}; const term=state.lastQuestion||p.sku||p.name||'';
+    const p=products[0]||{}; const term=state.commerceState?.lastProductQuery||state.lastQuestion||p.sku||p.name||'';
     if(p?.source==='kalendare-2027'||p?.product_type_key==='calendar')return '/kalendare/';
     return `/produkty?s=${encodeURIComponent(term)}`;
   }

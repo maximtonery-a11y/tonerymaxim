@@ -26,7 +26,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // Service questions must be routable at any point of a shopping flow.  In
   // particular, a pending quantity/type question must never turn "can I pay
   // cash?" into a product follow-up using the previous catalogue query.
-  const serviceQuestion = /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|doprava|doruc\w*|kurier\w*|objednavk\w*|stav\w*\s+objednavk\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklamac\w*|vraten\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|otvarac\w*|pracovn\w*\s+doba|vernost\w*|odmen\w*|zlav\w*|bod(?:y|ov)?)\b/.test(n);
+  const serviceQuestion = /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|doprava|doruc\w*|kurier\w*|objednavk\w*|zasielk\w*|balik\w*|exped\w*|odosl\w*|stav\w*\s+objednavk\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklam\w*|vraten\w*|odstup\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|telefon\w*|e-?mail\w*|otvarac\w*|otvoren\w*|pracovn\w*\s+doba|kde\s+(?:vas|vás)\s+najd\w*|adres\w*|sidlo|vernost\w*|odmen\w*|zlav\w*|bod(?:y|ov)?)\b/.test(n);
   const pendingAnswer = state.pendingQuestion === 'quantity'
     ? /^(?:\s*(?:\d{1,2}|jeden|jednu|jedno|dva|dve|tri|styri|pat)\s*(?:ks|kus|kusy|kusov)?\s*)$/.test(n)
     : state.pendingQuestion === 'product_type'
@@ -62,8 +62,8 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const explicitCheckout = /\b(?:pokladn\w*|sumar\w*|prejst\w*.*(?:pokladn|platb|doprav)|pokrac\w*.*(?:nakup|objednav)|dokonc\w*.*objednav|chcem\s+(?:kupit|objednat)|objednaj)\b/.test(n);
   if (explicitCheckout) add('CHECKOUT');
   if (/(zopak|ako naposledy|posli ako naposledy|posledn.*objednav)/.test(n)) add('ORDER_REPEAT');
-  if (/(ako|preco|kolko stran|vydrz|vytaznost|pasy|slaba tlac|cip)/.test(n)) add('ADVICE');
-  if (/(reklamac|vraten|registr|vernost|obchodne podmienky)/.test(n)) add('POLICY');
+  if (/(ako|preco|kolko stran|vydrz|vytaznost|pasy|pruhy|ciary|smuhy|slaba tlac|cip)/.test(n)) add('ADVICE');
+  if (/(reklam|vraten|odstup|registr|vernost|obchodne podmienky)/.test(n)) add('POLICY');
   if (!serviceQuestion && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (/(ten|ho|ich|do nej|a original|a kompatibil|a renov|originalny|kompatibilny|renovovany|renovovanu|renovovany|repasovany|je skladom|kolko stran|chcem|zoberiem|pridaj|\bkus(?:y|ov)?\b|\bks\b|kosik|pokladn)/.test(n) || pendingAnswer)) add('FOLLOW_UP');
   if (!intents.length) add('UNKNOWN');
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];

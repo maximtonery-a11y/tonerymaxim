@@ -22,7 +22,7 @@ test('zakázané produkty filtruje server',async()=>{
 
 test('servisná otázka po produktoch nepoužije starý katalógový dopyt',()=>{
  const state=normalizeCommerceState({lastProductQuery:'CRG054',currentPrinter:'Canon i-SENSYS LBP623Cdw',pendingQuestion:'quantity'});
- for(const message of ['Môžem platiť v hotovosti?','Máte možnosť osobného odberu?','Ako prebieha reklamácia?','Koľko stojí doprava?']){
+ for(const message of ['Môžem platiť v hotovosti?','Máte možnosť osobného odberu?','Ako prebieha reklamácia?','Ako môžem reklamovať chybný toner?','Kedy mi príde objednávka?','Kde vás nájdem a kedy máte otvorené?','Koľko stojí doprava?']){
   const route=routeCommerceMessage(message,state);
   assert.equal(route.needsProducts,false,message);
   assert.equal(route.productQuery,null,message);

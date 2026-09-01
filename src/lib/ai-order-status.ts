@@ -6,13 +6,24 @@ const labels: Record<string, string> = {
 export function publicOrderStatus(order: any) {
   const status = String(order?.status || '').toLowerCase();
   return {
-    number: String(order?.number || order?.id || '').replace(/[^a-z0-9._/-]/gi, '').slice(0, 40),
+    number: publicOrderNumber(order).replace(/[^a-z0-9._/-]/gi, '').slice(0, 40),
     status,
     statusLabel: labels[status] || 'Stav sa overuje',
     date: String(order?.date_created || '').slice(0, 32),
     shipping: String(order?.shipping_lines?.[0]?.method_title || '').slice(0, 100),
     tracking: extractTracking(order?.meta_data),
   };
+}
+
+function orderMetaValue(order: any, key: string) {
+  const rows = Array.isArray(order?.meta_data) ? order.meta_data : [];
+  return String(rows.find((row: any) => String(row?.key || '') === key)?.value || '').trim();
+}
+
+export function publicOrderNumber(order: any) {
+  return orderMetaValue(order, 'tm_order_number')
+    || orderMetaValue(order, 'gopay_order_number')
+    || String(order?.number || order?.id || '');
 }
 
 function extractTracking(meta: any) {
