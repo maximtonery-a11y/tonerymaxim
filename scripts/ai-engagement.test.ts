@@ -145,7 +145,8 @@ test('rýchle otázky sú viditeľné hneď a kalendárový odkaz nejde do toner
   ]);
   assert.match(component, /data-ai-quick aria-label="Najčastejšie otázky"/);
   assert.doesNotMatch(component, /data-ai-quick hidden/);
-  assert.match(client, /product_type_key==='calendar'\)return '\/kalendare\/'/);
+  assert.match(client, /product_type_key==='calendar'\)\{/);
+  assert.match(client, /return '\/kalendare\/'/);
   assert.match(client, /tm_ai_tomas_nudge_v2/);
 });
 
@@ -155,4 +156,5 @@ test('UI zachová model tlačiarne v odkaze a pre kalendáre použije správne z
   assert.match(client, /calendar\?\[1,3,21\]:\[1,2,3,4\]/);
   assert.match(client, /3 ks so zľavou 5 %/);
   assert.match(client, /21 ks so zľavou 15 %/);
+  assert.match(client, /cat=\$\{encodeURIComponent\('Diáre'\)\}/);
 });

@@ -142,9 +142,15 @@ function asProduct(row: CalendarRow) {
 export async function searchCalendarProducts(query: string) {
   const rows = await loadRows();
   const n = normalize(query);
+  // SKU kalendára je jednoznačný identifikátor. Pomlčky v kódoch ako
+  // D-02-2-27 sa pri bežnej tokenizácii rozpadnú na čísla a mohli vrátiť
+  // desiatky nesúvisiacich produktov s rokom 2027.
+  const compact = (value: unknown) => normalize(value).replace(/\s+/g, '');
+  const exactSku = rows.find((row) => compact(row.sku) === compact(query));
+  if (exactSku) return { products: [asProduct(exactSku)], source: 'calendar' as const };
   const ignored = new Set(['ake','aky','aku','mate','predavate','ponukate','ponuke','sortiment','chcem','hladam','potrebujem','kalendar','kalendare','kalendara','kalendat','kaledar','kalemdar','kalndar','calendar','diar','diare','diara','prosim','ukaz','mi','v','vo','na','do','pre','s','so','a','aj','alebo',
     'dakujem','dobry','den','mozete','povedat','vediet','opytat','je','to','mozne','presnu','informaciu','viete','poradit','ide','o','nakup','pytam','sa','ako','zakaznik','odpovedzte','strucne','spisovne','pomoc',
-    'ukazte','ukazete','zobrazte','zobrazite','ponuknite','vyberte']);
+    'ukazte','ukazete','zobrazte','zobrazite','ponuknite','vyberte','druh','druhy','typ','typy','vybrat','vyber','si','kupit','kupim','objednat','zobrat','su','skladom','odporucit','rok']);
   const aliases: Record<string, string> = { psami: 'psy', psov: 'psy', psiky: 'psy', mackami: 'macky', maciek: 'macky', tatrach: 'tatry' };
   const canonicalToken = (token: string) => {
     const aliased = aliases[token] || token;
@@ -157,13 +163,27 @@ export async function searchCalendarProducts(query: string) {
     if (/^prirod/.test(aliased)) return 'prirod';
     return aliased;
   };
-  const tokens = n.split(' ').filter((token) => token.length > 1 && !ignored.has(token) && !/^202[6-9]$/.test(token)).map(canonicalToken);
+  const tokens = n.split(' ').filter((token) => token.length > 1 && !ignored.has(token) && !/^diar/.test(token) && !/^202[6-9]$/.test(token)).map(canonicalToken);
   const generic = tokens.length === 0 || tokens.every((token) => /^202[6-9]$/.test(token));
   const wantsDiary = /\b(?:diar|diare|minidiar)\w*\b/.test(n);
   const wantsNature = tokens.includes('prirod');
   const isNatureTheme = (row: CalendarRow) => /\b(slovensko|tatry|polovnik|kvety|rozkvitnut|luka|hory|more|krajina|pobrezie|huby|rybarsk)\w*\b/.test(normalize(row.name));
+  const wantsDailyDiary = tokens.includes('denn');
+  const wantsWeeklyDiary = tokens.includes('tyzden');
+  const wantsMonthlyDiary = tokens.includes('mesac');
+  const wantsMiniDiary = tokens.includes('minidiar') && !wantsMonthlyDiary;
+  const matchesDiarySubtype = (row: CalendarRow) => {
+    const identity = normalize(`${row.name || ''} ${row.category || ''}`);
+    const mini = /\bminidiar\w*\b/.test(identity);
+    if (wantsMonthlyDiary) return mini && /\bmesac\w*\b/.test(identity);
+    if (wantsMiniDiary) return mini && !/\bmesac\w*\b/.test(identity);
+    if (wantsDailyDiary) return /\bdenn\w*\b/.test(identity) && !mini;
+    if (wantsWeeklyDiary) return /\btyzden\w*\b/.test(identity) && !mini;
+    return true;
+  };
   const scopedRows = wantsDiary
     ? rows.filter((row) => /\b(?:diar|minidiar)\w*\b/.test(normalize(`${row.name} ${row.category || ''}`)))
+      .filter(matchesDiarySubtype)
     : wantsNature ? rows.filter(isNatureTheme) : rows;
   const scored = scopedRows.map((row) => {
     const identity = normalize(`${row.name} ${row.sku} ${row.category} ${row.variant || ''} ${row.format || ''}`);
@@ -194,7 +214,11 @@ export async function searchCalendarProducts(query: string) {
 
   const diaryKind = (row: CalendarRow) => {
     const identity = normalize(`${row.name || ''} ${row.category || ''} ${row.format || ''}`);
-    if (/\bminidiar\w*\b|\bmesac\w*\b/.test(identity)) return 'minidiar';
+    // Mesačný minidiár a týždenný minidiár sú na webe dve samostatné
+    // možnosti („Mesačné“ a „Minidiáre“). Pri všeobecnej otázke preto
+    // nesmú splynúť do jednej karty.
+    if (/\bminidiar\w*\b/.test(identity) && /\bmesac\w*\b/.test(identity)) return 'mesacny-diar';
+    if (/\bminidiar\w*\b/.test(identity)) return 'minidiar';
     if (/\bdenn\w*\b/.test(identity)) return 'denny-diar';
     if (/\btyzden\w*\b/.test(identity)) return 'tyzdenny-diar';
     return String(row.category || row.sku || 'diar');

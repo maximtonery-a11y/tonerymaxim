@@ -597,7 +597,14 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   }
   function webResultsUrl(products){
     const p=products[0]||{}; const term=state.commerceState?.lastProductQuery||state.lastQuestion||p.sku||p.name||'';
-    if(p?.source==='kalendare-2027'||p?.product_type_key==='calendar')return '/kalendare/';
+    if(p?.source==='kalendare-2027'||p?.product_type_key==='calendar'){
+      const calendarQuery=String(term).toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      if(/\b(?:diar|minidiar)\w*\b/.test(calendarQuery)){
+        const sub=/\bdenn\w*\b/.test(calendarQuery)?'daily':/\btyzden\w*\b/.test(calendarQuery)?'weekly':/\bmesac\w*\b/.test(calendarQuery)?'monthly':/\bminidiar\w*\b/.test(calendarQuery)?'mini':'';
+        return `/kalendare/#/?cat=${encodeURIComponent('Diáre')}${sub?`&sub=${sub}`:''}`;
+      }
+      return '/kalendare/';
+    }
     return `/produkty?s=${encodeURIComponent(term)}`;
   }
   function renderCommerceProductList(products,title){

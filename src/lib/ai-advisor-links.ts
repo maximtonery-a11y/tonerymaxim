@@ -15,6 +15,9 @@ export function advisorLinks(advisor: { intent?: unknown; faq?: unknown; sources
   // Kalendárová odpoveď nesmie nikdy spadnúť na tonerovú poradňu.
   // Produkty majú vlastné, katalógom dodané URL; tento odkaz je iba bezpečný
   // vstup do celej ponuky.
+  if (intent === 'calendar_search' && faq === 'calendar-diary-overview') return [
+    { label: 'Zobraziť všetky diáre', url: '/kalendare/#/?cat=Di%C3%A1re' },
+  ];
   if (intent === 'calendar_search') return [
     { label: 'Celá ponuka kalendárov a diárov', url: '/kalendare/' },
   ];

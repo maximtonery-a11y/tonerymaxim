@@ -87,6 +87,7 @@ function cleanQuestion(message: string) {
 
 function hasProductCodeOrModel(message: string) {
   const text = normalize(message);
+  if (/\bsku\s*[:#-]?\s*[a-z0-9][a-z0-9_-]{1,99}\b/i.test(text)) return true;
   // Bežné čísla (percentá, ceny, počty objednávok) nesmú spustiť produktové vyhľadávanie.
   // Všeobecný model musí mať písmeno a číslo v tom istom tokene; medzeru povoľujeme iba pri známych OEM prefixoch.
   if (/\b[a-z]{1,8}-?\d{2,}[a-z0-9-]*\b/i.test(text)) return true;
@@ -101,6 +102,8 @@ function productQueryCandidates(message: string) {
   const normalized = normalize(message).replace(/[^a-z0-9-]+/g, ' ').trim();
   const tokens = normalized.split(/\s+/).filter(Boolean);
   const candidates: string[] = [];
+  const explicitSku = normalize(message).match(/\bsku\s*[:#-]?\s*([a-z0-9][a-z0-9_-]{1,99})\b/i)?.[1];
+  if (explicitSku) candidates.push(explicitSku);
   for (let i = 0; i < tokens.length; i += 1) {
     if (!/\d/.test(tokens[i])) continue;
     for (let before = 0; before <= 2; before += 1) {
@@ -188,7 +191,7 @@ function isGenericConsumableSelectionRequest(message: string) {
   if (!/\b(?:toner\w*|napln\w*|atrament\w*|kazet\w*|cartridge\w*|ink\w*)\b/.test(text)) return false;
   if (!/\b(?:mate|predavate|ponukate|hladam|potrebujem|chcem|kupit|zhanam|je|su)\b/.test(text)) return false;
   // Informačné, diagnostické a reklamačné otázky majú vlastnú odpoveď.
-  if (/\b(?:co je|co znamena|aky je rozdiel|ako funguje|preco|pasy|ciary|smuhy|bled|sype|prasi|nerozpozna|nefunguje|reklamac|vratit|vymen|nepasuje|pokaz|original|kompatibil|renov|repas)\w*/.test(text)) return false;
+  if (/\b(?:co je|co znamena|aky je rozdiel|ako funguje|preco|pasy|ciary|smuhy|bled|sype|prasi|nerozpozna|nefunguje|reklam|vratit|vymen|nepasuje|pokaz|original|kompatibil|renov|repas)\w*/.test(text)) return false;
   return true;
 }
 

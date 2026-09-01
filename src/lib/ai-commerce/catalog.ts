@@ -104,6 +104,20 @@ function compactPrinterKey(value: unknown) {
   return String(value || '').toLocaleLowerCase('sk-SK').normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 }
+function printerSeriesTokens(value: unknown) {
+  const ignored = new Set(['hp','canon','brother','epson','lexmark','samsung','kyocera','xerox','oki','konica','minolta','ricoh','dell','pantum','sharp','toshiba','utax','panasonic','xpress','sl','mfp','color','colour']);
+  return String(value || '').toLocaleLowerCase('sk-SK').normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim().split(/\s+/)
+    .filter((token) => token && !ignored.has(token) && !/\d/.test(token));
+}
+function samePrinterSeries(product: any, query: string) {
+  const required = printerSeriesTokens(query);
+  if (!required.length) return true;
+  return productPrinterValues(product).some((printer) => {
+    const text = String(printer || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return required.every((token) => new RegExp(`(?:^|[^a-z0-9])${token}(?:$|[^a-z0-9])`).test(text));
+  });
+}
 function printerAssignmentIndex(products: any[]) {
   const cached = AI_PRINTER_ASSIGNMENT_INDEX.get(products);
   if (cached) return cached;
@@ -157,7 +171,12 @@ export async function resolveCommerceProducts(query: string) {
   const directlyAssigned = assignmentIndex.exact.get(normalizedQuery) || [];
   const familyAssigned = assignmentIndex.family.get(consumablePrinterFamilyKey(query)) || [];
   const structuredLoose = findExactPrinterModelMatches(loose, query).map(m => m.product);
-  const printer = [...new Map([...directlyAssigned, ...familyAssigned, ...structuredLoose].map((p: any) => [String(p.id), p])).values()]
+  // Širší rodinný alias musí zachovať produktovú radu. Samsung C430W sa má
+  // spojiť so Samsung Xpress SL-C430W, no HP Apollo P-2100 sa nesmie spojiť
+  // s HP LaserJet 2100 iba preto, že zdieľajú číslo 2100.
+  const familyFallback = familyAssigned.filter((product: any) => samePrinterSeries(product, query));
+  const structuredFallback = structuredLoose.filter((product: any) => samePrinterSeries(product, query));
+  const printer = [...new Map([...directlyAssigned, ...familyFallback, ...structuredFallback].map((p: any) => [String(p.id), p])).values()]
     .filter(isValidOffer)
     .filter((product: any) => !isPrinterDevice(product));
   // Presné štruktúrované priradenie tlačiarne je autoritatívne. Predošlá

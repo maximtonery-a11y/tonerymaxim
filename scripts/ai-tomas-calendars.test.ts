@@ -100,10 +100,42 @@ test('všeobecná otázka na diáre vráti druhy ponuky, nie jediný náhodný v
   for (const question of ['Máte v ponuke diáre?', 'Aké máte diáre v ponuke?']) {
     const result = await searchCalendarProducts(question);
     const names = result.products.map((product) => product.name).join(' ');
-    assert.ok(result.products.length >= 3, `${question}: ${result.products.length}`);
+    assert.ok(result.products.length >= 4, `${question}: ${result.products.length}`);
     assert.match(names, /Denný diár/i);
     assert.match(names, /Týždenný diár/i);
+    assert.match(names, /Minidiár mesačný/i);
     assert.match(names, /Minidiár/i);
+  }
+});
+
+test('odpoveď na všeobecnú otázku o diároch uvedie všetky 4 typy a otvorí priamo diáre', async () => {
+  for (const question of ['Aké máte diáre v ponuke?', 'Máte v ponuke diáre?', 'Prosím, ukážte druhy diárov.']) {
+    const result = await askAiTomas(question);
+    const answer = result.advisor.answer.join(' ');
+    assert.match(answer, /denné diáre.*týždenné diáre.*mesačné diáre.*minidiáre/i, question);
+    assert.equal(result.commerce?.products?.length, 4, question);
+    assert.deepEqual(result.advisor.sources, [
+      { label:'Zobraziť všetky diáre', url:'/kalendare/#/?cat=Di%C3%A1re' },
+    ], question);
+    const target = new URL(`https://www.tonerymaxim.sk${result.advisor.sources[0].url}`);
+    const params = new URLSearchParams(target.hash.split('?')[1]);
+    assert.equal(params.get('cat'), 'Diáre', question);
+  }
+});
+
+test('presné kalendárové SKU a diárové podtypy sa nemiešajú', async () => {
+  const exact = await searchCalendarProducts('D-02-2-27');
+  assert.deepEqual(exact.products.map((product) => product.sku), ['D-02-2-27']);
+  const cases = [
+    ['Máte denné diáre?', /Denný diár/i, /Týždenný diár|Minidiár/i],
+    ['Máte týždenné diáre?', /^Týždenný diár/i, /^Denný diár|^Minidiár/i],
+    ['Máte mesačné diáre?', /Minidiár mesačný/i, /týždenný/i],
+  ] as const;
+  for (const [question, expected, forbidden] of cases) {
+    const result = await searchCalendarProducts(question);
+    assert.ok(result.products.length > 0, question);
+    assert.ok(result.products.every((product) => expected.test(product.name)), question);
+    assert.ok(result.products.every((product) => !forbidden.test(product.name)), question);
   }
 });
 

@@ -59,3 +59,10 @@ test('prirodzená požiadavka na WF-6090 routuje iba čistý model tlačiarne',(
  assert.equal(route.productQuery,'Epson WF-6090');
  assert.ok(route.intents.includes('PRINTER_SEARCH'));
 });
+
+test('explicitné krátke číselné SKU sa dá vyhľadať bez zámeny za objednávku',()=>{
+ const route=routeCommerceMessage('Chcem kúpiť SKU 276',normalizeCommerceState({}));
+ assert.equal(route.needsProducts,true);
+ assert.equal(route.productQuery,'276');
+ assert.ok(route.intents.includes('BUY_INTENT'));
+});

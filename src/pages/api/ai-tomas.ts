@@ -89,19 +89,19 @@ export const POST: APIRoute = async ({ request }) => {
       const count = commerce.products.length;
       const optionCount = count === 1 ? '1 aktuálne dostupnú možnosť' : count < 5 ? `${count} aktuálne dostupné možnosti` : `${count} aktuálne dostupných možností`;
       const diaryOverview = /\b(?:diar|diare)\w*\b/.test(normalized(message))
-        && /\b(ake|aky|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(normalized(message));
+        && /\b(ake|aky|co|mate|predavate|ponukate|ponuke|sortiment|druh|druhy|typ|typy|vybrat|vyber)\w*\b/.test(normalized(message));
       const tableCalendarOverview = /\bstolov\w*\b/.test(normalized(message));
       const wallCalendarOverview = /\bnastenn\w*\b/.test(normalized(message));
       advisor = {
         ...advisor,
         answer: [diaryOverview
-          ? `V ponuke máme denné a týždenné diáre aj mesačné minidiáre v rôznych farbách. Nižšie zobrazujem ${optionCount}; výber môžete spresniť typom alebo farbou.`
+          ? `V ponuke máme štyri typy: denné diáre, týždenné diáre, mesačné diáre a minidiáre. Nižšie zobrazujem ${optionCount}; výber môžete spresniť typom alebo farbou.`
           : tableCalendarOverview
             ? `Máme viacero stolových kalendárov na rok 2027. Nižšie zobrazujem ${optionCount}. Hľadáte konkrétny motív, rozmer alebo cenovú úroveň?`
             : wallCalendarOverview
               ? `Máme viacero nástenných kalendárov na rok 2027. Nižšie zobrazujem ${optionCount}. Hľadáte konkrétny motív alebo rozmer?`
               : `V aktuálnej ponuke som našiel ${count} ${count === 1 ? 'vhodný produkt' : count < 5 ? 'vhodné produkty' : 'vhodných produktov'}.`],
-        products: [], groups: [], intent: 'calendar_search', confidence: 1, unanswered: false, handoffSuggested: false,
+        products: [], groups: [], intent: 'calendar_search', faq: diaryOverview ? 'calendar-diary-overview' : advisor?.faq, confidence: 1, unanswered: false, handoffSuggested: false,
       };
     }
     const wantsHuman=route.intents.includes('HUMAN_ESCALATION');

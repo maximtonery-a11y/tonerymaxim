@@ -9,8 +9,9 @@ const printer = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|r
 export function routeCommerceMessage(message: string, state: CommerceState) {
   const n = norm(message); const intents: AiIntent[] = [];
   const catalogQuery = analyzeCatalogQuery(message);
+  const explicitSkuMention = message.match(/\bsku\s*[:#-]?\s*([a-z0-9][a-z0-9_-]{1,99})\b/i)?.[1] || null;
   const explicitReference = message.match(/\b(?=[A-Z0-9_-]{4,}\b)(?=[A-Z0-9_-]*[A-Z])(?=[A-Z0-9_-]*\d)[A-Z0-9]+(?:[-_][A-Z0-9]+)*\b/i)?.[0] || null;
-  const sharedCatalogReference = Boolean(explicitReference) || (
+  const sharedCatalogReference = Boolean(explicitReference || explicitSkuMention) || (
     catalogQuery.brands.length > 0 && catalogQuery.referenceTokens.some(token => /^\d{2,6}[a-z]{0,4}$/i.test(token))
   );
   const calendarQuestion = /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn|nastenn|stolov|trojmesac|trojspiral)\w*\b/.test(n);
@@ -73,7 +74,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // Pri modeli tlačiarne vraciame iba čistý model (napr. Epson WF-6090), nie
   // celú vetu „Hľadám náplne...“. OEM kód má naďalej prednosť, aby sa Canon
   // CRG054 alebo Brother TN2421 nikdy nepovažovali za model tlačiarne.
-  const query = serviceQuestion ? null : calendarQuery || knownProductAlias || numericSku
+  const query = serviceQuestion ? null : calendarQuery || knownProductAlias || explicitSkuMention || numericSku
     || (hasExplicitProductCode && sharedCatalogReference ? message : null)
     || printerQuery
     || (sharedCatalogReference ? message : null)
