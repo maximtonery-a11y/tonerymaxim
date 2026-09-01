@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { buildAssistantAnswer } from '../src/lib/aiSalesAssistant.ts';
 import { emptyCommerceState, normalizeCommerceState } from '../src/lib/ai-commerce/domain.ts';
 import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
-import { isCalendarQuery } from '../src/lib/calendar-ai-catalog.ts';
+import { isCalendarQuery, isGeneralCalendarQuestion } from '../src/lib/calendar-ai-catalog.ts';
 
 process.env.OPENAI_ASSISTANT_ENABLED = '0';
 
@@ -91,6 +91,12 @@ const calendarQuestions = [
 for (const question of calendarQuestions) test(`kalendárový smer bez tonerov: ${question}`, () => {
   assert.equal(isCalendarQuery(question), true);
   const route = routeCommerceMessage(question, emptyCommerceState());
+  if (isGeneralCalendarQuestion(question)) {
+    assert.equal(route.needsProducts, false);
+    assert.ok(route.intents.includes('ADVICE'));
+    assert.equal(route.productQuery, null);
+    return;
+  }
   assert.equal(route.needsProducts, true);
   assert.ok(route.intents.includes('PRODUCT_SEARCH'));
   assert.match(String(route.productQuery), /.+/);

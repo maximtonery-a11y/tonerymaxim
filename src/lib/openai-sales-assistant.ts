@@ -63,13 +63,13 @@ export function isOpenAiAssistantEnabled() {
   return env("OPENAI_ASSISTANT_ENABLED") === "1" && env("OPENAI_API_KEY").length >= 20;
 }
 
-export async function answerWithOpenAi(message: string, page = "") {
+export async function answerWithOpenAi(message: string, page = "", verifiedFacts: string[] = [], history: Array<{ role: string; content: string }> = []) {
   if (!isOpenAiAssistantEnabled()) return null;
 
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
-    numberEnv("OPENAI_TIMEOUT_MS", 1_200, 600, 1_500),
+    numberEnv("OPENAI_TIMEOUT_MS", 12_000, 1_500, 15_000),
   );
 
   const instructions = [
@@ -85,6 +85,7 @@ export async function answerWithOpenAi(message: string, page = "") {
     "",
     "OVERENÉ INFORMÁCIE:",
     knowledgeContext(),
+    verifiedFacts.length ? `\nOVERENÝ KONTEXT PRE TÚTO OTÁZKU:\n${verifiedFacts.map((fact) => `- ${fact}`).join("\n")}` : "",
   ].join("\n");
 
   try {
@@ -129,7 +130,11 @@ export async function answerWithOpenAi(message: string, page = "") {
             content: [
               {
                 type: "input_text",
-                text: `Aktuálna stránka: ${page || "neuvedená"}\nOtázka zákazníka: ${message}`,
+                text: [
+                  `Aktuálna stránka: ${page || "neuvedená"}`,
+                  history.length ? `Posledný kontext konverzácie:\n${history.slice(-6).map((item) => `${item.role}: ${item.content}`).join("\n")}` : "",
+                  `Otázka zákazníka: ${message}`,
+                ].filter(Boolean).join("\n"),
               },
             ],
           },

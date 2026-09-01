@@ -35,7 +35,7 @@ test('mobilný AI panel zostáva fullscreen, posuvný a ovládateľný dotykom',
 });
 
 test('zmena témy produkt → objednávka nikdy nepoužije starý produktový kontext', () => {
-  const state = { ...emptyCommerceState(), lastProductQuery:'Canon CL586', currentProductId:44105, pendingQuestion:'product_type' as const };
+  const state = { ...emptyCommerceState(), lastProductQuery:'Canon CL586', currentProductId:'44105', pendingQuestion:'product_type' as const };
   for (const question of ['Kde je moja objednávka 51664?', 'Aký je stav objednávky?', 'Kde nájdem tracking zásielky?']) {
     const route = routeCommerceMessage(question, state);
     assert.equal(route.productQuery, null, question);
@@ -105,7 +105,9 @@ test('aktívna bublina je nenásilná a sama neotvára AI panel', async () => {
   ]);
   assert.match(component, /data-ai-nudge/);
   assert.match(component, /data-ai-nudge-close/);
-  assert.match(script, /setTimeout\(\(\)=>\{if\(panel\.hidden/);
+  assert.match(script, /function scheduleNudge\(\)/);
+  assert.match(script, /if\(panel\.hidden&&!document\.hidden\)nudge\.hidden=false/);
+  assert.match(script, /closePanel[\s\S]*scheduleNudge\(\)/);
   assert.match(script, /sessionStorage\.setItem\(NUDGE_KEY,'dismissed'\)/);
   assert.doesNotMatch(script, /setTimeout\([^)]*openPanel/);
 });

@@ -2,9 +2,15 @@ export type AiAdvisorLink = { label: string; url: string };
 
 // Odkazy sú zámerne vyberané iba z pevného zoznamu interných stránok.
 // Text zákazníka ani odpoveď modelu nikdy neurčujú cieľovú URL.
-export function advisorLinks(advisor: { intent?: unknown; faq?: unknown } | null | undefined): AiAdvisorLink[] {
+export function advisorLinks(advisor: { intent?: unknown; faq?: unknown; sources?: unknown } | null | undefined): AiAdvisorLink[] {
   const intent = String(advisor?.intent || '');
   const faq = String(advisor?.faq || '');
+
+  if (intent === 'calendar_overview' && Array.isArray(advisor?.sources)) {
+    return (advisor.sources as any[]).filter((source) =>
+      source && typeof source.label === 'string' && /^\/kalendare\/#\/kategoria\/(?:nastenne|stolove)-kalendare$/.test(String(source.url || ''))
+    ).slice(0, 2).map((source) => ({ label: source.label, url: source.url }));
+  }
 
   if (faq === 'ucet-heslo') return [
     { label: 'Obnoviť heslo', url: '/zabudnute-heslo' },

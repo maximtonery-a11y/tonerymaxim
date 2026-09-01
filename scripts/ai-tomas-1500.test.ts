@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { emptyCommerceState } from '../src/lib/ai-commerce/domain.ts';
 import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
 import { buildAssistantAnswer } from '../src/lib/aiSalesAssistant.ts';
-import { searchCalendarProducts } from '../src/lib/calendar-ai-catalog.ts';
+import { isGeneralCalendarQuestion, searchCalendarProducts } from '../src/lib/calendar-ai-catalog.ts';
 
 type Kind = 'service' | 'generic-toner' | 'product' | 'calendar' | 'outside';
 const bases: Array<{ question: string; kind: Kind }> = [
@@ -42,6 +42,11 @@ test('všetkých 1 500 otázok má bezpečnú vecnú trasu a spisovnú odpoveď'
       continue;
     }
     if (item.kind === 'calendar') {
+      if (isGeneralCalendarQuestion(item.text)) {
+        assert.equal(route.needsProducts, false, item.text);
+        assert.equal(route.productQuery, null, item.text);
+        continue;
+      }
       assert.equal(route.needsProducts, true, item.text);
       const result = await searchCalendarProducts(item.text);
       assert.ok(result.products.length > 0, item.text);

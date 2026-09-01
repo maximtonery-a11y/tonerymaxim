@@ -71,6 +71,35 @@ export function isCalendarQuery(query: string) {
     || /\b(nastenn|stolov|trojmesac|trojspiral|rodinn|pracovn)\w*\b/.test(n) && /\b202[6-9]\b/.test(n);
 }
 
+const CALENDAR_OVERVIEW_WORDS = new Set([
+  'a', 'aj', 'ake', 'aky', 'aku', 'aki', 'ano', 'co', 'dobry', 'den', 'mate',
+  'mi', 'mozete', 'ponuka', 'ponuke', 'ponukate', 'predavate', 'prosim', 'sortiment',
+  'ukaz', 'ukazte', 'v', 'vo', 'vy', 'akeho', 'kalendare', 'kalendar', 'kalendara',
+  'kalendat', 'kaledar', 'kalemdar', 'kalndar', 'calendar', '2027',
+]);
+
+/** Všeobecná otázka na ponuku nie je produktové vyhľadávanie. */
+export function isGeneralCalendarQuestion(query: string) {
+  const n = normalize(query);
+  if (!/\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar)\w*\b/.test(n)) return false;
+  if (/\b(nastenn|stolov|trojmesac|trojspiral|rodinn|pracovn|planovac|motiv|format|sku|kod)\w*\b/.test(n)) return false;
+  if (/\bkalendar\w*\s+(?:s\s+motivom\s+)?(?:slovensko|tatry|psy|mack|prirod|ponork)\w*\b/.test(n)) return false;
+  if (/\b(?:ake|aky|aku|aki|mate|ponukate|predavate)\b[^?!.]*\bkalendare\b|\bkalendare\b[^?!.]*\b(?:mate|ponuke|ponukate|predavate)\b/.test(n)) return true;
+  const tokens = n.split(' ').filter(Boolean);
+  return tokens.length > 0 && tokens.every((token) => CALENDAR_OVERVIEW_WORDS.has(token));
+}
+
+export const calendarOverviewLinks = [
+  { label: 'Nástenné kalendáre', url: '/kalendare/#/kategoria/nastenne-kalendare' },
+  { label: 'Stolové kalendáre', url: '/kalendare/#/kategoria/stolove-kalendare' },
+];
+
+export const calendarOverviewFacts = [
+  'V ponuke sú nástenné a stolové kalendáre na rok 2027.',
+  'Pri všeobecnej otázke nezobrazuj náhodné produkty.',
+  'Na konci sa opýtaj: Hľadáte konkrétny kalendár? Napíšte, aký typ alebo motív hľadáte.',
+];
+
 function imageUrl(value: unknown) {
   const raw = String(value || '').trim();
   if (!raw) return '';

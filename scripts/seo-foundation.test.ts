@@ -442,7 +442,7 @@ test("all printer entry points lead to the canonical printer page", () => {
   assert.doesNotMatch(catalog, /return `\/produkty\?printer=/);
 });
 
-test("AI fallback cannot wait ten seconds", () => {
+test("živá AI rešpektuje produkčný timeout a má bezpečný horný limit", () => {
   const ai = read("src/lib/openai-sales-assistant.ts");
-  assert.match(ai, /OPENAI_TIMEOUT_MS", 1_200, 600, 1_500/);
+  assert.match(ai, /OPENAI_TIMEOUT_MS", 12_000, 1_500, 15_000/);
 });

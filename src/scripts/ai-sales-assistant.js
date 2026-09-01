@@ -38,6 +38,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   function readSavedState(){ try { const x=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); return x&&typeof x==='object'?x:{}; } catch { return {}; } }
   const saved=readSavedState();
   let customerProfileLoadStarted = false;
+  let nudgeTimer = 0;
   const state = { busy: false, history: Array.isArray(saved.history)?saved.history.slice(-20):[], lastQuestion: saved.lastProductQuery||'', mode: saved.uiMode||'auto', size: saved.uiSize==='expanded'?'expanded':'compact', manualSize:Boolean(saved.uiManualSize), cart: Array.isArray(saved.uiCart)?saved.uiCart:[], offerSets:Array.isArray(saved.uiOfferSets)?saved.uiOfferSets:[], offerSingles:Array.isArray(saved.uiOfferSingles)?saved.uiOfferSingles:[], profile: null, started: Boolean(saved.uiStarted),
     commerceState: {version:1,sessionId:saved.sessionId||'',history:Array.isArray(saved.history)?saved.history.slice(-20):[],currentPrinter:saved.currentPrinter||null,currentProductId:saved.currentProductId||null,selectedProductId:saved.selectedProductId||null,currentColor:saved.currentColor||null,currentType:saved.currentType||null,cart:Array.isArray(saved.cart)?saved.cart:[],checkoutDraft:saved.checkoutDraft||{},lastProductQuery:saved.lastProductQuery||null,lastIntent:saved.lastIntent||null,pendingQuestion:saved.pendingQuestion||null} };
   function saveCommerceSession(){
@@ -88,6 +89,7 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     toggle.setAttribute('aria-expanded', 'true');
     root.classList.add('is-open');
     if(nudge)nudge.hidden=true;
+    if(nudgeTimer){window.clearTimeout(nudgeTimer);nudgeTimer=0;}
     if(!state.started)setExperience('home');
     document.documentElement.classList.add('tm-ai-open');
     setPanelSize(state.size);
@@ -101,6 +103,18 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
     root.classList.remove('is-open', 'has-keyboard');
     document.documentElement.classList.remove('tm-ai-open');
     if (options.restoreFocus) toggle.focus({ preventScroll: true });
+    scheduleNudge();
+  }
+
+  function scheduleNudge() {
+    if(!nudge||!panel.hidden)return;
+    try{if(sessionStorage.getItem(NUDGE_KEY)==='dismissed')return;}catch{}
+    if(nudgeTimer)window.clearTimeout(nudgeTimer);
+    nudgeTimer=window.setTimeout(()=>{
+      nudgeTimer=0;
+      if(panel.hidden&&!document.hidden)nudge.hidden=false;
+      else if(panel.hidden)scheduleNudge();
+    },8000);
   }
 
   function updateViewportState() {
@@ -714,15 +728,12 @@ import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-c
   nudgeQuestion?.addEventListener('click',()=>{
     const question=nudgeQuestion.dataset.aiPrompt||'';
     nudge.hidden=true;
-    try{sessionStorage.setItem(NUDGE_KEY,'used');}catch{}
+    try{sessionStorage.removeItem(NUDGE_KEY);}catch{}
     openPanel();state.mode='advice';beginSession();messages.hidden=false;form.hidden=false;
     unifiedAsk(question);trackEvent('nudge_used',{question});
   });
-  try{
-    if(nudge&&!state.started&&!sessionStorage.getItem(NUDGE_KEY)){
-      window.setTimeout(()=>{if(panel.hidden&&!document.hidden)nudge.hidden=false;},8000);
-    }
-  }catch{}
+  scheduleNudge();
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&panel.hidden)scheduleNudge();});
 
   quick.addEventListener('click', (event) => {
     const button = event.target.closest('[data-ai-prompt]');
