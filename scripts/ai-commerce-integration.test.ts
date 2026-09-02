@@ -85,6 +85,8 @@ test('diáre zobrazia všetky štyri typy a rýchly nákup bez tonerovej kapacit
  assert.match(js,/const quantities=calendar\?\[1,3,21\]:\[1,2,3,4\]/);
  assert.match(js,/if\(qty<3\)return\{quantity:3,label:'3 ks so zľavou 5 %'\}/);
  assert.match(js,/if\(qty<21\)return\{quantity:21,label:'21 ks so zľavou 15 %'\}/);
+ assert.match(js,/sources\.slice\(0,4\)/, 'rozhranie musí zobraziť aj štvrtý odkaz Minidiáre');
+ assert.doesNotMatch(js,/sources\.slice\(0,3\)/, 'tri odkazy by skryli Minidiáre');
 });
 
 test('AI košík počíta kalendáre a tonery rovnako ako bežný košík',async()=>{

@@ -157,7 +157,7 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
   }
   function appendSources(item,sources){
     if(!item||!Array.isArray(sources)||!sources.length)return;
-    const box=document.createElement('div');box.className='tm-ai-msg__sources';box.innerHTML=`<b>Priame odkazy:</b> ${sources.slice(0,3).map(source=>`<a href="${escapeHtml(source.url||'/faq')}" data-ai-source>${escapeHtml(source.label||'Viac informácií')}</a>`).join(' · ')}`;item.appendChild(box);
+    const box=document.createElement('div');box.className='tm-ai-msg__sources';box.innerHTML=`<b>Priame odkazy:</b> ${sources.slice(0,4).map(source=>`<a href="${escapeHtml(source.url||'/faq')}" data-ai-source>${escapeHtml(source.label||'Viac informácií')}</a>`).join(' · ')}`;item.appendChild(box);
   }
   if(saved.uiMessages){
     messages.innerHTML=saved.uiMessages;
