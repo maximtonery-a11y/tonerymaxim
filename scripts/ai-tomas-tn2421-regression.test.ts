@@ -57,6 +57,8 @@ test('Máte tonery na sklade → Potrebujem toner TN2421',async()=>{
   for(const [answer,type] of [['Kompatibilné','compatible'],['Originálne','original'],['Renovované','renovated']] as const){
     const selected=await ask(answer,second.state);
     assert.equal(selected.state.currentType,type);
+    assert.match(selected.advisor.answer.join(' '),/pre TN2421\./i);
+    assert.doesNotMatch(selected.advisor.answer.join(' '),/pre Potrebujem toner/i);
     assert.equal(selected.commerce?.products?.length,1);
     assert.ok(selected.commerce.products.every((product:any)=>product.type===type));
     assert.ok(selected.commerce.products.every((product:any)=>/TN2421/i.test(`${product.name} ${product.sku}`)));
