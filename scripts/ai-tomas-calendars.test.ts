@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
 import { emptyCommerceState } from '../src/lib/ai-commerce/domain.ts';
-import { isCalendarQuery, isGeneralCalendarQuestion, resetCalendarCatalogForTests, searchCalendarProducts } from '../src/lib/calendar-ai-catalog.ts';
+import { isCalendarQuery, isGeneralCalendarQuestion, isGeneralDiaryQuestion, resetCalendarCatalogForTests, searchCalendarProducts } from '../src/lib/calendar-ai-catalog.ts';
 import { priceForQuantity, quantityOffers } from '../src/lib/ai-commerce/pricing.ts';
 import { buildAssistantAnswer } from '../src/lib/aiSalesAssistant.ts';
 import { POST as aiTomasPost } from '../src/pages/api/ai-tomas.ts';
@@ -108,18 +108,37 @@ test('všeobecná otázka na diáre vráti druhy ponuky, nie jediný náhodný v
   }
 });
 
-test('odpoveď na všeobecnú otázku o diároch uvedie všetky 4 typy a otvorí priamo diáre', async () => {
+test('všeobecná otázka o diároch uvedie 4 typy a nezobrazí náhodné produkty', async () => {
   for (const question of ['Aké máte diáre v ponuke?', 'Máte v ponuke diáre?', 'Prosím, ukážte druhy diárov.']) {
+    assert.equal(isGeneralDiaryQuestion(question), true, question);
+    const route = routeCommerceMessage(question, emptyCommerceState());
+    assert.equal(route.needsProducts, false, question);
+    assert.equal(route.productQuery, null, question);
     const result = await askAiTomas(question);
     const answer = result.advisor.answer.join(' ');
-    assert.match(answer, /denné diáre.*týždenné diáre.*mesačné diáre.*minidiáre/i, question);
-    assert.equal(result.commerce?.products?.length, 4, question);
+    assert.match(answer, /denné.*týždenné.*mesačné.*minidiáre/i, question);
+    assert.match(answer, /Aký diár hľadáte/i, question);
+    assert.equal(result.commerce, null, question);
+    assert.deepEqual(result.advisor.products, [], question);
     assert.deepEqual(result.advisor.sources, [
-      { label:'Zobraziť všetky diáre', url:'/kalendare/#/?cat=Di%C3%A1re' },
+      { label:'Denné diáre', url:'/kalendare/#/?cat=Di%C3%A1re&sub=daily' },
+      { label:'Týždenné diáre', url:'/kalendare/#/?cat=Di%C3%A1re&sub=weekly' },
+      { label:'Mesačné diáre', url:'/kalendare/#/?cat=Di%C3%A1re&sub=monthly' },
+      { label:'Minidiáre', url:'/kalendare/#/?cat=Di%C3%A1re&sub=mini' },
     ], question);
-    const target = new URL(`https://www.tonerymaxim.sk${result.advisor.sources[0].url}`);
-    const params = new URLSearchParams(target.hash.split('?')[1]);
-    assert.equal(params.get('cat'), 'Diáre', question);
+    assert.deepEqual(result.advisor.sources.map((source:any) => new URLSearchParams(new URL(`https://www.tonerymaxim.sk${source.url}`).hash.split('?')[1]).get('sub')),
+      ['daily','weekly','monthly','mini'], question);
+  }
+});
+
+test('konkrétny typ diára zostáva produktovým vyhľadávaním', async () => {
+  for (const question of ['Máte denné diáre?', 'Ukážte týždenné diáre', 'Hľadám mesačný diár', 'Máte minidiáre?']) {
+    assert.equal(isGeneralDiaryQuestion(question), false, question);
+    const route = routeCommerceMessage(question, emptyCommerceState());
+    assert.equal(route.needsProducts, true, question);
+    const result = await askAiTomas(question);
+    assert.equal(result.commerce?.source, 'calendar', question);
+    assert.ok(result.commerce?.products?.length > 0, question);
   }
 });
 

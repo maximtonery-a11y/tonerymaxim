@@ -5,7 +5,7 @@ import { routeCommerceMessage } from '../../lib/ai-commerce/router.ts';
 import { searchCommerce } from '../../lib/ai-commerce/engine.ts';
 import { saveAiUnanswered } from '../../lib/ai-unanswered.ts';
 import { advisorLinks } from '../../lib/ai-advisor-links.ts';
-import { calendarOverviewFacts, calendarOverviewLinks, isCalendarQuery, isGeneralCalendarQuestion } from '../../lib/calendar-ai-catalog.ts';
+import { calendarOverviewFacts, calendarOverviewLinks, diaryOverviewLinks, isCalendarQuery, isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../../lib/calendar-ai-catalog.ts';
 import { answerWithOpenAi } from '../../lib/openai-sales-assistant.ts';
 
 export const prerender = false;
@@ -37,6 +37,29 @@ export const POST: APIRoute = async ({ request }) => {
     const state = normalizeCommerceState(body?.state); if (!state.sessionId) state.sessionId=randomUUID();
     const route = routeCommerceMessage(message,state);
     const page = clean(body?.page,300) || '/';
+    if (isGeneralDiaryQuestion(message)) {
+      const answer = [
+        'V ponuke máme štyri typy diárov: denné diáre, týždenné diáre, mesačné diáre a minidiáre.',
+        'Aký diár hľadáte? Vyberte typ nižšie alebo napíšte farbu či konkrétny názov.',
+      ];
+      const advisor = {
+        answer,
+        products: [],
+        groups: [],
+        intent: 'calendar_diary_overview',
+        confidence: 1,
+        unanswered: false,
+        handoffSuggested: false,
+        sources: diaryOverviewLinks,
+      };
+      state.lastIntent = 'ADVICE';
+      state.lastProductQuery = null;
+      state.currentProductId = null;
+      state.selectedProductId = null;
+      state.pendingQuestion = null;
+      state.history = [...state.history, { role: 'user' as const, content: message }, { role: 'assistant' as const, content: answer.join(' ') }].slice(-20);
+      return Response.json({ ok: true, route, advisor: { ...advisor, sources: advisorLinks(advisor) }, commerce: null, state, action: null }, { headers: { 'Cache-Control': 'no-store' } });
+    }
     if (isGeneralCalendarQuestion(message)) {
       const live = await answerWithOpenAi(message, page, calendarOverviewFacts, state.history);
       const answer = live?.answer?.length ? live.answer : [

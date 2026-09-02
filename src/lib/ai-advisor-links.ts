@@ -12,6 +12,19 @@ export function advisorLinks(advisor: { intent?: unknown; faq?: unknown; sources
     ).slice(0, 1).map((source) => ({ label: source.label, url: source.url }));
   }
 
+  if (intent === 'calendar_diary_overview' && Array.isArray(advisor?.sources)) {
+    const allowed = new Set([
+      '/kalendare/#/?cat=Di%C3%A1re&sub=daily',
+      '/kalendare/#/?cat=Di%C3%A1re&sub=weekly',
+      '/kalendare/#/?cat=Di%C3%A1re&sub=monthly',
+      '/kalendare/#/?cat=Di%C3%A1re&sub=mini',
+    ]);
+    return (advisor.sources as any[])
+      .filter((source) => source && typeof source.label === 'string' && allowed.has(String(source.url || '')))
+      .slice(0, 4)
+      .map((source) => ({ label: source.label, url: source.url }));
+  }
+
   // Kalendárová odpoveď nesmie nikdy spadnúť na tonerovú poradňu.
   // Produkty majú vlastné, katalógom dodané URL; tento odkaz je iba bezpečný
   // vstup do celej ponuky.

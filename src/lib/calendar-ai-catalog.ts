@@ -93,11 +93,30 @@ export function isGeneralCalendarQuestion(query: string) {
   return tokens.length > 0 && tokens.every((token) => CALENDAR_OVERVIEW_WORDS.has(token));
 }
 
+/**
+ * Všeobecná otázka na diáre je navigácia medzi typmi, nie produktové
+ * vyhľadávanie. Konkrétny typ, farba, názov alebo SKU sa naďalej vyhľadáva.
+ */
+export function isGeneralDiaryQuestion(query: string) {
+  const n = normalize(query);
+  if (!/\b(?:diar|diare)\w*\b/.test(n)) return false;
+  if (/\b(?:denn|tyzdenn|mesacn|minidiar|farb|cier|modr|zelen|bord|cerven|manager|praktik|vreck|format|sku|kod)\w*\b/.test(n)) return false;
+  if (/\b(?:d)(?:\s+\d+){1,4}\b/.test(n)) return false;
+  return /\b(?:ake|aky|aku|aki|mate|ponukate|predavate|ponuke|sortiment|druh|typ|ukaz|ukazte|vyber|vybrat)\w*\b/.test(n);
+}
+
 export const calendarOverviewLinks = [
   // Kalendárová SPA zatiaľ nemá stabilné verejné URL podkategórií.
   // Preto nikdy neskladáme hash adresy odhadom. Jediný bezpečný prehľadový
   // odkaz je skutočná vstupná stránka; konkrétne výsledky majú vlastné URL.
   { label: 'Celá ponuka kalendárov a diárov', url: '/kalendare/' },
+];
+
+export const diaryOverviewLinks = [
+  { label: 'Denné diáre', url: '/kalendare/#/?cat=Di%C3%A1re&sub=daily' },
+  { label: 'Týždenné diáre', url: '/kalendare/#/?cat=Di%C3%A1re&sub=weekly' },
+  { label: 'Mesačné diáre', url: '/kalendare/#/?cat=Di%C3%A1re&sub=monthly' },
+  { label: 'Minidiáre', url: '/kalendare/#/?cat=Di%C3%A1re&sub=mini' },
 ];
 
 export const calendarOverviewFacts = [

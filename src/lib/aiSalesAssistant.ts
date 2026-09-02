@@ -599,7 +599,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     const foreign = aiKnowledge.find((item) => item.id === 'ceska-republika');
     if (foreign) return { answer: [`${foreign.title}:`, ...foreign.answer], products: [], groups: [], intent: 'shipping', faq: foreign.id, confidence: 0.99 };
   }
-  if (!isContextualProductFollowUp && /ako rychlo dorucujete|kedy.*(?:doruc|pride|exped|odosl)|(?:doruc|exped).*ako rychlo|kolko\s+(?:pracovn\w*\s+)?dni\s+(?:trva|potrva).*doruc/i.test(normalizedMessage)) {
+  if (!isContextualProductFollowUp && /ako rychlo dorucujete|kedy.*(?:doruc|pride|exped|odosl)|(?:doruc|exped).*ako rychlo|kolko\s+(?:pracovn\w*\s+)?dni\s+(?:trva|potrva).*doruc|kolko\s+(?:dlho\s+)?trva\s+(?:dodanie|dorucenie)|ako\s+dlho\s+trva\s+(?:dodanie|dorucenie)/i.test(normalizedMessage)) {
     const dispatch = aiKnowledge.find((item) => item.id === 'expedicia-kedy-posleme');
     if (dispatch) return { answer: [`${dispatch.title}:`, ...dispatch.answer], products: [], groups: [], intent: 'order', faq: dispatch.id, confidence: 0.99 };
   }

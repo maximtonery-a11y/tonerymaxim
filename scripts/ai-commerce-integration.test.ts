@@ -82,6 +82,16 @@ test('diáre zobrazia všetky štyri typy a rýchly nákup bez tonerovej kapacit
  assert.match(css,/is-calendar-list[\s\S]*repeat\(4,minmax\(0,1fr\)\)/);
  assert.match(js,/data-ai-buy/);
  assert.match(js,/quantityChooser\(ordered\[Number\(btn\.dataset\.aiBuy\)\]\)/);
+ assert.match(js,/const quantities=calendar\?\[1,3,21\]:\[1,2,3,4\]/);
+ assert.match(js,/if\(qty<3\)return\{quantity:3,label:'3 ks so zľavou 5 %'\}/);
+ assert.match(js,/if\(qty<21\)return\{quantity:21,label:'21 ks so zľavou 15 %'\}/);
+});
+
+test('AI košík počíta kalendáre a tonery rovnako ako bežný košík',async()=>{
+ const js=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
+ assert.match(js,/if\(isCalendarProduct\(p\)&&rate>0\)return roundMoney\(roundMoney\(price\*\(1-rate\)\)\*quantity\)/);
+ assert.match(js,/return roundMoney\(original-roundMoney\(original\*rate\)\)/);
+ assert.match(js,/function cartTotal\(\)\{ return roundMoney\(/);
 });
 
 test('zisťovanie dostupnosti jasne vyžaduje telefón alebo e-mail',async()=>{
@@ -102,7 +112,6 @@ test('slovenské otázky na stav objednávky vždy otvoria bezpečné overenie',
   'V akom stave je moja objednávka?',
   'Kde je moja objednávka?',
   'Bola už objednávka odoslaná?',
-  'Kedy bude zásielka doručená?',
   'Chcem sledovať zásielku.',
   'Čo je s mojím balíkom?',
   'Je moja objednávka vybavená?',
@@ -113,7 +122,7 @@ test('slovenské otázky na stav objednávky vždy otvoria bezpečné overenie',
   'Kde je objednávka 300945?',
  ];
  for(const question of questions)assert.equal(isOrderStatusQuestion(question),true,question);
- for(const question of ['Ako vytvorím objednávku?','Koľko stojí doprava?','Chcem objednať toner.','Zisti stav skladu','Je toner skladom?'])assert.equal(isOrderStatusQuestion(question),false,question);
+ for(const question of ['Ako vytvorím objednávku?','Koľko stojí doprava?','Chcem objednať toner.','Zisti stav skladu','Je toner skladom?','Kedy bude zásielka doručená?','Kedy mi bude doručená objednávka?'])assert.equal(isOrderStatusQuestion(question),false,question);
 });
 
 test('výber typu hovorí o variantoch, nie o kusoch na sklade, a má kompaktnú spoločnú zľavu',async()=>{

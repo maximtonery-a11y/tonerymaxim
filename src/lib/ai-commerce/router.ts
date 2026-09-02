@@ -1,6 +1,6 @@
 import type { AiIntent, CommerceState } from './domain.ts';
 import { analyzeCatalogQuery } from '../catalog-query.ts';
-import { isGeneralCalendarQuestion } from '../calendar-ai-catalog.ts';
+import { isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../calendar-ai-catalog.ts';
 
 const norm = (v: unknown) => String(v || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const productCode = /\b(?:(?:cf|ce|crg|tn|dr|q|clt|mlt|tk|pgi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*)\b/i;
@@ -17,6 +17,8 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   );
   const calendarQuestion = Boolean(explicitCalendarSku) || /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn|nastenn|stolov|trojmesac|trojspiral)\w*\b/.test(n);
   const generalCalendarQuestion = isGeneralCalendarQuestion(message);
+  const generalDiaryQuestion = isGeneralDiaryQuestion(message);
+  const generalCalendarOrDiaryQuestion = generalCalendarQuestion || generalDiaryQuestion;
   const calendarInformationQuestion = calendarQuestion
     && /\b(ake|aky|aku|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(n);
   // Častý prepis kódu Samsung MLT-D111S: písmeno S zákazník zadá ako 1.
@@ -47,7 +49,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const add = (x: AiIntent) => { if (!intents.includes(x)) intents.push(x); };
   if (/(clovek|operator|predajca|zavolajte|kontaktujte ma)/.test(n)) add('HUMAN_ESCALATION');
   if (sharedCatalogReference || knownProductAlias || numericSku) add('PRODUCT_SEARCH');
-  if (calendarQuestion && !generalCalendarQuestion) add('PRODUCT_SEARCH');
+  if (calendarQuestion && !generalCalendarOrDiaryQuestion) add('PRODUCT_SEARCH');
   // Všeobecná otázka na kalendárový sortiment potrebuje súčasne overenú
   // poradenskú odpoveď aj živé produkty. Bez ADVICE sa načítal iba katalóg
   // a pri nečakanom prázdnom výsledku sa zobrazila tonerová výzva.
@@ -78,7 +80,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];
   // Pri presnom kalendárovom SKU posielame katalógu iba kód. Celá veta
   // (napr. „Pridaj 2 ks D-02-2-27“) by inak znížila presnosť vyhľadávania.
-  const calendarQuery=explicitCalendarSku || (calendarQuestion&&!generalCalendarQuestion?message:null);
+  const calendarQuery=explicitCalendarSku || (calendarQuestion&&!generalCalendarOrDiaryQuestion?message:null);
   const printerQuery = message.match(printer)?.[0] || (shortPrinter ? `${brand || ''} ${shortPrinter}`.trim() : null);
   const hasExplicitProductCode = productCode.test(message);
   // Pri modeli tlačiarne vraciame iba čistý model (napr. Epson WF-6090), nie

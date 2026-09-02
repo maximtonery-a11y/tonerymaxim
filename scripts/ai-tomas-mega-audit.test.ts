@@ -203,11 +203,16 @@ test('MEGA: všeobecná otázka na diáre má vždy 4 typy a presný funkčný f
     assert.equal(response.status, 200, question);
     const answer = body.advisor.answer.join(' ');
     assert.match(answer, /denné diáre.*týždenné diáre.*mesačné diáre.*minidiáre/i, question);
-    assert.equal(body.commerce?.products?.length, 4, question);
-    assert.deepEqual(body.advisor.sources, [{ label:'Zobraziť všetky diáre', url:'/kalendare/#/?cat=Di%C3%A1re' }], question);
-    const url = new URL(`https://www.tonerymaxim.sk${body.advisor.sources[0].url}`);
-    const params = new URLSearchParams(url.hash.split('?')[1]);
-    assert.equal(params.get('cat'), 'Diáre', question);
+    assert.match(answer, /Aký diár hľadáte/i, question);
+    assert.equal(body.commerce, null, question);
+    assert.deepEqual(body.advisor.sources, [
+      { label:'Denné diáre', url:'/kalendare/#/?cat=Di%C3%A1re&sub=daily' },
+      { label:'Týždenné diáre', url:'/kalendare/#/?cat=Di%C3%A1re&sub=weekly' },
+      { label:'Mesačné diáre', url:'/kalendare/#/?cat=Di%C3%A1re&sub=monthly' },
+      { label:'Minidiáre', url:'/kalendare/#/?cat=Di%C3%A1re&sub=mini' },
+    ], question);
+    assert.deepEqual(body.advisor.sources.map((source:any) => new URLSearchParams(new URL(`https://www.tonerymaxim.sk${source.url}`).hash.split('?')[1]).get('sub')),
+      ['daily','weekly','monthly','mini'], question);
   }
 });
 

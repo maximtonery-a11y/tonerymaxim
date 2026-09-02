@@ -165,7 +165,7 @@ for (const [baseIndex, base] of serviceBases.entries()) for (const [wrapperIndex
 const orderBases = [
   'Kde je moja objednávka?', 'V akom stave je moja objednávka?', 'Zisti stav objednávky.', 'Over stav objednávky.',
   'Skontroluj stav objednávky.', 'Bola objednávka odoslaná?', 'Chcem sledovať zásielku.', 'Kde je môj balík?',
-  'Je objednávka vybavená?', 'Kedy bude zásielka doručená?',
+  'Je objednávka vybavená?', 'Má už moja objednávka tracking?',
 ];
 const orderWrappers = [
   (q:string)=>`Kontrola stavu objednávky: ${q}`, (q:string)=>`Bezpečné overenie objednávky: ${q}`,

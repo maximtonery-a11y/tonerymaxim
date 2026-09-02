@@ -371,7 +371,13 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
   const isCalendarProduct = p => String(p?.source||'')==='kalendare-2027' || String(p?.product_type_key||'').toLowerCase()==='calendar';
   const discount = (p,q) => isCalendarProduct(p) ? (q>=21?15:(q>=3?5:0)) : String(p?.type || p?.product_type_key || '').toLowerCase()==='compatible' ? (q>=4?25:(q>=2?10:0)) : 0;
   const unitPrice = (p,q) => Number(p?.price||0)*(1-discount(p,q)/100);
-  const linePrice = (p,q) => unitPrice(p,q)*q;
+  const roundMoney = value => Math.round((Number(value)||0)*100)/100;
+  const linePrice = (p,q) => {
+    const price=Number(p?.price||0),quantity=cleanCartQty(q),rate=discount(p,quantity)/100;
+    const original=roundMoney(price*quantity);
+    if(isCalendarProduct(p)&&rate>0)return roundMoney(roundMoney(price*(1-rate))*quantity);
+    return roundMoney(original-roundMoney(original*rate));
+  };
   const cartKey = p => String(p?.sku || p?.id || p?.name || '').trim().toLowerCase();
   const WEB_CART_KEY = 'tm_cart_v1';
   const cleanCartQty = value => Math.max(1,Math.min(99,parseInt(value,10)||1));
@@ -403,7 +409,7 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
     if(topCart){topCart.hidden=count===0;topCartCount.textContent=`${count} ks`;topCartTotal.textContent=`· ${money(cartTotal())}`;}
     saveCommerceSession();
   });
-  function cartTotal(){ return state.cart.reduce((n,x)=>n+linePrice(x.product,x.qty),0); }
+  function cartTotal(){ return roundMoney(state.cart.reduce((n,x)=>n+linePrice(x.product,x.qty),0)); }
   function updateLiveCart(){
     if(!liveCart) return; const count=state.cart.reduce((n,x)=>n+x.qty,0);
     liveCart.hidden=count===0; root.querySelector('[data-ai-cart-count]').textContent=`${count} ks`;
