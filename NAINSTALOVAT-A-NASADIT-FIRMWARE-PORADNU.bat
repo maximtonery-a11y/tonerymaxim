@@ -51,10 +51,14 @@ git add -- .env.production.example README-INSTALACIA.txt package.json NAINSTALOV
 if errorlevel 1 goto :fail_git
 
 git diff --cached --quiet
-if not errorlevel 1 goto :nothing
+if errorlevel 1 (
+  git commit -m "Firmware poradna: denny prehlad cipov ABIX"
+  if errorlevel 1 goto :fail_git
+) else (
+  echo Firmware subory sa oproti poslednemu commitu nezmenili.
+  echo Kontroluje sa, ci je aktualny commit odoslany na GitHub...
+)
 
-git commit -m "Firmware poradna: denny prehlad cipov ABIX"
-if errorlevel 1 goto :fail_git
 git push origin main
 if errorlevel 1 goto :fail_git
 
@@ -73,12 +77,6 @@ echo Prva kontrola ABIX prebehne asi 90 sekund po spusteni webu.
 echo Stranka: /poradna/aktualizacia-firmveru-a-kompatibilny-toner
 pause
 exit /b 0
-
-:nothing
-echo.
-echo Nie je co commitnut. Subory uz mozu byt na GitHube.
-pause
-exit /b 2
 
 :missing_project
 echo.
