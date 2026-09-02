@@ -1,0 +1,46 @@
+---
+import { readFirmwareInfoSnapshot } from "../lib/firmware-info";
+
+const snapshot = await readFirmwareInfoSnapshot();
+const checkedLabel = new Intl.DateTimeFormat("sk-SK", {
+  day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Bratislava",
+}).format(new Date(snapshot.checkedAt));
+---
+<section class="firmware-status" aria-labelledby="firmware-status-title">
+  <p class="advice-eyebrow">Denne kontrolované informácie</p>
+  <h2 id="firmware-status-title">Aktuálny stav čipov vybraných náplní</h2>
+  <p>Prehľad kontrolujeme raz denne podľa technických informácií dodávateľa. Nejde o údaj o skladovej dostupnosti na ToneryMaxim.sk. Kompatibilitu vždy potvrdíme podľa presného modelu tlačiarne, náplne a verzie firmvéru.</p>
+  <label class="firmware-search">
+    <span>Vyhľadať označenie náplne</span>
+    <input type="search" placeholder="Napríklad CF259, HP415 alebo HP963" data-firmware-search />
+  </label>
+  <div class="firmware-table-wrap">
+    <table>
+      <thead><tr><th>Označenie náplne</th><th>Aktuálna informácia o čipe</th></tr></thead>
+      <tbody>
+        {snapshot.entries.map((entry) => <tr data-firmware-row data-search={entry.codes.toLowerCase()}><th scope="row">{entry.codes}</th><td>{entry.status}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+  <p class="firmware-empty" data-firmware-empty hidden>Takéto označenie v aktuálnom prehľade nie je. Pošlite nám model tlačiarne a označenie náplne – kompatibilitu preveríme.</p>
+  <div class="firmware-status-foot">
+    <span>{snapshot.source === "abix" ? "Posledná úspešná automatická kontrola" : "Východiskové údaje aktualizované"}: <strong>{checkedLabel}</strong></span>
+    <a href="/kontakt">Overiť čip pre moju tlačiareň →</a>
+  </div>
+</section>
+
+<script>
+  const search = document.querySelector<HTMLInputElement>("[data-firmware-search]");
+  const rows = Array.from(document.querySelectorAll<HTMLElement>("[data-firmware-row]"));
+  const empty = document.querySelector<HTMLElement>("[data-firmware-empty]");
+  search?.addEventListener("input", () => {
+    const query = search.value.toLocaleLowerCase("sk").replace(/[^a-z0-9]/g, "");
+    let visible = 0;
+    rows.forEach((row) => {
+      const haystack = String(row.dataset.search || "").replace(/[^a-z0-9]/g, "");
+      row.hidden = Boolean(query) && !haystack.includes(query);
+      if (!row.hidden) visible += 1;
+    });
+    if (empty) empty.hidden = visible > 0;
+  });
+</script>

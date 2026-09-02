@@ -5,6 +5,7 @@ import "../styles/advice.css";
 import Header from "./Header.astro";
 import Footer from "./Footer.astro";
 import FloatingAdvisor from "./FloatingAdvisor.astro";
+import FirmwareStatusPanel from "./FirmwareStatusPanel.astro";
 import SeoHead from "./SeoHead.astro";
 import type { AdviceArticle } from "../data/advice";
 import { adviceArticles } from "../data/advice";
@@ -109,6 +110,8 @@ const jsonLd = [
                 </section>
               ))}
             </div>
+
+            {article.slug === "aktualizacia-firmveru-a-kompatibilny-toner" && <FirmwareStatusPanel />}
 
             <section class="advice-faq" aria-labelledby="article-faq">
               <p class="advice-eyebrow">Praktické odpovede</p>

@@ -229,7 +229,8 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     answer: [
       'Skontrolujte, či sú odstránené všetky ochranné pásky a krytky a či je toner správne zacvaknutý.',
       'Pri niektorých modeloch môže problém súvisieť s čipom alebo aktualizáciou firmvéru tlačiarne.',
-      'Napíšte presný model tlačiarne a označenie toneru. Overím, či potrebujete verziu s čipom alebo inú náplň.',
+      'Napíšte presný model tlačiarne, označenie toneru, verziu firmvéru a presné chybové hlásenie. Ak je dostupná novšia verzia čipu, ToneryMaxim ho môže preprogramovať alebo vymeniť; náplň je potrebné doručiť a možnosť úpravy sa najskôr overí.',
+      'Aktuálny prehľad a postup nájdete na /poradna/aktualizacia-firmveru-a-kompatibilny-toner.',
     ],
   },
   {
