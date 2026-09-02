@@ -7,6 +7,7 @@ import { saveAiUnanswered } from '../../lib/ai-unanswered.ts';
 import { advisorLinks } from '../../lib/ai-advisor-links.ts';
 import { calendarOverviewFacts, calendarOverviewLinks, diaryOverviewLinks, isCalendarQuery, isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../../lib/calendar-ai-catalog.ts';
 import { answerWithOpenAi } from '../../lib/openai-sales-assistant.ts';
+import { customerProductLabel } from '../../lib/ai-product-label.ts';
 
 export const prerender = false;
 const clean = (v: unknown, max=500) => String(v || '').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);
@@ -151,7 +152,8 @@ export const POST: APIRoute = async ({ request }) => {
     if(route.needsProducts&&candidates.length&&availableTypes.length>1&&!type&&!state.currentType){
       const savedQty=requestedQuantity(message);state.pendingQuestion='product_type';state.checkoutDraft={...(state.checkoutDraft||{}),guidedQuantity:savedQty||null};
       const options=['compatible','original','renovated'].filter(productType=>availableTypes.includes(productType));
-      const answer=`Pre ${clean(route.productQuery || message, 120)} máme v ponuke ${slovakJoin(options.map(typePlural))} ${productMaterial(candidates)}. Ktorý typ si chcete zobraziť?`;
+      const productLabel=customerProductLabel(route.productQuery,message,commerce?.source);
+      const answer=`Pre ${productLabel} máme v ponuke ${slovakJoin(options.map(typePlural))} ${productMaterial(candidates)}. Ktorý typ si chcete zobraziť?`;
       state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
       const counts=Object.fromEntries(options.map(productType=>[productType,candidates.filter((p:any)=>p.type===productType).length]));
       return Response.json({ok:true,route,advisor:{...advisor,answer:[answer]},commerce:null,state,action:{kind:'ASK_PRODUCT_TYPE',options,counts,material:productMaterial(candidates)}},{headers:{'Cache-Control':'no-store'}});

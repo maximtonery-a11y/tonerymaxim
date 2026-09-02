@@ -20,7 +20,7 @@
     "test:migration": "node --experimental-strip-types --test scripts/legacy-migration.test.ts && node scripts/migration-gate.test.mjs",
     "test:security": "node --experimental-strip-types --test scripts/security-config.test.ts",
     "test:price-history": "node --experimental-strip-types --test scripts/price-history.test.ts",
-    "test:production": "node --experimental-strip-types --test scripts/production-readiness.test.ts scripts/calendar-integration.test.ts scripts/ai-tomas-calendars.test.ts scripts/ai-tomas-hard-regression.test.ts scripts/ai-tomas-1500.test.ts scripts/ai-tomas-8700.test.ts scripts/ai-tomas-mega-audit.test.ts scripts/ai-tomas-common-questions.test.ts scripts/ai-search-parity.test.ts scripts/ai-engagement.test.ts scripts/combined-release.test.ts scripts/firmware-info.test.ts",
+    "test:production": "node --experimental-strip-types --test scripts/production-readiness.test.ts scripts/calendar-integration.test.ts scripts/ai-tomas-calendars.test.ts scripts/ai-tomas-hard-regression.test.ts scripts/ai-tomas-tn2421-regression.test.ts scripts/ai-tomas-1500.test.ts scripts/ai-tomas-8700.test.ts scripts/ai-tomas-mega-audit.test.ts scripts/ai-tomas-common-questions.test.ts scripts/ai-search-parity.test.ts scripts/ai-engagement.test.ts scripts/combined-release.test.ts scripts/firmware-info.test.ts",
     "test:storefront": "node scripts/storefront-production-smoke.mjs",
     "test:storefront:load": "node scripts/storefront-load-smoke.mjs",
     "geo:score": "node scripts/geo-ai-score.mjs",

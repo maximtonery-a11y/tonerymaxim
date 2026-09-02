@@ -4,6 +4,7 @@ import { buildAssistantAnswer } from '../src/lib/aiSalesAssistant.ts';
 import { emptyCommerceState, normalizeCommerceState } from '../src/lib/ai-commerce/domain.ts';
 import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
 import { isCalendarQuery, isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../src/lib/calendar-ai-catalog.ts';
+import { customerProductLabel } from '../src/lib/ai-product-label.ts';
 
 process.env.OPENAI_ASSISTANT_ENABLED = '0';
 
@@ -76,6 +77,31 @@ for (const question of exactProducts) test(`konkrétny produkt alebo tlačiareň
   const route = routeCommerceMessage(question, emptyCommerceState());
   assert.equal(route.needsProducts, true);
   assert.ok(route.productQuery);
+});
+
+test('dvojkrokový scenár skladu používa v odpovedi iba kód TN2421',()=>{
+  const first=routeCommerceMessage('Máte tonery na sklade?',normalizeCommerceState({}));
+  assert.equal(first.productQuery,null);
+  assert.equal(first.needsProducts,false);
+  const state=normalizeCommerceState({lastIntent:first.intents[0],lastProductQuery:first.productQuery});
+  for(const message of ['Potrebujem toner TN2421','Hľadám toner TN-2421','Máte toner TN2421?','Chcem kúpiť TN2421']){
+    const route=routeCommerceMessage(message,state);
+    assert.equal(route.needsProducts,true,message);
+    // Zdroj product zodpovedá výsledku živého katalógu pre produktový kód.
+    const label=customerProductLabel(route.productQuery,message,'product');
+    assert.match(label,/^TN-?2421$/,message);
+    assert.doesNotMatch(label,/potrebujem|hladam|hľadám|mate|máte|chcem|toner\s/i,message);
+    const answer=`Pre ${label} máme v ponuke kompatibilné, originálne alebo renovované tonery. Ktorý typ si chcete zobraziť?`;
+    assert.match(answer,/^Pre TN-?2421 máme v ponuke/);
+    assert.doesNotMatch(answer,/Pre\s+(?:Potrebujem|Hľadám|Máte|Chcem)/i);
+  }
+});
+
+test('zobrazovaný názov nemení model tlačiarne ani kanonický produktový kód',()=>{
+  assert.equal(customerProductLabel('Epson WF-6090','Hľadám náplne do tlačiarne Epson WF-6090','printer'),'Epson WF-6090');
+  assert.equal(customerProductLabel('MLT-D111S','Potrebujem toner d1111','product'),'MLT-D111S');
+  assert.equal(customerProductLabel('276','Chcem kúpiť SKU 276','product'),'276');
+  assert.equal(customerProductLabel('DR-1050-KOM-13968','Máte DR-1050-KOM-13968?','product'),'DR-1050-KOM-13968');
 });
 
 const calendarQuestions = [
