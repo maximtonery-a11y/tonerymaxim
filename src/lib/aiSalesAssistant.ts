@@ -25,7 +25,7 @@ const TYPE_PLURAL: Record<string, string> = {
 const TYPE_ORDER: Record<string, number> = { compatible: 1, original: 2, renovated: 3, product: 4 };
 
 const SERVICE_INTENT_WORDS: Record<AiIntent, string[]> = {
-  shipping: ['doprava', 'dopravne', 'postovne', 'kurier', 'gls', 'dpd', 'pickup', 'box', 'balikomat', 'parcelshop', 'dorucenie', 'pride balik', 'cena dopravy', 'balik na adresu'],
+  shipping: ['doprava', 'dopravne', 'postovne', 'kurier', 'gls', 'dpd', 'packeta', 'packetu', 'packetou', 'zasielkovna', 'pickup', 'box', 'balikomat', 'parcelshop', 'dorucenie', 'pride balik', 'cena dopravy', 'balik na adresu'],
   payment: ['platba', 'zaplatit', 'platit', 'hotovost', 'hotovosti', 'gopay', 'dobierka', 'prevod', 'faktura', 'kartou', 'bankovy prevod', 'ico', 'dic', 'firma'],
   claim: ['reklamacia', 'reklamovat', 'reklamujem', 'vratit', 'vymenit', 'nepasuje', 'nesedi', 'zly toner', 'chyba tovaru', 'prisiel zly', 'nefunguje', 'vratenie'],
   order: ['objednavka', 'objednavku', 'objednal', 'odoslete', 'poslete', 'expedujete', 'expedicia', 'kedy pride', 'kedy mi pride', 'stav objednavky', 'sledovanie zasielky', 'tracking', 'kde je balik'],
@@ -599,7 +599,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     const foreign = aiKnowledge.find((item) => item.id === 'ceska-republika');
     if (foreign) return { answer: [`${foreign.title}:`, ...foreign.answer], products: [], groups: [], intent: 'shipping', faq: foreign.id, confidence: 0.99 };
   }
-  if (!isContextualProductFollowUp && /ako rychlo dorucujete|kedy.*(?:doruc|pride|exped|odosl)|(?:doruc|exped).*ako rychlo/i.test(normalizedMessage)) {
+  if (!isContextualProductFollowUp && /ako rychlo dorucujete|kedy.*(?:doruc|pride|exped|odosl)|(?:doruc|exped).*ako rychlo|kolko\s+(?:pracovn\w*\s+)?dni\s+(?:trva|potrva).*doruc/i.test(normalizedMessage)) {
     const dispatch = aiKnowledge.find((item) => item.id === 'expedicia-kedy-posleme');
     if (dispatch) return { answer: [`${dispatch.title}:`, ...dispatch.answer], products: [], groups: [], intent: 'order', faq: dispatch.id, confidence: 0.99 };
   }
@@ -617,6 +617,10 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   if (/(?:ako dlho|lehota|30 dni|dva roky).*reklamac|reklamac.*(?:ako dlho|lehota|30 dni|dva roky)|vadu.*dva roky/i.test(normalizedMessage)) {
     const claimTime = aiKnowledge.find((item) => item.id === 'reklamacia-lehoty');
     if (claimTime) return { answer: [`${claimTime.title}:`, ...claimTime.answer], products: [], groups: [], intent: 'claim', faq: claimTime.id, confidence: 0.99 };
+  }
+  if (/(?:poslali|dost(?:al|ala|ali)|prisiel|dorucili)[^.?!]{0,35}(?:nespravny|iny|zly|poskoden)\w*[^.?!]{0,20}(?:toner|tovar|produkt)|(?:toner|tovar|produkt)[^.?!]{0,30}(?:prisiel|dorucili)[^.?!]{0,20}poskoden/i.test(normalizedMessage)) {
+    const claim = aiKnowledge.find((item) => item.id === 'reklamacia-postup');
+    if (claim) return { answer: [`${claim.title}:`, ...claim.answer], products: [], groups: [], intent: 'claim', faq: claim.id, confidence: 0.99 };
   }
   if (/vrateni|vratenie|odstupen|nespravny toner|zle som objednal|kupil som nespravny/i.test(normalizedMessage)) {
     const returns = aiKnowledge.find((item) => item.id === 'vratenie-tovaru');
@@ -644,21 +648,29 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
 
   // Rýchle deterministické routovanie servisných otázok. Tieto otázky nikdy nesmú
   // spúšťať katalóg ani zobrazovať produkty. Je to zároveň ochrana rýchlosti chatu.
-  const directServiceId = /\b(?:osobn\w*\s+odber\w*|vyzdvih\w*\s+osobn\w*)/i.test(normalizedMessage)
+  const directServiceId = /\b(?:packet\w*|zasielkovn\w*|z-?box)\b/i.test(normalizedMessage)
+    ? 'doprava-packeta'
+    : !/\b(?:registrac\w*|uvitac\w*)\b/i.test(normalizedMessage) && /\b(?:aky|aka|ake|aku|mate|ponukate|poskytn\w*|dostat|individualn\w*|mnozstevn\w*)[^.?!]{0,50}\bzlav\w*|\bzlav\w*[^.?!]{0,50}\b(?:mate|ponukate|poskytn\w*|dostat|individualn\w*|mnozstevn\w*)/i.test(normalizedMessage)
+      ? 'zlavy-prehlad'
+    : /\b(?:osobn\w*\s+odber\w*|osobn\w*(?:\s+\w+){0,3}\s+vyzdvih\w*|vyzdvih\w*(?:\s+\w+){0,3}\s+osobn\w*|prevziat(?:\s+\w+){0,3}\s+(?:prevadzk|predajn)\w*)/i.test(normalizedMessage)
     ? 'doprava-osobny-odber'
-    : /\bhotovost\w*/i.test(normalizedMessage)
+    : /\bhotovost\w*|\b(?:zaplat\w*|plat\w*)[^.?!]{0,35}\bpri\s+(?:prevzat|preberan)\w*/i.test(normalizedMessage)
     ? 'platba-hotovost'
+    : /\b(?:faktur\w*|firemn\w*\s+udaj\w*|na\s+firmu|ico|dic|ic\s+dph|pre\s+(?:obec|skolu|mesto|organizaciu))\b/i.test(normalizedMessage)
+    ? 'faktura-firma'
     : !/dopravcov|akych? kurier|cim posiel/i.test(normalizedMessage) && /\b(?:kolko|aka|cena|stoji|postovn|doprav|kurier|gls|dpd|parcelshop|balikomat|pickup|doruc)\w*/i.test(normalizedMessage)
     && /\b(?:dopr|postovn|kurier|gls|dpd|parcelshop|balikomat|pickup|doruc)\w*/i.test(normalizedMessage)
       ? 'doprava-ceny'
     : /\b(?:dopravcov|aky kurier|cim posiel|gls|dpd|parcelshop|balikomat|pickup)\w*/i.test(normalizedMessage)
       ? 'doprava-dopravcovia'
-    : /\b(?:plat|zaplat|dobierk|gopay|bankov.*prevod|prevodom|kartou)\w*/i.test(normalizedMessage)
+    : !/\b(?:registrac\w*|uvitac\w*\s+zlav\w*)\b/i.test(normalizedMessage) && /\b(?:plat|zaplat|dobierk|gopay|bankov.*prevod|prevodom|kartou)\w*/i.test(normalizedMessage)
       ? 'platba-moznosti'
     : /\b(?:reklam|vratit|vraten|odstup|vymen|nepasuj|nespravny toner|zly toner|poskoden.*tovar)\w*/i.test(normalizedMessage)
       ? (/vrat|vraten|odstup|vymen|nespravny toner/i.test(normalizedMessage) ? 'vratenie-tovaru' : 'reklamacia-postup')
     : /\b(?:zabud|obnov)\w*.*\bhesl\w*|\b(?:neviem|nemozem|neda|nejde)\w*(?:\s+\w+){0,3}\s+prihlas\w*|\bprihlas\w*.*(?:nejde|nefung|problem|chyba)|\b(?:nespravn|zle|neplatn)\w*(?:\s+\w+){0,3}\s+(?:meno|email|e-mail|hesl)\w*|\b(?:meno|email|e-mail|hesl)\w*(?:\s+\w+){0,3}\s+(?:nespravn|zle|neplatn)\w*/i.test(normalizedMessage)
       ? 'ucet-heslo'
+    : /\b(?:registrac\w*|bez\s+(?:uctu|registracie)|uvitac\w*\s+zlav\w*)\b/i.test(normalizedMessage)
+      ? 'registracia-zlava'
     : /\b(?:kontakt|telefon|email|mail|spojim|spojit|pracovn.*doba|volat|volať|otvoren\w*|otvarac\w*|sidlo)\w*/i.test(normalizedMessage)
       || /\bkde\s+vas\s+najd\w*|\b(?:aka|kde)\w*.*\b(?:vasa|vasu|firmy)\s+adres\w*/i.test(normalizedMessage)
       ? 'kontakt'

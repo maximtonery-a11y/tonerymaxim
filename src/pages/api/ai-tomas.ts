@@ -88,7 +88,8 @@ export const POST: APIRoute = async ({ request }) => {
     if (calendarRoute && commerce?.source === 'calendar' && Array.isArray(commerce.products) && commerce.products.length) {
       const count = commerce.products.length;
       const optionCount = count === 1 ? '1 aktuálne dostupnú možnosť' : count < 5 ? `${count} aktuálne dostupné možnosti` : `${count} aktuálne dostupných možností`;
-      const diaryOverview = /\b(?:diar|diare)\w*\b/.test(normalized(message))
+      const diarySubtype = normalized(message).match(/\b(denn|tyzdenn|mesacn|minidiar)\w*\b/)?.[1] || '';
+      const diaryOverview = !diarySubtype && /\b(?:diar|diare)\w*\b/.test(normalized(message))
         && /\b(ake|aky|co|mate|predavate|ponukate|ponuke|sortiment|druh|druhy|typ|typy|vybrat|vyber)\w*\b/.test(normalized(message));
       const tableCalendarOverview = /\bstolov\w*\b/.test(normalized(message));
       const wallCalendarOverview = /\bnastenn\w*\b/.test(normalized(message));
@@ -96,6 +97,8 @@ export const POST: APIRoute = async ({ request }) => {
         ...advisor,
         answer: [diaryOverview
           ? `V ponuke máme štyri typy: denné diáre, týždenné diáre, mesačné diáre a minidiáre. Nižšie zobrazujem ${optionCount}; výber môžete spresniť typom alebo farbou.`
+          : diarySubtype
+            ? `Našiel som ${optionCount} pre požadovaný typ diára. Nižšie sú iba zodpovedajúce produkty.`
           : tableCalendarOverview
             ? `Máme viacero stolových kalendárov na rok 2027. Nižšie zobrazujem ${optionCount}. Hľadáte konkrétny motív, rozmer alebo cenovú úroveň?`
             : wallCalendarOverview

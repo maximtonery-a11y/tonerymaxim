@@ -139,6 +139,18 @@ test('presné kalendárové SKU a diárové podtypy sa nemiešajú', async () =>
   }
 });
 
+test('presné kalendárové SKU smeruje do kalendárov aj v nákupnej vete', async () => {
+  for (const question of ['D-02-2-27', 'Chcem D-02-2-27', 'Pridaj 2 ks D-02-2-27']) {
+    assert.equal(isCalendarQuery(question), true, question);
+    const route = routeCommerceMessage(question, emptyCommerceState());
+    assert.equal(route.productQuery, 'D-02-2-27', question);
+    assert.equal(route.needsProducts, true, question);
+    const result = await askAiTomas(question);
+    assert.equal(result.commerce?.source, 'calendar', question);
+    assert.deepEqual(result.commerce?.products?.map((product:any)=>product.sku), ['D-02-2-27'], question);
+  }
+});
+
 test('prírodný motív nevydá kalendár iba pre slovo prirodzene v popise', async () => {
   const result = await searchCalendarProducts('aký nástenný kalendár s prírodou máte?');
   assert.ok(result.products.length > 0);

@@ -70,7 +70,9 @@ export function isCalendarQuery(query: string) {
   return /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn)\w*\b/.test(n)
     // Zákazník prirodzene nadväzuje aj bez slova „kalendár“:
     // „stolové hľadám, aké máte?“ alebo „ukážte nástenné“.
-    || /\b(nastenn|stolov|trojmesac|trojspiral)\w*\b/.test(n);
+    || /\b(nastenn|stolov|trojmesac|trojspiral)\w*\b/.test(n)
+    // Verejné SKU kalendárov: D (diáre), NK, SK, PF a PP.
+    || /\b(?:d|nk|sk|pf|pp)(?:\s+\d+){1,4}\b/.test(n);
 }
 
 const CALENDAR_OVERVIEW_WORDS = new Set([

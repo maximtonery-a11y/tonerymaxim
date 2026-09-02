@@ -62,10 +62,15 @@ test('prirodzená požiadavka na WF-6090 routuje iba čistý model tlačiarne',(
 });
 
 test('explicitné krátke číselné SKU sa dá vyhľadať bez zámeny za objednávku',()=>{
- const route=routeCommerceMessage('Chcem kúpiť SKU 276',normalizeCommerceState({}));
- assert.equal(route.needsProducts,true);
- assert.equal(route.productQuery,'276');
- assert.ok(route.intents.includes('BUY_INTENT'));
+ for(const question of ['Chcem kúpiť SKU 276','Máte 276?','Prosím, nájdite presne 276.']){
+  const route=routeCommerceMessage(question,normalizeCommerceState({}));
+  assert.equal(route.needsProducts,true,question);
+  assert.equal(route.productQuery,'276',question);
+ }
+ const composite=routeCommerceMessage('Máte DR-1050-KOM-13968?',normalizeCommerceState({}));
+ assert.equal(composite.needsProducts,true);
+ assert.match(String(composite.productQuery),/DR-1050-KOM-13968/i);
+ assert.notEqual(composite.productQuery,'1050');
 });
 
 test('diáre zobrazia všetky štyri typy a rýchly nákup bez tonerovej kapacity',async()=>{
@@ -101,7 +106,27 @@ test('slovenské otázky na stav objednávky vždy otvoria bezpečné overenie',
   'Chcem sledovať zásielku.',
   'Čo je s mojím balíkom?',
   'Je moja objednávka vybavená?',
+  'Zistiť stav objednávky',
+  'Zisti stav',
+  'Over mi stav objednávky 300945',
+  'Skontroluj stav objednávky',
+  'Kde je objednávka 300945?',
  ];
  for(const question of questions)assert.equal(isOrderStatusQuestion(question),true,question);
- for(const question of ['Ako vytvorím objednávku?','Koľko stojí doprava?','Chcem objednať toner.'])assert.equal(isOrderStatusQuestion(question),false,question);
+ for(const question of ['Ako vytvorím objednávku?','Koľko stojí doprava?','Chcem objednať toner.','Zisti stav skladu','Je toner skladom?'])assert.equal(isOrderStatusQuestion(question),false,question);
+});
+
+test('výber typu hovorí o variantoch, nie o kusoch na sklade, a má kompaktnú spoločnú zľavu',async()=>{
+ const js=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
+ assert.match(js,/Máme \$\{count\} produktové varianty/);
+ assert.doesNotMatch(js,/\$\{Number\(counts\[type\]\|\|0\)\} \$\{material\} skladom/);
+ assert.match(js,/tm-ai-type-benefit/);
+ assert.match(js,/pri 2–3 ks 10 % · pri 4 a viac ks 25 %/);
+});
+
+test('tlačidlo Stav objednávky vynúti bezpečné overenie a nejde do poradne',async()=>{
+ const js=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
+ assert.match(js,/const forceOrderStatus=buttonLabel==='stav objednavky'/);
+ assert.match(js,/unifiedAsk\(question,\{forceOrderStatus\}\)/);
+ assert.match(js,/options\.forceOrderStatus===true\|\|isOrderStatusQuestion\(question\)/);
 });

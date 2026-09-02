@@ -19,7 +19,7 @@
     "test:seo": "node --experimental-strip-types --test scripts/seo-foundation.test.ts scripts/seo-index-cache.test.ts scripts/seo-snippet.test.ts scripts/product-publication-policy.test.ts scripts/seo-content-quality.test.ts",
     "test:migration": "node --experimental-strip-types --test scripts/legacy-migration.test.ts && node scripts/migration-gate.test.mjs",
     "test:security": "node --experimental-strip-types --test scripts/security-config.test.ts",
-    "test:production": "node --experimental-strip-types --test scripts/production-readiness.test.ts scripts/calendar-integration.test.ts scripts/ai-tomas-calendars.test.ts scripts/ai-tomas-hard-regression.test.ts scripts/ai-tomas-1500.test.ts scripts/ai-search-parity.test.ts scripts/ai-engagement.test.ts scripts/combined-release.test.ts",
+    "test:production": "node --experimental-strip-types --test scripts/production-readiness.test.ts scripts/calendar-integration.test.ts scripts/ai-tomas-calendars.test.ts scripts/ai-tomas-hard-regression.test.ts scripts/ai-tomas-1500.test.ts scripts/ai-tomas-8700.test.ts scripts/ai-tomas-mega-audit.test.ts scripts/ai-tomas-common-questions.test.ts scripts/ai-search-parity.test.ts scripts/ai-engagement.test.ts scripts/combined-release.test.ts",
     "test:storefront": "node scripts/storefront-production-smoke.mjs",
     "test:storefront:load": "node scripts/storefront-load-smoke.mjs",
     "geo:score": "node scripts/geo-ai-score.mjs",

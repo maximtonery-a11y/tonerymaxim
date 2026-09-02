@@ -78,7 +78,7 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     answer: [
       'Tovar označený „Skladom“ objednaný v pracovný deň do 15:00 spravidla expedujeme v ten istý pracovný deň. Po 15:00, cez víkend alebo sviatok ho spravidla expedujeme najbližší pracovný deň. Pri platbe prevodom začína príprava po pripísaní úhrady.',
       'Doručenie kuriérom alebo do výdajného miesta býva spravidla 1–2 pracovné dni od odoslania zásielky.',
-      'Ak potrebujete overiť konkrétnu objednávku, AI Tomáš k jej stavu nemá prístup. Použite tracking od dopravcu alebo nás kontaktujte na info@tonerymaxim.sk; číslo objednávky neposielajte do AI chatu.',
+      'Ak potrebujete overiť konkrétnu objednávku, použite v AI Tomášovi voľbu „Stav objednávky“. Prihlásenému zákazníkovi zobrazí objednávky z účtu; neprihlásený zákazník ich bezpečne overí číslom objednávky, e-mailom a PSČ.',
     ],
   },
   {
@@ -97,6 +97,14 @@ export const aiKnowledge: AiKnowledgeItem[] = [
       'Používame dopravu cez GLS a DPD.',
       'Vybrať si môžete kuriéra na adresu, GLS Balíkomat / ParcelShop alebo DPD Pickup / DPD Pickup Box podľa dostupnosti v pokladni.',
       'Presnú cenu a dostupné možnosti uvidíte vždy v košíku a v pokladni pred odoslaním objednávky.',
+    ],
+  },
+  {
+    id: 'doprava-packeta', intent: 'shipping', title: 'Doručenie cez Packetu', priority: 155,
+    triggers: ['packeta', 'packetu', 'packetou', 'zasielkovna', 'zasielkovnu', 'z box', 'z-box'],
+    answer: [
+      'Cez Packetu ani Zásielkovňu momentálne neposielame.',
+      'Vybrať si môžete kuriéra GLS alebo DPD na adresu, GLS Balíkomat / ParcelShop alebo DPD Pickup / Pickup Box podľa možností v pokladni.',
     ],
   },
   {
@@ -122,6 +130,16 @@ export const aiKnowledge: AiKnowledgeItem[] = [
       'Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni.',
       'Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH.',
       'Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom.',
+    ],
+  },
+  {
+    id: 'zlavy-prehlad', intent: 'loyalty', title: 'Dostupné zľavy', priority: 150,
+    triggers: ['ake zlavy ponukate', 'mate zlavy', 'poskytnut zlavu', 'dostat zlavu', 'individualna zlava', 'mnozstevna zlava', 'zlava na nakup'],
+    answer: [
+      'Po registrácii získate uvítaciu zľavu 5 %. Po dokončenej objednávke získate 7 % odmenu na ďalší nákup kompatibilných tonerov.',
+      'Na kompatibilné tonery sa množstevná zľava počíta automaticky: pri 2–3 kusoch 10 % a pri 4 a viac kusoch 25 %.',
+      'Pri kalendároch je zľava 5 % pri 3–20 kusoch rovnakého produktu a 15 % pri 21 a viac kusoch.',
+      'Individuálnu zľavu AI Tomáš nemôže schváliť. Pri väčšom firemnom odbere nás kontaktujte na info@tonerymaxim.sk.',
     ],
   },
   {
@@ -279,9 +297,9 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     id: 'objednavka-konkretny-stav', intent: 'order', title: 'Stav konkrétnej objednávky', priority: 135,
     triggers: ['kde je moja objednavka', 'kde je balik', 'mam tracking', 'stav mojej objednavky', 'sledovat objednavku', 'tracking objednavky', 'cislo objednavky'],
     answer: [
-      'AI Tomáš nemá prístup k stavu konkrétnej objednávky ani k zákazníckym údajom.',
-      'Stav zásielky skontrolujte cez informácie o odoslaní a tracking od dopravcu. Ak potrebujete pomoc, kontaktujte nás na info@tonerymaxim.sk alebo +421 917 859 206.',
-      'Do AI chatu neposielajte osobné údaje ani celé údaje o platbe.',
+      'Stav objednávky môžete bezpečne overiť priamo cez voľbu „Stav objednávky“ v AI Tomášovi.',
+      'Prihlásenému zákazníkovi zobrazí objednávky z účtu. Neprihlásený zákazník zadá číslo objednávky, e-mail a PSČ použité v objednávke.',
+      'Do voľnej správy AI neposielajte platobné údaje ani heslá.',
     ],
   },
   {

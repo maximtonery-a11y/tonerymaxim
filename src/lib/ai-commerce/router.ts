@@ -11,10 +11,11 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const catalogQuery = analyzeCatalogQuery(message);
   const explicitSkuMention = message.match(/\bsku\s*[:#-]?\s*([a-z0-9][a-z0-9_-]{1,99})\b/i)?.[1] || null;
   const explicitReference = message.match(/\b(?=[A-Z0-9_-]{4,}\b)(?=[A-Z0-9_-]*[A-Z])(?=[A-Z0-9_-]*\d)[A-Z0-9]+(?:[-_][A-Z0-9]+)*\b/i)?.[0] || null;
+  const explicitCalendarSku = message.match(/\b(?:D|NK|SK|PF|PP)(?:-\d+){1,4}\b/i)?.[0]?.toUpperCase() || null;
   const sharedCatalogReference = Boolean(explicitReference || explicitSkuMention) || (
     catalogQuery.brands.length > 0 && catalogQuery.referenceTokens.some(token => /^\d{2,6}[a-z]{0,4}$/i.test(token))
   );
-  const calendarQuestion = /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn|nastenn|stolov|trojmesac|trojspiral)\w*\b/.test(n);
+  const calendarQuestion = Boolean(explicitCalendarSku) || /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn|nastenn|stolov|trojmesac|trojspiral)\w*\b/.test(n);
   const generalCalendarQuestion = isGeneralCalendarQuestion(message);
   const calendarInformationQuestion = calendarQuestion
     && /\b(ake|aky|aku|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(n);
@@ -23,11 +24,18 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const knownProductAlias = /^\s*(?:samsung\s+|mlt[- ]?)?d[- ]?111(?:s|1)\s*$/i.test(message)
     ? 'MLT-D111S'
     : null;
-  const numericSku = /^\s*\d{4,12}\s*$/.test(message) ? message.trim() : null;
+  const numericToken = message.match(/(?<![a-z0-9_-])\d{3,12}(?![a-z0-9_-])/i)?.[0] || null;
+  // Niektoré staršie interné SKU majú iba tri číslice. Rozpoznáme ich ako
+  // produkt iba samostatne alebo v jednoznačnej nákupnej vete; číslo
+  // objednávky, telefón či PSČ neskôr odfiltruje serviceQuestion.
+  const numericSku = numericToken && (
+    /^\s*\d{3,12}\s*$/.test(message)
+    || /\b(?:mate|hladam|najd|potrebujem|produkt|kod|sku|ukaz|stoji|skladom|kupit|objednat|pridaj)\w*\b/.test(n)
+  ) ? numericToken : null;
   // Service questions must be routable at any point of a shopping flow.  In
   // particular, a pending quantity/type question must never turn "can I pay
   // cash?" into a product follow-up using the previous catalogue query.
-  const serviceQuestion = /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|doprava|doruc\w*|kurier\w*|objednavk\w*|zasielk\w*|balik\w*|exped\w*|odosl\w*|stav\w*\s+objednavk\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklam\w*|vraten\w*|odstup\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|telefon\w*|e-?mail\w*|otvarac\w*|otvoren\w*|pracovn\w*\s+doba|kde\s+(?:vas|vás)\s+najd\w*|adres\w*|sidlo|vernost\w*|odmen\w*|zlav\w*|bod(?:y|ov)?)\b/.test(n);
+  const serviceQuestion = /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|doprava|doruc\w*|kurier\w*|packet\w*|zasielkovn\w*|z-?box|objednavk\w*|zasielk\w*|balik\w*|exped\w*|odosl\w*|stav\w*\s+objednavk\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklam\w*|vraten\w*|odstup\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|telefon\w*|e-?mail\w*|otvarac\w*|otvoren\w*|pracovn\w*\s+doba|kde\s+(?:vas|vás)\s+najd\w*|adres\w*|sidlo|vernost\w*|odmen\w*|zlav\w*|bod(?:y|ov)?)\b/.test(n);
   const pendingAnswer = state.pendingQuestion === 'quantity'
     ? /^(?:\s*(?:\d{1,2}|jeden|jednu|jedno|dva|dve|tri|styri|pat)\s*(?:ks|kus|kusy|kusov)?\s*)$/.test(n)
     : state.pendingQuestion === 'product_type'
@@ -68,7 +76,9 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (!serviceQuestion && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (/(ten|ho|ich|do nej|a original|a kompatibil|a renov|originalny|kompatibilny|renovovany|renovovanu|renovovany|repasovany|je skladom|kolko stran|chcem|zoberiem|pridaj|\bkus(?:y|ov)?\b|\bks\b|kosik|pokladn)/.test(n) || pendingAnswer)) add('FOLLOW_UP');
   if (!intents.length) add('UNKNOWN');
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];
-  const calendarQuery=calendarQuestion&&!generalCalendarQuestion?message:null;
+  // Pri presnom kalendárovom SKU posielame katalógu iba kód. Celá veta
+  // (napr. „Pridaj 2 ks D-02-2-27“) by inak znížila presnosť vyhľadávania.
+  const calendarQuery=explicitCalendarSku || (calendarQuestion&&!generalCalendarQuestion?message:null);
   const printerQuery = message.match(printer)?.[0] || (shortPrinter ? `${brand || ''} ${shortPrinter}`.trim() : null);
   const hasExplicitProductCode = productCode.test(message);
   // Pri modeli tlačiarne vraciame iba čistý model (napr. Epson WF-6090), nie
