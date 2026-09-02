@@ -497,6 +497,20 @@
   font-weight: 850;
 }
 
+.tm-row-buy .tm-lowest-price {
+  max-width: 210px;
+  margin: 2px 0 3px;
+  color: #526174;
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: right;
+}
+
+.tm-row-buy .tm-lowest-price b {
+  color: #071b3a;
+  font-weight: 950;
+}
+
 .tm-row-buy button {
   display: inline-flex;
   place-items: center;

@@ -100,6 +100,11 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     document.head.appendChild(style);
   }
 
+  function lowestPriceHtml(product) {
+    if (product?.lowest_price_30d_valid !== true || !(Number(product?.lowest_price_30d) > 0)) return "";
+    return `<small class="tm-lowest-price-detail">Najnižšia cena za posledných 30 dní: <b>${money(product.lowest_price_30d)}</b></small>`;
+  }
+
   function isMissingValue(value) {
     const text = String(value || "").trim().toLowerCase();
     return !text || text === "neuvedené" || text === "neuvedene" || text === "n/a" || text === "-";
@@ -1352,6 +1357,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         <aside class="purchase-panel">
           <span class="vat-label">Cena s DPH</span>
           <div class="price-row"><strong>${money(product.price)}</strong><span>s DPH</span></div>
+          ${lowestPriceHtml(product)}
           <small class="no-vat">bez DPH ${moneyPlain(priceWithoutVat)} €</small>
 
           <div class="purchase-status ${isProductInStock(product) ? "is-available" : "is-unavailable"}">

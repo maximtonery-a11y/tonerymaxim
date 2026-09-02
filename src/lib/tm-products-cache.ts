@@ -4,6 +4,7 @@ import { TM_PRODUCT_CACHE_ROOT } from './runtime-paths.ts';
 import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, productPrinterValues } from './catalog-query.ts';
 import { normalizedCompletenessRatio, requiredProductCount } from './product-cache-policy.ts';
 import { notifyIndexNowAfterProductSync, type IndexNowResult } from './indexnow.ts';
+import { recordAndAnnotatePrices } from './price-history.ts';
 
 export type TmProduct = Record<string, any>;
 
@@ -46,6 +47,7 @@ const COMPLETENESS_RATIO = normalizedCompletenessRatio(env("WOO_SYNC_COMPLETENES
 const WOO_SYNC_PER_PAGE = Math.min(100, Math.max(10, Number(env("WOO_SYNC_PER_PAGE") || 100)));
 const WOO_SYNC_TIMEOUT_MS = Math.min(60000, Math.max(8000, Number(env("WOO_SYNC_TIMEOUT_MS") || 25000)));
 const WOO_SYNC_MAX_PAGES = Math.min(1000, Math.max(1, Number(env("WOO_SYNC_MAX_PAGES") || 500)));
+const WOO_SYNC_PAGE_DELAY_MS = Math.min(2_000, Math.max(120, Number(env("WOO_SYNC_PAGE_DELAY_MS") || 250)));
 const CACHE_TTL_MS = Math.max(5 * 60_000, Number(env("WOO_CACHE_TTL_MS") || 60 * 60_000));
 const WOO_FIELDS = [
   "id",
@@ -1198,7 +1200,7 @@ async function fetchAllWooProducts() {
     if (!reportedTotalPages && result.products.length < WOO_SYNC_PER_PAGE) break;
 
     page += 1;
-    await new Promise((resolve) => setTimeout(resolve, 120));
+    await new Promise((resolve) => setTimeout(resolve, WOO_SYNC_PAGE_DELAY_MS));
   }
 
   if (reportedTotalPages > WOO_SYNC_MAX_PAGES) {
@@ -1245,6 +1247,14 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
   }
 
   const products = sortProducts(enrichProductsFromRelated(raw.products));
+  await recordAndAnnotatePrices(products).catch((error) => {
+    console.error('[TM price history] Zápis histórie zlyhal, údaj o 30-dňovej cene sa nezverejní:', error?.message || error);
+    for (const product of products) {
+      delete product.lowest_price_30d;
+      delete product.lowest_price_30d_valid;
+      delete product.price_reduction_started_at;
+    }
+  });
   const fullNext: CacheFile = {
     ok: true,
     version: CACHE_VERSION,

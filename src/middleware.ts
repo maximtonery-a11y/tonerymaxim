@@ -2,6 +2,7 @@ import { defineMiddleware } from 'astro:middleware';
 import { ensureTonerCareWorkerStarted } from './lib/toner-care';
 import { ensureEmailQueueStarted } from './lib/email-queue';
 import { ensureFirmwareInfoWorkerStarted } from './lib/firmware-info';
+import { ensureNightlyPriceWorkerStarted } from './lib/nightly-price-worker';
 
 const NOINDEX_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
 const PRIVATE_PATHS = new Set([
@@ -144,6 +145,7 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
     if (process.env.TM_DISABLE_BACKGROUND_WORKERS !== '1') {
       ensureEmailQueueStarted();
       ensureFirmwareInfoWorkerStarted();
+      ensureNightlyPriceWorkerStarted();
     }
   }
   // Storefront, kosik, pokladna a healthcheck nemaju ziadnu zavislost od

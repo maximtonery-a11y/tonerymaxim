@@ -12,6 +12,8 @@ const money = (value: unknown) => new Intl.NumberFormat("sk-SK", {
   maximumFractionDigits: 2,
 }).format(Number(value || 0));
 
+const hasLowestPriceReference = (product: Product) => product.lowest_price_30d_valid === true && Number(product.lowest_price_30d || 0) > 0;
+
 const typeData = (product: Product) => {
   const key = product.product_type_key || "product";
   if (key === "original") return { key, label: "ORIGINÁL", note: "🏅 Originálna kvalita výrobcu", iconImage: "/design-icons/icon-original.png" };
@@ -140,6 +142,7 @@ const specialGroups = [
           <span class={`tm-stock-dot ${stockClass(product)}`}>{stockText(product)}</span>
           <strong>{money(product.price)}</strong>
           <small>s DPH</small>
+          {hasLowestPriceReference(product) && <small class="tm-lowest-price">Najnižšia cena za posledných 30 dní: <b>{money(product.lowest_price_30d)}</b></small>}
           <button type="button" class={inStock ? "" : "tm-availability-btn"} aria-label={inStock ? `Pridať do košíka ${product.name}` : `Overiť dostupnosť ${product.name}`}>
             {inStock ? <><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7zM5 6 4 3H2M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"></path></svg>Do košíka</> : "Overiť dostupnosť"}
           </button>

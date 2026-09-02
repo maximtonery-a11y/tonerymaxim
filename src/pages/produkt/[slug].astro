@@ -65,6 +65,9 @@ const productStructuredData = noindex
     ];
 const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
 const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.price || 0));
+const lowestPrice30d = product.lowest_price_30d_valid === true && Number(product.lowest_price_30d || 0) > 0
+  ? new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.lowest_price_30d))
+  : '';
 const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
 const printerLinks = cache ? printerLinksFromNames(cache.products, printers, 100) : [];
 const oemLinks = productOemCodes(product).map((code) => ({
@@ -147,7 +150,7 @@ const initialProductJson = JSON.stringify(product)
                 )}
                 <div class:list={["stock-line", inStock ? "is-available" : "is-unavailable"]}><strong>{inStock ? 'Skladom' : 'Momentálne nie je skladom'}</strong></div>
               </div>
-              <aside class="purchase-panel"><span class="vat-label">Cena s DPH</span><div class="price-row"><strong>{price}</strong><span>s DPH</span></div></aside>
+              <aside class="purchase-panel"><span class="vat-label">Cena s DPH</span><div class="price-row"><strong>{price}</strong><span>s DPH</span></div>{lowestPrice30d && <small class="tm-lowest-price-detail">Najnižšia cena za posledných 30 dní: <b>{lowestPrice30d}</b></small>}</aside>
             </section>
             {plainDescription && <section class="info-grid"><article class="params-card"><h2>Popis produktu</h2><p>{plainDescription}</p></article></section>}
             {productSafetyRows.length > 0 && (

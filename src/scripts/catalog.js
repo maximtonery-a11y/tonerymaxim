@@ -78,6 +78,11 @@ import { getDispatchParts } from "./dispatch-message.js";
     return src;
   }
 
+  function lowestPriceHtml(product) {
+    if (product?.lowest_price_30d_valid !== true || !(Number(product?.lowest_price_30d) > 0)) return "";
+    return `<small class="tm-lowest-price">Najnižšia cena za posledných 30 dní: <b>${money(product.lowest_price_30d)}</b></small>`;
+  }
+
   const CART_KEY = "tm_cart_v1";
 
   const CATALOG_CACHE_VERSION = "tm_catalog_v4";
@@ -844,6 +849,7 @@ import { getDispatchParts } from "./dispatch-message.js";
           <span class="tm-stock-dot ${stockClass(product)}">${esc(stockText(product))}</span>
           <strong>${money(product.price)}</strong>
           <small>s DPH</small>
+          ${lowestPriceHtml(product)}
           <button type="button" class="${isProductInStock(product) ? "" : "tm-availability-btn"}" aria-label="${isProductInStock(product) ? `Pridať do košíka ${esc(product.name)}` : `Overiť dostupnosť ${esc(product.name)}`}">
             ${isProductInStock(product) ? `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7zM5 6 4 3H2M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>Do košíka` : `Overiť dostupnosť`}
           </button>
