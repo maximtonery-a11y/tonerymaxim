@@ -1,0 +1,8 @@
+import type { APIRoute } from 'astro';
+import { constantTimeEqual,getAdminAccessKey } from '../../../lib/admin-access';
+import { importConfirmedNewsletterEmails,listNewsletterRecords } from '../../../lib/newsletter';
+export const prerender=false;
+function allowed(request:Request,locals:any){const expected=getAdminAccessKey(locals),supplied=request.headers.get('x-admin-key')||'';return Boolean(expected)&&constantTimeEqual(expected,supplied)}
+const csv=(v:unknown)=>`"${String(v??'').replaceAll('"','""')}"`;
+export const GET:APIRoute=async({request,url,locals})=>{if(!allowed(request,locals))return new Response('Unauthorized',{status:401});const rows=(await listNewsletterRecords()).filter(r=>r.status==='subscribed');const body=['email,status,source,consent_at,confirmed_at,legacy_imported_at',...rows.map(r=>[r.email,r.status,r.source,r.consentAt||'',r.confirmedAt||'',r.legacyImportedAt||''].map(csv).join(','))].join('\r\n');return new Response('\uFEFF'+body,{headers:{'content-type':'text/csv; charset=utf-8','content-disposition':'attachment; filename="newsletter-aktivni.csv"','cache-control':'no-store'}})};
+export const POST:APIRoute=async({request,url,locals})=>{if(!allowed(request,locals))return Response.json({ok:false,error:'Unauthorized'},{status:401});const b=await request.json().catch(()=>({}));if(!Array.isArray(b.emails)||b.emails.length>5000)return Response.json({ok:false,error:'Očakáva sa pole emails (max. 5000).'},{status:400});const result=await importConfirmedNewsletterEmails(b.emails);return Response.json({ok:true,...result},{headers:{'cache-control':'no-store'}})};

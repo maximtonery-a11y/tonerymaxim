@@ -48,6 +48,12 @@ const shippingLogos = [
         <img src="/images/tonerymaxim-logo-sharp.png" alt="ToneryMaxim" width="1270" height="222" loading="lazy" decoding="async" />
       </a>
       <p>Slovenský špecialista na tonery, atramentové náplne a komponenty pre tlačiarne.</p>
+      <form class="footer-newsletter" data-footer-newsletter>
+        <strong>Novinky, akcie a výhody do e-mailu</strong>
+        <div><input type="email" name="email" required autocomplete="email" placeholder="vas@email.sk" aria-label="E-mail pre newsletter" /><button type="submit">Prihlásiť</button></div>
+        <label><input type="checkbox" required /> <span>Súhlasím so zasielaním marketingových informácií. <a href="/newsletter">Viac</a></span></label>
+        <small data-footer-newsletter-message hidden></small>
+      </form>
     </div>
 
     <nav class="footer-col" aria-label="Zákaznícka podpora">
@@ -78,6 +84,7 @@ const shippingLogos = [
       <a href="/toner-bez-starosti">Toner bez starostí</a>
       <a href="/spatny-odber-tonerov">Spätný odber tonerov</a>
       <a href="/vernostny-program">Vernostný program</a>
+      <a href="/newsletter">Newsletter</a>
       <a href="/ochrana-osobnych-udajov">GDPR</a>
       <a href="/partneri-a-tretie-strany">Partneri a tretie strany</a>
       <a href="/cookies">Informácie o cookies</a>
@@ -225,4 +232,11 @@ const shippingLogos = [
   }
 
   loadFooterHeurekaStats();
+</script>
+
+<script>
+  document.querySelector<HTMLFormElement>("[data-footer-newsletter]")?.addEventListener("submit", async (event) => {
+    event.preventDefault(); const form=event.currentTarget as HTMLFormElement; const button=form.querySelector<HTMLButtonElement>("button")!; const message=form.querySelector<HTMLElement>("[data-footer-newsletter-message]")!; button.disabled=true; message.hidden=true;
+    try { const email=String(new FormData(form).get("email")||""); const response=await fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,source:"footer"})}); const data=await response.json(); message.textContent=data.message||data.error||"Hotovo."; message.className=response.ok?"is-success":"is-error"; message.hidden=false; if(response.ok)form.reset(); } catch { message.textContent="Prihlásenie sa nepodarilo. Skúste to neskôr."; message.className="is-error"; message.hidden=false; } finally { button.disabled=false; }
+  });
 </script>

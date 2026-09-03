@@ -13,7 +13,7 @@ const TEST_ROUTES = new Set([
   '/api/test-woo', '/api/auth/test-email', '/api/cache-status', '/test-produkt',
   '/design/icons-test', '/design/product-detail', '/design/product-list',
 ]);
-const ORIGIN_EXEMPT = new Set(['/api/gopay-notify']);
+const ORIGIN_EXEMPT = new Set(['/api/gopay-notify', '/api/admin/newsletter']);
 const TRUSTED_REQUEST_ORIGINS = new Set([
   'https://tonerymaxim.sk',
   'https://www.tonerymaxim.sk',
@@ -27,6 +27,8 @@ const MAX_RATE_BUCKETS = 5_000;
 const RATE_RULES: Array<{ match: RegExp; methods: string[]; limit: number; windowMs: number }> = [
   { match: /^\/api\/auth\/login$/, methods: ['POST'], limit: 30, windowMs: 60_000 },
   { match: /^\/api\/auth\/(register|forgot-password|reset-password)$/, methods: ['POST'], limit: 15, windowMs: 600_000 },
+  { match: /^\/api\/newsletter\/(subscribe|unsubscribe|account-unsubscribe)$/, methods: ['POST'], limit: 12, windowMs: 600_000 },
+  { match: /^\/api\/admin\/newsletter$/, methods: ['GET', 'POST'], limit: 30, windowMs: 600_000 },
   { match: /^\/api\/(order-create|gopay-create)$/, methods: ['POST'], limit: 30, windowMs: 60_000 },
   { match: /^\/api\/gopay-status$/, methods: ['GET'], limit: 180, windowMs: 60_000 },
   { match: /^\/api\/(smart-search|products|product|printers)$/, methods: ['GET'], limit: 600, windowMs: 60_000 },

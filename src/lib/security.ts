@@ -32,6 +32,7 @@ const RATE_RULES: Array<{ match: RegExp; methods?: string[]; rule: RateRule }> =
 
   // Registrácia a obnova hesla: vyšší bezpečný limit, aby neblokoval legitímne opakovanie formulára.
   { match: /^\/api\/auth\/(register|forgot-password|reset-password)$/, methods: ['POST'], rule: { limit: 15, windowMs: 10 * 60_000 } },
+  { match: /^\/api\/newsletter\/(subscribe|unsubscribe|account-unsubscribe)$/, methods: ['POST'], rule: { limit: 12, windowMs: 10 * 60_000 } },
 
   // Checkout a GoPay: rezerva pre dvojklik, opakovanie po chybe a viac používateľov za jednou IP.
   { match: /^\/api\/(order-create|gopay-create)$/, methods: ['POST'], rule: { limit: 30, windowMs: 60_000 } },

@@ -653,3 +653,15 @@ export async function sendWooOrderStatusEmail(payload: WooOrderStatusEmailPayloa
     html,
   });
 }
+
+export async function sendNewsletterConfirmationEmail(input: { email: string; confirmUrl: string }) {
+  const text = `Dobrý deň,\n\npotvrďte prihlásenie na newsletter ToneryMaxim.sk:\n${input.confirmUrl}\n\nAk ste sa neprihlasovali, e-mail ignorujte.\n\nToneryMaxim.sk`;
+  const html = `<div style="font-family:Arial,sans-serif;line-height:1.55;color:#061735;max-width:640px;margin:0 auto;padding:24px"><h1 style="font-size:24px">Potvrďte odber noviniek</h1><p>Ešte jeden krok a budete dostávať novinky, akcie a výhody ToneryMaxim.sk.</p><p><a href="${input.confirmUrl}" style="display:inline-block;background:#061735;color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:700">Potvrdiť odber</a></p><p style="color:#60708c">Ak ste sa na odber neprihlasovali, tento e-mail ignorujte.</p></div>`;
+  return sendMail({to:input.email,subject:'Potvrďte odber noviniek | ToneryMaxim.sk',text,html});
+}
+
+export async function sendNewsletterUnsubscribeConfirmationEmail(input: { email: string; confirmUrl: string }) {
+  const text = `Dobrý deň,\n\npožiadali ste o odhlásenie z newslettera ToneryMaxim.sk. Odber zrušíte kliknutím na tento odkaz:\n${input.confirmUrl}\n\nAk ste o odhlásenie nežiadali, e-mail ignorujte a nič sa nezmení.\n\nToneryMaxim.sk`;
+  const html = `<div style="font-family:Arial,sans-serif;line-height:1.55;color:#061735;max-width:640px;margin:0 auto;padding:24px"><h1 style="font-size:24px">Potvrďte odhlásenie z newslettera</h1><p>Kliknutím na tlačidlo bezpečne zrušíte odber marketingových noviniek ToneryMaxim.sk.</p><p><a href="${input.confirmUrl}" style="display:inline-block;background:#061735;color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:700">Odhlásiť z newslettera</a></p><p style="color:#60708c">Ak ste o odhlásenie nežiadali, tento e-mail ignorujte a nič sa nezmení.</p></div>`;
+  return sendMail({to:input.email,subject:'Potvrďte odhlásenie z newslettera | ToneryMaxim.sk',text,html});
+}

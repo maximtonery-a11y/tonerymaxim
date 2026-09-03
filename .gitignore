@@ -26,3 +26,7 @@ pnpm-debug.log*
 
 migration/reports/*
 !migration/reports/.gitkeep
+
+# newsletter local import/export data - never commit
+NEWSLETTER-IMPORT-*.json
+newsletter-aktivni.csv
