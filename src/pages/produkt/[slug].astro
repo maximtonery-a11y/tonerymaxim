@@ -13,12 +13,22 @@ import { buildProductSeo } from "../../lib/catalog-seo-text";
 import { breadcrumbJsonLd, organizationJsonLd, productJsonLd, absoluteUrl, websiteJsonLd } from "../../lib/seo";
 import { printerBrandForName, printerLinksFromNames, productOemCodes, validIndexableProduct } from "../../lib/seo-catalog";
 import { currentProductSlug, isLegacyProductSlug } from "../../lib/product-slug-aliases";
+import { productIdForHistoricalSlug } from "../../lib/product-slug-history";
 
 const { slug } = Astro.params;
 const lookupSlug = currentProductSlug(slug);
 const lookup = await getProductFromCache({ slug: lookupSlug, id: slug }).catch(() => null);
-const cache = lookup?.cache || null;
-const product = lookup?.product || null;
+let cache = lookup?.cache || null;
+let product = lookup?.product || null;
+if (!product && slug) {
+  const historicalProductId = await productIdForHistoricalSlug(slug);
+  if (historicalProductId) {
+    const historicalLookup = await getProductFromCache({ id: historicalProductId }).catch(() => null);
+    if (historicalLookup?.product?.slug) {
+      return Astro.redirect(`/produkt/${encodeURIComponent(historicalLookup.product.slug)}`, 301);
+    }
+  }
+}
 if (product && isLegacyProductSlug(slug)) {
   return Astro.redirect(`/produkt/${encodeURIComponent(product.slug)}`, 301);
 }

@@ -5,6 +5,7 @@ import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatch
 import { normalizedCompletenessRatio, requiredProductCount } from './product-cache-policy.ts';
 import { notifyIndexNowAfterProductSync, type IndexNowResult } from './indexnow.ts';
 import { recordAndAnnotatePrices } from './price-history.ts';
+import { rememberProductSlugChanges } from './product-slug-history.ts';
 
 export type TmProduct = Record<string, any>;
 
@@ -1263,6 +1264,12 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
     woo_reported_total: raw.reportedTotal || products.length,
     products,
   };
+
+  // Before replacing the catalog, preserve every observed old product slug by stable Woo ID.
+  // This makes future slug changes SEO-safe: old URLs can always 301 to the product's current slug.
+  await rememberProductSlugChanges(current?.products || [], products).catch((error) => {
+    console.error('[TM slug history] Zápis histórie slugov zlyhal:', error?.message || error);
+  });
 
   const next = await writeSplitCache(fullNext, current?.details_file);
 
