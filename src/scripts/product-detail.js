@@ -410,7 +410,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     if (!items.length) return "";
     return `
       <div class="series-colors-strip" aria-label="Ďalšie farby série">
-        <strong>Ďalšie farby:</strong>
         <div class="series-color-pills">
           ${items.map((item) => `
             <a class="series-color-pill series-color-pill--${item.dot}" href="${esc(item.url)}" title="${esc(item.code)} ${esc(item.label)}">
@@ -1268,8 +1267,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
       <section class="series-wide-section" data-series-wide-section hidden>
         <div class="section-head">
-          <h2>Farby tejto série</h2>
-          <p>Ak má séria viac farieb, zobrazíme ich tu na rýchly preklik.</p>
+          <h2>Farebné možnosti tejto série</h2>
         </div>
         <div data-series-colors></div>
       </section>
