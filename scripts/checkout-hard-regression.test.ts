@@ -97,3 +97,24 @@ test("počas odosielania sú zamknuté tlačidlá, doprava aj platba", async () 
   assert.match(source, /\[name="shipping"\], \[name="payment"\]/);
   assert.match(source, /control\.disabled = disabled/);
 });
+
+test("GoPay ochrana zostáva aktívna až do potvrdenej platby", async () => {
+  const checkout = await readFile(new URL("../src/scripts/checkout.js", import.meta.url), "utf8");
+  const confirmation = await readFile(new URL("../src/pages/platba-dokoncena.astro", import.meta.url), "utf8");
+  assert.doesNotMatch(checkout, /sessionStorage\.removeItem\("tm_checkout_request_id"\)[\s\S]{0,120}window\.location\.href = data\.gwUrl/);
+  assert.match(checkout, /tm_submitted_gopay_v1/);
+  assert.match(checkout, /Táto objednávka už bola odoslaná/);
+  assert.match(confirmation, /clearCheckoutLock\(\)/);
+});
+
+test("čas vytvorenia nemení identitu opakovaného requestu", async () => {
+  let runs = 0;
+  const first = { requestId: "same-intent-time", createdAt: "2026-09-03T08:00:00.000Z", payment: "gopay", cart: [{ sku: "X", qty: 1 }] };
+  const second = { ...first, createdAt: "2026-09-03T08:01:00.000Z" };
+  const a = await withCheckoutSubmission(first.requestId, "gopay", first, async () => { runs += 1; return okResponse("301100"); });
+  const b = await withCheckoutSubmission(second.requestId, "gopay", second, async () => { runs += 1; return okResponse("301101"); });
+  assert.equal(a.status, 200);
+  assert.equal(b.status, 200);
+  assert.equal(runs, 1);
+  assert.deepEqual(await a.json(), await b.json());
+});

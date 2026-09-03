@@ -5,6 +5,28 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
   window.__TM_CHECKOUT_INIT__ = true;
 
   const CART_KEYS = ["tm_cart_v1", "tonerymaxim_cart", "cart", "tm_cart"];
+  const CHECKOUT_INTENT_KEY = "tm_checkout_intent_v2";
+  const SUBMITTED_GOPAY_KEY = "tm_submitted_gopay_v1";
+
+  function checkoutCartSignature(cart) {
+    return JSON.stringify((Array.isArray(cart) ? cart : []).map((item) => ({
+      id: String(item?.id ?? item?.productId ?? item?.product_id ?? ""),
+      sku: String(item?.sku || ""),
+      qty: Math.max(1, Number(item?.qty ?? item?.quantity ?? 1) || 1),
+      price: Number(item?.price ?? item?.unitPrice ?? 0) || 0,
+      source: String(item?.source || ""),
+    })));
+  }
+
+  function readJsonStorage(key) {
+    try { return JSON.parse(localStorage.getItem(key) || "null"); } catch { return null; }
+  }
+
+  function submittedGoPayForCart(cart) {
+    const submitted = readJsonStorage(SUBMITTED_GOPAY_KEY);
+    if (!submitted?.requestId || submitted.cartSignature !== checkoutCartSignature(cart)) return null;
+    return submitted;
+  }
 
   function isCalendarCartItem(item) {
     const source = String(item?.source || "").trim();
@@ -1747,13 +1769,17 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
 
   let tmOrderSubmitting = false;
 
-  function checkoutRequestId() {
+  function checkoutRequestId(cart) {
+    const cartSignature = checkoutCartSignature(cart);
     try {
-      let value = sessionStorage.getItem("tm_checkout_request_id") || "";
+      const stored = readJsonStorage(CHECKOUT_INTENT_KEY);
+      let value = stored?.cartSignature === cartSignature ? String(stored.requestId || "") : "";
+      if (!value && !stored) value = sessionStorage.getItem("tm_checkout_request_id") || "";
       if (!value) {
         value = `checkout-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
-        sessionStorage.setItem("tm_checkout_request_id", value);
       }
+      sessionStorage.setItem("tm_checkout_request_id", value);
+      localStorage.setItem(CHECKOUT_INTENT_KEY, JSON.stringify({ requestId: value, cartSignature, savedAt: Date.now() }));
       return value;
     } catch {
       return `checkout-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
@@ -1794,6 +1820,20 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
     if (cart.length === 0) {
       status.textContent = "Košík je prázdny. Vráťte sa späť do košíka.";
       status.className = "order-status is-error";
+      return;
+    }
+
+    const alreadySubmitted = submittedGoPayForCart(cart);
+    if (alreadySubmitted) {
+      tmOrderSubmitting = true;
+      setSubmitDisabled(true);
+      status.textContent = "Táto objednávka už bola odoslaná. Otváram jej platbu a stav...";
+      status.className = "order-status is-success";
+      setSubmitProgress(true, "Objednávku už evidujeme. Novú objednávku nevytvárame.");
+      const statusUrl = alreadySubmitted.paymentId
+        ? `/platba-dokoncena?id=${encodeURIComponent(alreadySubmitted.paymentId)}`
+        : String(alreadySubmitted.gwUrl || "/platba-dokoncena");
+      window.location.href = statusUrl;
       return;
     }
 
@@ -1852,7 +1892,7 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
       termsAccepted: document.querySelector("#terms")?.checked === true,
       heurekaConsent: document.querySelector("#heureka-consent")?.checked === true,
       createdAt: new Date().toISOString(),
-      requestId: checkoutRequestId(),
+      requestId: checkoutRequestId(cart),
     };
 
     localStorage.setItem("tm_last_order_preview", JSON.stringify(orderPreview));
@@ -1890,7 +1930,16 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
         status.textContent = "Presmerujem vás na GoPay...";
         status.className = "order-status is-success";
         setSubmitProgress(true, "Objednávka je pripravená. Presmerujeme vás na bezpečnú platbu GoPay.");
-        try { sessionStorage.removeItem("tm_checkout_request_id"); } catch {}
+        try {
+          localStorage.setItem(SUBMITTED_GOPAY_KEY, JSON.stringify({
+            requestId: orderPreview.requestId,
+            cartSignature: checkoutCartSignature(cart),
+            paymentId: String(data.paymentId || ""),
+            orderNumber: String(data.orderNumber || ""),
+            gwUrl: String(data.gwUrl || ""),
+            submittedAt: Date.now(),
+          }));
+        } catch {}
         window.location.href = data.gwUrl;
         return;
       }
@@ -1902,6 +1951,8 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
       localStorage.removeItem("tm_cart_v1");
       localStorage.removeItem("tm_coupon_v1");
       localStorage.removeItem("tm_loyalty_apply");
+      localStorage.removeItem(CHECKOUT_INTENT_KEY);
+      localStorage.removeItem(SUBMITTED_GOPAY_KEY);
       status.textContent = "Objednávka bola uložená. Presmerujem vás na potvrdenie...";
       status.className = "order-status is-success";
       setSubmitProgress(true, "Objednávka bola úspešne uložená. Otvárame potvrdenie objednávky.");

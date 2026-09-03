@@ -19,7 +19,10 @@ function stable(value: unknown): unknown {
 }
 
 function fingerprint(body: unknown): string {
-  return createHash("sha256").update(JSON.stringify(stable(body))).digest("hex");
+  const canonical = body && typeof body === "object"
+    ? Object.fromEntries(Object.entries(body as Record<string, unknown>).filter(([key]) => key !== "createdAt"))
+    : body;
+  return createHash("sha256").update(JSON.stringify(stable(canonical))).digest("hex");
 }
 
 function conflict(message: string): Response {
