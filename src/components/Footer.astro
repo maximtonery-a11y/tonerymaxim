@@ -41,6 +41,15 @@ const shippingLogos = [
   </section>
 )}
 
+<section class="mobile-newsletter" aria-label="Newsletter ToneryMaxim">
+  <form class="footer-newsletter" data-footer-newsletter>
+    <strong>Novinky, akcie a výhody do e-mailu</strong>
+    <div><input type="email" name="email" required autocomplete="email" placeholder="vas@email.sk" aria-label="E-mail pre newsletter" /><button type="submit">Prihlásiť</button></div>
+    <label><input type="checkbox" required /> <span>Súhlasím so zasielaním marketingových informácií. <a href="/newsletter">Viac o newsletteri</a></span></label>
+    <small data-footer-newsletter-message hidden></small>
+  </form>
+</section>
+
 <footer class="site-footer" id="kontakt">
   <div class="wrap footer-main">
     <div class="footer-brand">
@@ -235,8 +244,8 @@ const shippingLogos = [
 </script>
 
 <script>
-  document.querySelector<HTMLFormElement>("[data-footer-newsletter]")?.addEventListener("submit", async (event) => {
+  document.querySelectorAll<HTMLFormElement>("[data-footer-newsletter]").forEach((newsletterForm) => newsletterForm.addEventListener("submit", async (event) => {
     event.preventDefault(); const form=event.currentTarget as HTMLFormElement; const button=form.querySelector<HTMLButtonElement>("button")!; const message=form.querySelector<HTMLElement>("[data-footer-newsletter-message]")!; button.disabled=true; message.hidden=true;
     try { const email=String(new FormData(form).get("email")||""); const response=await fetch("/api/newsletter/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,source:"footer"})}); const data=await response.json(); message.textContent=data.message||data.error||"Hotovo."; message.className=response.ok?"is-success":"is-error"; message.hidden=false; if(response.ok)form.reset(); } catch { message.textContent="Prihlásenie sa nepodarilo. Skúste to neskôr."; message.className="is-error"; message.hidden=false; } finally { button.disabled=false; }
-  });
+  }));
 </script>

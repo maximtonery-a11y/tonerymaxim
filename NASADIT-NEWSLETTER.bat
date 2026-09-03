@@ -41,7 +41,7 @@ if errorlevel 1 goto fail
 
 echo.
 echo [5/6] Pridavam LEN subory newsletter opravy...
-git add -- .gitignore scripts\newsletter.test.ts src\components\AccountShell.astro src\components\Footer.astro src\lib\mail.ts src\lib\newsletter.ts src\lib\security.ts src\middleware.ts src\pages\registracia.astro src\pages\newsletter.astro src\pages\newsletter\potvrdit.astro src\pages\ucet\newsletter.astro src\pages\api\newsletter\subscribe.ts src\pages\api\newsletter\unsubscribe.ts src\pages\api\newsletter\account-unsubscribe.ts src\pages\api\newsletter\status.ts src\pages\api\admin\newsletter.ts src\pages\newsletter\odhlasit.astro IMPORTOVAT-NEWSLETTER-883.bat EXPORTOVAT-AKTIVNY-NEWSLETTER.bat src\styles\footer.css src\styles\newsletter.css NASADIT-NEWSLETTER.bat
+git add -- src\components\Footer.astro src\pages\registracia.astro src\pages\admin\newsletter.astro src\styles\footer.css src\styles\account.css NASADIT-NEWSLETTER.bat
 if errorlevel 1 goto fail
 
 git diff --cached --quiet

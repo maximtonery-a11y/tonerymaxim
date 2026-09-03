@@ -2458,3 +2458,11 @@
 }
 
 .tm-password-toggle b { font-weight: 850; }
+
+/* Registrácia – súhlasy čitateľne pod sebou na desktope aj mobile */
+.auth-form .tm-check{display:grid!important;grid-template-columns:18px minmax(0,1fr)!important;gap:10px!important;align-items:start!important;width:100%!important;font-size:14px!important;line-height:1.45!important}
+.auth-form .tm-check>input{width:16px!important;height:16px!important;margin:3px 0 0!important;accent-color:var(--tm-blue);flex:none!important}
+.auth-form .tm-check>span{display:block!important;min-width:0!important}
+.auth-form .tm-check small{display:block;margin-top:3px;color:#718096;font-size:12px;line-height:1.4}
+.auth-form .tm-check a{display:inline;color:var(--tm-blue);font-weight:750;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:620px){.auth-form .tm-check{grid-template-columns:17px minmax(0,1fr)!important;gap:9px!important;font-size:13px!important;line-height:1.4!important}.auth-form .tm-check>input{width:15px!important;height:15px!important}.auth-form .tm-check small{font-size:11.5px;line-height:1.35}}
