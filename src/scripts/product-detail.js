@@ -393,6 +393,19 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     };
   }
 
+  function isSeriesSetProduct(product) {
+    const text = [
+      product?.name,
+      product?.color,
+      product?.colour,
+      product?.farba,
+      product?.product_type_label,
+      product?.product_type_detail_label,
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    return /\b(?:cmyk|multipack|multi[\s-]?pack|sada|set)\b/.test(text);
+  }
+
   function seriesColorsHtml(items) {
     if (!items.length) return "";
     return `
@@ -418,7 +431,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
     try {
       const currentId = String(product?.id || product?.sku || product?.slug || "");
-      const currentColor = productColorKey(product);
+      const currentColor = isSeriesSetProduct(product) ? "" : productColorKey(product);
       const products = await fetchProductsBySearch(key, 96);
       const sameType = String(product?.product_type_key || "");
       const pickedByColor = new Map();
@@ -427,6 +440,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         .filter((item) => String(item?.id || item?.sku || item?.slug || "") !== currentId)
         .filter((item) => !sameType || item.product_type_key === sameType)
         .filter((item) => sameSeries(item, key))
+        .filter((item) => !isSeriesSetProduct(item))
         .forEach((item) => {
           const itemColor = productColorKey(item);
           if (!itemColor || itemColor === currentColor || pickedByColor.has(itemColor)) return;
@@ -439,151 +453,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       if (items.length < 1) return;
       holder.innerHTML = seriesColorsHtml(items);
       holder.closest("[data-series-wide-section]")?.removeAttribute("hidden");
-    } catch {
-      holder.innerHTML = "";
-    }
-  }
-
-  function isSetColorAvailable(product) {
-    return product && Number(product.price || 0) > 0 && product.stock_status === "instock";
-  }
-
-  function seriesPackName(key) {
-    const clean = String(key || "").toUpperCase();
-    return clean ? `${clean} CMYK sada` : "CMYK sada";
-  }
-
-  function buildSeriesPackHtml(pack) {
-    if (!pack || !pack.items?.length) return "";
-    return `
-      <div class="series-pack-card" data-series-pack-card>
-        <div class="series-pack-head">
-          <span class="series-pack-icon">CMYK</span>
-          <div>
-            <strong>Výhodná sada ${esc(pack.keyLabel)}</strong>
-            <small>4 farby v jednej sade so zľavou 5 % oproti nákupu po kusoch.</small>
-          </div>
-        </div>
-
-        <div class="series-pack-items">
-          ${pack.items.map((item) => `
-            <a class="series-pack-item series-pack-item--${item.colorKey}" href="${esc(getProductUrl(item))}" title="${esc(item.name)}">
-              <span aria-hidden="true"></span>
-              <strong>${esc(item.code)}</strong>
-              <small>${esc(colorLabelByKey(item.colorKey))}</small>
-            </a>
-          `).join("")}
-        </div>
-
-        <div class="series-pack-price">
-          <span>
-            <small>Samostatne ${money(pack.originalTotal)}</small>
-            <strong>Sada ${money(pack.discountedTotal)}</strong>
-          </span>
-          <em>Ušetríte ${money(pack.saving)}</em>
-          <button type="button" data-add-series-pack>Pridať sadu do košíka</button>
-        </div>
-      </div>
-    `;
-  }
-
-  function makeSeriesPackItem(product, itemColor) {
-    return {
-      ...product,
-      colorKey: itemColor,
-      code: productDisplayCode(product),
-      price: Number(product.price || 0),
-      detail_url: product.detail_url || `/produkt/${product.slug || product.id || ""}`,
-    };
-  }
-
-  function buildSeriesPack(product, candidates, key) {
-    const sameType = String(product?.product_type_key || "");
-    const byColor = new Map();
-    const currentColor = productColorKey(product);
-
-    if (currentColor && isSetColorAvailable(product)) {
-      byColor.set(currentColor, makeSeriesPackItem(product, currentColor));
-    }
-
-    const sorted = [...candidates]
-      .filter((item) => !sameType || item.product_type_key === sameType)
-      .filter((item) => sameSeries(item, key))
-      .filter(isSetColorAvailable)
-      .sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
-
-    sorted.forEach((item) => {
-      const itemColor = productColorKey(item);
-      if (!itemColor || byColor.has(itemColor)) return;
-      byColor.set(itemColor, makeSeriesPackItem(item, itemColor));
-    });
-
-    const order = ["black", "cyan", "magenta", "yellow"];
-    const items = order.map((itemColor) => byColor.get(itemColor)).filter(Boolean);
-    if (items.length !== 4) return null;
-
-    const originalTotal = items.reduce((sum, item) => sum + Number(item.price || 0), 0);
-    if (originalTotal <= 0) return null;
-
-    const discountedTotal = Math.round(originalTotal * 0.95 * 100) / 100;
-    return {
-      key,
-      keyLabel: seriesPackName(key),
-      items,
-      originalTotal,
-      discountedTotal,
-      saving: Math.round((originalTotal - discountedTotal) * 100) / 100,
-    };
-  }
-
-  function addSeriesPackToCart(pack) {
-    if (!pack?.items?.length) return;
-
-    pack.items.forEach((item) => {
-      addToCart({
-        ...item,
-        id: item.id || item.sku || item.code,
-        sku: item.sku || item.code || String(item.id || ""),
-        name: item.name,
-        price: Number(item.price || 0),
-        qty: 1,
-        product_type_key: item.product_type_key || "compatible",
-        product_type_label: item.product_type_label || "Kompatibilný",
-        series_pack_key: pack.key,
-        series_pack_label: pack.keyLabel,
-        series_pack_discount_rate: 0.05,
-      }, 1);
-    });
-  }
-
-  async function hydrateSeriesPack(product) {
-    const holder = document.querySelector("[data-series-pack]");
-    if (!holder) return;
-
-    const key = seriesSearchKey(product);
-    if (!key) return;
-
-    try {
-      const products = await fetchProductsBySearch(key, 96);
-      const pack = buildSeriesPack(product, products, key);
-      if (!pack) {
-        holder.innerHTML = "";
-        return;
-      }
-
-      holder.innerHTML = buildSeriesPackHtml(pack);
-      holder.closest("[data-series-wide-section]")?.removeAttribute("hidden");
-      holder.querySelector("[data-add-series-pack]")?.addEventListener("click", (event) => {
-        addSeriesPackToCart(pack);
-        const button = event.currentTarget;
-        const original = button.textContent;
-        button.textContent = "Sada pridaná ✓";
-        button.disabled = true;
-        setTimeout(() => {
-          button.textContent = original;
-          button.disabled = false;
-        }, 1400);
-      });
     } catch {
       holder.innerHTML = "";
     }
@@ -1399,11 +1268,10 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
       <section class="series-wide-section" data-series-wide-section hidden>
         <div class="section-head">
-          <h2>Farby a sada tejto série</h2>
-          <p>Ak má séria viac farieb, zobrazíme ich tu na rýchly preklik alebo nákup celej CMYK sady.</p>
+          <h2>Farby tejto série</h2>
+          <p>Ak má séria viac farieb, zobrazíme ich tu na rýchly preklik.</p>
         </div>
         <div data-series-colors></div>
-        <div data-series-pack></div>
       </section>
 
       <section class="info-grid">
@@ -1634,7 +1502,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     mobileParameterMedia.addEventListener("change", refreshMobileParameterVisibility, { once: true });
 
     hydrateSeriesColors(product);
-    hydrateSeriesPack(product);
     hydrateExtraProducts(product);
 
     root.querySelectorAll("[data-show-compatible]").forEach((button) => {
