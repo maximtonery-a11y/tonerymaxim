@@ -1305,3 +1305,6 @@ body.has-add-cart-drawer { overflow: hidden; }
     min-height: 48px;
   }
 }
+.cart-item.is-unavailable{border-color:#efb7b7;background:#fffafa}
+.cart-unavailable-notice{border:1px solid #efb7b7;background:#fff2f2;color:#b42318;font-weight:800}
+.checkout-button[aria-disabled="true"],.cart-mobile-sticky-checkout[aria-disabled="true"]{opacity:.55;cursor:not-allowed;pointer-events:auto}

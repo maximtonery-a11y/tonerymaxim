@@ -496,7 +496,10 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
     const all=allowedAiProducts(Array.isArray(data?.products)?data.products:[]);
     if(!all.length){ addMessage('bot','<p>Nenašiel som vhodný produkt. Skúste presný kód toneru alebo model tlačiarne.</p>'); return; }
     const available=all.filter(isAiInStock), unavailable=all.filter(p=>!isAiInStock(p));
-    const query=escapeHtml(state.lastQuestion||'túto tlačiareň');
+    // Server posiela zákaznícke označenie bez nákupnej vety (napr. TN2421
+    // namiesto „Potrebujem toner TN2421“). lastQuestion je iba záloha pre
+    // staršiu odpoveď API.
+    const query=escapeHtml(data?.queryLabel||state.lastQuestion||'túto tlačiareň');
     addMessage('bot',`<div class="tm-ai-offer-summary"><b>Overil som aktuálnu ponuku pre ${query}.</b><p>${available.length?`Na sklade máme <strong>${suitableProductsText(available.length)}</strong> a ${dispatchSentence()}.`:'Momentálne nemáme vhodný produkt skladom.'}${unavailable.length?` V ponuke máme aj <strong>${unavailableProductsText(unavailable.length)}</strong>; ich dostupnosť vám vieme zistiť.`:''}</p><div class="tm-ai-summary-actions"><a href="${escapeHtml(webResultsUrl(all))}">Zobraziť všetky na webe</a></div></div>`,{scroll:false});
     const colorPrinter=Boolean(data?.presentation?.isColorPrinter) || [...new Set(all.map(aiColor).filter(Boolean))].length>=3;
     if(colorPrinter){

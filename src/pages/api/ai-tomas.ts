@@ -55,6 +55,9 @@ export const POST: APIRoute = async ({ request }) => {
       };
       state.lastIntent = 'ADVICE';
       state.lastProductQuery = null;
+      state.currentType = null;
+      state.currentColor = null;
+      state.currentPrinter = null;
       state.currentProductId = null;
       state.selectedProductId = null;
       state.pendingQuestion = null;
@@ -79,6 +82,9 @@ export const POST: APIRoute = async ({ request }) => {
       };
       state.lastIntent = 'ADVICE';
       state.lastProductQuery = null;
+      state.currentType = null;
+      state.currentColor = null;
+      state.currentPrinter = null;
       state.currentProductId = null;
       state.selectedProductId = null;
       state.pendingQuestion = null;
@@ -187,6 +193,10 @@ export const POST: APIRoute = async ({ request }) => {
       action={kind:'CLARIFY_PRODUCT'};
     }
     if(!action&&needsHandoff)action={kind:'OPEN_HANDOFF',reason:wantsHuman?'customer_request':'unanswered'};
+    if(commerce&&commerce?.source!=='calendar'){
+      const productLabel=customerProductLabel(route.productQuery||state.lastProductQuery,message,commerce?.source);
+      commerce={...commerce,queryLabel:productLabel};
+    }
     if(advisor?.unanswered===true||advisor?.intent==='fallback'||Number(advisor?.confidence||0)<0.35){void saveAiUnanswered({message,page,intent:String(advisor?.intent||'fallback'),confidence:Number(advisor?.confidence||0),kind:advisor?.unanswered===true||advisor?.intent==='fallback'?'unknown_question':'low_confidence'}).catch(()=>undefined);}
     state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:(advisor.answer||[]).join(' ')}].slice(-20);
     return Response.json({ok:true,route,advisor,commerce,state,action},{headers:{'Cache-Control':'no-store'}});

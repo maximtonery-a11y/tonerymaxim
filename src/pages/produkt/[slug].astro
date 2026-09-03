@@ -12,11 +12,16 @@ import { getProductFromCache, stripHtml } from "../../lib/tm-products-cache";
 import { buildProductSeo } from "../../lib/catalog-seo-text";
 import { breadcrumbJsonLd, organizationJsonLd, productJsonLd, absoluteUrl, websiteJsonLd } from "../../lib/seo";
 import { printerBrandForName, printerLinksFromNames, productOemCodes, validIndexableProduct } from "../../lib/seo-catalog";
+import { currentProductSlug, isLegacyProductSlug } from "../../lib/product-slug-aliases";
 
 const { slug } = Astro.params;
-const lookup = await getProductFromCache({ slug, id: slug }).catch(() => null);
+const lookupSlug = currentProductSlug(slug);
+const lookup = await getProductFromCache({ slug: lookupSlug, id: slug }).catch(() => null);
 const cache = lookup?.cache || null;
 const product = lookup?.product || null;
+if (product && isLegacyProductSlug(slug)) {
+  return Astro.redirect(`/produkt/${encodeURIComponent(product.slug)}`, 301);
+}
 if (!product) {
   return new Response(`<!doctype html>
 <html lang="sk">

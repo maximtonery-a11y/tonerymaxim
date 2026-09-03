@@ -64,3 +64,24 @@ test('Máte tonery na sklade → Potrebujem toner TN2421',async()=>{
     assert.ok(selected.commerce.products.every((product:any)=>/TN2421/i.test(`${product.name} ${product.sku}`)));
   }
 });
+
+test('TN2421 → kalendáre → Potrebujem toner TN2421 zachová čisté označenie',async()=>{
+  const toner=await ask('Potrebujem toner TN2421');
+  assert.equal(toner.action?.kind,'ASK_PRODUCT_TYPE');
+
+  const compatible=await ask('Kompatibilné',toner.state);
+  assert.equal(compatible.commerce?.queryLabel,'TN2421');
+
+  // Zmena sortimentu musí starý tonerový kontext vyčistiť.
+  const calendars=await ask('Aké máte diáre?',compatible.state);
+  assert.equal(calendars.state.lastProductQuery,null);
+
+  const tonerAgain=await ask('Potrebujem toner TN2421',calendars.state);
+  assert.equal(tonerAgain.action?.kind,'ASK_PRODUCT_TYPE');
+  assert.match(tonerAgain.advisor.answer.join(' '),/^Pre TN2421 /);
+
+  const compatibleAgain=await ask('Kompatibilné',tonerAgain.state);
+  assert.equal(compatibleAgain.commerce?.queryLabel,'TN2421');
+  assert.match(compatibleAgain.advisor.answer.join(' '),/pre TN2421\./i);
+  assert.doesNotMatch(JSON.stringify(compatibleAgain),/pre Potrebujem toner TN2421/i);
+});

@@ -1,5 +1,6 @@
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } from "./paper-reward-cart.js";
+import { cartProductUnavailable, markMissingCartProduct, mergeCurrentCartProduct } from "../lib/cart-product-refresh.ts";
 
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
@@ -265,7 +266,9 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
   }
 
   function stockLimit(item) {
-    if (String(item?.stock_status || "instock").toLowerCase() !== "instock") return null;
+    const status = String(item?.stock_status || "instock").toLowerCase();
+    if (status === "outofstock") return 0;
+    if (status !== "instock") return null;
     const raw = item?.stock_quantity;
     if (raw === null || raw === undefined || String(raw).trim() === "") return null;
     const value = Number(raw);
@@ -355,23 +358,14 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
 
   function mergeProductData(item, product) {
     if (!product) return item;
+    const current = mergeCurrentCartProduct(item, product);
     return {
-      ...item,
-      id: item.id || product.id || "",
-      sku: item.sku || product.sku || "",
-      name: item.name || product.name || "Produkt",
-      price: Number(item.price || product.price || 0),
-      image: item.image || product.image || "",
-      url: productUrl({ ...product, url: item.url || product.detail_url }),
-      slug: item.slug || product.slug || "",
+      ...current,
       product_type_key: item.product_type_key || product.product_type_key || "",
       product_type_label: item.product_type_label || product.product_type_label || product.product_type_detail_label || "",
       color: firstFilled(item.color, item.farba, product.color),
       capacity: productCapacity(item) || productCapacity(product),
       warranty: firstFilled(item.warranty, item.zaruka) || "24 mesiacov",
-      stock_status: product.stock_status || item.stock_status || "instock",
-      stock_quantity: product.stock_quantity ?? item.stock_quantity ?? null,
-      stock_text: product.stock_text || item.stock_text || "",
     };
   }
 
@@ -395,18 +389,19 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
     return null;
   }
 
-  async function fetchProductBySku(sku) {
-    const wanted = String(sku || "").trim();
-    if (!wanted) return null;
+  async function fetchProductsBySkus(skus) {
+    const wanted = [...new Set((skus || []).map((sku) => String(sku || "").trim()).filter(Boolean))].slice(0, 30);
+    if (!wanted.length) return { verified: false, products: new Map() };
     try {
-      const response = await fetch(`/api/products?search=${encodeURIComponent(wanted)}&per_page=24`, { cache: "no-store" });
+      const response = await fetch(`/api/products?skus=${encodeURIComponent(wanted.join(','))}`, { cache: "no-store" });
       const data = await response.json();
-      if (!response.ok || !data?.ok || !Array.isArray(data.products)) return null;
-      // Fuzzy výsledok nesmie byť použitý pre inú SKU. Inak by položka mohla
-      // prevziať sklad alebo dostupnosť úplne iného produktu.
-      return data.products.find((product) => String(product?.sku || "").trim() === wanted) || null;
+      if (!response.ok || !data?.ok || !Array.isArray(data.products)) return { verified: false, products: new Map() };
+      return {
+        verified: true,
+        products: new Map(data.products.map((product) => [String(product?.sku || '').trim(), product])),
+      };
     } catch {
-      return null;
+      return { verified: false, products: new Map() };
     }
   }
 
@@ -416,8 +411,14 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
 
     let changed = false;
     const hydrated = [];
+    // Aktuálne údaje všetkých tonerov načítame pri každom otvorení košíka
+    // jedinou požiadavkou. Kalendáre zostávajú vo vlastnom katalógu.
+    const liveLookup = await fetchProductsBySkus(cart
+      .filter((item) => !isCalendarCartItem(item))
+      .map((item) => item.sku));
 
-    for (const item of cart) {
+    for (let itemIndex = 0; itemIndex < cart.length; itemIndex += 1) {
+      const item = cart[itemIndex];
       // Kalendáre majú vlastný katalóg a vlastnú serverovú kontrolu skladu.
       // Nikdy ich nedohľadávame medzi tonermi cez hlavné /api/products.
       if (isCalendarCartItem(item)) {
@@ -451,11 +452,16 @@ import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } f
         continue;
       }
 
-      const needsData = !productCapacity(item) || !item.url || item.url === "#" || !item.stock_text || !item.stock_quantity;
-      let product = findProductInSessionCache(item.sku);
-      if (needsData && !product) product = await fetchProductBySku(item.sku);
-
-      const merged = product ? mergeProductData(item, product) : { ...item, url: productUrl(item), capacity: productCapacity(item) };
+      const liveProduct = liveLookup.products.get(String(item.sku || '').trim()) || null;
+      const needsData = !productCapacity(item) || !item.url || item.url === "#" || !item.stock_text || item.stock_quantity === null || item.stock_quantity === undefined;
+      const fallback = !liveLookup.verified && needsData ? findProductInSessionCache(item.sku) : null;
+      const merged = liveProduct
+        ? mergeProductData(item, liveProduct)
+        : liveLookup.verified
+          ? markMissingCartProduct(item)
+          : fallback
+            ? mergeProductData(item, fallback)
+            : { ...item, url: productUrl(item), capacity: productCapacity(item) };
       const availableQty = limitedQty(merged, merged.qty, true);
       if (availableQty > 0) merged.qty = availableQty;
       hydrated.push(merged);
@@ -928,10 +934,12 @@ function formatMoney(value) {
     const netEl = document.querySelector("[data-cart-net]");
     const vatEl = document.querySelector("[data-cart-vat]");
     const totalEl = document.querySelector("[data-cart-total]");
+    const checkoutButtons = document.querySelectorAll('.checkout-button, .cart-mobile-sticky-checkout');
 
     if (!list) return;
 
     const cart = readCart();
+    const hasUnavailable = cart.some((item) => !isPaperRewardCartItem(item) && cartProductUnavailable(item));
     list.innerHTML = "";
 
     if (cart.length === 0) {
@@ -948,6 +956,7 @@ function formatMoney(value) {
 
     cart.forEach((item) => {
       const isPaperReward = isPaperRewardCartItem(item);
+      const unavailable = !isPaperReward && cartProductUnavailable(item);
       const qty = cleanQty(item.qty);
       const maxQty = stockLimit(item);
       const qtyMax = maxQty === null ? 99 : Math.max(1, maxQty);
@@ -957,7 +966,7 @@ function formatMoney(value) {
       const itemFinal = Math.max(0, itemTotal - itemDiscount);
 
       const row = document.createElement("article");
-      row.className = "cart-item";
+      row.className = `cart-item${unavailable ? ' is-unavailable' : ''}`;
       row.dataset.sku = item.sku;
       row.dataset.rewardItem = String(isPaperReward);
 
@@ -981,9 +990,9 @@ function formatMoney(value) {
 
         <div class="cart-item-quantity">
           <div class="qty-control">
-            <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Znížiť množstvo" ${isPaperReward ? "disabled" : ""}>−</button>
-            <input type="number" min="1" max="${qtyMax}" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Množstvo" ${isPaperReward ? "disabled" : ""}/>
-            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Zvýšiť množstvo" ${isPaperReward ? "disabled" : (maxQty !== null && qty >= maxQty ? 'aria-disabled="true"' : "")}>+</button>
+            <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Znížiť množstvo" ${isPaperReward || unavailable ? "disabled" : ""}>−</button>
+            <input type="number" min="1" max="${qtyMax}" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Množstvo" ${isPaperReward || unavailable ? "disabled" : ""}/>
+            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Zvýšiť množstvo" ${isPaperReward || unavailable ? "disabled" : (maxQty !== null && qty >= maxQty ? 'aria-disabled="true"' : "")}>+</button>
           </div>
         </div>
 
@@ -1143,6 +1152,26 @@ function formatMoney(value) {
     if (totalEl) totalEl.textContent = formatMoney(total);
     if (mobileTotalEl) mobileTotalEl.textContent = formatMoney(total);
 
+    let unavailableNotice = document.querySelector('[data-cart-unavailable-notice]');
+    if (summary && !unavailableNotice) {
+      unavailableNotice = document.createElement('div');
+      unavailableNotice.dataset.cartUnavailableNotice = '';
+      unavailableNotice.className = 'summary-note cart-unavailable-notice';
+      unavailableNotice.textContent = 'V košíku je vypredaný alebo už nedostupný produkt. Odstráňte ho, aby ste mohli pokračovať do pokladne.';
+      summary.insertBefore(unavailableNotice, summary.querySelector('.summary-total'));
+    }
+    if (unavailableNotice) unavailableNotice.hidden = !hasUnavailable;
+    checkoutButtons.forEach((button) => {
+      if (hasUnavailable) {
+        if (!button.dataset.checkoutHref) button.dataset.checkoutHref = button.getAttribute('href') || '/pokladna';
+        button.setAttribute('href', '#');
+        button.setAttribute('aria-disabled', 'true');
+      } else {
+        button.setAttribute('href', button.dataset.checkoutHref || '/pokladna');
+        button.removeAttribute('aria-disabled');
+      }
+    });
+
     refreshCartCounters();
   }
 
@@ -1164,6 +1193,12 @@ function formatMoney(value) {
   });
 
   document.addEventListener("click", (event) => {
+    const blockedCheckout = event.target.closest('[aria-disabled="true"].checkout-button, [aria-disabled="true"].cart-mobile-sticky-checkout');
+    if (blockedCheckout) {
+      event.preventDefault();
+      document.querySelector('[data-cart-unavailable-notice]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     const couponToggle = event.target.closest("[data-coupon-toggle]");
     if (couponToggle) {
       const box = couponToggle.closest("[data-cart-coupon-box]");

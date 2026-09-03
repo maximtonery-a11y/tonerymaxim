@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductsCache, isSpecialChipVariantProduct, jsonResponse, limitedSpecialChipVariants, type TmProduct } from "../../lib/tm-products-cache";
+import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductsCache, isSpecialChipVariantProduct, jsonResponse, limitedSpecialChipVariants, type TmProduct } from "../../lib/tm-products-cache.ts";
 
 export const prerender = false;
 
@@ -8,8 +8,9 @@ type ProductsApiCacheEntry = {
   body: string;
 };
 
-const RESULT_CACHE_TTL_MS = Number(process.env.PRODUCTS_API_CACHE_TTL_MS || import.meta.env.PRODUCTS_API_CACHE_TTL_MS || 60_000);
-const RESULT_CACHE_MAX_ITEMS = Math.min(100, Math.max(20, Number(process.env.PRODUCTS_API_CACHE_MAX_ITEMS || import.meta.env.PRODUCTS_API_CACHE_MAX_ITEMS || 80)));
+const buildEnv = (import.meta as ImportMeta & { env?: Record<string, unknown> }).env || {};
+const RESULT_CACHE_TTL_MS = Number(process.env.PRODUCTS_API_CACHE_TTL_MS || buildEnv.PRODUCTS_API_CACHE_TTL_MS || 60_000);
+const RESULT_CACHE_MAX_ITEMS = Math.min(100, Math.max(20, Number(process.env.PRODUCTS_API_CACHE_MAX_ITEMS || buildEnv.PRODUCTS_API_CACHE_MAX_ITEMS || 80)));
 
 const globalStore = globalThis as typeof globalThis & {
   __TM_PRODUCTS_API_RESULT_CACHE__?: Map<string, ProductsApiCacheEntry>;
@@ -94,6 +95,26 @@ function slimProduct(product: TmProduct) {
 
 export const GET: APIRoute = async ({ url }) => {
   try {
+    const requestedSkus = [...new Set(cleanParam(url.searchParams.get("skus"))
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean))]
+      .slice(0, 30);
+    if (requestedSkus.length) {
+      const productsCache = await getProductsCache();
+      const wanted = new Set(requestedSkus.map((value) => value.toLocaleLowerCase("sk-SK")));
+      const products = productsCache.products
+        .filter((product) => wanted.has(String(product?.sku || "").trim().toLocaleLowerCase("sk-SK")))
+        .map(slimProduct);
+      return jsonResponse({
+        ok: true,
+        source: "local-products-cache-exact-skus",
+        cache_generated_at: productsCache.generated_at,
+        requested_skus: requestedSkus,
+        count: products.length,
+        products,
+      }, 200, "no-store");
+    }
     const rawSearch = cleanParam(url.searchParams.get("search") || url.searchParams.get("s"));
     const requestedBrand = cleanParam(url.searchParams.get("brand"));
     const requestedCategory = cleanParam(url.searchParams.get("category"));
