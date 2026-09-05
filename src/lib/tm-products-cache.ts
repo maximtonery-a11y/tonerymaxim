@@ -50,6 +50,7 @@ const WOO_SYNC_TIMEOUT_MS = Math.min(60000, Math.max(8000, Number(env("WOO_SYNC_
 const WOO_SYNC_MAX_PAGES = Math.min(1000, Math.max(1, Number(env("WOO_SYNC_MAX_PAGES") || 500)));
 const WOO_SYNC_PAGE_DELAY_MS = Math.min(2_000, Math.max(120, Number(env("WOO_SYNC_PAGE_DELAY_MS") || 250)));
 const CACHE_TTL_MS = Math.max(5 * 60_000, Number(env("WOO_CACHE_TTL_MS") || 60 * 60_000));
+const CACHE_FILE_STAT_INTERVAL_MS = Math.max(0, Number(env("WOO_CACHE_FILE_STAT_INTERVAL_MS") || 1_000));
 const WOO_FIELDS = [
   "id",
   "sku",
@@ -86,6 +87,10 @@ const globalStore = globalThis as typeof globalThis & {
   __TM_PRODUCTS_WARM_STARTED_AT__?: number;
   __TM_PRODUCTS_READ_PROMISE__?: Promise<CacheFile | null>;
   __TM_PRODUCT_DETAILS_CACHE__?: Map<string, TmProduct>;
+  __TM_PRODUCTS_FILE_PATH__?: string;
+  __TM_PRODUCTS_FILE_SIGNATURE__?: string;
+  __TM_PRODUCTS_FILE_STAT_AT__?: number;
+  __TM_PRODUCTS_API_RESULT_CACHE__?: Map<string, unknown>;
 };
 
 const filteredProductsCache = new WeakMap<TmProduct[], Map<string, TmProduct[]>>();
@@ -383,6 +388,19 @@ function normalizeWooWarranty(value: string) {
   const clean = cleanAttributeValue(value);
   if (isMissingValue(clean)) return DEFAULT_WARRANTY;
   return clean;
+}
+
+export function normalizeDescriptionWarranty(html: unknown, warranty: unknown) {
+  const source = String(html || "");
+  const canonical = normalizeWooWarranty(String(warranty || ""));
+  if (!source || !canonical) return source;
+
+  // Popis dodávateľa môže obsahovať starší marketingový údaj, hoci kanonický
+  // atribút produktu už uvádza inú záruku. Upravujeme iba hodnotu priamo pri
+  // slove záruka; ostatné čísla a obsah popisu zostávajú nedotknuté.
+  return source
+    .replace(/(záruk(?:a|y|e|u|ou)?\s*(?::|je|v trvaní)?\s*)(\d+\s*(?:mesiacov|mesiace|mesiac|mes\.?))/giu, `$1${canonical}`)
+    .replace(/((?:predĺžená|predĺženej|predĺženú)\s+záruk(?:a|y|e|u|ou)?\s*)(\d+\s*(?:mesiacov|mesiace|mesiac|mes\.?))/giu, `$1${canonical}`);
 }
 
 function ensureDefaultWarrantyAttribute(attributes: ReturnType<typeof extractWooAttributes>) {
@@ -683,10 +701,10 @@ export function sortProducts(products: TmProduct[]) {
 
 export function mapProduct(product: any): TmProduct {
   const type = detectType(product);
-  const description = product.description || "";
-  const shortDescription = product.short_description || "";
   const wooAttributes = ensureDefaultWarrantyAttribute(extractWooAttributes(product));
   const warrantyValue = normalizeWooWarranty(getWooAttributeValue(wooAttributes, ["Záruka", "Zaruka", "Warranty"]));
+  const description = normalizeDescriptionWarranty(product.description, warrantyValue);
+  const shortDescription = normalizeDescriptionWarranty(product.short_description, warrantyValue);
   const compatiblePrinters = extractPrinters(product);
   const categories = Array.isArray(product.categories) ? product.categories.map((cat: any) => ({ id: cat.id, name: cat.name, slug: cat.slug })) : [];
   const tagText = Array.isArray(product.tags) ? product.tags.map((tag: any) => `${tag.name || ""} ${tag.slug || ""}`).join(" ") : "";
@@ -988,11 +1006,10 @@ function compactProductAliases(product: TmProduct): void {
 }
 
 async function readProductsCacheInternal(): Promise<CacheFile | null> {
-  if (globalStore.__TM_PRODUCTS_FILE_CACHE__) return globalStore.__TM_PRODUCTS_FILE_CACHE__;
-
   for (const file of FALLBACK_CACHE_FILES) {
     try {
-      const size=(await stat(file)).size;
+      const fileStat = await stat(file);
+      const size=fileStat.size;
       if(size>20_000_000)await compactLargeCacheFile(file);
       let data = parseCacheFile(await readFile(file, "utf8"));
       if (!data) continue;
@@ -1004,6 +1021,9 @@ async function readProductsCacheInternal(): Promise<CacheFile | null> {
         }
       }
       globalStore.__TM_PRODUCTS_FILE_CACHE__ = data;
+      globalStore.__TM_PRODUCTS_FILE_PATH__ = file;
+      globalStore.__TM_PRODUCTS_FILE_SIGNATURE__ = fileSignature(await stat(file));
+      globalStore.__TM_PRODUCTS_FILE_STAT_AT__ = Date.now();
       return data;
     } catch {
       // skús ďalší fallback
@@ -1011,6 +1031,36 @@ async function readProductsCacheInternal(): Promise<CacheFile | null> {
   }
 
   return null;
+}
+
+function fileSignature(value: NonNullable<Awaited<ReturnType<typeof stat>>>) {
+  return `${value.dev}:${value.ino}:${value.size}:${value.mtimeMs}:${value.ctimeMs}`;
+}
+
+function clearRuntimeProductCaches() {
+  delete globalStore.__TM_PRODUCTS_FILE_CACHE__;
+  delete globalStore.__TM_PUBLIC_PRODUCTS_CACHE__;
+  delete globalStore.__TM_PRODUCTS_LOOKUP_INDEX__;
+  globalStore.__TM_PRODUCT_DETAILS_CACHE__?.clear();
+  globalStore.__TM_PRODUCTS_API_RESULT_CACHE__?.clear();
+}
+
+async function productCacheFileChanged(): Promise<boolean> {
+  if (!globalStore.__TM_PRODUCTS_FILE_CACHE__) return false;
+  if (!globalStore.__TM_PRODUCTS_FILE_PATH__ || !globalStore.__TM_PRODUCTS_FILE_SIGNATURE__) return false;
+  const now = Date.now();
+  const lastCheck = globalStore.__TM_PRODUCTS_FILE_STAT_AT__ || 0;
+  if (CACHE_FILE_STAT_INTERVAL_MS > 0 && now - lastCheck < CACHE_FILE_STAT_INTERVAL_MS) return false;
+  globalStore.__TM_PRODUCTS_FILE_STAT_AT__ = now;
+  const file = globalStore.__TM_PRODUCTS_FILE_PATH__;
+  try {
+    return fileSignature(await stat(file)) !== globalStore.__TM_PRODUCTS_FILE_SIGNATURE__;
+  } catch {
+    // Pri krátkom atómovom premenovaní alebo probléme disku ponecháme poslednú
+    // platnú cache. Ďalšia požiadavka kontrolu zopakuje.
+    globalStore.__TM_PRODUCTS_FILE_STAT_AT__ = 0;
+    return false;
+  }
 }
 
 async function compactLargeCacheFile(file:string):Promise<void>{
@@ -1029,8 +1079,11 @@ async function compactLargeCacheFile(file:string):Promise<void>{
 }
 
 export async function readProductsCache(): Promise<CacheFile | null> {
-  if (globalStore.__TM_PRODUCTS_FILE_CACHE__) return globalStore.__TM_PRODUCTS_FILE_CACHE__;
   if (globalStore.__TM_PRODUCTS_READ_PROMISE__) return globalStore.__TM_PRODUCTS_READ_PROMISE__;
+  if (globalStore.__TM_PRODUCTS_FILE_CACHE__) {
+    if (!(await productCacheFileChanged())) return globalStore.__TM_PRODUCTS_FILE_CACHE__;
+    clearRuntimeProductCaches();
+  }
   const operation = readProductsCacheInternal();
   globalStore.__TM_PRODUCTS_READ_PROMISE__ = operation;
   try {
@@ -1274,9 +1327,13 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
   const next = await writeSplitCache(fullNext, current?.details_file);
 
   globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
+  globalStore.__TM_PRODUCTS_FILE_PATH__ = CACHE_FILE;
+  globalStore.__TM_PRODUCTS_FILE_SIGNATURE__ = fileSignature(await stat(CACHE_FILE));
+  globalStore.__TM_PRODUCTS_FILE_STAT_AT__ = Date.now();
   delete globalStore.__TM_PUBLIC_PRODUCTS_CACHE__;
   delete globalStore.__TM_PRODUCTS_LOOKUP_INDEX__;
   globalStore.__TM_PRODUCT_DETAILS_CACHE__?.clear();
+  globalStore.__TM_PRODUCTS_API_RESULT_CACHE__?.clear();
   const indexNow = await notifyIndexNowAfterProductSync(current?.products || [], products)
     .catch((error: any): IndexNowResult => ({
       attempted: 0,
@@ -1364,6 +1421,16 @@ export async function getProductFromCache(input: { id?: unknown; slug?: unknown 
   return { cache, product };
 }
 
+function canonicalWarrantyProduct(product: TmProduct): TmProduct {
+  const warranty = product.warranty || product.zaruka || DEFAULT_WARRANTY;
+  return {
+    ...product,
+    description_html: normalizeDescriptionWarranty(product.description_html, warranty),
+    short_description_html: normalizeDescriptionWarranty(product.short_description_html, warranty),
+    description: normalizeDescriptionWarranty(product.description, warranty),
+  };
+}
+
 async function loadProductDetail(cache: CacheFile, product: TmProduct): Promise<TmProduct> {
   const detailsFile = safeDetailsFile(cache.details_file);
   const offset = Number(product._detail_offset);
@@ -1373,7 +1440,7 @@ async function loadProductDetail(cache: CacheFile, product: TmProduct): Promise<
     printers: Array.isArray(product.compatible_printers) ? product.compatible_printers : [],
   };
   if (!detailsFile || !Number.isSafeInteger(offset) || offset < 0 || !Number.isSafeInteger(length) || length < 2 || length > 5_000_000) {
-    return { ...product, ...aliases };
+    return canonicalWarrantyProduct({ ...product, ...aliases });
   }
 
   const cacheKey = `${cache.generated_at}:${product.id || product.slug}`;
@@ -1394,7 +1461,7 @@ async function loadProductDetail(cache: CacheFile, product: TmProduct): Promise<
     if (bytesRead !== length) throw new Error("Neúplný záznam detailu produktu.");
     const detail = JSON.parse(buffer.toString("utf8").trim());
     const mergedAttributes = Array.isArray(detail?.attributes) ? detail.attributes : aliases.attributes_all;
-    const merged = { ...product, ...detail, ...aliases, attributes: mergedAttributes, attributes_all: mergedAttributes };
+    const merged = canonicalWarrantyProduct({ ...product, ...detail, ...aliases, attributes: mergedAttributes, attributes_all: mergedAttributes });
     detailCache.set(cacheKey, merged);
     while (detailCache.size > 100) {
       const oldest = detailCache.keys().next().value;
@@ -1403,7 +1470,7 @@ async function loadProductDetail(cache: CacheFile, product: TmProduct): Promise<
     }
     return merged;
   } catch {
-    return { ...product, ...aliases };
+    return canonicalWarrantyProduct({ ...product, ...aliases });
   } finally {
     await handle?.close().catch(() => undefined);
   }

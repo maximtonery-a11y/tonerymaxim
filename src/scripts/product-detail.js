@@ -155,7 +155,9 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     });
   }
 
-  const DETAIL_CACHE_TTL = 24 * 60 * 60 * 1000;
+  // Detail obsahuje cenu a sklad. Dlhá session cache by po dennom importe
+  // mohla v otvorenom prehliadači držať včerajší údaj.
+  const DETAIL_CACHE_TTL = 60 * 1000;
 
   function productDetailCacheKey(slug) {
     return `tm_product_detail_v2:${String(slug || "")}`;
@@ -1020,7 +1022,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   async function fetchProductBySlug(slug) {
     const response = await fetch(`/api/product?slug=${encodeURIComponent(slug)}`, {
       headers: { Accept: "application/json" },
-      cache: "default",
+      cache: "no-store",
     });
     const data = await response.json().catch(() => ({}));
     return response.ok && data.ok && data.product ? data.product : null;
@@ -1550,7 +1552,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     try {
       const response = await fetch(`/api/product?slug=${encodeURIComponent(slug)}`, {
         headers: { Accept: "application/json" },
-        cache: "default",
+        cache: "no-store",
       });
       const data = await response.json();
 

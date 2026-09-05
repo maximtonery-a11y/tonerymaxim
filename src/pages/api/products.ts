@@ -132,20 +132,21 @@ export const GET: APIRoute = async ({ url }) => {
     const page = Math.max(1, Number(url.searchParams.get("page") || 1));
     const perPage = Math.min(96, Math.max(1, Number(url.searchParams.get("per_page") || 12)));
 
-    const cacheKey = canonicalCacheKey({ search, brand, category, type, color, stock, printer, page, perPage });
+    // Najprv načítame generáciu katalógu. Inak by starý výsledok z pamäte mohol
+    // byť vrátený ešte pred zistením novej products.json po dennom syncu.
+    const productsCache = await getProductsCache();
+    const cacheKey = canonicalCacheKey({ generation: productsCache.generated_at, search, brand, category, type, color, stock, printer, page, perPage });
     const cachedBody = getCachedBody(cacheKey);
     if (cachedBody) {
       return new Response(cachedBody, {
         status: 200,
         headers: {
           "Content-Type": "application/json; charset=utf-8",
-          "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=3600",
+          "Cache-Control": "no-store",
           "X-TM-Products-Cache": "hit",
         },
       });
     }
-
-    const productsCache = await getProductsCache();
 
     // Produktová cache je už pri synchronizácii zoradená podľa pravidla:
     // kompatibilný → originál → renovovaný → ostatné, skladom najskôr.
@@ -179,7 +180,7 @@ export const GET: APIRoute = async ({ url }) => {
       status: 200,
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=3600",
+        "Cache-Control": "no-store",
         "X-TM-Products-Cache": "miss",
       },
     });

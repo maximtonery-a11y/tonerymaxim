@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ url }) => {
     return jsonResponse(
       { ok: true, source: "local-products-cache-index", cache_generated_at: cache.generated_at, product },
       200,
-      "public, max-age=60, s-maxage=600, stale-while-revalidate=3600",
+      "no-store",
     );
   } catch (error: any) {
     return jsonResponse({ ok: false, error: error?.message || "Chyba detailu produktu" }, 500, "no-store");

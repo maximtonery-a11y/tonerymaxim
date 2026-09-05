@@ -97,6 +97,20 @@ test("storefront chráni pamäť a neposiela skryté stovky variantov", async ()
   assert.match(search, /printerIntern/);
 });
 
+test("cena a sklad sa po synchronizácii nesmú vracať zo starej HTML alebo API cache", async () => {
+  const middleware = await readFile(new URL("../src/middleware.ts", import.meta.url), "utf8");
+  const productsApi = await readFile(new URL("../src/pages/api/products.ts", import.meta.url), "utf8");
+  const productApi = await readFile(new URL("../src/pages/api/product.ts", import.meta.url), "utf8");
+  const productClient = await readFile(new URL("../src/scripts/product-detail.js", import.meta.url), "utf8");
+
+  assert.match(middleware, /liveCatalogPath\(url\.pathname\)[\s\S]{0,100}Cache-Control', 'no-store'/);
+  assert.match(productsApi, /generation:\s*productsCache\.generated_at/);
+  assert.doesNotMatch(productsApi, /stale-while-revalidate/);
+  assert.doesNotMatch(productApi, /stale-while-revalidate/);
+  assert.match(productClient, /DETAIL_CACHE_TTL\s*=\s*60\s*\*\s*1000/);
+  assert.match(productClient, /cache:\s*["']no-store["']/);
+});
+
 test("produkčné premenné z Coolify majú prednosť pred hodnotami vloženými pri builde", async () => {
   const runtimeConfiguredFiles = [
     "../src/lib/tm-products-cache.ts",

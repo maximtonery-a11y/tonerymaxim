@@ -122,6 +122,19 @@ function publicCacheable(request: Request, url: URL, response: Response): boolea
   return true;
 }
 
+export function liveCatalogPath(pathname: string): boolean {
+  return pathname === '/produkty'
+    || pathname === '/tonery'
+    || pathname === '/atramentove-naplne'
+    || pathname === '/kompatibilne-tonery'
+    || pathname === '/originalne-tonery'
+    || pathname === '/renovovane-tonery'
+    || pathname.startsWith('/produkt/')
+    || pathname.startsWith('/oem/')
+    || pathname.startsWith('/znacky/')
+    || /^\/tlaciarne\/[^/]+\/[^/]+\/?$/.test(pathname);
+}
+
 function finish(response: Response, url: URL, request?: Request): Response {
   const headers = new Headers(response.headers);
   headers.set('X-Content-Type-Options', 'nosniff');
@@ -129,7 +142,7 @@ function finish(response: Response, url: URL, request?: Request): Response {
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   if (privatePath(url.pathname)) headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
   else if (NOINDEX_HOSTS.has(url.hostname.toLowerCase())) headers.set('X-Robots-Tag', 'noindex, follow');
-  if (url.pathname.startsWith('/api/') || privatePath(url.pathname)) headers.set('Cache-Control', 'no-store');
+  if (url.pathname.startsWith('/api/') || privatePath(url.pathname) || liveCatalogPath(url.pathname)) headers.set('Cache-Control', 'no-store');
   else if (request && publicCacheable(request, url, response)) {
     // Verejny SSR storefront moze kratko cachovat reverzna proxy/CDN.
     // Znizuje to pocet Node renderov pri spickach a crawleroch, bez cachovania

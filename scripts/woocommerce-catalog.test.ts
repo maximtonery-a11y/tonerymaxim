@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -76,6 +76,7 @@ test("WooCommerce katalóg načíta všetky strany, prežije 429 a uloží kompl
     WOO_SYNC_MIN_PRODUCTS: process.env.WOO_SYNC_MIN_PRODUCTS,
     WOO_SYNC_EXPECTED_MIN_PRODUCTS: process.env.WOO_SYNC_EXPECTED_MIN_PRODUCTS,
     WOO_SYNC_PER_PAGE: process.env.WOO_SYNC_PER_PAGE,
+    WOO_CACHE_FILE_STAT_INTERVAL_MS: process.env.WOO_CACHE_FILE_STAT_INTERVAL_MS,
     TM_CACHE_DIR: process.env.TM_CACHE_DIR,
   };
 
@@ -85,6 +86,7 @@ test("WooCommerce katalóg načíta všetky strany, prežije 429 a uloží kompl
   process.env.WOO_SYNC_MIN_PRODUCTS = "100";
   process.env.WOO_SYNC_EXPECTED_MIN_PRODUCTS = "0";
   process.env.WOO_SYNC_PER_PAGE = "100";
+  process.env.WOO_CACHE_FILE_STAT_INTERVAL_MS = "0";
   process.env.TM_CACHE_DIR = cacheDir;
 
   try {
@@ -101,6 +103,26 @@ test("WooCommerce katalóg načíta všetky strany, prežije 429 a uloží kompl
     const saved = JSON.parse(await readFile(join(cacheDir, "products.json"), "utf8"));
     assert.equal(saved.total, products.length);
     assert.equal(saved.products.length, products.length);
+
+    // Simuluje synchronizáciu vykonanú iným Node procesom nad zdieľaným
+    // súborom. Aktuálny proces musí zahodiť pamäťovú cache bez reštartu.
+    saved.generated_at = new Date(Date.now() + 1_000).toISOString();
+    saved.products[0].stock_quantity = 77;
+    const replacement = join(cacheDir, "products.external-sync.json");
+    await writeFile(replacement, JSON.stringify(saved), "utf8");
+    await rename(replacement, join(cacheDir, "products.json"));
+    const reloaded = await module.getProductsCache();
+    assert.equal(reloaded.generated_at, saved.generated_at);
+    assert.equal(reloaded.products.find((product: any) => product.id === 1)?.stock_quantity, 77);
+
+    const inconsistentWarranty = mockProduct(999);
+    inconsistentWarranty.description = "<li>Predĺžená záruka 36 mesiacov</li>";
+    inconsistentWarranty.short_description = "<p>Záruka: 36 mesiacov</p>";
+    inconsistentWarranty.attributes.push({ id: 3, name: "Záruka", slug: "zaruka", options: ["24 mesiacov"] });
+    const mapped = module.mapProduct(inconsistentWarranty);
+    assert.match(mapped.description_html, /záruka 24 mesiacov/i);
+    assert.match(mapped.short_description_html, /Záruka: 24 mesiacov/i);
+    assert.doesNotMatch(`${mapped.description_html} ${mapped.short_description_html}`, /záruk[^<]*36 mesiacov/i);
   } finally {
     await new Promise<void>((resolve) => server.close(() => resolve()));
     await rm(cacheDir, { recursive: true, force: true });
