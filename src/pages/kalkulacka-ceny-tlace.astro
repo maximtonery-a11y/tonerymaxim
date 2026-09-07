@@ -1,0 +1,40 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
+import { breadcrumbJsonLd } from "../lib/seo";
+const origin="https://www.tonerymaxim.sk";
+const canonical=`${origin}/kalkulacka-ceny-tlace`;
+const noindex=["tonerymaxim.info","www.tonerymaxim.info"].includes(Astro.url.hostname.toLowerCase());
+---
+<!doctype html><html lang="sk"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><SeoHead title="Kalkulačka ceny za stranu a úspory na tlači | ToneryMaxim.sk" description="Vypočítajte cenu jednej vytlačenej strany a porovnajte dve tonerové kazety podľa ceny, výťažnosti a mesačného objemu tlače." canonical={canonical} noindex={noindex} jsonLd={[breadcrumbJsonLd(origin,[{name:"Domov",path:"/"},{name:"Kalkulačka ceny tlače",path:"/kalkulacka-ceny-tlace"}])]} /></head>
+<body><div class="page"><Header/><main><InfoPageShell active="/kalkulacka-ceny-tlace" eyebrow="Porovnávajte náklady, nie iba cenu kazety" title="Kalkulačka ceny za jednu stranu" intro="Zadajte cenu s DPH a deklarovanú výťažnosť dvoch kaziet. Výpočet ukáže, ktorá je lacnejšia pri vašom objeme tlače.">
+  <section class="calculator" data-print-calculator>
+    <div class="variants">
+      <article><span>Variant A</span><h2>Súčasná alebo prvá kazeta</h2><label>Cena kazety s DPH (€)<input inputmode="decimal" type="number" min="0.01" step="0.01" value="100" data-a-price/></label><label>Deklarovaná výťažnosť (strán)<input inputmode="numeric" type="number" min="1" step="1" value="3000" data-a-yield/></label></article>
+      <article><span>Variant B</span><h2>Porovnávaná kazeta</h2><label>Cena kazety s DPH (€)<input inputmode="decimal" type="number" min="0.01" step="0.01" value="25" data-b-price/></label><label>Deklarovaná výťažnosť (strán)<input inputmode="numeric" type="number" min="1" step="1" value="3000" data-b-yield/></label></article>
+    </div>
+    <label class="volume">Koľko strán vytlačíte približne mesačne?<input inputmode="numeric" type="number" min="1" step="100" value="2000" data-volume/></label>
+    <section class="results" aria-live="polite"><article><small>Variant A</small><strong data-a-page>—</strong><span>za stranu</span><b data-a-month>— mesačne</b></article><article><small>Variant B</small><strong data-b-page>—</strong><span>za stranu</span><b data-b-month>— mesačne</b></article><article class="saving"><small>Rozdiel pri vašej tlači</small><strong data-saving>—</strong><span data-saving-label>orientačne mesačne</span><b data-saving-year>— ročne</b></article></section>
+    <p class="method">Výpočet: cena kazety ÷ deklarovaná výťažnosť. Nezahŕňa papier, valec, fixačnú jednotku, energiu ani servis. Reálna výťažnosť závisí od pokrytia a spôsobu tlače.</p>
+    <div class="actions"><a href="/produkty">Nájsť náplň podľa kódu</a><a href="/tlaciarne">Vybrať podľa tlačiarne</a><a href="/firemna-tlac">Požiadať o bezplatnú firemnú kontrolu</a></div>
+  </section>
+  <section class="how"><h2>Ako získať porovnateľný výsledok</h2><ol><li>Použite ceny s rovnakým DPH.</li><li>Porovnávajte deklarovanú výťažnosť pri rovnakej metodike.</li><li>Overte, že oba produkty patria do vašej presnej tlačiarne.</li><li>Pri farebnej tlači počítajte spotrebu všetkých použitých farieb.</li></ol><p>Najlacnejšia kazeta nemusí mať najnižšiu cenu za stranu. Rovnako platí, že teoreticky nižšia cena za stranu nie je výhodou, ak produkt nie je správny pre vašu tlačiareň.</p></section>
+</InfoPageShell></main><Footer showTrust={false}/><FloatingAdvisor/></div>
+<script>
+  const root=document.querySelector<HTMLElement>('[data-print-calculator]');
+  const read=(selector:string)=>Number(root?.querySelector<HTMLInputElement>(selector)?.value||0);
+  const money=(value:number)=>new Intl.NumberFormat('sk-SK',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
+  const page=(value:number)=>`${value.toLocaleString('sk-SK',{minimumFractionDigits:4,maximumFractionDigits:4})} € (${(value*100).toLocaleString('sk-SK',{minimumFractionDigits:value<.01?2:1,maximumFractionDigits:value<.01?2:1})} centa)`;
+  const write=(selector:string,value:string)=>{const element=root?.querySelector<HTMLElement>(selector);if(element)element.textContent=value;};
+  function render(){if(!root)return;const ap=read('[data-a-price]'),ay=read('[data-a-yield]'),bp=read('[data-b-price]'),by=read('[data-b-yield]'),volume=read('[data-volume]');const a=ay>0?ap/ay:0,b=by>0?bp/by:0;write('[data-a-page]',a?page(a):'—');write('[data-b-page]',b?page(b):'—');write('[data-a-month]',a&&volume?`${money(a*volume)} mesačne`:'— mesačne');write('[data-b-month]',b&&volume?`${money(b*volume)} mesačne`:'— mesačne');const diff=Math.abs(a-b)*volume;write('[data-saving]',a&&b&&volume?money(diff):'—');write('[data-saving-year]',a&&b&&volume?`${money(diff*12)} ročne`:'— ročne');write('[data-saving-label]',a===b?'rovnaké orientačné náklady':`${a<b?'Variant A':'Variant B'} je lacnejší mesačne`);}
+  root?.querySelectorAll('input').forEach(input=>input.addEventListener('input',render));render();
+</script></body></html>
+<style>
+  .calculator,.how{padding:25px;border:1px solid #dbe8f6;border-radius:22px;background:#fff;box-shadow:0 18px 54px rgba(6,23,53,.07)}.variants{display:grid;grid-template-columns:1fr 1fr;gap:16px}.variants article{display:grid;gap:13px;padding:20px;border:1px solid #dce7f2;border-radius:18px;background:#f8fbff}.variants article>span{color:#0878c3;font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:.08em}.variants h2{margin:0;color:#071b3a;font-size:19px}.calculator label{display:grid;gap:6px;color:#354d69;font-size:14px;font-weight:850}.calculator input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #bccfe2;border-radius:11px;background:#fff;font:inherit}.volume{max-width:480px;margin:18px auto}.results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.results article{display:grid;gap:4px;padding:20px;border-radius:18px;background:#eef6ff;color:#173b63}.results small{font-weight:850}.results strong{font-size:29px}.results span,.results b{font-size:13px}.results .saving{background:#eaf9f0;color:#12663c}.method{margin:18px 0 0;color:#66768b;font-size:13px;line-height:1.5}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.actions a{padding:12px 16px;border-radius:999px;background:#071b3a;color:#fff;font-weight:900;text-decoration:none}.actions a:last-child{background:#087343}.how{margin-top:16px}.how h2{margin:0;color:#071b3a}.how li,.how p{color:#52657c;line-height:1.6}.how p{margin-bottom:0}@media(max-width:700px){.calculator,.how{padding:19px}.variants,.results{grid-template-columns:1fr}.actions a{width:100%;box-sizing:border-box;text-align:center}}
+</style>

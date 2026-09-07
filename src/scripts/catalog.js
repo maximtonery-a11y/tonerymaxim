@@ -83,6 +83,37 @@ import { getDispatchParts } from "./dispatch-message.js";
     return `<small class="tm-lowest-price">Najnižšia cena za posledných 30 dní: <b>${money(product.lowest_price_30d)}</b></small>`;
   }
 
+  function numericPageYield(product) {
+    for (const candidate of [product?.yield_pages, product?.page_yield]) {
+      const raw = String(candidate ?? "").trim();
+      if (!raw || /\b(ml|cl|dl|l|liter|litre|g|kg)\b/i.test(raw)) continue;
+      if (!/^\d[\d\s.,]*$/.test(raw) && !/\b(stran|strán|pages?)\b/i.test(raw)) continue;
+      const packText = `${product?.name || ""} ${product?.color || product?.farba || ""} ${raw}`;
+      if (/CMYK|CMY|C\/M\/Y|multipack|troj[ -]?pack|VAL(?:BP)?|RBWBP|\+/i.test(packText)) continue;
+      const multiplier = raw.match(/(\d[\d\s.,]*)\s*(?:x|×|\*)\s*(\d[\d\s.,]*)\s*(?:stran|strán|pages?)/i);
+      if (multiplier) {
+        const count = Number(multiplier[1].replace(/\s/g, "").replace(",", "."));
+        const perItem = Number(multiplier[2].replace(/\s/g, "").replace(/\.(?=\d{3}(?:\D|$))/g, "").replace(",", "."));
+        const productName = String(product?.name || "");
+        const confirmedSameCartridgePack = count === 2 && (/(?:dual\s*pack|duopack|twin|\b2\s*ks\b|\(2\s*ks\)|2\s*x\s*(?:origináln|kompatibiln|renovovan).*toner)/i.test(productName) || /\b(?:CB|CE|CF|Q|W)\d{3,4}(?:A?D|XD)\b/i.test(productName));
+        if (confirmedSameCartridgePack && Number.isFinite(perItem) && perItem > 0) return count * perItem;
+        continue;
+      }
+      const match = raw.replace(/\s/g, "").match(/(\d[\d.,]*)/);
+      const parsed = match ? Number(match[1].replace(/\.(?=\d{3}(?:\D|$))/g, "").replace(",", ".")) : 0;
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+    return 0;
+  }
+
+  function costPerPageHtml(product) {
+    const pages = numericPageYield(product);
+    const price = Number(product?.price || 0);
+    if (!pages || !Number.isFinite(price) || price <= 0) return "";
+    const value = (price / pages).toLocaleString("sk-SK", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+    return `<small class="tm-cost-per-page">${esc(value)} € / strana</small>`;
+  }
+
   const CART_KEY = "tm_cart_v1";
 
   const CATALOG_CACHE_VERSION = "tm_catalog_v4";
@@ -849,6 +880,7 @@ import { getDispatchParts } from "./dispatch-message.js";
           <span class="tm-stock-dot ${stockClass(product)}">${esc(stockText(product))}</span>
           <strong>${money(product.price)}</strong>
           <small>s DPH</small>
+          ${costPerPageHtml(product)}
           ${lowestPriceHtml(product)}
           <button type="button" class="${isProductInStock(product) ? "" : "tm-availability-btn"}" aria-label="${isProductInStock(product) ? `Pridať do košíka ${esc(product.name)}` : `Overiť dostupnosť ${esc(product.name)}`}">
             ${isProductInStock(product) ? `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7zM5 6 4 3H2M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>Do košíka` : `Overiť dostupnosť`}

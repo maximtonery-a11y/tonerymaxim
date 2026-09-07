@@ -2942,6 +2942,10 @@ body.product-detail-body .related-section-stacked .related-column {
   width: 100%;
 }
 
+body.product-detail-body [data-alternatives-section][hidden] {
+  display: none !important;
+}
+
 body.product-detail-body .related-title-row {
   display: flex;
   align-items: flex-end;
@@ -3119,6 +3123,13 @@ body.product-detail-body .related-section-stacked .accessory-grid {
 .chip-variant--no-chip { border-color: #fecaca; background: #fff1f2; color: #be123c; }
 .chip-variant--oem-chip { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; }
 .chip-variant--hatona { border-color: #ddd6fe; background: #f5f3ff; color: #6d28d9; }
+.cost-per-page { display:grid; gap:3px; margin:8px 0 4px; padding:10px 12px; border:1px solid #cce8d8; border-radius:12px; background:#f1fbf5; }
+.cost-per-page strong { color:#087343; font-size:14px; }
+.cost-per-page small { color:#526a60; font-size:10px; line-height:1.35; }
+.purchase-decision { display:grid; gap:7px; margin-top:14px; padding:14px; border:1px solid #dbe7f3; border-radius:15px; background:#f8fbff; }
+.purchase-decision strong { color:#071b3a; font-size:13px; }
+.purchase-decision span { position:relative; padding-left:18px; color:#526174; font-size:12px; line-height:1.4; }
+.purchase-decision span::before { content:"✓"; position:absolute; left:0; color:#138454; font-weight:950; }
 @media (max-width: 760px) {
   .chip-variant { align-items: flex-start; flex-direction: column; gap: 0; padding: 6px 10px; line-height: 1.15; }
 }

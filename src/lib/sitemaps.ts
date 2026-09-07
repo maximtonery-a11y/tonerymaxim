@@ -50,6 +50,8 @@ export const INDEXABLE_STATIC_PATHS = [
   "/partneri-a-tretie-strany",
   "/cookies",
   "/toner-bez-starosti",
+  "/firemna-tlac",
+  "/kalkulacka-ceny-tlace",
   "/spatny-odber-tonerov",
   "/vernostny-program",
 ];

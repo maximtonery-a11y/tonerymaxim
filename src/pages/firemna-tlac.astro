@@ -1,0 +1,87 @@
+---
+import "../styles/global.css";
+import "../styles/footer.css";
+import "../styles/legal.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAdvisor from "../components/FloatingAdvisor.astro";
+import InfoPageShell from "../components/InfoPageShell.astro";
+import SeoHead from "../components/SeoHead.astro";
+import { breadcrumbJsonLd } from "../lib/seo";
+
+const origin = "https://www.tonerymaxim.sk";
+const canonical = `${origin}/firemna-tlac`;
+const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname.toLowerCase());
+const faq = [
+  { q: "Je kontrola naozaj bezplatná?", a: "Áno. Kontrola a návrh sú bez poplatku a bez povinnosti objednať." },
+  { q: "Musím poslať faktúru?", a: "Nie. Stačí aj zoznam modelov tlačiarní a približná spotreba. Ceny môžete na faktúre prekryť; bez nich však nevieme vypočítať možnú úsporu." },
+  { q: "Budete automaticky meniť originály za kompatibilné tonery?", a: "Nie. Pri každej tlačiarni oddelíme originálnu, kompatibilnú a renovovanú možnosť. Rozhodnutie zostáva na vás." },
+  { q: "Čo dostanem ako výsledok?", a: "Prehľad správnych náplní, orientačnú cenu za stranu, upozornenie na rizikové zámenné kódy a návrh ďalšieho nákupu." },
+];
+const jsonLd = [
+  breadcrumbJsonLd(origin, [{ name: "Domov", path: "/" }, { name: "Firemná tlač", path: "/firemna-tlac" }]),
+  { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map((item) => ({ "@type": "Question", name: item.q, acceptedAnswer: { "@type": "Answer", text: item.a } })) },
+];
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <SeoHead title="Bezplatná kontrola nákladov na firemnú tlač | ToneryMaxim.sk" description="Pošlite faktúru za tonery alebo zoznam tlačiarní. Skontrolujeme kompatibilitu, cenu za stranu a pripravíme konkrétny návrh bez viazanosti." canonical={canonical} noindex={noindex} jsonLd={jsonLd} />
+  </head>
+  <body><div class="page"><Header /><main>
+    <InfoPageShell active="/firemna-tlac" eyebrow="Bezplatne a bez viazanosti" title="Zistite, či vaša firma neprepláca tlač" intro="Pošlite poslednú faktúru za náplne alebo zoznam tlačiarní. Dostanete konkrétnu kontrolu, nie všeobecnú obchodnú ponuku.">
+      <section class="audit-outcomes" aria-label="Výsledok kontroly">
+        <article><b>1</b><h2>Správne náplne</h2><p>Overíme modely, OEM kódy, farby, kapacity a rizikové zámeny.</p></article>
+        <article><b>2</b><h2>Cena za stranu</h2><p>Porovnáme nákupnú cenu s deklarovanou výťažnosťou, nie iba cenu kazety.</p></article>
+        <article><b>3</b><h2>Reálne možnosti</h2><p>Oddelíme originálne, kompatibilné a renovované riešenia. Vy si vyberiete.</p></article>
+      </section>
+      <p class="calculator-link">Chcete si náklady najprv prepočítať sami? <a href="/kalkulacka-ceny-tlace">Otvorte kalkulačku ceny za stranu →</a></p>
+
+      <section class="audit-grid">
+        <article class="audit-form-card">
+          <span class="eyebrow">Začať kontrolu</span><h2>Čo nám máte poslať</h2>
+          <p>Do správy vložte zoznam tlačiarní a približnú spotrebu. Ak máte faktúru, po odoslaní formulára vám odpovieme e-mailom a môžete ju priložiť v odpovedi. Citlivé údaje môžete prekryť.</p>
+          <form id="business-audit-form" method="post" action="/api/contact" novalidate>
+            <div class="form-row"><label>Meno alebo firma<input name="name" required autocomplete="name" /></label><label>Firemný e-mail<input name="email" type="email" required autocomplete="email" /></label></div>
+            <label>Telefón <span>nepovinné</span><input name="phone" type="tel" autocomplete="tel" /></label>
+            <label>Modely tlačiarní, používané náplne a spotreba<textarea name="message" required placeholder="Napr. 3× Brother DCP-L2532DW, približne 2 tonery mesačne. Nakupujeme TN-2421 za ... €."></textarea></label>
+            <label class="check"><input name="privacy" type="checkbox" required /><span>Beriem na vedomie spracovanie údajov potrebné na vybavenie požiadavky podľa <a href="/ochrana-osobnych-udajov">zásad ochrany osobných údajov</a>.</span></label>
+            <input type="hidden" name="type" value="Bezplatná kontrola firemnej tlače" />
+            <button type="submit">Požiadať o bezplatnú kontrolu</button><p class="form-status" role="status" aria-live="polite"></p>
+          </form>
+        </article>
+        <aside class="audit-side">
+          <article><span class="eyebrow">Čo nesľubujeme</span><h2>Úsporu nevymýšľame dopredu</h2><p>Ak je vaša súčasná ponuka dobrá, povieme vám to. Číslo úspory uvedieme iba vtedy, keď ho vieme vypočítať z porovnateľných údajov.</p></article>
+          <article><span class="eyebrow">Po kontrole</span><h2>Nákup bez ďalšieho hľadania</h2><p>Vhodné tlačiarne a produkty si uložíte do účtu. Ďalší nákup potom začínate od overeného zoznamu, nie od reklám vo vyhľadávači.</p><a href="/vyhody-registracie">Pozrieť výhody účtu →</a></article>
+        </aside>
+      </section>
+
+      <section class="audit-faq"><span class="eyebrow">Otázky a odpovede</span><h2>Bez drobného písma</h2>{faq.map((item) => <details><summary>{item.q}</summary><p>{item.a}</p></details>)}</section>
+    </InfoPageShell>
+  </main><Footer showTrust={false} /><FloatingAdvisor /></div>
+  <script>
+    const form = document.getElementById("business-audit-form");
+    const status = form?.querySelector(".form-status");
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!(form instanceof HTMLFormElement) || !(status instanceof HTMLElement)) return;
+      const button = form.querySelector("button[type='submit']");
+      if (button instanceof HTMLButtonElement) button.disabled = true;
+      status.textContent = "Odosielam požiadavku…";
+      try {
+        const response = await fetch(form.action, { method: "POST", body: new FormData(form) });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result?.message || "Požiadavku sa nepodarilo odoslať.");
+        form.reset(); status.textContent = "Požiadavka bola odoslaná. Ozveme sa vám e-mailom."; status.classList.add("ok");
+      } catch (error) { status.textContent = error instanceof Error ? error.message : "Požiadavku sa nepodarilo odoslať."; status.classList.remove("ok"); }
+      finally { if (button instanceof HTMLButtonElement) button.disabled = false; }
+    });
+  </script>
+  </body>
+</html>
+
+<style>
+  .audit-outcomes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}.audit-outcomes article,.audit-form-card,.audit-side article,.audit-faq{border:1px solid #dbe8f6;border-radius:22px;background:#fff;box-shadow:0 18px 54px rgba(6,23,53,.07)}.audit-outcomes article{padding:21px}.audit-outcomes b{display:grid;width:34px;height:34px;place-items:center;border-radius:50%;background:#061735;color:#fff}.audit-outcomes h2{margin:12px 0 5px;font-size:18px;color:#061735}.audit-outcomes p,.audit-form-card p,.audit-side p,.audit-faq p{margin:0;color:#617087;line-height:1.55}.calculator-link{margin:0 0 16px;padding:14px 18px;border-radius:14px;background:#eef7ff;color:#405b78}.calculator-link a{color:#075fc2;font-weight:900}.audit-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:16px}.audit-form-card,.audit-side article,.audit-faq{padding:25px}.eyebrow{color:#0784d6;font-size:12px;font-weight:950;letter-spacing:.07em;text-transform:uppercase}.audit-form-card h2,.audit-side h2,.audit-faq h2{margin:6px 0 10px;color:#061735;font-size:25px}.audit-side{display:grid;gap:16px}.audit-side article:first-child{background:#f1fbf5;border-color:#cbe9d7}.audit-side a{display:inline-block;margin-top:13px;color:#075fc2;font-weight:900;text-decoration:none}form{display:grid;gap:14px;margin-top:20px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:grid;gap:6px;color:#263b59;font-size:13px;font-weight:850}label>span{font-weight:500;color:#748196}input,textarea{width:100%;box-sizing:border-box;border:1px solid #cbd9e9;border-radius:12px;padding:12px;font:inherit}textarea{min-height:145px;resize:vertical}.check{display:flex;grid-template:none;align-items:flex-start;gap:9px;font-weight:500;line-height:1.45}.check input{width:auto;margin-top:3px}button{width:max-content;border:0;border-radius:999px;padding:14px 20px;background:#061735;color:#fff;font-weight:900;cursor:pointer}.form-status{min-height:24px;font-weight:800;color:#b42318}.form-status.ok{color:#087343}.audit-faq{margin-top:16px}.audit-faq details{border-top:1px solid #e1e9f2}.audit-faq details:first-of-type{margin-top:18px}.audit-faq summary{padding:16px 0;color:#061735;font-weight:900;cursor:pointer}.audit-faq details p{padding-bottom:16px}@media(max-width:760px){.audit-outcomes,.audit-grid,.form-row{grid-template-columns:1fr}.audit-form-card,.audit-side article,.audit-faq{padding:20px}button{width:100%}}
+</style>

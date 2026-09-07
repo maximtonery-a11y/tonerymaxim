@@ -252,6 +252,15 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     `;
   }
 
+  function purchaseDecisionHtml(product) {
+    const type = String(product?.product_type_key || "");
+    const warranty = esc(productWarranty(product));
+    if (type === "compatible") return `<div class="purchase-decision"><strong>Prečo zvoliť tento variant</strong><span>Nižšia cena tlače než pri bežnom originálnom variante.</span><span>Určený pre modely uvedené v kompatibilite.</span><span>Záruka ${warranty}; pri neistote výber pred objednaním overíme.</span></div>`;
+    if (type === "original") return `<div class="purchase-decision"><strong>Prečo zvoliť tento variant</strong><span>Originálny spotrebný materiál výrobcu zariadenia.</span><span>Voľba pre tlač, kde je prioritou predvídateľnosť výrobcu.</span><span>Pred objednaním skontrolujte celý OEM kód, farbu a kapacitu.</span></div>`;
+    if (type === "renovated") return `<div class="purchase-decision"><strong>Prečo zvoliť tento variant</strong><span>Odborne obnovená kazeta s opätovne použitým telom.</span><span>Alternatíva medzi novým kompatibilným a originálnym produktom.</span><span>Záruka ${warranty}; kompatibilitu overte podľa presného modelu.</span></div>`;
+    return `<div class="purchase-decision"><strong>Kontrola pred objednaním</strong><span>Porovnajte typ dielu, celý kód a presný model tlačiarne.</span><span>Ak si nie ste istí, výber vám bezplatne overíme.</span></div>`;
+  }
+
 
 
   function colorKey(value) {
@@ -665,6 +674,43 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     return product.yield || product.page_yield || product.capacity || product.kapacita || "Neuvedené";
   }
 
+  function numericPageYield(product) {
+    for (const candidate of [product?.yield_pages, product?.page_yield]) {
+      const raw = String(candidate ?? "").trim();
+      if (!raw || /\b(ml|cl|dl|l|liter|litre|g|kg)\b/i.test(raw)) continue;
+      if (!/^\d[\d\s.,]*$/.test(raw) && !/\b(stran|strán|pages?)\b/i.test(raw)) continue;
+      const packText = `${product?.name || ""} ${product?.color || product?.farba || ""} ${raw}`;
+      const mixedColorPack = /CMYK|CMY|C\/M\/Y|multipack|troj[ -]?pack|VAL(?:BP)?|RBWBP|\+/i.test(packText);
+      if (mixedColorPack) continue;
+      const multiplier = raw.match(/(\d[\d\s.,]*)\s*(?:x|×|\*)\s*(\d[\d\s.,]*)\s*(?:stran|strán|pages?)/i);
+      if (multiplier) {
+        const count = Number(multiplier[1].replace(/\s/g, "").replace(",", "."));
+        const perItem = Number(multiplier[2].replace(/\s/g, "").replace(/\.(?=\d{3}(?:\D|$))/g, "").replace(",", "."));
+        const productName = String(product?.name || "");
+        const confirmedSameCartridgePack = count === 2 && (/(?:dual\s*pack|duopack|twin|\b2\s*ks\b|\(2\s*ks\)|2\s*x\s*(?:origináln|kompatibiln|renovovan).*toner)/i.test(productName) || /\b(?:CB|CE|CF|Q|W)\d{3,4}(?:A?D|XD)\b/i.test(productName));
+        if (confirmedSameCartridgePack && Number.isFinite(perItem) && perItem > 0) return count * perItem;
+        continue;
+      }
+      const match = raw.replace(/\s/g, "").match(/(\d[\d.,]*)/);
+      if (!match) continue;
+      const parsed = Number(match[1].replace(/\.(?=\d{3}(?:\D|$))/g, "").replace(",", "."));
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+    return 0;
+  }
+
+  function costPerPageHtml(product) {
+    const pages = numericPageYield(product);
+    const price = Number(product?.price || 0);
+    if (!pages || !Number.isFinite(price) || price <= 0) return "";
+    const euros = price / pages;
+    const cents = euros * 100;
+    const precision = cents < 1 ? 2 : 1;
+    const euroValue = euros.toLocaleString("sk-SK", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+    const centValue = cents.toLocaleString("sk-SK", { minimumFractionDigits: precision, maximumFractionDigits: precision });
+    return `<div class="cost-per-page"><strong>${esc(euroValue)} € / strana</strong><small>${esc(centValue)} centa. Orientačne: cena s DPH ÷ deklarovaná výťažnosť. Skutočná spotreba závisí od pokrytia tlače.</small></div>`;
+  }
+
   function productWarranty(product) {
     const value = product.warranty || product.zaruka || product.guarantee || "";
     return isMissingValue(value) ? "24 mesiacov" : value;
@@ -997,8 +1043,8 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const text = `${product.sku || ""} ${product.name || ""}`;
     const codes = [];
     const patterns = [
-      /(?:TN|DR|LC|DK|BU|WT|CF|CE|CB|Q|W|CRG|PGI|CLI|PG|CL|T)\s*[-]?\s*\d{2,5}[A-Z0-9]*/gi,
-      /[A-Z]{2,5}\s*[-]?\s*\d{2,5}[A-Z0-9]*/g,
+      /\b(?:TN|DR|LC|DK|BU|WT|CF|CE|CB|Q|W|CRG|PGI|CLI|PG|CL|T)\s*[-]?\s*[A-Z0-9]{2,10}\b/gi,
+      /\b[A-Z]{2,5}\s*[-]?\s*\d{2,5}[A-Z0-9]*\b/g,
     ];
     patterns.forEach((pattern) => {
       for (const match of text.matchAll(pattern)) {
@@ -1008,6 +1054,46 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     });
     if (product.sku && !codes.includes(String(product.sku).toUpperCase())) codes.push(String(product.sku).toUpperCase());
     return codes.slice(0, 4);
+  }
+
+  function comparableKind(product) {
+    const categories = Array.isArray(product?.categories) ? product.categories.map((item) => `${item?.name || ""} ${item?.slug || ""}`).join(" ") : "";
+    const text = `${product?.name || ""} ${product?.slug || ""} ${product?.product_type_detail_label || ""} ${categories}`.toLowerCase();
+    if (/odpadov|waste\s*toner|n[aá]dobk.*toner|\bwt[-\s]?\d/.test(text)) return "waste-toner";
+    if (/prenosov|transfer\s*belt|belt\s*unit|\bbu[-\s]?\d/.test(text)) return "transfer-belt";
+    if (/zapekac|zapek[aá]c|fuser/.test(text)) return "fuser";
+    if (/optick|fotovalec|drum|zobrazovac/.test(text)) return "drum";
+    if (/atrament|inkjet|ink\b|náplň|napln/.test(text)) return "ink";
+    if (/toner/.test(text)) return "toner";
+    return "other";
+  }
+
+  function comparableColor(product) {
+    return String(product?.color || product?.farba || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+  }
+
+  function printerModelKeys(product) {
+    return new Set(getPrinters(product).map((value) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "")));
+  }
+
+  function alternativeScore(current, candidate) {
+    const currentKind = comparableKind(current);
+    if (currentKind !== comparableKind(candidate)) return -1;
+    const currentColor = comparableColor(current);
+    const candidateColor = comparableColor(candidate);
+    if (["toner", "ink"].includes(currentKind) && (!currentColor || !candidateColor || currentColor !== candidateColor)) return -1;
+    if (!["toner", "ink"].includes(currentKind) && currentColor && candidateColor && currentColor !== candidateColor) return -1;
+    const currentPrinters = printerModelKeys(current);
+    const candidatePrinters = printerModelKeys(candidate);
+    if (!currentPrinters.size || !candidatePrinters.size) return -1;
+    let overlap = 0;
+    currentPrinters.forEach((model) => { if (candidatePrinters.has(model)) overlap += 1; });
+    if (!overlap) return -1;
+    const overlapRatio = overlap / Math.min(currentPrinters.size, candidatePrinters.size);
+    const currentFamily = seriesSearchKey(current);
+    const candidateFamily = seriesSearchKey(candidate);
+    const sameFamily = currentFamily && candidateFamily && currentFamily === candidateFamily;
+    return overlapRatio * 1000 + overlap * 10 + (sameFamily ? 500 : 0);
   }
 
   async function fetchProductsBySearch(search, perPage = 24) {
@@ -1061,21 +1147,27 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     const codes = extractSearchCodes(product);
     const currentId = String(product.id || product.sku || product.slug || "");
     const all = [];
+    const verifiedCandidates = () => all
+      .map((item) => ({ item, score: alternativeScore(product, item) }))
+      .filter(({ score }) => score >= 0)
+      .sort((a, b) => b.score - a.score)
+      .map(({ item }) => item);
 
     for (const code of codes) {
       const products = await fetchProductsBySearch(code, 96);
       products.forEach((item) => uniquePushProduct(all, item, currentId));
     }
 
-    if (all.length < 3) {
+    if (verifiedCandidates().length < 3) {
       const printers = getPrinters(product).slice(0, 2);
       for (const printer of printers) {
         const products = await fetchProductsBySearch(printer, 36);
         products.forEach((item) => uniquePushProduct(all, item, currentId));
+        if (verifiedCandidates().length >= 3) break;
       }
     }
 
-    if (all.length < 3) {
+    if (verifiedCandidates().length < 3) {
       const fallbackTerms = String(product.name || "")
         .replace(/kompatibiln[ýáéy]|origináln[ýáéy]|renovovan[ýáéy]|toner|kazeta|náplň|optický|valec/gi, " ")
         .split(/\s+/)
@@ -1088,7 +1180,9 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       }
     }
 
-    return pickAlternativesByType(all, 3);
+    const verified = verifiedCandidates();
+    const picked = pickAlternativesByType(verified, 3);
+    return picked.length === 3 ? picked : [];
   }
 
   async function findAccessories(currentProduct) {
@@ -1148,10 +1242,13 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 
     const alternativesRoot = root.querySelector("[data-alternatives]");
     if (alternativesRoot) {
-      alternativesRoot.innerHTML = alternatives.length
+      const alternativesSection = alternativesRoot.closest("[data-alternatives-section]");
+      const showAlternatives = alternatives.length === 3;
+      if (alternativesSection) alternativesSection.hidden = !showAlternatives;
+      alternativesRoot.innerHTML = showAlternatives
         ? alternatives.map((item) => realProductCardHtml(item)).join("")
-        : `<p class="related-empty">Alternatívy sa nepodarilo načítať.</p>`;
-      bindRelatedAddButtons(root, alternatives);
+        : "";
+      if (showAlternatives) bindRelatedAddButtons(root, alternatives);
     }
   }
 
@@ -1222,11 +1319,13 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
           </div>
 
           ${bulkDiscountNoticeHtml(product)}
+          ${purchaseDecisionHtml(product)}
         </div>
 
         <aside class="purchase-panel">
           <span class="vat-label">Cena s DPH</span>
           <div class="price-row"><strong>${money(product.price)}</strong><span>s DPH</span></div>
+          ${costPerPageHtml(product)}
           ${lowestPriceHtml(product)}
           <small class="no-vat">bez DPH ${moneyPlain(priceWithoutVat)} €</small>
 
@@ -1261,8 +1360,8 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
           </a>
 
           <div class="purchase-note">
-            <span>✓ Bezpečný nákup</span>
-            <span>✓ Pomoc s výberom</span>
+            <span>✓ Pred nákupom overíme kompatibilitu</span>
+            <span>✓ Pri probléme pomôžeme nájsť riešenie</span>
           </div>
         </aside>
       </section>
@@ -1292,10 +1391,10 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
           <h2>Popis produktu</h2>
           <div class="product-description product-description-preview">${descriptionPreviewHtml(product)}</div>
           <div class="micro-benefits">
-            <div><span>🛡️</span><strong>Overená kompatibilita</strong><small>Vhodné pre uvedené modely.</small></div>
-            <div><span>🚚</span><strong>Rýchle doručenie</strong><small>Skladom expedujeme čo najskôr.</small></div>
-            <div><span>♻️</span><strong>Šetrné riešenie</strong><small>Rozumná voľba pre kanceláriu.</small></div>
-            <div><span>☎</span><strong>Pomoc s výberom</strong><small>Poradíme pred nákupom.</small></div>
+            <div><span>✓</span><strong>Presný model</strong><small>Kontrolujte celý názov tlačiarne.</small></div>
+            <div><span>⌁</span><strong>Celý OEM kód</strong><small>Rozhoduje aj koncovka kódu.</small></div>
+            <div><span>📄</span><strong>Cena za stranu</strong><small>Porovnávajte rovnakú výťažnosť.</small></div>
+            <div><span>☎</span><strong>Bezplatné overenie</strong><small>Pri neistote poradíme pred nákupom.</small></div>
           </div>
         </article>
       </section>
@@ -1314,7 +1413,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
       </section>` : ""}
 
       <section class="related-section related-section-stacked">
-        ${printerRelated ? `<div class="related-column related-column-alternatives">
+        ${printerRelated ? `<div class="related-column related-column-alternatives" data-alternatives-section hidden>
           <div class="related-title-row"><h2>Alternatívy k produktu</h2><span>Porovnajte dostupné varianty</span></div>
           <div class="alternative-grid" data-alternatives>
             <p class="related-loading">Načítavam skutočné alternatívy…</p>

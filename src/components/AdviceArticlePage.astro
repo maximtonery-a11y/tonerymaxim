@@ -113,6 +113,25 @@ const jsonLd = [
 
             {article.slug === "aktualizacia-firmveru-a-kompatibilny-toner" && <FirmwareStatusPanel />}
 
+            {article.category === "naklady-vytaznost" && (
+              <section class="advice-conversion" aria-label="Vypočítať náklady na tlač">
+                <div><p class="advice-eyebrow">Prepočítať na vaše čísla</p><h2>Porovnajte dve kazety podľa ceny za stranu</h2><p>Zadajte cenu, deklarovanú výťažnosť a približný mesačný počet strán. Výsledok ukáže orientačný mesačný aj ročný rozdiel.</p></div>
+                <a href="/kalkulacka-ceny-tlace">Otvoriť kalkulačku →</a>
+              </section>
+            )}
+            {article.category === "vyber-naplne" && (
+              <section class="advice-conversion" aria-label="Nájsť správnu náplň">
+                <div><p class="advice-eyebrow">Pokračovať výberom</p><h2>Nájdite iba náplne pre svoju tlačiareň</h2><p>Vyberte presný model tlačiarne alebo zadajte celý OEM kód pôvodnej kazety.</p></div>
+                <a href="/tlaciarne">Vybrať tlačiareň →</a>
+              </section>
+            )}
+            {article.category === "riesenie-problemov" && (
+              <section class="advice-conversion" aria-label="Pomoc s problémom pri tlači">
+                <div><p class="advice-eyebrow">Neviete určiť príčinu?</p><h2>Nekupujte nový diel naslepo</h2><p>Pošlite model tlačiarne, chybové hlásenie a podľa možnosti fotografiu výtlačku. Pomôžeme rozlíšiť toner, valec alebo inú príčinu.</p></div>
+                <a href="/kontakt">Požiadať o pomoc →</a>
+              </section>
+            )}
+
             <section class="advice-faq" aria-labelledby="article-faq">
               <p class="advice-eyebrow">Praktické odpovede</p>
               <h2 id="article-faq">Najčastejšie otázky</h2>

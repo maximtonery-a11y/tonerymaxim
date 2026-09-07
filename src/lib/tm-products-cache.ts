@@ -377,6 +377,16 @@ function normalizeWooCapacity(value: string) {
   return clean;
 }
 
+function normalizeWooPageYield(value: string, allowBareNumber = false) {
+  const clean = cleanAttributeValue(value);
+  if (!clean) return "";
+  // Objem atramentu ani hmotnosť prášku nie sú počet vytlačených strán.
+  if (/\b(ml|cl|dl|lit(?:er|re|ra|rov|re)?|g|kg)\b/i.test(clean)) return "";
+  if (/\b(stran|strán|pages?)\b/i.test(clean)) return clean;
+  if (allowBareNumber && /^\d[\d\s.,]*$/.test(clean)) return `${clean.replace(/\s+/g, " ").trim()} strán`;
+  return "";
+}
+
 const DEFAULT_WARRANTY = "24 mesiacov";
 
 function isMissingValue(value: unknown) {
@@ -662,7 +672,8 @@ function enrichProductsFromRelated(products: TmProduct[]) {
         product.capacity = capacity;
         product.kapacita = capacity;
         product.yield = capacity;
-        product.page_yield = capacity;
+        const relatedPageYield = normalizeWooPageYield(capacity);
+        if (relatedPageYield) product.page_yield = relatedPageYield;
       }
     }
 
@@ -706,6 +717,10 @@ export function mapProduct(product: any): TmProduct {
   const description = normalizeDescriptionWarranty(product.description, warrantyValue);
   const shortDescription = normalizeDescriptionWarranty(product.short_description, warrantyValue);
   const compatiblePrinters = extractPrinters(product);
+  const attributeCapacity = normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"]));
+  const attributePageYield = normalizeWooPageYield(getWooAttributeValue(wooAttributes, ["Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages"]), true)
+    || normalizeWooPageYield(getWooAttributeValue(wooAttributes, ["Kapacita"]));
+  const metaPageYield = normalizeWooPageYield(getWooMetaValue(product, ["_ciq_yield_pages", "ciq_yield_pages", "yield_pages"]), true);
   const categories = Array.isArray(product.categories) ? product.categories.map((cat: any) => ({ id: cat.id, name: cat.name, slug: cat.slug })) : [];
   const tagText = Array.isArray(product.tags) ? product.tags.map((tag: any) => `${tag.name || ""} ${tag.slug || ""}`).join(" ") : "";
   const categoryText = categories.map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ");
@@ -833,10 +848,11 @@ export function mapProduct(product: any): TmProduct {
     attributes_all: wooAttributes,
     color: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])) || detectColor(product),
     farba: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])) || detectColor(product),
-    capacity: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
-    kapacita: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
-    yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"])),
-    page_yield: normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages"])),
+    capacity: attributeCapacity || metaPageYield,
+    kapacita: attributeCapacity || metaPageYield,
+    yield: attributePageYield || metaPageYield || attributeCapacity,
+    page_yield: attributePageYield || metaPageYield,
+    yield_pages: metaPageYield || attributePageYield,
     warranty: warrantyValue,
     zaruka: warrantyValue,
     compatible_printers: compatiblePrinters,

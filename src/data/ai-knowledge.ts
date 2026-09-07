@@ -152,6 +152,24 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     ],
   },
   {
+    id: 'firemna-kontrola-tlace', intent: 'support', title: 'Bezplatná kontrola firemnej tlače', priority: 155,
+    triggers: ['setrenie firmy na toneroch', 'preplacame tonery', 'kontrola faktury za tonery', 'audit tlace', 'firemna tlac', 'naklady firmy na tlac', 'ponuka tonerov pre firmu', 'zoznam tlaciarni vo firme'],
+    answer: [
+      'Na stránke /firemna-tlac môžete požiadať o bezplatnú kontrolu súčasných nákupov náplní. Stačí zoznam tlačiarní a používaných tonerov; ak poznáte ceny a približnú spotrebu, vieme porovnať aj orientačné náklady.',
+      'Kontrola rozlišuje originálne, kompatibilné a renovované produkty. Nesľubuje úsporu vopred a nevytvorí automatickú objednávku.',
+      'Ak si chcete najprv urobiť vlastný výpočet, použite /kalkulacka-ceny-tlace.',
+    ],
+  },
+  {
+    id: 'kalkulacka-ceny-tlace', intent: 'support', title: 'Cena za stranu a kalkulačka', priority: 145,
+    triggers: ['cena za stranu', 'naklad na stranu', 'kolko stoji jedna strana', 'porovnat cenu tonerov', 'kalkulacka tlace', 'kolko usetrim na tlaci', 'mesacne naklady na tlac'],
+    answer: [
+      'Orientačnú cenu jednej strany vypočítate ako cenu kazety s DPH vydelenú deklarovanou výťažnosťou. Porovnávajte produkty určené pre rovnakú tlačiareň a údaje merané rovnakou metodikou.',
+      'Na stránke /kalkulacka-ceny-tlace môžete porovnať dve kazety a zadať svoj mesačný počet strán. Kalkulačka ukáže orientačný mesačný aj ročný rozdiel.',
+      'Výpočet nezahŕňa papier, valec, fixačnú jednotku, energiu ani servis a reálna výťažnosť závisí od pokrytia tlače.',
+    ],
+  },
+  {
     id: 'reklamacia-postup', intent: 'claim', title: 'Ako postupovať pri reklamácii', priority: 120,
     triggers: ['reklamacia', 'reklamovat', 'reklamujem', 'ako reklamujem', 'chcem reklamovat', 'toner nefunguje', 'chybny toner', 'pokazeny toner', 'nepasuje toner', 'toner nepasuje', 'nesedi toner', 'prisiel zly toner', 'zly toner', 'vymena toneru', 'vratenie tovaru', 'rozbita krabica', 'toner bol poskodeny', 'balik prisiel poskodeny', 'tovar prisiel poskodeny', 'toner netlaci', 'poslali ste mi iny toner', 'kupil som nespravny toner'],
     answer: [

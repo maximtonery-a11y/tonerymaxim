@@ -37,6 +37,12 @@ export function quickPromptsForPath(pathname: string): AiQuickPrompt[] {
     { label: 'Čas dodania', question: 'Koľko trvá dodanie?' },
     { label: 'Reklamácia', question: 'Ako môžem reklamovať objednávku?' },
   ];
+  if (/^\/(firemna-tlac|kalkulacka-ceny-tlace)/.test(path)) return [
+    { label: 'Cena za stranu', question: 'Ako sa správne počíta cena za jednu stranu?' },
+    { label: 'Kontrola pre firmu', question: 'Ako funguje bezplatná kontrola firemnej tlače?' },
+    { label: 'Nájsť správny toner', question: 'Pomôžte mi nájsť správny toner podľa tlačiarne.' },
+    ...common.slice(0, 1),
+  ];
   return [
     { label: 'Nájsť toner', question: 'Pomôžte mi nájsť správny toner.' },
     ...common,

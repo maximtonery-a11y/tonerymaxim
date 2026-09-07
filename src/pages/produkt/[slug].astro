@@ -83,6 +83,32 @@ const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR
 const lowestPrice30d = product.lowest_price_30d_valid === true && Number(product.lowest_price_30d || 0) > 0
   ? new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.lowest_price_30d))
   : '';
+const fallbackYield = (() => {
+  for (const candidate of [product.yield_pages, product.page_yield]) {
+    const raw = String(candidate ?? '').trim();
+    if (!raw || /\b(ml|cl|dl|l|liter|litre|g|kg)\b/i.test(raw)) continue;
+    if (!/^\d[\d\s.,]*$/.test(raw) && !/\b(stran|strán|pages?)\b/i.test(raw)) continue;
+    const packText = `${product.name || ''} ${product.color || product.farba || ''} ${raw}`;
+    if (/CMYK|CMY|C\/M\/Y|multipack|troj[ -]?pack|VAL(?:BP)?|RBWBP|\+/i.test(packText)) continue;
+    const multiplier = raw.match(/(\d[\d\s.,]*)\s*(?:x|×|\*)\s*(\d[\d\s.,]*)\s*(?:stran|strán|pages?)/i);
+    if (multiplier) {
+      const count = Number(multiplier[1].replace(/\s/g, '').replace(',', '.'));
+      const perItem = Number(multiplier[2].replace(/\s/g, '').replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.'));
+      const productName = String(product.name || '');
+      const confirmedSameCartridgePack = count === 2 && (/(?:dual\s*pack|duopack|twin|\b2\s*ks\b|\(2\s*ks\)|2\s*x\s*(?:origináln|kompatibiln|renovovan).*toner)/i.test(productName) || /\b(?:CB|CE|CF|Q|W)\d{3,4}(?:A?D|XD)\b/i.test(productName));
+      if (confirmedSameCartridgePack && Number.isFinite(perItem) && perItem > 0) return count * perItem;
+      continue;
+    }
+    const match = raw.replace(/\s/g, '').match(/(\d[\d.,]*)/);
+    if (!match) continue;
+    const parsed = Number(match[1].replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.'));
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  return 0;
+})();
+const fallbackCostPerPage = fallbackYield > 0 && Number(product.price || 0) > 0
+  ? (Number(product.price) / fallbackYield).toLocaleString('sk-SK', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+  : '';
 const printers = Array.isArray(product.compatible_printers) ? product.compatible_printers : [];
 const printerLinks = cache ? printerLinksFromNames(cache.products, printers, 100) : [];
 const oemLinks = productOemCodes(product).map((code) => ({
@@ -165,7 +191,7 @@ const initialProductJson = JSON.stringify(product)
                 )}
                 <div class:list={["stock-line", inStock ? "is-available" : "is-unavailable"]}><strong>{inStock ? 'Skladom' : 'Momentálne nie je skladom'}</strong></div>
               </div>
-              <aside class="purchase-panel"><span class="vat-label">Cena s DPH</span><div class="price-row"><strong>{price}</strong><span>s DPH</span></div>{lowestPrice30d && <small class="tm-lowest-price-detail">Najnižšia cena za posledných 30 dní: <b>{lowestPrice30d}</b></small>}</aside>
+              <aside class="purchase-panel"><span class="vat-label">Cena s DPH</span><div class="price-row"><strong>{price}</strong><span>s DPH</span></div>{fallbackCostPerPage && <div class="cost-per-page"><strong>{fallbackCostPerPage} € / strana</strong><small>Orientačne podľa ceny s DPH a deklarovanej výťažnosti v stranách.</small></div>}{lowestPrice30d && <small class="tm-lowest-price-detail">Najnižšia cena za posledných 30 dní: <b>{lowestPrice30d}</b></small>}</aside>
             </section>
             {plainDescription && <section class="info-grid"><article class="params-card"><h2>Popis produktu</h2><p>{plainDescription}</p></article></section>}
             {productSafetyRows.length > 0 && (

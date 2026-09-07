@@ -497,6 +497,14 @@
   font-weight: 850;
 }
 
+.tm-row-buy .tm-cost-per-page {
+  margin-top: 4px;
+  color: #087343;
+  font-size: 12px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
 .tm-row-buy .tm-lowest-price {
   max-width: 210px;
   margin: 2px 0 3px;
