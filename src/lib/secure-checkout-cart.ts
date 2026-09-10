@@ -186,7 +186,6 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
     })
     : [];
   const liveById = new Map((Array.isArray(liveProducts) ? liveProducts : []).map((product) => [String(product.id), product]));
-  const requestedById = new Map<string, number>();
   const result: NormalizedCartItem[] = [];
 
   for (const item of calendarInput) {
@@ -218,13 +217,6 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
       throw new CheckoutCartError(`Produkt nie je dostupný na objednanie: ${product.name || requested}`);
     }
     const qty = normalizeQty(item.qty ?? item.quantity ?? 1);
-    const totalRequested = (requestedById.get(String(product.id)) || 0) + qty;
-    requestedById.set(String(product.id), totalRequested);
-    const stockQuantity = Number(product.stock_quantity);
-    if (product.manage_stock === true && Number.isFinite(stockQuantity) && stockQuantity > 0 && totalRequested > stockQuantity) {
-      throw new CheckoutCartError(`Na sklade nie je požadované množstvo produktu ${product.name || requested}. Dostupné množstvo: ${stockQuantity} ks.`);
-    }
-
     result.push({
       id: String(product.id || ""),
       productId: product.id,

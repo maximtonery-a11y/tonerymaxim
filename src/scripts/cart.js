@@ -1,7 +1,7 @@
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } from "./paper-reward-cart.js";
 import { cartProductUnavailable, markMissingCartProduct, mergeCurrentCartProduct } from "../lib/cart-product-refresh.ts";
-import { isAvailableNow, ORDER_DELIVERY_LABEL } from "../lib/product-availability.ts";
+import { isAvailableNow, orderFulfilmentText, ORDER_DELIVERY_LABEL } from "../lib/product-availability.ts";
 
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
@@ -276,7 +276,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL } from "../lib/product-availabilit
     return Number.isFinite(value) && value > 0 ? Math.floor(value) : null;
   }
 
-  function showStockLimitNotice(item, limit) {
+  function showStockLimitNotice(item, limit, requested) {
     let notice = document.querySelector("[data-cart-stock-limit-notice]");
     if (!notice) {
       notice = document.createElement("div");
@@ -294,8 +294,8 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL } from "../lib/product-availabilit
     }
     const name = String(item?.name || "Tento produkt").trim();
     notice.textContent = limit > 0
-      ? `${name}: môžete objednať maximálne ${limit} ks, pretože viac momentálne nie je na sklade.`
-      : `${name} momentálne nie je na sklade.`;
+      ? `${name}: ${limit} ks expedujeme zo skladu, zostávajúce ${Math.max(0, requested - limit)} ks dodáme do 3–10 pracovných dní.`
+      : `${name}: objednávku dodáme do 3–10 pracovných dní.`;
     notice.hidden = false;
     window.clearTimeout(Number(notice.dataset.hideTimer || 0));
     notice.dataset.hideTimer = String(window.setTimeout(() => { notice.hidden = true; }, 6000));
@@ -305,8 +305,8 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL } from "../lib/product-availabilit
     const requested = cleanQty(value);
     const limit = stockLimit(item);
     if (limit === null || requested <= limit) return requested;
-    if (notify) showStockLimitNotice(item, limit);
-    return Math.max(0, limit);
+    if (notify) showStockLimitNotice(item, limit, requested);
+    return requested;
   }
 
 
@@ -497,6 +497,9 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL } from "../lib/product-availabilit
   }
 
   function stockText(item) {
+    const requested = cleanQty(item?.qty || 1);
+    const limit = stockLimit(item);
+    if (limit !== null && requested > limit) return orderFulfilmentText(item, requested);
     if (item?.stock_text) return String(item.stock_text);
     if (item?.stock_status === "instock") {
       if (item.stock_quantity !== null && item.stock_quantity !== undefined && item.stock_quantity !== "") return `Skladom ${item.stock_quantity} ks`;
@@ -507,6 +510,8 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL } from "../lib/product-availabilit
   }
 
   function stockClass(item) {
+    const limit = stockLimit(item);
+    if (limit !== null && cleanQty(item?.qty || 1) > limit) return "is-backorder";
     if (item?.stock_status === "outofstock" || item?.stock_status === "onbackorder") return "is-backorder";
     return "is-instock";
   }
@@ -958,7 +963,7 @@ function formatMoney(value) {
       const unavailable = !isPaperReward && cartProductUnavailable(item);
       const qty = cleanQty(item.qty);
       const maxQty = stockLimit(item);
-      const qtyMax = maxQty === null ? 99 : Math.max(1, maxQty);
+      const qtyMax = 99;
       const itemTotal = Number(item.price || 0) * qty;
       const itemDiscountRate = quantityDiscountRate(item);
       const itemDiscount = quantityLineDiscount(item);
@@ -991,7 +996,7 @@ function formatMoney(value) {
           <div class="qty-control">
             <button type="button" data-cart-action="minus" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Znížiť množstvo" ${isPaperReward || unavailable ? "disabled" : ""}>−</button>
             <input type="number" min="1" max="${qtyMax}" value="${qty}" data-cart-action="input" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Množstvo" ${isPaperReward || unavailable ? "disabled" : ""}/>
-            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Zvýšiť množstvo" ${isPaperReward || unavailable ? "disabled" : (maxQty !== null && qty >= maxQty ? 'aria-disabled="true"' : "")}>+</button>
+            <button type="button" data-cart-action="plus" data-sku="${esc(item.sku)}" data-reward-item="${isPaperReward}" aria-label="Zvýšiť množstvo" ${isPaperReward || unavailable ? "disabled" : ""}>+</button>
           </div>
         </div>
 
@@ -1005,8 +1010,8 @@ function formatMoney(value) {
           <div class="cart-benefit-card cart-benefit-expedition">
             <span class="cart-benefit-icon" aria-hidden="true">🚚</span>
             <div>
-              <strong data-tm-dispatch-message>${esc(isAvailableNow(item) ? getDispatchMessage() : ORDER_DELIVERY_LABEL)}</strong>
-              <small>${isAvailableNow(item) ? "Produkty skladom pripravíme na odoslanie čo najskôr." : "Objednávku odošleme po naskladnení produktu."}</small>
+              <strong data-tm-dispatch-message>${esc(maxQty !== null && qty > maxQty ? orderFulfilmentText(item, qty) : (isAvailableNow(item) ? getDispatchMessage() : ORDER_DELIVERY_LABEL))}</strong>
+              <small>${maxQty !== null && qty > maxQty ? "Objednávku odošleme naraz po skompletizovaní všetkých kusov." : (isAvailableNow(item) ? "Produkty skladom pripravíme na odoslanie čo najskôr." : "Objednávku odošleme po naskladnení produktu.")}</small>
             </div>
           </div>
           ${isCompatibleDiscountItem(item) ? `

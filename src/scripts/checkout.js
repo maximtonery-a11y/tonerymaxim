@@ -1,4 +1,5 @@
 import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-cart.js";
+import { orderFulfilmentText } from "../lib/product-availability.ts";
 
 (() => {
   if (window.__TM_CHECKOUT_INIT__) return;
@@ -535,6 +536,11 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
   }
 
   function stockText(item) {
+    const requested = Math.max(1, Number.parseInt(String(item?.qty ?? item?.quantity ?? 1), 10) || 1);
+    const stock = Number(item?.stock_quantity);
+    if (item?.stock_status === "instock" && Number.isFinite(stock) && stock > 0 && requested > stock) {
+      return orderFulfilmentText(item, requested);
+    }
     if (item?.stock_text) return String(item.stock_text);
     if (item?.stock_status === "instock") {
       if (item.stock_quantity !== null && item.stock_quantity !== undefined && item.stock_quantity !== "") return `Skladom ${item.stock_quantity} ks`;
