@@ -132,7 +132,7 @@ export function productJsonLd(origin: string, product: TmProduct) {
   const image = (Array.isArray(product.images) ? product.images : [product.image]).filter(Boolean).map((v) => absoluteUrl(origin, v));
   const stockStatus = String(product.stock_status || '').toLowerCase();
   const stockQuantity = product.stock_quantity == null ? null : Number(product.stock_quantity);
-  const availability = stockStatus === 'onbackorder'
+  const availability = stockStatus === 'onbackorder' || stockStatus === 'outofstock' || (stockQuantity !== null && stockQuantity <= 0)
     ? 'https://schema.org/BackOrder'
     : stockStatus === 'preorder'
       ? 'https://schema.org/PreOrder'

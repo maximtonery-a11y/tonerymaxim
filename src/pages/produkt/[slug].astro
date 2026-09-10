@@ -14,6 +14,7 @@ import { breadcrumbJsonLd, organizationJsonLd, productJsonLd, absoluteUrl, websi
 import { printerBrandForName, printerLinksFromNames, productOemCodes, validIndexableProduct } from "../../lib/seo-catalog";
 import { currentProductSlug, isLegacyProductSlug } from "../../lib/product-slug-aliases";
 import { productIdForHistoricalSlug } from "../../lib/product-slug-history";
+import { isAvailableNow } from "../../lib/product-availability";
 
 const { slug } = Astro.params;
 const lookupSlug = currentProductSlug(slug);
@@ -78,7 +79,7 @@ const productStructuredData = noindex
         { name: product.name, path: "/produkt/" + product.slug },
       ]),
     ];
-const inStock = product.stock_status === 'instock' && Number(product.stock_quantity ?? 1) > 0;
+const inStock = isAvailableNow(product);
 const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.price || 0));
 const lowestPrice30d = product.lowest_price_30d_valid === true && Number(product.lowest_price_30d || 0) > 0
   ? new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' }).format(Number(product.lowest_price_30d))
@@ -189,7 +190,7 @@ const initialProductJson = JSON.stringify(product)
                     </nav>
                   </details>
                 )}
-                <div class:list={["stock-line", inStock ? "is-available" : "is-unavailable"]}><strong>{inStock ? 'Skladom' : 'Momentálne nie je skladom'}</strong></div>
+                <div class:list={["stock-line", inStock ? "is-available" : "is-unavailable"]}><strong>{inStock ? 'Skladom' : 'Na objednávku – dodanie 3–10 pracovných dní'}</strong></div>
               </div>
               <aside class="purchase-panel"><span class="vat-label">Cena s DPH</span><div class="price-row"><strong>{price}</strong><span>s DPH</span></div>{fallbackCostPerPage && <div class="cost-per-page"><strong>{fallbackCostPerPage} € / strana</strong><small>Orientačne podľa ceny s DPH a deklarovanej výťažnosti v stranách.</small></div>}{lowestPrice30d && <small class="tm-lowest-price-detail">Najnižšia cena za posledných 30 dní: <b>{lowestPrice30d}</b></small>}</aside>
             </section>

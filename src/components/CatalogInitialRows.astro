@@ -1,5 +1,6 @@
 ---
 import { getDispatchParts } from "../scripts/dispatch-message.js";
+import { isAvailableNow, storefrontStockClass, storefrontStockText } from "../lib/product-availability";
 
 type Product = Record<string, any>;
 
@@ -61,16 +62,13 @@ const chipVariant = (product: Product) => {
 };
 
 const stockText = (product: Product) => {
-  if (product.stock_status === "instock") return product.stock_quantity !== null && product.stock_quantity !== undefined ? `Skladom ${product.stock_quantity} ks` : "Skladom";
-  if (product.stock_status === "outofstock") return "Nie je skladom";
-  if (product.stock_status === "onbackorder") return "Na objednávku";
-  return product.stock_status || "Dostupnosť neznáma";
+  return storefrontStockText(product);
 };
 
-const stockClass = (product: Product) => product.stock_status === "instock" ? "is-instock" : product.stock_status === "outofstock" ? "is-outofstock" : product.stock_status === "onbackorder" ? "is-backorder" : "is-unknown";
-const dispatchInfo = (product: Product) => product.stock_status === "instock"
+const stockClass = (product: Product) => storefrontStockClass(product);
+const dispatchInfo = (product: Product) => isAvailableNow(product)
   ? getDispatchParts()
-  : { title: "Termín dodania", detail: "overíme individuálne" };
+  : { title: "Na objednávku", detail: "dodanie 3–10 pracovných dní" };
 const colorHex = (value: unknown) => {
   const c = String(value || "").toLowerCase();
   if (c.includes("žlt") || c.includes("zlt") || c.includes("yellow")) return "#facc15";
@@ -122,7 +120,6 @@ const specialGroups = [
   previousGroup = type.key;
   const color = product.color || "Neuvedené";
   const capacity = product.yield || product.page_yield || product.capacity || product.kapacita || "Neuvedené";
-  const inStock = product.stock_status === "instock";
   const dispatch = dispatchInfo(product);
   const pagePrice = costPerPage(product);
   return (
@@ -173,8 +170,8 @@ const specialGroups = [
           <small>s DPH</small>
           {pagePrice && <small class="tm-cost-per-page">{pagePrice}</small>}
           {hasLowestPriceReference(product) && <small class="tm-lowest-price">Najnižšia cena za posledných 30 dní: <b>{money(product.lowest_price_30d)}</b></small>}
-          <button type="button" class={inStock ? "" : "tm-availability-btn"} aria-label={inStock ? `Pridať do košíka ${product.name}` : `Overiť dostupnosť ${product.name}`}>
-            {inStock ? <><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7zM5 6 4 3H2M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"></path></svg>Do košíka</> : "Overiť dostupnosť"}
+          <button type="button" aria-label={`Pridať do košíka ${product.name}`}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7zM5 6 4 3H2M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"></path></svg>Do košíka
           </button>
         </div>
       </article>

@@ -108,11 +108,8 @@ function resolveProduct(item: RawCartItem, index: ReturnType<typeof indexProduct
 }
 
 function isPurchasable(product: TmProduct) {
-  const status = String(product.stock_status || "").toLowerCase();
   const price = money(product.price);
-  if (price <= 0) return false;
-  if (status === "outofstock") return false;
-  return true;
+  return price > 0;
 }
 
 export function isCompatibleDiscountItem(item: NormalizedCartItem) {
@@ -224,7 +221,7 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
     const totalRequested = (requestedById.get(String(product.id)) || 0) + qty;
     requestedById.set(String(product.id), totalRequested);
     const stockQuantity = Number(product.stock_quantity);
-    if (product.manage_stock === true && Number.isFinite(stockQuantity) && stockQuantity >= 0 && totalRequested > stockQuantity) {
+    if (product.manage_stock === true && Number.isFinite(stockQuantity) && stockQuantity > 0 && totalRequested > stockQuantity) {
       throw new CheckoutCartError(`Na sklade nie je požadované množstvo produktu ${product.name || requested}. Dostupné množstvo: ${stockQuantity} ks.`);
     }
 

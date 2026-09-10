@@ -89,8 +89,7 @@ function isValidOffer(p: any) {
 }
 
 function purchasable(p: any) {
-  const stock = String(p.stock_status || '').toLowerCase();
-  return isValidOffer(p) && stock !== 'outofstock' && Number(p.stock_quantity ?? 1) !== 0;
+  return isValidOffer(p);
 }
 
 function isPrinterDevice(p: any) {

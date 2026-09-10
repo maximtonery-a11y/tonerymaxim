@@ -1,4 +1,5 @@
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
+import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../lib/product-availability.ts";
 
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
@@ -212,22 +213,16 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
   }
 
   function stockText(product) {
-    if (product.stock_status === "instock") {
-      if (product.stock_quantity !== null && product.stock_quantity !== undefined) return `Skladom ${product.stock_quantity} ks`;
-      return "Skladom";
-    }
-    if (product.stock_status === "outofstock") return "Nie je skladom";
-    if (product.stock_status === "onbackorder") return "Na objednávku";
-    return product.stock_status || "Dostupnosť neznáma";
+    return storefrontStockText(product);
   }
 
   function dispatchText(product) {
-    return product.stock_status === "instock" ? getDispatchMessage() : "Termín dodania overíme";
+    return isAvailableNow(product) ? getDispatchMessage() : ORDER_DELIVERY_LABEL;
   }
 
 
   function isProductInStock(product) {
-    return product?.stock_status === "instock" && Number(product?.stock_quantity ?? 0) > 0;
+    return isAvailableNow(product);
   }
 
   function deliveryMissing(product) {
@@ -1001,7 +996,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
         <div>
           <span class="mini-badge">${esc(productTypeLabel(typeKey))}</span>
           <a class="mini-title" href="${esc(getProductUrl(product))}">${esc(product.name)}</a>
-          <small>${isProductInStock(product) ? "Skladom" : "Dostupnosť na overenie"}</small>
+          <small>${isProductInStock(product) ? "Skladom" : "Na objednávku · 3–10 pracovných dní"}</small>
           <strong>${money(product.price)}</strong>
         </div>
         <button type="button" data-related-add aria-label="Pridať do košíka">🛒</button>
@@ -1347,11 +1342,11 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
             <button type="button" data-qty-plus>+</button>
           </div>
 
-          <button type="button" class="add-main ${isProductInStock(product) ? "" : "availability-main"}" data-add-main>
-            ${isProductInStock(product) ? `<svg viewBox="0 0 24 24"><path d="M6 6h15l-2 9H8L6 6z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>Pridať do košíka` : `Overiť dostupnosť`}
+          <button type="button" class="add-main" data-add-main>
+            <svg viewBox="0 0 24 24"><path d="M6 6h15l-2 9H8L6 6z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>Pridať do košíka
           </button>
 
-          ${isProductInStock(product) ? `<button type="button" class="buy-now" data-buy-now>Kúpiť ihneď</button>` : ""}
+          <button type="button" class="buy-now" data-buy-now>Kúpiť ihneď</button>
 
           <a class="heureka-mini purchase-heureka" href="https://obchody.heureka.sk/tonerymaxim-sk/recenze/" target="_blank" rel="noopener noreferrer" aria-label="Overené hodnotenie obchodu ToneryMaxim na Heureke">
             <span data-heureka-stars aria-hidden="true">★★★★★</span>
@@ -1460,8 +1455,8 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
           <span>${esc(stockText(product))}</span>
           <strong>${money(product.price)}</strong>
         </div>
-        <button type="button" class="${isProductInStock(product) ? "" : "availability-main"}" data-mobile-sticky-add>
-          ${isProductInStock(product) ? "Pridať do košíka" : "Overiť dostupnosť"}
+        <button type="button" data-mobile-sticky-add>
+          Pridať do košíka
         </button>
       </div>
     `;
@@ -1521,10 +1516,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     });
 
     function addCurrentProductAndConfirm(button) {
-      if (!isProductInStock(product)) {
-        openAvailabilityModal(product);
-        return;
-      }
       addToCart(product, qtyInput.value);
       if (!button) return;
       const original = button.innerHTML;
@@ -1564,10 +1555,6 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
     }
 
     root.querySelector("[data-buy-now]")?.addEventListener("click", () => {
-      if (!isProductInStock(product)) {
-        openAvailabilityModal(product);
-        return;
-      }
       addToCart(product, qtyInput.value);
       window.location.href = "/pokladna";
     });

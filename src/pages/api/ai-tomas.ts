@@ -150,7 +150,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (commerce?.source==='printer') state.currentPrinter=route.productQuery;
     const type=requestedType(message);const color=requestedColor(message);const wasPendingType=state.pendingQuestion==='product_type';const wasPendingQuantity=state.pendingQuestion==='quantity';if(type)state.currentType=type;if(color)state.currentColor=color;
     let candidates=commerce?.products||[];
-    const canBuy=(p:any)=>p?.purchasable!==false&&String(p?.stock_status||'').toLowerCase()!=='outofstock'&&Number(p?.stock_quantity??1)!==0;
+    const canBuy=(p:any)=>Number(p?.price||0)>0;
     // Typ produktu patrí do ponuky aj vtedy, keď je konkrétna položka práve
     // vypredaná. Zákazník ju musí vidieť s pravdivou dostupnosťou; iba vloženie
     // do košíka zostáva obmedzené funkciou canBuy.

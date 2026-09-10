@@ -21,7 +21,7 @@ test('košík nahradí starú URL, cenu a sklad aktuálnymi údajmi katalógu',(
   assert.equal(merged.price,14.01);
   assert.equal(merged.stock_status,'outofstock');
   assert.equal(merged.stock_quantity,0);
-  assert.equal(cartProductUnavailable(merged),true);
+  assert.equal(cartProductUnavailable(merged),false);
 });
 
 test('produkt nenájdený v úspešne overenom katalógu sa nesmie objednať',()=>{
@@ -39,7 +39,7 @@ test('staré verejné URL TN2421 majú bezpečné kanonické aliasy',()=>{
   assert.equal(currentProductSlug('brother-tn-2421-renovovany-toner'),'brother-tn-2421-cierny-renovovany-toner');
 });
 
-test('živý košík vždy overuje produkt a blokuje pokladňu pri nedostupnosti',async()=>{
+test('živý košík overuje produkt a blokuje iba chýbajúci alebo nepredajný produkt',async()=>{
   const cart=await readFile(new URL('../src/scripts/cart.js',import.meta.url),'utf8');
   assert.match(cart,/fetchProductsBySkus\(cart/);
   assert.match(cart,/\/api\/products\?skus=/);

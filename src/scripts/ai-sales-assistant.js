@@ -188,8 +188,7 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
   }
 
   function isAiInStock(product) {
-    const status=String(product?.stock_status||'').toLowerCase();
-    return product?.purchasable!==false && status!=='outofstock' && Number(product?.stock_quantity??1)!==0;
+    return Number(product?.price||0)>0;
   }
   function dispatchSentence() {
     const live=document.querySelector('[data-tm-dispatch-message]')?.textContent?.trim();
@@ -197,7 +196,8 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
     return text.charAt(0).toLowerCase()+text.slice(1).replace(/[.]$/,'');
   }
   function aiStockLabel(product) {
-    if(!isAiInStock(product)) return 'Nie je skladom';
+    if(String(product?.stock_status||'').toLowerCase()==='outofstock'||Number(product?.stock_quantity??1)===0) return 'Na objednávku · dodanie 3–10 pracovných dní';
+    if(!isAiInStock(product)) return 'Nie je možné objednať';
     const qty=Number(product?.stock_quantity);
     return Number.isFinite(qty)&&qty>0?`Skladom ${qty} ks`:'Skladom';
   }

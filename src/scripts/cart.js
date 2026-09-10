@@ -1,6 +1,7 @@
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } from "./paper-reward-cart.js";
 import { cartProductUnavailable, markMissingCartProduct, mergeCurrentCartProduct } from "../lib/cart-product-refresh.ts";
+import { isAvailableNow, ORDER_DELIVERY_LABEL } from "../lib/product-availability.ts";
 
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
@@ -267,12 +268,12 @@ import { cartProductUnavailable, markMissingCartProduct, mergeCurrentCartProduct
 
   function stockLimit(item) {
     const status = String(item?.stock_status || "instock").toLowerCase();
-    if (status === "outofstock") return 0;
+    if (status === "outofstock") return null;
     if (status !== "instock") return null;
     const raw = item?.stock_quantity;
     if (raw === null || raw === undefined || String(raw).trim() === "") return null;
     const value = Number(raw);
-    return Number.isFinite(value) && value >= 0 ? Math.floor(value) : null;
+    return Number.isFinite(value) && value > 0 ? Math.floor(value) : null;
   }
 
   function showStockLimitNotice(item, limit) {
@@ -501,14 +502,12 @@ import { cartProductUnavailable, markMissingCartProduct, mergeCurrentCartProduct
       if (item.stock_quantity !== null && item.stock_quantity !== undefined && item.stock_quantity !== "") return `Skladom ${item.stock_quantity} ks`;
       return "Skladom";
     }
-    if (item?.stock_status === "onbackorder") return "Na objednávku";
-    if (item?.stock_status === "outofstock") return "Nie je skladom";
+    if (item?.stock_status === "onbackorder" || item?.stock_status === "outofstock") return "Na objednávku · dodanie 3–10 pracovných dní";
     return "Skladom";
   }
 
   function stockClass(item) {
-    if (item?.stock_status === "outofstock") return "is-outofstock";
-    if (item?.stock_status === "onbackorder") return "is-backorder";
+    if (item?.stock_status === "outofstock" || item?.stock_status === "onbackorder") return "is-backorder";
     return "is-instock";
   }
 
@@ -1006,8 +1005,8 @@ function formatMoney(value) {
           <div class="cart-benefit-card cart-benefit-expedition">
             <span class="cart-benefit-icon" aria-hidden="true">🚚</span>
             <div>
-              <strong data-tm-dispatch-message>${esc(getDispatchMessage())}</strong>
-              <small>Produkty skladom pripravíme na odoslanie čo najskôr.</small>
+              <strong data-tm-dispatch-message>${esc(isAvailableNow(item) ? getDispatchMessage() : ORDER_DELIVERY_LABEL)}</strong>
+              <small>${isAvailableNow(item) ? "Produkty skladom pripravíme na odoslanie čo najskôr." : "Objednávku odošleme po naskladnení produktu."}</small>
             </div>
           </div>
           ${isCompatibleDiscountItem(item) ? `

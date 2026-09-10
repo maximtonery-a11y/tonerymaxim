@@ -1,4 +1,5 @@
 import { getDispatchParts } from "./dispatch-message.js";
+import { isAvailableNow, storefrontStockClass, storefrontStockText } from "../lib/product-availability.ts";
 
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
@@ -410,24 +411,11 @@ import { getDispatchParts } from "./dispatch-message.js";
   }
 
   function stockText(product) {
-    if (product.stock_status === "instock") {
-      if (product.stock_quantity !== null && product.stock_quantity !== undefined) return `Skladom ${product.stock_quantity} ks`;
-      return "Skladom";
-    }
-    if (product.stock_status === "outofstock") return "Nie je skladom";
-    if (product.stock_status === "onbackorder") return "Na objednávku";
-    return product.stock_status || "Dostupnosť neznáma";
-  }
-
-  function isProductInStock(product) {
-    return product.stock_status === "instock";
+    return storefrontStockText(product);
   }
 
   function stockClass(product) {
-    if (product.stock_status === "instock") return "is-instock";
-    if (product.stock_status === "outofstock") return "is-outofstock";
-    if (product.stock_status === "onbackorder") return "is-backorder";
-    return "is-unknown";
+    return storefrontStockClass(product);
   }
 
   function mobileGroupInfo(key) {
@@ -438,10 +426,10 @@ import { getDispatchParts } from "./dispatch-message.js";
   }
 
   function dispatchInfo(product) {
-    if (product.stock_status === "instock") return getDispatchParts();
+    if (isAvailableNow(product)) return getDispatchParts();
     return {
-      title: "Termín dodania",
-      detail: "overíme individuálne",
+      title: "Na objednávku",
+      detail: "dodanie 3–10 pracovných dní",
     };
   }
 
@@ -882,8 +870,8 @@ import { getDispatchParts } from "./dispatch-message.js";
           <small>s DPH</small>
           ${costPerPageHtml(product)}
           ${lowestPriceHtml(product)}
-          <button type="button" class="${isProductInStock(product) ? "" : "tm-availability-btn"}" aria-label="${isProductInStock(product) ? `Pridať do košíka ${esc(product.name)}` : `Overiť dostupnosť ${esc(product.name)}`}">
-            ${isProductInStock(product) ? `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7zM5 6 4 3H2M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>Do košíka` : `Overiť dostupnosť`}
+          <button type="button" aria-label="Pridať do košíka ${esc(product.name)}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7zM5 6 4 3H2M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>Do košíka
           </button>
         </div>
       `;
@@ -898,11 +886,6 @@ import { getDispatchParts } from "./dispatch-message.js";
 
       row.querySelector(".tm-row-buy button").addEventListener("click", () => {
         const btn = row.querySelector(".tm-row-buy button");
-
-        if (!isProductInStock(product)) {
-          openAvailabilityModal(product);
-          return;
-        }
 
         addToCart(product);
         btn.classList.add("added");

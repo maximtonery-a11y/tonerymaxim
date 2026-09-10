@@ -51,8 +51,5 @@ export function markMissingCartProduct(item: CartProduct) {
 
 export function cartProductUnavailable(item: CartProduct) {
   if (item?.catalog_missing === true) return true;
-  const status = text(item?.stock_status).toLowerCase();
-  if (status === 'outofstock') return true;
-  const quantity = item?.stock_quantity;
-  return quantity !== null && quantity !== undefined && text(quantity) !== '' && Number(quantity) <= 0;
+  return Number(item?.price || 0) <= 0;
 }

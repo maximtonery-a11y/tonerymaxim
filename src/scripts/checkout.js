@@ -540,8 +540,7 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
       if (item.stock_quantity !== null && item.stock_quantity !== undefined && item.stock_quantity !== "") return `Skladom ${item.stock_quantity} ks`;
       return "Skladom";
     }
-    if (item?.stock_status === "onbackorder") return "Na objednávku";
-    if (item?.stock_status === "outofstock") return "Nie je skladom";
+    if (item?.stock_status === "onbackorder" || item?.stock_status === "outofstock") return "Na objednávku · dodanie 3–10 pracovných dní";
     return "Dostupnosť neznáma";
   }
 
@@ -591,7 +590,7 @@ import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-car
       stock_status: stockStatus,
       stock_quantity: isCalendarItem ? null : (item.stock_quantity ?? item.stockQuantity ?? null),
       stock_text: isCalendarItem
-        ? (stockStatus === "outofstock" ? "Nie je skladom" : (stockStatus === "onbackorder" ? "Na objednávku" : "Skladom"))
+        ? (["outofstock", "onbackorder"].includes(stockStatus) ? "Na objednávku · dodanie 3–10 pracovných dní" : "Skladom")
         : String(item.stock_text || item.stockText || ""),
       product_type_key: isCalendarItem ? "" : String(item.product_type_key || item.productTypeKey || item.type || ""),
       product_type_label: isCalendarItem ? "" : String(item.product_type_label || item.productTypeLabel || ""),

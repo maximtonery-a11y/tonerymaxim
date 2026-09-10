@@ -42,7 +42,7 @@ export async function searchCommerce(query:string) {
   const sets:any[]=[];
   if(isColorPrinter){
     for(const type of ['compatible','original','renovated']){
-      const typed=products.filter((p:any)=>p.type===type&&p.purchasable!==false&&p.stock_status!=='outofstock'&&Number(p.stock_quantity??1)!==0);const families=new Map<string,any[]>();for(const p of typed){const f=familyOf(p);if(f){const a=families.get(f)||[];a.push(p);families.set(f,a)}}
+      const typed=products.filter((p:any)=>p.type===type&&Number(p.price||0)>0);const families=new Map<string,any[]>();for(const p of typed){const f=familyOf(p);if(f){const a=families.get(f)||[];a.push(p);families.set(f,a)}}
       const complete=[...families.entries()].map(([family,list])=>({family,chosen:['black','cyan','magenta','yellow'].map(color=>list.filter((p:any)=>p.color===color).sort((a:any,b:any)=>a.price-b.price)[0]).filter(Boolean)})).filter(x=>x.chosen.length===4).sort((a,b)=>a.chosen.reduce((n,p)=>n+p.price,0)-b.chosen.reduce((n,p)=>n+p.price,0));
       let completeFamilies=complete;
       if(!completeFamilies.length){const fallback=['black','cyan','magenta','yellow'].map(color=>typed.filter((p:any)=>p.color===color).sort((a:any,b:any)=>a.price-b.price)[0]).filter(Boolean);if(fallback.length===4&&typed.filter((p:any)=>p.color).length===4)completeFamilies=[{family:'single-family',chosen:fallback}];}
