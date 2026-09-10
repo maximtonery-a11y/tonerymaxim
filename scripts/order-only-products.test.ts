@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { isAvailableNow, orderFulfilmentText, storefrontStockClass, storefrontStockText } from '../src/lib/product-availability.ts';
+import { refreshDispatchMessages } from '../src/scripts/dispatch-message.js';
+import { fulfilmentSentence } from '../src/pages/api/ai-tomas.ts';
 
 test('nulový sklad sa zobrazuje ako produkt na objednávku', () => {
   const product = { price: 55.35, stock_status: 'outofstock', stock_quantity: 0 };
@@ -62,4 +64,41 @@ test('dohodnutá lehota je jednotná v detaile, katalógu, košíku a pokladni',
   ];
   const sources = await Promise.all(paths.map((path) => readFile(new URL(path, import.meta.url), 'utf8')));
   for (const source of sources) assert.match(source, /3–10 pracovných dní|ORDER_DELIVERY_LABEL/);
+});
+
+test('časovač expedície neprepíše dodanie produktu na objednávku ani rozdelené dodanie', async () => {
+  const dispatch = await readFile(new URL('../src/scripts/dispatch-message.js', import.meta.url), 'utf8');
+  const detail = await readFile(new URL('../src/scripts/product-detail.js', import.meta.url), 'utf8');
+  const cart = await readFile(new URL('../src/scripts/cart.js', import.meta.url), 'utf8');
+  assert.match(dispatch, /:not\(\[data-tm-dispatch-static\]\)/);
+  assert.match(detail, /isProductInStock\(product\).*data-tm-dispatch-static/);
+  assert.match(cart, /qty > maxQty.*data-tm-dispatch-static/);
+});
+
+test('AI Tomáš vysvetlí skladové a objednávané kusy po vložení do košíka', async () => {
+  const ai = await readFile(new URL('../src/pages/api/ai-tomas.ts', import.meta.url), 'utf8');
+  assert.match(ai, /function fulfilmentSentence/);
+  assert.match(ai, /zostávajúce.*3–10 pracovných dní/);
+  assert.match(ai, /Objednávku odošleme naraz po skompletizovaní/);
+  assert.match(ai, /fulfilmentSentence\(selected,total\)/);
+});
+
+test('časovač v prehliadači mení iba dynamickú skladovú hlášku', () => {
+  const dynamic = { textContent: 'pôvodná', setAttribute(name: string, value: string) { (this as any)[name] = value; } };
+  const staticMessage = { textContent: '1 ks skladom · zostávajúce 2 ks dodáme do 3–10 pracovných dní', setAttribute() { throw new Error('Statická hláška sa nesmie meniť'); } };
+  const root = {
+    querySelectorAll(selector: string) {
+      assert.equal(selector, '[data-tm-dispatch-message]:not([data-tm-dispatch-static])');
+      return [dynamic];
+    },
+  };
+  refreshDispatchMessages(root as any);
+  assert.notEqual(dynamic.textContent, 'pôvodná');
+  assert.equal(staticMessage.textContent, '1 ks skladom · zostávajúce 2 ks dodáme do 3–10 pracovných dní');
+});
+
+test('AI Tomáš vypočíta tri reálne režimy dodania', () => {
+  assert.equal(fulfilmentSentence({ stock_status: 'instock', stock_quantity: 5 }, 3), '3 ks je skladom.');
+  assert.equal(fulfilmentSentence({ stock_status: 'instock', stock_quantity: 1 }, 3), '1 ks je skladom a zostávajúce 2 ks dodáme do 3–10 pracovných dní. Objednávku odošleme naraz po skompletizovaní.');
+  assert.equal(fulfilmentSentence({ stock_status: 'outofstock', stock_quantity: 0 }, 3), 'Všetkých 3 ks je na objednávku s dodaním do 3–10 pracovných dní.');
 });

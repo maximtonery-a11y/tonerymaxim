@@ -1310,7 +1310,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
 
           <div class="stock-line ${isProductInStock(product) ? "is-available" : "is-unavailable"}">
             <strong>${esc(stockText(product))}</strong>
-            <span data-tm-dispatch-message>${esc(dispatchText(product))}</span>
+            <span data-tm-dispatch-message${isProductInStock(product) ? "" : " data-tm-dispatch-static"}>${esc(dispatchText(product))}</span>
           </div>
 
           ${bulkDiscountNoticeHtml(product)}
@@ -1326,7 +1326,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
 
           <div class="purchase-status ${isProductInStock(product) ? "is-available" : "is-unavailable"}">
             <strong>● ${esc(stockText(product))}</strong>
-            <span data-tm-dispatch-message>${esc(dispatchText(product))}</span>
+            <span data-tm-dispatch-message${isProductInStock(product) ? "" : " data-tm-dispatch-static"}>${esc(dispatchText(product))}</span>
           </div>
 
           <div class="delivery-box">

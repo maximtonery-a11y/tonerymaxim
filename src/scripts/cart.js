@@ -1010,7 +1010,7 @@ function formatMoney(value) {
           <div class="cart-benefit-card cart-benefit-expedition">
             <span class="cart-benefit-icon" aria-hidden="true">🚚</span>
             <div>
-              <strong data-tm-dispatch-message>${esc(maxQty !== null && qty > maxQty ? orderFulfilmentText(item, qty) : (isAvailableNow(item) ? getDispatchMessage() : ORDER_DELIVERY_LABEL))}</strong>
+              <strong data-tm-dispatch-message${maxQty !== null && qty > maxQty || !isAvailableNow(item) ? " data-tm-dispatch-static" : ""}>${esc(maxQty !== null && qty > maxQty ? orderFulfilmentText(item, qty) : (isAvailableNow(item) ? getDispatchMessage() : ORDER_DELIVERY_LABEL))}</strong>
               <small>${maxQty !== null && qty > maxQty ? "Objednávku odošleme naraz po skompletizovaní všetkých kusov." : (isAvailableNow(item) ? "Produkty skladom pripravíme na odoslanie čo najskôr." : "Objednávku odošleme po naskladnení produktu.")}</small>
             </div>
           </div>

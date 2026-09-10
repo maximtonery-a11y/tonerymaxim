@@ -124,7 +124,7 @@ export function getDispatchParts(date = new Date()) {
 export function refreshDispatchMessages(root = document) {
   if (!root || typeof root.querySelectorAll !== "function") return;
   const message = getDispatchMessage();
-  root.querySelectorAll("[data-tm-dispatch-message]").forEach((element) => {
+  root.querySelectorAll("[data-tm-dispatch-message]:not([data-tm-dispatch-static])").forEach((element) => {
     element.textContent = message;
     element.setAttribute("data-tm-dispatch-version", DISPATCH_RULE_VERSION);
   });
