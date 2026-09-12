@@ -6,6 +6,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import SeoHead from "../components/SeoHead.astro";
+import siteLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
 import { readCustomerSession } from "../lib/auth-session";
 
 const session = readCustomerSession(Astro.cookies);
@@ -25,7 +26,7 @@ const prefilledEmail = Astro.url.searchParams.get("email")?.trim().slice(0, 254)
       <Header />
       <main class="auth-wrap">
         <section class="auth-card">
-          <img class="auth-logo" src="/images/tonerymaxim-logo-sharp.png" alt="ToneryMaxim" width="1270" height="222" decoding="async" />
+          <img class="auth-logo" src={siteLogo.src} alt="ToneryMaxim" width="1270" height="222" decoding="async" />
           <h1>Registrácia</h1>
           <p>Vytvorte si účet zdarma, získajte <strong>5 % zľavu na celý prvý nákup</strong> a nakupujte rýchlejšie pri každej ďalšej objednávke.</p>
 

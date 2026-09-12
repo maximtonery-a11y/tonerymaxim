@@ -23,11 +23,16 @@ export const GET: APIRoute = async () => {
     numberFromFile('/sys/fs/cgroup/memory.current'),
     numberFromFile('/sys/fs/cgroup/memory.max'),
   ]);
-  const configuredLimit = Math.max(256, Number(process.env.TM_PROCESS_MEMORY_LIMIT_MB || 512)) * 1024 * 1024;
+  const configuredLimitMb = Number(process.env.TM_PROCESS_MEMORY_LIMIT_MB || 0);
+  const configuredLimit = Number.isFinite(configuredLimitMb) && configuredLimitMb > 0
+    ? Math.max(256, configuredLimitMb) * 1024 * 1024
+    : null;
+  // memory.max="max" znamená, že Docker nemá hard limit. Bez explicitného
+  // limitu nesmieme predstierať 512 MB a vracať falošný HTTP 503.
   const effectiveLimit = cgroupMax && cgroupMax > 0 ? cgroupMax : configuredLimit;
   const effectiveCurrent = cgroupCurrent && cgroupCurrent > 0 ? cgroupCurrent : rssBytes;
-  const usageRatio = effectiveLimit > 0 ? effectiveCurrent / effectiveLimit : 0;
-  const ok = usageRatio < 0.9;
+  const usageRatio = effectiveLimit && effectiveLimit > 0 ? effectiveCurrent / effectiveLimit : null;
+  const ok = usageRatio == null || usageRatio < 0.9;
   const mb = (value: number | null) => value == null ? null : Math.round(value / 1024 / 1024);
 
   return Response.json({
@@ -44,7 +49,8 @@ export const GET: APIRoute = async () => {
       cgroupCurrentMb: mb(cgroupCurrent),
       cgroupLimitMb: mb(cgroupMax),
       effectiveMemoryLimitMb: mb(effectiveLimit),
-      memoryUsagePercent: Math.round(usageRatio * 1000) / 10,
+      memoryUsagePercent: usageRatio == null ? null : Math.round(usageRatio * 1000) / 10,
+      memoryLimitConfigured: effectiveLimit != null,
       uptimeSeconds: Math.round(process.uptime()),
       pid: process.pid,
     },

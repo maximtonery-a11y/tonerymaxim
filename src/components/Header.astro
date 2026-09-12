@@ -22,7 +22,7 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
 
 <header class="site-header">
   <a class="site-logo-link" href="/" aria-label="ToneryMaxim domov">
-    <img class="site-logo" src="/images/tonerymaxim-logo-sharp.png" alt="ToneryMaxim" width="1270" height="222" decoding="async" fetchpriority="high" />
+    <img class="site-logo" src={mobileLogo.src} alt="ToneryMaxim" width="1270" height="222" decoding="async" fetchpriority="high" />
   </a>
 
   <nav class="site-nav" aria-label="Hlavná navigácia">
@@ -281,7 +281,13 @@ body.has-add-cart-drawer { overflow: hidden; }
     }
   }
 
-  updateHeaderAccountState();
+  // Kontrola relácie nie je potrebná na prvé vykreslenie verejnej stránky.
+  // Spustíme ju až keď prehliadač dokončí kritické zdroje.
+  const scheduleHeaderAccountState = () => {
+    window.setTimeout(() => void updateHeaderAccountState(), 750);
+  };
+  if (document.readyState === 'complete') scheduleHeaderAccountState();
+  else window.addEventListener('load', scheduleHeaderAccountState, { once: true });
   window.addEventListener('storage', (event) => {
     if (!event.key || event.key.includes('auth') || event.key.includes('customer')) updateHeaderAccountState();
   });

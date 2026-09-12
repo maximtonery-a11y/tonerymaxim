@@ -2,6 +2,7 @@
 import "../styles/footer.css";
 import CookieConsent from "./CookieConsent.astro";
 import LegacyShopPanel from "./LegacyShopPanel.astro";
+import siteLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
 
 const { showTrust = true } = Astro.props;
 
@@ -54,7 +55,7 @@ const shippingLogos = [
   <div class="wrap footer-main">
     <div class="footer-brand">
       <a class="footer-logo" href="/" aria-label="ToneryMaxim.sk">
-        <img src="/images/tonerymaxim-logo-sharp.png" alt="ToneryMaxim" width="1270" height="222" loading="lazy" decoding="async" />
+        <img src={siteLogo.src} alt="ToneryMaxim" width="1270" height="222" loading="lazy" decoding="async" />
       </a>
       <p>Slovenský špecialista na tonery, atramentové náplne a komponenty pre tlačiarne.</p>
       <form class="footer-newsletter" data-footer-newsletter>
@@ -242,7 +243,13 @@ const shippingLogos = [
     }
   }
 
-  loadFooterHeurekaStats();
+  // Heureka je externá služba s timeoutom až 8 sekúnd. Overené hodnoty sú už
+  // v HTML; živé obnovenie preto nepatrí do kritickej cesty prvého zobrazenia.
+  const scheduleFooterHeurekaStats = () => {
+    window.setTimeout(() => void loadFooterHeurekaStats(), 3_000);
+  };
+  if (document.readyState === 'complete') scheduleFooterHeurekaStats();
+  else window.addEventListener('load', scheduleFooterHeurekaStats, { once: true });
 </script>
 
 <script>
