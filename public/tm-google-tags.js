@@ -3,6 +3,9 @@
   var script = document.currentScript;
   var id = String(script && (script.dataset.googleTagId || script.dataset.gtmId) || '').toUpperCase();
   var loaded = false;
+  var scheduled = false;
+  var fallbackTimer = 0;
+  var interactionEvents = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
   if (!/^(G|GT|AW|GTM)-[A-Z0-9]+$/.test(id)) return;
 
   window.dataLayer = window.dataLayer || [];
@@ -47,19 +50,40 @@
   window.addEventListener('tm:cookies', function (event) { update(event.detail); });
   try { update(JSON.parse(localStorage.getItem('tm_cookie_consent_v10') || 'null')); } catch (_) {}
 
-  // Keep the Google tag out of the critical rendering path. Events generated
-  // before it loads remain queued in dataLayer and are processed afterwards.
-  function scheduleLoad() {
-    var start = function () {
-      if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(load, { timeout: 2000 });
-      } else {
-        window.setTimeout(load, 0);
-      }
-    };
+  // Do not let Google Tag extend the first-render/interactive window. Start it
+  // on the customer's first interaction, or use a bounded fallback for a
+  // visitor who only reads the page. Calls made before loading stay queued in
+  // dataLayer and are replayed by gtag.js/GTM.
+  function removeInteractionListeners() {
+    interactionEvents.forEach(function (eventName) {
+      window.removeEventListener(eventName, start);
+    });
+  }
 
-    if (document.readyState === 'complete') start();
-    else window.addEventListener('load', start, { once: true });
+  function start() {
+    if (scheduled || loaded) return;
+    scheduled = true;
+    if (fallbackTimer) window.clearTimeout(fallbackTimer);
+    removeInteractionListeners();
+
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(load, { timeout: 2000 });
+    } else {
+      window.setTimeout(load, 0);
+    }
+  }
+
+  function armFallback() {
+    fallbackTimer = window.setTimeout(start, 8000);
+  }
+
+  function scheduleLoad() {
+    interactionEvents.forEach(function (eventName) {
+      window.addEventListener(eventName, start, { once: true, passive: true });
+    });
+
+    if (document.readyState === 'complete') armFallback();
+    else window.addEventListener('load', armFallback, { once: true });
   }
 
   scheduleLoad();
