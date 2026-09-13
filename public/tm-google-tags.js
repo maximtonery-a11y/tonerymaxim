@@ -46,5 +46,21 @@
 
   window.addEventListener('tm:cookies', function (event) { update(event.detail); });
   try { update(JSON.parse(localStorage.getItem('tm_cookie_consent_v10') || 'null')); } catch (_) {}
-  load();
+
+  // Keep the Google tag out of the critical rendering path. Events generated
+  // before it loads remain queued in dataLayer and are processed afterwards.
+  function scheduleLoad() {
+    var start = function () {
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(load, { timeout: 2000 });
+      } else {
+        window.setTimeout(load, 0);
+      }
+    };
+
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
+  }
+
+  scheduleLoad();
 })();

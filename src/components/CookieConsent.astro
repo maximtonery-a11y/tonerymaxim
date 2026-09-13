@@ -1,4 +1,4 @@
-<div class="tm-cookie-consent" id="tm-cookie-consent" data-cookie-consent>
+<div class="tm-cookie-consent tm-cookie-is-open" id="tm-cookie-consent" data-cookie-consent>
   <button type="button" class="tm-cookie-floating" id="tm-cookie-floating" aria-label="Otvoriť nastavenia cookies">
     <span aria-hidden="true">🍪</span>
     <strong>Cookies</strong>
@@ -483,10 +483,9 @@
     reset: resetConsent
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
-  } else {
-    init();
-  }
+  // All consent markup is already parsed because this inline script follows it.
+  // Initialising synchronously prevents the banner from appearing only after
+  // DOMContentLoaded, which made its paragraph a late LCP element.
+  init();
 })();
 </script>
