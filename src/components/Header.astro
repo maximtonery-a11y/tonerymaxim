@@ -22,7 +22,7 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
 
 <header class="site-header">
   <a class="site-logo-link" href="/" aria-label="ToneryMaxim domov">
-    <img class="site-logo" src={mobileLogo.src} alt="ToneryMaxim" width="1270" height="222" decoding="async" fetchpriority="high" />
+    <img class="site-logo" src="/images/tonerymaxim-logo-sharp.png" alt="ToneryMaxim" width="1270" height="222" decoding="async" fetchpriority="high" />
   </a>
 
   <nav class="site-nav" aria-label="Hlavná navigácia">
@@ -78,7 +78,14 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
     </button>
 
     <a class="tm-global-mobile-logo" href="/" aria-label="ToneryMaxim domov">
-      <img src={mobileLogo.src} alt="ToneryMaxim" />
+      <img
+        src={mobileLogo.src}
+        alt="ToneryMaxim"
+        width={mobileLogo.width}
+        height={mobileLogo.height}
+        decoding="async"
+        fetchpriority="high"
+      />
     </a>
 
     <a href="/kosik" class="tm-global-mobile-cart" aria-label="Košík">
@@ -205,18 +212,6 @@ body.has-add-cart-drawer { overflow: hidden; }
 </style>
 
 <script>
-  // Odstráni prebliknutie nehotového rozloženia pri prechode medzi stránkami.
-  const revealPage = () => {
-    requestAnimationFrame(() => document.documentElement.classList.add("tm-page-ready"));
-  };
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", revealPage, { once: true });
-  } else {
-    revealPage();
-  }
-  // Bezpečnostná poistka pri chybe iného skriptu.
-  window.setTimeout(() => document.documentElement.classList.add("tm-page-ready"), 1200);
-
   import "../scripts/device-layout.js";
   import "../scripts/cart.js";
   import "../scripts/smart-search.js";
@@ -281,13 +276,7 @@ body.has-add-cart-drawer { overflow: hidden; }
     }
   }
 
-  // Kontrola relácie nie je potrebná na prvé vykreslenie verejnej stránky.
-  // Spustíme ju až keď prehliadač dokončí kritické zdroje.
-  const scheduleHeaderAccountState = () => {
-    window.setTimeout(() => void updateHeaderAccountState(), 750);
-  };
-  if (document.readyState === 'complete') scheduleHeaderAccountState();
-  else window.addEventListener('load', scheduleHeaderAccountState, { once: true });
+  updateHeaderAccountState();
   window.addEventListener('storage', (event) => {
     if (!event.key || event.key.includes('auth') || event.key.includes('customer')) updateHeaderAccountState();
   });

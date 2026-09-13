@@ -1244,19 +1244,4 @@ body.product-detail-body .header-heureka {
   }
 }
 
-/* TM global anti-FOUC: verejné stránky sa zobrazia až po pripravení základného DOM. */
-html:not(.tm-page-ready) body > .page {
-  opacity: 0;
-  visibility: hidden;
-}
-
-html.tm-page-ready body > .page {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity .12s ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html.tm-page-ready body > .page { transition: none; }
-}
 .tm-smart-empty--alternative{display:flex!important;align-items:center;gap:10px;flex-wrap:wrap}.tm-smart-didyoumean{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:#eaf7ff;color:#006ca8;font-weight:900;text-decoration:none}.tm-smart-didyoumean:hover{text-decoration:underline}
