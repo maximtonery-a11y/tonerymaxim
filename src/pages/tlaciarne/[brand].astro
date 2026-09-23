@@ -6,7 +6,7 @@ import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import "../../styles/footer.css";
-import mobileLogo from "../../assets/tonerymaxim-mobile-approved-logo.png";
+import mobileLogo from "../../assets/tonerymaxim-logo-840.webp";
 import SeoHead from "../../components/SeoHead.astro";
 import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../../lib/seo";
 import { getProductsCache } from "../../lib/tm-products-cache";
@@ -128,7 +128,7 @@ const jsonLd = [
             <span></span><span></span><span></span>
           </button>
           <a class="tm-printer-mobile-logo-link" href="/" aria-label="ToneryMaxim domov">
-            <img src={mobileLogo.src} alt="ToneryMaxim" loading="eager" decoding="async" />
+            <img src={mobileLogo.src} alt="ToneryMaxim" width={mobileLogo.width} height={mobileLogo.height} loading="eager" decoding="async" />
           </a>
           <a class="tm-printer-mobile-cart-link" href="/kosik" aria-label="Košík">
             <span aria-hidden="true">🛒</span>
@@ -184,7 +184,7 @@ const jsonLd = [
           </div>
 
           <section class="tm-printer-popular-mobile">
-            <h1>Najčastejšie hľadané tlačiarne {selectedBrand}</h1>
+            <h2>Najčastejšie hľadané tlačiarne {selectedBrand}</h2>
             <div class="printer-popular-grid" data-printer-popular-grid></div>
           </section>
 

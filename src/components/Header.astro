@@ -1,5 +1,6 @@
 ---
-import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
+import logo420 from "../assets/tonerymaxim-logo-420.webp";
+import mobileLogo from "../assets/tonerymaxim-logo-840.webp";
 import TrustBar from "./TrustBar.astro";
 
 const privateNoIndexPaths = new Set([
@@ -22,7 +23,7 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
 
 <header class="site-header">
   <a class="site-logo-link" href="/" aria-label="ToneryMaxim domov">
-    <img class="site-logo" src="/images/tonerymaxim-logo-sharp.png" alt="ToneryMaxim" width="1270" height="222" decoding="async" fetchpriority="high" />
+    <img class="site-logo" src={mobileLogo.src} srcset={`${logo420.src} 420w, ${mobileLogo.src} 840w`} sizes="(max-width: 760px) 420px, 320px" alt="ToneryMaxim" width="1270" height="222" decoding="async" fetchpriority="high" />
   </a>
 
   <nav class="site-nav" aria-label="Hlavná navigácia">
@@ -80,6 +81,8 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
     <a class="tm-global-mobile-logo" href="/" aria-label="ToneryMaxim domov">
       <img
         src={mobileLogo.src}
+        srcset={`${logo420.src} 420w, ${mobileLogo.src} 840w`}
+        sizes="(max-width: 760px) 420px, 320px"
         alt="ToneryMaxim"
         width={mobileLogo.width}
         height={mobileLogo.height}

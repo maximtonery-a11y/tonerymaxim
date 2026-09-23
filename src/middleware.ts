@@ -1,9 +1,35 @@
 import { defineMiddleware } from 'astro:middleware';
-import { startOrderWorker } from './lib/order-worker-start';
-import { ensureTonerCareWorkerStarted } from './lib/toner-care';
-import { ensureEmailQueueStarted } from './lib/email-queue';
-import { ensureFirmwareInfoWorkerStarted } from './lib/firmware-info';
-import { ensureNightlyPriceWorkerStarted } from './lib/nightly-price-worker';
+
+const BACKGROUND_WORKERS_GLOBAL_KEY = '__tmBackgroundWorkersScheduled';
+
+function scheduleBackgroundWorkers(): void {
+  const globalState = globalThis as typeof globalThis & { [BACKGROUND_WORKERS_GLOBAL_KEY]?: boolean };
+  if (globalState[BACKGROUND_WORKERS_GLOBAL_KEY]) return;
+  globalState[BACKGROUND_WORKERS_GLOBAL_KEY] = true;
+
+  // Storefront nesmie pri studenom štarte načítavať moduly denných workerov.
+  // Worker moduly sa načítajú až po odpovedi a každý z nich si ďalej stráži,
+  // aby v jednom Node procese nevytvoril viac časovačov.
+  setTimeout(async () => {
+    try {
+      const [{ ensureTonerCareWorkerStarted }, { ensureEmailQueueStarted }, { ensureFirmwareInfoWorkerStarted }, { ensureNightlyPriceWorkerStarted }] = await Promise.all([
+        import('./lib/toner-care'),
+        import('./lib/email-queue'),
+        import('./lib/firmware-info'),
+        import('./lib/nightly-price-worker'),
+      ]);
+      ensureTonerCareWorkerStarted();
+      if (process.env.TM_DISABLE_BACKGROUND_WORKERS !== '1') {
+        ensureEmailQueueStarted();
+        ensureFirmwareInfoWorkerStarted();
+        ensureNightlyPriceWorkerStarted();
+      }
+    } catch (error) {
+      globalState[BACKGROUND_WORKERS_GLOBAL_KEY] = false;
+      console.error('[TM workers] delayed startup failed', error instanceof Error ? error.message : error);
+    }
+  }, 2_000).unref?.();
+}
 
 const NOINDEX_HOSTS = new Set(['tonerymaxim.info', 'www.tonerymaxim.info']);
 const PRIVATE_PATHS = new Set([
@@ -154,18 +180,10 @@ function finish(response: Response, url: URL, request?: Request): Response {
 }
 
 export const onRequest = defineMiddleware(async ({ request, url }, next) => {
-  // Obnova čakajúcich objednávok sa aktivuje neblokujúco aj pri healthchecku.
-  // Vďaka tomu prežije fronta redeploy bez potreby novej objednávky.
-  startOrderWorker();
-  // Healthcheck zostáva úplne ľahký. Prvá bežná požiadavka spustí neblokujúci
-  // denný worker; globálny zámok zabráni ďalším časovačom v tom istom procese.
+  // Healthcheck zostáva úplne ľahký. Prvá bežná požiadavka iba naplánuje
+  // oneskorený štart workerov bez ich načítania v kritickej ceste odpovede.
   if (!['/api/health', '/api/readiness', '/api/storefront-check'].includes(url.pathname)) {
-    ensureTonerCareWorkerStarted();
-    if (process.env.TM_DISABLE_BACKGROUND_WORKERS !== '1') {
-      ensureEmailQueueStarted();
-      ensureFirmwareInfoWorkerStarted();
-      ensureNightlyPriceWorkerStarted();
-    }
+    scheduleBackgroundWorkers();
   }
   // Storefront, kosik, pokladna a healthcheck nemaju ziadnu zavislost od
   // Ads, Merchant, Analytics, ich klucov ani ich diskoveho uloziska.

@@ -64,7 +64,8 @@ const productSeo = buildProductSeo(product, cache?.products || []);
 const title = productSeo.title;
 const description = productSeo.description;
 const canonical = `${SEO_ORIGIN}/produkt/${encodeURIComponent(product.slug)}`;
-const image = absoluteUrl(SEO_ORIGIN, product.image || product.images?.[0] || '/favicon.svg');
+const primaryImage = product.image || product.images?.[0] || '/images/tm-product-placeholder-box.jpg';
+const image = absoluteUrl(SEO_ORIGIN, primaryImage);
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname)
   || !validIndexableProduct(product);
 const productStructuredData = noindex
@@ -152,6 +153,9 @@ const initialProductJson = JSON.stringify(product)
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://www.coloriq.store" crossorigin />
+    <link rel="dns-prefetch" href="https://www.coloriq.store" />
+    <link rel="preload" as="image" href={primaryImage} fetchpriority="high" />
     <SeoHead title={title} description={description} canonical={canonical} image={image} type="product" noindex={noindex} jsonLd={productStructuredData} />
   </head>
 
@@ -177,7 +181,7 @@ const initialProductJson = JSON.stringify(product)
             </div>
             <div class="tm-product-seo-fallback">
             <section class="detail-hero-card">
-              <div class="product-gallery"><div class="main-image"><img src={product.image} alt={product.name} width="640" height="640" loading="eager" decoding="async" /></div></div>
+              <div class="product-gallery"><div class="main-image"><img src={primaryImage} alt={product.name} width="640" height="640" loading="eager" decoding="async" fetchpriority="high" /></div></div>
               <div class="product-info">
                 <div class="badge-row"><span class="type-badge">{product.product_type_label}</span>{detailChipVariant && <span class={`chip-variant chip-variant--${detailChipVariant.key}`}>{detailChipVariant.label}<small>{detailChipVariant.note}</small></span>}</div>
                 <h1>{product.name}</h1>

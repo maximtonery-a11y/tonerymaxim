@@ -691,7 +691,7 @@
     padding: 20px 18px 118px;
   }
 
-  .tm-printer-mobile-content h1 {
+  .tm-printer-mobile-content :is(h1, h2) {
     margin: 0 0 18px;
     color: #061b3d;
     font-size: clamp(34px, 9vw, 48px);
@@ -829,7 +829,7 @@
     margin-top: 28px;
   }
 
-  .tm-printer-popular-mobile h1 {
+  .tm-printer-popular-mobile :is(h1, h2) {
     margin-bottom: 22px;
   }
 
@@ -1143,7 +1143,7 @@
     margin-top: 24px;
   }
 
-  .tm-printer-popular-mobile h1 {
+  .tm-printer-popular-mobile :is(h1, h2) {
     margin-bottom: 18px;
     font-size: clamp(31px, 9vw, 44px);
     line-height: 1;

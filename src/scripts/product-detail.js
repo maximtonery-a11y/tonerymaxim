@@ -1269,16 +1269,16 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     root.innerHTML = `
       <section class="detail-hero-card">
         <div class="product-gallery">
-          <div class="thumbs" aria-label="Galéria produktu">
+          <div class="thumbs" role="group" aria-label="Galéria produktu">
             ${images.slice(0, 4).map((image, index) => `
-              <button type="button" data-image="${esc(image)}" class="${index === 0 ? "active" : ""}">
-                <img src="${esc(image)}" alt="">
+              <button type="button" data-image="${esc(image)}" class="${index === 0 ? "active" : ""}" aria-label="Zobraziť obrázok produktu ${index + 1}" aria-pressed="${index === 0 ? "true" : "false"}">
+                <img src="${esc(image)}" alt="" width="72" height="72" loading="lazy" decoding="async">
               </button>
             `).join("")}
           </div>
 
           <div class="main-image">
-            <img src="${esc(images[0] || TM_PRODUCT_PLACEHOLDER_IMAGE)}" alt="${esc(product.name)}" class="tm-product-fit-image">
+            <img src="${esc(images[0] || TM_PRODUCT_PLACEHOLDER_IMAGE)}" alt="${esc(product.name)}" class="tm-product-fit-image" width="640" height="640" loading="eager" decoding="async" fetchpriority="high">
             <button type="button" class="zoom-button" data-zoom-image aria-label="Zväčšiť obrázok">
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
             </button>
@@ -1335,11 +1335,11 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
             <span>${esc(deliveryMissing(product))}</span>
           </div>
 
-          <label>Množstvo</label>
+          <label for="tm-product-quantity">Množstvo</label>
           <div class="qty-row">
-            <button type="button" data-qty-minus>-</button>
-            <input type="number" data-qty value="1" min="1" max="99">
-            <button type="button" data-qty-plus>+</button>
+            <button type="button" data-qty-minus aria-label="Znížiť množstvo">-</button>
+            <input id="tm-product-quantity" type="number" data-qty value="1" min="1" max="99" aria-label="Množstvo produktu">
+            <button type="button" data-qty-plus aria-label="Zvýšiť množstvo">+</button>
           </div>
 
           <button type="button" class="add-main" data-add-main>
@@ -1467,13 +1467,15 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
         const mainImage = root.querySelector(".main-image");
         if (!mainImage) return;
         mainImage.innerHTML = `
-          <img src="${esc(image)}" alt="${esc(product.name)}" class="tm-product-fit-image">
+          <img src="${esc(image)}" alt="${esc(product.name)}" class="tm-product-fit-image" width="640" height="640" decoding="async">
           <button type="button" class="zoom-button" data-zoom-image aria-label="Zväčšiť obrázok">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
           </button>
         `;
         root.querySelectorAll("[data-image]").forEach((btn) => btn.classList.remove("active"));
+        root.querySelectorAll("[data-image]").forEach((btn) => btn.setAttribute("aria-pressed", "false"));
         button.classList.add("active");
+        button.setAttribute("aria-pressed", "true");
       });
     });
 

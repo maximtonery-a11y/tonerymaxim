@@ -1,4 +1,5 @@
 (() => {
+  let panelCounter = 0;
   if (window.__TM_SMART_SEARCH_MODULE_READY__) {
     window.tmInitSmartSearch?.();
     return;
@@ -156,9 +157,14 @@
       wrapper.appendChild(panel);
     }
 
+    if (!panel.id) panel.id = `tm-smart-search-results-${++panelCounter}`;
+
     input.setAttribute("autocomplete", "off");
+    input.setAttribute("role", "combobox");
     input.setAttribute("aria-autocomplete", "list");
     input.setAttribute("aria-expanded", "false");
+    input.setAttribute("aria-controls", panel.id);
+    input.setAttribute("aria-haspopup", "listbox");
 
     return { wrapper, panel };
   }

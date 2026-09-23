@@ -218,7 +218,7 @@ const jsonLd = [
                   const filter = match?.[1] === "Kompatibilné" ? "compatible" : match?.[1] === "Originálne" ? "original" : match?.[1] === "Renovované" ? "renovated" : "";
                   const selected = filter && Astro.url.searchParams.get("typ") === filter;
                   const filterHref = filter ? (selected ? `${canonicalPath}#produkty` : `${canonicalPath}?typ=${filter}#produkty`) : "";
-                  return <li class:list={{ [`seo-type-${filter}`]: Boolean(filter), "is-active": Boolean(selected) }}>{filter ? <a class="seo-type-filter" href={filterHref} aria-current={selected ? "true" : undefined}>{fact}</a> : fact}</li>;
+                  return <li class:list={{ [`seo-type-${filter}`]: Boolean(filter), "is-active": Boolean(selected) }}>{filter ? <a class="seo-type-filter" data-seo-type-filter={filter} href={filterHref} aria-current={selected ? "true" : undefined}>{fact}</a> : fact}</li>;
                 })}
               </ul>
             )}

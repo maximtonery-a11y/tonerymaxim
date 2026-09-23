@@ -12,7 +12,8 @@ import Benefits from "../components/Benefits.astro";
 import AccountBenefits from "../components/AccountBenefits.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
-import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
+import logo420 from "../assets/tonerymaxim-logo-420.webp";
+import mobileLogo from "../assets/tonerymaxim-logo-840.webp";
 import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 import SeoHead from "../components/SeoHead.astro";
 import { organizationJsonLd, websiteJsonLd } from "../lib/seo";
@@ -47,6 +48,8 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
             <a class="tm-mobile-logo-link" href="/" aria-label="ToneryMaxim domov">
               <img
                 src={mobileLogo.src}
+                srcset={`${logo420.src} 420w, ${mobileLogo.src} 840w`}
+                sizes="(max-width: 760px) 420px, 320px"
                 alt="ToneryMaxim"
                 width={mobileLogo.width}
                 height={mobileLogo.height}
@@ -188,7 +191,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
 
             <section class="tm-mobile-help-card" aria-label="Pomoc s výberom">
               <a class="tm-mobile-help-card-link" href="/kontakt" aria-label="Kontaktujte nás">
-                <img class="tm-mobile-help-card-image" src={tmHelpVisual.src} alt="Potrebujete poradiť? Sme tu pre vás. Kontaktujte nás." loading="lazy" decoding="async" />
+                <img class="tm-mobile-help-card-image" src={tmHelpVisual.src} alt="Potrebujete poradiť? Sme tu pre vás. Kontaktujte nás." width={tmHelpVisual.width} height={tmHelpVisual.height} loading="lazy" decoding="async" />
               </a>
             </section>
 

@@ -5,7 +5,7 @@ import "../styles/home-mobile.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
-import mobileLogo from "../assets/tonerymaxim-mobile-approved-logo.png";
+import mobileLogo from "../assets/tonerymaxim-logo-840.webp";
 import SeoHead from "../components/SeoHead.astro";
 import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
 
@@ -74,7 +74,7 @@ const jsonLd = [
             <span></span><span></span><span></span>
           </button>
           <a class="tm-printer-mobile-logo-link" href="/" aria-label="ToneryMaxim domov">
-            <img src={mobileLogo.src} alt="ToneryMaxim" loading="eager" decoding="async" />
+            <img src={mobileLogo.src} alt="ToneryMaxim" width={mobileLogo.width} height={mobileLogo.height} loading="eager" decoding="async" />
           </a>
           <a class="tm-printer-mobile-cart-link" href="/kosik" aria-label="Košík">
             <span aria-hidden="true">🛒</span>
@@ -113,7 +113,7 @@ const jsonLd = [
         </div>
 
         <main class="tm-printer-mobile-content">
-          <h1>Značka tlačiarne</h1>
+          <h2>Značka tlačiarne</h2>
           <div class="tm-printer-brand-logo-grid" aria-label="Značky tlačiarní">
             {brands.map((brand) => (
               <a href={`/tlaciarne/${brand.slug}`} class={`tm-printer-brand-logo tm-printer-brand-logo--${brand.slug}`} aria-label={`Vybrať značku ${brand.name}`}>
