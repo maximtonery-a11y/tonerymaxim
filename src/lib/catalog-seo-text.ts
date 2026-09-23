@@ -269,6 +269,9 @@ function readableNameIdentity(product: TmProduct): string {
 }
 
 function productIdentity(product: TmProduct): string {
+  // Sady s dvoma samostatnými Brother kódmi nesmú v title stratiť druhý kód.
+  const pairedTonerCodes = productName(product).match(/\b(TN\s*-?\s*\d{2,5}[A-Z]*(?:\s*\/\s*TN\s*-?\s*\d{2,5}[A-Z]*)+)\b/i)?.[1];
+  if (pairedTonerCodes) return pairedTonerCodes.replace(/\s+/g, "").toUpperCase();
   const nameCode = codeFromProductName(product);
   if (nameCode) return nameCode;
   const oem = productOemCodes(product)[0];
@@ -349,6 +352,18 @@ function humanVariantQualifier(product: TmProduct): string {
   if (thousandYield) return `${thousandYield.replace(".", ",")} tis. strán`;
   const volume = name.match(/\b(\d+(?:[.,]\d+)?)\s*ml\b/i)?.[1];
   if (volume) return `${volume.replace(".", ",")} ml`;
+  const splitColorYield = clean(product.page_yield || product.capacity).match(
+    /BK:\s*(\d[\d\s.,]*)\s*(?:str\.?|strán);?\s*C\/M\/Y:\s*(\d[\d\s.,]*)\s*(?:str\.?|strán)/iu,
+  );
+  if (splitColorYield) {
+    const compactThousands = (value: string) => {
+      const number = Number(value.replace(/\s/g, "").replace(",", "."));
+      return Number.isFinite(number) && number >= 1000
+        ? `${(number / 1000).toLocaleString("sk-SK", { maximumFractionDigits: 1 })}k`
+        : value.replace(/\s/g, "");
+    };
+    return `CMY ${compactThousands(splitColorYield[2])}`;
+  }
   if (/\bDevelop\b/i.test(name)) return "Develop";
   const series = name.match(/\b([A-Z])\s+(\d{3}(?:\/\d{3}){1,8})\b/i);
   if (series) return `${series[1].toUpperCase()} ${series[2]}`;
@@ -413,8 +428,12 @@ function productTitle(product: TmProduct, allProducts?: TmProduct[]): string {
   const qualifier = duplicateQualifier(product, allProducts);
   if (!qualifier) return base;
   const core = base.endsWith(SITE_SUFFIX) ? base.slice(0, -SITE_SUFFIX.length) : base;
-  const suffix = " – " + qualifier;
-  return normalizeSeoTitle(truncate(core, 65 - suffix.length) + suffix);
+  // Identita, farba a typ produktu sú dôležitejšie než dlhý doplnkový
+  // rozlišovač. Krátime preto iba rozlišovač, nikdy jadro názvu.
+  const availableQualifierLength = 65 - core.length - 3;
+  if (availableQualifierLength < 3) return normalizeSeoTitle(core);
+  const suffix = " – " + truncate(qualifier, availableQualifierLength);
+  return normalizeSeoTitle(core + suffix);
 }
 
 export function buildProductSeo(product: TmProduct, allProducts?: TmProduct[]): { title: string; description: string } {

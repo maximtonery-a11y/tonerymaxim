@@ -63,7 +63,9 @@ const PRODUCT_IDENTITY_ALIASES = new WeakMap<object, Set<string>>();
 const PRODUCT_BRAND_CACHE = new WeakMap<object, string>();
 const PRODUCT_PRINTER_VALUES = new WeakMap<object, string[]>();
 const REFERENCE_ALIASES_CACHE = new Map<string, Set<string>>();
-const REFERENCE_ALIASES_CACHE_MAX = 50_000;
+// Táto mapa je iba výkonnostná memoizácia. Limit zabraňuje tomu, aby
+// jednorazové alebo botom generované dotazy zostávali po celý život procesu.
+const REFERENCE_ALIASES_CACHE_MAX = 5_000;
 
 const QUERY_FILLER_WORDS = new Set([
   "aky",

@@ -1,6 +1,23 @@
 import { createHash } from "node:crypto";
 import { withOrderIdempotency, type OrderIdempotencyResult } from "./order-idempotency.ts";
 
+const unsubmittedResponses = new WeakSet<Response>();
+
+/** Iba serverový handler môže potvrdiť, že tvorba objednávky/platby nezačala. */
+export function markCheckoutUnsubmitted(response: Response): Response {
+  if (!response.ok) unsubmittedResponses.add(response);
+  return response;
+}
+
+class CheckoutUnsubmittedResponse extends Error {
+  readonly response: Response;
+
+  constructor(response: Response) {
+    super("Checkout bol zamietnutý pred vytváraním objednávky alebo platby.");
+    this.response = response;
+  }
+}
+
 type CheckoutSubmissionResult = OrderIdempotencyResult & {
   endpoint: string;
   fingerprint: string;
@@ -46,6 +63,7 @@ export async function withCheckoutSubmission(
   try {
     result = await withOrderIdempotency<CheckoutSubmissionResult>(`checkout-submit-${cleanId}`, async () => {
       const response = await work();
+      if (unsubmittedResponses.has(response)) throw new CheckoutUnsubmittedResponse(response);
       return {
         ok: response.ok,
         status: response.status,
@@ -59,6 +77,10 @@ export async function withCheckoutSubmission(
       };
     });
   } catch (error: any) {
+    if (error instanceof CheckoutUnsubmittedResponse) {
+      error.response.headers.set("Cache-Control", "no-store");
+      return error.response;
+    }
     if (Number(error?.status || 0) === 409) return conflict(error.message);
     throw error;
   }

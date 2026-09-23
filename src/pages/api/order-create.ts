@@ -9,7 +9,7 @@ import { CheckoutProfiler } from "../../lib/checkout-profiler";
 import { nextTmOrderNumber } from "../../lib/order-number";
 import { getOrCreateOrderNumber } from "../../lib/order-idempotency";
 import { validateCheckoutRequest } from "../../lib/checkout-validation";
-import { withCheckoutSubmission } from "../../lib/checkout-submission";
+import { markCheckoutUnsubmitted, withCheckoutSubmission } from "../../lib/checkout-submission";
 
 const SHIPPING: Record<string, { label: string; price: number }> = {
   dpd_courier: { label: "DPD kuriér na adresu", price: 3.9 },
@@ -28,6 +28,7 @@ const PAYMENT: Record<string, { label: string; price: number }> = {
 export const prerender = false;
 
 const handlePost: APIRoute = async ({ request, cookies }) => {
+  let creationStarted = false;
   const profiler = new CheckoutProfiler("order-create");
   try {
     const session = readCustomerSession(cookies);
@@ -41,10 +42,10 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
     const cart = await profiler.measure("normalize-cart", () => normalizeSecureCheckoutCart(body.cart, { customerId: session?.id, loyalty }));
 
     if (cart.length === 0) {
-      return new Response(JSON.stringify({ ok: false, error: "Košík je prázdny." }), {
+      return markCheckoutUnsubmitted(new Response(JSON.stringify({ ok: false, error: "Košík je prázdny." }), {
         status: 400,
         headers: { "Content-Type": "application/json; charset=utf-8" },
-      });
+      }));
     }
 
     const { shippingCode, paymentCode } = checkout;
@@ -60,10 +61,10 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
     if (couponCode) {
       coupon = await profiler.measure("coupon-validate", () => validateCheckoutCoupon(session?.id, couponCode, cart));
       if (!coupon.ok) {
-        return new Response(JSON.stringify({ ok: false, error: coupon.reason || "Kupón nie je platný." }), {
+        return markCheckoutUnsubmitted(new Response(JSON.stringify({ ok: false, error: coupon.reason || "Kupón nie je platný." }), {
           status: 400,
           headers: { "Content-Type": "application/json; charset=utf-8" },
-        });
+        }));
       }
       couponDiscount = Math.min(Number(coupon.discount || 0), Math.max(0, subtotal));
       coupon.discount = Math.round(couponDiscount * 100) / 100;
@@ -112,6 +113,7 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
       customerId: session?.id || undefined,
     };
 
+    creationStarted = true;
     const asyncEnabled = process.env.TM_FORCE_SYNC_WOO_ORDERS !== "1";
 
     if (asyncEnabled) {
@@ -147,7 +149,7 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
     profiler.fail(error);
     const status = Number(error?.status || 500);
     console.error("Order create error:", error?.message || error);
-    return new Response(JSON.stringify({
+    const response = new Response(JSON.stringify({
       ok: false,
       error: status < 500 ? error?.message : "Nepodarilo sa vytvoriť objednávku. Skúste to znova alebo nás kontaktujte.",
       validationErrors: status === 400 ? error?.validationErrors || undefined : undefined,
@@ -155,6 +157,7 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
       status,
       headers: { "Content-Type": "application/json; charset=utf-8" },
     });
+    return creationStarted ? response : markCheckoutUnsubmitted(response);
   }
 };
 

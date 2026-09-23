@@ -26,10 +26,13 @@ function colorOf(p:any) {
 export function familyOf(p:any){const raw=`${p.name||''} ${p.sku||''}`.toUpperCase();let m=raw.match(/\bTN[- ]?(\d{3,4})(?:BK|C|M|Y)\b/);if(m)return`TN${m[1]}`;m=raw.match(/\bCRG[- ]?(\d{3})(H?)(?:BK|C|M|Y)\b/);if(m)return`CRG${m[1]}${m[2]}`;m=raw.match(/\b(?:CF|CE)(\d{2})[0-3]([AX])\b/);if(m)return`HP${m[1]}X${m[2]}`;m=raw.match(/\bCLT[- ]?[KCMY](\d+)([LS])\b/);if(m)return`CLT${m[1]}${m[2]}`;m=raw.match(/\bT(\d{3})[1-4](XXL|XL)?\b/);if(m)return`EPSON-T${m[1]}${m[2]||''}`;return'';}
 const commerceCache: Map<string,{expires:number,value:any}> = (globalThis as any).__TM_AI_COMMERCE_SEARCH_CACHE__ ||= new Map();
 const commerceInFlight: Map<string,Promise<any>> = (globalThis as any).__TM_AI_COMMERCE_IN_FLIGHT__ ||= new Map();
+const COMMERCE_CACHE_MAX = 200;
 export async function searchCommerce(query:string) {
   query=String(query||'').replace(/\bminoltu\b/gi,'Konica Minolta').replace(/\bminolta\b/gi,'Konica Minolta').replace(/Konica\s+Konica\s+Minolta/gi,'Konica Minolta');
   const cacheKey=query.toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
-  const cached=commerceCache.get(cacheKey);if(cached&&cached.expires>Date.now())return cached.value;
+  const now=Date.now();
+  const cached=commerceCache.get(cacheKey);if(cached&&cached.expires>now){commerceCache.delete(cacheKey);commerceCache.set(cacheKey,cached);return cached.value;}
+  if(cached)commerceCache.delete(cacheKey);
   // Pri prvom dotaze po deployi moze prist viac rovnakych poziadaviek naraz.
   // Jedna spolocna Promise zabrani paralelnemu filtrovaniu celeho katalogu,
   // ktore predtym kratkodobo nasobilo RAM a mohlo zhodit cely Node proces.
@@ -54,7 +57,7 @@ export async function searchCommerce(query:string) {
   }
   const value={...result,products,presentation:{isColorPrinter,sets,colors:[...colors]}};
   commerceCache.set(cacheKey,{expires:Date.now()+5*60_000,value});
-  if(commerceCache.size>500){const oldest=commerceCache.keys().next().value;if(oldest)commerceCache.delete(oldest);}
+  while(commerceCache.size>COMMERCE_CACHE_MAX){const oldest=commerceCache.keys().next().value;if(!oldest)break;commerceCache.delete(oldest);}
   return value;
   })();
   commerceInFlight.set(cacheKey,operation);

@@ -6,6 +6,7 @@ import { createWooOrderFromCheckout, readPendingGoPayOrder, savePendingGoPayOrde
 import { CheckoutProfiler } from "./checkout-profiler";
 import { sendOrderAdminCopyEmail, sendOrderConfirmationEmail } from "./mail";
 import { wooRequest } from "./woo-client";
+import { createEarliestTask } from "./earliest-task";
 
 const QUEUE_ROOT = join(TM_DATA_ROOT, "async-orders");
 const LEGACY_QUEUE_ROOT = join(TM_CACHE_ROOT, 'async-orders');
@@ -39,7 +40,10 @@ type AsyncOrderJob = {
 };
 
 let queueLoopRunning = false;
-let queueScheduled = false;
+let queueWakePending = false;
+const scheduleQueueTask = createEarliestTask(processAsyncOrderQueue, (error) => {
+  console.error("[TM async order queue] processing failed", (error as Error)?.message || error);
+});
 
 function safeId(value: string) {
   return String(value || "")
@@ -280,20 +284,16 @@ export async function enqueueAsyncWooOrder(source: CheckoutOrderSource) {
 }
 
 export function scheduleAsyncOrderQueue(delayMs = 0) {
-  if (queueScheduled || queueLoopRunning) return;
-  queueScheduled = true;
-  setTimeout(() => {
-    queueScheduled = false;
-    // Chyba disku alebo WooCommerce vo fronte nikdy nesmie byt unhandled
-    // rejection, ktory by ukoncil hlavny Node proces e-shopu.
-    void processAsyncOrderQueue().catch((error) => {
-      console.error("[TM async order queue] processing failed", (error as Error)?.message || error);
-    });
-  }, Math.max(0, delayMs));
+  scheduleQueueTask(delayMs);
 }
 
 export async function processAsyncOrderQueue() {
-  if (queueLoopRunning) return;
+  if (queueLoopRunning) {
+    // Impulz prijatý počas aktívnej dávky nesmie zaniknúť. Po jej skončení
+    // frontu okamžite skontrolujeme ešte raz.
+    queueWakePending = true;
+    return;
+  }
   queueLoopRunning = true;
   try {
     await ensureDirs();
@@ -304,6 +304,10 @@ export async function processAsyncOrderQueue() {
     }
   } finally {
     queueLoopRunning = false;
+    if (queueWakePending) {
+      queueWakePending = false;
+      scheduleAsyncOrderQueue(0);
+    }
   }
 }
 

@@ -182,7 +182,15 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
   }
   const liveProducts = ids.length
     ? await wooRequest<any[]>("/products", {
-      query: { include: ids.join(","), per_page: Math.min(100, ids.length), status: "publish" },
+      // Na bezpečné overenie ceny a identity nepotrebujeme celé Woo objekty
+      // s obrázkami, popismi a meta údajmi. Menšia odpoveď skracuje pokladňu
+      // a súčasne ponecháva cenu výhradne pod kontrolou servera.
+      query: {
+        include: ids.join(","),
+        per_page: Math.min(100, ids.length),
+        status: "publish",
+        _fields: "id,sku,name,price,status",
+      },
     })
     : [];
   const liveById = new Map((Array.isArray(liveProducts) ? liveProducts : []).map((product) => [String(product.id), product]));

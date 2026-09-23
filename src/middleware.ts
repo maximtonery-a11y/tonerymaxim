@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { startOrderWorker } from './lib/order-worker-start';
 import { ensureTonerCareWorkerStarted } from './lib/toner-care';
 import { ensureEmailQueueStarted } from './lib/email-queue';
 import { ensureFirmwareInfoWorkerStarted } from './lib/firmware-info';
@@ -153,6 +154,9 @@ function finish(response: Response, url: URL, request?: Request): Response {
 }
 
 export const onRequest = defineMiddleware(async ({ request, url }, next) => {
+  // Obnova čakajúcich objednávok sa aktivuje neblokujúco aj pri healthchecku.
+  // Vďaka tomu prežije fronta redeploy bez potreby novej objednávky.
+  startOrderWorker();
   // Healthcheck zostáva úplne ľahký. Prvá bežná požiadavka spustí neblokujúci
   // denný worker; globálny zámok zabráni ďalším časovačom v tom istom procese.
   if (!['/api/health', '/api/readiness', '/api/storefront-check'].includes(url.pathname)) {

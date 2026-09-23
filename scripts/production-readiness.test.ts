@@ -231,7 +231,7 @@ test("healthcheck nikdy nenačítava katalóg, search index ani background worke
   assert.match(middleware, /ensureEmailQueueStarted/);
   assert.doesNotMatch(middleware, /ensureAsyncOrderQueueStarted/);
   assert.match(middleware, /TM_DISABLE_BACKGROUND_WORKERS/);
-  assert.match(queue, /processAsyncOrderQueue\(\)\.catch/);
+  assert.match(queue, /createEarliestTask\(processAsyncOrderQueue,/);
   assert.doesNotMatch(adsRuntime, /readFileSync\([^)]*products\.json/);
   assert.match(adsRuntime, /await getProductsCache\(\)/);
   const safeReader=adsRuntime.slice(adsRuntime.indexOf('export async function calculateAdsIntelligence('));

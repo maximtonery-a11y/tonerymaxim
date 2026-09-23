@@ -1817,6 +1817,9 @@ import { orderFulfilmentText } from "../lib/product-availability.ts";
     // Rýchle kliknutie po otvorení pokladne nesmie predbehnúť načítanie
     // automatickej vernostnej odmeny.
     if (tmLoyaltyLoadPromise) await tmLoyaltyLoadPromise.catch(() => {});
+    // Kým prvý handler čakal na vernostné údaje, druhý klik mohol vstúpiť
+    // do rovnakej vetvy. Zámku preto kontrolujeme znova po await.
+    if (tmOrderSubmitting) return;
     const status = document.querySelector("[data-order-status]");
     renderCheckoutSummary();
 
