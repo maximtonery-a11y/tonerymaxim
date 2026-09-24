@@ -67,7 +67,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (shortPrinter) add('PRINTER_SEARCH');
   if (/(pasuje|kompatibil|do (nej|tlaciarne)|aky toner)/.test(n)) add('COMPATIBILITY');
   if (/(original.*kompat|kompat.*original|porovnaj|rozdiel)/.test(n)) add('PRODUCT_COMPARE');
-  if (/(cierny|black|cyan|magenta|yellow|zlty|originalny|renovovany|kompatibilny)/.test(n)) add('COLOR_TYPE_FILTER');
+  if (/(cierny|black|cyan|magenta|yellow|zlty|original\w*|renov\w*|repas\w*|kompatibil\w*)/.test(n)) add('COLOR_TYPE_FILTER');
   const cartMutationForbidden = forbidsCartMutation(message);
   const explicitBuy = !cartMutationForbidden && (/\b(?:chcem\s+(?:kupit|objednat|zobrat)|kupim|kupit|zoberiem|zobrat|pridaj|objednaj|daj\s+mi)\b/.test(n)
     || (Boolean(sharedCatalogReference || printer.test(message) || state.lastProductQuery) && /\bchcem\b/.test(n)));
@@ -79,7 +79,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (/(zopak|ako naposledy|posli ako naposledy|posledn.*objednav)/.test(n)) add('ORDER_REPEAT');
   if (/(ako|preco|kolko stran|vydrz|vytaznost|pasy|pruhy|ciary|smuhy|slaba tlac|cip)/.test(n)) add('ADVICE');
   if (/(reklam|vraten|odstup|registr|vernost|obchodne podmienky)/.test(n)) add('POLICY');
-  if (!serviceQuestion && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (/(ten|ho|ich|do nej|a original|a kompatibil|a renov|originalny|kompatibilny|renovovany|renovovanu|renovovany|repasovany|je skladom|kolko stran|chcem|zoberiem|pridaj|\bkus(?:y|ov)?\b|\bks\b|kosik|pokladn)/.test(n) || pendingAnswer)) add('FOLLOW_UP');
+  if (!serviceQuestion && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (/(ten|ho|ich|do nej|a original|a kompatibil|a renov|original\w*|kompatibil\w*|renov\w*|repas\w*|je skladom|kolko stran|chcem|zoberiem|pridaj|\bkus(?:y|ov)?\b|\bks\b|kosik|pokladn)/.test(n) || pendingAnswer)) add('FOLLOW_UP');
   if (!intents.length) add('UNKNOWN');
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];
   // Pri presnom kalendárovom SKU posielame katalógu iba kód. Celá veta

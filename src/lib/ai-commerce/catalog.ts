@@ -182,15 +182,33 @@ export async function resolveCommerceProducts(query: string) {
   // implementácia ho síce vypočítala, ale následne omylom zobrazila širší
   // výsledok textového vyhľadávania. To pridávalo produkty pre podobné modely
   // a pri veľkých rodinách časť správnych produktov vynechalo.
-  const exact = printer.length ? [] : findExactProductIdentityMatches(loose, query).map(m => m.product)
+  const exactIdentity = printer.length ? [] : findExactProductIdentityMatches(loose, query).map(m => m.product)
     .filter(isValidOffer).filter((product: any) => !isPrinterDevice(product));
+  // Pri presnom OEM kóde doplníme rovnocenné typy pre tie isté tlačiarne.
+  // Typický príklad: kompatibilný/renovovaný Samsung MLT-D111L a originálny
+  // MLT-D111S majú odlišnú koncovku, ale patria k rovnakým modelom. Bez tohto
+  // rozšírenia AI originál v ponuke vôbec neukázala.
+  const exactPrinterKeys = new Set(exactIdentity.flatMap((product: any) => productPrinterValues(product).map(compactPrinterKey)).filter(Boolean));
+  const exactColors = new Set(exactIdentity.map((product: any) => productColor(product)).filter(Boolean));
+  const exactTypes = new Set(exactIdentity.map((product:any)=>productType(product)).filter(Boolean));
+  const isConsumableOffer = (product:any) => {
+    const text=`${product?.name||''} ${product?.product_type_label||''}`.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    return !isPrinterDevice(product) && !/\b(valec|optick|drum|fuser|fixac|prenosov.*pas|transfer.*belt|odpadov)/i.test(text);
+  };
+  const equivalentTypes = exactPrinterKeys.size ? allProducts.filter((product:any) => {
+    if(!isValidOffer(product)||!isConsumableOffer(product))return false;
+    // Rozšírenie slúži iba na doplnenie chýbajúceho typu. Varianty typu,
+    // ktorý už presný OEM výsledok obsahuje, nesmieme rozšíriť o inú kapacitu.
+    if(exactTypes.has(productType(product)))return false;
+    const color=productColor(product);
+    if(exactColors.size&&color&&!exactColors.has(color))return false;
+    return productPrinterValues(product).some((printer)=>exactPrinterKeys.has(compactPrinterKey(printer)));
+  }) : [];
+  const exact = [...new Map([...exactIdentity,...equivalentTypes].map((product:any)=>[String(product.id),product])).values()];
   const fallback = !printer.length && !exact.length
     ? loose.filter(isValidOffer).filter((product: any) => !isPrinterDevice(product))
     : [];
-  const isConsumable = (p:any) => {
-    const text=`${p?.name||''} ${p?.product_type_label||''}`.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    return !isPrinterDevice(p) && !/\b(valec|optick|drum|fuser|fixac|prenosov.*pas|transfer.*belt|odpadov)/i.test(text);
-  };
+  const isConsumable = isConsumableOffer;
   const matched = printer.length ? printer : exact.length ? exact : fallback;
   const consumables = matched.filter(isConsumable);
   // Pri modeli tlačiarne odpovedáme na otázku o náplniach, preto optický

@@ -5,6 +5,7 @@ import { resolveCommerceProducts } from '../src/lib/ai-commerce/catalog.ts';
 import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
 import { emptyCommerceState } from '../src/lib/ai-commerce/domain.ts';
 import { POST as aiTomasPost } from '../src/pages/api/ai-tomas.ts';
+import { productPrinterValues } from '../src/lib/catalog-query.ts';
 
 const cases = [
   'Canon CL586',
@@ -31,7 +32,8 @@ test('AI používa rovnaké katalógové zhody ako vyhľadávanie', async () => 
     assert.ok(search.length > 0, `vyhľadávanie: ${query}`);
     assert.ok(ai.products.length > 0, `AI: ${query}`);
     const searchIds = new Set(search.map(product => String(product.id)));
-    assert.ok(ai.products.every(product => searchIds.has(String(product.id))), `parita: ${query}`);
+    const printerKeys = new Set(search.flatMap(product=>productPrinterValues(product)).map(value=>String(value).toLocaleLowerCase('sk-SK').replace(/[^a-z0-9]/g,'')));
+    assert.ok(ai.products.every(product => searchIds.has(String(product.id)) || product.compatible_printers.some(printer=>printerKeys.has(String(printer).toLocaleLowerCase('sk-SK').replace(/[^a-z0-9]/g,'')))), `parita alebo rovnaka tlaciaren: ${query}`);
   }
 });
 
@@ -57,7 +59,7 @@ test('servisné čísla a všeobecná tonerová otázka nespustia katalóg', () 
   }
 });
 
-test('Epson WF-6090 najprv vyžiada typ a potom zobrazí celú kompatibilnú ponuku',async()=>{
+test('Epson WF-6090 zobrazí všetky typy naraz a umožní ich následne filtrovať',async()=>{
  const firstResponse=await aiTomasPost({request:new Request('http://localhost/api/ai-tomas',{
   method:'POST',headers:{'Content-Type':'application/json'},
   body:JSON.stringify({message:'Hľadám náplne do tlačiarne Epson WF-6090',page:'/'})
@@ -65,14 +67,14 @@ test('Epson WF-6090 najprv vyžiada typ a potom zobrazí celú kompatibilnú pon
  assert.equal(firstResponse.status,200);
  const first=await firstResponse.json() as any;
  assert.equal(first.route.productQuery,'Epson WF-6090');
- assert.equal(first.action?.kind,'ASK_PRODUCT_TYPE');
- assert.deepEqual(first.action.options,['compatible','original']);
- assert.equal(first.commerce,null);
- assert.match(first.advisor.answer.join(' '),/kompatibilné.*originálne.*atramentové náplne/i);
+ assert.notEqual(first.action?.kind,'ASK_PRODUCT_TYPE');
+ assert.ok(first.commerce?.products?.some((product:any)=>product.type==='compatible'));
+ assert.ok(first.commerce?.products?.some((product:any)=>product.type==='original'));
+ assert.equal(first.state.cart.length,0);
 
  const secondResponse=await aiTomasPost({request:new Request('http://localhost/api/ai-tomas',{
   method:'POST',headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({message:'Kompatibilné',page:'/',state:first.state})
+  body:JSON.stringify({message:'Zobraz kompatibilné',page:'/',state:first.state})
  })} as any);
  assert.equal(secondResponse.status,200);
  const second=await secondResponse.json() as any;
@@ -86,7 +88,7 @@ test('Epson WF-6090 najprv vyžiada typ a potom zobrazí celú kompatibilnú pon
 
  const originalResponse=await aiTomasPost({request:new Request('http://localhost/api/ai-tomas',{
   method:'POST',headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({message:'Originálne',page:'/',state:first.state})
+  body:JSON.stringify({message:'Zobraz originálne',page:'/',state:first.state})
  })} as any);
  const original=await originalResponse.json() as any;
  assert.equal(originalResponse.status,200);

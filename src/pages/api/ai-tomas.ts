@@ -66,6 +66,12 @@ export function samePrinterModel(first:unknown,second:unknown){const a=printerId
 function slovakJoin(values:string[]){return values.length<2?values.join(''):values.length===2?`${values[0]} alebo ${values[1]}`:`${values.slice(0,-1).join(', ')} alebo ${values.at(-1)}`;}
 function productMaterial(products:any[]){const text=normalized(products.map((p:any)=>`${p?.name||''} ${p?.product_type_label||''}`).join(' '));if(/atrament|ink|cartridge|kazet/.test(text))return'atramentové náplne';if(/toner/.test(text))return'tonery';return'produkty';}
 function typePlural(type:string){return type==='compatible'?'kompatibilné':type==='original'?'originálne':type==='renovated'?'renovované':type;}
+function ambiguousNumericReference(message:string){
+  const n=normalized(message);
+  return /(?:^|\s)711(?:\s|[.,!?]|$)/.test(n)
+    && !/\b(?:hp|canon|brother|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell)\b/.test(n)
+    && !/\b(?:sku|kod\s+produktu)\s*[:#-]?\s*711\b/.test(n);
+}
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json().catch(() => ({}));
@@ -75,6 +81,12 @@ export const POST: APIRoute = async ({ request }) => {
     const cartBeforeRequest=state.cart.map((item:any)=>({...item}));
     const route = routeCommerceMessage(message,state);
     const page = clean(body?.page,300) || '/';
+    if(ambiguousNumericReference(message)){
+      const answer='Označenie 711 nie je bez značky alebo modelu tlačiarne jednoznačné. Napíšte, prosím, výrobcu a model tlačiarne alebo celý kód náplne (napríklad HP 711). Podľa interného SKU hádať nebudem.';
+      state.lastIntent='ADVICE';state.lastProductQuery=null;state.currentType=null;state.currentColor=null;state.currentPrinter=null;state.currentProductId=null;state.selectedProductId=null;state.pendingQuestion=null;
+      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
+      return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRODUCT'}},{headers:{'Cache-Control':'no-store'}});
+    }
     if (isGeneralDiaryQuestion(message)) {
       const answer = [
         'V ponuke máme štyri typy diárov: denné diáre, týždenné diáre, mesačné diáre a minidiáre.',
@@ -192,7 +204,11 @@ export const POST: APIRoute = async ({ request }) => {
     // vypredaná. Zákazník ju musí vidieť s pravdivou dostupnosťou; iba vloženie
     // do košíka zostáva obmedzené funkciou canBuy.
     const availableTypes=[...new Set(candidates.map((p:any)=>p.type).filter(Boolean))];
-    if(route.needsProducts&&candidates.length&&availableTypes.length>1&&!type&&!state.currentType){
+    // Pri bežnom hľadaní zobrazíme všetky dostupné typy naraz. Samostatnú
+    // otázku na typ potrebujeme iba pri príkaze na nákup, keď by automatický
+    // výber kompatibilného/originálneho/renovovaného produktu nebol bezpečný.
+    const requiresTypeBeforePurchase=route.intents.includes('BUY_INTENT')||Boolean(requestedQuantity(message));
+    if(route.needsProducts&&candidates.length&&availableTypes.length>1&&!type&&!state.currentType&&requiresTypeBeforePurchase){
       const savedQty=requestedQuantity(message);state.pendingQuestion='product_type';state.checkoutDraft={...(state.checkoutDraft||{}),guidedQuantity:savedQty||null};
       state.checkoutDraft={...(state.checkoutDraft||{}),guidedSet:wantsCompleteSet(message)};
       const options=['compatible','original','renovated'].filter(productType=>availableTypes.includes(productType));

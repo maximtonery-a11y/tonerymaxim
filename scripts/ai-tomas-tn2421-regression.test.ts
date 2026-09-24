@@ -48,17 +48,14 @@ test('Máte tonery na sklade → Potrebujem toner TN2421',async()=>{
   const second=await ask('Potrebujem toner TN2421',first.state);
   // Katalóg stále dostáva celý pôvodný dopyt; oprava mení iba text odpovede.
   assert.equal(second.route.productQuery,'Potrebujem toner TN2421');
-  assert.equal(second.action?.kind,'ASK_PRODUCT_TYPE');
-  assert.deepEqual(second.action.options,['compatible','original','renovated']);
-  assert.deepEqual(second.action.counts,{compatible:1,original:1,renovated:1});
-  assert.match(second.advisor.answer.join(' '),/^Pre TN2421 máme v ponuke kompatibilné, originálne alebo renovované tonery\./);
-  assert.doesNotMatch(second.advisor.answer.join(' '),/Pre Potrebujem toner/i);
+  assert.notEqual(second.action?.kind,'ASK_PRODUCT_TYPE');
+  assert.deepEqual([...new Set(second.commerce.products.map((product:any)=>product.type))],['compatible','original','renovated']);
+  assert.equal(second.state.cart.length,0);
 
   for(const [answer,type] of [['Kompatibilné','compatible'],['Originálne','original'],['Renovované','renovated']] as const){
-    const selected=await ask(answer,second.state);
+    const selected=await ask(`Zobraz ${answer.toLocaleLowerCase('sk-SK')}`,second.state);
     assert.equal(selected.state.currentType,type);
-    assert.match(selected.advisor.answer.join(' '),/pre TN2421\./i);
-    assert.doesNotMatch(selected.advisor.answer.join(' '),/pre Potrebujem toner/i);
+    assert.equal(selected.commerce?.queryLabel,'TN2421');
     assert.equal(selected.commerce?.products?.length,1);
     assert.ok(selected.commerce.products.every((product:any)=>product.type===type));
     assert.ok(selected.commerce.products.every((product:any)=>/TN2421/i.test(`${product.name} ${product.sku}`)));
@@ -67,9 +64,10 @@ test('Máte tonery na sklade → Potrebujem toner TN2421',async()=>{
 
 test('TN2421 → kalendáre → Potrebujem toner TN2421 zachová čisté označenie',async()=>{
   const toner=await ask('Potrebujem toner TN2421');
-  assert.equal(toner.action?.kind,'ASK_PRODUCT_TYPE');
+  assert.notEqual(toner.action?.kind,'ASK_PRODUCT_TYPE');
+  assert.deepEqual([...new Set(toner.commerce.products.map((product:any)=>product.type))],['compatible','original','renovated']);
 
-  const compatible=await ask('Kompatibilné',toner.state);
+  const compatible=await ask('Zobraz kompatibilné',toner.state);
   assert.equal(compatible.commerce?.queryLabel,'TN2421');
 
   // Zmena sortimentu musí starý tonerový kontext vyčistiť.
@@ -77,11 +75,10 @@ test('TN2421 → kalendáre → Potrebujem toner TN2421 zachová čisté označe
   assert.equal(calendars.state.lastProductQuery,null);
 
   const tonerAgain=await ask('Potrebujem toner TN2421',calendars.state);
-  assert.equal(tonerAgain.action?.kind,'ASK_PRODUCT_TYPE');
-  assert.match(tonerAgain.advisor.answer.join(' '),/^Pre TN2421 /);
+  assert.notEqual(tonerAgain.action?.kind,'ASK_PRODUCT_TYPE');
+  assert.deepEqual([...new Set(tonerAgain.commerce.products.map((product:any)=>product.type))],['compatible','original','renovated']);
 
-  const compatibleAgain=await ask('Kompatibilné',tonerAgain.state);
+  const compatibleAgain=await ask('Zobraz kompatibilné',tonerAgain.state);
   assert.equal(compatibleAgain.commerce?.queryLabel,'TN2421');
-  assert.match(compatibleAgain.advisor.answer.join(' '),/pre TN2421\./i);
   assert.doesNotMatch(JSON.stringify(compatibleAgain),/pre Potrebujem toner TN2421/i);
 });
