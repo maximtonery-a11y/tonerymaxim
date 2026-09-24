@@ -48,6 +48,26 @@ test("zmena na dobierku overí GoPay a upraví pôvodnú objednávku", async () 
   assert.match(changeApi, /updateWooOrderPayment/);
 });
 
+test("po zmene platby sa zákazníkovi vždy vráti číslo ToneryMAXIM, nie interné Woo ID", async () => {
+  const changeApi = await read("src/pages/api/gopay-change-payment.ts");
+  assert.match(changeApi, /orderNumber:\s*pending\.orderNumber/);
+  assert.match(changeApi, /const orderNumber\s*=\s*updatedSource\.orderNumber/);
+  assert.doesNotMatch(changeApi, /orderNumber:\s*pending\.wooOrderNumber\s*\|\|\s*pending\.orderNumber/);
+  assert.doesNotMatch(changeApi, /orderNumber\s*=\s*woo\.orderNumber\s*\|\|\s*orderNumber/);
+});
+
+test("stavový e-mail po zmene platby používa aktualizovanú platbu, poplatok a celkovú sumu", async () => {
+  const checkoutOrder = await read("src/lib/checkout-order.ts");
+  const emailQueue = await read("src/lib/email-queue.ts");
+  assert.match(checkoutOrder, /function orderSnapshot\(/);
+  assert.match(checkoutOrder, /tm_order_snapshot[\s\S]*orderSnapshot\(source, payment\.title\)/);
+  assert.match(checkoutOrder, /tm_payment_amount_cents[\s\S]*source\.amountCents/);
+  assert.match(checkoutOrder, /tm_order_total_gross[\s\S]*source\.total/);
+  assert.match(emailQueue, /snapshot\?\.paymentLabel\s*\|\|\s*order\.payment_method_title/);
+  assert.match(emailQueue, /snapshot\?\.total\s*\?\?\s*order\.total/);
+  assert.match(emailQueue, /snapshot\?\.paymentPrice\s*\?\?\s*0/);
+});
+
 test("oneskorená GoPay notifikácia po zmene platby nevytvorí druhú objednávku", async () => {
   const checkoutOrder = await read("src/lib/checkout-order.ts");
   const statusApi = await read("src/pages/api/gopay-status.ts");

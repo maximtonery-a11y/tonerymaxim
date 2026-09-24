@@ -353,6 +353,44 @@ function shippingLine(source: CheckoutOrderSource, taxRateId = 0) {
   };
 }
 
+function orderSnapshot(source: CheckoutOrderSource, paymentTitle: string) {
+  return {
+    version: 2,
+    orderNumber: source.orderNumber,
+    currency: source.currency || "EUR",
+    originalSubtotal: money(source.originalSubtotal),
+    quantityDiscount: money(source.quantityDiscount),
+    subtotal: money(source.subtotal),
+    couponDiscount: money(source.coupon?.discount),
+    couponCode: String(source.coupon?.code || ""),
+    couponLabel: String(source.coupon?.label || "Kupónová zľava"),
+    loyaltyDiscount: money(source.loyaltyDiscount),
+    loyaltyPointsUsed: Number(source.loyaltyPointsUsed || 0),
+    shippingPrice: money(source.shippingPrice),
+    shippingLabel: source.shippingLabel || "",
+    paymentPrice: money(source.paymentPrice),
+    paymentCode: source.paymentCode || "",
+    paymentLabel: paymentTitle || source.paymentLabel || "",
+    total: money(source.total),
+    billing: source.billing || {},
+    delivery: source.delivery || {},
+    contact: source.contact || {},
+    orderNote: source.orderNote || "",
+    heurekaConsent: source.heurekaConsent === true,
+    heurekaConsentAt: source.heurekaConsentAt || "",
+    items: source.cart.map((item) => ({
+      name: item.name,
+      sku: item.sku,
+      qty: item.qty,
+      unitGross: money(item.price),
+      originalGross: money(item.price * item.qty),
+      discountRate: discountRate(item),
+      discountGross: money(item.price * item.qty - discountedLineTotal(item)),
+      totalGross: discountedLineTotal(item),
+    })),
+  };
+}
+
 function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: boolean, payment: ReturnType<typeof wooPaymentMethod>) {
   const p = selectedPickup(source);
   const pickupText = pickupLabel(source);
@@ -422,41 +460,7 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     );
   }
 
-  const snapshot = {
-    version: 2,
-    orderNumber: source.orderNumber,
-    currency: source.currency || "EUR",
-    originalSubtotal: money(source.originalSubtotal),
-    quantityDiscount: money(source.quantityDiscount),
-    subtotal: money(source.subtotal),
-    couponDiscount: money(source.coupon?.discount),
-    couponCode: String(source.coupon?.code || ""),
-    couponLabel: String(source.coupon?.label || "Kupónová zľava"),
-    loyaltyDiscount: money(source.loyaltyDiscount),
-    loyaltyPointsUsed: Number(source.loyaltyPointsUsed || 0),
-    shippingPrice: money(source.shippingPrice),
-    shippingLabel: source.shippingLabel || "",
-    paymentPrice: money(source.paymentPrice),
-    paymentCode: source.paymentCode || "",
-    paymentLabel: payment.title || source.paymentLabel || "",
-    total: money(source.total),
-    billing: source.billing || {},
-    delivery: source.delivery || {},
-    contact: source.contact || {},
-    orderNote: source.orderNote || "",
-    heurekaConsent: source.heurekaConsent === true,
-    heurekaConsentAt: source.heurekaConsentAt || "",
-    items: source.cart.map((item) => ({
-      name: item.name,
-      sku: item.sku,
-      qty: item.qty,
-      unitGross: money(item.price),
-      originalGross: money(item.price * item.qty),
-      discountRate: discountRate(item),
-      discountGross: money(item.price * item.qty - discountedLineTotal(item)),
-      totalGross: discountedLineTotal(item),
-    })),
-  };
+  const snapshot = orderSnapshot(source, payment.title);
   meta.push({ key: "tm_order_snapshot", value: JSON.stringify(snapshot) });
   return meta.filter((item) => item.value !== undefined && item.value !== null && String(item.value).trim() !== "");
 }
@@ -865,6 +869,12 @@ export async function updateWooOrderPayment(source: CheckoutOrderSource, orderId
       meta_data: [
         { key: "tm_payment_code", value: source.paymentCode },
         { key: "tm_payment_title", value: payment.title },
+        { key: "tm_payment_amount_cents", value: String(source.amountCents || "") },
+        { key: "tm_order_total_gross", value: money(source.total).toFixed(2) },
+        // Stavový e-mail číta tento snapshot prednostne pred Woo poliami.
+        // Pri zmene z GoPay na dobierku/prevod preto musí dostať aktuálnu
+        // platbu, poplatok aj celkovú sumu pôvodnej objednávky.
+        { key: "tm_order_snapshot", value: JSON.stringify(orderSnapshot(source, payment.title)) },
         { key: "gopay_state", value: "CONVERTED_TO_OFFLINE" },
         { key: "tm_gopay_converted_at", value: new Date().toISOString() },
       ],

@@ -43,7 +43,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return json({
         ok: true,
         orderId: Number(pending.wooOrderId || 0) || pending.orderNumber,
-        orderNumber: pending.wooOrderNumber || pending.orderNumber,
+        // Zákazníkovi vždy zobrazujeme číslo ToneryMAXIM. Woo číslo je iba
+        // interný identifikátor a nesmie sa dostať do URL ani potvrdenia.
+        orderNumber: pending.orderNumber,
         payment: paymentCode,
         replayed: true,
       });
@@ -89,13 +91,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
 
       const orderId = Number(queue.orderId || updatedSource.wooOrderId || 0);
-      let orderNumber = updatedSource.orderNumber;
+      const orderNumber = updatedSource.orderNumber;
       if (orderId > 0) {
         const woo = await updateWooOrderPayment(updatedSource, orderId);
         updatedSource.wooOrderId = woo.orderId;
         updatedSource.wooOrderNumber = woo.orderNumber;
         updatedSource.convertedPaymentFeeLineIds = woo.paymentFeeLineIds;
-        orderNumber = woo.orderNumber || orderNumber;
       }
       await savePendingGoPayOrder(updatedSource);
 
