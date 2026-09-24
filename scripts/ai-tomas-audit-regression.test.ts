@@ -39,13 +39,12 @@ test('server pri zákaze zachová aj existujúci košík',async()=>{
   assert.match(result.advisor.answer.join(' '),/nič som nepridal/i);
 });
 
-test('požiadavka na CRG-069H sadu pridá presne BK C M Y',async()=>{
+test('AI nevytvorí CRG-069H sadu zo štyroch samostatných tonerov',async()=>{
   const result=await askApi('Pridaj 1 kompletnú kompatibilnú vysokokapacitnú Canon CRG-069H CMYK sadu do košíka.');
-  assert.equal(result.action?.kind,'ADD_BUNDLE_TO_CART');
-  assert.equal(result.action.products.length,4);
-  assert.deepEqual(new Set(result.action.products.map((p:any)=>p.color)),new Set(['black','cyan','magenta','yellow']));
-  assert.equal(result.state.cart.length,4);
-  assert.notEqual(result.action.products.length,1);
+  assert.notEqual(result.action?.kind,'ADD_BUNDLE_TO_CART');
+  assert.equal(result.action,null);
+  assert.equal(result.state.cart.length,0);
+  assert.match(result.advisor.answer.join(' '),/katalógový produkt|nespojil do falošnej sady/i);
 });
 
 test('hotová katalógová CMYK sada nie je jednotlivá farba ani duplikát',async()=>{
@@ -92,9 +91,12 @@ test('otázka na IČO vráti identitu predávajúceho',async()=>{
   assert.match(result.answer.join(' '),/IČO 37 328 344/);
 });
 
-test('prehliadač pozná balík a druhú poistku zákazu košíka',async()=>{
-  const source=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
-  assert.match(source,/ADD_BUNDLE_TO_CART/);
+test('server nevytvára skladané balíky a prehliadač zachová poistku zákazu košíka',async()=>{
+  const [source,api]=await Promise.all([
+    readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8'),
+    readFile(new URL('../src/pages/api/ai-tomas.ts',import.meta.url),'utf8'),
+  ]);
+  assert.doesNotMatch(api,/ADD_BUNDLE_TO_CART/);
   assert.match(source,/forbidsCartMutation\(question\)/);
   assert.match(source,/state\.cart=uiCartBefore/);
 });

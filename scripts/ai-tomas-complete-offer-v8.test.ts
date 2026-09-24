@@ -48,7 +48,49 @@ test('offer UI uses compact rows and keeps desktop plus mobile layouts',async()=
   assert.match(script,/tm-ai-card-main/);
   assert.match(script,/tm-ai-card-side/);
   assert.match(script,/Detail produktu/);
-  assert.match(css,/grid-template-columns:96px minmax\(0,1fr\) 190px/);
+  assert.match(css,/grid-template-columns:96px minmax\(0,1fr\) 210px/);
+  assert.match(css,/\.tm-ai-discovery:not\(\.is-calendar-list\) \.tm-ai-product-card>div\{margin-top:0!important\}/);
+  assert.match(css,/\.tm-ai-card-side \.tm-ai-card-actions\{display:grid;width:100%;grid-template-columns:1fr 1fr/);
   assert.match(css,/\.tm-ai-discovery:not\(\.is-calendar-list\) \.tm-ai-shop-products\{grid-template-columns:1fr!important/);
   assert.match(css,/@media\(max-width:760px\)[\s\S]*grid-template-columns:72px minmax\(0,1fr\)!important/);
+});
+
+test('offer summary does not call orderable products in-stock products',async()=>{
+  const script=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
+  assert.match(script,/V ponuke máme <strong>\$\{suitableProductsText\(available\.length\)\}<\/strong>\. Produkty skladom/);
+  assert.doesNotMatch(script,/Na sklade máme <strong>\$\{suitableProductsText\(available\.length\)\}/);
+});
+
+test('V9 renders only real catalog sets and never assembled four-color bundles',async()=>{
+  const [script,api]=await Promise.all([
+    readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8'),
+    readFile(new URL('../src/pages/api/ai-tomas.ts',import.meta.url),'utf8'),
+  ]);
+  assert.match(script,/set\?\.packageKind==='catalog'&&Array\.isArray\(set\.products\)&&set\.products\.length===1/);
+  assert.doesNotMatch(script,/set\.products\.length===4\|\|/);
+  assert.doesNotMatch(api,/ADD_BUNDLE_TO_CART/);
+  assert.match(api,/Jednotlivé farby som nespojil do falošnej sady/);
+});
+
+test('V9 API never exposes an assembled set in presentation data',async()=>{
+  const data=await ask('Hľadám Brother BT6000/BT5000 CMYK kompatibilnú sadu, nič nepridávaj do košíka.');
+  const sets=data.commerce?.presentation?.sets||[];
+  assert.ok(sets.length>0,'BT6000/BT5000 má obsahovať reálnu katalógovú sadu');
+  assert.ok(sets.every((set:any)=>set.packageKind==='catalog'&&set.products.length===1));
+  assert.equal(sets.some((set:any)=>set.products.length===4),false);
+  assert.equal(data.state.cart.length,0);
+});
+
+test('V9 locks mobile panel to visual viewport and compacts frequent purchases',async()=>{
+  const [script,css]=await Promise.all([
+    readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8'),
+    readFile(new URL('../src/styles/ai-sales-assistant.css',import.meta.url),'utf8'),
+  ]);
+  assert.match(script,/visualViewport\.offsetTop/);
+  assert.match(script,/--tm-ai-visual-top/);
+  assert.match(script,/setTimeout\(updateViewportState,260\)/);
+  assert.match(css,/top:var\(--tm-ai-visual-top,0px\)!important/);
+  assert.match(css,/\.tm-ai-assistant\.has-keyboard \.tm-ai-livecart\{display:none!important\}/);
+  assert.match(css,/\.tm-ai-frequent>div\{display:flex!important/);
+  assert.match(css,/flex:0 0 min\(76vw,270px\)!important/);
 });

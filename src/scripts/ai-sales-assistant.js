@@ -122,7 +122,9 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
   function updateViewportState() {
     if (!window.visualViewport) return;
     const viewportHeight = Math.round(window.visualViewport.height);
+    const viewportTop = Math.max(0, Math.round(window.visualViewport.offsetTop || 0));
     root.style.setProperty('--tm-ai-visual-height', `${viewportHeight}px`);
+    root.style.setProperty('--tm-ai-visual-top', `${viewportTop}px`);
     root.classList.toggle('has-keyboard', mobileQuery.matches && window.innerHeight - viewportHeight > 150);
   }
 
@@ -364,6 +366,12 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
 
   window.visualViewport?.addEventListener('resize', updateViewportState);
   window.visualViewport?.addEventListener('scroll', updateViewportState);
+  input?.addEventListener('focus',()=>{
+    updateViewportState();
+    window.setTimeout(updateViewportState,80);
+    window.setTimeout(updateViewportState,260);
+  });
+  input?.addEventListener('blur',()=>window.setTimeout(updateViewportState,120));
   updateViewportState();
 
 
@@ -502,10 +510,12 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
     // namiesto „Potrebujem toner TN2421“). lastQuestion je iba záloha pre
     // staršiu odpoveď API.
     const query=escapeHtml(data?.queryLabel||state.lastQuestion||'túto tlačiareň');
-    addMessage('bot',`<div class="tm-ai-offer-summary"><b>Overil som aktuálnu ponuku pre ${query}.</b><p>${available.length?`Na sklade máme <strong>${suitableProductsText(available.length)}</strong> a ${dispatchSentence()}.`:'Momentálne nemáme vhodný produkt skladom.'}${unavailable.length?` V ponuke máme aj <strong>${unavailableProductsText(unavailable.length)}</strong>; ich dostupnosť vám vieme zistiť.`:''}</p><div class="tm-ai-summary-actions"><a href="${escapeHtml(webResultsUrl(all))}">Zobraziť všetky na webe</a></div></div>`,{scroll:false});
+    addMessage('bot',`<div class="tm-ai-offer-summary"><b>Overil som aktuálnu ponuku pre ${query}.</b><p>${available.length?`V ponuke máme <strong>${suitableProductsText(available.length)}</strong>. Produkty skladom ${dispatchSentence()}.`:'Momentálne nemáme vhodný produkt, ktorý je možné objednať.'}${unavailable.length?` V ponuke máme aj <strong>${unavailableProductsText(unavailable.length)}</strong>; ich dostupnosť vám vieme zistiť.`:''}</p><div class="tm-ai-summary-actions"><a href="${escapeHtml(webResultsUrl(all))}">Zobraziť všetky na webe</a></div></div>`,{scroll:false});
     const colorPrinter=Boolean(data?.presentation?.isColorPrinter) || [...new Set(all.map(aiColor).filter(Boolean))].length>=3;
     if(colorPrinter){
-      const sets=Array.isArray(data?.presentation?.sets)?data.presentation.sets.filter(set=>Array.isArray(set.products)&&(set.products.length===4||(set.packageKind==='catalog'&&set.products.length===1))):[];
+      // Sada je iba reálny katalógový produkt. AI už nikdy neskladá virtuálnu
+      // CMYK sadu zo štyroch samostatných tonerov.
+      const sets=Array.isArray(data?.presentation?.sets)?data.presentation.sets.filter(set=>set?.packageKind==='catalog'&&Array.isArray(set.products)&&set.products.length===1):[];
       const typeOrder=['compatible','original','renovated'],colorOrder=['black','cyan','magenta','yellow'];
       const singleGroups=typeOrder.map(type=>({type,products:available.filter(p=>aiType(p)===type&&aiColor(p)&&p?.package_shape!=='set').sort((a,b)=>Number(isHighCapacity(a))-Number(isHighCapacity(b))||colorOrder.indexOf(aiColor(a))-colorOrder.indexOf(aiColor(b))||Number(a.price)-Number(b.price))})).filter(group=>group.products.length);
       const singles=singleGroups.flatMap(group=>group.products);

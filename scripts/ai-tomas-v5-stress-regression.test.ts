@@ -45,20 +45,19 @@ const syntheticSetRequests=[
   'Pridaj kompletnú 4-farebnú kompatibilnú sadu CRG-069H.',
 ];
 
-for(const [index,message] of syntheticSetRequests.entries())test(`skladaná CMYK sada ${index+1}`,async()=>{
+for(const [index,message] of syntheticSetRequests.entries())test(`virtuálna CMYK sada sa nevytvorí ${index+1}`,async()=>{
   const result=await ask(message,emptyCommerceState(`set-${index}`));
-  assert.equal(result.action?.kind,'ADD_BUNDLE_TO_CART',message);
-  assert.equal(result.action.products.length,4,message);
-  assert.deepEqual(new Set(result.action.products.map((p:any)=>p.color)),new Set(['black','cyan','magenta','yellow']),message);
-  assert.equal(result.state.cart.length,4,message);
+  assert.notEqual(result.action?.kind,'ADD_BUNDLE_TO_CART',message);
+  assert.equal(result.action,null,message);
+  assert.equal(result.state.cart.length,0,message);
+  assert.match(result.advisor.answer.join(' '),/katalógový produkt|nespojil do falošnej sady/i,message);
 });
 
-test('dve sady pridajú každú zo štyroch farieb v množstve 2',async()=>{
+test('ani množstvo 2 nevytvorí virtuálnu sadu zo štyroch farieb',async()=>{
   const result=await ask('Pridaj 2 kompletné kompatibilné Canon CRG-069H CMYK sady do košíka.');
-  assert.equal(result.action?.kind,'ADD_BUNDLE_TO_CART');
-  assert.equal(result.action.quantity,2);
-  assert.equal(result.state.cart.length,4);
-  assert.ok(result.state.cart.every((line:any)=>line.quantity===2));
+  assert.notEqual(result.action?.kind,'ADD_BUNDLE_TO_CART');
+  assert.equal(result.action,null);
+  assert.equal(result.state.cart.length,0);
 });
 
 test('hotová katalógová CMYK sada sa pridá ako jeden reálny produkt',async()=>{

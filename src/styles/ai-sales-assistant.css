@@ -935,16 +935,17 @@
 
 /* V132 – jednoduchá úplná ponuka: jeden čitateľný riadok na každý typ. */
 .tm-ai-discovery:not(.is-calendar-list) .tm-ai-shop-products{grid-template-columns:1fr!important;gap:10px!important;max-width:none!important}
-.tm-ai-discovery:not(.is-calendar-list) .tm-ai-product-card{display:grid!important;grid-template-columns:96px minmax(0,1fr) 190px;align-items:stretch;min-height:126px;border-width:1px!important;border-left-width:5px!important;border-radius:13px!important;background:#fff!important}
+.tm-ai-discovery:not(.is-calendar-list) .tm-ai-product-card{display:grid!important;grid-template-columns:96px minmax(0,1fr) 210px;align-items:stretch;min-height:126px;border-width:1px!important;border-left-width:5px!important;border-radius:13px!important;background:#fff!important}
+.tm-ai-discovery:not(.is-calendar-list) .tm-ai-product-card>div{margin-top:0!important}
 .tm-ai-discovery:not(.is-calendar-list) .tm-ai-card-image{width:96px;height:100%!important;min-height:124px;border:0!important;border-right:1px solid #e4ebf3!important;background:#f8fafc!important}
 .tm-ai-discovery:not(.is-calendar-list) .tm-ai-card-image img{padding:12px!important}
 .tm-ai-card-image.is-empty:before{content:'▧';display:grid;place-items:center;height:100%;color:#b1bfd0;font-size:28px}
 .tm-ai-card-main{display:flex;min-width:0;flex-direction:column;justify-content:center;gap:7px;padding:14px 16px}
 .tm-ai-card-main>strong{color:#092a55;font-size:16px;line-height:1.3}
 .tm-ai-card-main>small{color:#667085;font-size:12px}
-.tm-ai-card-side{display:flex;min-width:0;flex-direction:column;align-items:flex-end;justify-content:center;gap:5px;padding:13px 14px;border-left:1px solid #e4ebf3;text-align:right}
+.tm-ai-card-side{display:flex;min-width:0;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;padding:10px 12px;border-left:1px solid #e4ebf3;text-align:right}
 .tm-ai-card-side>em{font-size:12px!important}.tm-ai-card-side>b{color:#082e66;font-size:21px}.tm-ai-card-side>small{color:#087b42;font-size:10px;font-weight:800}
-.tm-ai-card-side .tm-ai-card-actions{display:grid;width:100%;grid-template-columns:1fr;gap:6px;margin-top:3px}
+.tm-ai-card-side .tm-ai-card-actions{display:grid;width:100%;grid-template-columns:1fr 1fr;gap:6px;margin-top:3px}
 .tm-ai-card-side .tm-ai-card-actions a,.tm-ai-card-side .tm-ai-card-actions button{min-height:34px!important;padding:6px 8px;font-size:11px}
 .tm-ai-discovery:not(.is-calendar-list) .tm-ai-product-card.is-compatible{border-left-color:#1689d8!important}.tm-ai-discovery:not(.is-calendar-list) .tm-ai-product-card.is-original{border-left-color:#e6ad00!important}.tm-ai-discovery:not(.is-calendar-list) .tm-ai-product-card.is-renovated{border-left-color:#ef6c21!important}
 @media(max-width:760px){
@@ -1001,4 +1002,18 @@
  .tm-ai-assistant__panel{grid-template-rows:74px minmax(0,1fr) 52px 34px!important}
  .tm-ai-assistant__tools,.tm-ai-assistant__tools button{height:34px!important;min-height:34px!important}
  .tm-ai-assistant__tools button{padding:0 3px!important;font-size:9.5px!important;letter-spacing:-.02em!important}
+}
+
+/* V9 FINAL – stabilný mobilný viewport, kompaktný domov a klávesnica bez posunu. */
+@media(max-width:760px){
+ .tm-ai-assistant__panel{top:var(--tm-ai-visual-top,0px)!important;right:0!important;bottom:auto!important;left:0!important;height:var(--tm-ai-visual-height,100dvh)!important;max-height:var(--tm-ai-visual-height,100dvh)!important;overscroll-behavior:none!important}
+ .tm-ai-assistant.has-keyboard .tm-ai-livecart{display:none!important}
+ .tm-ai-assistant.has-keyboard .tm-ai-assistant__panel{grid-template-rows:64px minmax(0,1fr) 54px 34px!important}
+ .tm-ai-assistant.has-keyboard .tm-ai-assistant__head,.tm-ai-assistant.has-keyboard.is-started .tm-ai-assistant__head,.tm-ai-assistant.has-keyboard.is-shopping .tm-ai-assistant__head,.tm-ai-assistant.has-keyboard.is-advice .tm-ai-assistant__head{height:64px!important;min-height:64px!important}
+ .tm-ai-home{padding:10px 12px!important}.tm-ai-home__intro{padding:10px 11px!important}.tm-ai-home__actions{gap:7px!important;margin-top:8px!important}.tm-ai-home__actions button{min-height:58px!important;padding:9px 11px!important}
+ .tm-ai-frequent{margin-top:10px!important;padding-top:9px!important;overflow:hidden!important}.tm-ai-frequent>b{margin-bottom:7px!important;font-size:14px!important}
+ .tm-ai-frequent>div{display:flex!important;grid-template-columns:none!important;gap:7px!important;overflow-x:auto!important;padding:0 0 4px!important;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+ .tm-ai-frequent button{display:grid!important;flex:0 0 min(76vw,270px)!important;min-width:0!important;min-height:54px!important;gap:3px!important;padding:8px 10px!important;border:1px solid #d6dfeb!important;border-radius:10px!important;background:#f8fafc!important;color:#173f7a!important;text-align:left!important;scroll-snap-align:start}
+ .tm-ai-frequent button span{display:-webkit-box!important;overflow:hidden!important;font-size:12px!important;font-weight:800!important;line-height:1.25!important;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+ .tm-ai-frequent button small{font-size:11px!important;line-height:1.2!important;color:#667085!important}
 }

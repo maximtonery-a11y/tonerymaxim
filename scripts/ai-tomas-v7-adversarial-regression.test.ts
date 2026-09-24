@@ -144,14 +144,12 @@ test('povolená voľba typu po rozpracovanom nákupe pridá uložené množstvo'
   assert.equal(second.state.cart[0]?.quantity,2);
 });
 
-for(const quantity of [1,2,3,4,5,9,20,99])test(`CMYK sada zachová množstvo ${quantity}`,async()=>{
+for(const quantity of [1,2,3,4,5,9,20,99])test(`CMYK požiadavka ${quantity} nevytvorí virtuálny balík`,async()=>{
   const result=await ask(`Pridaj ${quantity} ks kompletnej kompatibilnej Canon CRG-069H CMYK sady do košíka.`,emptyCommerceState(`bundle-${quantity}`));
-  assert.equal(result.action?.kind,'ADD_BUNDLE_TO_CART');
-  assert.equal(result.action?.quantity,quantity);
-  assert.equal(result.action?.products?.length,4);
-  assert.equal(result.state.cart.length,4);
-  assert.ok(result.state.cart.every((line:any)=>line.quantity===quantity));
-  assert.deepEqual(new Set(result.action.products.map((p:any)=>p.color)),new Set(['black','cyan','magenta','yellow']));
+  assert.notEqual(result.action?.kind,'ADD_BUNDLE_TO_CART');
+  assert.equal(result.action,null);
+  assert.equal(result.state.cart.length,0);
+  assert.match(result.advisor.answer.join(' '),/katalógový produkt|nespojil do falošnej sady/i);
 });
 
 test('opakované pridanie rovnakého produktu bez množstva ho nezdvojí',async()=>{

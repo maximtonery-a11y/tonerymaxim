@@ -83,7 +83,8 @@ test('Epson WF-6090 zobrazí všetky typy naraz a umožní ich následne filtrov
  assert.ok(second.commerce?.products?.length>=4);
  assert.ok(second.commerce.products.every((product:any)=>product.type==='compatible'));
  assert.deepEqual(new Set(second.commerce.products.map((product:any)=>product.color)),new Set(['black','cyan','magenta','yellow']));
- assert.ok(second.commerce.presentation.sets.some((set:any)=>set.type==='compatible'&&set.products.length===4));
+ assert.ok(second.commerce.presentation.sets.every((set:any)=>set.packageKind==='catalog'&&set.products.length===1));
+ assert.equal(second.commerce.presentation.sets.some((set:any)=>set.products.length===4),false);
  assert.equal(second.state.cart.length,0,'výber typu nesmie automaticky vložiť náhodný produkt');
 
  const originalResponse=await aiTomasPost({request:new Request('http://localhost/api/ai-tomas',{
@@ -95,7 +96,8 @@ test('Epson WF-6090 zobrazí všetky typy naraz a umožní ich následne filtrov
  assert.ok(original.commerce?.products?.length>=4);
  assert.ok(original.commerce.products.every((product:any)=>product.type==='original'));
  assert.deepEqual(new Set(original.commerce.products.map((product:any)=>product.color)),new Set(['black','cyan','magenta','yellow']));
- assert.ok(original.commerce.presentation.sets.some((set:any)=>set.type==='original'&&set.products.length===4));
+ assert.ok(original.commerce.presentation.sets.every((set:any)=>set.packageKind==='catalog'&&set.products.length===1));
+ assert.equal(original.commerce.presentation.sets.some((set:any)=>set.products.length===4),false);
  assert.equal(original.state.cart.length,0);
 });
 

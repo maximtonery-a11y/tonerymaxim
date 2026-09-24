@@ -34,15 +34,11 @@ function wantsCompleteSet(message:string){const n=normalized(message);return /\b
 function wantsHighCapacity(message:string){const n=normalized(message);return /\bvysokokapacit\w*\b|\bhigh[ -]?yield\b|\b(?:crg|tn|clt)[- ]?\d+h\b/.test(n);}
 function chooseCompleteSet(sets:any[],type:string|null,message:string){
   const high=wantsHighCapacity(message);
-  return (sets||[]).filter((set:any)=>(!type||set.type===type)&&Array.isArray(set.products)&&set.products.length)
+  // CMYK sada musí byť jeden skutočný katalógový produkt. Štyri samostatné
+  // farby sa nesmú vydávať za sadu ani automaticky vložiť do košíka.
+  return (sets||[]).filter((set:any)=>(!type||set.type===type)&&set.packageKind==='catalog'&&Array.isArray(set.products)&&set.products.length===1)
     .sort((a:any,b:any)=>Number(high&&b.capacityVariant==='high')-Number(high&&a.capacityVariant==='high')
-      || Number(b.packageKind==='catalog')-Number(a.packageKind==='catalog')
       || Number(a.totalPrice||Infinity)-Number(b.totalPrice||Infinity))[0]||null;
-}
-function addCompleteSet(state:any,set:any,quantity:number){
-  const products=Array.isArray(set?.products)?set.products:[];
-  for(const product of products)upsertCart(state,product,quantity);
-  return {kind:'ADD_BUNDLE_TO_CART',products,quantity,set:{label:set.label,family:set.family,packageKind:set.packageKind,totalPrice:set.totalPrice}};
 }
 export function fulfilmentSentence(product:any,quantity:number){
   const requested=Math.max(1,Math.min(99,Math.floor(Number(quantity)||1)));
@@ -164,6 +160,11 @@ export const POST: APIRoute = async ({ request }) => {
     const resolved = await Promise.all([advisorPromise,commercePromise]);
     let advisor:any = resolved[0];
     let commerce:any = resolved[1];
+    // Verejné API posiela iba skutočné katalógové sady. Virtuálne kombinácie
+    // BK+C+M+Y nesmú zostať ani ako skryté dáta pre starší alebo budúci klient.
+    if(commerce?.presentation){
+      commerce={...commerce,presentation:{...commerce.presentation,sets:(commerce.presentation.sets||[]).filter((set:any)=>set?.packageKind==='catalog'&&Array.isArray(set.products)&&set.products.length===1)}};
+    }
     if (calendarRoute && commerce?.source === 'calendar' && Array.isArray(commerce.products) && commerce.products.length) {
       const count = commerce.products.length;
       const optionCount = count === 1 ? '1 aktuálne dostupnú možnosť' : count < 5 ? `${count} aktuálne dostupné možnosti` : `${count} aktuálne dostupných možností`;
@@ -232,13 +233,31 @@ export const POST: APIRoute = async ({ request }) => {
     const completeSetRequested=wantsCompleteSet(message)||Boolean((state.checkoutDraft as any)?.guidedSet&&wasPendingType);
     const completeSet=completeSetRequested?chooseCompleteSet(commerce?.presentation?.sets||[],state.currentType,message):null;
     if(!cartMutationForbidden&&wasPendingQuantity&&qty&&selected){state.pendingQuestion=null;const total=upsertCart(state,selected,qty);action={kind:'ADD_TO_CART',product:selected,quantity:qty};advisor={...advisor,answer:[`Pridal som ${qty} ks produktu ${selected.name} do nákupu. ${fulfilmentSentence(selected,total)}`]};commerce=null;}
-    else if(wasPendingType&&type){const guidedQty=Number(qty||(state.checkoutDraft as any)?.guidedQuantity||0);state.checkoutDraft={...(state.checkoutDraft||{}),guidedQuantity:null,guidedSet:null};state.pendingQuestion=null;state.selectedProductId=null;const purchasableCandidates=singleCandidates.filter(canBuy);if(!cartMutationForbidden&&guidedQty>0&&completeSet){if(completeSet.packageKind==='catalog'&&completeSet.products.length===1){const product=completeSet.products[0];const total=upsertCart(state,product,guidedQty);action={kind:'ADD_TO_CART',product,quantity:guidedQty};advisor={...advisor,answer:[`Pridal som ${guidedQty} ${guidedQty===1?'kompletnú sadu':'kompletné sady'} ${completeSet.label} do nákupu. ${fulfilmentSentence(product,total)}`]};}else{action=addCompleteSet(state,completeSet,guidedQty);advisor={...advisor,answer:[`Pridal som ${guidedQty} ${guidedQty===1?'kompletnú sadu':'kompletné sady'} BK + C + M + Y do nákupu.`]};}commerce=null;}else if(!cartMutationForbidden&&guidedQty>0&&purchasableCandidates.length===1&&selected){const total=upsertCart(state,selected,guidedQty);action={kind:'ADD_TO_CART',product:selected,quantity:guidedQty};advisor={...advisor,answer:[`Vybral som ${selected.name} a pridal ${guidedQty} ks do nákupu. ${fulfilmentSentence(selected,total)}`]};commerce=null;}else{const productLabel=customerProductLabel(state.lastProductQuery,message,commerce?.source);advisor={...advisor,answer:[`Zobrazujem ${typePlural(type)} ${productMaterial(candidates)} pre ${productLabel}. Vyberte konkrétny produkt, farbu alebo celú sadu.`]};}}
+    else if(wasPendingType&&type){
+      const guidedQty=Number(qty||(state.checkoutDraft as any)?.guidedQuantity||0);
+      state.checkoutDraft={...(state.checkoutDraft||{}),guidedQuantity:null,guidedSet:null};
+      state.pendingQuestion=null;state.selectedProductId=null;
+      const purchasableCandidates=singleCandidates.filter(canBuy);
+      if(!cartMutationForbidden&&guidedQty>0&&completeSet){
+        const product=completeSet.products[0];const total=upsertCart(state,product,guidedQty);
+        action={kind:'ADD_TO_CART',product,quantity:guidedQty};
+        advisor={...advisor,answer:[`Pridal som ${guidedQty} ${guidedQty===1?'kompletnú sadu':'kompletné sady'} ${completeSet.label} do nákupu. ${fulfilmentSentence(product,total)}`]};commerce=null;
+      }else if(!completeSet&&completeSetRequested){
+        const productLabel=customerProductLabel(state.lastProductQuery,message,commerce?.source);
+        advisor={...advisor,answer:[`Pre ${productLabel} momentálne nemáme samostatný katalógový produkt CMYK sady. Zobrazujem dostupné jednotlivé farby; nič som neposkladal ani nepridal do nákupu.`]};
+      }else if(!cartMutationForbidden&&guidedQty>0&&purchasableCandidates.length===1&&selected){
+        const total=upsertCart(state,selected,guidedQty);action={kind:'ADD_TO_CART',product:selected,quantity:guidedQty};advisor={...advisor,answer:[`Vybral som ${selected.name} a pridal ${guidedQty} ks do nákupu. ${fulfilmentSentence(selected,total)}`]};commerce=null;
+      }else{
+        const productLabel=customerProductLabel(state.lastProductQuery,message,commerce?.source);advisor={...advisor,answer:[`Zobrazujem ${typePlural(type)} ${productMaterial(candidates)} pre ${productLabel}. Vyberte konkrétny produkt.`]};
+      }
+    }
     const explicitAdd=/\b(pridaj|zoberiem|kupim|objednaj|daj mi)\b/.test(n)||(/\bchcem\b/.test(n)&&(/\b(kupit|ho|ju|ich|kus|ks|dva|dve|tri|styri|pat)\b/.test(n)));
     if(!action&&!cartMutationForbidden&&route.intents.includes('BUY_INTENT')&&completeSet&&!ambiguousCalendarSelection){
       const amount=qty||1;
-      if(completeSet.packageKind==='catalog'&&completeSet.products.length===1){const product=completeSet.products[0];const total=upsertCart(state,product,amount);action={kind:'ADD_TO_CART',product,quantity:amount};advisor={...advisor,answer:[`Pridal som ${amount} ${amount===1?'kompletnú sadu':'kompletné sady'} ${completeSet.label} do nákupu. ${fulfilmentSentence(product,total)}`]};}
-      else{action=addCompleteSet(state,completeSet,amount);advisor={...advisor,answer:[`Pridal som ${amount} ${amount===1?'kompletnú sadu':'kompletné sady'} BK + C + M + Y do nákupu.`]};}
+      const product=completeSet.products[0];const total=upsertCart(state,product,amount);action={kind:'ADD_TO_CART',product,quantity:amount};advisor={...advisor,answer:[`Pridal som ${amount} ${amount===1?'kompletnú sadu':'kompletné sady'} ${completeSet.label} do nákupu. ${fulfilmentSentence(product,total)}`]};
       commerce=null;
+    } else if(!action&&route.intents.includes('BUY_INTENT')&&completeSetRequested&&!completeSet&&!ambiguousCalendarSelection){
+      advisor={...advisor,answer:['Samostatný katalógový produkt tejto CMYK sady momentálne nemáme. Jednotlivé farby som nespojil do falošnej sady a nič som nepridal do nákupu.']};
     } else if(!action&&!cartMutationForbidden&&route.intents.includes('BUY_INTENT')&&selected&&!ambiguousCalendarSelection){
       if(explicitAdd||qty){const amount=qty||1;const already=state.cart.some((x:any)=>String(x.id)===String(selected.id));if(!already||qty){const total=upsertCart(state,selected,amount);action={kind:'ADD_TO_CART',product:selected,quantity:amount};advisor={...advisor,answer:[`Pridal som ${amount} ks produktu ${selected.name} do nákupu. ${fulfilmentSentence(selected,total)}`]};}else{action={kind:'OPEN_CART'};advisor={...advisor,answer:['Tento produkt už v nákupe máte. Otváram aktuálny nákup.']};}}
       else{state.pendingQuestion='quantity';action={kind:'OPEN_QUANTITY',product:selected};advisor={...advisor,answer:[`Vybrali ste ${selected.name}. Zvoľte množstvo.`]};}
