@@ -39,12 +39,21 @@ test('server pri zákaze zachová aj existujúci košík',async()=>{
   assert.match(result.advisor.answer.join(' '),/nič som nepridal/i);
 });
 
-test('AI nevytvorí CRG-069H sadu zo štyroch samostatných tonerov',async()=>{
+test('AI pridá CRG-069H iba ako jeden skutočný katalógový produkt sady',async()=>{
+  const catalog=await searchCommerce('Canon CRG-069H');
+  const realSet=catalog.products.find((product:any)=>product.sku==='SET-CAN-CRG-069H-KOM-4PK'&&product.package_shape==='set');
   const result=await askApi('Pridaj 1 kompletnú kompatibilnú vysokokapacitnú Canon CRG-069H CMYK sadu do košíka.');
   assert.notEqual(result.action?.kind,'ADD_BUNDLE_TO_CART');
-  assert.equal(result.action,null);
-  assert.equal(result.state.cart.length,0);
-  assert.match(result.advisor.answer.join(' '),/katalógový produkt|nespojil do falošnej sady/i);
+  if(realSet){
+    assert.equal(result.action?.kind,'ADD_TO_CART');
+    assert.equal(result.action?.product?.sku,realSet.sku);
+    assert.equal(result.action?.product?.package_shape,'set');
+    assert.equal(result.state.cart.length,1);
+    assert.equal(result.state.cart[0]?.sku,realSet.sku);
+  }else{
+    assert.equal(result.action?.kind,undefined);
+    assert.deepEqual(result.state.cart,[]);
+  }
 });
 
 test('hotová katalógová CMYK sada nie je jednotlivá farba ani duplikát',async()=>{

@@ -5,6 +5,7 @@ import { emptyCommerceState } from '../src/lib/ai-commerce/domain.ts';
 import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
 import { forbidsCartMutation, isCartChangingAction } from '../src/lib/ai-cart-safety.ts';
 import { isOrderStatusQuestion } from '../src/lib/ai-order-question.ts';
+import { searchCommerce } from '../src/lib/ai-commerce/engine.ts';
 import { buildAssistantAnswer } from '../src/lib/aiSalesAssistant.ts';
 
 async function ask(message:string,state:any=emptyCommerceState('v7-adversarial')){
@@ -144,12 +145,23 @@ test('povolená voľba typu po rozpracovanom nákupe pridá uložené množstvo'
   assert.equal(second.state.cart[0]?.quantity,2);
 });
 
-for(const quantity of [1,2,3,4,5,9,20,99])test(`CMYK požiadavka ${quantity} nevytvorí virtuálny balík`,async()=>{
+const crg069Catalog=await searchCommerce('Canon CRG-069H');
+const realCrg069Set=crg069Catalog.products.find((product:any)=>product.sku==='SET-CAN-CRG-069H-KOM-4PK'&&product.package_shape==='set');
+
+for(const quantity of [1,2,3,4,5,9,20,99])test(`CMYK požiadavka ${quantity} použije jeden reálny produkt sady`,async()=>{
   const result=await ask(`Pridaj ${quantity} ks kompletnej kompatibilnej Canon CRG-069H CMYK sady do košíka.`,emptyCommerceState(`bundle-${quantity}`));
   assert.notEqual(result.action?.kind,'ADD_BUNDLE_TO_CART');
-  assert.equal(result.action,null);
-  assert.equal(result.state.cart.length,0);
-  assert.match(result.advisor.answer.join(' '),/katalógový produkt|nespojil do falošnej sady/i);
+  if(realCrg069Set){
+    assert.equal(result.action?.kind,'ADD_TO_CART');
+    assert.equal(result.action?.product?.sku,realCrg069Set.sku);
+    assert.equal(result.action?.product?.package_shape,'set');
+    assert.equal(result.action?.quantity,quantity);
+    assert.equal(result.state.cart.length,1);
+    assert.equal(result.state.cart[0]?.quantity,quantity);
+  }else{
+    assert.equal(result.action?.kind,undefined);
+    assert.deepEqual(result.state.cart,[]);
+  }
 });
 
 test('opakované pridanie rovnakého produktu bez množstva ho nezdvojí',async()=>{

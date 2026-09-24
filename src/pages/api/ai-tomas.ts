@@ -25,15 +25,20 @@ function requestedTypes(message:string):RequestedProductType[]{
 function requestedColor(message:string){const n=normalized(message);return /cier|black|\bbk\b/.test(n)?'black':/cyan|azur/.test(n)?'cyan':/magenta|purpur/.test(n)?'magenta':/yellow|zlt/.test(n)?'yellow':null;}
 function requestedQuantity(message:string){
   const n=normalized(message);
+  // „4-farebná sada“ ani „všetky štyri farby“ neznamenajú štyri kusy sady.
+  // Číslo tu opisuje zloženie CMYK balenia, nie požadované množstvo.
+  const quantityText=n
+    .replace(/\b4\s*[- ]?farebn\w*\b/g,' ')
+    .replace(/\bstyri\s+farb\w*\b/g,' ');
   // Čísla vo vnútri modelu/SKU (GI-41, WF-6090, TN-2421) nikdy nie sú
   // množstvo. Bez jednotky prijímame iba samostatnú číselnú odpoveď alebo
   // číslo sprevádzané jednoznačným nákupným slovesom.
-  const explicit=n.match(/\b(\d{1,2})\s*(?:ks|kus|kusy|kusov)\b/)
-    || n.match(/^\s*(\d{1,2})\s*$/)
-    || (/\b(?:chcem|pridaj|zober|kup|objednaj)\w*\b/.test(n)?n.match(/\b(\d{1,2})\b/):null);
+  const explicit=quantityText.match(/\b(\d{1,2})\s*(?:ks|kus|kusy|kusov)\b/)
+    || quantityText.match(/^\s*(\d{1,2})\s*$/)
+    || (/\b(?:chcem|pridaj|zober|kup|objednaj)\w*\b/.test(quantityText)?quantityText.match(/\b(\d{1,2})\b/):null);
   if(explicit)return Math.min(99,Math.max(1,Number(explicit[1])));
   const words:Record<string,number>={jeden:1,jednu:1,jedno:1,dva:2,dve:2,tri:3,styri:4,pat:5};
-  if(/^\s*(?:jeden|jednu|jedno|dva|dve|tri|styri|pat)(?:\s+(?:ks|kus|kusy|kusov))?\s*$/.test(n)||/\b(?:chcem|pridaj|zober|kup|objednaj)\w*\b/.test(n))for(const [w,q] of Object.entries(words))if(new RegExp(`\\b${w}\\b`).test(n))return q;
+  if(/^\s*(?:jeden|jednu|jedno|dva|dve|tri|styri|pat)(?:\s+(?:ks|kus|kusy|kusov))?\s*$/.test(quantityText)||/\b(?:chcem|pridaj|zober|kup|objednaj)\w*\b/.test(quantityText))for(const [w,q] of Object.entries(words))if(new RegExp(`\\b${w}\\b`).test(quantityText))return q;
   return null;
 }
 function upsertCart(state:any,product:any,quantity:number){const key=String(product.id);const found=state.cart.find((x:any)=>String(x.id)===key||String(x.sku)===String(product.sku));if(found){found.quantity=Math.min(99,Number(found.quantity||1)+quantity);return found.quantity;}const total=Math.min(99,quantity);state.cart.push({id:key,sku:String(product.sku||''),quantity:total});return total;}
@@ -211,6 +216,14 @@ export const POST: APIRoute = async ({ request }) => {
     if(explicitlyRequestedTypes.length>1)state.currentType=null;else if(type)state.currentType=type;
     if(color)state.currentColor=color;
     let candidates=commerce?.products||[];
+    if(explicitlyRequestedTypes.length>1&&commerce){
+      const catalogTypes=new Set(candidates.map((product:any)=>product.type).filter(Boolean));
+      const requested=new Set(explicitlyRequestedTypes);
+      candidates=candidates.filter((product:any)=>requested.has(product.type));
+      commerce={...commerce,products:candidates,presentation:{...(commerce.presentation||{}),sets:(commerce.presentation?.sets||[]).filter((set:any)=>requested.has(set.type)),requestedTypes:explicitlyRequestedTypes,missingRequestedTypes:explicitlyRequestedTypes.filter(productType=>!catalogTypes.has(productType))}};
+    }else if(commerce?.presentation){
+      commerce={...commerce,presentation:{...commerce.presentation,requestedTypes:explicitlyRequestedTypes}};
+    }
     const canBuy=(p:any)=>Number(p?.price||0)>0;
     // Typ produktu patrí do ponuky aj vtedy, keď je konkrétna položka práve
     // vypredaná. Zákazník ju musí vidieť s pravdivou dostupnosťou; iba vloženie

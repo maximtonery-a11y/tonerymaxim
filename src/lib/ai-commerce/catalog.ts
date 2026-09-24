@@ -182,7 +182,11 @@ export async function resolveCommerceProducts(query: string) {
   // implementácia ho síce vypočítala, ale následne omylom zobrazila širší
   // výsledok textového vyhľadávania. To pridávalo produkty pre podobné modely
   // a pri veľkých rodinách časť správnych produktov vynechalo.
-  const exactIdentity = printer.length ? [] : findExactProductIdentityMatches(loose, query).map(m => m.product)
+  // Štruktúrované OEM vyhľadávanie nesmie závisieť od voľného textového
+  // predvýberu. Pri vete s dvoma rodinami (BT6000 + BT5000) môže fulltext
+  // vrátiť iba prvú časť alebo nič, zatiaľ čo katalógový parser pozná oba
+  // presné kódy aj značku.
+  const exactIdentity = printer.length ? [] : findExactProductIdentityMatches(allProducts, query).map(m => m.product)
     .filter(isValidOffer).filter((product: any) => !isPrinterDevice(product));
   // Pri presnom OEM kóde doplníme rovnocenné typy pre tie isté tlačiarne.
   // Typický príklad: kompatibilný/renovovaný Samsung MLT-D111L a originálny

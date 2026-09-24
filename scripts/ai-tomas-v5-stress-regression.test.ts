@@ -6,6 +6,7 @@ import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
 import { forbidsCartMutation } from '../src/lib/ai-cart-safety.ts';
 import { isOrderStatusQuestion } from '../src/lib/ai-order-question.ts';
 import { buildAssistantAnswer } from '../src/lib/aiSalesAssistant.ts';
+import { searchCommerce } from '../src/lib/ai-commerce/engine.ts';
 
 async function ask(message:string,state:any=emptyCommerceState('v5-stress')){
   const request=new Request('http://localhost/api/ai-tomas',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message,page:'/',state})});
@@ -45,19 +46,32 @@ const syntheticSetRequests=[
   'Pridaj kompletnú 4-farebnú kompatibilnú sadu CRG-069H.',
 ];
 
-for(const [index,message] of syntheticSetRequests.entries())test(`virtuálna CMYK sada sa nevytvorí ${index+1}`,async()=>{
-  const result=await ask(message,emptyCommerceState(`set-${index}`));
+const crg069Catalog=await searchCommerce('Canon CRG-069H');
+const realCrg069Set=crg069Catalog.products.find((product:any)=>product.sku==='SET-CAN-CRG-069H-KOM-4PK'&&product.package_shape==='set');
+
+function assertRealCrg069SetOrSafeAbsence(result:any,message:string,quantity=1){
   assert.notEqual(result.action?.kind,'ADD_BUNDLE_TO_CART',message);
-  assert.equal(result.action,null,message);
-  assert.equal(result.state.cart.length,0,message);
-  assert.match(result.advisor.answer.join(' '),/katalógový produkt|nespojil do falošnej sady/i,message);
+  if(realCrg069Set){
+    assert.equal(result.action?.kind,'ADD_TO_CART',message);
+    assert.equal(result.action?.product?.sku,realCrg069Set.sku,message);
+    assert.equal(result.action?.product?.package_shape,'set',message);
+    assert.equal(result.action?.quantity,quantity,message);
+    assert.equal(result.state.cart.length,1,message);
+  }else{
+    assert.equal(result.action?.kind,undefined,message);
+    assert.deepEqual(result.state.cart,[],message);
+  }
+}
+
+for(const [index,message] of syntheticSetRequests.entries())test(`CRG-069H sa pridá iba ako reálny katalógový produkt ${index+1}`,async()=>{
+  const result=await ask(message,emptyCommerceState(`set-${index}`));
+  assertRealCrg069SetOrSafeAbsence(result,message);
 });
 
-test('ani množstvo 2 nevytvorí virtuálnu sadu zo štyroch farieb',async()=>{
+test('množstvo 2 pridá dva kusy jedného reálneho produktu sady',async()=>{
   const result=await ask('Pridaj 2 kompletné kompatibilné Canon CRG-069H CMYK sady do košíka.');
-  assert.notEqual(result.action?.kind,'ADD_BUNDLE_TO_CART');
-  assert.equal(result.action,null);
-  assert.equal(result.state.cart.length,0);
+  assertRealCrg069SetOrSafeAbsence(result,'množstvo 2 musí zostať jedným reálnym produktom',2);
+  if(realCrg069Set)assert.equal(result.state.cart[0]?.quantity,2);
 });
 
 test('hotová katalógová CMYK sada sa pridá ako jeden reálny produkt',async()=>{

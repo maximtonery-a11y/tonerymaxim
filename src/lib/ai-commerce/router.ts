@@ -22,6 +22,8 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const generalCalendarOrDiaryQuestion = generalCalendarQuestion || generalDiaryQuestion;
   const calendarInformationQuestion = calendarQuestion
     && /\b(ake|aky|aku|co|mate|predavate|ponukate|ponuke|sortiment)\b/.test(n);
+  const genericCalendarYearQuestion = calendarInformationQuestion && /\b2027\b/.test(n)
+    && !/\b(stolov|nastenn|denn|tyzden|mesac|minidiar|pf|pohladnic|slovensk|tatry|prirod|ps)\w*\b/.test(n);
   // Častý prepis kódu Samsung MLT-D111S: písmeno S zákazník zadá ako 1.
   // Alias je úmyselne úzky, aby sme neopravovali iné modelové čísla naslepo.
   const knownProductAlias = /^\s*(?:samsung\s+|mlt[- ]?)?d[- ]?111(?:s|1)\s*$/i.test(message)
@@ -33,7 +35,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // označením „SKU“ alebo „kód produktu“.
   const explicitNumericProductCode = n.match(/\b(?:sku|kod\s+produktu)\s*[:#-]?\s*(\d{3,12})\b/i)?.[1] || null;
   const numericSku = explicitNumericProductCode
-    || (numericToken && numericToken !== '711' && (
+    || (numericToken && numericToken !== '711' && catalogQuery.brands.length === 0 && (
       /^\s*\d{3,12}\s*$/.test(message)
       || /\b(?:mate|hladam|najd|potrebujem|produkt|kod|sku|ukaz|stoji|skladom|kupit|objednat|pridaj)\w*\b/.test(n)
     ) ? numericToken : (explicitSkuMention && /^\d{3,12}$/.test(explicitSkuMention) ? explicitSkuMention : null));
@@ -84,13 +86,18 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];
   // Pri presnom kalendárovom SKU posielame katalógu iba kód. Celá veta
   // (napr. „Pridaj 2 ks D-02-2-27“) by inak znížila presnosť vyhľadávania.
-  const calendarQuery=explicitCalendarSku || (calendarQuestion&&!generalCalendarOrDiaryQuestion?message:null);
+  const calendarQuery=explicitCalendarSku || (calendarQuestion&&!generalCalendarOrDiaryQuestion&&!genericCalendarYearQuestion?message:null);
   const printerQuery = message.match(printer)?.[0] || (shortPrinter ? `${brand || ''} ${shortPrinter}`.trim() : null);
   const hasExplicitProductCode = productCode.test(message);
+  const mixedCatalogReferences = catalogQuery.referenceTokens.filter(token => /[a-z]/i.test(token) && /\d/.test(token));
+  // Kompletná sada môže používať dva rozdielne rodinné kódy, napríklad
+  // Brother BT6000BK + BT5000 C/M/Y. Zachováme preto celý dopyt namiesto
+  // skrátenia na prvý zachytený model.
+  const multiReferenceQuery = mixedCatalogReferences.length > 1 ? message : null;
   // Pri modeli tlačiarne vraciame iba čistý model (napr. Epson WF-6090), nie
   // celú vetu „Hľadám náplne...“. OEM kód má naďalej prednosť, aby sa Canon
   // CRG054 alebo Brother TN2421 nikdy nepovažovali za model tlačiarne.
-  const query = serviceQuestion ? null : calendarQuery || knownProductAlias || explicitSkuMention || numericSku
+  const query = serviceQuestion || genericCalendarYearQuestion ? null : calendarQuery || knownProductAlias || explicitSkuMention || multiReferenceQuery || numericSku
     || (hasExplicitProductCode && sharedCatalogReference ? message : null)
     || printerQuery
     || (sharedCatalogReference ? message : null)

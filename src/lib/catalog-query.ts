@@ -73,6 +73,7 @@ const QUERY_FILLER_WORDS = new Set([
   "ake",
   "do",
   "hladam",
+  "mi",
   "mate",
   "najdi",
   "najst",
@@ -81,11 +82,15 @@ const QUERY_FILLER_WORDS = new Set([
   "na",
   "pre",
   "prosim",
+  "produkt",
+  "produktu",
   "potrebujem",
   "tlaciaren",
   "tlaciarne",
   "toner",
   "tonery",
+  "ukaz",
+  "zobraz",
 ]);
 
 function alphanumericTokens(value: unknown) {
@@ -124,13 +129,13 @@ function referenceAliases(value: unknown, includeMixedTokenSegments = true) {
     // Séria a číslo bývajú oddelené pomlčkou alebo medzerou: CLP-320,
     // FS 1035, SP 3400, e-STUDIO 163. Pre prefixové hľadanie potrebujeme
     // aj spojený alias (clp320, fs1035, sp3400, studio163).
-    if (/^[a-z]{1,12}$/.test(token) && /^\d{1,8}[a-z]{0,4}$/.test(next)) {
+    if (/^[a-z]{1,12}$/.test(token) && !QUERY_FILLER_WORDS.has(token) && /^\d{1,8}[a-z]{0,4}$/.test(next)) {
       aliases.add(`${token}${next}`);
     }
     // Neviažeme vyhľadávanie na žiadny zoznam farieb ani kapacitných koncoviek.
     // Ak je kód rozdelený medzerou/pomlčkou (napr. 247 GY), spojíme ho
     // všeobecne; význam koncovky určuje iba reálny katalógový kód.
-    if (/^\d{2,8}$/.test(token) && /^[a-z]{1,12}$/.test(next)) {
+    if (/^\d{2,8}$/.test(token) && /^[a-z]{1,4}$/.test(next)) {
       aliases.add(`${token}${next}`);
     }
   }
@@ -186,7 +191,11 @@ function referenceTokensFromQuery(value: string, brands: string[]) {
   const withoutBrand = brandlessQuery(value, brands);
   const aliases = referenceAliases(withoutBrand.normalized, false);
 
-  if (withoutBrand.compact && /\d/.test(withoutBrand.compact)) aliases.add(withoutBrand.compact);
+  // Celý kompaktný zápis je užitočný pri samotnom kóde (CRG-054, HP305),
+  // ale nie pri bežnej vete. Zo súvislej vety by vznikol jeden obrovský
+  // alfanumerický token, ktorý následne potlačí presný číselný kód.
+  if (withoutBrand.compact && /\d/.test(withoutBrand.compact)
+    && alphanumericTokens(withoutBrand.normalized).length <= 3) aliases.add(withoutBrand.compact);
 
   for (const filler of QUERY_FILLER_WORDS) aliases.delete(filler);
   for (const token of [...aliases]) {
@@ -314,7 +323,7 @@ function hasExplicitNumberedCartridgeReference(product: CatalogProduct, analysis
   const identity = normalize(productIdentityValue(product))
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
-  const marker = new RegExp(`(?:^|\\s)(?:no|nr)\\s*${reference}(?:\\s*[a-z]{1,4})?(?:\\s|$)`);
+  const marker = new RegExp(`(?:^|\\s)(?:no|nr)\\s*${reference}(?:\\s*(?:x|xl|xxl|e))?(?:\\s|$)|\\(\\s*${reference}(?:x|xl|xxl|e)?\\s*\\)`);
   return marker.test(identity);
 }
 
@@ -325,7 +334,7 @@ function hasVisibleBrandNumberedFamilyReference(product: CatalogProduct, analysi
   const identity = normalize(productIdentityValue(product)).replace(/[^a-z0-9]+/g, " ").trim();
   return analysis.brands.some((brand) => {
     const brandToken = normalize(brand).replace(/[^a-z0-9]+/g, " ").trim();
-    return new RegExp(`(?:^|\\s)${brandToken}\\s*${reference}[a-z]{0,4}(?:\\s|$)`, "i").test(identity);
+    return new RegExp(`(?:^|\\s)${brandToken}\\s*${reference}(?:x|xl|xxl|e)?(?:\\s|$)`, "i").test(identity);
   });
 }
 
