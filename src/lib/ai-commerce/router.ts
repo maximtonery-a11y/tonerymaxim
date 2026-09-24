@@ -1,6 +1,7 @@
 import type { AiIntent, CommerceState } from './domain.ts';
 import { analyzeCatalogQuery } from '../catalog-query.ts';
 import { isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../calendar-ai-catalog.ts';
+import { forbidsCartMutation } from '../ai-cart-safety.ts';
 
 const norm = (v: unknown) => String(v || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const productCode = /\b(?:(?:cf|ce|crg|tn|dr|q|clt|mlt|tk|pgi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*)\b/i;
@@ -27,13 +28,15 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
     ? 'MLT-D111S'
     : null;
   const numericToken = message.match(/(?<![a-z0-9_-])\d{3,12}(?![a-z0-9_-])/i)?.[0] || null;
-  // Niektoré staršie interné SKU majú iba tri číslice. Rozpoznáme ich ako
-  // produkt iba samostatne alebo v jednoznačnej nákupnej vete; číslo
-  // objednávky, telefón či PSČ neskôr odfiltruje serviceQuestion.
-  const numericSku = numericToken && (
-    /^\s*\d{3,12}\s*$/.test(message)
-    || /\b(?:mate|hladam|najd|potrebujem|produkt|kod|sku|ukaz|stoji|skladom|kupit|objednat|pridaj)\w*\b/.test(n)
-  ) ? numericToken : null;
+  // Čisto číselný reťazec je nejednoznačný (interné SKU, HP 711, číslo
+  // objednávky, PSČ...). Ako interné SKU ho použijeme iba s výslovným
+  // označením „SKU“ alebo „kód produktu“.
+  const explicitNumericProductCode = n.match(/\b(?:sku|kod\s+produktu)\s*[:#-]?\s*(\d{3,12})\b/i)?.[1] || null;
+  const numericSku = explicitNumericProductCode
+    || (numericToken && numericToken !== '711' && (
+      /^\s*\d{3,12}\s*$/.test(message)
+      || /\b(?:mate|hladam|najd|potrebujem|produkt|kod|sku|ukaz|stoji|skladom|kupit|objednat|pridaj)\w*\b/.test(n)
+    ) ? numericToken : (explicitSkuMention && /^\d{3,12}$/.test(explicitSkuMention) ? explicitSkuMention : null));
   // Service questions must be routable at any point of a shopping flow.  In
   // particular, a pending quantity/type question must never turn "can I pay
   // cash?" into a product follow-up using the previous catalogue query.
@@ -65,13 +68,14 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (/(pasuje|kompatibil|do (nej|tlaciarne)|aky toner)/.test(n)) add('COMPATIBILITY');
   if (/(original.*kompat|kompat.*original|porovnaj|rozdiel)/.test(n)) add('PRODUCT_COMPARE');
   if (/(cierny|black|cyan|magenta|yellow|zlty|originalny|renovovany|kompatibilny)/.test(n)) add('COLOR_TYPE_FILTER');
-  const explicitBuy = /\b(?:chcem\s+(?:kupit|objednat|zobrat)|kupim|kupit|zoberiem|zobrat|pridaj|objednaj|daj\s+mi)\b/.test(n)
-    || (Boolean(sharedCatalogReference || printer.test(message) || state.lastProductQuery) && /\bchcem\b/.test(n));
+  const cartMutationForbidden = forbidsCartMutation(message);
+  const explicitBuy = !cartMutationForbidden && (/\b(?:chcem\s+(?:kupit|objednat|zobrat)|kupim|kupit|zoberiem|zobrat|pridaj|objednaj|daj\s+mi)\b/.test(n)
+    || (Boolean(sharedCatalogReference || printer.test(message) || state.lastProductQuery) && /\bchcem\b/.test(n)));
   if (explicitBuy && !serviceQuestion) add('BUY_INTENT');
   const explicitCart = /\b(?:otvor|ukaz|zobraz|skontroluj)\w*(?:\s+\w+){0,3}\s+kosik\w*|\b(?:co|kolko)\s+mam\s+v\s+kosik\w*|\b(?:odstran|vymaz)\w*(?:\s+\w+){0,3}\s+(?:z\s+)?(?:kosik|produkt|polozk)\w*|(?:^|\s)[+−-]\s*\d/.test(n);
-  if (explicitCart) add('CART');
+  if (explicitCart && !cartMutationForbidden) add('CART');
   const explicitCheckout = /\b(?:pokladn\w*|sumar\w*|prejst\w*.*(?:pokladn|platb|doprav)|pokrac\w*.*(?:nakup|objednav)|dokonc\w*.*objednav|chcem\s+(?:kupit|objednat)|objednaj)\b/.test(n);
-  if (explicitCheckout) add('CHECKOUT');
+  if (explicitCheckout && !cartMutationForbidden) add('CHECKOUT');
   if (/(zopak|ako naposledy|posli ako naposledy|posledn.*objednav)/.test(n)) add('ORDER_REPEAT');
   if (/(ako|preco|kolko stran|vydrz|vytaznost|pasy|pruhy|ciary|smuhy|slaba tlac|cip)/.test(n)) add('ADVICE');
   if (/(reklam|vraten|odstup|registr|vernost|obchodne podmienky)/.test(n)) add('POLICY');

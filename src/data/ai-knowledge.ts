@@ -354,6 +354,7 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     answer: [
       'O storno objednávky môžete požiadať pred jej expedíciou. AI Tomáš objednávku sám nezruší ani nezmení.',
       'Kontaktujte nás čo najskôr na info@tonerymaxim.sk alebo +421 917 859 206. Ak už bola zásielka odovzdaná dopravcovi, postupuje sa podľa pravidiel pre odstúpenie od zmluvy alebo vrátenie tovaru.',
+      'Ak bola objednávka zaplatená online a storno potvrdíme, refundáciu odošleme bez zbytočného odkladu rovnakým spôsobom platby. Pripísanie na účet potom závisí od banky a platobnej brány.',
     ],
   },
   {

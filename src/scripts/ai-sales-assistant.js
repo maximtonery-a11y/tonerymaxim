@@ -1,5 +1,6 @@
 import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-cart.js";
 import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
+import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety.ts";
 
 (function () {
   const root = document.querySelector('[data-ai-sales-assistant]');
@@ -485,8 +486,9 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
   }
   function setChooser(set){
     const compatible=set.type==='compatible';
+    const catalogPackage=set.packageKind==='catalog'&&set.products.length===1;
     const ink=isInkOffer(set.products),items=ink?'náplní':'tonerov',discountTarget=ink?'každú kompatibilnú náplň':'každý kompatibilný toner';
-    const option=(q)=>{const rate=compatible?(q>=4?25:q>=2?10:0):0,base=Number(set.totalPrice||set.products.reduce((n,p)=>n+Number(p.price||0),0)),per=base*(1-rate/100);return `<button type="button" data-ai-set-q="${q}" ${q===4&&compatible?'class="best"':''}><b>${q} ${q===1?'sada':'sady'}</b><span>${q*4} ${items} · ${money(per)}/sada</span><small>Spolu ${money(per*q)}</small>${rate?`<em>−${rate} %</em>`:''}</button>`};
+    const option=(q)=>{const rate=compatible?(q>=4?25:q>=2?10:0):0,base=Number(set.totalPrice||set.products.reduce((n,p)=>n+Number(p.price||0),0)),per=base*(1-rate/100);return `<button type="button" data-ai-set-q="${q}" ${q===4&&compatible?'class="best"':''}><b>${q} ${q===1?'sada':'sady'}</b><span>${catalogPackage?q:q*4} ${catalogPackage?'balenie':items} · ${money(per)}/sada</span><small>Spolu ${money(per*q)}</small>${rate?`<em>−${rate} %</em>`:''}</button>`};
     openCommerceStage(`<div class="tm-ai-commerce__head"><button data-ai-q-back>← Späť na ponuku</button><b>Vyberte množstvo sád</b></div><div class="tm-ai-purchase-step"><p><b>${escapeHtml(set.label||`Sada 4 ${items}`)}</b></p>${compatible?`<p class="tm-ai-cost-note">Zľava na ${discountTarget}: 2–3 sady −10 %, 4 a viac sád −25 %.</p>`:''}<div class="tm-ai-qty-grid">${[1,2,3,4].map(option).join('')}</div></div>`,2);
     commerce.querySelector('[data-ai-q-back]').onclick=commerceBack;
     commerce.querySelectorAll('[data-ai-set-q]').forEach(b=>b.onclick=()=>{const q=Number(b.dataset.aiSetQ);state.commerceState.pendingQuestion=null;set.products.forEach(p=>addCommerceItem(p,q));renderCart();});
@@ -503,9 +505,9 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
     addMessage('bot',`<div class="tm-ai-offer-summary"><b>Overil som aktuálnu ponuku pre ${query}.</b><p>${available.length?`Na sklade máme <strong>${suitableProductsText(available.length)}</strong> a ${dispatchSentence()}.`:'Momentálne nemáme vhodný produkt skladom.'}${unavailable.length?` V ponuke máme aj <strong>${unavailableProductsText(unavailable.length)}</strong>; ich dostupnosť vám vieme zistiť.`:''}</p><div class="tm-ai-summary-actions"><a href="${escapeHtml(webResultsUrl(all))}">Zobraziť všetky na webe</a></div></div>`,{scroll:false});
     const colorPrinter=Boolean(data?.presentation?.isColorPrinter) || [...new Set(all.map(aiColor).filter(Boolean))].length>=3;
     if(colorPrinter){
-      const sets=Array.isArray(data?.presentation?.sets)?data.presentation.sets.filter(set=>Array.isArray(set.products)&&set.products.length===4):[];
+      const sets=Array.isArray(data?.presentation?.sets)?data.presentation.sets.filter(set=>Array.isArray(set.products)&&(set.products.length===4||(set.packageKind==='catalog'&&set.products.length===1))):[];
       const typeOrder=['compatible','original','renovated'],colorOrder=['black','cyan','magenta','yellow'];
-      const singleGroups=typeOrder.map(type=>({type,products:available.filter(p=>aiType(p)===type&&aiColor(p)).sort((a,b)=>Number(isHighCapacity(a))-Number(isHighCapacity(b))||colorOrder.indexOf(aiColor(a))-colorOrder.indexOf(aiColor(b))||Number(a.price)-Number(b.price))})).filter(group=>group.products.length);
+      const singleGroups=typeOrder.map(type=>({type,products:available.filter(p=>aiType(p)===type&&aiColor(p)&&p?.package_shape!=='set').sort((a,b)=>Number(isHighCapacity(a))-Number(isHighCapacity(b))||colorOrder.indexOf(aiColor(a))-colorOrder.indexOf(aiColor(b))||Number(a.price)-Number(b.price))})).filter(group=>group.products.length);
       const singles=singleGroups.flatMap(group=>group.products);
       state.offerSets=sets;state.offerSingles=singles;saveCommerceSession();
       if(sets.length||singleGroups.length){
@@ -515,11 +517,12 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
         const setCardsByType=new Map(typeOrder.map(type=>{
           const cards=indexedSets.filter(item=>item.set.type===type).map(({set,index:i})=>{
             const compatible=set.type==='compatible';
+            const catalogPackage=set.packageKind==='catalog'&&set.products.length===1;
             const capacities=set.products.map(parseCapacity).filter(Boolean);
             const minCapacity=capacities.length?Math.min(...capacities):0;
             const setPage=minCapacity?Number(set.totalPrice)/minCapacity:0;
             const itemLabel=isInkOffer(set.products)?'náplne':'tonery';
-            return `<article class="tm-ai-set-card is-${set.type}${set===recommended?' is-recommended':''}">${set===recommended?'<span class="tm-ai-recommend-badge">Odporúčame – najlepší pomer cena/strana</span>':''}<div class="tm-ai-set-card__head"><div><b>${escapeHtml(set.label||labels[set.type])}</b><small>4 ${itemLabel}: BK + C + M + Y · skladom${setPage?` · ${setPage.toLocaleString('sk-SK',{minimumFractionDigits:4,maximumFractionDigits:4})} €/farebná strana`:''}</small></div><strong>${money(set.totalPrice)}</strong></div><div class="tm-ai-set-toners">${set.products.map(p=>`<span>${aiImage(p)?`<img src="${escapeHtml(aiImage(p))}" alt="${escapeHtml(p.name)}" loading="lazy">`:''}<span><b>${escapeHtml(aiColorLabel(aiColor(p)).split(' / ')[0])}</b><small>${escapeHtml(p.name||p.sku||(isInkOffer([p])?'Náplň':'Toner'))}</small><em>${aiStockLabel(p)}${costPerPage(p)?` · ${costPerPageText(p)}`:''}</em></span></span>`).join('')}</div>${compatible?'<p class="tm-ai-set-discount">Zľava na každú farbu v sade: 2–3 sady −10 % · 4 a viac sád −25 %</p>':''}<div class="tm-ai-set-actions"><button type="button" data-ai-set="${i}">⚡ Rýchly nákup s AI</button><a href="${escapeHtml(webResultsUrl(set.products))}">Zobraziť na webe</a></div></article>`;
+            return `<article class="tm-ai-set-card is-${set.type}${set===recommended?' is-recommended':''}">${set===recommended?'<span class="tm-ai-recommend-badge">Odporúčame – najlepší pomer cena/strana</span>':''}<div class="tm-ai-set-card__head"><div><b>${escapeHtml(set.label||labels[set.type])}</b><small>${catalogPackage?'Kompletné katalógové balenie CMYK':'4 '+itemLabel+': BK + C + M + Y'} · ${set.products.every(isAiInStock)?'skladom':'overte dostupnosť'}${setPage?` · ${setPage.toLocaleString('sk-SK',{minimumFractionDigits:4,maximumFractionDigits:4})} €/farebná strana`:''}</small></div><strong>${money(set.totalPrice)}</strong></div><div class="tm-ai-set-toners">${set.products.map(p=>`<span>${aiImage(p)?`<img src="${escapeHtml(aiImage(p))}" alt="${escapeHtml(p.name)}" loading="lazy">`:''}<span><b>${catalogPackage?'CMYK':escapeHtml(aiColorLabel(aiColor(p)).split(' / ')[0])}</b><small>${escapeHtml(p.name||p.sku||(isInkOffer([p])?'Náplň':'Toner'))}</small><em>${aiStockLabel(p)}${costPerPage(p)?` · ${costPerPageText(p)}`:''}</em></span></span>`).join('')}</div>${compatible?`<p class="tm-ai-set-discount">${catalogPackage?'Množstevná zľava na rovnakú sadu':'Zľava na každú farbu v sade'}: 2–3 sady −10 % · 4 a viac sád −25 %</p>`:''}<div class="tm-ai-set-actions"><button type="button" data-ai-set="${i}">⚡ Rýchly nákup s AI</button><a href="${escapeHtml(webResultsUrl(set.products))}">Zobraziť na webe</a></div></article>`;
           }).join('');
           return [type,cards];
         }));
@@ -685,12 +688,20 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
       ps.forEach(p=>addCommerceItem(p,Math.max(1,Number(p.historical_quantity||1))));const unavailable=state.profile.lastOrder?.unavailableProducts?.length||0;
       addMessage('bot',`<p>Pripravil som dostupné produkty z poslednej objednávky.${unavailable?` ${unavailable} nedostupných položiek som nepridal ani automaticky nenahradil.`:''}</p>`,{scroll:false});askNextStep();return;
     }
+    const cartMutationForbidden=forbidsCartMutation(question);
+    const commerceCartBefore=(state.commerceState?.cart||[]).map(item=>({...item}));
+    const uiCartBefore=state.cart.map(item=>({...item}));
     state.busy=true; state.lastQuestion=question;trackEvent('question',{question:String(question).slice(0,300)});
     addMessage('user',`<p>${escapeHtml(question)}</p>`); const loading=addMessage('bot','<p>Overujem informácie a katalóg…</p>');
     try{
       const r=await fetch('/api/ai-tomas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:question,page:location.pathname,state:state.commerceState})});
       const d=await r.json(); if(!r.ok||!d?.ok)throw new Error(d?.error||'Požiadavka zlyhala.');
-      const shoppingAction=['ASK_PRODUCT_TYPE','OPEN_QUANTITY','ADD_TO_CART','OPEN_CART','OPEN_CHECKOUT'].includes(d.action?.kind);
+      if(cartMutationForbidden){
+        if(d.state)d.state.cart=commerceCartBefore;
+        state.cart=uiCartBefore;
+        if(isCartChangingAction(d.action?.kind))d.action=null;
+      }
+      const shoppingAction=['ASK_PRODUCT_TYPE','OPEN_QUANTITY','ADD_TO_CART','ADD_BUNDLE_TO_CART','OPEN_CART','OPEN_CHECKOUT'].includes(d.action?.kind);
       if(d.commerce?.products?.length||shoppingAction){state.mode='shop';setExperience('shop');}
       else autoPanelSize('advice');
       state.commerceState=d.state||state.commerceState; state.history=Array.isArray(d.state?.history)?d.state.history.slice(-20):state.history;
@@ -703,6 +714,13 @@ import { isOrderStatusQuestion } from "../lib/ai-order-question.ts";
         const exists=state.cart.find(x=>cartKey(x.product)===cartKey(d.action.product));
         if(exists)exists.qty=Math.max(exists.qty,Number((d.state?.cart||[]).find(x=>String(x.id)===String(d.action.product.id))?.quantity||exists.qty));
         else state.cart.push({product:d.action.product,qty:Math.max(1,Number(d.action.quantity||1))});
+        updateLiveCart();askNextStep();
+      } else if(d.action?.kind==='ADD_BUNDLE_TO_CART'&&Array.isArray(d.action.products)){
+        d.action.products.forEach(product=>{
+          const exists=state.cart.find(x=>cartKey(x.product)===cartKey(product));
+          const quantity=Math.max(1,Number(d.action.quantity||1));
+          if(exists)exists.qty+=quantity;else state.cart.push({product,qty:quantity});
+        });
         updateLiveCart();askNextStep();
       } else if(d.action?.kind==='OPEN_QUANTITY'&&d.action.product) quantityChooser(d.action.product);
       else if(d.action?.kind==='ASK_PRODUCT_TYPE') renderTypeQuestion(d.action);

@@ -533,10 +533,24 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   // Jednoznačné obchodné témy routujeme priamo, aby ich všeobecné slová ako „nákup“ neprebili.
   const normalizedMessage = normalize(originalMessage);
 
+  // Otázka na identitu predávajúceho má prednosť pred všeobecnou témou
+  // „faktúra na firmu“. Inak sa „Aké je vaše IČO?“ nesprávne vysvetľovalo
+  // ako návod na zadanie IČO zákazníka v pokladni.
+  if (/\b(?:ake|vase|vas|firma|prevadzkovatel|predavajuci|sidlo)\w*(?:\s+\w+){0,5}\s+\b(?:ico|dic|ic\s*dph|sidlo)\b|\b(?:ico|dic|ic\s*dph)\b(?:\s+\w+){0,4}\s+\b(?:firmy|predavajuceho|prevadzkovatela|vase)\w*\b/.test(normalizedMessage)) {
+    const seller = aiKnowledge.find((item) => item.id === 'predavajuci-firma');
+    if (seller) return { answer: [`${seller.title}:`, ...seller.answer], products: [], groups: [], intent: 'legal', faq: seller.id, confidence: 0.99 };
+  }
+
+  if ((/\bfaktur\w*\b/.test(normalizedMessage)&&/\bobjednavk\w*\b/.test(normalizedMessage))
+    || /\b(?:moje|svoje)\s+objednavky\b|\bhistori\w*(?:\s+\w+){0,3}\s+objednav\w*\b/.test(normalizedMessage)) {
+    const account = aiKnowledge.find((item) => item.id === 'ucet-funkcie');
+    if (account) return { answer: [`${account.title}:`, ...account.answer], products: [], groups: [], intent: 'account', faq: account.id, confidence: 0.99 };
+  }
+
   // Najčastejšie diagnostické problémy musia mať deterministickú odpoveď.
   // Všeobecné slovo „tlačí“ samo osebe nesmie prebiť konkrétne „pruhy“ a
   // vybrať nesúvisiacu radu pre nerozpoznaný toner.
-  const directDiagnosticId = /\b(?:pas|pasy|pruh|pruhy|ciar|ciary|smuh|smuhy)\w*\b/.test(normalizedMessage)
+  const directDiagnosticId = /\b(?:pas|pasy|pruh|pruhy|ciar|ciary|smuh|smuhy|bodk|bodky)\w*\b/.test(normalizedMessage)
     ? 'tlaci-pasy'
     : /\b(?:bled|slab)\w*\b.*\b(?:tlac|vytlac|farb)\w*\b|\b(?:tlac|vytlac|farb)\w*\b.*\b(?:bled|slab)\w*\b/.test(normalizedMessage)
       ? 'bledy-vytlacok'
@@ -546,6 +560,17 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   if (directDiagnosticId) {
     const diagnostic = aiKnowledge.find((item) => item.id === directDiagnosticId);
     if (diagnostic) return { answer: [`${diagnostic.title}:`, ...diagnostic.answer], products: [], groups: [], intent: 'diagnostic', faq: diagnostic.id, confidence: 0.99 };
+  }
+
+  if (/\b(?:aky je rozdiel|rozdiel|co je)\b.*\btoner\w*\b.*\batrament\w*\b|\btoner\w*\b.*\b(?:alebo|versus|vs)\b.*\batrament\w*\b/.test(normalizedMessage)) {
+    const material = aiKnowledge.find((item) => item.id === 'toner-atrament');
+    if (material) return { answer: [`${material.title}:`, ...material.answer], products: [], groups: [], intent: 'support', faq: material.id, confidence: 0.99 };
+  }
+
+  const changesSensitiveOrderData = /\b(?:zmen|uprav)\w*\b(?:\s+\w+){0,5}\s+\b(?:adres|telefon|e-?mail|email|meno|udaj)\w*\b/.test(normalizedMessage);
+  if (!changesSensitiveOrderData && /\b(?:storn|zrus|zrus mi|zmen)\w*\b.*\bobjednavk\w*\b|\bobjednavk\w*\b.*\b(?:storn|zrus|zmen)\w*\b/.test(normalizedMessage)) {
+    const cancellation = aiKnowledge.find((item) => item.id === 'storno-objednavky');
+    if (cancellation) return { answer: [`${cancellation.title}:`, ...cancellation.answer], products: [], groups: [], intent: 'order', faq: cancellation.id, confidence: 0.99 };
   }
 
   if (/\bporad\w*\b/.test(normalizedMessage) && /\b(?:nakup|toner|napln|produkt)\w*\b/.test(normalizedMessage)) {
@@ -642,7 +667,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     const diag = knowledgeMatch(originalMessage, 'diagnostic');
     if (diag) return { answer: [`${diag.item.title}:`, ...diag.item.answer], products: [], groups: [], intent: 'diagnostic', faq: diag.item.id, confidence: 0.99 };
   }
-  if (/\b(kto je majitel|zrus mi objednavku|zmen mi adresu objednavky)\b/i.test(normalizedMessage)) {
+  if (/\b(kto je majitel|zmen mi adresu objednavky)\b/i.test(normalizedMessage)) {
     return { answer: ['Túto požiadavku neviem v AI Tomášovi bezpečne vykonať. Kontaktujte prosím zákaznícku podporu.'], products: [], groups: [], intent: 'fallback', confidence: 0.99, unanswered: true };
   }
 

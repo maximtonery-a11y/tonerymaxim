@@ -9,6 +9,9 @@ export function normalizeOrderQuestion(value: unknown) {
 
 export function isOrderStatusQuestion(value: unknown) {
   const text = normalizeOrderQuestion(value);
+  // Storno, zmena, reklamácia, vrátenie či refundácia sú servisné otázky.
+  // Ani slová „pred expedíciou“ ich nesmú presmerovať na poslednú objednávku.
+  if (/\b(?:storno|stornovat|zrusit|zmena|zmenit|upravit|reklam|vratit|vraten|odstup|refund|peniaz|platb)\w*\b/.test(text)) return false;
   const hasOrder = /\b(?:objednavk|zasielk|balik)\w*\b/.test(text);
   const hasOrderNumber = /\b(?:tm\s*)?\d{5,12}\b/.test(text);
   const explicitStatus = /\b(?:kde|stav|zist|over|skontrol|sled|tracking|track)\w*\b/.test(text);
