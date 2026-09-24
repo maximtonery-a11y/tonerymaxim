@@ -46,7 +46,7 @@ const RATE_RULES: Array<{ match: RegExp; methods?: string[]; rule: RateRule }> =
   // Citlivé účtové a platobné operácie.
   { match: /^\/api\/account\/change-password$/, methods: ['POST'], rule: { limit: 10, windowMs: 10 * 60_000 } },
   { match: /^\/api\/auth\/logout$/, methods: ['POST'], rule: { limit: 60, windowMs: 60_000 } },
-  { match: /^\/api\/gopay-retry$/, methods: ['POST'], rule: { limit: 10, windowMs: 10 * 60_000 } },
+  { match: /^\/api\/(gopay-retry|gopay-change-payment)$/, methods: ['POST'], rule: { limit: 10, windowMs: 10 * 60_000 } },
   { match: /^\/api\/sync-products$/, methods: ['GET', 'POST'], rule: { limit: 6, windowMs: 10 * 60_000 } },
 
   // Analytika a vyhľadávanie generujú viac požiadaviek pri bežnom používaní.

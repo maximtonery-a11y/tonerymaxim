@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { readPendingGoPayOrder, savePendingGoPayOrder } from "../../lib/checkout-order";
-import { getEnv, getGoPayAccessToken, getGoPayHost } from "../../lib/gopay-client";
+import { getEnv, getGoPayAccessToken, getGoPayHost, verifyGoPayPaymentAgainstOrder } from "../../lib/gopay-client";
 import { makePaymentAccessToken, paymentReturnUrl, verifyPaymentAccessToken } from "../../lib/payment-access";
 
 export const prerender = false;
@@ -32,6 +32,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ ok: false, error: 'Odkaz na opakovanie platby nie je platný alebo expiroval.' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+      });
+    }
+
+    const currentPayment = await verifyGoPayPaymentAgainstOrder(oldPaymentId, {
+      orderNumber: pending.orderNumber,
+      amountCents: Number(pending.amountCents || 0),
+      currency: pending.currency,
+      requirePaid: false,
+    });
+    const currentState = String(currentPayment?.state || "UNKNOWN").toUpperCase();
+    if (["PAID", "AUTHORIZED"].includes(currentState)) {
+      return new Response(JSON.stringify({ ok: false, error: "Platba už bola uhradená. Novú platbu nevytvárame." }), {
+        status: 409,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+      });
+    }
+    if (!["CANCELED", "TIMEOUTED", "FAILED"].includes(currentState)) {
+      return new Response(JSON.stringify({ ok: false, error: "Pôvodná platba ešte nemá konečný neúspešný stav. Najskôr obnovte kontrolu jej stavu." }), {
+        status: 409,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
       });
     }
 

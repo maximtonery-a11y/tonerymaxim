@@ -169,13 +169,18 @@ function modelTokenScore(queryToken: string, targetCompact: string, targetTokens
   const queryCompact = compactKey(queryToken);
   if (!queryCompact) return 0;
 
-  let best = targetCompact.includes(queryCompact) ? 70 : 0;
+  // Dlhé čisto číselné SKU sa nesmú správať ako rodina. Dotaz 99999
+  // napríklad nie je zhoda pre interné SKU 9999999999999 vernostného papiera.
+  // Kratšie číselné rodiny náplní (305, 652...) zostávajú bez zmeny.
+  const strictNumeric = /^\d{5,}$/.test(queryCompact);
+  let best = !strictNumeric && targetCompact.includes(queryCompact) ? 70 : 0;
   for (const token of targetTokens) {
     const tokenCompact = compactKey(token);
     if (!/\d/.test(tokenCompact)) continue;
     if (tokenCompact === queryCompact) best = Math.max(best, 110);
     else if (tokenCompact.startsWith(queryCompact)) {
       const suffix = tokenCompact.slice(queryCompact.length);
+      if (strictNumeric && /^\d+$/.test(tokenCompact)) continue;
       // M28a/M28w sú prirodzenejšie doplnenia M28 než samostatná rada M280/M281.
       if (/^[a-z]{1,3}$/.test(suffix)) best = Math.max(best, 100);
       else if (/^\d/.test(suffix)) best = Math.max(best, 78);
@@ -484,7 +489,10 @@ function isLikelyCandidate(item: IndexedProduct, query: QueryInfo) {
   if (query.normalized.length >= 3 && item.text.includes(query.normalized)) return true;
 
   if (query.modelTokens.length) {
-    const hasModel = query.modelTokens.some((token) => item.compact.includes(compactKey(token)) || item.printers.some((printer) => printer.compact.includes(compactKey(token))));
+    const hasModel = query.modelTokens.some((token) =>
+      modelTokenScore(token, item.compact, item.tokens) >= 46
+      || item.printers.some((printer) => modelTokenScore(token, printer.compact, printer.tokens) >= 46)
+    );
     if (!hasModel) return false;
 
     const hasBrand = !query.brandTokens.length || query.brandTokens.some((brand) => item.text.includes(brand) || item.printers.some((printer) => printer.text.includes(brand)));

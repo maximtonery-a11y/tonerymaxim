@@ -29,6 +29,10 @@ import { orderFulfilmentText } from "../lib/product-availability.ts";
     return submitted;
   }
 
+  function isOnlinePayment(code) {
+    return ["gopay", "applepay", "googlepay"].includes(String(code || ""));
+  }
+
   function isCalendarCartItem(item) {
     const source = String(item?.source || "").trim();
     const id = String(item?.id ?? item?.productId ?? item?.product_id ?? "").trim().toLowerCase();
@@ -929,6 +933,13 @@ import { orderFulfilmentText } from "../lib/product-availability.ts";
     const discountedSubtotal = Math.max(0, subtotal - discount);
     const shipping = SHIPPING[getSelected("shipping") || "dpd_courier"] || SHIPPING.dpd_courier;
     const payment = PAYMENT[getSelected("payment") || "gopay"] || PAYMENT.gopay;
+
+    const securePaymentNote = document.querySelector("[data-secure-payment-note]");
+    if (securePaymentNote) {
+      securePaymentNote.textContent = isOnlinePayment(getSelected("payment"))
+        ? "🔒 Bezpečná online platba cez GoPay"
+        : "🔒 Bezpečné odoslanie objednávky";
+    }
 
     const paymentPrice = payment.price;
     const couponDiscount = couponDiscountForTotal(discountedSubtotal, cart);
@@ -1831,8 +1842,9 @@ import { orderFulfilmentText } from "../lib/product-availability.ts";
       return;
     }
 
+    const selectedPayment = getSelected("payment") || "gopay";
     const alreadySubmitted = submittedGoPayForCart(cart);
-    if (alreadySubmitted) {
+    if (alreadySubmitted && isOnlinePayment(selectedPayment)) {
       tmOrderSubmitting = true;
       setSubmitDisabled(true);
       status.textContent = "Táto objednávka už bola odoslaná. Otváram jej platbu a stav...";
@@ -1905,30 +1917,39 @@ import { orderFulfilmentText } from "../lib/product-availability.ts";
 
     localStorage.setItem("tm_last_order_preview", JSON.stringify(orderPreview));
 
-    const onlinePayments = ["gopay", "applepay", "googlepay"];
-    const isOnlinePayment = onlinePayments.includes(orderPreview.payment);
+    const onlinePaymentSelected = isOnlinePayment(orderPreview.payment);
+    const isGoPayRecovery = Boolean(alreadySubmitted?.paymentId && !onlinePaymentSelected);
 
     try {
       tmOrderSubmitting = true;
       setSubmitDisabled(true);
-      status.textContent = isOnlinePayment ? "Vytváram GoPay platbu..." : "Ukladám objednávku...";
+      status.textContent = onlinePaymentSelected ? "Vytváram GoPay platbu..." : (isGoPayRecovery ? "Mením spôsob platby..." : "Ukladám objednávku...");
       status.className = "order-status";
-      setSubmitProgress(true, isOnlinePayment
+      setSubmitProgress(true, onlinePaymentSelected
         ? "Pripravujeme bezpečnú platbu GoPay. Prosím, nezatvárajte túto stránku."
-        : "Objednávku bezpečne ukladáme. Prosím, nezatvárajte túto stránku.");
+        : (isGoPayRecovery
+          ? "Aktualizujeme platbu na pôvodnej objednávke. Novú objednávku nevytvárame."
+          : "Objednávku bezpečne ukladáme. Prosím, nezatvárajte túto stránku."));
 
-      const response = await fetch(isOnlinePayment ? "/api/gopay-create" : "/api/order-create", {
+      const endpoint = onlinePaymentSelected
+        ? "/api/gopay-create"
+        : (isGoPayRecovery ? "/api/gopay-change-payment" : "/api/order-create");
+      const requestOptions = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-TM-Idempotency-Key": orderPreview.requestId,
         },
         body: JSON.stringify(orderPreview),
-      });
+      };
+      if (isGoPayRecovery) {
+        requestOptions.body = JSON.stringify({ ...orderPreview, paymentId: alreadySubmitted.paymentId });
+      }
+      const response = await fetch(endpoint, requestOptions);
 
       const data = await response.json();
 
-      if (isOnlinePayment) {
+      if (onlinePaymentSelected) {
         if (!response.ok || !data.ok || !data.gwUrl) {
           throw new Error(data.error || "Nepodarilo sa vytvoriť GoPay platbu.");
         }

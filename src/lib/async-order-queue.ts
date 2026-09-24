@@ -287,6 +287,46 @@ export function scheduleAsyncOrderQueue(delayMs = 0) {
   scheduleQueueTask(delayMs);
 }
 
+export async function replaceQueuedOrderPayment(source: CheckoutOrderSource) {
+  await ensureDirs();
+  const id = safeId(source.orderNumber);
+  if (!id) return { state: "missing" as const, orderId: 0 };
+
+  const pendingPath = jobFile(PENDING_DIR, id);
+  const pending = await readJob(pendingPath);
+  if (pending) {
+    pending.source = source;
+    await writeJob(PENDING_DIR, pending);
+    return { state: "pending" as const, orderId: Number(pending.wooOrderId || 0) };
+  }
+
+  const processing = await readJob(jobFile(PROCESSING_DIR, id));
+  if (processing) return { state: "processing" as const, orderId: Number(processing.wooOrderId || 0) };
+
+  const done = await readJob(jobFile(DONE_DIR, id));
+  if (done) {
+    return {
+      state: "done" as const,
+      orderId: Number(done.wooOrderId || done.source.wooOrderId || 0),
+    };
+  }
+
+  const failedPath = jobFile(FAILED_DIR, id);
+  const failed = await readJob(failedPath);
+  if (failed) {
+    failed.source = source;
+    failed.status = "pending";
+    failed.attempts = 0;
+    failed.lastError = undefined;
+    await writeJob(PENDING_DIR, failed);
+    await unlink(failedPath).catch(() => null);
+    scheduleAsyncOrderQueue(0);
+    return { state: "pending" as const, orderId: Number(failed.wooOrderId || 0) };
+  }
+
+  return { state: "missing" as const, orderId: Number(source.wooOrderId || 0) };
+}
+
 export async function processAsyncOrderQueue() {
   if (queueLoopRunning) {
     // Impulz prijatý počas aktívnej dávky nesmie zaniknúť. Po jej skončení

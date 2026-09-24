@@ -17,7 +17,7 @@ function getUiState(state: string) {
       return {
         type: "canceled",
         title: "Platba nebola dokončená",
-        message: "GoPay vrátil stav CANCELED. Pri sandbox teste to znamená, že platba bola zrušená alebo zamietnutá v testovacom 3D Secure kroku.",
+        message: "Platba bola zrušená alebo zamietnutá. Môžete ju bezpečne zopakovať alebo zvoliť inú platbu v pokladni.",
       };
     case "TIMEOUTED":
       return {
@@ -31,6 +31,12 @@ function getUiState(state: string) {
         type: "pending",
         title: "Platba čaká na dokončenie",
         message: "Platba ešte nebola zaplatená. Skúste platbu zopakovať alebo zvoľte inú metódu.",
+      };
+    case "FAILED":
+      return {
+        type: "canceled",
+        title: "Platba zlyhala",
+        message: "Platba neprebehla. Môžete ju bezpečne zopakovať alebo zvoliť inú platbu v pokladni.",
       };
     default:
       return {

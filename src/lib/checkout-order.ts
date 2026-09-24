@@ -837,6 +837,42 @@ export async function readPendingGoPayOrder(paymentId: string): Promise<Checkout
   return null;
 }
 
+export async function updateWooOrderPayment(source: CheckoutOrderSource, orderId: number) {
+  if (!Number.isInteger(orderId) || orderId <= 0) throw new Error("Chýba WooCommerce objednávka pre zmenu platby.");
+  const payment = wooPaymentMethod(source);
+  const taxRateId = source.paymentPrice > 0 ? await resolveStandardTaxRateId() : 0;
+  const paymentFee = source.paymentPrice > 0
+    ? feeLines({ ...source, coupon: null, loyaltyDiscount: 0 }, taxRateId).find((line) => line.name === source.paymentLabel)
+    : null;
+
+  if (paymentFee) {
+    paymentFee.meta_data.push({ key: "tm_payment_fee", value: "1" });
+  }
+
+  const updated = await wooRequest<any>(`/orders/${orderId}`, {
+    method: "PUT",
+    body: {
+      status: payment.status,
+      set_paid: false,
+      payment_method: payment.method,
+      payment_method_title: payment.title,
+      transaction_id: "",
+      ...(paymentFee ? { fee_lines: [paymentFee] } : {}),
+      meta_data: [
+        { key: "tm_payment_code", value: source.paymentCode },
+        { key: "tm_payment_title", value: payment.title },
+        { key: "gopay_state", value: "CONVERTED_TO_OFFLINE" },
+        { key: "tm_gopay_converted_at", value: new Date().toISOString() },
+      ],
+    },
+  });
+
+  return {
+    orderId: Number(updated?.id || orderId),
+    orderNumber: String(updated?.number || source.orderNumber),
+  };
+}
+
 async function markWooGoPayOrderPaid(source: CheckoutOrderSource, payment: GoPayPayment) {
   const orderId = Number(source.wooOrderId || 0);
   if (!orderId) return null;

@@ -57,6 +57,7 @@ const RATE_RULES: Array<{ match: RegExp; methods: string[]; limit: number; windo
   { match: /^\/api\/newsletter\/(subscribe|unsubscribe|account-unsubscribe)$/, methods: ['POST'], limit: 12, windowMs: 600_000 },
   { match: /^\/api\/admin\/newsletter$/, methods: ['GET', 'POST'], limit: 30, windowMs: 600_000 },
   { match: /^\/api\/(order-create|gopay-create)$/, methods: ['POST'], limit: 30, windowMs: 60_000 },
+  { match: /^\/api\/(gopay-retry|gopay-change-payment)$/, methods: ['POST'], limit: 10, windowMs: 600_000 },
   { match: /^\/api\/gopay-status$/, methods: ['GET'], limit: 180, windowMs: 60_000 },
   { match: /^\/api\/(smart-search|products|product|printers)$/, methods: ['GET'], limit: 600, windowMs: 60_000 },
   { match: /^\/api\/ai-/, methods: ['POST'], limit: 30, windowMs: 600_000 },
