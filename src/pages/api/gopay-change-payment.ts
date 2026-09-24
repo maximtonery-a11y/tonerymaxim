@@ -60,8 +60,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (["PAID", "AUTHORIZED"].includes(state)) {
       return json({ ok: false, error: "Platba už bola uhradená. Spôsob platby sa nedá zmeniť." }, 409);
     }
-    if (!["CANCELED", "TIMEOUTED", "FAILED"].includes(state)) {
-      return json({ ok: false, error: "GoPay platba ešte nemá konečný neúspešný stav. Najskôr overte jej stav." }, 409);
+    if (!["CREATED", "PAYMENT_METHOD_CHOSEN", "CANCELED", "TIMEOUTED", "FAILED"].includes(state)) {
+      return json({ ok: false, error: "GoPay vrátil neznámy stav platby. Spôsob platby zatiaľ nemožno bezpečne zmeniť." }, 409);
     }
 
     const result = await withOrderIdempotency(`gopay-change-${paymentId}-${paymentCode}`, async () => {
@@ -69,6 +69,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       const total = Math.max(0, Math.round((Number(pending.total || 0) - oldPaymentPrice + nextPayment.price) * 100) / 100);
       const updatedSource = {
         ...pending,
+        originalGoPayAmountCents: Number(pending.originalGoPayAmountCents || pending.amountCents || 0),
+        originalGoPayTotal: Number(pending.originalGoPayTotal || pending.total || 0),
+        convertedPaymentFeeLineIds: pending.convertedPaymentFeeLineIds || [],
         paymentState: "CONVERTED_TO_OFFLINE",
         paymentCode,
         paymentLabel: nextPayment.label,
@@ -91,6 +94,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         const woo = await updateWooOrderPayment(updatedSource, orderId);
         updatedSource.wooOrderId = woo.orderId;
         updatedSource.wooOrderNumber = woo.orderNumber;
+        updatedSource.convertedPaymentFeeLineIds = woo.paymentFeeLineIds;
         orderNumber = woo.orderNumber || orderNumber;
       }
       await savePendingGoPayOrder(updatedSource);

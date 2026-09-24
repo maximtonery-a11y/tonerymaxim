@@ -57,6 +57,25 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
       });
     }
+    if (["CREATED", "PAYMENT_METHOD_CHOSEN"].includes(currentState)) {
+      const existingGatewayUrl = clean(currentPayment?.gw_url || (pending as any).gwUrl);
+      if (!existingGatewayUrl) {
+        return new Response(JSON.stringify({ ok: false, error: "Pôvodná nezaplatená platba nemá dostupný odkaz na GoPay. Zvoľte inú platbu v pokladni." }), {
+          status: 409,
+          headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+        });
+      }
+      return new Response(JSON.stringify({
+        ok: true,
+        paymentId: oldPaymentId,
+        orderNumber: pending.orderNumber,
+        gwUrl: existingGatewayUrl,
+        reused: true,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+      });
+    }
     if (!["CANCELED", "TIMEOUTED", "FAILED"].includes(currentState)) {
       return new Response(JSON.stringify({ ok: false, error: "Pôvodná platba ešte nemá konečný neúspešný stav. Najskôr obnovte kontrolu jej stavu." }), {
         status: 409,

@@ -71,7 +71,7 @@ export const GET: APIRoute = async ({ url, cookies }) => {
         headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
       });
     }
-    const amountCents = Number(pending.amountCents);
+    const amountCents = Number(pending.originalGoPayAmountCents || pending.amountCents);
     if (!Number.isFinite(amountCents) || amountCents <= 0) throw new Error(`GoPay platba ${paymentId} nemá platnú očakávanú sumu.`);
     const payment = await verifyGoPayPaymentAgainstOrder(paymentId, { orderNumber: pending.orderNumber, amountCents, currency: pending.currency, requirePaid: false });
     const state = String(payment?.state || "UNKNOWN");

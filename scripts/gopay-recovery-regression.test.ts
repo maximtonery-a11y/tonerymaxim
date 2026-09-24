@@ -11,7 +11,7 @@ test("zrušená GoPay platba sa pri offline platbe nemení na novú objednávku"
   assert.match(checkout, /alreadySubmitted\s*&&\s*isOnlinePayment/);
   assert.match(endpoint, /replaceQueuedOrderPayment/);
   assert.match(endpoint, /updateWooOrderPayment/);
-  assert.match(endpoint, /\["CANCELED",\s*"TIMEOUTED",\s*"FAILED"\]/);
+  assert.match(endpoint, /\["CREATED",\s*"PAYMENT_METHOD_CHOSEN",\s*"CANCELED",\s*"TIMEOUTED",\s*"FAILED"\]/);
   assert.match(endpoint, /\["PAID",\s*"AUTHORIZED"\]/);
 });
 
@@ -26,7 +26,37 @@ test("opakovať GoPay vytvorí novú platbu k pôvodnej objednávke", async () =
   assert.match(retryApi, /paymentState:\s*"RETRIED"/);
   assert.match(retryApi, /paymentState:\s*"CREATED"/);
   assert.match(retryApi, /\["PAID",\s*"AUTHORIZED"\]/);
+  assert.match(retryApi, /\["CREATED",\s*"PAYMENT_METHOD_CHOSEN"\]/);
+  assert.match(retryApi, /gwUrl:\s*existingGatewayUrl/);
+  assert.match(retryApi, /reused:\s*true/);
   assert.match(retryApi, /\["CANCELED",\s*"TIMEOUTED",\s*"FAILED"\]/);
+});
+
+test("nedokončená GoPay platba vždy ponúkne opakovanie aj zmenu platby", async () => {
+  const confirmation = await read("src/pages/platba-dokoncena.astro");
+  assert.match(confirmation, /data-gopay-change/);
+  assert.match(confirmation, /Zmeniť spôsob platby/);
+  assert.match(confirmation, /\['CREATED','PAYMENT_METHOD_CHOSEN'\]\.includes\(state\)[\s\S]*showRecoveryActions\(\)/);
+});
+
+test("zmena na dobierku overí GoPay a upraví pôvodnú objednávku", async () => {
+  const changeApi = await read("src/pages/api/gopay-change-payment.ts");
+  assert.match(changeApi, /verifyGoPayPaymentAgainstOrder/);
+  assert.match(changeApi, /\["PAID",\s*"AUTHORIZED"\]\.includes\(state\)/);
+  assert.match(changeApi, /originalGoPayAmountCents/);
+  assert.match(changeApi, /replaceQueuedOrderPayment/);
+  assert.match(changeApi, /updateWooOrderPayment/);
+});
+
+test("oneskorená GoPay notifikácia po zmene platby nevytvorí druhú objednávku", async () => {
+  const checkoutOrder = await read("src/lib/checkout-order.ts");
+  const statusApi = await read("src/pages/api/gopay-status.ts");
+  const notifyApi = await read("src/pages/api/gopay-notify.ts");
+  assert.match(statusApi, /pending\.originalGoPayAmountCents\s*\|\|\s*pending\.amountCents/);
+  assert.match(notifyApi, /pending\.originalGoPayAmountCents\s*\|\|\s*pending\.amountCents/);
+  assert.match(checkoutOrder, /CONVERTED_TO_OFFLINE[\s\S]*lastGoPayState/);
+  assert.match(checkoutOrder, /convertedFromOffline[\s\S]*payment_method:\s*"gopay"/);
+  assert.match(checkoutOrder, /convertedFeeLines[\s\S]*total:\s*"0\.00"/);
 });
 
 test("stará GoPay poistka v prehliadači po 24 hodinách neblokuje novú objednávku", async () => {

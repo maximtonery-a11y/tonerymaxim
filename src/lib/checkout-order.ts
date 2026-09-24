@@ -34,6 +34,10 @@ export type CheckoutOrderSource = {
   paymentId?: string;
   paymentState?: string;
   amountCents?: number;
+  originalGoPayAmountCents?: number;
+  originalGoPayTotal?: number;
+  convertedPaymentFeeLineIds?: number[];
+  lastGoPayState?: string;
   currency: string;
   cart: NormalizedCartItem[];
   billing: Record<string, any>;
@@ -870,6 +874,12 @@ export async function updateWooOrderPayment(source: CheckoutOrderSource, orderId
   return {
     orderId: Number(updated?.id || orderId),
     orderNumber: String(updated?.number || source.orderNumber),
+    paymentFeeLineIds: Array.isArray(updated?.fee_lines)
+      ? updated.fee_lines
+          .filter((line: any) => Array.isArray(line?.meta_data) && line.meta_data.some((meta: any) => meta?.key === "tm_payment_fee" && String(meta?.value) === "1"))
+          .map((line: any) => Number(line?.id || 0))
+          .filter((id: number) => id > 0)
+      : [],
   };
 }
 
@@ -878,16 +888,29 @@ async function markWooGoPayOrderPaid(source: CheckoutOrderSource, payment: GoPay
   if (!orderId) return null;
 
   const paymentId = String(payment?.id || source.paymentId || "");
+  const convertedFromOffline = String(source.paymentState || "").toUpperCase() === "CONVERTED_TO_OFFLINE";
+  const convertedFeeLines = convertedFromOffline && Array.isArray(source.convertedPaymentFeeLineIds)
+    ? source.convertedPaymentFeeLineIds.map((id) => ({ id, total: "0.00", total_tax: "0.00" }))
+    : [];
   const updated = await wooRequest<any>(`/orders/${orderId}`, {
     method: "PUT",
     body: {
       status: "processing",
       set_paid: true,
       transaction_id: paymentId || undefined,
+      ...(convertedFromOffline ? {
+        payment_method: "gopay",
+        payment_method_title: "GoPay",
+        ...(convertedFeeLines.length ? { fee_lines: convertedFeeLines } : {}),
+      } : {}),
       meta_data: [
         { key: "gopay_payment_id", value: paymentId },
         { key: "gopay_state", value: String(payment?.state || "PAID") },
         { key: "tm_payment_paid_at", value: new Date().toISOString() },
+        ...(convertedFromOffline ? [
+          { key: "tm_payment_code", value: "gopay" },
+          { key: "tm_late_gopay_after_offline_conversion", value: "1" },
+        ] : []),
       ],
     },
   });
@@ -907,11 +930,20 @@ async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
 
   const source = await readPendingGoPayOrder(paymentId);
   if (!source) throw new Error(`Nenájdené uložené dáta objednávky pre GoPay platbu ${paymentId}.`);
+  const convertedFromOffline = String(source.paymentState || "").toUpperCase() === "CONVERTED_TO_OFFLINE";
+  const paidSource: CheckoutOrderSource = convertedFromOffline ? {
+    ...source,
+    paymentCode: "gopay",
+    paymentLabel: "GoPay",
+    paymentPrice: 0,
+    total: Number(source.originalGoPayTotal || source.total || 0),
+    amountCents: Number(source.originalGoPayAmountCents || source.amountCents || 0),
+  } : source;
 
   if (source.wooOrderId) {
     const paidUpdate = await markWooGoPayOrderPaid(source, payment);
     const updated: CheckoutOrderSource = {
-      ...source,
+      ...paidSource,
       paymentState: String(payment.state || "PAID"),
       wooOrderId: paidUpdate?.orderId || source.wooOrderId,
       wooOrderNumber: paidUpdate?.orderNumber || source.wooOrderNumber || String(source.wooOrderId),
@@ -932,7 +964,7 @@ async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
   }
 
   const result = await createWooOrderFromCheckout(
-    { ...source, paymentState: String(payment.state || "PAID") },
+    { ...paidSource, paymentState: String(payment.state || "PAID") },
     {
       gopayPayment: payment,
       customerNote: "Objednávka vytvorená automaticky po úspešnej GoPay platbe.",
@@ -943,7 +975,7 @@ async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
   );
 
   let updated: CheckoutOrderSource = {
-    ...source,
+    ...paidSource,
     paymentState: String(payment.state || "PAID"),
     wooOrderId: result.orderId,
     wooOrderNumber: result.orderNumber,
@@ -994,6 +1026,15 @@ export async function syncWooGoPayPaymentState(source: CheckoutOrderSource, paym
   const paymentId = String(payment?.id || source.paymentId || "");
   const state = String(payment?.state || source.paymentState || "UNKNOWN").toUpperCase();
   const now = new Date().toISOString();
+  if (String(source.paymentState || "").toUpperCase() === "CONVERTED_TO_OFFLINE" && !["PAID", "AUTHORIZED"].includes(state)) {
+    await savePendingGoPayOrder({ ...source, paymentId, lastGoPayState: state });
+    return {
+      created: false,
+      orderId: Number(source.wooOrderId || 0),
+      orderNumber: String(source.wooOrderNumber || source.orderNumber || ""),
+      state,
+    };
+  }
   const updatedSource: CheckoutOrderSource = {
     ...source,
     paymentId,
