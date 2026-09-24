@@ -1017,3 +1017,19 @@
  .tm-ai-frequent button span{display:-webkit-box!important;overflow:hidden!important;font-size:12px!important;font-weight:800!important;line-height:1.25!important;-webkit-box-orient:vertical;-webkit-line-clamp:2}
  .tm-ai-frequent button small{font-size:11px!important;line-height:1.2!important;color:#667085!important}
 }
+
+/* V10 – stabilná mobilná klávesnica a jednoduché karty skutočných sád. */
+.tm-ai-set-missing{margin:0!important;padding:12px 14px!important;border:1px solid #d9e3ef!important;border-radius:12px!important;background:#f8fafc!important;color:#52647a!important;font-size:13px!important;line-height:1.4!important}
+.tm-ai-singles-toggle{display:block;width:100%;min-height:44px;margin:12px 0 0;padding:10px 14px;border:1px solid #b8c9df;border-radius:12px;background:#fff;color:#123e78;font-weight:800;cursor:pointer}
+.tm-ai-singles-panel{margin-top:12px}.tm-ai-singles-panel[hidden]{display:none!important}
+@media(max-width:760px){
+ .tm-ai-assistant__panel{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;transform:none!important}
+ .tm-ai-workspace,.tm-ai-workspace__main,.tm-ai-assistant__messages,.tm-ai-commerce,.tm-ai-guided-offer,.tm-ai-offer-section,.tm-ai-set-card,.tm-ai-single-type{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+ .tm-ai-assistant__form{box-sizing:border-box!important;max-width:100%!important}
+ .tm-ai-assistant__form input{font-size:16px!important}
+ .tm-ai-set-card__head{grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}
+ .tm-ai-set-card__head>div{min-width:0!important}.tm-ai-set-card__head b,.tm-ai-set-card__head small{overflow-wrap:anywhere!important}
+ .tm-ai-singles-toggle{position:relative;z-index:1}
+ .tm-ai-assistant.has-keyboard .tm-ai-assistant__tools{display:none!important}
+ .tm-ai-assistant.has-keyboard .tm-ai-assistant__panel{grid-template-rows:64px minmax(0,1fr) 54px!important}
+}

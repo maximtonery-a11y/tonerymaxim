@@ -194,6 +194,14 @@ function referenceTokensFromQuery(value: string, brands: string[]) {
     if (xlMatch) aliases.delete(xlMatch[1]);
   }
 
+  // Pri presnom OEM kóde (CRG-054, TN-2421...) je samotná číselná časť
+  // príliš všeobecná. Napríklad 054 by inak spojilo Canon CRG-054 s HP
+  // CN054AE. Samostatné číselné dopyty ako HP 305 zostávajú zachované.
+  const hasAlphaNumericReference=[...aliases].some((token)=>/[a-z]/.test(token)&&/\d/.test(token));
+  if(hasAlphaNumericReference){
+    for(const token of [...aliases])if(/^\d{2,8}$/.test(token))aliases.delete(token);
+  }
+
   return [...aliases]
     .filter((token) => /\d/.test(token) && token.length >= 2)
     .sort((left, right) => {

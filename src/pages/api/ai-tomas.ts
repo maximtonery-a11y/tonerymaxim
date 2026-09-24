@@ -14,7 +14,14 @@ import { customerProductLabel } from '../../lib/ai-product-label.ts';
 export const prerender = false;
 const clean = (v: unknown, max=500) => String(v || '').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);
 const normalized = (v: unknown) => clean(v).toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-function requestedType(message:string){const n=normalized(message);return /original/.test(n)?'original':/renov|repas/.test(n)?'renovated':/kompatibil/.test(n)?'compatible':null;}
+type RequestedProductType='compatible'|'original'|'renovated';
+function requestedTypes(message:string):RequestedProductType[]{
+  const n=normalized(message);const types:RequestedProductType[]=[];
+  if(/kompatibil/.test(n))types.push('compatible');
+  if(/original/.test(n))types.push('original');
+  if(/renov|repas/.test(n))types.push('renovated');
+  return types;
+}
 function requestedColor(message:string){const n=normalized(message);return /cier|black|\bbk\b/.test(n)?'black':/cyan|azur/.test(n)?'cyan':/magenta|purpur/.test(n)?'magenta':/yellow|zlt/.test(n)?'yellow':null;}
 function requestedQuantity(message:string){
   const n=normalized(message);
@@ -198,7 +205,11 @@ export const POST: APIRoute = async ({ request }) => {
     if(isNewProduct){state.currentType=null;state.currentColor=null;state.currentProductId=null;state.selectedProductId=null;state.pendingQuestion=null;}
     if (route.productQuery) state.lastProductQuery=route.productQuery;
     if (commerce?.source==='printer') state.currentPrinter=route.productQuery;
-    const type=requestedType(message);const color=requestedColor(message);const wasPendingType=state.pendingQuestion==='product_type';const wasPendingQuantity=state.pendingQuestion==='quantity';if(type)state.currentType=type;if(color)state.currentColor=color;
+    const explicitlyRequestedTypes=requestedTypes(message);const type=explicitlyRequestedTypes.length===1?explicitlyRequestedTypes[0]:null;const color=requestedColor(message);const wasPendingType=state.pendingQuestion==='product_type';const wasPendingQuantity=state.pendingQuestion==='quantity';
+    // Ak zákazník žiada viac typov naraz, nesmieme vetu svojvoľne zúžiť na
+    // prvé nájdené slovo. Jediný typ zostáva voľbou pre nákupný dialóg.
+    if(explicitlyRequestedTypes.length>1)state.currentType=null;else if(type)state.currentType=type;
+    if(color)state.currentColor=color;
     let candidates=commerce?.products||[];
     const canBuy=(p:any)=>Number(p?.price||0)>0;
     // Typ produktu patrí do ponuky aj vtedy, keď je konkrétna položka práve
@@ -231,6 +242,7 @@ export const POST: APIRoute = async ({ request }) => {
     if(selected&&!ambiguousCalendarSelection){state.currentProductId=String(selected.id);if((type&&!wasPendingType)||color||route.intents.includes('BUY_INTENT'))state.selectedProductId=String(selected.id);}
     const n=normalized(message);const qty=requestedQuantity(message);let action:any=null;
     const completeSetRequested=wantsCompleteSet(message)||Boolean((state.checkoutDraft as any)?.guidedSet&&wasPendingType);
+    if(commerce?.presentation)commerce={...commerce,presentation:{...commerce.presentation,setIntent:completeSetRequested}};
     const completeSet=completeSetRequested?chooseCompleteSet(commerce?.presentation?.sets||[],state.currentType,message):null;
     if(!cartMutationForbidden&&wasPendingQuantity&&qty&&selected){state.pendingQuestion=null;const total=upsertCart(state,selected,qty);action={kind:'ADD_TO_CART',product:selected,quantity:qty};advisor={...advisor,answer:[`Pridal som ${qty} ks produktu ${selected.name} do nákupu. ${fulfilmentSentence(selected,total)}`]};commerce=null;}
     else if(wasPendingType&&type){

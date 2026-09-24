@@ -512,6 +512,7 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
     const query=escapeHtml(data?.queryLabel||state.lastQuestion||'túto tlačiareň');
     addMessage('bot',`<div class="tm-ai-offer-summary"><b>Overil som aktuálnu ponuku pre ${query}.</b><p>${available.length?`V ponuke máme <strong>${suitableProductsText(available.length)}</strong>. Produkty skladom ${dispatchSentence()}.`:'Momentálne nemáme vhodný produkt, ktorý je možné objednať.'}${unavailable.length?` V ponuke máme aj <strong>${unavailableProductsText(unavailable.length)}</strong>; ich dostupnosť vám vieme zistiť.`:''}</p><div class="tm-ai-summary-actions"><a href="${escapeHtml(webResultsUrl(all))}">Zobraziť všetky na webe</a></div></div>`,{scroll:false});
     const colorPrinter=Boolean(data?.presentation?.isColorPrinter) || [...new Set(all.map(aiColor).filter(Boolean))].length>=3;
+    const setIntent=Boolean(data?.presentation?.setIntent);
     if(colorPrinter){
       // Sada je iba reálny katalógový produkt. AI už nikdy neskladá virtuálnu
       // CMYK sadu zo štyroch samostatných tonerov.
@@ -538,10 +539,13 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
         }));
         let singleIndex=0;
         const singleSectionsByType=new Map(typeOrder.map(type=>[type,'']));
-        singleGroups.forEach(group=>{const cards=group.products.map(p=>{const i=singleIndex++,cpp=costPerPage(p);return `<article class="tm-ai-single-color">${aiImage(p)?`<img src="${escapeHtml(aiImage(p))}" alt="${escapeHtml(p.name)}" loading="lazy">`:''}<span><b>${escapeHtml(p.name||'')}</b><small>${aiColorLabel(aiColor(p))}${isHighCapacity(p)?' · vysoká kapacita':''}</small><small>${escapeHtml(p.sku||'')}</small><em class="is-stock">${aiStockLabel(p)}</em><strong>${money(p.price)}</strong>${cpp?`<mark>${costPerPageText(p)}</mark>`:''}</span><div><button type="button" data-ai-single="${i}">⚡ Rýchly nákup s AI</button><a href="${escapeHtml(p.url||webResultsUrl([p]))}">Zobraziť na webe</a></div></article>`}).join('');const productNoun=isInkOffer(group.products)?'atramentové náplne':'tonery';singleSectionsByType.set(group.type,`<section class="tm-ai-single-type is-${group.type}"><h4>${group.type==='compatible'?'<span class="tm-ai-recommend-badge">Odporúčame – najlepší pomer cena/strana</span>':''}<span>Jednotlivé ${group.type==='compatible'?'kompatibilné':group.type==='original'?'originálne':'renovované'} ${productNoun}</span></h4><div class="tm-ai-single-grid">${cards}</div></section>`)});
-        const offerSections=typeOrder.map(type=>{const setCards=setCardsByType.get(type)||'',singleSection=singleSectionsByType.get(type)||'';if(!setCards&&!singleSection)return'';const typeLabel=type==='compatible'?'Kompatibilné možnosti':type==='original'?'Originálne možnosti':'Renovované možnosti';return `<section class="tm-ai-offer-section is-${type}"><h4>${typeLabel}</h4>${setCards?`<div class="tm-ai-set-list">${setCards}</div>`:''}${singleSection}</section>`}).join('');
+        singleGroups.forEach(group=>{const cards=group.products.map(p=>{const i=singleIndex++,cpp=costPerPage(p);return `<article class="tm-ai-single-color">${aiImage(p)?`<img src="${escapeHtml(aiImage(p))}" alt="${escapeHtml(p.name)}" loading="lazy">`:''}<span><b>${escapeHtml(p.name||'')}</b><small>${aiColorLabel(aiColor(p))}${isHighCapacity(p)?' · vysoká kapacita':''}</small><small>${escapeHtml(p.sku||'')}</small><em class="is-stock">${aiStockLabel(p)}</em><strong>${money(p.price)}</strong>${cpp?`<mark>${costPerPageText(p)}</mark>`:''}</span><div><button type="button" data-ai-single="${i}">⚡ Rýchly nákup s AI</button><a href="${escapeHtml(safeProductUrl(p))}">Zobraziť na webe</a></div></article>`}).join('');const productNoun=group.products.every(p=>isInkOffer([p]))?'atramentové náplne':'tonery';singleSectionsByType.set(group.type,`<section class="tm-ai-single-type is-${group.type}"><h4>${group.type==='compatible'?'<span class="tm-ai-recommend-badge">Odporúčame – najlepší pomer cena/strana</span>':''}<span>Jednotlivé ${group.type==='compatible'?'kompatibilné':group.type==='original'?'originálne':'renovované'} ${productNoun}</span></h4><div class="tm-ai-single-grid">${cards}</div></section>`)});
+        const offerSections=typeOrder.map(type=>{const setCards=setCardsByType.get(type)||'',singleSection=singleSectionsByType.get(type)||'';if(!setCards&&!singleSection)return'';const typeLabel=type==='compatible'?'Kompatibilná sada':type==='original'?'Originálna sada':'Renovovaná sada';const missingSet=setIntent&&!setCards&&singleSection?`<p class="tm-ai-set-missing">${typeLabel} ako jeden kompletný katalógový produkt momentálne nie je v katalógu.</p>`:'';return `<section class="tm-ai-offer-section is-${type}"><h4>${typeLabel}</h4>${setCards?`<div class="tm-ai-set-list">${setCards}</div>`:''}${missingSet}${setIntent?'':singleSection}</section>`}).join('');
+        const hiddenSingles=setIntent&&singleGroups.length?`<button type="button" class="tm-ai-singles-toggle" data-ai-show-singles>Zobraziť aj jednotlivé tonery</button><div class="tm-ai-singles-panel" data-ai-singles-panel hidden>${typeOrder.map(type=>singleSectionsByType.get(type)||'').join('')}</div>`:'';
         const unavailableCards=unavailable.slice(0,4).map((p,i)=>productOfferCard(p,i,true)).join('');
-        const box=addMessage('bot',`<div class="tm-ai-color-offer tm-ai-guided-offer"><div class="tm-ai-guided-title"><b>Vyberte spôsob nákupu</b><span>Najskôr zobrazujeme kompatibilné, potom originálne a renovované možnosti.</span></div>${offerSections}${unavailableCards?`<section class="tm-ai-offer-section is-unavailable"><h4>V ponuke, momentálne nie je skladom</h4><div class="tm-ai-shop-products">${unavailableCards}</div></section>`:''}<div class="tm-ai-discovery__footer"><a href="${escapeHtml(webResultsUrl(all))}">Zobraziť kompletnú ponuku na webe →</a></div></div>`);
+        const box=addMessage('bot',`<div class="tm-ai-color-offer tm-ai-guided-offer"><div class="tm-ai-guided-title"><b>${setIntent?'Kompletné CMYK sady':'Vyberte spôsob nákupu'}</b><span>${setIntent?'Zobrazujeme iba skutočné katalógové sady. Jednotlivé tonery sú dostupné osobitne.':'Najskôr zobrazujeme kompatibilné, potom originálne a renovované možnosti.'}</span></div>${offerSections}${hiddenSingles}${unavailableCards?`<section class="tm-ai-offer-section is-unavailable"><h4>V ponuke, momentálne nie je skladom</h4><div class="tm-ai-shop-products">${unavailableCards}</div></section>`:''}<div class="tm-ai-discovery__footer"><a href="${escapeHtml(webResultsUrl(all))}">Zobraziť kompletnú ponuku na webe →</a></div></div>`);
+        const showSingles=box.querySelector('[data-ai-show-singles]');
+        if(showSingles)showSingles.onclick=()=>{const singlesPanel=box.querySelector('[data-ai-singles-panel]');if(singlesPanel)singlesPanel.hidden=false;showSingles.hidden=true;};
         wireAvailability(box,unavailable.slice(0,4));
         return;
       }
@@ -552,7 +556,7 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
   }
 
   function productOfferCard(p,index,unavailable=false){
-    const img=aiImage(p),color=aiColor(p),type=aiType(p),href=aiText(p?.url)||`/produkty?s=${encodeURIComponent(aiText(p?.sku)||aiText(p?.name))}`;
+    const img=aiImage(p),color=aiColor(p),type=aiType(p),href=safeProductUrl(p);
     const calendar=isCalendarProduct(p);
     const cpp=calendar?'':costPerPageText(p);
     return `<article class="tm-ai-product-card is-${type}${calendar?' is-calendar':''}${unavailable?' is-unavailable':''}">${img?`<div class="tm-ai-card-image"><img src="${escapeHtml(img)}" alt="${escapeHtml(aiText(p?.name))}" loading="lazy"></div>`:'<div class="tm-ai-card-image is-empty" aria-hidden="true"></div>'}<div class="tm-ai-card-main"><div class="tm-ai-card-badges"><span class="tm-ai-product-kind">${aiTypeLabel(p)}</span>${color?`<span class="tm-ai-color-badge">${aiColorLabel(color)}</span>`:''}</div><strong>${escapeHtml(aiText(p?.name)||'Toner')}</strong><small>${escapeHtml(aiText(p?.sku))}</small></div><div class="tm-ai-card-side"><em class="${unavailable?'is-out':'is-stock'}">${aiStockLabel(p)}</em><b>${money(Number(p?.price||0))}</b>${cpp?`<small>${cpp}</small>`:''}<div class="tm-ai-card-actions">${unavailable?`<button type="button" data-ai-availability="${index}">Zistiť dostupnosť</button>`:`<button type="button" data-ai-buy="${index}">Rýchly nákup</button>`}<a href="${escapeHtml(href)}">Detail produktu</a></div></div></article>`;
@@ -621,6 +625,17 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
     if (/\b(yellow|žlt\w*|zlt\w*)\b/.test(t) || /(?:crg|tn|clt|mlt|tk)[-_ ]?\d+[a-z0-9-]*y\b/i.test(raw)) return 'yellow';
     return '';
   }
+  function safeProductUrl(p){
+    const fallback=`/produkty?s=${encodeURIComponent(aiText(p?.sku)||aiText(p?.name))}`;
+    const direct=aiText(p?.url);
+    if(!direct)return fallback;
+    // Import môže výnimočne priradiť farebnému variantu URL inej farby.
+    // V takom prípade radšej otvoríme bezpečné vyhľadanie SKU než nesprávny detail.
+    const productColor=aiColor(p);
+    let decodedUrl=direct;try{decodedUrl=decodeURIComponent(direct)}catch{}
+    const urlColor=aiColor({name:decodedUrl.replace(/[-_/]+/g,' ')});
+    return productColor&&urlColor&&productColor!==urlColor?fallback:direct;
+  }
   function aiImage(p){
     const vals=[p?.image,p?.image_url,p?.imageUrl,p?.thumbnail,p?.featured_image,Array.isArray(p?.images)?p.images[0]:null];
     for(const v of vals){
@@ -653,7 +668,7 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
   function renderCommerceProductList(products,title){
     products=allowedAiProducts(products);
     const recommended=pickRecommendedProducts(products);
-    const a=addMessage('bot',`<div class="tm-ai-discovery"><p><b>${escapeHtml(title)}</b></p><p class="tm-ai-discovery__hint">Vybral som najprehľadnejšie možnosti. Môžete si pozrieť detail na webe alebo nechať AI Tomáša pripraviť nákup.</p><div class="tm-ai-shop-products">${recommended.map((p,i)=>`<article><span class="tm-ai-product-kind">${productTypeLabel(p)}</span><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(p.sku||'')}</small><b class="tm-ai-card-price">${money(p.price)}</b><div class="tm-ai-card-actions"><a href="${escapeHtml(p.url||`/produkty?s=${encodeURIComponent(p.sku||p.name||'')}`)}">Detail produktu</a><button data-ai-buy="${i}">⚡ Kúpiť cez AI</button></div></article>`).join('')}</div><div class="tm-ai-discovery__footer"><a href="${webResultsUrl(products)}">Zobraziť všetky produkty na webe →</a><small><b>⚡ Rýchly nákup s AI Tomášom</b></small></div></div>`);
+    const a=addMessage('bot',`<div class="tm-ai-discovery"><p><b>${escapeHtml(title)}</b></p><p class="tm-ai-discovery__hint">Vybral som najprehľadnejšie možnosti. Môžete si pozrieť detail na webe alebo nechať AI Tomáša pripraviť nákup.</p><div class="tm-ai-shop-products">${recommended.map((p,i)=>`<article><span class="tm-ai-product-kind">${productTypeLabel(p)}</span><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(p.sku||'')}</small><b class="tm-ai-card-price">${money(p.price)}</b><div class="tm-ai-card-actions"><a href="${escapeHtml(safeProductUrl(p))}">Detail produktu</a><button data-ai-buy="${i}">⚡ Kúpiť cez AI</button></div></article>`).join('')}</div><div class="tm-ai-discovery__footer"><a href="${webResultsUrl(products)}">Zobraziť všetky produkty na webe →</a><small><b>⚡ Rýchly nákup s AI Tomášom</b></small></div></div>`);
     a.querySelectorAll('[data-ai-buy]').forEach(b=>b.onclick=()=>quantityChooser(recommended[+b.dataset.aiBuy]));
   }
   async function shopSearch(question){
