@@ -32,6 +32,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return json({ ok: false, error: "Odkaz na zmenu platby nie je platný alebo expiroval." }, 403);
     }
 
+    const storedState = String(pending.paymentState || "").toUpperCase();
+    if (storedState === "RETRIED") {
+      return json({ ok: false, error: "K tejto objednávke už bol vytvorený nový GoPay platobný pokus. Pôvodnú platbu už nemožno zmeniť." }, 409);
+    }
+    if (storedState === "CONVERTED_TO_OFFLINE") {
+      if (pending.paymentCode !== paymentCode) {
+        return json({ ok: false, error: "Spôsob platby tejto objednávky už bol zmenený. Ďalšiu zmenu vykonajte cez podporu." }, 409);
+      }
+      return json({
+        ok: true,
+        orderId: Number(pending.wooOrderId || 0) || pending.orderNumber,
+        orderNumber: pending.wooOrderNumber || pending.orderNumber,
+        payment: paymentCode,
+        replayed: true,
+      });
+    }
+
     const amountCents = Number(pending.amountCents || 0);
     const payment = await verifyGoPayPaymentAgainstOrder(paymentId, {
       orderNumber: pending.orderNumber,

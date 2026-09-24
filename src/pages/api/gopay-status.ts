@@ -8,6 +8,7 @@ export const prerender = false;
 function getUiState(state: string) {
   switch (state) {
     case "PAID":
+    case "AUTHORIZED":
       return {
         type: "paid",
         title: "Platba bola úspešná",

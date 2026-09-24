@@ -8,6 +8,7 @@ import { orderFulfilmentText } from "../lib/product-availability.ts";
   const CART_KEYS = ["tm_cart_v1", "tonerymaxim_cart", "cart", "tm_cart"];
   const CHECKOUT_INTENT_KEY = "tm_checkout_intent_v2";
   const SUBMITTED_GOPAY_KEY = "tm_submitted_gopay_v1";
+  const SUBMITTED_GOPAY_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
   function checkoutCartSignature(cart) {
     return JSON.stringify((Array.isArray(cart) ? cart : []).map((item) => ({
@@ -25,7 +26,12 @@ import { orderFulfilmentText } from "../lib/product-availability.ts";
 
   function submittedGoPayForCart(cart) {
     const submitted = readJsonStorage(SUBMITTED_GOPAY_KEY);
-    if (!submitted?.requestId || submitted.cartSignature !== checkoutCartSignature(cart)) return null;
+    const submittedAt = Number(submitted?.submittedAt || 0);
+    if (!submitted?.requestId || !submittedAt || Date.now() - submittedAt > SUBMITTED_GOPAY_MAX_AGE_MS) {
+      localStorage.removeItem(SUBMITTED_GOPAY_KEY);
+      return null;
+    }
+    if (submitted.cartSignature !== checkoutCartSignature(cart)) return null;
     return submitted;
   }
 

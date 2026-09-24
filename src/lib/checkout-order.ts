@@ -942,13 +942,27 @@ async function processPaidGoPayOrderInternal(payment: GoPayPayment) {
     }
   );
 
-  const updated: CheckoutOrderSource = {
+  let updated: CheckoutOrderSource = {
     ...source,
     paymentState: String(payment.state || "PAID"),
     wooOrderId: result.orderId,
     wooOrderNumber: result.orderNumber,
     processedAt: new Date().toISOString(),
   };
+
+  // Opakovaná GoPay platba môže odkazovať na Woo objednávku, ktorú medzitým
+  // vytvorila asynchrónna fronta pod rovnakým interným číslom. Nájdenú
+  // objednávku musíme po úspešnej platbe výslovne označiť ako zaplatenú.
+  if (!result.created && result.orderId > 0) {
+    const paidUpdate = await markWooGoPayOrderPaid(updated, payment);
+    updated = {
+      ...updated,
+      wooOrderId: paidUpdate?.orderId || result.orderId,
+      wooOrderNumber: paidUpdate?.orderNumber || result.orderNumber,
+    };
+    await finalizeCheckoutBenefits(updated, updated.wooOrderId!, updated.orderNumber);
+    await ensurePaperRewardClaim(updated, updated.wooOrderId!);
+  }
 
   await savePendingGoPayOrder(updated);
 

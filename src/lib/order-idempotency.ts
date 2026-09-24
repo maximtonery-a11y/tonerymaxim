@@ -37,7 +37,11 @@ export async function withOrderIdempotency<T extends OrderIdempotencyResult>(key
       if (info && Date.now() - info.mtimeMs > STALE_MS) {
         // Po páde procesu nevieme dokázať, či už externý GoPay/Woo side-effect
         // prebehol. Checkout zámok preto nikdy automaticky neopakujeme.
-        if (id.startsWith('checkout-submit-')) {
+        if (
+          id.startsWith('checkout-submit-')
+          || id.startsWith('gopay-retry-')
+          || id.startsWith('gopay-change-')
+        ) {
           const error = new Error('Predchádzajúce odoslanie objednávky nemá potvrdený výsledok. Skontrolujte objednávky alebo kontaktujte podporu.');
           (error as Error & { status?: number }).status = 409;
           throw error;

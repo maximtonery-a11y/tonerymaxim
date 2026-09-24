@@ -22,8 +22,38 @@ test("opakovať GoPay vytvorí novú platbu k pôvodnej objednávke", async () =
   assert.match(confirmation, /paymentId:String\(data\.paymentId/);
   assert.match(retryApi, /order_number:\s*clean\(pending\.orderNumber\)/);
   assert.match(retryApi, /verifyGoPayPaymentAgainstOrder/);
+  assert.match(retryApi, /withOrderIdempotency\(`gopay-retry-/);
+  assert.match(retryApi, /paymentState:\s*"RETRIED"/);
+  assert.match(retryApi, /paymentState:\s*"CREATED"/);
   assert.match(retryApi, /\["PAID",\s*"AUTHORIZED"\]/);
   assert.match(retryApi, /\["CANCELED",\s*"TIMEOUTED",\s*"FAILED"\]/);
+});
+
+test("stará GoPay poistka v prehliadači po 24 hodinách neblokuje novú objednávku", async () => {
+  const checkout = await read("src/scripts/checkout.js");
+  assert.match(checkout, /SUBMITTED_GOPAY_MAX_AGE_MS\s*=\s*24\s*\*\s*60\s*\*\s*60\s*\*\s*1000/);
+  assert.match(checkout, /Date\.now\(\)\s*-\s*submittedAt\s*>\s*SUBMITTED_GOPAY_MAX_AGE_MS/);
+  assert.match(checkout, /localStorage\.removeItem\(SUBMITTED_GOPAY_KEY\)/);
+});
+
+test("zaplatený opakovaný pokus označí už existujúcu Woo objednávku ako zaplatenú", async () => {
+  const checkoutOrder = await read("src/lib/checkout-order.ts");
+  assert.match(checkoutOrder, /if\s*\(!result\.created\s*&&\s*result\.orderId\s*>\s*0\)/);
+  assert.match(checkoutOrder, /markWooGoPayOrderPaid\(updated,\s*payment\)/);
+});
+
+test("po zmene na offline platbu sa GoPay nedá znova aktivovať", async () => {
+  const retryApi = await read("src/pages/api/gopay-retry.ts");
+  const changeApi = await read("src/pages/api/gopay-change-payment.ts");
+  assert.match(retryApi, /storedState\s*===\s*"CONVERTED_TO_OFFLINE"/);
+  assert.match(changeApi, /storedState\s*===\s*"RETRIED"/);
+  assert.match(changeApi, /storedState\s*===\s*"CONVERTED_TO_OFFLINE"/);
+});
+
+test("neistá zámka po páde procesu nesmie zopakovať externý GoPay alebo Woo zásah", async () => {
+  const idempotency = await read("src/lib/order-idempotency.ts");
+  assert.match(idempotency, /id\.startsWith\('gopay-retry-'\)/);
+  assert.match(idempotency, /id\.startsWith\('gopay-change-'\)/);
 });
 
 test("poznámka o GoPay sa zobrazuje iba pri online platbe", async () => {
