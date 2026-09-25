@@ -1677,23 +1677,34 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
   // všetkými 7k+ produktmi (vrátane parsovania tlačiarní a aliasov). To bolo
   // ~2 s aj pri nulovom výsledku. Štruktúrovanú presnosť teraz aplikujeme iba
   // na úzky okruh kandidátov, ktoré dotaz reálne obsahujú.
+  const searchAnalysis = search ? analyzeCatalogQuery(filters.search || "") : null;
+  const hasSpecificProductReference = Boolean(searchAnalysis?.referenceTokens.some((token) =>
+    token.length >= 4 && /[a-z]/.test(token) && /\d/.test(token)));
   const looseCandidates = search
     ? products.filter((product) => matchesLooseSearch(product.search_text || normalize(`${product.name || ""} ${product.sku || ""}`), search))
     : products;
-  const exactSearchProducts = search && looseCandidates.length
-    ? new Set(findExactProductIdentityMatches(looseCandidates, filters.search || "").map((match) => match.product))
+  // Pri presnom OEM kóde prehľadáme identity v celej cache. Fulltextový
+  // predvýber môže pravý produkt vynechať (MC-G02), no zároveň obsahovať
+  // vzdialenú podobnosť (A0WG02H). Pri bežných slovných dopytoch zostáva
+  // rýchly úzky predvýber.
+  const structuredPool = hasSpecificProductReference ? products : looseCandidates;
+  const exactSearchMatches = search && structuredPool.length
+    ? findExactProductIdentityMatches(structuredPool, filters.search || "")
+    : [];
+  const exactSearchProducts = new Set(exactSearchMatches.map((match) => match.product));
+  const exactSearchScores = new Map(exactSearchMatches.map((match) => [match.product, Number(match.score || 0)]));
+  const exactPrinterProducts = search && structuredPool.length
+    ? new Set(findExactPrinterModelMatches(structuredPool, filters.search || "").map((match) => match.product))
     : new Set<TmProduct>();
-  const exactPrinterProducts = search && looseCandidates.length
-    ? new Set(findExactPrinterModelMatches(looseCandidates, filters.search || "").map((match) => match.product))
-    : new Set<TmProduct>();
-  const searchAnalysis = search ? analyzeCatalogQuery(filters.search || "") : null;
   const hasAlphaNumericModel = Boolean(searchAnalysis?.referenceTokens.some((token) => /[a-z]/.test(token) && /\d/.test(token)));
   const partialPrinterProducts = search && looseCandidates.length && hasAlphaNumericModel && !exactPrinterProducts.size
     ? new Set(looseCandidates.filter((product) => productPrinterValues(product)
       .some((printer) => partialPrinterModelMatch(printer, searchAnalysis!))))
     : new Set<TmProduct>();
 
-  const sourceProducts = search ? looseCandidates : products;
+  const sourceProducts = search
+    ? [...new Set([...looseCandidates, ...exactSearchProducts, ...exactPrinterProducts])]
+    : products;
   const filtered = sourceProducts.filter((product) => {
     // Služby renovácie nie sú samostatný predajný produkt a v katalógu sa nezobrazujú.
     if (isRenovationServiceProduct(product)) return false;
@@ -1725,18 +1736,32 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     if (search) {
       const hasStructuredMatches = exactSearchProducts.size > 0 || exactPrinterProducts.size > 0 || partialPrinterProducts.size > 0;
       if (hasStructuredMatches && !exactSearchProducts.has(product) && !exactPrinterProducts.has(product) && !partialPrinterProducts.has(product)) return false;
+      if (hasSpecificProductReference && !hasStructuredMatches) return false;
       if (!hasStructuredMatches && !matchesLooseSearch(text, search)) return false;
     }
     return true;
   });
 
-  productCache.set(filterKey, filtered);
+  const visibleReferenceRank = (product: TmProduct) => {
+    if (!searchAnalysis) return 0;
+    const name = compactKey(product.name || "");
+    const branded = searchAnalysis.brands.some((queryBrand) => searchAnalysis.referenceTokens
+      .some((reference) => name.includes(`${compactKey(queryBrand)}${reference}`)));
+    if (branded) return 2;
+    return searchAnalysis.referenceTokens.some((reference) => name.includes(reference)) ? 1 : 0;
+  };
+  const ranked = search ? filtered.sort((left, right) =>
+    visibleReferenceRank(right) - visibleReferenceRank(left)
+    || Number(exactSearchScores.get(right) || 0) - Number(exactSearchScores.get(left) || 0)
+    || String(left.name || "").localeCompare(String(right.name || ""), "sk")) : filtered;
+
+  productCache.set(filterKey, ranked);
   while (productCache.size > FILTERED_PRODUCTS_CACHE_MAX) {
     const oldest = productCache.keys().next().value;
     if (!oldest) break;
     productCache.delete(oldest);
   }
-  return filtered;
+  return ranked;
 }
 
 export function jsonResponse(body: unknown, status = 200, cacheHeader = "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400") {

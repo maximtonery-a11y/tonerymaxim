@@ -92,7 +92,8 @@ function hasProductCodeOrModel(message: string) {
   // Všeobecný model musí mať písmeno a číslo v tom istom tokene; medzeru povoľujeme iba pri známych OEM prefixoch.
   if (/\b[a-z]{1,8}-?\d{2,}[a-z0-9-]*\b/i.test(text)) return true;
   if (/\b\d{2,}[a-z]{1,5}\b/i.test(text)) return true;
-  if (/\b(cf|ce|crg|tn|dr|w|q|clt|mlt|tk|pg|cli|lc)\s*-?\s*\d{2,}[a-z0-9]*\b/i.test(text)) return true;
+  if (/\b(cf|ce|crg|tn|dr|wt|mc|w|q|clt|mlt|tk|pg|cli|lc)\s*-?\s*\d{2,}[a-z0-9]*\b/i.test(text)) return true;
+  if (/\b\d{2,}[a-z]{1,5}\d{2,}[a-z0-9-]*\b/i.test(text)) return true;
   // Modely často zákazník napíše ako značka + číselný model (napr. Xerox 3020).
   if (/\b(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica|minolta)\s+[a-z-]*\d{3,}[a-z0-9-]*\b/i.test(text)) return true;
   return false;
@@ -123,7 +124,8 @@ function keywordScore(message: string, keyword: string) {
   const kc = compactKey(keyword);
   if (!k || !kc) return 0;
   if (text === k || compact === kc) return 160;
-  if (text.includes(k) || compact.includes(kc)) return 110;
+  const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+  if (new RegExp(`(?:^|[^a-z0-9])${escaped}(?:$|[^a-z0-9])`, 'i').test(text)) return 110;
   const triggerWords = words(keyword);
   const messageWords = new Set(words(message));
   const matched = triggerWords.filter((word) => messageWords.has(word)).length;
@@ -196,7 +198,20 @@ function isGenericConsumableSelectionRequest(message: string) {
 }
 
 function nonTonerPart(product: Product) {
-  return /optick|valec|drum|fuser|fixac|zapekac|atrament|prenosov.*pas|transfer.*belt/i.test(normalize(`${product.name || ''} ${product.product_type_label || ''}`));
+  return /optick|valec|drum|fuser|fixac|zapekac|atrament|prenosov.*pas|transfer.*belt|odpad|waste|nadob/i.test(normalize(`${product.name || ''} ${product.sku || ''} ${product.product_type_label || ''}`));
+}
+
+function isWasteProduct(product: Product) {
+  const text = normalize(`${product.name || ''} ${product.sku || ''} ${product.product_type_label || ''} ${product.category || ''}`);
+  return /\b(?:odpad\w*|waste|nadob\w*)\b/.test(text) || /\bwt\s*-?\s*\d{2,}[a-z0-9-]*\b/.test(text);
+}
+
+function filterRequestedConsumableKind(products: Product[], message: string) {
+  const text = normalize(message);
+  const asksWaste = /\b(?:odpad\w*|waste|nadob\w*)\b/.test(text) || /\bwt\s*-?\s*\d{2,}[a-z0-9-]*\b/.test(text);
+  if (asksWaste) return products.filter(isWasteProduct);
+  if (isTonerRequest(message)) return products.filter((product) => !nonTonerPart(product));
+  return products;
 }
 
 
@@ -218,7 +233,7 @@ function relevantProducts(products: Product[], message: string) {
   // Pôvodný univerzálny matcher prechádzal pri každom kandidátovi aj tisíce
   // kompatibilných modelov tlačiarní a na produkcii vedel trvať niekoľko sekúnd.
   // Pri OEM kóde stačí identita produktu (SKU/názov), takže kompatibility vôbec neskenujeme.
-  const explicitOemFast = normalize(raw).match(/\b(cf|ce|crg|tn|dr|w|q|clt|mlt|tk|pgi|cli|lc)\s*-?\s*(\d{2,}[a-z0-9]*)\b/i);
+  const explicitOemFast = normalize(raw).match(/\b(cf|ce|crg|tn|dr|wt|mc|w|q|clt|mlt|tk|pgi|cli|lc)\s*-?\s*(\d{2,}[a-z0-9]*)\b/i);
   if (explicitOemFast) {
     const wanted = compactKey(`${explicitOemFast[1]}${explicitOemFast[2]}`);
     let fastMatches = products.filter((product) => {
@@ -228,6 +243,7 @@ function relevantProducts(products: Product[], message: string) {
     if (!/renovac|repas|sluzb/i.test(normalize(raw))) {
       fastMatches = fastMatches.filter((product) => !/\bsluzba\b.*renovac|renovacia pre/i.test(normalize(product.name || '')));
     }
+    fastMatches = filterRequestedConsumableKind(fastMatches, raw);
     fastMatches = filterRequestedProductType(fastMatches, raw);
     if (fastMatches.length) {
       return fastMatches
@@ -244,9 +260,9 @@ function relevantProducts(products: Product[], message: string) {
     const printerMatches = findExactPrinterModelMatches(products, candidate);
     if (printerMatches.length) {
       let matched = printerMatches.map((match) => match.product);
-      if (isTonerRequest(raw)) matched = matched.filter((product) => !nonTonerPart(product));
+      matched = filterRequestedConsumableKind(matched, raw);
       matched = filterRequestedProductType(matched, raw);
-      return matched
+      if (matched.length) return matched
         .sort((a, b) => (TYPE_ORDER[a.product_type_key] || 9) - (TYPE_ORDER[b.product_type_key] || 9)
           || Number(a.price || 0) - Number(b.price || 0)
           || String(a.name || '').localeCompare(String(b.name || ''), 'sk'))
@@ -260,7 +276,7 @@ function relevantProducts(products: Product[], message: string) {
 
   // Pri explicitnom OEM prefixe nesmie samotné číslo (napr. 737) pritiahnuť
   // nesúvisiaci produkt inej značky.
-  const explicitOem = normalize(raw).match(/\b(cf|ce|crg|tn|dr|w|q|clt|mlt|tk|pgi|cli|lc)\s*-?\s*(\d{2,}[a-z0-9]*)\b/i);
+  const explicitOem = normalize(raw).match(/\b(cf|ce|crg|tn|dr|wt|mc|w|q|clt|mlt|tk|pgi|cli|lc)\s*-?\s*(\d{2,}[a-z0-9]*)\b/i);
   if (explicitOem) {
     const wanted = compactKey(`${explicitOem[1]}${explicitOem[2]}`);
     const strict = exactIdentityMatches.filter((match) => compactKey(productSearchValue(match.product)).includes(wanted));
@@ -274,7 +290,7 @@ function relevantProducts(products: Product[], message: string) {
     const canonical = uniq(exactIdentityMatches.flatMap((m: any) => {
       const values = [String(m.product?.sku || '').trim()];
       const name = String(m.product?.name || '');
-      const code = name.match(/\b(?:CF|CE|CRG|TN|DR|W|Q|CLT|MLT|TK|PGI|CLI|LC)[- ]?\d{2,}[A-Z0-9-]*\b/i)?.[0];
+      const code = name.match(/\b(?:CF|CE|CRG|TN|DR|WT|MC|W|Q|CLT|MLT|TK|PGI|CLI|LC)[- ]?\d{2,}[A-Z0-9-]*\b/i)?.[0];
       if (code) values.push(code);
       return values;
     }).filter((sku) => /[a-z].*\d|\d.*[a-z]/i.test(sku)));
@@ -289,6 +305,7 @@ function relevantProducts(products: Product[], message: string) {
     if (!/renovac|repas|sluzb/i.test(normalize(raw))) {
       exactProducts = exactProducts.filter((product) => !/\bsluzba\b.*renovac|renovacia pre/i.test(normalize(product.name || '')));
     }
+    exactProducts = filterRequestedConsumableKind(exactProducts, raw);
     exactProducts = filterRequestedProductType(exactProducts, raw);
     return exactProducts
       .sort((a, b) => (
@@ -340,8 +357,11 @@ function relevantProducts(products: Product[], message: string) {
     .filter((item) => item.score >= 90)
     .sort((a, b) => b.score - a.score || (TYPE_ORDER[a.product.product_type_key] || 9) - (TYPE_ORDER[b.product.product_type_key] || 9) || Number(a.product.price || 0) - Number(b.product.price || 0));
 
-  const strong = scored.length ? scored[0].score : 0;
-  return scored.filter((item) => item.score >= Math.max(90, strong - 95)).slice(0, 60).map((item) => item.product);
+  const kindFiltered = filterRequestedConsumableKind(scored.map((item) => item.product), raw);
+  const kindIds = new Set(kindFiltered.map((product) => String(product.id)));
+  const finalScored = scored.filter((item) => kindIds.has(String(item.product.id)));
+  const strong = finalScored.length ? finalScored[0].score : 0;
+  return finalScored.filter((item) => item.score >= Math.max(90, strong - 95)).slice(0, 60).map((item) => item.product);
 }
 
 function findCompatibilityConflict(products: Product[], message: string) {
@@ -550,8 +570,10 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   // Najčastejšie diagnostické problémy musia mať deterministickú odpoveď.
   // Všeobecné slovo „tlačí“ samo osebe nesmie prebiť konkrétne „pruhy“ a
   // vybrať nesúvisiacu radu pre nerozpoznaný toner.
-  const directDiagnosticId = /\b(?:pas|pasy|pruh|pruhy|ciar|ciary|smuh|smuhy|bodk|bodky)\w*\b/.test(normalizedMessage)
-    ? 'tlaci-pasy'
+  const directDiagnosticId = /\b(?:kruti|kruten|zvlnen)\w*\b.*\bpapier\w*\b|\bpapier\w*\b.*\b(?:kruti|kruten|zvlnen)\w*\b|\b(?:rozmaz|zotier)\w*\b.*\b(?:toner|tlac|okraj)\w*\b/.test(normalizedMessage)
+    ? 'krutenie-rozmazavanie'
+    : /\b(?:pas|pasy|pruh|pruhy|ciar|ciary|smuh|smuhy|bodk|bodky)\w*\b/.test(normalizedMessage)
+      ? 'tlaci-pasy'
     : /\b(?:bled|slab)\w*\b.*\b(?:tlac|vytlac|farb)\w*\b|\b(?:tlac|vytlac|farb)\w*\b.*\b(?:bled|slab)\w*\b/.test(normalizedMessage)
       ? 'bledy-vytlacok'
       : /\b(?:nerozpozna|nepozna|chyba kazety|cartridge error|replace toner)\b/.test(normalizedMessage)
@@ -565,6 +587,11 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   if (/\b(?:aky je rozdiel|rozdiel|co je)\b.*\btoner\w*\b.*\batrament\w*\b|\btoner\w*\b.*\b(?:alebo|versus|vs)\b.*\batrament\w*\b/.test(normalizedMessage)) {
     const material = aiKnowledge.find((item) => item.id === 'toner-atrament');
     if (material) return { answer: [`${material.title}:`, ...material.answer], products: [], groups: [], intent: 'support', faq: material.id, confidence: 0.99 };
+  }
+
+  if (/\b(?:aky je rozdiel|rozdiel|co je|je to iste)\b.*\btoner\w*\b.*\b(?:optick\w*\s+valc\w*|valc\w*|drum\w*)\b|\btoner\w*\b.*\b(?:alebo|versus|vs)\b.*\b(?:optick\w*\s+valc\w*|valc\w*|drum\w*)\b/.test(normalizedMessage)) {
+    const drum = aiKnowledge.find((item) => item.id === 'toner-opticky-valec');
+    if (drum) return { answer: [`${drum.title}:`, ...drum.answer], products: [], groups: [], intent: 'support', faq: drum.id, confidence: 0.99 };
   }
 
   const changesSensitiveOrderData = /\b(?:zmen|uprav)\w*\b(?:\s+\w+){0,5}\s+\b(?:adres|telefon|e-?mail|email|meno|udaj)\w*\b/.test(normalizedMessage);
@@ -675,7 +702,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   // spúšťať katalóg ani zobrazovať produkty. Je to zároveň ochrana rýchlosti chatu.
   const directServiceId = /\b(?:packet\w*|zasielkovn\w*|z-?box)\b/i.test(normalizedMessage)
     ? 'doprava-packeta'
-    : !/\b(?:registrac\w*|uvitac\w*)\b/i.test(normalizedMessage) && /\b(?:aky|aka|ake|aku|mate|ponukate|poskytn\w*|dostat|individualn\w*|mnozstevn\w*)[^.?!]{0,50}\bzlav\w*|\bzlav\w*[^.?!]{0,50}\b(?:mate|ponukate|poskytn\w*|dostat|individualn\w*|mnozstevn\w*)/i.test(normalizedMessage)
+    : !hasProductCodeOrModel(originalMessage) && !/\b(?:registrac\w*|uvitac\w*)\b/i.test(normalizedMessage) && /\b(?:aky|aka|ake|aku|mate|ponukate|poskytn\w*|dostat|individualn\w*|mnozstevn\w*)[^.?!]{0,50}\bzlav\w*|\bzlav\w*[^.?!]{0,50}\b(?:mate|ponukate|poskytn\w*|dostat|individualn\w*|mnozstevn\w*)/i.test(normalizedMessage)
       ? 'zlavy-prehlad'
     : /\b(?:osobn\w*\s+odber\w*|osobn\w*(?:\s+\w+){0,3}\s+vyzdvih\w*|vyzdvih\w*(?:\s+\w+){0,3}\s+osobn\w*|prevziat(?:\s+\w+){0,3}\s+(?:prevadzk|predajn)\w*)/i.test(normalizedMessage)
     ? 'doprava-osobny-odber'
@@ -686,7 +713,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     : !/dopravcov|akych? kurier|cim posiel/i.test(normalizedMessage) && /\b(?:kolko|aka|cena|stoji|postovn|doprav|kurier|gls|dpd|parcelshop|balikomat|pickup|doruc)\w*/i.test(normalizedMessage)
     && /\b(?:dopr|postovn|kurier|gls|dpd|parcelshop|balikomat|pickup|doruc)\w*/i.test(normalizedMessage)
       ? 'doprava-ceny'
-    : /\b(?:dopravcov|aky kurier|cim posiel|gls|dpd|parcelshop|balikomat|pickup)\w*/i.test(normalizedMessage)
+    : /\b(?:dopravcov|akych?\s+kurier\w*|cim posiel|gls|dpd|parcelshop|balikomat|pickup)\w*/i.test(normalizedMessage)
       ? 'doprava-dopravcovia'
     : !/\b(?:registrac\w*|uvitac\w*\s+zlav\w*)\b/i.test(normalizedMessage) && /\b(?:plat|zaplat|dobierk|gopay|bankov.*prevod|prevodom|kartou)\w*/i.test(normalizedMessage)
       ? 'platba-moznosti'
@@ -814,8 +841,8 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   if (isContextualProductFollowUp || shouldTryProductFirst(originalMessage, classified.intent)) {
     const cache = await getProductsCache();
     const modelTokens = [...new Set((originalMessage.match(/\b[A-Z]{0,4}-?[A-Z]?\d{3,}[A-Z0-9-]*\b/gi) || [])
-      .map(x => x.toUpperCase()).filter(x => !/^(?:CF|CE|CRG|TN|DR|W|Q|CLT|MLT|TK|PGI|CLI|LC)-?\d/.test(x)))];
-    const requestedCodes = originalMessage.match(/\b(?:CF|CE|CRG|TN|DR|W|Q|CLT|MLT|TK|PGI|CLI|LC)[- ]?\d{2,}[A-Z0-9-]*\b/gi) || [];
+      .map(x => x.toUpperCase()).filter(x => !/^(?:CF|CE|CRG|TN|DR|WT|MC|W|Q|CLT|MLT|TK|PGI|CLI|LC)-?\d/.test(x)))];
+    const requestedCodes = originalMessage.match(/\b(?:CF|CE|CRG|TN|DR|WT|MC|W|Q|CLT|MLT|TK|PGI|CLI|LC)[- ]?\d{2,}[A-Z0-9-]*\b/gi) || [];
     if (modelTokens.length > 1 && requestedCodes.length) {
       return { answer: [
         `V rozhovore sa objavili rozdielne označenia modelu (${modelTokens.join(' a ')}), preto nemôžem bezpečne potvrdiť toner ${requestedCodes[requestedCodes.length-1]}.`,

@@ -185,7 +185,8 @@ export const aiKnowledge: AiKnowledgeItem[] = [
       'Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk.',
       'Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup.',
       'Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak.',
-      'Tovar neposielajte na dobierku a dobre ho zabaľte, aby sa pri preprave nepoškodil.',
+      'Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila.',
+      'Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy.',
     ],
   },
   {
@@ -252,11 +253,29 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     ],
   },
   {
+    id: 'krutenie-rozmazavanie', intent: 'diagnostic', title: 'Papier sa krúti alebo sa toner rozmazáva', priority: 125,
+    triggers: ['papier sa kruti', 'krutenie papiera', 'toner sa rozmazava', 'rozmazany toner na okraji', 'toner sa zotiera', 'tlac sa zotiera', 'papier je zvlneny'],
+    answer: [
+      'Najskôr overte správny typ a gramáž papiera v zásobníku aj v nastavení tlače. Použite suchý, rovný papier a skúste menší balík z nového balenia.',
+      'Ak sa toner dá po vytlačení zotrieť alebo sa papier výrazne krúti najmä po prechode tlačiarňou, príčinou môže byť fixačná jednotka alebo nesprávna teplota fixácie.',
+      'Pri zápachu, nezvyčajnom prehrievaní alebo poškodzovaní papiera tlačiareň ďalej nepoužívajte. Napíšte presný model tlačiarne a gramáž papiera, aby sme vedeli odporučiť bezpečný ďalší krok.',
+    ],
+  },
+  {
     id: 'toner-atrament', intent: 'support', title: 'Toner alebo atramentová náplň', priority: 70,
     triggers: ['toner alebo atrament', 'laser atrament', 'atramentova napln', 'napln do tlaciarne', 'cartridge', 'inkjet'],
     answer: [
       'Laserové tlačiarne používajú toner. Atramentové tlačiarne používajú atramentové náplne.',
       'Ak neviete, aký typ máte, napíšte model tlačiarne. Podľa modelu vyberiem správnu náplň.',
+    ],
+  },
+  {
+    id: 'toner-opticky-valec', intent: 'support', title: 'Rozdiel medzi tonerom a optickým valcom', priority: 115,
+    triggers: ['toner a opticky valec', 'toner alebo opticky valec', 'rozdiel toner valec', 'toner vs drum', 'je toner valec'],
+    answer: [
+      'Toner je kazeta s tonerovým práškom, ktorý sa pri tlači prenáša na papier. Optický valec (drum) vytvára obraz a prenáša toner; nejde o ten istý diel.',
+      'Niektoré tlačiarne majú toner a valec oddelené, iné ich majú spojené v jednej kazete. Preto treba výmenu určiť podľa presného modelu tlačiarne a chybového hlásenia.',
+      'Ak napíšete model tlačiarne, overím, či používa samostatný toner, samostatný valec alebo kombinovanú kazetu.',
     ],
   },
   {

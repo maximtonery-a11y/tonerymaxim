@@ -4,7 +4,7 @@ import { isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../calendar-a
 import { forbidsCartMutation } from '../ai-cart-safety.ts';
 
 const norm = (v: unknown) => String(v || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-const productCode = /\b(?:(?:cf|ce|crg|tn|dr|q|clt|mlt|tk|pgi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*)\b/i;
+const productCode = /\b(?:(?:cf|ce|crg|tn|dr|wt|mc|q|clt|mlt|tk|pgi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*|\d{2,}[a-z]{1,5}\d{2,}[a-z0-9-]*)\b/i;
 const printer = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|utax|ibm|panasonic|philips|konica(?:\s+minolta)?|minolta|minoltu)(?:\s+[a-z][a-z-]*){0,5}\s+[a-z-]*\d{1,}[a-z0-9-]*\b/i;
 
 export function routeCommerceMessage(message: string, state: CommerceState) {
@@ -43,6 +43,12 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // particular, a pending quantity/type question must never turn "can I pay
   // cash?" into a product follow-up using the previous catalogue query.
   const serviceQuestion = /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|doprava|doruc\w*|kurier\w*|packet\w*|zasielkovn\w*|z-?box|objednavk\w*|zasielk\w*|balik\w*|exped\w*|odosl\w*|stav\w*\s+objednavk\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklam\w*|vraten\w*|odstup\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|telefon\w*|e-?mail\w*|otvarac\w*|otvoren\w*|pracovn\w*\s+doba|kde\s+(?:vas|vás)\s+najd\w*|adres\w*|sidlo|vernost\w*|odmen\w*|zlav\w*|bod(?:y|ov)?)\b/.test(n);
+  // Otázka na cenu/sklad konkrétneho produktu môže súčasne žiadať
+  // množstevnú zľavu. POLICY zostáva aktívne, ale nesmie vymazať katalógový
+  // dopyt ani presný OEM kód.
+  const catalogQuestionWithPolicy = sharedCatalogReference
+    && /\b(?:najd|hlad|potreb|ukaz|cena|stoji|sklad|produkt|toner|napln)\w*\b/.test(n);
+  const blocksCatalogQuery = serviceQuestion && !catalogQuestionWithPolicy;
   const pendingAnswer = state.pendingQuestion === 'quantity'
     ? /^(?:\s*(?:\d{1,2}|jeden|jednu|jedno|dva|dve|tri|styri|pat)\s*(?:ks|kus|kusy|kusov)?\s*)$/.test(n)
     : state.pendingQuestion === 'product_type'
@@ -73,7 +79,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const cartMutationForbidden = forbidsCartMutation(message);
   const explicitBuy = !cartMutationForbidden && (/\b(?:chcem\s+(?:kupit|objednat|zobrat)|kupim|kupit|zoberiem|zobrat|pridaj|objednaj|daj\s+mi)\b/.test(n)
     || (Boolean(sharedCatalogReference || printer.test(message) || state.lastProductQuery) && /\bchcem\b/.test(n)));
-  if (explicitBuy && !serviceQuestion) add('BUY_INTENT');
+  if (explicitBuy && !blocksCatalogQuery) add('BUY_INTENT');
   const explicitCart = /\b(?:otvor|ukaz|zobraz|skontroluj)\w*(?:\s+\w+){0,3}\s+kosik\w*|\b(?:co|kolko)\s+mam\s+v\s+kosik\w*|\b(?:odstran|vymaz)\w*(?:\s+\w+){0,3}\s+(?:z\s+)?(?:kosik|produkt|polozk)\w*|(?:^|\s)[+−-]\s*\d/.test(n);
   if (explicitCart && !cartMutationForbidden) add('CART');
   const explicitCheckout = /\b(?:pokladn\w*|sumar\w*|prejst\w*.*(?:pokladn|platb|doprav)|pokrac\w*.*(?:nakup|objednav)|dokonc\w*.*objednav|chcem\s+(?:kupit|objednat)|objednaj)\b/.test(n);
@@ -97,7 +103,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // Pri modeli tlačiarne vraciame iba čistý model (napr. Epson WF-6090), nie
   // celú vetu „Hľadám náplne...“. OEM kód má naďalej prednosť, aby sa Canon
   // CRG054 alebo Brother TN2421 nikdy nepovažovali za model tlačiarne.
-  const query = serviceQuestion || genericCalendarYearQuestion ? null : calendarQuery || knownProductAlias || explicitSkuMention || multiReferenceQuery || numericSku
+  const query = blocksCatalogQuery || genericCalendarYearQuestion ? null : calendarQuery || knownProductAlias || explicitSkuMention || multiReferenceQuery || numericSku
     || (hasExplicitProductCode && sharedCatalogReference ? message : null)
     || printerQuery
     || (sharedCatalogReference ? message : null)

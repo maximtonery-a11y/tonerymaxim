@@ -132,6 +132,12 @@ function referenceAliases(value: unknown, includeMixedTokenSegments = true) {
     if (/^[a-z]{1,12}$/.test(token) && !QUERY_FILLER_WORDS.has(token) && /^\d{1,8}[a-z]{0,4}$/.test(next)) {
       aliases.add(`${token}${next}`);
     }
+    // Niektoré modelové rodiny majú medzi prefixom a číslom ešte písmeno:
+    // MLT-D111L, DCP-L2532DW, MC-G02. Spojený alias musí vzniknúť rovnako
+    // v dopyte aj v identite produktu/tlačiarne.
+    if (/^(?:mlt|clt|dcp|mfc|hl|mc)$/.test(token) && /^[a-z]\d{1,8}[a-z0-9]*$/.test(next)) {
+      aliases.add(`${token}${next}`);
+    }
     // Neviažeme vyhľadávanie na žiadny zoznam farieb ani kapacitných koncoviek.
     // Ak je kód rozdelený medzerou/pomlčkou (napr. 247 GY), spojíme ho
     // všeobecne; význam koncovky určuje iba reálny katalógový kód.
@@ -190,14 +196,40 @@ function brandlessQuery(value: string, brands: string[]) {
 function referenceTokensFromQuery(value: string, brands: string[]) {
   const withoutBrand = brandlessQuery(value, brands);
   const aliases = referenceAliases(withoutBrand.normalized, false);
+  // Zachovaj explicitné prefixové kódy aj vo vetách. Samotný tokenizer môže
+  // pri „Hľadám MC-G02 odpadovú nádobu“ vidieť iba koncovku G02; celý OEM
+  // kód je však stále jednoznačne prítomný v texte.
+  for (const match of withoutBrand.normalized.matchAll(/(?:^|\s)(mc[ -]?g\d{2,}[a-z0-9-]*)\b/gi)) {
+    aliases.add(compactKey(match[1]));
+  }
 
   // Celý kompaktný zápis je užitočný pri samotnom kóde (CRG-054, HP305),
   // ale nie pri bežnej vete. Zo súvislej vety by vznikol jeden obrovský
   // alfanumerický token, ktorý následne potlačí presný číselný kód.
-  if (withoutBrand.compact && /\d/.test(withoutBrand.compact)
-    && alphanumericTokens(withoutBrand.normalized).length <= 3) aliases.add(withoutBrand.compact);
+  const compactTokens = alphanumericTokens(withoutBrand.normalized);
+  const isStandaloneCode = compactTokens.length > 0 && compactTokens.length <= 2
+    && compactTokens.every((token) => /\d/.test(token) || /^[a-z]{1,4}$/.test(token));
+  if (withoutBrand.compact && /\d/.test(withoutBrand.compact) && isStandaloneCode) {
+    aliases.add(withoutBrand.compact);
+    // Pri krátkom presnom kóde nesmie jeho koncovka fungovať ako druhý,
+    // všeobecný OEM kód. MC-G02 tak zostane mcg02 a nevytvorí aj alias g02,
+    // ktorý predtým priťahoval Konica A0WG02H. Rovnako WT-223CL nesmie
+    // degradovať na všeobecné 223cl.
+    if (/[a-z]/.test(withoutBrand.compact)) {
+      for (const token of [...aliases]) {
+        if (token !== withoutBrand.compact && token.length >= 2
+          && (withoutBrand.compact.startsWith(token) || withoutBrand.compact.endsWith(token))) aliases.delete(token);
+      }
+    }
+  }
 
   for (const filler of QUERY_FILLER_WORDS) aliases.delete(filler);
+  const strongAliases = [...aliases].filter((token) => token.length >= 5
+    && /^(?:mcg|wt|crg|clt|pgi|cli|tn|dr|cf|ce|tk|lc)/.test(token) && /\d/.test(token));
+  for (const token of [...aliases]) {
+    if (strongAliases.some((strong) => strong !== token && token.length >= 2
+      && (strong.startsWith(token) || strong.endsWith(token)))) aliases.delete(token);
+  }
   for (const token of [...aliases]) {
     const xlMatch = token.match(/^(\d{2,6})(?:xl|xxl)$/);
     if (xlMatch) aliases.delete(xlMatch[1]);
@@ -366,6 +398,12 @@ export function findExactProductIdentityMatches(products: CatalogProduct[], quer
   // obsahuje explicitný zápis „no. 305“, má pred všeobecným číselným
   // aliasom prednosť a do výsledkov sa nedostanú nesúvisiace tonery.
   const explicitFamilyMatches = matches.filter((match) => hasExplicitNumberedCartridgeReference(match.product, analysis));
+  const visibleBrandFamilyMatches = matches.filter((match) => hasVisibleBrandNumberedFamilyReference(match.product, analysis));
+  // Ak zákazník uviedol značku a číselnú rodinu a tá je priamo viditeľná
+  // v názve produktu, slug so zoznamom viacerých rodín nemá rovnakú váhu.
+  // Epson 104 preto už nezobrazí Epson 101 len preto, že starý slug obsahuje
+  // text „101-102-103-104“.
+  if (!explicitFamilyMatches.length && visibleBrandFamilyMatches.length) return visibleBrandFamilyMatches;
   if (!explicitFamilyMatches.length) return matches;
   // Ak existuje presný zápis „no. 924“, zachováme aj reálne označenie
   // „HP 924e“. Naopak HP CD973AE sa pri dotaze HP 973 nevydáva za rodinu

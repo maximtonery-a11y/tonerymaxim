@@ -1,5 +1,5 @@
 import { filterProducts, getProductsCache } from '../tm-products-cache.ts';
-import { findExactPrinterModelMatches, findExactProductIdentityMatches, productPrinterValues } from '../catalog-query.ts';
+import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIdentityMatches, productPrinterValues } from '../catalog-query.ts';
 import { consumablePrinterFamilyKey } from '../printer-model-family.ts';
 
 export type CommerceProduct = {
@@ -197,9 +197,12 @@ export async function resolveCommerceProducts(query: string) {
   const exactTypes = new Set(exactIdentity.map((product:any)=>productType(product)).filter(Boolean));
   const isConsumableOffer = (product:any) => {
     const text=`${product?.name||''} ${product?.product_type_label||''}`.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    return !isPrinterDevice(product) && !/\b(valec|optick|drum|fuser|fixac|prenosov.*pas|transfer.*belt|odpadov)/i.test(text);
+    return !isPrinterDevice(product) && !/\b(valec|optick|drum|fuser|fixac|prenosov.*pas|transfer.*belt|odpadov|waste|nádob|nadob)/i.test(text);
   };
-  const equivalentTypes = exactPrinterKeys.size ? allProducts.filter((product:any) => {
+  const exactContainsComponent = exactIdentity.some((product:any) => !isConsumableOffer(product));
+  const hasStrongReference = analyzeCatalogQuery(query).referenceTokens
+    .some((token) => /[a-z]/i.test(token) && /\d/.test(token));
+  const equivalentTypes = exactPrinterKeys.size && hasStrongReference && !exactContainsComponent ? allProducts.filter((product:any) => {
     if(!isValidOffer(product)||!isConsumableOffer(product))return false;
     // Rozšírenie slúži iba na doplnenie chýbajúceho typu. Varianty typu,
     // ktorý už presný OEM výsledok obsahuje, nesmieme rozšíriť o inú kapacitu.
@@ -219,11 +222,19 @@ export async function resolveCommerceProducts(query: string) {
   // valec ani servisný diel nesmie byť náhradou za prázdny zoznam tonerov.
   // Pri explicitnom produktovom kóde však nechávame aj valec/fuser, aby Tomáš
   // vedel nájsť každý samostatne hľadaný produkt.
-  const found = printer.length ? consumables : consumables.length ? consumables : matched;
+  const found = printer.length ? consumables : exactContainsComponent ? exactIdentity : consumables.length ? consumables : matched;
+  const queryAnalysis = analyzeCatalogQuery(query);
+  const visibleReferenceRank = (product:any) => {
+    const name = compactPrinterKey(product?.name || '');
+    const branded = queryAnalysis.brands.some((brand) => queryAnalysis.referenceTokens
+      .some((reference) => name.includes(`${compactPrinterKey(brand)}${reference}`)));
+    if (branded) return 2;
+    return queryAnalysis.referenceTokens.some((reference) => name.includes(reference)) ? 1 : 0;
+  };
   const unique = [...new Map(found.map((p: any) => [String(p.id), p])).values()]
     .sort((a: any, b: any) => {
       const order: Record<string, number> = { compatible: 1, original: 2, renovated: 3 };
-      return Number(!purchasable(a)) - Number(!purchasable(b)) ||
+      return Number(!purchasable(a)) - Number(!purchasable(b)) || visibleReferenceRank(b) - visibleReferenceRank(a) ||
         (order[productType(a)] || 9) - (order[productType(b)] || 9) || Number(a.price || 0) - Number(b.price || 0);
     })
     // API musí poznať celú priradenú rodinu. UI si môže výsledok dávkovať,
