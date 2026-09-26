@@ -92,7 +92,7 @@ function hasProductCodeOrModel(message: string) {
   // Všeobecný model musí mať písmeno a číslo v tom istom tokene; medzeru povoľujeme iba pri známych OEM prefixoch.
   if (/\b[a-z]{1,8}-?\d{2,}[a-z0-9-]*\b/i.test(text)) return true;
   if (/\b\d{2,}[a-z]{1,5}\b/i.test(text)) return true;
-  if (/\b(cf|ce|crg|tn|dr|wt|mc|w|q|clt|mlt|tk|pg|cli|lc)\s*-?\s*\d{2,}[a-z0-9]*\b/i.test(text)) return true;
+  if (/\b(cf|ce|crg|tn|dr|wt|mc|w|q|clt|mlt|tk|pg|pgi|pfi|cli|lc)\s*-?\s*\d{2,}[a-z0-9]*\b/i.test(text)) return true;
   if (/\b\d{2,}[a-z]{1,5}\d{2,}[a-z0-9-]*\b/i.test(text)) return true;
   // Modely často zákazník napíše ako značka + číselný model (napr. Xerox 3020).
   if (/\b(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica|minolta)\s+[a-z-]*\d{3,}[a-z0-9-]*\b/i.test(text)) return true;
@@ -647,6 +647,17 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   }
 
   // Priority routes before generic shipping/payment keyword matching.
+  const markedDeliveredButMissing = /\bdorucen\w*\b/.test(normalizedMessage)
+    && /\b(?:nemam|nepris|nedostal|chyba|nenasiel)\w*\b/.test(normalizedMessage)
+    && /\b(?:zasielk|balik|tracking|kurier|dopravc)\w*\b/.test(normalizedMessage);
+  if (markedDeliveredButMissing) {
+    const delivered = aiKnowledge.find((item) => item.id === 'zasielka-oznacena-dorucena');
+    if (delivered) return { answer: [`${delivered.title}:`, ...delivered.answer], products: [], groups: [], intent: 'order', faq: delivered.id, confidence: 0.99 };
+  }
+  if (/\b(?:cvak|klep)\w*(?:\s+\w+){0,5}\b(?:podavac|papier|zasobnik)\w*\b|\b(?:podavac|zasobnik)\w*(?:\s+\w+){0,5}\b(?:cvak|klep|neber)\w*\b/i.test(normalizedMessage)) {
+    const feeder = aiKnowledge.find((item) => item.id === 'cvakanie-podavaca');
+    if (feeder) return { answer: [`${feeder.title}:`, ...feeder.answer], products: [], groups: [], intent: 'diagnostic', faq: feeder.id, confidence: 0.99 };
+  }
   if (!isContextualProductFollowUp && /\b(cesk(a|ej|u|o)|cesko|cr|cz|brno|brna|praha|prahy)\b/i.test(normalizedMessage)) {
     const foreign = aiKnowledge.find((item) => item.id === 'ceska-republika');
     if (foreign) return { answer: [`${foreign.title}:`, ...foreign.answer], products: [], groups: [], intent: 'shipping', faq: foreign.id, confidence: 0.99 };
@@ -659,9 +670,18 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     return { answer: ['Na túto otázku nemám v overených informáciách ToneryMAXIM spoľahlivú odpoveď.'], products: [], groups: [], intent: 'fallback', confidence: 0.99, unanswered: true };
   }
 
+  // Vrátenie peňazí je užšia téma než všeobecné vrátenie tovaru, preto musí
+  // zostať vyhodnotené ako prvé.
   if (/vrat\w* peniaz|peniaz\w*.*odstupen|odstupen.*peniaz/i.test(normalizedMessage)) {
     const refund = aiKnowledge.find((item) => item.id === 'odstupenie-vratenie-penazi');
     if (refund) return { answer: [`${refund.title}:`, ...refund.answer], products: [], groups: [], intent: 'claim', faq: refund.id, confidence: 0.99 };
+  }
+  // Odstúpenie/vrátenie má vždy prednosť pred slovom „doprava“. V otázke
+  // „kto hradí spätnú dopravu“ ide o reklamáciu/vrátenie, nie o cenník novej
+  // objednávky.
+  if (/\b(?:vratit|vraten|vratenie|odstup|odstupujem)\w*\b|\b(?:navratov\w*\s+adres\w*|spatn\w*\s+(?:dopr|preprav|postovn)\w*)\b/i.test(normalizedMessage)) {
+    const returns = aiKnowledge.find((item) => item.id === 'vratenie-tovaru');
+    if (returns) return { answer: [`${returns.title}:`, ...returns.answer], products: [], groups: [], intent: 'claim', faq: returns.id, confidence: 0.99 };
   }
   const adviceId = /ktore tonery.*najlepsi pomer|najlepsi pomer.*toner|preco.*drahsi toner.*vyhodnejs/i.test(normalizedMessage) ? 'najlepsi-pomer-toner'
     : /(?:odporuc|najlacnejsi).*toner.*(?:ciernobiel|farebn)/i.test(normalizedMessage) ? 'najlacnejsi-toner-bez-modelu' : '';

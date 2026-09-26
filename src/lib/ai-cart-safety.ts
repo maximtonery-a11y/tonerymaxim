@@ -11,6 +11,12 @@ const normalize = (value: unknown) => String(value || '')
  */
 export function forbidsCartMutation(value: unknown) {
   const text = normalize(value);
+  // Machine-readable/action wording is used by audits and integrations as
+  // well as by customers. A ban on any shopping action must win even when
+  // the message does not literally contain the word "košík".
+  const shoppingAction = /\b(?:nakupn\w*\s+akci\w*|add\s+to\s+cart|addtocart|buy\s+intent|buyintent|objednavkov\w*\s+akci\w*)\b/;
+  const actionBan = /\b(?:bez|ziadn\w*|zakaz\w*|nechcem|nezelam\s+si|nesmie|nemas|nerob|nevykon|nevytvar)\b(?:\s+\w+){0,8}\s+\b(?:nakupn\w*\s+akci\w*|add\s+to\s+cart|addtocart|buy\s+intent|buyintent|objednavkov\w*\s+akci\w*)\b/;
+  const onlyOffer = /\b(?:iba|len)\b(?:\s+\w+){0,5}\s+\b(?:ponuk|ukaz|zobraz|porovnaj|informuj)\w*\b(?:\s+\w+){0,8}\s+\b(?:bez|ziadn\w*)\b(?:\s+\w+){0,4}\s+\b(?:nakup|objednav|pridav|vloz|akci)\w*\b/;
   // Zachytávame rozkazovací spôsob, neurčitok aj zdvorilé množné číslo:
   // „nepridávaj“, „nepridať“, „nepridávajte“, „nevložil“, „nedali“.
   const negativeVerb = /\b(?:nepridav|nepridaj|nepridat|nevklad|nevkladaj|nevloz|nedavaj|nedat|nedal|neobjednav|neobjednaj|neobjednat|nekup|nemen|nezmen|neuprav|nedotyk|nevytvar)\w*\b/;
@@ -32,7 +38,9 @@ export function forbidsCartMutation(value: unknown) {
   const passiveUnchanged = /\b(?:kosik|nakup|objednavk)\w*\b(?:\s+\w+){0,5}\s+\b(?:nesmie|nema)\b(?:\s+\w+){0,3}\s+\b(?:zmen|uprav)\w*\b/;
   const leaveAlone = /\b(?:nechaj|ponech)\w*\b(?:\s+\w+){0,5}\s+\b(?:kosik|nakup|objednavk)\w*\b(?:\s+\w+){0,3}\s+\b(?:tak|nedotknut|bez\s+zmen)\w*\b/;
   const noInterference = /\bnezasah\w*\b(?:\s+\w+){0,5}\s+\b(?:kosik|nakup|objednavk)\w*\b/;
-  return explicitNothing.test(text)
+  return (shoppingAction.test(text) && actionBan.test(text))
+    || onlyOffer.test(text)
+    || explicitNothing.test(text)
     || withoutMutation.test(text)
     || negativeObject.test(text)
     || doesNotWantMutation.test(text)
@@ -50,6 +58,27 @@ export function forbidsCartMutation(value: unknown) {
     || noInterference.test(text)
     || (/\bbez\s+(?:nakup|objednav)\w*\b/.test(text) && mutationWord.test(text))
     || (negativeVerb.test(text) && cartTarget.test(text));
+}
+
+/**
+ * A product wish or search is not permission to mutate the cart.
+ *
+ * Examples which are intentionally NOT commands:
+ * - "Chcem originálnu Epson 104 sadu"
+ * - "Potrebujem HP CF230X"
+ * - "Ukáž mi kompatibilný toner"
+ *
+ * The API may start a buying flow only after an unmistakable purchase/cart
+ * command. A later quantity/type reply is handled through pendingQuestion,
+ * which can only be created by one of these explicit commands.
+ */
+export function hasExplicitCartAddCommand(value: unknown) {
+  const text = normalize(value);
+  if (!text || forbidsCartMutation(text)) return false;
+
+  return /\b(?:pridaj|pridat|vloz|vlozit|objednaj|objednat|kup|kupit|zober|zobrat)\w*\b/.test(text)
+    || /\bdaj\s+mi\b(?:\s+\w+){0,8}\s+\b(?:do\s+)?(?:kosik|nakup)\w*\b/.test(text)
+    || /\bchcem\s+(?:si\s+)?(?:kupit|objednat|zobrat)\b/.test(text);
 }
 
 export function isCartChangingAction(kind: unknown) {

@@ -86,13 +86,16 @@ test("storefront chráni pamäť a neposiela skryté stovky variantov", async ()
   const productsPage = await readFile(new URL("../src/pages/produkty.astro", import.meta.url), "utf8");
   const productsApi = await readFile(new URL("../src/pages/api/products.ts", import.meta.url), "utf8");
   const printerPage = await readFile(new URL("../src/pages/tlaciarne/[brand]/[model].astro", import.meta.url), "utf8");
+  const catalogRows = await readFile(new URL("../src/components/CatalogInitialRows.astro", import.meta.url), "utf8");
   const search = await readFile(new URL("../src/pages/api/smart-search.ts", import.meta.url), "utf8");
 
   assert.match(cache, /__TM_PUBLIC_PRODUCTS_CACHE__/);
   assert.match(cache, /result\.products\.map\(mapProduct\)/);
   assert.doesNotMatch(cache, /detailLines\.join/);
-  assert.match(productsPage, /limitedSpecialChipVariants\(specialVariantsRaw, 8\)/);
-  assert.match(productsApi, /limitedSpecialChipVariants\(specialVariants, 8\)/);
+  assert.match(productsPage, /const special_variants: any\[\] = \[\]/);
+  assert.match(productsApi, /special_variants: \[\]/);
+  assert.match(catalogRows, /const specialProducts: Product\[\] = \[\]/);
+  assert.doesNotMatch(catalogRows, /\[\.\.\.products, \.\.\.suppliedSpecialProducts\]\.filter/);
   assert.doesNotMatch(printerPage, /printerEntities\(cache\.products\)/);
   assert.match(search, /printerIntern/);
 });

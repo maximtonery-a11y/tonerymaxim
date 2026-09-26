@@ -1,10 +1,10 @@
 import type { AiIntent, CommerceState } from './domain.ts';
 import { analyzeCatalogQuery } from '../catalog-query.ts';
 import { isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../calendar-ai-catalog.ts';
-import { forbidsCartMutation } from '../ai-cart-safety.ts';
+import { forbidsCartMutation, hasExplicitCartAddCommand } from '../ai-cart-safety.ts';
 
 const norm = (v: unknown) => String(v || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-const productCode = /\b(?:(?:cf|ce|crg|tn|dr|wt|mc|q|clt|mlt|tk|pgi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*|\d{2,}[a-z]{1,5}\d{2,}[a-z0-9-]*)\b/i;
+const productCode = /\b(?:(?:cf|ce|crg|tn|dr|wt|mc|q|clt|mlt|tk|pgi|pfi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*|\d{2,}[a-z]{1,5}\d{2,}[a-z0-9-]*)\b/i;
 const printer = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|utax|ibm|panasonic|philips|konica(?:\s+minolta)?|minolta|minoltu)(?:\s+[a-z][a-z-]*){0,5}\s+[a-z-]*\d{1,}[a-z0-9-]*\b/i;
 
 export function routeCommerceMessage(message: string, state: CommerceState) {
@@ -12,11 +12,15 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const catalogQuery = analyzeCatalogQuery(message);
   const explicitSkuMention = message.match(/\bsku\s*[:#-]?\s*([a-z0-9][a-z0-9_-]{1,99})\b/i)?.[1] || null;
   const explicitReference = message.match(/\b(?=[A-Z0-9_-]{4,}\b)(?=[A-Z0-9_-]*[A-Z])(?=[A-Z0-9_-]*\d)[A-Z0-9]+(?:[-_][A-Z0-9]+)*\b/i)?.[0] || null;
+  // Číselné rodiny atramentov sa často píšu ako značka + číslo (Epson 104,
+  // HP 711). Zachytíme iba bezprostrednú dvojicu, takže model Epson L3250 ani
+  // negatívna veta „nie séria 101“ nemôžu prebiť požadovanú rodinu Epson 104.
+  const explicitBrandFamily = message.match(/\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh)\s+\d{2,4}[a-z]{0,3}\b/i)?.[0] || null;
   const explicitCalendarSku = message.match(/\b(?:D|NK|SK|PF|PP)(?:-\d+){1,4}\b/i)?.[0]?.toUpperCase() || null;
-  const sharedCatalogReference = Boolean(explicitReference || explicitSkuMention) || (
+  const sharedCatalogReference = Boolean(explicitReference || explicitSkuMention || explicitBrandFamily) || (
     catalogQuery.brands.length > 0 && catalogQuery.referenceTokens.some(token => /^\d{2,6}[a-z]{0,4}$/i.test(token))
   );
-  const calendarQuestion = Boolean(explicitCalendarSku) || /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn|nastenn|stolov|trojmesac|trojspiral)\w*\b/.test(n);
+  const calendarQuestion = Boolean(explicitCalendarSku) || /\b(?:kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|novorocn|nastenn|stolov|trojmesac|trojspiral)\w*\b|\bpf\b/.test(n);
   const generalCalendarQuestion = isGeneralCalendarQuestion(message);
   const generalDiaryQuestion = isGeneralDiaryQuestion(message);
   const generalCalendarOrDiaryQuestion = generalCalendarQuestion || generalDiaryQuestion;
@@ -77,8 +81,9 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (/(original.*kompat|kompat.*original|porovnaj|rozdiel)/.test(n)) add('PRODUCT_COMPARE');
   if (/(cierny|black|cyan|magenta|yellow|zlty|original\w*|renov\w*|repas\w*|kompatibil\w*)/.test(n)) add('COLOR_TYPE_FILTER');
   const cartMutationForbidden = forbidsCartMutation(message);
-  const explicitBuy = !cartMutationForbidden && (/\b(?:chcem\s+(?:kupit|objednat|zobrat)|kupim|kupit|zoberiem|zobrat|pridaj|objednaj|daj\s+mi)\b/.test(n)
-    || (Boolean(sharedCatalogReference || printer.test(message) || state.lastProductQuery) && /\bchcem\b/.test(n)));
+  // Samotné „chcem/potrebujem/hľadám“ je požiadavka na ponuku, nie súhlas
+  // so zmenou košíka. Nákupný tok otvoríme iba pri výslovnom príkaze.
+  const explicitBuy = !cartMutationForbidden && hasExplicitCartAddCommand(message);
   if (explicitBuy && !blocksCatalogQuery) add('BUY_INTENT');
   const explicitCart = /\b(?:otvor|ukaz|zobraz|skontroluj)\w*(?:\s+\w+){0,3}\s+kosik\w*|\b(?:co|kolko)\s+mam\s+v\s+kosik\w*|\b(?:odstran|vymaz)\w*(?:\s+\w+){0,3}\s+(?:z\s+)?(?:kosik|produkt|polozk)\w*|(?:^|\s)[+−-]\s*\d/.test(n);
   if (explicitCart && !cartMutationForbidden) add('CART');
@@ -103,8 +108,11 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // Pri modeli tlačiarne vraciame iba čistý model (napr. Epson WF-6090), nie
   // celú vetu „Hľadám náplne...“. OEM kód má naďalej prednosť, aby sa Canon
   // CRG054 alebo Brother TN2421 nikdy nepovažovali za model tlačiarne.
-  const query = blocksCatalogQuery || genericCalendarYearQuestion ? null : calendarQuery || knownProductAlias || explicitSkuMention || multiReferenceQuery || numericSku
+  const query = blocksCatalogQuery || genericCalendarYearQuestion ? null : calendarQuery || knownProductAlias || explicitSkuMention || explicitBrandFamily || multiReferenceQuery || numericSku
     || (hasExplicitProductCode && sharedCatalogReference ? message : null)
+    // „Epson EcoTank L3250 + Epson 104“ musí hľadať presnú rodinu 104.
+    // Model tlačiarne nesmie prebiť explicitné označenie náplne a dovoliť
+    // náhradu susednou rodinou 103/101.
     || printerQuery
     || (sharedCatalogReference ? message : null)
     || (intents.includes('FOLLOW_UP') ? state.lastProductQuery : null);

@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductsCache, isSpecialChipVariantProduct, jsonResponse, limitedSpecialChipVariants, type TmProduct } from "../../lib/tm-products-cache.ts";
+import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductsCache, isSpecialChipVariantProduct, jsonResponse, type TmProduct } from "../../lib/tm-products-cache.ts";
 
 export const prerender = false;
 
@@ -154,7 +154,6 @@ export const GET: APIRoute = async ({ url }) => {
     // Preto tu znovu netriedime celé pole pri každom requeste.
     const filtered = filterProducts(productsCache.products, { search, brand, category, type, color, stock, printer });
     const explicitSpecial = explicitlyRequestsSpecialChipVariant(search);
-    const specialVariants = explicitSpecial ? [] : filtered.filter(isSpecialChipVariantProduct);
     const mainFiltered = explicitSpecial ? filtered : filtered.filter((product) => !isSpecialChipVariantProduct(product));
     const start = (page - 1) * perPage;
     const products = mainFiltered.slice(start, start + perPage).map(slimProduct);
@@ -169,7 +168,7 @@ export const GET: APIRoute = async ({ url }) => {
       count: products.length,
       total: mainFiltered.length,
       total_pages: Math.max(1, Math.ceil(mainFiltered.length / perPage)),
-      special_variants: limitedSpecialChipVariants(specialVariants, 8).map(slimProduct),
+      special_variants: [],
       filters: { search, brand, category, type, color, stock, printer },
       sorted_by: "compatible-original-renovated",
       products,

@@ -1708,6 +1708,10 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
   const filtered = sourceProducts.filter((product) => {
     // Služby renovácie nie sú samostatný predajný produkt a v katalógu sa nezobrazujú.
     if (isRenovationServiceProduct(product)) return false;
+    // No-chip, OEM-chip and Hatona are specialist products. They must never
+    // leak into ordinary search, autocomplete or printer pages. They remain
+    // reachable only when the customer explicitly searches for that variant.
+    if (isSpecialChipVariantProduct(product) && !explicitlyRequestsSpecialChipVariant(filters.search || "")) return false;
     // V bežnom katalógu zobrazujeme ako hlavné karty iba hotové produkty.
     // Bez čipu / OEM čip / Hatona sa zobrazia ako samostatné výsledky iba
     // pri explicitnom vyhľadaní daného variantu. Ostatné UI ich ponúka v

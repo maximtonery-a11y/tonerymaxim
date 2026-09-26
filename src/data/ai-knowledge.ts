@@ -88,6 +88,16 @@ export const aiKnowledge: AiKnowledgeItem[] = [
       'Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.',
       'GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.',
       'Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.',
+      'Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.',
+    ],
+  },
+  {
+    id: 'zasielka-oznacena-dorucena', intent: 'order', title: 'Zásielka je označená ako doručená, ale nemáte ju', priority: 180,
+    triggers: ['zasielka oznacena ako dorucena', 'balik je doruceny ale nemam ho', 'tracking ukazuje dorucene', 'kurier oznacil dorucene', 'zasielku nemam'],
+    answer: [
+      'Najskôr skontrolujte detail sledovania zásielky, miesto odovzdania, schránku alebo bezpečné miesto a overte prevzatie u členov domácnosti či susedov.',
+      'Potom čo najskôr kontaktujte dopravcu uvedeného v sledovaní a požiadajte o preverenie GPS alebo záznamu o odovzdaní. Číslo zásielky posielajte dopravcovi, nie do voľnej správy AI.',
+      'Ak zásielku nenájdete, kontaktujte ToneryMAXIM na info@tonerymaxim.sk alebo +421 917 859 206 a uveďte číslo objednávky. Pomôžeme prípad riešiť s dopravcom.',
     ],
   },
   {
@@ -259,6 +269,15 @@ export const aiKnowledge: AiKnowledgeItem[] = [
       'Najskôr overte správny typ a gramáž papiera v zásobníku aj v nastavení tlače. Použite suchý, rovný papier a skúste menší balík z nového balenia.',
       'Ak sa toner dá po vytlačení zotrieť alebo sa papier výrazne krúti najmä po prechode tlačiarňou, príčinou môže byť fixačná jednotka alebo nesprávna teplota fixácie.',
       'Pri zápachu, nezvyčajnom prehrievaní alebo poškodzovaní papiera tlačiareň ďalej nepoužívajte. Napíšte presný model tlačiarne a gramáž papiera, aby sme vedeli odporučiť bezpečný ďalší krok.',
+    ],
+  },
+  {
+    id: 'cvakanie-podavaca', intent: 'diagnostic', title: 'Podávač papiera cvaká alebo neberie papier', priority: 135,
+    triggers: ['cvaka podavac', 'cvakanie podavaca', 'podavac cvaka', 'tlaciaren neberie papier', 'problem s podavanim papiera'],
+    answer: [
+      'Tlačiareň vypnite a odpojte od elektriny. Vyberte papier, skontrolujte, či nie je zvlnený alebo zlepený, a vložte menší rovný balík správnej gramáže.',
+      'Skontrolujte, či vodiace lišty v zásobníku papier iba pridŕžajú a nie sú príliš tesné. Odstráňte iba voľný papier alebo viditeľný cudzí predmet; mechanizmus nerozoberajte a nepoužívajte silu.',
+      'Ak cvakanie pokračuje aj s iným papierom alebo vidíte poškodený valček či ozubené koleso, tlačiareň ďalej nepoužívajte a obráťte sa na servis. Pre presnejší postup napíšte model tlačiarne a odkiaľ zvuk vychádza.',
     ],
   },
   {

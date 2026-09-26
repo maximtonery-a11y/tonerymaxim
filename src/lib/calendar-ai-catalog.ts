@@ -67,7 +67,7 @@ async function loadRows() {
 
 export function isCalendarQuery(query: string) {
   const n = normalize(query);
-  return /\b(kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|pf|novorocn)\w*\b/.test(n)
+  return /\b(?:kalendar|kalendat|kaledar|kalemdar|kalndar|calendar|diar|minidiar|planovac|novorocn)\w*\b|\bpf\b/.test(n)
     // Zákazník prirodzene nadväzuje aj bez slova „kalendár“:
     // „stolové hľadám, aké máte?“ alebo „ukážte nástenné“.
     || /\b(nastenn|stolov|trojmesac|trojspiral)\w*\b/.test(n)

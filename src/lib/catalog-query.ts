@@ -225,7 +225,7 @@ function referenceTokensFromQuery(value: string, brands: string[]) {
 
   for (const filler of QUERY_FILLER_WORDS) aliases.delete(filler);
   const strongAliases = [...aliases].filter((token) => token.length >= 5
-    && /^(?:mcg|wt|crg|clt|pgi|cli|tn|dr|cf|ce|tk|lc)/.test(token) && /\d/.test(token));
+    && /^(?:mcg|wt|crg|clt|pgi|pfi|cli|tn|dr|cf|ce|tk|lc)/.test(token) && /\d/.test(token));
   for (const token of [...aliases]) {
     if (strongAliases.some((strong) => strong !== token && token.length >= 2
       && (strong.startsWith(token) || strong.endsWith(token)))) aliases.delete(token);

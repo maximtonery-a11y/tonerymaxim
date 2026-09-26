@@ -4,7 +4,8 @@ import { isAvailableNow, storefrontStockClass, storefrontStockText } from "../li
 
 type Product = Record<string, any>;
 
-const { products = [], specialProducts: suppliedSpecialProducts = [], showSpecialAsProducts = false } = Astro.props as { products?: Product[]; specialProducts?: Product[]; showSpecialAsProducts?: boolean };
+const catalogProps = Astro.props as { products?: Product[]; specialProducts?: Product[]; showSpecialAsProducts?: boolean };
+const { products = [], showSpecialAsProducts = false } = catalogProps;
 
 const money = (value: unknown) => new Intl.NumberFormat("sk-SK", {
   style: "currency",
@@ -97,15 +98,13 @@ const desktopProductImage = (value: unknown) => {
 const printers = (product: Product) => Array.isArray(product.compatible_printers) ? product.compatible_printers.filter(Boolean) : [];
 const groupTitle = (key: string) => key === "compatible" ? "Kompatibilný" : key === "original" ? "Originál" : key === "renovated" ? "Renovovaný" : "Produkt";
 let previousGroup = "";
-const specialProducts = showSpecialAsProducts ? [] : [...products, ...suppliedSpecialProducts].filter((product) => {
-  const chip = chipVariant(product);
-  // Hatona je naďalej dostupná pri explicitnom vyhľadaní názvu, ale nesmie
-  // sa podsúvať ako bežný „ďalší variant“ na produkte alebo tlačiarni.
-  return chip && chip.key !== "ready-chip" && chip.key !== "hatona";
-});
+// Špecializované produkty bez čipu, s OEM čipom a Hatona sa nesmú
+// podsúvať na stránke tlačiarne ani v bežnom katalógu. Pri ich výslovnom
+// vyhľadaní ich stránka pošle v `products` a zapne showSpecialAsProducts.
+const specialProducts: Product[] = [];
 const mainProducts = showSpecialAsProducts ? products : products.filter((product) => {
   const chip = chipVariant(product);
-  return !chip || chip.key === "ready-chip";
+  return !chip || (chip.key !== "hatona" && chip.key === "ready-chip");
 });
 const specialGroups = [
   { key: "no-chip", label: "Bez čipu", note: "Cenovo výhodnejší variant pre zákazníkov, ktorí vedia použiť pôvodný čip." },
