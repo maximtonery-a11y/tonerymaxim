@@ -2,7 +2,7 @@
 export const prerender = false;
 
 import SeoCatalogPage from "../../../components/SeoCatalogPage.astro";
-import { getProductsCache } from "../../../lib/tm-products-cache";
+import { getProductsCache, isSpecialChipVariantProduct } from "../../../lib/tm-products-cache";
 import {
   catalogStats,
   entitySlug,
@@ -91,7 +91,10 @@ function cleanColor(value: unknown): string {
 const cache = await getProductsCache().catch(() => ({ products: [] as any[], generated_at: "" }));
 const printer = findPrinterEntity(cache.products, Astro.params.brand, Astro.params.model);
 const notFound = !printer;
-const allProducts = printer?.products || [];
+// Stránka tlačiarne je bežná ponuka, preto špecializované bezčipové,
+// OEM-čipové a Hatona varianty nezapočítavame ani do kariet, filtrov, štatistík
+// a SEO textov. Sú dostupné iba cez ich výslovné produktové vyhľadanie.
+const allProducts = (printer?.products || []).filter((product) => !isSpecialChipVariantProduct(product));
 const requestedType = String(Astro.url.searchParams.get("typ") || "").toLowerCase();
 const selectedType = ["compatible", "original", "renovated"].includes(requestedType) ? requestedType : "";
 const products = selectedType

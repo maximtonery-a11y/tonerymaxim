@@ -50,19 +50,9 @@ export async function searchCommerce(query:string) {
     const family=familyOf(product);const high=/H$/i.test(family)||/vysokokapacit|high[ -]?yield/i.test(`${product.name||''} ${product.sku||''}`);
     sets.push({type:product.type,family,capacityVariant:high?'high':'standard',label:product.name,products:[product],catalogProduct:product,totalPrice:Number(product.price||0),discountPercent:0,packageKind:'catalog'});
   }
-  if(isColorPrinter){
-    for(const type of ['compatible','original','renovated']){
-      const typed=products.filter((p:any)=>p.type===type&&!isPackProduct(p)&&Number(p.price||0)>0);const families=new Map<string,any[]>();for(const p of typed){const f=familyOf(p);if(f){const a=families.get(f)||[];a.push(p);families.set(f,a)}}
-      const complete=[...families.entries()].map(([family,list])=>({family,chosen:['black','cyan','magenta','yellow'].map(color=>list.filter((p:any)=>p.color===color).sort((a:any,b:any)=>a.price-b.price)[0]).filter(Boolean)})).filter(x=>x.chosen.length===4).sort((a,b)=>a.chosen.reduce((n,p)=>n+p.price,0)-b.chosen.reduce((n,p)=>n+p.price,0));
-      let completeFamilies=complete;
-      if(!completeFamilies.length){const fallback=['black','cyan','magenta','yellow'].map(color=>typed.filter((p:any)=>p.color===color).sort((a:any,b:any)=>a.price-b.price)[0]).filter(Boolean);if(fallback.length===4&&typed.filter((p:any)=>p.color).length===4)completeFamilies=[{family:'single-family',chosen:fallback}];}
-      for(const entry of completeFamilies){
-        if(catalogPacks.some((p:any)=>p.type===type&&familyOf(p)===entry.family))continue;
-        const high=/H$/i.test(entry.family);const base=type==='compatible'?'Kompatibilná':type==='original'?'Originálna':'Renovovaná';
-        sets.push({type,family:entry.family,capacityVariant:high?'high':'standard',label:`${base}${high?' vysokokapacitná':''} sada`,products:entry.chosen,totalPrice:Math.round(entry.chosen.reduce((n:number,p:any)=>n+p.price,0)*100)/100,discountPercent:0,packageKind:'synthetic'});
-      }
-    }
-  }
+  // Sada smie vzniknúť iba z jedného reálneho katalógového produktu.
+  // Štyri samostatné farby sa nikdy neskladajú do virtuálneho balenia — ani
+  // interne. Tým sa nemôže syntetická sada omylom dostať do iného klienta API.
   const value={...result,products,presentation:{isColorPrinter,sets,colors:[...colors]}};
   commerceCache.set(cacheKey,{expires:Date.now()+5*60_000,value});
   if(commerceCache.size>500){const oldest=commerceCache.keys().next().value;if(oldest)commerceCache.delete(oldest);}

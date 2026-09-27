@@ -284,8 +284,14 @@ test("OKI C301 nájde produkty podľa priradeného modelu, nielen podľa názvu"
 
   assert.deepEqual(
     filterProducts(okiProducts, { search: "OKI C301" }).map((product) => product.id),
-    [101, 102, 103],
+    [101, 102],
   );
+
+  // Hatona je špecializovaný variant a v bežnom modeli tlačiarne sa nesmie
+  // ponúknuť. Zostáva dostupná iba pri výslovnom dopyte zákazníka.
+  const explicitHatona = filterProducts(okiProducts, { search: "OKI C301 Hatona" }).map((product) => product.id);
+  assert.equal(explicitHatona[0], 103);
+  assert.ok(explicitHatona.includes(103));
 });
 
 test("každý zo 16 priradených modelov dohľadá produkt", () => {

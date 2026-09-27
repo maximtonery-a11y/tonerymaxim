@@ -1,3 +1,4 @@
+import { isDeliveredButMissingQuestion } from './ai-order-question.ts';
 import { compactKey, getProductsCache, normalize } from './tm-products-cache.ts';
 import { aiKnowledge, type AiKnowledgeItem } from '../data/ai-knowledge.ts';
 import { findExactPrinterModelMatches, findExactProductIdentityMatches } from './catalog-query.ts';
@@ -512,7 +513,7 @@ function contextualizeFollowUp(message: string, history: AiConversationTurn[] = 
   // Jednoznačná samostatná servisná otázka nesmie zdediť predchádzajúci produkt.
   // Inak by napr. „koľko stojí doprava?“ po produktovej otázke znovu spustilo
   // katalógové hľadanie, pridalo tonery pod odpoveď a zbytočne spomalilo chat.
-  if (/\b(?:doprava|dopravn\w*|postovn\w*|kurier\w*|doruc\w*|zasielk\w*|balik\w*|objednavk\w*|exped\w*|odosl\w*|osobn\w*\s+odber\w*|vyzdvih\w*|parcelshop|balikomat|pickup|dobierk\w*|gopay|platb\w*|prevod\w*|faktur\w*|reklam\w*|vraten\w*|odstup\w*|hesl\w*|registrac\w*|gdpr|kontakt\w*|telefon\w*|e-?mail\w*|otvoren\w*|otvarac\w*|pracovna doba|adres\w*|sidlo)/.test(n)) return current;
+  if (/\b(?:doprava|dopravn\w*|postovn\w*|kurier\w*|doruc\w*|zasielk\w*|balik\w*|objednavk\w*|exped\w*|odosl\w*|osobn\w*\s+odber\w*|vyzdvih\w*|parcelshop|balikomat|pickup|dobierk\w*|gopay|platb\w*|prevod\w*|faktur\w*|reklam\w*|vraten\w*|vratit\w*|odstup\w*|hesl\w*|registrac\w*|gdpr|kontakt\w*|telefon\w*|e-?mail\w*|otvoren\w*|otvarac\w*|pracovna doba|adres\w*|sidlo|podavac\w*|zasobnik\w*|papier\w*|cvak\w*|klep\w*|neber\w*|rozmaz\w*|kruti\w*|zvlnen\w*|pruh\w*|ciar\w*|smuh\w*|bled\w*|nerozpozna\w*)/.test(n)) return current;
 
   const followUp = current.length <= 90 && (
     /^(a |ale |tak |dobre |ok |ano |nie )/.test(n)
@@ -552,6 +553,21 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
 
   // Jednoznačné obchodné témy routujeme priamo, aby ich všeobecné slová ako „nákup“ neprebili.
   const normalizedMessage = normalize(originalMessage);
+
+  // Súhrnná otázka na dopravu A platbu musí vrátiť obe časti. Generické
+  // skórovanie vedomostí predtým vybralo iba dopravu a zamlčalo GoPay aj
+  // bankový prevod.
+  const asksShippingOverview = /\b(?:doprav\w*|postovn\w*|kurier\w*|dorucen\w*|vyzdajn\w*\s+miest\w*)\b/.test(normalizedMessage);
+  const asksPaymentOverview = /\b(?:plat(?:b|ob)\w*|gopay|bankov\w*\s+prevod\w*|prevodom|kartou)\b|\b(?:ako|cim)\s+(?:(?:sa|to|u vas|mozem|da)\s+){0,2}zaplat\w*\b/.test(normalizedMessage);
+  const changesExistingOrder = /\b(?:storn|zrus|zmen)\w*\b.*\bobjednavk\w*\b|\bobjednavk\w*\b.*\b(?:storn|zrus|zmen)\w*\b/.test(normalizedMessage);
+  if (asksShippingOverview && asksPaymentOverview && !changesExistingOrder) {
+    const shipping = aiKnowledge.find((item) => item.id === 'doprava-ceny');
+    const payment = aiKnowledge.find((item) => item.id === 'platba-moznosti');
+    if (shipping && payment) return {
+      answer: ['Doprava a platba:', ...shipping.answer, ...payment.answer],
+      products: [], groups: [], intent: 'shipping', faq: 'doprava-a-platba', confidence: 0.99,
+    };
+  }
 
   // Otázka na identitu predávajúceho má prednosť pred všeobecnou témou
   // „faktúra na firmu“. Inak sa „Aké je vaše IČO?“ nesprávne vysvetľovalo
@@ -647,10 +663,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   }
 
   // Priority routes before generic shipping/payment keyword matching.
-  const markedDeliveredButMissing = /\bdorucen\w*\b/.test(normalizedMessage)
-    && /\b(?:nemam|nepris|nedostal|chyba|nenasiel)\w*\b/.test(normalizedMessage)
-    && /\b(?:zasielk|balik|tracking|kurier|dopravc)\w*\b/.test(normalizedMessage);
-  if (markedDeliveredButMissing) {
+  if (isDeliveredButMissingQuestion(originalMessage)) {
     const delivered = aiKnowledge.find((item) => item.id === 'zasielka-oznacena-dorucena');
     if (delivered) return { answer: [`${delivered.title}:`, ...delivered.answer], products: [], groups: [], intent: 'order', faq: delivered.id, confidence: 0.99 };
   }

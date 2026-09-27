@@ -116,6 +116,12 @@ async function submitChunk(urlList: string[]): Promise<boolean> {
 }
 
 export async function notifyIndexNowAfterProductSync(previous: Product[], current: Product[]): Promise<IndexNowResult> {
+  // Testy a lokálne overenie katalógu nesmú posielať produkčné indexačné
+  // notifikácie. Produkcia ostáva zapnutá, pokiaľ nie je poistka výslovne
+  // nastavená na hodnotu 1.
+  if (process.env.TM_DISABLE_INDEXNOW === '1') {
+    return { attempted: 0, accepted: 0, status: 'skipped' };
+  }
   const urls = changedUrls(previous, current);
   if (!urls.length) return { attempted: 0, accepted: 0, status: 'skipped' };
 

@@ -78,6 +78,7 @@ test("WooCommerce katalóg načíta všetky strany, prežije 429 a uloží kompl
     WOO_SYNC_PER_PAGE: process.env.WOO_SYNC_PER_PAGE,
     WOO_CACHE_FILE_STAT_INTERVAL_MS: process.env.WOO_CACHE_FILE_STAT_INTERVAL_MS,
     TM_CACHE_DIR: process.env.TM_CACHE_DIR,
+    TM_DISABLE_INDEXNOW: process.env.TM_DISABLE_INDEXNOW,
   };
 
   process.env.WOO_URL = `http://127.0.0.1:${address.port}/wp-json/wc/v3`;
@@ -88,6 +89,7 @@ test("WooCommerce katalóg načíta všetky strany, prežije 429 a uloží kompl
   process.env.WOO_SYNC_PER_PAGE = "100";
   process.env.WOO_CACHE_FILE_STAT_INTERVAL_MS = "0";
   process.env.TM_CACHE_DIR = cacheDir;
+  process.env.TM_DISABLE_INDEXNOW = "1";
 
   try {
     const module = await import(`../src/lib/tm-products-cache.ts?woo-test=${Date.now()}`);

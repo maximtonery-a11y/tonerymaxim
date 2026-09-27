@@ -72,9 +72,21 @@ export function forbidsCartMutation(value: unknown) {
  * command. A later quantity/type reply is handled through pendingQuestion,
  * which can only be created by one of these explicit commands.
  */
+export function isNonExecutingShoppingRequest(value: unknown) {
+  const text = normalize(value);
+  // Otázka na postup/cenu ani vysvetlenie citovaného príkazu nie sú
+  // súhlasom. Kontrolujeme text pred slovesom, aby „objednaj ako naposledy“
+  // zostalo platným príkazom.
+  const verb = /\b(?:pridaj|pridat|vloz|objednaj|objednat|kup|zober|zobrat|zopakuj|zopakovat|posli)\w*\b/.exec(text);
+  const prefix = verb ? text.slice(0, verb.index) : text;
+  const explanation = /\b(?:ako|kolko|kedy|preco|mozem|mozeme|je mozne|da sa|co znamena|povedz\w*|povedat|vysvetl\w*|popis\w*|navod|porovnaj|ukaz|zobraz|(?:chcem|potrebujem)\s+(?:vediet|zistit))\b/.test(prefix);
+  const deferred = /\b(?:ak|ked|az\s+po|po\s+(?:mojom|mojej)\s+(?:potvrden\w*|suhlas\w*)|zatial\s+(?:iba|len))\b/.test(text);
+  return explanation || deferred;
+}
+
 export function hasExplicitCartAddCommand(value: unknown) {
   const text = normalize(value);
-  if (!text || forbidsCartMutation(text)) return false;
+  if (!text || forbidsCartMutation(text) || isNonExecutingShoppingRequest(text)) return false;
 
   return /\b(?:pridaj|pridat|vloz|vlozit|objednaj|objednat|kup|kupit|zober|zobrat)\w*\b/.test(text)
     || /\bdaj\s+mi\b(?:\s+\w+){0,8}\s+\b(?:do\s+)?(?:kosik|nakup)\w*\b/.test(text)

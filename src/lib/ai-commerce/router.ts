@@ -1,7 +1,8 @@
 import type { AiIntent, CommerceState } from './domain.ts';
+import { isOrderRepeatCommand } from '../ai-order-question.ts';
 import { analyzeCatalogQuery } from '../catalog-query.ts';
 import { isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../calendar-ai-catalog.ts';
-import { forbidsCartMutation, hasExplicitCartAddCommand } from '../ai-cart-safety.ts';
+import { forbidsCartMutation, hasExplicitCartAddCommand, isNonExecutingShoppingRequest } from '../ai-cart-safety.ts';
 
 const norm = (v: unknown) => String(v || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const productCode = /\b(?:(?:cf|ce|crg|tn|dr|wt|mc|q|clt|mlt|tk|pgi|pfi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*|\d{2,}[a-z]{1,5}\d{2,}[a-z0-9-]*)\b/i;
@@ -46,13 +47,14 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // Service questions must be routable at any point of a shopping flow.  In
   // particular, a pending quantity/type question must never turn "can I pay
   // cash?" into a product follow-up using the previous catalogue query.
-  const serviceQuestion = /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|doprava|doruc\w*|kurier\w*|packet\w*|zasielkovn\w*|z-?box|objednavk\w*|zasielk\w*|balik\w*|exped\w*|odosl\w*|stav\w*\s+objednavk\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklam\w*|vraten\w*|odstup\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|telefon\w*|e-?mail\w*|otvarac\w*|otvoren\w*|pracovn\w*\s+doba|kde\s+(?:vas|vás)\s+najd\w*|adres\w*|sidlo|vernost\w*|odmen\w*|zlav\w*|bod(?:y|ov)?)\b/.test(n);
+  const serviceQuestion = /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|plat(?:b|ob)\w*|doprav\w*|postovn\w*|doruc\w*|kurier\w*|packet\w*|zasielkovn\w*|z-?box|objednavk\w*|zasielk\w*|balik\w*|exped\w*|odosl\w*|stav\w*\s+objednavk\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklam\w*|vraten\w*|vratit\w*|odstup\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|telefon\w*|e-?mail\w*|otvarac\w*|otvoren\w*|pracovn\w*\s+doba|kde\s+(?:vas|vás)\s+najd\w*|adres\w*|sidlo|vernost\w*|odmen\w*|zlav\w*|bod(?:y|ov)?|podavac\w*|zasobnik\w*|papier\w*|cvak\w*|klep\w*|neber\w*|rozmaz\w*|kruti\w*|zvlnen\w*|pruh\w*|ciar\w*|smuh\w*|bled\w*|nerozpozna\w*)\b/.test(n);
   // Otázka na cenu/sklad konkrétneho produktu môže súčasne žiadať
   // množstevnú zľavu. POLICY zostáva aktívne, ale nesmie vymazať katalógový
   // dopyt ani presný OEM kód.
   const catalogQuestionWithPolicy = sharedCatalogReference
     && /\b(?:najd|hlad|potreb|ukaz|cena|stoji|sklad|produkt|toner|napln)\w*\b/.test(n);
-  const blocksCatalogQuery = serviceQuestion && !catalogQuestionWithPolicy;
+  const humanRequest = /(clovek|operator|predajca|zavolajte|kontaktujte ma)/.test(n);
+  const blocksCatalogQuery = (serviceQuestion && !catalogQuestionWithPolicy) || humanRequest;
   const pendingAnswer = state.pendingQuestion === 'quantity'
     ? /^(?:\s*(?:\d{1,2}|jeden|jednu|jedno|dva|dve|tri|styri|pat)\s*(?:ks|kus|kusy|kusov)?\s*)$/.test(n)
     : state.pendingQuestion === 'product_type'
@@ -62,7 +64,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const genericConsumableQuestion=explicitConsumableSearch&&!sharedCatalogReference&&!printer.test(message);
   const shortPrinter = state.currentPrinter && !productCode.test(message) ? message.match(/\b[A-Z]{1,4}[- ]?\d{3,}[A-Z0-9-]*\b/i)?.[0] : null;
   const add = (x: AiIntent) => { if (!intents.includes(x)) intents.push(x); };
-  if (/(clovek|operator|predajca|zavolajte|kontaktujte ma)/.test(n)) add('HUMAN_ESCALATION');
+  if (humanRequest) add('HUMAN_ESCALATION');
   if (sharedCatalogReference || knownProductAlias || numericSku) add('PRODUCT_SEARCH');
   if (calendarQuestion && !generalCalendarOrDiaryQuestion) add('PRODUCT_SEARCH');
   // Všeobecná otázka na kalendárový sortiment potrebuje súčasne overenú
@@ -80,7 +82,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (/(pasuje|kompatibil|do (nej|tlaciarne)|aky toner)/.test(n)) add('COMPATIBILITY');
   if (/(original.*kompat|kompat.*original|porovnaj|rozdiel)/.test(n)) add('PRODUCT_COMPARE');
   if (/(cierny|black|cyan|magenta|yellow|zlty|original\w*|renov\w*|repas\w*|kompatibil\w*)/.test(n)) add('COLOR_TYPE_FILTER');
-  const cartMutationForbidden = forbidsCartMutation(message);
+  const cartMutationForbidden = forbidsCartMutation(message) || isNonExecutingShoppingRequest(message);
   // Samotné „chcem/potrebujem/hľadám“ je požiadavka na ponuku, nie súhlas
   // so zmenou košíka. Nákupný tok otvoríme iba pri výslovnom príkaze.
   const explicitBuy = !cartMutationForbidden && hasExplicitCartAddCommand(message);
@@ -89,10 +91,11 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (explicitCart && !cartMutationForbidden) add('CART');
   const explicitCheckout = /\b(?:pokladn\w*|sumar\w*|prejst\w*.*(?:pokladn|platb|doprav)|pokrac\w*.*(?:nakup|objednav)|dokonc\w*.*objednav|chcem\s+(?:kupit|objednat)|objednaj)\b/.test(n);
   if (explicitCheckout && !cartMutationForbidden) add('CHECKOUT');
-  if (/(zopak|ako naposledy|posli ako naposledy|posledn.*objednav)/.test(n)) add('ORDER_REPEAT');
+  if (isOrderRepeatCommand(message)) add('ORDER_REPEAT');
   if (/(ako|preco|kolko stran|vydrz|vytaznost|pasy|pruhy|ciary|smuhy|slaba tlac|cip)/.test(n)) add('ADVICE');
   if (/(reklam|vraten|odstup|registr|vernost|obchodne podmienky)/.test(n)) add('POLICY');
-  if (!serviceQuestion && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (/(ten|ho|ich|do nej|a original|a kompatibil|a renov|original\w*|kompatibil\w*|renov\w*|repas\w*|je skladom|kolko stran|chcem|zoberiem|pridaj|\bkus(?:y|ov)?\b|\bks\b|kosik|pokladn)/.test(n) || pendingAnswer)) add('FOLLOW_UP');
+  const explicitProductFollowUp = /\b(?:ten|ho|ich|do\s+nej|a\s+original\w*|a\s+kompatibil\w*|a\s+renov\w*|original\w*|kompatibil\w*|renov\w*|repas\w*|je\s+skladom|kolko\s+stran|chcem|zoberiem|pridaj\w*|kus(?:y|ov)?|ks|kosik\w*|pokladn\w*)\b/.test(n);
+  if (!serviceQuestion && !humanRequest && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (explicitProductFollowUp || pendingAnswer)) add('FOLLOW_UP');
   if (!intents.length) add('UNKNOWN');
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];
   // Pri presnom kalendárovom SKU posielame katalógu iba kód. Celá veta

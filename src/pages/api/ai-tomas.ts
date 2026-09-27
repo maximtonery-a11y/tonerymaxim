@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { normalizeCommerceState } from '../../lib/ai-commerce/domain.ts';
 import { routeCommerceMessage } from '../../lib/ai-commerce/router.ts';
 import { isPackProduct, searchCommerce } from '../../lib/ai-commerce/engine.ts';
-import { forbidsCartMutation, hasExplicitCartAddCommand, isCartChangingAction } from '../../lib/ai-cart-safety.ts';
+import { forbidsCartMutation, hasExplicitCartAddCommand, isCartChangingAction, isNonExecutingShoppingRequest } from '../../lib/ai-cart-safety.ts';
 export { forbidsCartMutation } from '../../lib/ai-cart-safety.ts';
 import { saveAiUnanswered } from '../../lib/ai-unanswered.ts';
 import { advisorLinks } from '../../lib/ai-advisor-links.ts';
@@ -45,7 +45,17 @@ function requestedTypes(message:string):RequestedProductType[]{
   return types;
 }
 function requestedColor(message:string){const n=normalized(message);return /cier|black|\bbk\b/.test(n)?'black':/cyan|azur/.test(n)?'cyan':/magenta|purpur/.test(n)?'magenta':/yellow|zlt/.test(n)?'yellow':null;}
+function hasInvalidRequestedQuantity(message:string){
+  const n=normalized(message).replace(/\([^)]*\)/g,' ').replace(/[−–]/g,'-').replace(/-\s+(?=\d)/g,'-');
+  if(/\b(?:nula|minus\s+(?:\d+|jeden|jednu|dva|dve|tri|styri|pat))\s*(?:ks|kus|kusy|kusov)\b/.test(n))return true;
+  const values=[...n.matchAll(/(?<![a-z0-9])(-?\d+(?:[.,]\d+)?(?:-\d+)?)\s*(?:ks|kus|kusy|kusov)\b/g)].map(match=>match[1]);
+  const bare=n.match(/^\s*(-?\d+(?:[.,]\d+)?)\s*[.!]?\s*$/)
+    || n.match(/\b(?:pridaj\w*|vloz\w*|objednaj\w*|kup\w*|zober\w*)\s+(?:(?:mi|prosim|si)\s+){0,2}(-?\d+(?:[.,]\d+)?)(?=\s|$)/);
+  if(bare)values.push(bare[1]);
+  return values.some(value=>{const number=Number(value.replace(',','.'));return /[.,]/.test(value)||!Number.isInteger(number)||number<1||number>99;});
+}
 export function requestedQuantity(message:string){
+  if(hasInvalidRequestedQuantity(message))return null;
   const n=normalized(message);
   // „4-farebná sada“ ani „všetky štyri farby“ neznamenajú štyri kusy sady.
   // Číslo tu opisuje zloženie CMYK balenia, nie požadované množstvo.
@@ -65,7 +75,7 @@ export function requestedQuantity(message:string){
   // číslo sprevádzané jednoznačným nákupným slovesom.
   const explicit=quantityText.match(/\b(\d{1,2})\s*(?:ks|kus|kusy|kusov)\b/)
     || quantityText.match(/^\s*(\d{1,2})\s*$/)
-    || (hasExplicitCartAddCommand(message)?quantityText.match(/\b(\d{1,2})\b/):null);
+    || (hasExplicitCartAddCommand(message)?quantityText.match(/\b(?:pridaj\w*|vloz\w*|objednaj\w*|kup\w*|zober\w*)\s+(?:(?:mi|prosim|si)\s+){0,2}(\d{1,2})(?=\s|$)/):null);
   if(explicit)return Math.min(99,Math.max(1,Number(explicit[1])));
   const words:Record<string,number>={jeden:1,jednu:1,jedno:1,dva:2,dve:2,tri:3,styri:4,pat:5};
   if(/^\s*(?:jeden|jednu|jedno|dva|dve|tri|styri|pat)(?:\s+(?:ks|kus|kusy|kusov))?\s*$/.test(quantityText)||hasExplicitCartAddCommand(message))for(const [w,q] of Object.entries(words))if(new RegExp(`\\b${w}\\b`).test(quantityText))return q;
@@ -115,10 +125,22 @@ export const POST: APIRoute = async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     const message = clean(body?.message); if (!message) return Response.json({ok:false,error:'Napíšte otázku alebo produkt.'},{status:400});
     const state = normalizeCommerceState(body?.state); if (!state.sessionId) state.sessionId=randomUUID();
-    const cartMutationForbidden=forbidsCartMutation(message);
+    const cartMutationForbidden=forbidsCartMutation(message)||isNonExecutingShoppingRequest(message);
     const cartBeforeRequest=state.cart.map((item:any)=>({...item}));
     const route = routeCommerceMessage(message,state);
     const page = clean(body?.page,300) || '/';
+    if(!cartMutationForbidden&&hasInvalidRequestedQuantity(message)&&(hasExplicitCartAddCommand(message)||state.pendingQuestion==='quantity')){
+      const answer='Množstvo musí byť celé číslo od 1 do 99. Nič som nepridal; napíšte, prosím, požadovaný počet kusov.';
+      state.lastProductQuery=route.productQuery||state.lastProductQuery;
+      const types=requestedTypes(message);if(types.length===1)state.currentType=types[0];
+      state.pendingQuestion='quantity';
+      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
+      return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'quantity_clarification',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_QUANTITY'}},{headers:{'Cache-Control':'no-store'}});
+    }
+    if(!route.needsProducts&&route.intents.some(intent=>intent==='POLICY'||intent==='HUMAN_ESCALATION')){
+      state.pendingQuestion=null;state.selectedProductId=null;
+      state.checkoutDraft={...state.checkoutDraft,guidedQuantity:null,guidedSet:null};
+    }
     if(ambiguousNumericReference(message)){
       const answer='Označenie 711 nie je bez značky alebo modelu tlačiarne jednoznačné. Napíšte, prosím, výrobcu a model tlačiarne alebo celý kód náplne (napríklad HP 711). Podľa interného SKU hádať nebudem.';
       state.lastIntent='ADVICE';state.lastProductQuery=null;state.currentType=null;state.currentColor=null;state.currentPrinter=null;state.currentProductId=null;state.selectedProductId=null;state.pendingQuestion=null;
@@ -353,7 +375,7 @@ export const POST: APIRoute = async ({ request }) => {
     // Pri požiadavke na hotovú sadu neposielame pred ňou ani pod ňou
     // jednotlivé farby. Výstup obsahuje jediný reálny katalógový produkt
     // sady; ak neexistuje, transparentne oznámime nedostupnosť.
-    if(!action&&completeSetRequested&&commerce?.source!=='calendar'){
+    if(!action&&route.needsProducts&&commerce&&completeSetRequested&&commerce.source!=='calendar'){
       if(completeSet){
         const setProduct=completeSet.products[0];
         commerce={...commerce,products:[setProduct],presentation:{...(commerce.presentation||{}),sets:[completeSet],colors:[]}};
