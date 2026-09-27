@@ -125,7 +125,8 @@ export const POST: APIRoute = async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     const message = clean(body?.message); if (!message) return Response.json({ok:false,error:'Napíšte otázku alebo produkt.'},{status:400});
     const state = normalizeCommerceState(body?.state); if (!state.sessionId) state.sessionId=randomUUID();
-    const cartMutationForbidden=forbidsCartMutation(message)||isNonExecutingShoppingRequest(message);
+    const explicitCartBan=forbidsCartMutation(message);
+    const cartMutationForbidden=explicitCartBan||isNonExecutingShoppingRequest(message);
     const cartBeforeRequest=state.cart.map((item:any)=>({...item}));
     const route = routeCommerceMessage(message,state);
     const page = clean(body?.page,300) || '/';
@@ -390,7 +391,10 @@ export const POST: APIRoute = async ({ request }) => {
       state.pendingQuestion=null;
       if(isCartChangingAction(action?.kind))action=null;
       const safeNotice='Rešpektujem váš pokyn: nič som nepridal do košíka ani nezmenil v nákupe. Zobrazujem iba overené možnosti.';
-      advisor={...advisor,answer:[safeNotice,...(advisor.answer||[]).filter((line:string)=>!/^Pridal som|^Vybral som.*pridal/i.test(line))]};
+      advisor={...advisor,answer:[...(explicitCartBan?[safeNotice]:[]),...(advisor.answer||[]).filter((line:string)=>!/^Pridal som|^Vybral som.*pridal/i.test(line))]};
+    }
+    if(cartMutationForbidden && commerce?.products?.length && /\bako\b.*\b(?:objednat|kupit|pridat|vlozit)\b/.test(normalized(message))) {
+      advisor={...advisor,answer:[...(advisor.answer||[]),'Pri zvolenom produkte kliknite na Rýchly nákup, vyberte počet kusov a skontrolujte košík. Objednávku dokončíte až v pokladni po výbere dopravy a platby. Touto otázkou ste nákup nepotvrdili; nič som nepridal.']};
     }
     if(/\bzlav\w*\b/.test(n)&&candidates.some((p:any)=>p.type==='compatible')){
       const discountNotice='Pri rovnakom kompatibilnom produkte platí zľava 10 % pri 2–3 ks a 25 % pri 4 a viac kusoch.';

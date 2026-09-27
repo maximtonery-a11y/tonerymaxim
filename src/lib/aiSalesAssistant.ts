@@ -1,3 +1,4 @@
+import { productPageYield } from './ai-page-yield.ts';
 import { isDeliveredButMissingQuestion } from './ai-order-question.ts';
 import { compactKey, getProductsCache, normalize } from './tm-products-cache.ts';
 import { aiKnowledge, type AiKnowledgeItem } from '../data/ai-knowledge.ts';
@@ -386,27 +387,7 @@ function noChipPenalty(product: Product) {
 
 
 function parsePageYield(product: Product): number | null {
-  const candidates = [product.capacity, product.kapacita, product.yield, product.page_yield];
-  if (Array.isArray(product.attributes)) {
-    for (const attr of product.attributes) {
-      const name = normalize(`${attr?.name || ''}`);
-      if (/kapacit|vytaz|vytaznost|yield|stran/.test(name)) {
-        candidates.push(attr?.value, ...(Array.isArray(attr?.options) ? attr.options : []));
-      }
-    }
-  }
-  for (const value of candidates) {
-    if (value == null) continue;
-    if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
-    const text = String(value).replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
-    // Kapacity tonerov sú typicky stovky až desiatky tisíc strán. Neberieme náhodné malé čísla.
-    const matches = [...text.matchAll(/(\d{3,6}(?:[ .]\d{3})*)\s*(?:str(?:a|á)n|pages?)?/gi)];
-    for (const match of matches) {
-      const num = Number(match[1].replace(/[ .]/g, ''));
-      if (Number.isFinite(num) && num >= 100 && num <= 200000) return num;
-    }
-  }
-  return null;
+  return productPageYield(product);
 }
 
 function costPerPage(product: Product): number | null {
@@ -508,7 +489,7 @@ function contextualizeFollowUp(message: string, history: AiConversationTurn[] = 
   // Výnimka: prirodzené pokračovanie s mestom/ČR (napr. „pošlete mi ho do Brna?“)
   // môže heuristika modelu vyhodnotiť ako kód, hoci ide len o dopravu.
   const locationFollowUp = /\b(?:brno|brna|praha|cesko|ceska|cr|cz)\b/.test(n) && /posl|kurier|dopr|doruc|pickup|parcel|box/.test(n);
-  const explicitContextReference = /\b(tam|do nej|do neho|ten|tento|ho|ju|pasuje|mozem)\b/.test(n);
+  const explicitContextReference = /\b(tam|do nej|do neho|ten|tento|ho|ju|pasuje)\b/.test(n);
   if (hasProductCodeOrModel(current) && !locationFollowUp && !explicitContextReference) return current;
   // Jednoznačná samostatná servisná otázka nesmie zdediť predchádzajúci produkt.
   // Inak by napr. „koľko stojí doprava?“ po produktovej otázke znovu spustilo
@@ -588,7 +569,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   // vybrať nesúvisiacu radu pre nerozpoznaný toner.
   const directDiagnosticId = /\b(?:kruti|kruten|zvlnen)\w*\b.*\bpapier\w*\b|\bpapier\w*\b.*\b(?:kruti|kruten|zvlnen)\w*\b|\b(?:rozmaz|zotier)\w*\b.*\b(?:toner|tlac|okraj)\w*\b/.test(normalizedMessage)
     ? 'krutenie-rozmazavanie'
-    : /\b(?:pas|pasy|pruh|pruhy|ciar|ciary|smuh|smuhy|bodk|bodky)\w*\b/.test(normalizedMessage)
+    : /\b(?:pas(?:y|ov|mi|och|e|ik\w*)?|(?:pruh|ciar|smuh|bodk)\w*)\b/.test(normalizedMessage)
       ? 'tlaci-pasy'
     : /\b(?:bled|slab)\w*\b.*\b(?:tlac|vytlac|farb)\w*\b|\b(?:tlac|vytlac|farb)\w*\b.*\b(?:bled|slab)\w*\b/.test(normalizedMessage)
       ? 'bledy-vytlacok'
@@ -903,7 +884,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
       const groups = groupProductsForQuestion(found, originalMessage);
       const selectedProducts = groups.flatMap((group) => group.products).slice(0, 12).map(asAiProduct);
       return {
-        answer: enrichProductAnswer(originalMessage, buildProductAnswer(originalMessage, found), found),
+        answer: enrichProductAnswer(originalMessage, buildProductAnswer(rawMessage, found), found),
         products: selectedProducts,
         groups: groups.map((group) => ({ key: group.key, label: group.label, count: group.count, products: group.products.slice(0, 4).map(asAiProduct) })),
         intent: 'product_search',
@@ -951,7 +932,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     if (found.length) {
       const groups = groupProductsForQuestion(found, originalMessage);
       return {
-        answer: enrichProductAnswer(originalMessage, buildProductAnswer(originalMessage, found), found),
+        answer: enrichProductAnswer(originalMessage, buildProductAnswer(rawMessage, found), found),
         products: groups.flatMap((group) => group.products).slice(0, 12).map(asAiProduct),
         groups: groups.map((group) => ({ key: group.key, label: group.label, count: group.count, products: group.products.slice(0, 4).map(asAiProduct) })),
         intent: 'product_search',
