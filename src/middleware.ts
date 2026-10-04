@@ -40,7 +40,7 @@ const TEST_ROUTES = new Set([
   '/api/test-woo', '/api/auth/test-email', '/api/cache-status', '/test-produkt',
   '/design/icons-test', '/design/product-detail', '/design/product-list',
 ]);
-const ORIGIN_EXEMPT = new Set(['/api/gopay-notify', '/api/admin/newsletter', '/api/printer-detect-submit']);
+const ORIGIN_EXEMPT = new Set(['/api/gopay-notify', '/api/admin/newsletter']);
 const TRUSTED_REQUEST_ORIGINS = new Set([
   'https://tonerymaxim.sk',
   'https://www.tonerymaxim.sk',
@@ -61,9 +61,6 @@ const RATE_RULES: Array<{ match: RegExp; methods: string[]; limit: number; windo
   { match: /^\/api\/gopay-status$/, methods: ['GET'], limit: 180, windowMs: 60_000 },
   { match: /^\/api\/(smart-search|products|product|printers)$/, methods: ['GET'], limit: 600, windowMs: 60_000 },
   { match: /^\/api\/ai-/, methods: ['POST'], limit: 30, windowMs: 600_000 },
-  { match: /^\/api\/printer-detect-session$/, methods: ['POST'], limit: 20, windowMs: 60_000 },
-  { match: /^\/api\/printer-detect-session$/, methods: ['GET'], limit: 120, windowMs: 60_000 },
-  { match: /^\/api\/printer-detect-submit$/, methods: ['POST'], limit: 60, windowMs: 60_000 },
 ];
 
 function privatePath(pathname: string): boolean {
@@ -168,14 +165,12 @@ export function liveCatalogPath(pathname: string): boolean {
 
 function finish(response: Response, url: URL, request?: Request): Response {
   const headers = new Headers(response.headers);
-  const printerFinderPreviewRequest = url.searchParams.get('tm_printer_finder_preview') === '1'
-    || url.searchParams.get('tm_printer_finder_installed') === '1';
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'SAMEORIGIN');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   if (privatePath(url.pathname)) headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
   else if (NOINDEX_HOSTS.has(url.hostname.toLowerCase())) headers.set('X-Robots-Tag', 'noindex, follow');
-  if (url.pathname.startsWith('/api/') || privatePath(url.pathname) || liveCatalogPath(url.pathname) || printerFinderPreviewRequest) headers.set('Cache-Control', 'no-store');
+  if (url.pathname.startsWith('/api/') || privatePath(url.pathname) || liveCatalogPath(url.pathname)) headers.set('Cache-Control', 'no-store');
   else if (request && publicCacheable(request, url, response)) {
     // Verejny SSR storefront moze kratko cachovat reverzna proxy/CDN.
     // Znizuje to pocet Node renderov pri spickach a crawleroch, bez cachovania
