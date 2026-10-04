@@ -1,0 +1,352 @@
+---
+const host = Astro.url.hostname.toLowerCase();
+const preview = Astro.url.searchParams.get("tm_printer_finder_preview") === "1";
+const envEnabled = String(process.env.TM_PRINTER_FINDER_ENABLED || import.meta.env.TM_PRINTER_FINDER_ENABLED || "")
+  .trim().toLowerCase() === "true";
+const testHost = host === "tonerymaxim.info" || host === "www.tonerymaxim.info";
+const enabled = testHost || preview || envEnabled;
+---
+
+{enabled ? (
+  <section class="tm-desktop-printer-finder wrap" id="tm-printer-finder" aria-labelledby="tm-printer-finder-title" hidden>
+    <div class="tm-dpf-card">
+      <div class="tm-dpf-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none">
+          <path d="M18 23V10h28v13" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 45H9a5 5 0 0 1-5-5V29a6 6 0 0 1 6-6h44a6 6 0 0 1 6 6v11a5 5 0 0 1-5 5h-7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M18 38h28v16H18V38Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+          <circle cx="50" cy="31" r="2.5" fill="currentColor"/>
+        </svg>
+      </div>
+
+      <div class="tm-dpf-copy">
+        <span class="tm-dpf-eyebrow">Windows PC</span>
+        <h2 id="tm-printer-finder-title">Nájdeme vaše tlačiarne automaticky</h2>
+        <p>Po vašom kliknutí pomocník prečíta tlačiarne nainštalované vo Windows a ToneryMaxim ich bezpečne priradí ku kompatibilným tonerom a náplniam.</p>
+        <div class="tm-dpf-actions">
+          <button type="button" class="tm-dpf-primary" data-tm-dpf-main>Zistiť moje tlačiarne</button>
+          <button type="button" class="tm-dpf-link" data-tm-dpf-install-toggle>Prvé použitie / inštalácia pomocníka</button>
+        </div>
+        <div class="tm-dpf-status" data-tm-dpf-status aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="tm-dpf-install" data-tm-dpf-install hidden>
+      <strong>Prvé použitie trvá približne minútu</strong>
+      <ol>
+        <li>Stiahnite pomocníka pre Windows.</li>
+        <li>Rozbaľte ZIP a spustite <b>INSTALOVAT.cmd</b>. Administrátorské práva nie sú potrebné.</li>
+        <li>Po úspešnej inštalácii sa otvorí ToneryMaxim a môžete spustiť detekciu.</li>
+      </ol>
+      <div class="tm-dpf-install-actions">
+        <a href="/downloads/tonerymaxim-printer-finder-windows.zip" class="tm-dpf-download" data-tm-dpf-download>Stiahnuť pomocníka pre Windows</a>
+        <button type="button" class="tm-dpf-secondary" data-tm-dpf-run-anyway>Pomocník už mám – spustiť</button>
+      </div>
+      <small>Pomocník nebeží na pozadí a neotvára lokálny port. Pri detekcii odošle na ToneryMaxim iba názov tlačovej fronty a ovládača; jednorazový výsledok sa drží iba krátko v pamäti servera.</small>
+    </div>
+
+    <div class="tm-dpf-results" data-tm-dpf-results hidden></div>
+    <div class="tm-dpf-saved" data-tm-dpf-saved hidden></div>
+  </section>
+) : null}
+
+{enabled ? (
+  <script is:inline>
+    (() => {
+      const root = document.querySelector('#tm-printer-finder');
+      if (!root) return;
+
+      const platform = `${navigator.userAgentData?.platform || ''} ${navigator.platform || ''} ${navigator.userAgent || ''}`;
+      if (!/windows|win32|win64/i.test(platform)) {
+        root.remove();
+        return;
+      }
+      root.hidden = false;
+
+      const mainButton = root.querySelector('[data-tm-dpf-main]');
+      const installToggle = root.querySelector('[data-tm-dpf-install-toggle]');
+      const installPanel = root.querySelector('[data-tm-dpf-install]');
+      const runAnyway = root.querySelector('[data-tm-dpf-run-anyway]');
+      const download = root.querySelector('[data-tm-dpf-download]');
+      const status = root.querySelector('[data-tm-dpf-status]');
+      const results = root.querySelector('[data-tm-dpf-results]');
+      const saved = root.querySelector('[data-tm-dpf-saved]');
+      const INSTALL_KEY = 'tm_printer_finder_installed_v4';
+      const SAVED_KEY = 'tm_saved_printers_v4';
+      const TOKEN_RE = /^[A-Za-z0-9_-]{32,96}$/;
+      let activeRun = 0;
+
+      const esc = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+
+      function installed() {
+        try { return localStorage.getItem(INSTALL_KEY) === '1'; } catch { return false; }
+      }
+
+      function setInstalled() {
+        try { localStorage.setItem(INSTALL_KEY, '1'); } catch {}
+        if (mainButton) mainButton.textContent = 'Zistiť moje tlačiarne';
+      }
+
+      function setStatus(message, kind = '') {
+        if (!status) return;
+        status.textContent = message || '';
+        status.className = `tm-dpf-status${kind ? ` is-${kind}` : ''}`;
+      }
+
+      function wait(ms) {
+        return new Promise((resolve) => window.setTimeout(resolve, ms));
+      }
+
+      function protocolUrl(token) {
+        const onInfo = location.hostname === 'tonerymaxim.info' || location.hostname === 'www.tonerymaxim.info';
+        const query = new URLSearchParams();
+        query.set('site', onInfo ? 'info' : 'sk');
+        query.set('token', token);
+        return `tonerymaxim-printer://detect?${query.toString()}`;
+      }
+
+      function safeCatalogUrl(value) {
+        try {
+          const url = new URL(String(value || ''), location.origin);
+          if (url.origin !== location.origin) return '';
+          if (!(url.pathname.startsWith('/tlaciarne/') || url.pathname === '/produkty')) return '';
+          return `${url.pathname}${url.search}${url.hash}`;
+        } catch { return ''; }
+      }
+
+      function savedPrinters() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(SAVED_KEY) || '[]');
+          if (!Array.isArray(parsed)) return [];
+          return parsed.map((item) => ({
+            model: String(item?.model || '').slice(0, 160),
+            url: safeCatalogUrl(item?.url),
+            savedAt: Number(item?.savedAt || 0),
+          })).filter((item) => item.model && item.url).slice(0, 6);
+        } catch { return []; }
+      }
+
+      function rememberPrinter(model, url) {
+        const safeUrl = safeCatalogUrl(url);
+        const safeModel = String(model || '').slice(0, 160);
+        if (!safeModel || !safeUrl) return;
+        const items = savedPrinters().filter((item) => item.model !== safeModel);
+        items.unshift({ model: safeModel, url: safeUrl, savedAt: Date.now() });
+        try { localStorage.setItem(SAVED_KEY, JSON.stringify(items.slice(0, 6))); } catch {}
+      }
+
+      function renderSaved() {
+        if (!saved) return;
+        const items = savedPrinters();
+        if (!items.length) {
+          saved.hidden = true;
+          saved.innerHTML = '';
+          return;
+        }
+        saved.hidden = false;
+        saved.innerHTML = `
+          <div class="tm-dpf-saved-head"><strong>Vaše uložené tlačiarne</strong><span>Na tomto počítači</span></div>
+          <div class="tm-dpf-saved-grid">
+            ${items.map((item) => `<a href="${esc(item.url)}"><span>🖨️</span><strong>${esc(item.model)}</strong><small>Zobraziť tonery a náplne →</small></a>`).join('')}
+          </div>
+        `;
+      }
+
+      function renderDetectionResult(payload) {
+        const items = Array.isArray(payload?.results) ? payload.results : [];
+        if (!items.length) {
+          if (results) {
+            results.hidden = false;
+            results.innerHTML = '<div class="tm-dpf-loading">Windows nenašiel žiadnu fyzickú nainštalovanú tlačiareň.</div>';
+          }
+          setStatus('Windows nenašiel žiadnu fyzickú nainštalovanú tlačiareň.', 'warn');
+          return;
+        }
+
+        const exact = items
+          .map((item) => ({ ...item, safeUrl: safeCatalogUrl(item?.url) }))
+          .filter((item) => item?.status === 'exact' && item?.model && item.safeUrl);
+        exact.forEach((item) => rememberPrinter(item.model, item.safeUrl));
+
+        if (results) {
+          results.hidden = false;
+          results.innerHTML = items.map((item) => {
+            const source = item?.source || 'Tlačiareň';
+            const flag = item?.isDefault ? '<span class="tm-dpf-default">Predvolená</span>' : '';
+
+            const itemUrl = safeCatalogUrl(item?.url);
+            if (item?.status === 'exact' && item?.model && itemUrl) {
+              return `
+                <article class="tm-dpf-result is-exact">
+                  <div><small>Windows: ${esc(source)}</small><h3>${esc(item.model)}</h3>${flag}</div>
+                  <a href="${esc(itemUrl)}">Zobraziť správne tonery <span>→</span></a>
+                </article>`;
+            }
+
+            const suggestions = Array.isArray(item?.suggestions)
+              ? item.suggestions.map((suggestion) => ({ ...suggestion, safeUrl: safeCatalogUrl(suggestion?.url) }))
+                .filter((suggestion) => suggestion?.model && suggestion.safeUrl)
+              : [];
+            if (suggestions.length) {
+              return `
+                <article class="tm-dpf-result is-ambiguous">
+                  <div><small>Windows: ${esc(source)}</small><h3>Potvrďte presný model</h3>${flag}</div>
+                  <div class="tm-dpf-suggestions">
+                    ${suggestions.map((suggestion) => `<a href="${esc(suggestion.safeUrl)}">${esc(suggestion.model)}</a>`).join('')}
+                  </div>
+                </article>`;
+            }
+
+            const manualQuery = String(item?.manualQuery || source || '').slice(0, 160);
+            return `
+              <article class="tm-dpf-result is-missing">
+                <div><small>Windows: ${esc(source)}</small><h3>Model sa nepodarilo bezpečne priradiť</h3>${flag}</div>
+                <a class="tm-dpf-manual" href="/produkty?s=${encodeURIComponent(manualQuery)}">Vyhľadať ručne</a>
+              </article>`;
+          }).join('');
+        }
+
+        renderSaved();
+        setStatus(exact.length
+          ? `Hotovo. ${exact.length === 1 ? 'Tlačiareň je bezpečne priradená.' : `${exact.length} tlačiarne sú bezpečne priradené.`}`
+          : 'Tlačiarne sme našli, ale nechceme hádať. Pri nejednoznačných modeloch vyberte presný variant.', exact.length ? 'ok' : 'warn');
+      }
+
+      function createClientToken() {
+        if (typeof crypto?.randomUUID === 'function') {
+          const token = crypto.randomUUID().replace(/-/g, '');
+          if (TOKEN_RE.test(token)) return token;
+        }
+        const bytes = new Uint8Array(24);
+        crypto.getRandomValues(bytes);
+        const token = btoa(String.fromCharCode(...bytes))
+          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+        if (!TOKEN_RE.test(token)) throw new Error('Nepodarilo sa vytvoriť bezpečný token.');
+        return token;
+      }
+
+      async function registerDetectionSession(token) {
+        const response = await fetch('/api/printer-detect-session', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', accept: 'application/json' },
+          body: JSON.stringify({ token }),
+          cache: 'no-store',
+          keepalive: true,
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !data?.ok) {
+          throw new Error(data?.error || 'Nepodarilo sa pripraviť bezpečnú detekciu.');
+        }
+      }
+
+      async function pollDetection(token, runId) {
+        const deadline = Date.now() + 45_000;
+        while (Date.now() < deadline && runId === activeRun) {
+          await wait(700);
+          const response = await fetch(`/api/printer-detect-session?token=${encodeURIComponent(token)}`, {
+            headers: { accept: 'application/json' },
+            cache: 'no-store',
+          });
+          const data = await response.json().catch(() => null);
+
+          if (response.status === 404 || data?.status === 'expired') {
+            throw new Error('Detekcia vypršala. Spustite ju znova.');
+          }
+          if (!response.ok || !data?.ok) {
+            throw new Error(data?.error || 'Nepodarilo sa načítať výsledok detekcie.');
+          }
+          if (data.status === 'pending') continue;
+          if (data.status === 'error') throw new Error(data.error || 'Windows pomocník detekciu nedokončil.');
+          if (data.status === 'complete') {
+            renderDetectionResult(data.result || {});
+            return;
+          }
+          throw new Error('Server vrátil neplatný stav detekcie.');
+        }
+        if (runId === activeRun) throw new Error('Pomocník sa neozval. Skontrolujte jeho inštaláciu a skúste to znova.');
+      }
+
+      function finishRunError(error, runId) {
+        if (runId !== activeRun) return;
+        if (results) results.hidden = true;
+        setStatus(error?.message || 'Detekciu sa nepodarilo dokončiť.', 'warn');
+        if (installPanel) installPanel.hidden = false;
+        if (mainButton) mainButton.disabled = false;
+        if (runAnyway) runAnyway.disabled = false;
+      }
+
+      function launchHelper() {
+        // DÔLEŽITÉ: externý Windows protokol musí byť spustený ešte v tom istom
+        // používateľskom kliknutí. Preto pred window.location.href nesmie byť await.
+        const runId = ++activeRun;
+        const token = createClientToken();
+        if (mainButton) mainButton.disabled = true;
+        if (runAnyway) runAnyway.disabled = true;
+        if (results) {
+          results.hidden = false;
+          results.innerHTML = '<div class="tm-dpf-loading">Pripravujem bezpečnú detekciu…</div>';
+        }
+        setStatus('Otváram pomocníka pre Windows a čakám na výsledok…', 'working');
+
+        // Registráciu pošleme ešte pred launchom, ale zámerne na ňu NEČAKÁME.
+        // Helper má krátky retry, takže nevadí ani tesný pretek medzi oboma požiadavkami.
+        const registration = registerDetectionSession(token);
+        window.location.href = protocolUrl(token);
+
+        registration
+          .then(() => pollDetection(token, runId))
+          .then(() => {
+            if (runId === activeRun) {
+              if (mainButton) mainButton.disabled = false;
+              if (runAnyway) runAnyway.disabled = false;
+            }
+          })
+          .catch((error) => finishRunError(error, runId));
+      }
+
+      const pageParams = new URLSearchParams(location.search);
+      if (pageParams.get('tm_printer_finder_installed') === '1') {
+        setInstalled();
+        pageParams.delete('tm_printer_finder_installed');
+        const cleaned = pageParams.toString();
+        history.replaceState(history.state, '', `${location.pathname}${cleaned ? `?${cleaned}` : ''}${location.hash}`);
+        setStatus('Pomocník je nainštalovaný. Môžete spustiť detekciu.', 'ok');
+      }
+
+      if (installed()) {
+        mainButton && (mainButton.textContent = 'Zistiť moje tlačiarne');
+      } else {
+        mainButton && (mainButton.textContent = 'Nainštalovať a zistiť tlačiarne');
+      }
+
+      mainButton?.addEventListener('click', () => {
+        if (!installed()) {
+          installPanel && (installPanel.hidden = false);
+          installPanel?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setStatus('Pri prvom použití treba nainštalovať malého pomocníka pre Windows.', 'warn');
+          return;
+        }
+        launchHelper();
+      });
+
+      installToggle?.addEventListener('click', () => {
+        if (!installPanel) return;
+        installPanel.hidden = !installPanel.hidden;
+      });
+      runAnyway?.addEventListener('click', () => launchHelper());
+      download?.addEventListener('click', () => setStatus('Po stiahnutí ZIP rozbaľte a spustite INSTALOVAT.cmd.', 'working'));
+
+      renderSaved();
+    })();
+  </script>
+) : null}
+
+{enabled ? (
+<style is:inline>
+  .tm-desktop-printer-finder[hidden]{display:none!important}.tm-desktop-printer-finder{padding:8px 0 24px}.tm-dpf-card{display:grid;grid-template-columns:78px minmax(0,1fr);gap:22px;align-items:center;padding:22px 26px;border:1px solid #d8e5f2;border-radius:22px;background:linear-gradient(135deg,#f8fcff,#fff);box-shadow:0 12px 34px rgba(7,27,58,.06)}.tm-dpf-icon{width:72px;height:72px;display:grid;place-items:center;border-radius:20px;background:#071b3a;color:#fff}.tm-dpf-icon svg{width:46px;height:46px}.tm-dpf-copy h2{margin:3px 0 6px;color:#071b3a;font-size:26px;line-height:1.12}.tm-dpf-copy p{max-width:900px;margin:0;color:#53647a;line-height:1.5}.tm-dpf-eyebrow{color:#008bc7;font-size:12px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.tm-dpf-actions{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-top:15px}.tm-dpf-primary,.tm-dpf-secondary,.tm-dpf-download{min-height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;padding:0 18px;font:inherit;font-weight:900;text-decoration:none;cursor:pointer}.tm-dpf-primary{border:1px solid #071b3a;background:#071b3a;color:#fff}.tm-dpf-primary:disabled{opacity:.58;cursor:wait}.tm-dpf-link{border:0;background:transparent;color:#087db6;padding:8px 0;font:inherit;font-weight:850;cursor:pointer;text-decoration:underline;text-underline-offset:3px}.tm-dpf-status{min-height:20px;margin-top:9px;color:#627289;font-size:14px;font-weight:700}.tm-dpf-status.is-ok{color:#08742f}.tm-dpf-status.is-warn{color:#8a5a00}.tm-dpf-status.is-working{color:#086a9b}.tm-dpf-install{margin-top:12px;padding:20px 24px;border:1px solid #dbe6f1;border-radius:18px;background:#fff}.tm-dpf-install[hidden],.tm-dpf-results[hidden],.tm-dpf-saved[hidden]{display:none!important}.tm-dpf-install>strong{color:#071b3a;font-size:18px}.tm-dpf-install ol{margin:10px 0 13px;padding-left:22px;color:#47566a;line-height:1.7}.tm-dpf-install-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:9px}.tm-dpf-download{background:#087db6;color:#fff}.tm-dpf-secondary{border:1px solid #cddcea;background:#f5f9fd;color:#071b3a}.tm-dpf-install small{display:block;max-width:940px;color:#6b7788;line-height:1.5}.tm-dpf-results{display:grid;gap:10px;margin-top:12px}.tm-dpf-loading{padding:16px 20px;border:1px solid #dbe6f1;border-radius:16px;background:#fff;color:#53647a;font-weight:800}.tm-dpf-result{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;padding:16px 20px;border:1px solid #dbe6f1;border-radius:16px;background:#fff}.tm-dpf-result small{display:block;color:#758297;margin-bottom:3px}.tm-dpf-result h3{display:inline;margin:0;color:#071b3a;font-size:18px}.tm-dpf-default{display:inline-flex;margin-left:8px;padding:3px 7px;border-radius:999px;background:#eaf8ef;color:#08742f;font-size:11px;font-weight:900}.tm-dpf-result>a{display:inline-flex;align-items:center;gap:8px;padding:11px 15px;border-radius:11px;background:#071b3a;color:#fff;font-weight:900;text-decoration:none}.tm-dpf-result.is-ambiguous{grid-template-columns:minmax(0,.75fr) minmax(300px,1.25fr)}.tm-dpf-suggestions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.tm-dpf-suggestions a{padding:8px 11px;border:1px solid #cfe0ef;border-radius:10px;background:#f7fbff;color:#0b5277;font-weight:850;text-decoration:none}.tm-dpf-result .tm-dpf-manual{background:#f3f7fc;color:#071b3a}.tm-dpf-saved{margin-top:14px}.tm-dpf-saved-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;color:#071b3a}.tm-dpf-saved-head span{color:#7b8796;font-size:12px}.tm-dpf-saved-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.tm-dpf-saved-grid a{display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center;padding:13px 15px;border:1px solid #dbe6f1;border-radius:14px;background:#fff;text-decoration:none}.tm-dpf-saved-grid a>span{grid-row:1/3;font-size:24px}.tm-dpf-saved-grid strong{color:#071b3a;font-size:14px}.tm-dpf-saved-grid small{color:#087db6;font-weight:800}
+  @media(max-width:1000px){.tm-dpf-saved-grid{grid-template-columns:1fr 1fr}.tm-dpf-result.is-ambiguous{grid-template-columns:1fr}.tm-dpf-suggestions{justify-content:flex-start}}
+  @media(max-width:760px),(hover:none) and (pointer:coarse){.tm-desktop-printer-finder{display:none!important}}
+</style>
+) : null}

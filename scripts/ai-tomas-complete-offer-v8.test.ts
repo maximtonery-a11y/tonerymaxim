@@ -35,7 +35,11 @@ test('ambiguous purchase still asks for type before cart mutation',async()=>{
 test('711 abandons stale product flow and asks for manufacturer or printer',async()=>{
   const data=await ask('Hľadám 711. Nehádaj podľa interného SKU.',{lastProductQuery:'HP CF280X',pendingQuestion:'product_type',currentType:null,cart:[]});
   assert.equal(data.action?.kind,'CLARIFY_PRODUCT');
-  assert.match(data.advisor.answer.join(' '),/výrobcu a model tlačiarne|HP 711/i);
+  const answer711=data.advisor.answer.join(' ');
+  assert.match(answer711,/\b711\b/);
+  assert.match(answer711,/značk|výrobc/i);
+  assert.match(answer711,/OEM kód|model tlačiarne/i);
+  assert.equal(data.commerce,null);
   assert.equal(data.state.lastProductQuery,null);
   assert.equal(data.state.pendingQuestion,null);
 });
