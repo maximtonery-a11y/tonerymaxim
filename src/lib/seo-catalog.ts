@@ -1,3 +1,5 @@
+import { BoundedMissCache } from "./bounded-miss-cache.ts";
+import { observePrinterCache } from "./storefront-memory-diagnostics.ts";
 import { normalize, sortProducts, stripHtml, type TmProduct } from "./tm-products-cache.ts";
 import { sameConsumablePrinterFamily } from "./printer-model-family.ts";
 import { publicationEligibleProduct } from "./product-publication-policy.ts";
@@ -78,7 +80,8 @@ const productSearchTextCache = new WeakMap<TmProduct, string>();
 const landingProductsCache = new WeakMap<TmProduct[], Map<CatalogLandingKind, TmProduct[]>>();
 const brandProductsCache = new WeakMap<TmProduct[], Map<string, TmProduct[]>>();
 const printerEntitiesCache = new WeakMap<TmProduct[], PrinterEntity[]>();
-const printerEntityLookupCache = new WeakMap<TmProduct[], Map<string, PrinterEntity | null>>();
+const printerEntityLookupCache = new WeakMap<TmProduct[], Map<string, PrinterEntity>>();
+const printerMissCache = new WeakMap<TmProduct[], BoundedMissCache>();
 const oemEntitiesCache = new WeakMap<TmProduct[], OemEntity[]>();
 const oemEntityLookupCache = new WeakMap<TmProduct[], Map<string, OemEntity>>();
 const catalogStatsCache = new WeakMap<TmProduct[], CatalogStats>();
@@ -247,7 +250,7 @@ export function printerEntities(products: TmProduct[]): PrinterEntity[] {
     .map((entity) => ({ ...entity, products: sortProducts(entity.products) }))
     .sort((left, right) => left.name.localeCompare(right.name, "sk"));
   printerEntitiesCache.set(products, result);
-  const lookup = printerEntityLookupCache.get(products) || new Map<string, PrinterEntity | null>();
+  const lookup = printerEntityLookupCache.get(products) || new Map<string, PrinterEntity>();
   for (const entity of result) lookup.set(`${entity.brand.slug}/${entity.slug}`, entity);
   printerEntityLookupCache.set(products, lookup);
   return result;
@@ -260,10 +263,17 @@ export function findPrinterEntity(products: TmProduct[], brandSlug: unknown, mod
   const lookupKey = `${brand.slug}/${wantedModel}`;
   let lookup = printerEntityLookupCache.get(products);
   if (!lookup) {
-    lookup = new Map<string, PrinterEntity | null>();
+    lookup = new Map<string, PrinterEntity>();
     printerEntityLookupCache.set(products, lookup);
   }
+  let misses = printerMissCache.get(products);
+  if (!misses) {
+    misses = new BoundedMissCache();
+    printerMissCache.set(products, misses);
+  }
+  observePrinterCache(lookup, misses);
   if (lookup.has(lookupKey)) return lookup.get(lookupKey) || null;
+  if (misses.has(lookupKey)) return null;
   let exactName = "";
   const exactProducts = new Map<string, TmProduct>();
 
@@ -285,7 +295,7 @@ export function findPrinterEntity(products: TmProduct[], brandSlug: unknown, mod
     }
   }
   if (!exactName) {
-    lookup.set(lookupKey, null);
+    misses.add(lookupKey);
     return null;
   }
 

@@ -1,3 +1,4 @@
+import { storefrontMemoryDiagnostics } from "../../lib/storefront-memory-diagnostics.ts";
 import type { APIRoute } from 'astro';
 import { readFile } from 'node:fs/promises';
 
@@ -46,6 +47,9 @@ export const GET: APIRoute = async () => {
       analyticsEndpointDisabled: true,
       rssMb: mb(rssBytes),
       heapMb: mb(heapBytes),
+      heapTotalMb: mb(memory.heapTotal),
+      externalMb: mb(memory.external),
+      arrayBuffersMb: mb(memory.arrayBuffers),
       cgroupCurrentMb: mb(cgroupCurrent),
       cgroupLimitMb: mb(cgroupMax),
       effectiveMemoryLimitMb: mb(effectiveLimit),
@@ -54,6 +58,7 @@ export const GET: APIRoute = async () => {
       uptimeSeconds: Math.round(process.uptime()),
       pid: process.pid,
     },
+    diagnostics: storefrontMemoryDiagnostics(),
     timestamp: new Date().toISOString(),
   }, {
     status: ok ? 200 : 503,

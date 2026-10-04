@@ -1,3 +1,4 @@
+import { beginCatalogSync, finishCatalogSync } from "./storefront-memory-diagnostics.ts";
 import { mkdir, open, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TM_PRODUCT_CACHE_ROOT } from './runtime-paths.ts';
@@ -1364,11 +1365,17 @@ export async function syncProductsCache(options: { force?: boolean } = {}): Prom
   const activeSync = globalStore.__TM_PRODUCTS_SYNC_PROMISE__;
   if (activeSync) return activeSync;
 
+  beginCatalogSync();
   const operation = syncProductsCacheInternal(options);
   globalStore.__TM_PRODUCTS_SYNC_PROMISE__ = operation;
 
   try {
-    return await operation;
+    const result = await operation;
+    finishCatalogSync(result.warning ? 'retained-old' : result.refreshed ? 'refreshed' : 'unchanged');
+    return result;
+  } catch (error) {
+    finishCatalogSync('failed');
+    throw error;
   } finally {
     if (globalStore.__TM_PRODUCTS_SYNC_PROMISE__ === operation) {
       delete globalStore.__TM_PRODUCTS_SYNC_PROMISE__;
