@@ -1,3 +1,4 @@
+import { isProductPriceQuestion } from '../../lib/ai-commerce/price-question.ts';
 import { priceForQuantity } from "../../lib/ai-commerce/pricing.ts";
 import type { APIRoute } from 'astro';
 import { randomUUID } from 'node:crypto';
@@ -222,7 +223,7 @@ export const POST: APIRoute = async ({ request }) => {
       state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
       return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'printer_conflict',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
     }
-    const needsAdvisor = !calendarRoute && route.intents.some(x => ['ADVICE','POLICY','HUMAN_ESCALATION','UNKNOWN'].includes(x));
+    const needsAdvisor = !(route.needsProducts && isProductPriceQuestion(message)) && !calendarRoute && route.intents.some(x => ['ADVICE','POLICY','HUMAN_ESCALATION','UNKNOWN'].includes(x));
     // Poradenska znalostna vrstva a produktovy nakupca sa nacitavaju oddelene.
     // Bezna produktova otazka tak nedrzi v RAM aj cely poradensky modul.
     const advisorPromise = needsAdvisor ? import('../../lib/aiSalesAssistant.ts').then(({buildAssistantAnswer})=>buildAssistantAnswer(message,page,state.history)) : Promise.resolve({
@@ -426,7 +427,7 @@ export const POST: APIRoute = async ({ request }) => {
       const discountNotice='Pri rovnakom kompatibilnom produkte platí zľava 10 % pri 2–3 ks a 25 % pri 4 a viac kusoch.';
       if(!(advisor.answer||[]).some((line:string)=>/2.?3 ks|4 a viac/.test(normalized(line))))advisor={...advisor,answer:[...(advisor.answer||[]),discountNotice]};
     }
-    if(/\b(?:cen\w*|kolko|zlav\w*)\b/.test(n)&&/\b[234]\s*(?:ks|kus\w*)\b/.test(n)&&selected?.type==='compatible'&&!action){
+    if((isProductPriceQuestion(message)||/\b(?:cen\w*|kolko|zlav\w*)\b/.test(n))&&/\b[234]\s*(?:ks|kus\w*)\b/.test(n)&&selected?.type==='compatible'&&!action){
       const quantities=[2,3,4].filter(q=>new RegExp(`\\b${q}\\s*(?:ks|kus\\w*)\\b`).test(n));
       const totals=quantities.map(q=>`${q} ks: ${priceForQuantity(selected.price,selected.type,q).totalPrice.toFixed(2).replace('.',',')} € spolu`);
       if(totals.length)advisor={...advisor,answer:[...(advisor.answer||[]),`${selected.name} — ${totals.join('; ')}. Sumy sú po množstevnej zľave, bez dopravy a ďalších zliav.`]};

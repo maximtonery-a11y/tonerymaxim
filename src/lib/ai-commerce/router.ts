@@ -1,3 +1,4 @@
+import { isProductPriceQuestion } from './price-question.ts';
 import type { AiIntent, CommerceState } from './domain.ts';
 import { isOrderRepeatCommand } from '../ai-order-question.ts';
 import { analyzeCatalogQuery } from '../catalog-query.ts';
@@ -47,7 +48,8 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // Service questions must be routable at any point of a shopping flow.  In
   // particular, a pending quantity/type question must never turn "can I pay
   // cash?" into a product follow-up using the previous catalogue query.
-  const serviceQuestion = /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|plat(?:b|ob)\w*|doprav\w*|postovn\w*|doruc\w*|kurier\w*|packet\w*|zasielkovn\w*|z-?box|objednavk\w*|zasielk\w*|balik\w*|exped\w*|odosl\w*|stav\w*\s+objednavk\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklam\w*|vraten\w*|vratit\w*|odstup\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|telefon\w*|e-?mail\w*|otvarac\w*|otvoren\w*|pracovn\w*\s+doba|kde\s+(?:vas|vás)\s+najd\w*|adres\w*|sidlo|vernost\w*|odmen\w*|zlav\w*|bod(?:y|ov)?|podavac\w*|zasobnik\w*|papier\w*|cvak\w*|klep\w*|neber\w*|rozmaz\w*|kruti\w*|zvlnen\w*|pruh\w*|ciar\w*|smuh\w*|bled\w*|nerozpozna\w*)\b/.test(n);
+  const productPriceQuestion = isProductPriceQuestion(message) && Boolean(sharedCatalogReference || state.lastProductQuery);
+  const serviceQuestion = !productPriceQuestion && /\b(platit\w*|zaplatit\w*|hotovost\w*|kartou|gopay|dobierk\w*|prevod\w*|plat(?:b|ob)\w*|doprav\w*|postovn\w*|doruc\w*|kurier\w*|packet\w*|zasielkovn\w*|z-?box|objednavk\w*|zasielk\w*|balik\w*|exped\w*|odosl\w*|stav\w*\s+objednavk\w*|osobn\w*\s+odber\w*|vyzdvih\w*|pickup|parcelshop|balikomat\w*|reklam\w*|vraten\w*|vratit\w*|odstup\w*|faktur\w*|registr\w*|ucet|heslo|kontakt\w*|telefon\w*|e-?mail\w*|otvarac\w*|otvoren\w*|pracovn\w*\s+doba|kde\s+(?:vas|vás)\s+najd\w*|adres\w*|sidlo|vernost\w*|odmen\w*|zlav\w*|bod(?:y|ov)?|podavac\w*|zasobnik\w*|papier\w*|cvak\w*|klep\w*|neber\w*|rozmaz\w*|kruti\w*|zvlnen\w*|pruh\w*|ciar\w*|smuh\w*|bled\w*|nerozpozna\w*)\b/.test(n);
   // Otázka na cenu/sklad konkrétneho produktu môže súčasne žiadať
   // množstevnú zľavu. POLICY zostáva aktívne, ale nesmie vymazať katalógový
   // dopyt ani presný OEM kód.
@@ -95,7 +97,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (/(ako|preco|kolko stran|vydrz|vytaznost|pasy|pruhy|ciary|smuhy|slaba tlac|cip)/.test(n)) add('ADVICE');
   if (/(reklam|vraten|odstup|registr|vernost|obchodne podmienky)/.test(n)) add('POLICY');
   const explicitProductFollowUp = /\b(?:ten|ho|ich|do\s+nej|a\s+original\w*|a\s+kompatibil\w*|a\s+renov\w*|original\w*|kompatibil\w*|renov\w*|repas\w*|je\s+skladom|kolko\s+stran|chcem|zoberiem|pridaj\w*|kus(?:y|ov)?|ks|kosik\w*|pokladn\w*)\b/.test(n);
-  if (!serviceQuestion && !humanRequest && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (explicitProductFollowUp || pendingAnswer)) add('FOLLOW_UP');
+  if (!serviceQuestion && !humanRequest && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (explicitProductFollowUp || pendingAnswer || productPriceQuestion)) add('FOLLOW_UP');
   if (!intents.length) add('UNKNOWN');
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];
   // Pri presnom kalendárovom SKU posielame katalógu iba kód. Celá veta
