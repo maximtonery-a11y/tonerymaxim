@@ -139,8 +139,8 @@ function printerAssignmentIndex(products: any[]) {
   return index;
 }
 
-export async function resolveCommerceProducts(query: string) {
-  const cache = await getProductsCache();
+export async function resolveCommerceProducts(query: string, snapshot?: Awaited<ReturnType<typeof getProductsCache>>) {
+  const cache = snapshot || await getProductsCache();
   // AI musí poznať aj platné produkty, ktoré momentálne nie sú skladom. Iba tak
   // vie podať úplnú ponuku a ponúknuť zistenie dostupnosti. Do košíka sa naďalej
   // smú dostať len skladové produkty (kontroluje UI aj serverová validácia).

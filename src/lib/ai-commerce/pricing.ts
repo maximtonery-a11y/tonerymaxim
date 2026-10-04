@@ -18,7 +18,12 @@ export function priceForQuantity(price: number, type: unknown, quantity: number)
   const base = Math.max(0, Number(price) || 0);
   const discountPercent = quantityDiscount(type, q);
   const unitPrice = Math.round(base * (1 - discountPercent / 100) * 100) / 100;
-  const totalPrice = Math.round(unitPrice * q * 100) / 100;
+  // Checkout rounds the line discount, except calendars (unit rounding).
+  const original = Math.round(base * q * 100) / 100;
+  const discount = Math.round(original * (discountPercent / 100) * 100) / 100;
+  const totalPrice = String(type || '').toLowerCase() === 'calendar'
+    ? Math.round(unitPrice * q * 100) / 100
+    : Math.max(0, Math.round((original - discount) * 100) / 100);
   return { quantity: q, discountPercent, unitPrice, totalPrice };
 }
 

@@ -1,3 +1,4 @@
+import { priceForQuantity } from "../../lib/ai-commerce/pricing.ts";
 import type { APIRoute } from 'astro';
 import { randomUUID } from 'node:crypto';
 import { normalizeCommerceState } from '../../lib/ai-commerce/domain.ts';
@@ -114,11 +115,17 @@ export function samePrinterModel(first:unknown,second:unknown){const a=printerId
 function slovakJoin(values:string[]){return values.length<2?values.join(''):values.length===2?`${values[0]} alebo ${values[1]}`:`${values.slice(0,-1).join(', ')} alebo ${values.at(-1)}`;}
 function productMaterial(products:any[]){const text=normalized(products.map((p:any)=>`${p?.name||''} ${p?.product_type_label||''}`).join(' '));if(/atrament|ink|cartridge|kazet/.test(text))return'atramentové náplne';if(/toner/.test(text))return'tonery';return'produkty';}
 function typePlural(type:string){return type==='compatible'?'kompatibilné':type==='original'?'originálne':type==='renovated'?'renovované':type;}
-function ambiguousNumericReference(message:string){
+function ambiguousNumericReference(message:string, state:any){
   const n=normalized(message);
-  return /(?:^|\s)711(?:\s|[.,!?]|$)/.test(n)
-    && !/\b(?:hp|canon|brother|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell)\b/.test(n)
-    && !/\b(?:sku|kod\s+produktu)\s*[:#-]?\s*711\b/.test(n);
+  if (/\b(?:hp|canon|brother|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica|minolta)\b/.test(n)) return null;
+  if (/\b(?:sku|kod\s+produktu)\s*[:#-]?\s*\d+\b/.test(n)) return null;
+  // Quantity replies and service questions are not product identifiers.
+  if (state.pendingQuestion === 'quantity' || /\b\d+\s*(?:ks|kus\w*|eur|euro|€|stran\w*|ml|dni|hodin\w*|%)\b/.test(n)) return null;
+  if (/\b(?:objednav\w*|faktur\w*|telefon\w*|psc|doprav\w*|platb\w*)\b/.test(n)) return null;
+  const match=n.match(/(?:^|\s)(\d{2,4})(?=\s|[.,!?]|$)/);
+  if (!match || /\b(?:cf|ce|crg|gi|pg|pgi|cli|tn|tk|dr|lc|mlt|clt)[- ]?\d+[a-z0-9-]*\b/.test(n)) return null;
+  // A bare short code (or a request for such a consumable) needs a brand.
+  return /^\s*\d{2,4}[.!?]?\s*$/.test(n) || /toner|napln|kazet|valec|hladam/.test(n) ? match[1] : null;
 }
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -142,8 +149,9 @@ export const POST: APIRoute = async ({ request }) => {
       state.pendingQuestion=null;state.selectedProductId=null;
       state.checkoutDraft={...state.checkoutDraft,guidedQuantity:null,guidedSet:null};
     }
-    if(ambiguousNumericReference(message)){
-      const answer='Označenie 711 nie je bez značky alebo modelu tlačiarne jednoznačné. Napíšte, prosím, výrobcu a model tlačiarne alebo celý kód náplne (napríklad HP 711). Podľa interného SKU hádať nebudem.';
+    const ambiguousCode=ambiguousNumericReference(message,state);
+    if(ambiguousCode){
+      const answer=`Označenie ${ambiguousCode} nie je bez značky alebo modelu tlačiarne jednoznačné. Napíšte, prosím, značku a celý OEM kód náplne alebo značku a presný model tlačiarne. Podľa neúplného čísla hádať nebudem.`;
       state.lastIntent='ADVICE';state.lastProductQuery=null;state.currentType=null;state.currentColor=null;state.currentPrinter=null;state.currentProductId=null;state.selectedProductId=null;state.pendingQuestion=null;
       state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
       return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRODUCT'}},{headers:{'Cache-Control':'no-store'}});
@@ -318,6 +326,24 @@ export const POST: APIRoute = async ({ request }) => {
         advisor={...advisor,answer:[`Pre ${productLabel} som v presnej produktovej rodine nenašiel ${typePlural(state.currentType)} prevedenie. Inú sériu ani podobný kód vám nenahradím bez vášho výslovného súhlasu.`],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false};
       }
     }
+    // Apply a requested single colour before EVERY purchase branch, including
+    // a previously selected ID. Never fall back to a different colour.
+    const setRequest=wantsCompleteSet(message)||Boolean((state.checkoutDraft as any)?.guidedSet&&wasPendingType);
+    if(state.currentColor&&commerce&&commerce.source!=='calendar'&&!setRequest){
+      const beforeColor=candidates;
+      candidates=candidates.filter((p:any)=>p.color===state.currentColor&&!isPackProduct(p));
+      const ids=new Set(candidates.map((p:any)=>String(p.id)));
+      commerce={...commerce,products:candidates,presentation:{...(commerce.presentation||{}),sets:[],colors:[...new Set(candidates.map((p:any)=>p.color))]}};
+      if(state.selectedProductId&&!ids.has(String(state.selectedProductId)))state.selectedProductId=null;
+      if(state.currentProductId&&!ids.has(String(state.currentProductId)))state.currentProductId=null;
+      if(beforeColor.length&&!candidates.length){
+        const labels:Record<string,string>={black:'čiernej',cyan:'azúrovej',magenta:'purpurovej',yellow:'žltej'};
+        const answer=`Pre zadané označenie nemám potvrdený produkt v požadovanej ${labels[state.currentColor]||state.currentColor} farbe. Inú farbu som nepridal do košíka. Overte, prosím, celý OEM kód a farbu alebo uveďte presný model tlačiarne.`;
+        state.pendingQuestion=null;
+        state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
+        return Response.json({ok:true,route,advisor:{...advisor,answer:[answer],products:[],groups:[],unanswered:false},commerce,state,action:{kind:'CLARIFY_PRODUCT'}},{headers:{'Cache-Control':'no-store'}});
+      }
+    }
     // Slovo „chcem“ ešte neznamená, že zákazník vybral konkrétny kalendár.
     // Ak katalóg vrátil viac možností, necháme ich zobrazené a pýtame sa na
     // motív/rozmer. Nikdy svojvoľne neotvoríme množstvo prvého výsledku.
@@ -325,7 +351,7 @@ export const POST: APIRoute = async ({ request }) => {
     const singleCandidates=candidates.filter((p:any)=>!isPackProduct(p));
     const selected=singleCandidates.find((p:any)=>canBuy(p)&&String(p.id)===String(state.selectedProductId||state.currentProductId||''))
       || singleCandidates.find((p:any)=>canBuy(p)&&(!state.currentType||p.type===state.currentType)&&(!state.currentColor||p.color===state.currentColor))
-      || singleCandidates.find(canBuy) || null;
+      || null;
     if(selected&&!ambiguousCalendarSelection){state.currentProductId=String(selected.id);if((type&&!wasPendingType)||color||route.intents.includes('BUY_INTENT'))state.selectedProductId=String(selected.id);}
     const n=normalized(message);const qty=requestedQuantity(message);let action:any=null;
     const completeSetRequested=wantsCompleteSet(message)||Boolean((state.checkoutDraft as any)?.guidedSet&&wasPendingType);
@@ -399,6 +425,11 @@ export const POST: APIRoute = async ({ request }) => {
     if(/\bzlav\w*\b/.test(n)&&candidates.some((p:any)=>p.type==='compatible')){
       const discountNotice='Pri rovnakom kompatibilnom produkte platí zľava 10 % pri 2–3 ks a 25 % pri 4 a viac kusoch.';
       if(!(advisor.answer||[]).some((line:string)=>/2.?3 ks|4 a viac/.test(normalized(line))))advisor={...advisor,answer:[...(advisor.answer||[]),discountNotice]};
+    }
+    if(/\b(?:cen\w*|kolko|zlav\w*)\b/.test(n)&&/\b[234]\s*(?:ks|kus\w*)\b/.test(n)&&selected?.type==='compatible'&&!action){
+      const quantities=[2,3,4].filter(q=>new RegExp(`\\b${q}\\s*(?:ks|kus\\w*)\\b`).test(n));
+      const totals=quantities.map(q=>`${q} ks: ${priceForQuantity(selected.price,selected.type,q).totalPrice.toFixed(2).replace('.',',')} € spolu`);
+      if(totals.length)advisor={...advisor,answer:[...(advisor.answer||[]),`${selected.name} — ${totals.join('; ')}. Sumy sú po množstevnej zľave, bez dopravy a ďalších zliav.`]};
     }
     if(commerce&&commerce?.source!=='calendar'){
       const productLabel=customerProductLabel(route.productQuery||state.lastProductQuery,message,commerce?.source);

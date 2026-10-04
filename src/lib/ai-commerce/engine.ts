@@ -1,8 +1,9 @@
+import { getProductsCache } from "../tm-products-cache.ts";
 import { resolveCommerceProducts, type CommerceProduct } from './catalog.ts';
 import { quantityOffers, priceForQuantity } from './pricing.ts';
 import { isCalendarQuery, searchCalendarProducts } from '../calendar-ai-catalog.ts';
 
-export const AI_COMMERCE_VERSION = '9.0';
+export const AI_COMMERCE_VERSION = '9.1';
 export const commerceCapabilities = {
   version: AI_COMMERCE_VERSION,
   channels: ['website'],
@@ -31,16 +32,33 @@ function colorOf(p:any) {
 export function familyOf(p:any){const raw=`${p.name||''} ${p.sku||''}`.toUpperCase();let m=raw.match(/\bTN[- ]?(\d{3,4})(?:BK|C|M|Y|\b)/);if(m)return`TN${m[1]}`;m=raw.match(/\bCRG[- ]?(\d{3})(H?)(?:BK|C|M|Y|\b)/);if(m)return`CRG${m[1]}${m[2]}`;m=raw.match(/\b(?:CF|CE)(\d{2})[0-3]?([AX])\b/);if(m)return`HP${m[1]}X${m[2]}`;m=raw.match(/\bCLT[- ]?(?:[KCMY])?(\d+)([LS])\b/);if(m)return`CLT${m[1]}${m[2]}`;m=raw.match(/\bT(\d{3})[1-4]?(XXL|XL)?\b/);if(m)return`EPSON-T${m[1]}${m[2]||''}`;return'';}
 const commerceCache: Map<string,{expires:number,value:any}> = (globalThis as any).__TM_AI_COMMERCE_SEARCH_CACHE__ ||= new Map();
 const commerceInFlight: Map<string,Promise<any>> = (globalThis as any).__TM_AI_COMMERCE_IN_FLIGHT__ ||= new Map();
+const catalogTokens = new WeakMap<object, number>();
+let nextCatalogToken = 0;
+let activeCatalogGeneration = '';
 export async function searchCommerce(query:string) {
   query=String(query||'').replace(/\bminoltu\b/gi,'Konica Minolta').replace(/\bminolta\b/gi,'Konica Minolta').replace(/Konica\s+Konica\s+Minolta/gi,'Konica Minolta');
-  const cacheKey=query.toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+  // Check the existing catalogue invalidation before consulting AI results.
+  // Use the same snapshot for lookup: an import cannot mix two generations.
+  const calendar = isCalendarQuery(query);
+  const snapshot = calendar ? null : await getProductsCache();
+  let generation = 'calendar';
+  if (snapshot) {
+    let token = catalogTokens.get(snapshot.products);
+    if (!token) { token = ++nextCatalogToken; catalogTokens.set(snapshot.products, token); }
+    generation = `${snapshot.generated_at}:${token}`;
+    if (generation !== activeCatalogGeneration) {
+      commerceCache.clear();
+      activeCatalogGeneration = generation;
+    }
+  }
+  const cacheKey=generation+'|'+query.toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
   const cached=commerceCache.get(cacheKey);if(cached&&cached.expires>Date.now())return cached.value;
   // Pri prvom dotaze po deployi moze prist viac rovnakych poziadaviek naraz.
   // Jedna spolocna Promise zabrani paralelnemu filtrovaniu celeho katalogu,
   // ktore predtym kratkodobo nasobilo RAM a mohlo zhodit cely Node proces.
   const running=commerceInFlight.get(cacheKey);if(running)return running;
   const operation=(async()=>{
-  const result=isCalendarQuery(query)?await searchCalendarProducts(query):await resolveCommerceProducts(query);
+  const result=calendar?await searchCalendarProducts(query):await resolveCommerceProducts(query,snapshot!);
   const products=result.products.map((product:any)=>({...product,color:colorOf(product),package_shape:isPackProduct(product)?'set':'single',quantity_offers:quantityOffers(product.price,product.type)}));
   const colors=new Set(products.filter((p:any)=>!isPackProduct(p)).map((p:any)=>p.color).filter(Boolean));
   const isColorPrinter=['black','cyan','magenta','yellow'].filter(c=>colors.has(c)).length>=3;
@@ -54,7 +72,7 @@ export async function searchCommerce(query:string) {
   // Štyri samostatné farby sa nikdy neskladajú do virtuálneho balenia — ani
   // interne. Tým sa nemôže syntetická sada omylom dostať do iného klienta API.
   const value={...result,products,presentation:{isColorPrinter,sets,colors:[...colors]}};
-  commerceCache.set(cacheKey,{expires:Date.now()+5*60_000,value});
+  if (calendar || generation === activeCatalogGeneration) commerceCache.set(cacheKey,{expires:Date.now()+5*60_000,value});
   if(commerceCache.size>500){const oldest=commerceCache.keys().next().value;if(oldest)commerceCache.delete(oldest);}
   return value;
   })();
