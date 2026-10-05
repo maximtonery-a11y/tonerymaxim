@@ -12,6 +12,8 @@
   // údery klávesov; používateľ nemá čakať stovky ms pred samotným requestom.
   const MIN_QUERY_LENGTH = 3;
   const DEBOUNCE_MS = 55;
+  const SLOW_RESPONSE_MS = 4000;
+  const REQUEST_TIMEOUT_MS = 30000;
 
   const memory = new Map();
   let warmupStarted = false;
@@ -250,6 +252,11 @@
     panel.hidden = false;
   }
 
+  function showSearchFallback(panel, query, pending = false) {
+    panel.innerHTML = `<div class="tm-smart-empty"><strong>${pending ? "Vyhľadávanie ešte prebieha." : "Návrhy sa nepodarilo načítať."}</strong><a class="tm-smart-all" href="/produkty?s=${encodeURIComponent(query)}">Zobraziť výsledky pre „${esc(query)}“ ›</a></div>`;
+    panel.hidden = false;
+  }
+
   async function fetchSuggestions(query, signal, retry = true) {
     const cached = sessionRead(query);
     if (cached) return cached;
@@ -314,6 +321,7 @@
     const { panel } = prepareWrapper(form, input);
     let timer = null;
     let loadingTimer = null;
+    let slowTimer = null;
     let controller = null;
     let serial = 0;
 
@@ -321,6 +329,8 @@
       serial += 1;
       if (timer) clearTimeout(timer);
       if (loadingTimer) clearTimeout(loadingTimer);
+      if (slowTimer) clearTimeout(slowTimer);
+      slowTimer = null;
       timer = null;
       loadingTimer = null;
       if (controller) controller.abort();
@@ -361,9 +371,12 @@
         if (mySerial !== serial || input.value.trim() !== query) return;
         controller = new AbortController();
         const requestController = controller;
-        // Cold-start indexu nesmie na mobilnej sieti skončiť skôr, než server
-        // stihne odpovedať. Warm odpovede zostávajú bežne pod stovkami ms.
-        const timeout = setTimeout(() => requestController.abort(), 4000);
+        // Po štyroch sekundách ponúkneme plné výsledky, ale nezrušíme
+        // platnú pomalšiu odpoveď. Nový dotaz/Escape ju stále zruší okamžite.
+        slowTimer = setTimeout(() => {
+          if (mySerial === serial && input.value.trim() === query) showSearchFallback(panel, query, true);
+        }, SLOW_RESPONSE_MS);
+        const timeout = setTimeout(() => requestController.abort(), REQUEST_TIMEOUT_MS);
 
         try {
           const data = await fetchSuggestions(query, requestController.signal);
@@ -375,13 +388,13 @@
           if (mySerial !== serial || input.value.trim() !== query) return;
           if (loadingTimer) clearTimeout(loadingTimer);
           loadingTimer = null;
-          if (error?.name === "AbortError") {
-            // Timeout alebo nový dotaz nikdy nesmie nechať UI visieť.
-            panel.innerHTML = `<div class="tm-smart-empty"><strong>Pokračujte Enterom.</strong><span>Otvoríme kompletné výsledky pre „${esc(query)}“.</span></div>`;
-          } else panel.innerHTML = `<div class="tm-smart-empty"><strong>Pokračujte Enterom.</strong><span>Otvoríme kompletné výsledky pre „${esc(query)}“.</span></div>`;
-          panel.hidden = false;
+          showSearchFallback(panel, query);
         } finally {
           clearTimeout(timeout);
+          if (mySerial === serial && slowTimer) {
+            clearTimeout(slowTimer);
+            slowTimer = null;
+          }
           if (controller === requestController) controller = null;
         }
       }, DEBOUNCE_MS);
