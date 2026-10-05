@@ -135,7 +135,7 @@ function referenceAliases(value: unknown, includeMixedTokenSegments = true) {
     // Niektoré modelové rodiny majú medzi prefixom a číslom ešte písmeno:
     // MLT-D111L, DCP-L2532DW, MC-G02. Spojený alias musí vzniknúť rovnako
     // v dopyte aj v identite produktu/tlačiarne.
-    if (/^(?:mlt|clt|dcp|mfc|hl|mc)$/.test(token) && /^[a-z]\d{1,8}[a-z0-9]*$/.test(next)) {
+    if (/^(?:mlt|clt|dcp|mfc|hl|mc|tn)$/.test(token) && /^[a-z]\d{1,8}[a-z0-9]*$/.test(next)) {
       aliases.add(`${token}${next}`);
     }
     // Neviažeme vyhľadávanie na žiadny zoznam farieb ani kapacitných koncoviek.
@@ -269,6 +269,64 @@ export function analyzeCatalogQuery(value: unknown): CatalogQueryAnalysis {
 
 export function productIdentityValue(product: CatalogProduct) {
   return `${product.name || ""} ${product.sku || ""} ${product.slug || ""}`;
+}
+
+/** Browsing fallback only: a truncated OEM such as CF53 may match CF530A.
+ * Keep this separate from exact identity matching used for purchase resolution.
+ * Never infer it from printer compatibility, descriptions or legacy slug aliases.
+ */
+export function partialProductCodeMatch(product: CatalogProduct, analysis: CatalogQueryAnalysis) {
+  if (analysis.referenceTokens.length !== 1) return false;
+  const reference = analysis.referenceTokens[0];
+  if (reference.length < 4 || !/^(?=.*[a-z])(?=.*\d)[a-z0-9]+\d$/.test(reference)) return false;
+  if (analysis.brands.length && !analysis.brands.some((brand) => compactKey(brand) === compactKey(productBrand(product)))) return false;
+  const aliases = referenceAliases(`${product.name || ""} ${product.sku || ""}`, false);
+  return [...aliases].some((alias) => alias.length > reference.length && alias.startsWith(reference));
+}
+
+export function isSearchPack(product: CatalogProduct) {
+  return /\b(?:sada|sady|suprava|set|multipack|multi-pack|cmyk|twin)\b/.test(normalize(product.name || product.title || ''));
+}
+
+/** An unfinished OEM may name a pack through a printed family alias:
+ * CF530A (205A) -> HP 205A CMYK. Require brand AND printer agreement too. */
+export function relatedPrefixPacks(products: CatalogProduct[], matches: CatalogProduct[]) {
+  const families: { brand: string; code: string; printers: Set<string> }[] = [];
+  for (const product of matches) {
+    if (isSearchPack(product)) continue;
+    for (const match of String(product.name || '').matchAll(/\(([^)]+)\)/g)) {
+      const code = compactKey(match[1]);
+      if (!/^(?=.*[a-z])(?=.*\d)[a-z0-9]{3,12}$/.test(code)) continue;
+      const brand = productBrand(product);
+      const printers = new Set(productPrinterValues(product).map(compactKey));
+      if (brand && printers.size) families.push({ brand, code, printers });
+    }
+  }
+  if (!families.length) return [];
+  return products.filter(product => isSearchPack(product) && families.some(family =>
+    productBrand(product) === family.brand
+    && referenceAliases(product.name, false).has(family.code)
+    && productPrinterValues(product).some(printer => family.printers.has(compactKey(printer)))));
+}
+
+/** Rank only already-matched results; a pack must never widen compatibility. */
+export function searchPackPriority(product: CatalogProduct, query: string) {
+  const text = normalize(query);
+  const name = normalize(product.name || product.title || '');
+  const isPack = isSearchPack(product);
+  const singleColor = /\b(?:ciern\w*|cern\w*|black|azur\w*|cyan|purpur\w*|magenta|zlt\w*|yellow|samostatn\w*|jednotliv\w*)\b/.test(text);
+  // A full colour-specific OEM (CF530A, TN247BK...) keeps single cartridges
+  // first. H/XL are capacity families and can still have matching CMYK packs.
+  const specificCode = (text.match(/\b[a-z]+\d+[a-z]+\b/g) || [])
+    .some(code => !/(?:\d+h|\d+xl|\d+xxl)$/.test(code));
+  if (singleColor) {
+    if (isPack) return 0;
+    const colors = [/\b(?:ciern\w*|cern\w*|black)\b/, /\b(?:azur\w*|cyan)\b/,
+      /\b(?:purpur\w*|magenta)\b/, /\b(?:zlt\w*|yellow)\b/];
+    return colors.some(color => color.test(text) && color.test(`${name} ${normalize(product.color || '')}`)) ? 2 : 1;
+  }
+  if (specificCode) return isPack ? 0 : 1;
+  return isPack ? 1 : 0;
 }
 
 export function productBrand(product: CatalogProduct) {

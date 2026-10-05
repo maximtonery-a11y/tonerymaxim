@@ -1,0 +1,2106 @@
+{
+  "selection": "300 distinct toner designations across 10 brands, round-robin by brand, prioritising available stock; not a sales ranking",
+  "catalogGeneratedAt": "2026-10-05T05:07:45.029Z",
+  "cases": [
+    {
+      "brand": "Brother",
+      "oem": "TN-3410",
+      "expectedId": 44051,
+      "name": "Brother TN-3410 čierny kompatibilný toner",
+      "stock": 711
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-047",
+      "expectedId": 43993,
+      "name": "Canon CRG-047 čierny kompatibilný toner",
+      "stock": 1154
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050709",
+      "expectedId": 37584,
+      "name": "Epson C13S050709 kompatibilný toner",
+      "stock": 33
+    },
+    {
+      "brand": "HP",
+      "oem": "W1420A",
+      "expectedId": 39951,
+      "name": "HP W1420A (142A) čierny kompatibilný toner nefunguje v HP+",
+      "stock": 1594
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-1160",
+      "expectedId": 37755,
+      "name": "Kyocera TK-1160 kompatibilný toner",
+      "stock": 55
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "70C2HY0",
+      "expectedId": 39050,
+      "name": "Lexmark 70C2HY0 renovovaný toner",
+      "stock": 22
+    },
+    {
+      "brand": "OKI",
+      "oem": "46508709",
+      "expectedId": 37779,
+      "name": "OKI C332 (46508709) žltý kompatibilný toner",
+      "stock": 60
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "406522",
+      "expectedId": 37809,
+      "name": "Ricoh 406522 kompatibilný toner",
+      "stock": 8
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D111L",
+      "expectedId": 37850,
+      "name": "Samsung MLT-D111L kompatibilný toner",
+      "stock": 489
+    },
+    {
+      "brand": "Xerox",
+      "oem": "B205",
+      "expectedId": 37856,
+      "name": "Xerox B205 ( 106R04348 ) čierny kompatibilný toner",
+      "stock": 28
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-3480",
+      "expectedId": 37501,
+      "name": "Brother TN-3480 čierny kompatibilný toner",
+      "stock": 711
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-726",
+      "expectedId": 43978,
+      "name": "Canon CRG-726 čierny kompatibilný toner",
+      "stock": 698
+    },
+    {
+      "brand": "Epson",
+      "oem": "T04D1",
+      "expectedId": 37185,
+      "name": "Epson T04D1 originálna nádobka na odpadový toner",
+      "stock": 19
+    },
+    {
+      "brand": "HP",
+      "oem": "CF217A",
+      "expectedId": 37635,
+      "name": "HP CF217A (17A) čierny kompatibilný toner",
+      "stock": 1154
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5280K",
+      "expectedId": 37748,
+      "name": "Kyocera TK-5280K kompatibilný toner",
+      "stock": 38
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "70C2HK0",
+      "expectedId": 39047,
+      "name": "Lexmark 70C2HK0 renovovaný toner",
+      "stock": 17
+    },
+    {
+      "brand": "OKI",
+      "oem": "44973536",
+      "expectedId": 37793,
+      "name": "OKI C 301 (44973536) čierny kompatibilný toner",
+      "stock": 53
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "407246",
+      "expectedId": 37807,
+      "name": "Ricoh 407246 kompatibilný toner",
+      "stock": 6
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D111XL",
+      "expectedId": 37811,
+      "name": "Samsung MLT-D111XL kompatibilný toner",
+      "stock": 487
+    },
+    {
+      "brand": "Xerox",
+      "oem": "B225",
+      "expectedId": 37894,
+      "name": "Xerox B225 ( 006R04404 ) čierny kompatibilný toner",
+      "stock": 22
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2421",
+      "expectedId": 37471,
+      "name": "Brother TN-2421 čierny kompatibilný toner",
+      "stock": 438
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-728",
+      "expectedId": 43977,
+      "name": "Canon CRG-728 čierny kompatibilný toner",
+      "stock": 698
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050612",
+      "expectedId": 37581,
+      "name": "Epson C13S050612 kompatibilný toner",
+      "stock": 18
+    },
+    {
+      "brand": "HP",
+      "oem": "W1350X",
+      "expectedId": 39950,
+      "name": "HP W1350X (135X) čierny kompatibilný toner nefunguje v HP+",
+      "stock": 966
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5280Y",
+      "expectedId": 37750,
+      "name": "Kyocera TK-5280Y kompatibilný toner",
+      "stock": 35
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "71B20K0",
+      "expectedId": 39073,
+      "name": "Lexmark 71B20K0 renovovaný toner",
+      "stock": 16
+    },
+    {
+      "brand": "OKI",
+      "oem": "45807106",
+      "expectedId": 37780,
+      "name": "OKI B412 (45807106) čierny kompatibilný toner",
+      "stock": 51
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "407254",
+      "expectedId": 37806,
+      "name": "Ricoh 407254 kompatibilný toner",
+      "stock": 6
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D116L",
+      "expectedId": 37823,
+      "name": "Samsung MLT-D116L kompatibilný toner",
+      "stock": 379
+    },
+    {
+      "brand": "Xerox",
+      "oem": "C230",
+      "expectedId": 37889,
+      "name": "Xerox C230 ( 006R04395 ) čierny kompatibilný toner",
+      "stock": 20
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2590XL",
+      "expectedId": 39938,
+      "name": "Brother TN-2590XL čierny kompatibilný toner",
+      "stock": 372
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-051H",
+      "expectedId": 44072,
+      "name": "Canon CRG-051H čierny kompatibilný toner",
+      "stock": 591
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050613",
+      "expectedId": 37580,
+      "name": "Epson C13S050613 kompatibilný toner",
+      "stock": 18
+    },
+    {
+      "brand": "HP",
+      "oem": "CF259X",
+      "expectedId": 37665,
+      "name": "HP CF259X (59X) čierny kompatibilný toner",
+      "stock": 900
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5230C",
+      "expectedId": 37738,
+      "name": "Kyocera TK-5230C kompatibilný toner",
+      "stock": 31
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "12016SE",
+      "expectedId": 37764,
+      "name": "Lexmark 12016SE kompatibilný toner",
+      "stock": 13
+    },
+    {
+      "brand": "OKI",
+      "oem": "46490605",
+      "expectedId": 37784,
+      "name": "OKI C532 (46490605) žltý kompatibilný toner",
+      "stock": 50
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "407166",
+      "expectedId": 37805,
+      "name": "Ricoh 407166 kompatibilný toner",
+      "stock": 2
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D1042S",
+      "expectedId": 37817,
+      "name": "Samsung MLT-D1042S kompatibilný toner",
+      "stock": 184
+    },
+    {
+      "brand": "Xerox",
+      "oem": "B305",
+      "expectedId": 44202,
+      "name": "Xerox B305 ( 006R04380 ) čierny originálny toner 8000 strán",
+      "stock": 6
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-247BK",
+      "expectedId": 37462,
+      "name": "Brother TN-247BK čierny kompatibilný toner",
+      "stock": 283
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-703",
+      "expectedId": 44000,
+      "name": "Canon CRG-703 čierny kompatibilný toner",
+      "stock": 490
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S110078",
+      "expectedId": 37576,
+      "name": "Epson C13S110078 kompatibilný toner",
+      "stock": 16
+    },
+    {
+      "brand": "HP",
+      "oem": "Q2612A",
+      "expectedId": 37585,
+      "name": "HP Q2612A čierny kompatibilný toner",
+      "stock": 808
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5240K",
+      "expectedId": 37741,
+      "name": "Kyocera TK-5240K kompatibilný toner",
+      "stock": 31
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "80C2SK0",
+      "expectedId": 39082,
+      "name": "Lexmark 80C2SK0 renovovaný toner",
+      "stock": 13
+    },
+    {
+      "brand": "OKI",
+      "oem": "44973535",
+      "expectedId": 37794,
+      "name": "OKI C 301 (44973535) azúrový kompatibilný toner",
+      "stock": 49
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "408294",
+      "expectedId": 37810,
+      "name": "Ricoh 408294 kompatibilný toner",
+      "stock": 2
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D1052L",
+      "expectedId": 37828,
+      "name": "Samsung MLT-D1052L kompatibilný toner",
+      "stock": 74
+    },
+    {
+      "brand": "Xerox",
+      "oem": "B410",
+      "expectedId": 38474,
+      "name": "Xerox B410 ( 006R04728 ) čierny originálny toner",
+      "stock": 3
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2420XXL",
+      "expectedId": 37467,
+      "name": "Brother TN-2420XXL čierny kompatibilný toner",
+      "stock": 235
+    },
+    {
+      "brand": "Canon",
+      "oem": "FX-10",
+      "expectedId": 43999,
+      "name": "Canon FX-10 čierny kompatibilný toner",
+      "stock": 490
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050614",
+      "expectedId": 37579,
+      "name": "Epson C13S050614 kompatibilný toner",
+      "stock": 14
+    },
+    {
+      "brand": "HP",
+      "oem": "CB435X",
+      "expectedId": 43962,
+      "name": "HP CB435X čierny kompatibilný toner",
+      "stock": 722
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-3100",
+      "expectedId": 37763,
+      "name": "Kyocera TK-3100 kompatibilný toner",
+      "stock": 29
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "71B20C0",
+      "expectedId": 39074,
+      "name": "Lexmark 71B20C0 renovovaný toner",
+      "stock": 12
+    },
+    {
+      "brand": "OKI",
+      "oem": "46508711",
+      "expectedId": 37777,
+      "name": "OKI C332 (46508711) azúrový kompatibilný toner",
+      "stock": 43
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "841925",
+      "expectedId": 41173,
+      "name": "Ricoh 841925 originálny toner",
+      "stock": 2
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-K404S",
+      "expectedId": 37843,
+      "name": "Samsung CLT-K404S kompatibilný toner",
+      "stock": 73
+    },
+    {
+      "brand": "Xerox",
+      "oem": "C320",
+      "expectedId": 38475,
+      "name": "Xerox C320 ( 006R04835 ) čierny originálny toner",
+      "stock": 3
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-247C",
+      "expectedId": 37463,
+      "name": "Brother TN-247C azúrový kompatibilný toner",
+      "stock": 222
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-719",
+      "expectedId": 43976,
+      "name": "Canon CRG-719 čierny kompatibilný toner",
+      "stock": 480
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050611",
+      "expectedId": 37582,
+      "name": "Epson C13S050611 kompatibilný toner",
+      "stock": 11
+    },
+    {
+      "brand": "HP",
+      "oem": "CB436X",
+      "expectedId": 43963,
+      "name": "HP CB436X čierny kompatibilný toner",
+      "stock": 722
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5230Y",
+      "expectedId": 37740,
+      "name": "Kyocera TK-5230Y kompatibilný toner",
+      "stock": 28
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "71B20M0",
+      "expectedId": 39075,
+      "name": "Lexmark 71B20M0 renovovaný toner",
+      "stock": 12
+    },
+    {
+      "brand": "OKI",
+      "oem": "46508712",
+      "expectedId": 37776,
+      "name": "OKI C332 (46508712) čierny kompatibilný toner",
+      "stock": 43
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "405783",
+      "expectedId": 39935,
+      "name": "Ricoh 405783 (IC 41) originálna nádobka na odpadový toner",
+      "stock": 1
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D119S",
+      "expectedId": 37812,
+      "name": "Samsung MLT-D119S kompatibilný toner",
+      "stock": 58
+    },
+    {
+      "brand": "Xerox",
+      "oem": "C310",
+      "expectedId": 39337,
+      "name": "Xerox C310 ( 006R04368 ) čierny renovovaný toner",
+      "stock": 3
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-247Y",
+      "expectedId": 37465,
+      "name": "Brother TN-247Y žltý kompatibilný toner",
+      "stock": 210
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-719H",
+      "expectedId": 43944,
+      "name": "Canon CRG-719H čierny kompatibilný toner",
+      "stock": 443
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S110079",
+      "expectedId": 37575,
+      "name": "Epson C13S110079 kompatibilný toner",
+      "stock": 10
+    },
+    {
+      "brand": "HP",
+      "oem": "CE278X",
+      "expectedId": 37677,
+      "name": "HP CE278X kompatibilný toner",
+      "stock": 722
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5230M",
+      "expectedId": 37739,
+      "name": "Kyocera TK-5230M kompatibilný toner",
+      "stock": 25
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "51F2H00",
+      "expectedId": 39072,
+      "name": "Lexmark 51F2H00 renovovaný toner",
+      "stock": 11
+    },
+    {
+      "brand": "OKI",
+      "oem": "44973534",
+      "expectedId": 37795,
+      "name": "OKI C 301 (44973534) purpurový kompatibilný toner",
+      "stock": 40
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "841919",
+      "expectedId": 38421,
+      "name": "Ricoh 841919 originálny toner",
+      "stock": 1
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-M4072S",
+      "expectedId": 37826,
+      "name": "Samsung CLT-M4072S kompatibilný toner",
+      "stock": 56
+    },
+    {
+      "brand": "Xerox",
+      "oem": "700",
+      "expectedId": 41401,
+      "name": "Xerox 700 ( 006R01379 ) čierny originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-247M",
+      "expectedId": 37464,
+      "name": "Brother TN-247M purpurový kompatibilný toner",
+      "stock": 193
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-720",
+      "expectedId": 43945,
+      "name": "Canon CRG-720 čierny kompatibilný toner",
+      "stock": 443
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050691",
+      "expectedId": 37583,
+      "name": "Epson C13S050691 kompatibilný toner",
+      "stock": 8
+    },
+    {
+      "brand": "HP",
+      "oem": "CE285X",
+      "expectedId": 43964,
+      "name": "HP CE285X čierny kompatibilný toner",
+      "stock": 722
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5280M",
+      "expectedId": 37749,
+      "name": "Kyocera TK-5280M kompatibilný toner",
+      "stock": 25
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "B232000",
+      "expectedId": 44195,
+      "name": "Lexmark B232000 Black originálny toner",
+      "stock": 10
+    },
+    {
+      "brand": "OKI",
+      "oem": "46508710",
+      "expectedId": 37778,
+      "name": "OKI C332 (46508710) purpurový kompatibilný toner",
+      "stock": 38
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "841920",
+      "expectedId": 38422,
+      "name": "Ricoh 841920 originálny toner",
+      "stock": 1
+    },
+    {
+      "brand": "Samsung",
+      "oem": "M4072S",
+      "expectedId": 44008,
+      "name": "Samsung M4072S kompatibilný toner",
+      "stock": 56
+    },
+    {
+      "brand": "Xerox",
+      "oem": "D95",
+      "expectedId": 41396,
+      "name": "Xerox D95 ( 006R01561 ) čierny originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-B023",
+      "expectedId": 37932,
+      "name": "Brother TN-B023 čierny originálny toner",
+      "stock": 190
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-712",
+      "expectedId": 44092,
+      "name": "Canon CRG-712 čierny kompatibilný toner",
+      "stock": 440
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050595",
+      "expectedId": 38128,
+      "name": "Epson C13S050595 originálna nádobka na odpadový toner",
+      "stock": 8
+    },
+    {
+      "brand": "HP",
+      "oem": "CE278A",
+      "expectedId": 37595,
+      "name": "HP CE278A čierny kompatibilný toner",
+      "stock": 698
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5230K",
+      "expectedId": 37737,
+      "name": "Kyocera TK-5230K kompatibilný toner",
+      "stock": 23
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "71B2HC0",
+      "expectedId": 39078,
+      "name": "Lexmark 71B2HC0 renovovaný toner",
+      "stock": 8
+    },
+    {
+      "brand": "OKI",
+      "oem": "46490606",
+      "expectedId": 37783,
+      "name": "OKI C532 (46490606) purpurový kompatibilný toner",
+      "stock": 37
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "841921",
+      "expectedId": 38423,
+      "name": "Ricoh 841921 originálny toner",
+      "stock": 1
+    },
+    {
+      "brand": "Samsung",
+      "oem": "M4092S",
+      "expectedId": 44009,
+      "name": "Samsung M4092S kompatibilný toner",
+      "stock": 56
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-1030",
+      "expectedId": 37478,
+      "name": "Brother TN-1030 čierny kompatibilný toner",
+      "stock": 164
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-713",
+      "expectedId": 44093,
+      "name": "Canon CRG-713 kompatibilný toner",
+      "stock": 440
+    },
+    {
+      "brand": "Epson",
+      "oem": "C9345",
+      "expectedId": 37217,
+      "name": "Epson C9345 originálna nádobka na odpadový toner",
+      "stock": 7
+    },
+    {
+      "brand": "HP",
+      "oem": "CF230X",
+      "expectedId": 37637,
+      "name": "HP CF230X (30X) čierny kompatibilný toner",
+      "stock": 591
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5280C",
+      "expectedId": 39962,
+      "name": "Kyocera TK-5280C kompatibilný toner",
+      "stock": 21
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "56F2U00",
+      "expectedId": 37767,
+      "name": "Lexmark 56F2U00 kompatibilný toner",
+      "stock": 7
+    },
+    {
+      "brand": "OKI",
+      "oem": "44973533",
+      "expectedId": 37796,
+      "name": "OKI C 301 (44973533) žltý kompatibilný toner",
+      "stock": 36
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "SP150",
+      "expectedId": 37808,
+      "name": "Ricoh SP150 kompatibilný toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D1092S",
+      "expectedId": 37816,
+      "name": "Samsung MLT-D1092S kompatibilný toner",
+      "stock": 54
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-1050",
+      "expectedId": 44044,
+      "name": "Brother TN-1050 čierny kompatibilný toner",
+      "stock": 164
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-051BK",
+      "expectedId": 43994,
+      "name": "Canon CRG-051BK čierny kompatibilný toner",
+      "stock": 388
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050435",
+      "expectedId": 37577,
+      "name": "Epson C13S050435 kompatibilný toner",
+      "stock": 6
+    },
+    {
+      "brand": "HP",
+      "oem": "Q2612X",
+      "expectedId": 37647,
+      "name": "HP Q2612X (12X) čierny kompatibilný toner",
+      "stock": 490
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-1140",
+      "expectedId": 37762,
+      "name": "Kyocera TK-1140 kompatibilný toner",
+      "stock": 18
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "70C2HC0",
+      "expectedId": 39048,
+      "name": "Lexmark 70C2HC0 renovovaný toner",
+      "stock": 7
+    },
+    {
+      "brand": "OKI",
+      "oem": "44469706",
+      "expectedId": 37790,
+      "name": "OKI C310 (44469706) azúrový kompatibilný toner",
+      "stock": 30
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "406475",
+      "expectedId": 41168,
+      "name": "Ricoh 406475 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "C4072S",
+      "expectedId": 44006,
+      "name": "Samsung C4072S kompatibilný toner",
+      "stock": 36
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-3600XXL",
+      "expectedId": 37521,
+      "name": "Brother TN-3600XXL čierny kompatibilný toner",
+      "stock": 84
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-045HBK",
+      "expectedId": 43918,
+      "name": "Canon CRG-045HBK čierny kompatibilný toner",
+      "stock": 342
+    },
+    {
+      "brand": "Epson",
+      "oem": "T6712",
+      "expectedId": 37310,
+      "name": "Epson T6712 originálna nádobka na odpadový toner",
+      "stock": 6
+    },
+    {
+      "brand": "HP",
+      "oem": "CE505A",
+      "expectedId": 37588,
+      "name": "HP CE505A čierny kompatibilný toner",
+      "stock": 480
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5240C",
+      "expectedId": 37742,
+      "name": "Kyocera TK-5240C kompatibilný toner",
+      "stock": 18
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "71B2HM0",
+      "expectedId": 39079,
+      "name": "Lexmark 71B2HM0 renovovaný toner",
+      "stock": 6
+    },
+    {
+      "brand": "OKI",
+      "oem": "44469705",
+      "expectedId": 37791,
+      "name": "OKI C310 (44469705) purpurový kompatibilný toner",
+      "stock": 28
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "406476",
+      "expectedId": 41185,
+      "name": "Ricoh 406476 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "C4092S",
+      "expectedId": 44007,
+      "name": "Samsung C4092S kompatibilný toner",
+      "stock": 36
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-245Y",
+      "expectedId": 37484,
+      "name": "Brother TN-245Y žltý kompatibilný toner",
+      "stock": 81
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-054HBK",
+      "expectedId": 43917,
+      "name": "Canon CRG-054HBK čierny kompatibilný toner",
+      "stock": 342
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050651",
+      "expectedId": 39945,
+      "name": "Epson C13S050651 kompatibilný toner",
+      "stock": 4
+    },
+    {
+      "brand": "HP",
+      "oem": "CF280A",
+      "expectedId": 43975,
+      "name": "HP CF280A čierny kompatibilný toner",
+      "stock": 480
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5240M",
+      "expectedId": 39007,
+      "name": "Kyocera TK-5240M renovovaný toner",
+      "stock": 16
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "71B2HY0",
+      "expectedId": 39080,
+      "name": "Lexmark 71B2HY0 renovovaný toner",
+      "stock": 6
+    },
+    {
+      "brand": "OKI",
+      "oem": "44469804",
+      "expectedId": 37785,
+      "name": "OKI C510 (44469804) čierny kompatibilný toner",
+      "stock": 25
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "406477",
+      "expectedId": 41184,
+      "name": "Ricoh 406477 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-C4072S",
+      "expectedId": 37825,
+      "name": "Samsung CLT-C4072S kompatibilný toner",
+      "stock": 36
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-245M",
+      "expectedId": 37483,
+      "name": "Brother TN-245M purpurový kompatibilný toner",
+      "stock": 71
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-725",
+      "expectedId": 44055,
+      "name": "Canon CRG-725 čierny kompatibilný toner",
+      "stock": 340
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050523",
+      "expectedId": 41580,
+      "name": "Epson C13S050523 renovovaný toner",
+      "stock": 3
+    },
+    {
+      "brand": "HP",
+      "oem": "W1106A",
+      "expectedId": 37662,
+      "name": "HP W1106A (106A) čierny kompatibilný toner",
+      "stock": 449
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5270Y",
+      "expectedId": 37747,
+      "name": "Kyocera TK-5270Y kompatibilný toner",
+      "stock": 13
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "80C20M0",
+      "expectedId": 39057,
+      "name": "Lexmark 80C20M0 renovovaný toner",
+      "stock": 6
+    },
+    {
+      "brand": "OKI",
+      "oem": "46490607",
+      "expectedId": 37782,
+      "name": "OKI C532 (46490607) azúrový kompatibilný toner",
+      "stock": 25
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "406479",
+      "expectedId": 41179,
+      "name": "Ricoh 406479 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D101S",
+      "expectedId": 39294,
+      "name": "Samsung MLT-D101S renovovaný toner",
+      "stock": 31
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-245C",
+      "expectedId": 37482,
+      "name": "Brother TN-245C azúrový kompatibilný toner",
+      "stock": 64
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-071H",
+      "expectedId": 37533,
+      "name": "Canon CRG-071H čierny kompatibilný toner",
+      "stock": 311
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050554",
+      "expectedId": 38731,
+      "name": "Epson C13S050554 renovovaný toner",
+      "stock": 3
+    },
+    {
+      "brand": "HP",
+      "oem": "CE505X",
+      "expectedId": 37589,
+      "name": "HP CE505X čierny kompatibilný toner",
+      "stock": 443
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5270C",
+      "expectedId": 37745,
+      "name": "Kyocera TK-5270C kompatibilný toner",
+      "stock": 12
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "80C2HM0",
+      "expectedId": 39061,
+      "name": "Lexmark 80C2HM0 renovovaný toner",
+      "stock": 6
+    },
+    {
+      "brand": "OKI",
+      "oem": "43979202",
+      "expectedId": 37799,
+      "name": "OKI B430 (43979202) čierny kompatibilný toner",
+      "stock": 24
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "406480",
+      "expectedId": 41180,
+      "name": "Ricoh 406480 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D203L",
+      "expectedId": 37839,
+      "name": "Samsung MLT-D203L kompatibilný toner",
+      "stock": 30
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2110",
+      "expectedId": 37475,
+      "name": "Brother TN-2110 čierny kompatibilný toner",
+      "stock": 52
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-737",
+      "expectedId": 44057,
+      "name": "Canon CRG-737 čierny kompatibilný toner",
+      "stock": 285
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050584",
+      "expectedId": 37578,
+      "name": "Epson C13S050584 kompatibilný toner",
+      "stock": 2
+    },
+    {
+      "brand": "HP",
+      "oem": "CF280X",
+      "expectedId": 43943,
+      "name": "HP CF280X čierny kompatibilný toner",
+      "stock": 443
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-3170",
+      "expectedId": 39002,
+      "name": "Kyocera TK-3170 renovovaný toner",
+      "stock": 12
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "80C2SC0",
+      "expectedId": 39083,
+      "name": "Lexmark 80C2SC0 renovovaný toner",
+      "stock": 6
+    },
+    {
+      "brand": "OKI",
+      "oem": "44469723",
+      "expectedId": 37787,
+      "name": "OKI C510 (44469723) purpurový kompatibilný toner",
+      "stock": 23
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "406481",
+      "expectedId": 41181,
+      "name": "Ricoh 406481 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-C404S",
+      "expectedId": 37844,
+      "name": "Samsung CLT-C404S kompatibilný toner",
+      "stock": 27
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2120",
+      "expectedId": 44041,
+      "name": "Brother TN-2120 čierny kompatibilný toner",
+      "stock": 52
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-052",
+      "expectedId": 43985,
+      "name": "Canon CRG-052 čierny kompatibilný toner",
+      "stock": 242
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050555",
+      "expectedId": 38730,
+      "name": "Epson C13S050555 renovovaný toner",
+      "stock": 2
+    },
+    {
+      "brand": "HP",
+      "oem": "CB435A",
+      "expectedId": 44090,
+      "name": "HP CB435A čierny kompatibilný toner",
+      "stock": 440
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5240Y",
+      "expectedId": 39008,
+      "name": "Kyocera TK-5240Y renovovaný toner",
+      "stock": 12
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "55B2H00",
+      "expectedId": 37765,
+      "name": "Lexmark 55B2H00 kompatibilný toner",
+      "stock": 5
+    },
+    {
+      "brand": "OKI",
+      "oem": "45807111",
+      "expectedId": 37804,
+      "name": "OKI B432 (45807111) čierny kompatibilný toner",
+      "stock": 19
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "406482",
+      "expectedId": 41182,
+      "name": "Ricoh 406482 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-M404S",
+      "expectedId": 37845,
+      "name": "Samsung CLT-M404S kompatibilný toner",
+      "stock": 23
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-625XLY",
+      "expectedId": 52058,
+      "name": "Brother TN-625XLY žltý kompatibilný toner",
+      "stock": 38
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-716BK",
+      "expectedId": 43894,
+      "name": "Canon CRG-716BK čierny kompatibilný toner",
+      "stock": 232
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050556",
+      "expectedId": 41584,
+      "name": "Epson C13S050556 renovovaný toner",
+      "stock": 2
+    },
+    {
+      "brand": "HP",
+      "oem": "CB436A",
+      "expectedId": 44091,
+      "name": "HP CB436A čierny kompatibilný toner",
+      "stock": 440
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5270K",
+      "expectedId": 37744,
+      "name": "Kyocera TK-5270K kompatibilný toner",
+      "stock": 10
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "52D2X00",
+      "expectedId": 39067,
+      "name": "Lexmark 52D2X00 renovovaný toner",
+      "stock": 5
+    },
+    {
+      "brand": "OKI",
+      "oem": "44469724",
+      "expectedId": 37786,
+      "name": "OKI C510 (44469724) azúrový kompatibilný toner",
+      "stock": 18
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "407629",
+      "expectedId": 41175,
+      "name": "Ricoh 407629 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-Y4072S",
+      "expectedId": 37827,
+      "name": "Samsung CLT-Y4072S kompatibilný toner",
+      "stock": 22
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-1090",
+      "expectedId": 37962,
+      "name": "Brother TN-1090 čierny originálny toner",
+      "stock": 36
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-731HBK",
+      "expectedId": 43895,
+      "name": "Canon CRG-731HBK čierny kompatibilný toner",
+      "stock": 232
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050557",
+      "expectedId": 38734,
+      "name": "Epson C13S050557 renovovaný toner",
+      "stock": 2
+    },
+    {
+      "brand": "HP",
+      "oem": "CE285A",
+      "expectedId": 37594,
+      "name": "HP CE285A čierny kompatibilný toner 2 000 strán",
+      "stock": 440
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-5270M",
+      "expectedId": 37746,
+      "name": "Kyocera TK-5270M kompatibilný toner",
+      "stock": 10
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "T650H11E",
+      "expectedId": 39036,
+      "name": "Lexmark T650H11E renovovaný toner",
+      "stock": 5
+    },
+    {
+      "brand": "OKI",
+      "oem": "46490608",
+      "expectedId": 37781,
+      "name": "OKI C532 (46490608) čierny kompatibilný toner",
+      "stock": 17
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "407630",
+      "expectedId": 41176,
+      "name": "Ricoh 407630 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "Y4072S",
+      "expectedId": 44010,
+      "name": "Samsung Y4072S kompatibilný toner",
+      "stock": 22
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2510XL",
+      "expectedId": 39937,
+      "name": "Brother TN-2510XL čierny kompatibilný toner",
+      "stock": 34
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-045HY",
+      "expectedId": 43924,
+      "name": "Canon CRG-045HY žltý kompatibilný toner",
+      "stock": 219
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050166",
+      "expectedId": 41585,
+      "name": "Epson C13S050166 renovovaný toner",
+      "stock": 1
+    },
+    {
+      "brand": "HP",
+      "oem": "CF279X",
+      "expectedId": 37648,
+      "name": "HP CF279X (79X) čierny kompatibilný toner",
+      "stock": 436
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-590C",
+      "expectedId": 37752,
+      "name": "Kyocera TK-590C kompatibilný toner",
+      "stock": 8
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "55B2000",
+      "expectedId": 38270,
+      "name": "Lexmark 55B2000 originálny toner",
+      "stock": 4
+    },
+    {
+      "brand": "OKI",
+      "oem": "44574702",
+      "expectedId": 37800,
+      "name": "OKI B411 (44574702) čierny kompatibilný toner",
+      "stock": 16
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "407631",
+      "expectedId": 41177,
+      "name": "Ricoh 407631 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "Y4092S",
+      "expectedId": 44011,
+      "name": "Samsung Y4092S kompatibilný toner",
+      "stock": 22
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2590",
+      "expectedId": 37912,
+      "name": "Brother TN-2590 čierny originálny toner",
+      "stock": 34
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-054HY",
+      "expectedId": 43923,
+      "name": "Canon CRG-054HY žltý kompatibilný toner",
+      "stock": 219
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050582",
+      "expectedId": 38732,
+      "name": "Epson C13S050582 renovovaný toner",
+      "stock": 1
+    },
+    {
+      "brand": "HP",
+      "oem": "W2070A",
+      "expectedId": 37685,
+      "name": "HP W2070A (117A) čierny kompatibilný toner",
+      "stock": 425
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-590K",
+      "expectedId": 37751,
+      "name": "Kyocera TK-590K kompatibilný toner",
+      "stock": 8
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "60F2H00",
+      "expectedId": 39045,
+      "name": "Lexmark 60F2H00 renovovaný toner",
+      "stock": 4
+    },
+    {
+      "brand": "OKI",
+      "oem": "44469722",
+      "expectedId": 37788,
+      "name": "OKI C510 (44469722) žltý kompatibilný toner",
+      "stock": 15
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "407632",
+      "expectedId": 41178,
+      "name": "Ricoh 407632 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-K4072S",
+      "expectedId": 37824,
+      "name": "Samsung CLT-K4072S kompatibilný toner",
+      "stock": 18
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2420",
+      "expectedId": 38607,
+      "name": "Brother TN-2420 čierny renovovaný toner",
+      "stock": 30
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-045HC",
+      "expectedId": 43921,
+      "name": "Canon CRG-045HC azúrový kompatibilný toner",
+      "stock": 209
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050167",
+      "expectedId": 40214,
+      "name": "Epson C13S050167 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "CF230A",
+      "expectedId": 37636,
+      "name": "HP CF230A (30A) čierny kompatibilný toner",
+      "stock": 388
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-3130",
+      "expectedId": 38991,
+      "name": "Kyocera TK-3130 renovovaný toner",
+      "stock": 8
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "70C2HM0",
+      "expectedId": 39049,
+      "name": "Lexmark 70C2HM0 renovovaný toner",
+      "stock": 4
+    },
+    {
+      "brand": "OKI",
+      "oem": "44469704",
+      "expectedId": 39199,
+      "name": "OKI C310 (44469704) žltý renovovaný toner",
+      "stock": 15
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "821034",
+      "expectedId": 41162,
+      "name": "Ricoh 821034 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "K4072S",
+      "expectedId": 44004,
+      "name": "Samsung K4072S kompatibilný toner",
+      "stock": 18
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2320",
+      "expectedId": 38587,
+      "name": "Brother TN-2320 čierny renovovaný toner",
+      "stock": 27
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-054HC",
+      "expectedId": 43920,
+      "name": "Canon CRG-054HC azúrový kompatibilný toner",
+      "stock": 209
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050195",
+      "expectedId": 40208,
+      "name": "Epson C13S050195 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "W1490X",
+      "expectedId": 37692,
+      "name": "HP W1490X (149X) čierny kompatibilný toner nefunguje v HP+",
+      "stock": 388
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-330",
+      "expectedId": 38966,
+      "name": "Kyocera TK-330 renovovaný toner",
+      "stock": 8
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "80C20K0",
+      "expectedId": 39055,
+      "name": "Lexmark 80C20K0 renovovaný toner",
+      "stock": 4
+    },
+    {
+      "brand": "OKI",
+      "oem": "45862838",
+      "expectedId": 39106,
+      "name": "OKI MC853 (45862838) purpurový renovovaný toner",
+      "stock": 15
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "841295",
+      "expectedId": 41164,
+      "name": "Ricoh 841295 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "K4092S",
+      "expectedId": 44005,
+      "name": "Samsung K4092S kompatibilný toner",
+      "stock": 18
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2010",
+      "expectedId": 44042,
+      "name": "Brother TN-2010 čierny kompatibilný toner",
+      "stock": 26
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-708H",
+      "expectedId": 43941,
+      "name": "Canon CRG-708H čierny kompatibilný toner",
+      "stock": 208
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050196",
+      "expectedId": 40207,
+      "name": "Epson C13S050196 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "CF400X",
+      "expectedId": 43916,
+      "name": "HP CF400X čierny kompatibilný toner",
+      "stock": 342
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-170",
+      "expectedId": 37760,
+      "name": "Kyocera TK-170 kompatibilný toner",
+      "stock": 7
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "80C2XC0",
+      "expectedId": 39064,
+      "name": "Lexmark 80C2XC0 renovovaný toner",
+      "stock": 4
+    },
+    {
+      "brand": "OKI",
+      "oem": "43979102",
+      "expectedId": 37798,
+      "name": "OKI B410 (43979102) čierny kompatibilný toner",
+      "stock": 14
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "841296",
+      "expectedId": 41163,
+      "name": "Ricoh 841296 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-Y404S",
+      "expectedId": 37846,
+      "name": "Samsung CLT-Y404S kompatibilný toner",
+      "stock": 17
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2220",
+      "expectedId": 37476,
+      "name": "Brother TN-2220 kom čierny kompatibilný toner",
+      "stock": 26
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-715H",
+      "expectedId": 43942,
+      "name": "Canon CRG-715H čierny kompatibilný toner",
+      "stock": 208
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050197",
+      "expectedId": 40206,
+      "name": "Epson C13S050197 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "CF540X",
+      "expectedId": 37643,
+      "name": "HP CF540X (203X) čierny kompatibilný toner",
+      "stock": 342
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-3060",
+      "expectedId": 41677,
+      "name": "Kyocera TK-3060 renovovaný toner",
+      "stock": 7
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "80C2XM0",
+      "expectedId": 39065,
+      "name": "Lexmark 80C2XM0 renovovaný toner",
+      "stock": 4
+    },
+    {
+      "brand": "OKI",
+      "oem": "45862837",
+      "expectedId": 39107,
+      "name": "OKI MC853 (45862837) žltý renovovaný toner",
+      "stock": 13
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "841297",
+      "expectedId": 41165,
+      "name": "Ricoh 841297 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D111S",
+      "expectedId": 37849,
+      "name": "Samsung MLT-D111S kompatibilný toner",
+      "stock": 17
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-2310",
+      "expectedId": 37477,
+      "name": "Brother TN-2310 čierny kompatibilný toner",
+      "stock": 25
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-716Y",
+      "expectedId": 43902,
+      "name": "Canon CRG-716Y žltý kompatibilný toner",
+      "stock": 193
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050198",
+      "expectedId": 40205,
+      "name": "Epson C13S050198 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "W2071A",
+      "expectedId": 37686,
+      "name": "HP W2071A (117A) azúrový kompatibilný toner",
+      "stock": 322
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-590Y",
+      "expectedId": 37754,
+      "name": "Kyocera TK-590Y kompatibilný toner",
+      "stock": 6
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "E460X11E",
+      "expectedId": 39031,
+      "name": "Lexmark E460X11E renovovaný toner",
+      "stock": 4
+    },
+    {
+      "brand": "OKI",
+      "oem": "44469803",
+      "expectedId": 37789,
+      "name": "OKI C310 (44469803) čierny kompatibilný toner",
+      "stock": 12
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "841298",
+      "expectedId": 41166,
+      "name": "Ricoh 841298 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D205E",
+      "expectedId": 37841,
+      "name": "Samsung MLT-D205E kompatibilný toner",
+      "stock": 16
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-241BK",
+      "expectedId": 37481,
+      "name": "Brother TN-241BK čierny kompatibilný toner",
+      "stock": 25
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-731Y",
+      "expectedId": 43903,
+      "name": "Canon CRG-731Y žltý kompatibilný toner",
+      "stock": 193
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050242",
+      "expectedId": 40204,
+      "name": "Epson C13S050242 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "W2072A",
+      "expectedId": 39947,
+      "name": "HP W2072A (117A) žltý kompatibilný toner",
+      "stock": 288
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-580C",
+      "expectedId": 37757,
+      "name": "Kyocera TK-580C kompatibilný toner",
+      "stock": 5
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "51B2H00",
+      "expectedId": 39967,
+      "name": "Lexmark 51B2H00 kompatibilný toner",
+      "stock": 3
+    },
+    {
+      "brand": "OKI",
+      "oem": "44973508",
+      "expectedId": 39234,
+      "name": "OKI C511 (44973508) čierny renovovaný toner",
+      "stock": 11
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "841337",
+      "expectedId": 41161,
+      "name": "Ricoh 841337 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D205L",
+      "expectedId": 37840,
+      "name": "Samsung MLT-D205L kompatibilný toner",
+      "stock": 16
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-325BK",
+      "expectedId": 37492,
+      "name": "Brother TN-325BK čierny kompatibilný toner",
+      "stock": 22
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-716M",
+      "expectedId": 43906,
+      "name": "Canon CRG-716M purpurový kompatibilný toner",
+      "stock": 185
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050243",
+      "expectedId": 40203,
+      "name": "Epson C13S050243 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "CF283X",
+      "expectedId": 37616,
+      "name": "HP CF283X (83X) čierny kompatibilný toner",
+      "stock": 285
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-580M",
+      "expectedId": 37758,
+      "name": "Kyocera TK-580M kompatibilný toner",
+      "stock": 4
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "50F2000",
+      "expectedId": 40676,
+      "name": "Lexmark 50F2000 originálny toner",
+      "stock": 3
+    },
+    {
+      "brand": "OKI",
+      "oem": "47095704",
+      "expectedId": 39259,
+      "name": "OKI C824 (47095704) čierny renovovaný toner",
+      "stock": 11
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "841813",
+      "expectedId": 38420,
+      "name": "Ricoh 841813 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-K504S",
+      "expectedId": 37830,
+      "name": "Samsung CLT-K504S kompatibilný toner",
+      "stock": 14
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-119",
+      "expectedId": 37919,
+      "name": "Brother TN-119 čierny originálny toner",
+      "stock": 22
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-731M",
+      "expectedId": 43907,
+      "name": "Canon CRG-731M purpurový kompatibilný toner",
+      "stock": 185
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050244",
+      "expectedId": 40202,
+      "name": "Epson C13S050244 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "W2073A",
+      "expectedId": 37687,
+      "name": "HP W2073A (117A) purpurový kompatibilný toner",
+      "stock": 271
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-580Y",
+      "expectedId": 37759,
+      "name": "Kyocera TK-580Y kompatibilný toner",
+      "stock": 4
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "51B2000",
+      "expectedId": 38266,
+      "name": "Lexmark 51B2000 originálny toner",
+      "stock": 3
+    },
+    {
+      "brand": "OKI",
+      "oem": "44844508",
+      "expectedId": 39243,
+      "name": "OKI C831 (44844508) čierny renovovaný toner",
+      "stock": 11
+    },
+    {
+      "brand": "Ricoh",
+      "oem": "D2233680",
+      "expectedId": 41174,
+      "name": "Ricoh D2233680 originálna nádobka na odpadový toner",
+      "stock": 0
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-C406S",
+      "expectedId": 37820,
+      "name": "Samsung CLT-C406S kompatibilný toner",
+      "stock": 13
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-423BK",
+      "expectedId": 37958,
+      "name": "Brother TN-423BK čierny originálny toner",
+      "stock": 22
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-045M",
+      "expectedId": 43891,
+      "name": "Canon CRG-045M purpurový kompatibilný toner",
+      "stock": 180
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050245",
+      "expectedId": 40201,
+      "name": "Epson C13S050245 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "CF279A",
+      "expectedId": 37634,
+      "name": "HP CF279A (79A) čierny kompatibilný toner",
+      "stock": 259
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-590M",
+      "expectedId": 37753,
+      "name": "Kyocera TK-590M kompatibilný toner",
+      "stock": 4
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "B222000",
+      "expectedId": 38267,
+      "name": "Lexmark B222000 originálny toner",
+      "stock": 3
+    },
+    {
+      "brand": "OKI",
+      "oem": "45862839",
+      "expectedId": 39105,
+      "name": "OKI MC853 (45862839) azúrový renovovaný toner",
+      "stock": 11
+    },
+    {
+      "brand": "Samsung",
+      "oem": "CLT-C506L",
+      "expectedId": 37835,
+      "name": "Samsung CLT-C506L kompatibilný toner",
+      "stock": 13
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-423C",
+      "expectedId": 37959,
+      "name": "Brother TN-423C azúrový originálny toner",
+      "stock": 22
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-054M",
+      "expectedId": 43890,
+      "name": "Canon CRG-054M purpurový kompatibilný toner",
+      "stock": 180
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050316",
+      "expectedId": 40212,
+      "name": "Epson C13S050316 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "CF217XXL",
+      "expectedId": 37650,
+      "name": "HP CF217XXL kompatibilný toner",
+      "stock": 248
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-3160",
+      "expectedId": 39001,
+      "name": "Kyocera TK-3160 renovovaný toner",
+      "stock": 4
+    },
+    {
+      "brand": "Lexmark",
+      "oem": "B222H00",
+      "expectedId": 38268,
+      "name": "Lexmark B222H00 originálny toner",
+      "stock": 3
+    },
+    {
+      "brand": "OKI",
+      "oem": "44574802",
+      "expectedId": 37801,
+      "name": "OKI B431 (44574802) čierny kompatibilný toner",
+      "stock": 8
+    },
+    {
+      "brand": "Samsung",
+      "oem": "MLT-D204L",
+      "expectedId": 37829,
+      "name": "Samsung MLT-D204L kompatibilný toner",
+      "stock": 13
+    },
+    {
+      "brand": "Brother",
+      "oem": "TN-423M",
+      "expectedId": 37960,
+      "name": "Brother TN-423M purpurový originálny toner",
+      "stock": 22
+    },
+    {
+      "brand": "Canon",
+      "oem": "CRG-045C",
+      "expectedId": 43885,
+      "name": "Canon CRG-045C azúrový kompatibilný toner",
+      "stock": 176
+    },
+    {
+      "brand": "Epson",
+      "oem": "C13S050317",
+      "expectedId": 40211,
+      "name": "Epson C13S050317 originálny toner",
+      "stock": 0
+    },
+    {
+      "brand": "HP",
+      "oem": "CF226A",
+      "expectedId": 37617,
+      "name": "HP CF226A (26A) čierny kompatibilný toner",
+      "stock": 242
+    },
+    {
+      "brand": "Kyocera",
+      "oem": "TK-3190",
+      "expectedId": 39003,
+      "name": "Kyocera TK-3190 renovovaný toner",
+      "stock": 4
+    }
+  ]
+}

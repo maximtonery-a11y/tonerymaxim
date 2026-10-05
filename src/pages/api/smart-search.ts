@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { compactKey, explicitlyRequestsSpecialChipVariant, getProductsCache, isSpecialChipVariantProduct, jsonResponse, normalize, sortProducts } from "../../lib/tm-products-cache.ts";
-import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, productPrinterValues } from "../../lib/catalog-query.ts";
+import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, partialProductCodeMatch, productPrinterValues, relatedPrefixPacks, searchPackPriority } from "../../lib/catalog-query.ts";
 import { entitySlug, printerBrandForName } from "../../lib/seo-catalog.ts";
 
 export const prerender = false;
@@ -651,8 +651,10 @@ function filteredStaticSuggestions(query: QueryInfo) {
   return { brands, categories };
 }
 
-function sortSuggestionProducts(items: any[]) {
+function sortSuggestionProducts(items: any[], query: string) {
   return [...items].sort((a, b) => {
+    const packDiff = searchPackPriority(b, query) - searchPackPriority(a, query);
+    if (packDiff) return packDiff;
     const relevanceDiff = Number(b.relevance || 0) - Number(a.relevance || 0);
     if (relevanceDiff) return relevanceDiff;
     const typeDiff = (TYPE_ORDER[a.type] || 99) - (TYPE_ORDER[b.type] || 99);
@@ -699,12 +701,13 @@ function findPrinterSuggestions(printers: IndexedPrinter[], query: QueryInfo) {
     });
 }
 
-function findProductSuggestions(items: IndexedProduct[], query: QueryInfo) {
-  const candidates = items.filter((item) => isLikelyCandidate(item, query));
+function findProductSuggestions(items: IndexedProduct[], query: QueryInfo, relatedPackIds = new Set<number>()) {
+  const candidates = items.filter((item) => relatedPackIds.has(item.product.id) || isLikelyCandidate(item, query));
   return sortSuggestionProducts(
     candidates
-      .map((item) => productItem(item, relevanceScore(item, query)))
+      .map((item) => productItem(item, Math.max(relatedPackIds.has(item.product.id) ? 65 : 0, relevanceScore(item, query))))
       .filter((item) => item.relevance >= 65),
+    query.raw,
   );
 }
 
@@ -742,7 +745,14 @@ export const GET: APIRoute = async ({ url }) => {
     const candidateItems = hasStructuredMatches
       ? index.items.filter((item) => exactProducts.has(item.product) || exactPrinterProducts.has(item.product) || partialPrinterProducts.has(item.product))
       : prefixCandidates;
-    const suggestedProducts = findProductSuggestions(candidateItems, query);
+    const relatedPacks = !hasStructuredMatches
+      ? relatedPrefixPacks(cache.products, candidateProducts.filter(product => partialProductCodeMatch(product, queryAnalysis)))
+      : [];
+    const relatedPackIds = new Set<number>(relatedPacks.map(product => product.id));
+    const suggestionItems = relatedPackIds.size
+      ? [...new Set([...candidateItems, ...index.items.filter(item => relatedPackIds.has(item.product.id))])]
+      : candidateItems;
+    const suggestedProducts = findProductSuggestions(suggestionItems, query, relatedPackIds);
     // Nášepkávač je súčasťou bežného katalógu. Bezčipové, OEM-čipové a
     // Hatona varianty v ňom nesmú presakovať iba preto, že sú kompatibilné
     // s nájdenou tlačiarňou. Zobrazia sa len pri výslovnom dopyte na daný typ.

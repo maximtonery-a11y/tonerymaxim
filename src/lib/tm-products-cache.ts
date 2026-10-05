@@ -2,7 +2,7 @@ import { beginCatalogSync, finishCatalogSync } from "./storefront-memory-diagnos
 import { mkdir, open, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TM_PRODUCT_CACHE_ROOT } from './runtime-paths.ts';
-import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, productPrinterValues } from './catalog-query.ts';
+import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, partialProductCodeMatch, productPrinterValues, relatedPrefixPacks, searchPackPriority } from './catalog-query.ts';
 import { normalizedCompletenessRatio, requiredProductCount } from './product-cache-policy.ts';
 import { notifyIndexNowAfterProductSync, type IndexNowResult } from './indexnow.ts';
 import { recordAndAnnotatePrices } from './price-history.ts';
@@ -1709,8 +1709,16 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
       .some((printer) => partialPrinterModelMatch(printer, searchAnalysis!))))
     : new Set<TmProduct>();
 
+  // Autocomplete accepts unfinished OEM codes. The results page must also
+  // accept them, but only when there is no exact product/printer match.
+  // Retain the strict guard for unknown full codes and all visibility filters.
+  const partialCodeProducts = searchAnalysis && !exactSearchProducts.size && !exactPrinterProducts.size && !partialPrinterProducts.size
+    ? new Set(looseCandidates.filter((product) => partialProductCodeMatch(product, searchAnalysis)))
+    : new Set<TmProduct>();
+  for (const pack of relatedPrefixPacks(products, [...partialCodeProducts])) partialCodeProducts.add(pack);
+
   const sourceProducts = search
-    ? [...new Set([...looseCandidates, ...exactSearchProducts, ...exactPrinterProducts])]
+    ? [...new Set([...looseCandidates, ...exactSearchProducts, ...exactPrinterProducts, ...partialCodeProducts])]
     : products;
   const filtered = sourceProducts.filter((product) => {
     // Služby renovácie nie sú samostatný predajný produkt a v katalógu sa nezobrazujú.
@@ -1745,8 +1753,8 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     if (filters.category && !matchesCategory(product, filters.category)) return false;
     if (printer && !matchesPrinterFilter(product, filters.printer || "")) return false;
     if (search) {
-      const hasStructuredMatches = exactSearchProducts.size > 0 || exactPrinterProducts.size > 0 || partialPrinterProducts.size > 0;
-      if (hasStructuredMatches && !exactSearchProducts.has(product) && !exactPrinterProducts.has(product) && !partialPrinterProducts.has(product)) return false;
+      const hasStructuredMatches = exactSearchProducts.size > 0 || exactPrinterProducts.size > 0 || partialPrinterProducts.size > 0 || partialCodeProducts.size > 0;
+      if (hasStructuredMatches && !exactSearchProducts.has(product) && !exactPrinterProducts.has(product) && !partialPrinterProducts.has(product) && !partialCodeProducts.has(product)) return false;
       if (hasSpecificProductReference && !hasStructuredMatches) return false;
       if (!hasStructuredMatches && !matchesLooseSearch(text, search)) return false;
     }
@@ -1762,7 +1770,8 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     return searchAnalysis.referenceTokens.some((reference) => name.includes(reference)) ? 1 : 0;
   };
   const ranked = search ? filtered.sort((left, right) =>
-    visibleReferenceRank(right) - visibleReferenceRank(left)
+    searchPackPriority(right, filters.search || '') - searchPackPriority(left, filters.search || '')
+    || visibleReferenceRank(right) - visibleReferenceRank(left)
     || Number(exactSearchScores.get(right) || 0) - Number(exactSearchScores.get(left) || 0)
     || String(left.name || "").localeCompare(String(right.name || ""), "sk")) : filtered;
 
