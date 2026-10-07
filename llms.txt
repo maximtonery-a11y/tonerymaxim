@@ -1,3 +1,0 @@
-Site: ToneryMaxim
-Primary language: sk
-Focus: printers, toners, cartridges, compatibility.
