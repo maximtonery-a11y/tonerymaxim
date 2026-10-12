@@ -1,3 +1,5 @@
+import { normalizeDpdPickup } from "./dpd-pickup.ts";
+
 const SHIPPING_CODES = new Set([
   "dpd_courier",
   "dpd_pickup",
@@ -129,16 +131,19 @@ export function validateCheckoutRequest(
   }
 
   const pickupRaw = raw?.shipping?.pickup ?? raw?.delivery?.pickup;
-  const pickup = pickupRaw && typeof pickupRaw === "object"
+  const pickupSource = pickupRaw && shippingCode.startsWith("dpd_") && (!pickupRaw.carrier || pickupRaw.carrier === "DPD")
+    ? normalizeDpdPickup(pickupRaw, shippingCode) : pickupRaw;
+  const pickup = pickupSource && typeof pickupSource === "object"
     ? {
-        carrier: text(pickupRaw.carrier, 20).toUpperCase(),
-        delivery_type: text(pickupRaw.delivery_type, 20),
-        pickup_id: text(pickupRaw.pickup_id ?? pickupRaw.id, 120),
-        pickup_name: text(pickupRaw.pickup_name ?? pickupRaw.name, 160),
-        pickup_address: text(pickupRaw.pickup_address ?? pickupRaw.address, 160),
-        pickup_city: text(pickupRaw.pickup_city ?? pickupRaw.city, 100),
-        pickup_zip: digits(pickupRaw.pickup_zip ?? pickupRaw.zip).slice(0, 5),
-        pickup_country: text(pickupRaw.pickup_country ?? pickupRaw.country ?? "SK", 3).toUpperCase(),
+        carrier: text(pickupSource.carrier, 20).toUpperCase(),
+        delivery_type: text(pickupSource.delivery_type, 20),
+        pickup_id: text(pickupSource.pickup_id ?? pickupSource.id, 120),
+        pickup_name: text(pickupSource.pickup_name ?? pickupSource.name, 160),
+        pickup_address: text(pickupSource.pickup_address ?? pickupSource.address, 160),
+        pickup_city: text(pickupSource.pickup_city ?? pickupSource.city, 100),
+        pickup_zip: digits(pickupSource.pickup_zip ?? pickupSource.zip).slice(0, 5),
+        pickup_country: text(pickupSource.pickup_country ?? pickupSource.country ?? "SK", 3).toUpperCase(),
+        ...(shippingCode.startsWith("dpd_") ? { raw_result: text(pickupSource.raw_result, 4000) } : {}),
       }
     : null;
 

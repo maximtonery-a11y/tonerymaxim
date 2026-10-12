@@ -14,6 +14,7 @@ import { canClaimPaperReward } from "./loyalty-rules";
 import { CALENDAR_SOURCE, calendarDiscountRate, calendarDiscountedUnitPrice } from "./calendar-catalog";
 import { customerProfileUpdateFromOrder } from "./checkout-customer-rules";
 import { calendarWooLineReference } from "./calendar-woo-line";
+import { normalizeDpdPickup } from "./dpd-pickup.ts";
 
 export type NormalizedCartItem = {
   id: string;
@@ -278,7 +279,9 @@ function pickupValue(pickup: any, keys: string[]) {
 }
 
 function selectedPickup(source: CheckoutOrderSource) {
-  const pickup = source.delivery?.pickup || {};
+  const original = source.delivery?.pickup || {};
+  const pickup = ["dpd_pickup", "dpd_box"].includes(source.shippingCode)
+    ? { ...original, ...normalizeDpdPickup(original, source.shippingCode) } : original;
   const id = pickupValue(pickup, ["pickup_id", "id", "parcelshop_id", "parcelShopId", "parcel_shop_id", "pudo_id", "depot", "code"]);
   const name = pickupValue(pickup, ["pickup_name", "name", "title", "company", "parcelshop_name", "parcelShopName", "shop_name"]);
   const street = pickupValue(pickup, ["pickup_address", "street", "address", "addressText", "address1", "parcelshop_address", "pickupPointAddress"]);
@@ -373,7 +376,8 @@ function orderSnapshot(source: CheckoutOrderSource, paymentTitle: string) {
     paymentLabel: paymentTitle || source.paymentLabel || "",
     total: money(source.total),
     billing: source.billing || {},
-    delivery: source.delivery || {},
+    delivery: ["dpd_pickup", "dpd_box"].includes(source.shippingCode)
+      ? { ...source.delivery, pickup: selectedPickup(source).raw } : source.delivery || {},
     contact: source.contact || {},
     orderNote: source.orderNote || "",
     heurekaConsent: source.heurekaConsent === true,
@@ -435,7 +439,7 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
     { key: "tm_terms_accepted_at", value: String(source.termsAcceptedAt || "") },
     { key: "tm_heureka_consent", value: source.heurekaConsent === true ? "1" : "0" },
     { key: "tm_heureka_consent_at", value: String(source.heurekaConsentAt || "") },
-    { key: "tm_shipping_pickup", value: JSON.stringify(source.delivery?.pickup || {}) },
+    { key: "tm_shipping_pickup", value: JSON.stringify(p.raw) },
     { key: "tm_shipping_pickup_id", value: p.id },
     { key: "tm_shipping_pickup_text", value: pickupText },
   ];
@@ -458,6 +462,17 @@ function orderMeta(source: CheckoutOrderSource, paymentId: string, isCompany: bo
       { key: "dpd_pudo_id", value: p.id },
       { key: "_dpd_pudo_id", value: p.id },
     );
+    if (["dpd_pickup", "dpd_box"].includes(source.shippingCode)) {
+      meta.push(
+        { key: "tm_shipping_pickup_name", value: p.name },
+        { key: "tm_shipping_pickup_street", value: p.street },
+        { key: "tm_shipping_pickup_city", value: p.city },
+        { key: "tm_shipping_pickup_postcode", value: p.postcode },
+        { key: "tm_shipping_pickup_country", value: p.country },
+        { key: "tm_shipping_carrier", value: "DPD" },
+        { key: "tm_shipping_pickup_type", value: p.isLocker ? "box" : "pickup" },
+      );
+    }
   }
 
   const snapshot = orderSnapshot(source, payment.title);

@@ -1,5 +1,6 @@
 import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-cart.js";
 import { orderFulfilmentText } from "../lib/product-availability.ts";
+import { normalizeDpdPickup as normalizeDpdPoint } from "../lib/dpd-pickup.ts";
 
 (() => {
   if (window.__TM_CHECKOUT_INIT__) return;
@@ -1217,63 +1218,7 @@ import { orderFulfilmentText } from "../lib/product-availability.ts";
   }
 
   function normalizeDpdPickup(widgetData) {
-    const point = widgetData?.pickupPoint || widgetData?.parcelShop || widgetData?.point || widgetData || {};
-    const rawResult = widgetData?.pickupPointResult || point?.pickupPointResult || JSON.stringify(point || {});
-
-    const id =
-      point.id ||
-      point.pudoId ||
-      point.pudo_id ||
-      point.parcelshop_id ||
-      point.parcelShopId ||
-      point.pickupPointId ||
-      point.pickup_point_id ||
-      widgetData?.id ||
-      "";
-
-    const name =
-      point.name ||
-      point.company ||
-      point.parcelshop_name ||
-      point.pickupPointName ||
-      point.title ||
-      "DPD Pickup miesto";
-
-    const streetParts = [point.street, point.houseno].filter(Boolean).join(" ").trim();
-    const street =
-      point.addressText ||
-      point.address ||
-      streetParts ||
-      point.parcelshop_address ||
-      point.pickupPointAddress ||
-      "";
-
-    const city = point.city || point.town || point.municipality || "";
-    const zip = point.zip || point.zipCode || point.postalCode || point.postal_code || "";
-    const country = point.country || point.countryCode || point.country_code || "SK";
-    const lat = point.lat || point.latitude || point.gpsLat || "";
-    const lng = point.lng || point.lon || point.longitude || point.gpsLng || "";
-    const codAllowedRaw = point.cod_allowed ?? point.codAllowed ?? point.cod ?? null;
-    const typeRaw = String(point.type || point.place || point.locationType || widgetData?.type || "").toLowerCase();
-
-    const selectedShipping = getSelected("shipping");
-
-    return {
-      carrier: "DPD",
-      delivery_type: selectedShipping === "dpd_box" || typeRaw === "locker" ? "box" : "pickup",
-      pickup_id: String(id || rawResult).trim(),
-      pickup_name: String(name).trim(),
-      pickup_address: String(street).trim(),
-      pickup_city: String(city).trim(),
-      pickup_zip: String(zip).trim(),
-      pickup_country: String(country).trim().toUpperCase(),
-      pickup_lat: String(lat).trim(),
-      pickup_lng: String(lng).trim(),
-      cod_allowed: codAllowedRaw === null ? null : String(codAllowedRaw) === "1" || codAllowedRaw === true,
-      raw_type: typeRaw,
-      raw_result: String(rawResult || "").trim(),
-      selected_at: new Date().toISOString(),
-    };
+    return normalizeDpdPoint(widgetData, getSelected("shipping"));
   }
 
   function normalizeGlsPickup(point) {
@@ -1371,9 +1316,9 @@ import { orderFulfilmentText } from "../lib/product-availability.ts";
       if (rawDpd) {
         const parsed = JSON.parse(rawDpd);
         if (parsed && parsed.carrier === "DPD" && parsed.pickup_id) {
-          selectedDpdPickup = parsed;
+          selectedDpdPickup = normalizeDpdPoint(parsed, parsed.delivery_type === "box" ? "dpd_box" : "dpd_pickup");
           const input = document.querySelector("#DPDPickupPointResult");
-          if (input) input.value = parsed.raw_result || parsed.pickup_id || "";
+          if (input) input.value = selectedDpdPickup.raw_result || selectedDpdPickup.pickup_id || "";
         }
       }
 
@@ -1775,7 +1720,7 @@ import { orderFulfilmentText } from "../lib/product-availability.ts";
       }
 
       const normalized = normalizeDpdPickup(data.dpdWidget);
-      if (!normalized.pickup_id && !normalized.raw_result) return;
+      if (!normalized.pickup_id) return;
 
       selectedDpdPickup = normalized;
       const input = document.querySelector("#DPDPickupPointResult");

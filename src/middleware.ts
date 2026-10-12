@@ -12,17 +12,19 @@ function scheduleBackgroundWorkers(): void {
   // aby v jednom Node procese nevytvoril viac časovačov.
   setTimeout(async () => {
     try {
-      const [{ ensureTonerCareWorkerStarted }, { ensureEmailQueueStarted }, { ensureFirmwareInfoWorkerStarted }, { ensureNightlyPriceWorkerStarted }] = await Promise.all([
+      const [{ ensureTonerCareWorkerStarted }, { ensureEmailQueueStarted }, { ensureFirmwareInfoWorkerStarted }, { ensureNightlyPriceWorkerStarted }, { ensureDpdPickupRepairStarted }] = await Promise.all([
         import('./lib/toner-care'),
         import('./lib/email-queue'),
         import('./lib/firmware-info'),
         import('./lib/nightly-price-worker'),
+        import('./lib/dpd-pickup-repair-worker'),
       ]);
       ensureTonerCareWorkerStarted();
       if (process.env.TM_DISABLE_BACKGROUND_WORKERS !== '1') {
         ensureEmailQueueStarted();
         ensureFirmwareInfoWorkerStarted();
         ensureNightlyPriceWorkerStarted();
+        ensureDpdPickupRepairStarted();
       }
     } catch (error) {
       globalState[BACKGROUND_WORKERS_GLOBAL_KEY] = false;
