@@ -16,7 +16,7 @@ let logs='';
 child.stdout.on('data',d=>logs+=d);
 child.stderr.on('data',d=>logs+=d);
 
-function request(path,host,options={}){return new Promise((resolve,reject)=>{const body=options.body||'';const req=http.request({host:'127.0.0.1',port,path,method:options.method||'GET',headers:{Host:host,...options.headers,...(body?{'Content-Length':Buffer.byteLength(body)}:{})},timeout:5000},res=>{let responseBody='';res.setEncoding('utf8');res.on('data',d=>responseBody+=d);res.on('end',()=>resolve({path,host,status:res.statusCode,location:res.headers.location||'',bytes:Buffer.byteLength(responseBody),body:responseBody}));});req.on('timeout',()=>req.destroy(new Error(`Timeout ${path}`)));req.on('error',reject);if(body)req.write(body);req.end();});}
+function request(path,host,options={}){return new Promise((resolve,reject)=>{const body=options.body||'';const req=http.request({host:'127.0.0.1',port,path,method:options.method||'GET',headers:{Host:host,...options.headers,...(body?{'Content-Length':Buffer.byteLength(body)}:{})},timeout:5000},res=>{let responseBody='';res.setEncoding('utf8');res.on('data',d=>responseBody+=d);res.on('end',()=>resolve({path,host,status:res.statusCode,location:res.headers.location||'',serverTiming:res.headers['server-timing']||'',bytes:Buffer.byteLength(responseBody),body:responseBody}));});req.on('timeout',()=>req.destroy(new Error(`Timeout ${path}`)));req.on('error',reject);if(body)req.write(body);req.end();});}
 function delay(ms){return new Promise(r=>setTimeout(r,ms))}
 
 try{
@@ -25,6 +25,7 @@ try{
   const results=[];
   for(const host of ['tonerymaxim.sk','www.tonerymaxim.sk'])for(const path of ['/','/kosik','/pokladna','/api/health'])results.push(await request(path,host));
   for(const r of results){if(r.status!==200)throw new Error(`${r.host}${r.path}: HTTP ${r.status}, location=${r.location}`);if(r.bytes<20)throw new Error(`${r.host}${r.path}: prázdna odpoveď`)}
+  for(const r of results)if(!/(?:^|,\s*)app;dur=\d+(?:\.\d+)?(?:$|,)/.test(r.serverTiming))throw new Error(`${r.host}${r.path}: chýba konečné serverové časovanie`);
   const cart=results.find(r=>r.path==='/kosik');
   const checkout=results.find(r=>r.path==='/pokladna');
   if(!cart.body.includes('Vaše produkty'))throw new Error('Košík nemá očakávaný obsah.');

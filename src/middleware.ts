@@ -165,8 +165,9 @@ export function liveCatalogPath(pathname: string): boolean {
     || /^\/tlaciarne\/[^/]+\/[^/]+\/?$/.test(pathname);
 }
 
-function finish(response: Response, url: URL, request?: Request): Response {
+function finish(response: Response, url: URL, request?: Request, startedAt?: number): Response {
   const headers = new Headers(response.headers);
+  if (startedAt !== undefined) headers.append('Server-Timing', `app;dur=${Math.max(0, performance.now() - startedAt).toFixed(1)}`);
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'SAMEORIGIN');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -183,6 +184,7 @@ function finish(response: Response, url: URL, request?: Request): Response {
 }
 
 export const onRequest = defineMiddleware(async ({ request, url }, next) => {
+  const startedAt = performance.now();
   // Healthcheck zostáva úplne ľahký. Prvá bežná požiadavka iba naplánuje
   // oneskorený štart workerov bez ich načítania v kritickej ceste odpovede.
   if (!['/api/health', '/api/readiness', '/api/storefront-check'].includes(url.pathname)) {
@@ -195,10 +197,10 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
     || url.pathname === '/api/readiness'
     || url.pathname === '/api/storefront-check') {
     try {
-      return finish(await next(), url, request);
+      return finish(await next(), url, request, startedAt);
     } catch (error) {
       console.error('[TM storefront] SSR request failed', url.pathname, error instanceof Error ? error.message : error);
-      return finish(temporaryUnavailable(), url, request);
+      return finish(temporaryUnavailable(), url, request, startedAt);
     }
   }
 
@@ -217,7 +219,7 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
   const rate = rateAllowed(request, url);
   if (!rate.ok) return apiError('Prilis vela poziadaviek.', 429, { 'Retry-After': String(rate.retryAfter) });
   try {
-    return finish(await next(), url, request);
+    return finish(await next(), url, request, startedAt);
   } catch (error) {
     console.error('[TM API] request failed', url.pathname, error instanceof Error ? error.message : error);
     return apiError('Sluzba je docasne nedostupna. Skuste poziadavku zopakovat.', 503, { 'Retry-After': '8' });

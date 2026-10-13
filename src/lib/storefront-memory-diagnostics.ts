@@ -37,6 +37,7 @@ export function storefrontMemoryDiagnostics() {
     __TM_PRODUCTS_FILE_CACHE__?: { generated_at?: string; products?: unknown[] };
     __TM_PRODUCT_DETAILS_CACHE__?: SizeRef;
     __TM_PRODUCTS_API_RESULT_CACHE__?: SizeRef;
+    __TM_PRINTERS_INDEX__?: SizeRef;
     __TM_PRODUCTS_SYNC_PROMISE__?: unknown;
   };
   const current = root.__TM_MEMORY_DIAGNOSTICS_V1__;
@@ -46,6 +47,7 @@ export function storefrontMemoryDiagnostics() {
     catalogProducts: globals.__TM_PRODUCTS_FILE_CACHE__?.products?.length ?? null,
     detailCacheEntries: globals.__TM_PRODUCT_DETAILS_CACHE__?.size ?? 0,
     productApiCacheEntries: globals.__TM_PRODUCTS_API_RESULT_CACHE__?.size ?? 0,
+    printerApiIndexEntries: globals.__TM_PRINTERS_INDEX__?.size ?? 0,
     // Last observed generation only; WeakRef must never keep a catalogue alive.
     printerPositiveEntries: current?.positive?.deref()?.size ?? null,
     printerNegativeEntries: current?.misses?.deref()?.size ?? null,

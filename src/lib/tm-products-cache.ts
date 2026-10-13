@@ -7,6 +7,7 @@ import { normalizedCompletenessRatio, requiredProductCount } from './product-cac
 import { notifyIndexNowAfterProductSync, type IndexNowResult } from './indexnow.ts';
 import { recordAndAnnotatePrices } from './price-history.ts';
 import { rememberProductSlugChanges } from './product-slug-history.ts';
+import { createProductCacheWriter } from './product-cache-writer.ts';
 
 export type TmProduct = Record<string, any>;
 
@@ -941,63 +942,34 @@ function safeDetailsFile(value: unknown): string {
   return /^product-details-[a-zA-Z0-9._-]+\.ndjson$/.test(file) ? file : "";
 }
 
-async function writeSplitCache(source: CacheFile, oldDetailsFile = ""): Promise<CacheFile> {
-  await mkdir(CACHE_DIR, { recursive: true });
-  const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const detailsFile = `product-details-${stamp}.ndjson`;
-  const detailsPath = path.join(CACHE_DIR, detailsFile);
-  const detailsTmp = `${detailsPath}.tmp`;
-  const cacheTmp = `${CACHE_FILE}.${stamp}.tmp`;
-  let offset = 0;
-  const products: TmProduct[] = [];
+type ProductCacheWriter = Awaited<ReturnType<typeof createProductCacheWriter>>;
 
+async function writeSplitCache(source: CacheFile, oldDetailsFile = "", staged?: ProductCacheWriter): Promise<CacheFile> {
+  const writer = staged || await createProductCacheWriter(CACHE_DIR, CACHE_FILE);
+  const products: TmProduct[] = [];
   const next: CacheFile = {
     ...source,
     version: CACHE_VERSION,
-    details_file: detailsFile,
+    details_file: writer.detailsFile,
     runtime_compact: true,
     products,
   };
-
-  let detailHandle: Awaited<ReturnType<typeof open>> | undefined;
   try {
-    detailHandle = await open(detailsTmp, "w");
-    let chunk = "";
     for (const product of source.products) {
-      const line = `${JSON.stringify(productDetail(product))}\n`;
-      const length = Buffer.byteLength(line);
+      const location = staged
+        ? { _detail_offset: product._detail_offset, _detail_length: product._detail_length }
+        : await writer.appendDetail(productDetail(product));
       const compact = runtimeProduct(product);
-      compact._detail_offset = offset;
-      compact._detail_length = length;
-      offset += length;
+      Object.assign(compact, location);
       products.push(compact);
-      chunk += line;
-      // Detailný NDJSON zapisujeme po menších blokoch. Pôvodné join() držalo
-      // počas dennej synchronizácie ďalšiu úplnú kópiu detailov v pamäti.
-      if (Buffer.byteLength(chunk) >= 512 * 1024) {
-        await detailHandle.write(chunk, undefined, "utf8");
-        chunk = "";
-      }
     }
-    if (chunk) await detailHandle.write(chunk, undefined, "utf8");
-    await detailHandle.sync();
-    await detailHandle.close();
-    detailHandle = undefined;
-
-    // Metadáta vytvárame až po naplnení kompaktného poľa produktov.
-    next.products = products;
-    await rename(detailsTmp, detailsPath);
-    await writeFile(cacheTmp, JSON.stringify(next), "utf8");
-    await rename(cacheTmp, CACHE_FILE);
-  } catch (error) {
-    await detailHandle?.close().catch(() => undefined);
-    await rm(detailsTmp, { force: true }).catch(() => undefined);
-    await rm(cacheTmp, { force: true }).catch(() => undefined);
-    throw error;
+    const { products: _products, ...metadata } = next;
+    await writer.publish(metadata, products);
+  } finally {
+    if (!staged) await writer.discard();
   }
-
   const previous = safeDetailsFile(oldDetailsFile);
-  if (previous && previous !== detailsFile) {
+  if (previous && previous !== writer.detailsFile) {
     await rm(path.join(CACHE_DIR, previous), { force: true }).catch(() => undefined);
   }
   return next;
@@ -1243,7 +1215,7 @@ async function fetchWooProductsPage(wooUrl: string, page: number) {
   throw lastError || new Error(`WooCommerce stránka ${page} zlyhala.`);
 }
 
-async function fetchAllWooProducts() {
+async function fetchAllWooProducts(detailsWriter: ProductCacheWriter) {
   const wooUrl = normalizeWooSiteUrl(env("WOO_URL"));
   const key = env("WOO_CONSUMER_KEY");
   const secret = env("WOO_CONSUMER_SECRET");
@@ -1265,7 +1237,20 @@ async function fetchAllWooProducts() {
     // až potom vytvorili runtime produkty, webový proces má naraz starú cache,
     // celý surový katalóg aj nový katalóg a môže prekročiť 512 MB. Každú stranu
     // preto normalizujeme hneď a surovú odpoveď necháme uvoľniť.
-    all.push(...result.products.map(mapProduct));
+    const mapped = result.products.map(mapProduct);
+    for (const product of mapped) {
+      // Keep full descriptions and attributes on disk from the very first page.
+      // Enrichment below uses canonical fields, aliases, plain description,
+      // and printer assignments; it does not need these large detail fields.
+      Object.assign(product, await detailsWriter.appendDetail(productDetail(product)));
+      delete product.description_html;
+      delete product.short_description_html;
+      delete product.attributes;
+      delete product.attributes_all;
+      // The final runtime search text is rebuilt after cross-product enrichment.
+      delete product.search_text;
+    }
+    all.push(...mapped);
 
     if (reportedTotalPages && page >= reportedTotalPages) break;
     if (!reportedTotalPages && result.products.length < WOO_SYNC_PER_PAGE) break;
@@ -1291,74 +1276,81 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
   const current = await readProductsCache();
   if (!options.force && current && isFresh(current)) return { cache: current, refreshed: false };
 
-  let raw: Awaited<ReturnType<typeof fetchAllWooProducts>>;
+  const detailsWriter = await createProductCacheWriter(CACHE_DIR, CACHE_FILE);
   try {
-    raw = await fetchAllWooProducts();
-  } catch (error: any) {
-    if (current?.products?.length) {
-      return {
-        cache: current,
-        refreshed: false,
-        warning: `Woo sync zlyhal, ponechaná posledná funkčná cache: ${error?.message || String(error)}`,
-      };
+    let raw: Awaited<ReturnType<typeof fetchAllWooProducts>>;
+    try {
+      raw = await fetchAllWooProducts(detailsWriter);
+    } catch (error: any) {
+      if (current?.products?.length) {
+        return {
+          cache: current,
+          refreshed: false,
+          warning: `Woo sync zlyhal, ponechaná posledná funkčná cache: ${error?.message || String(error)}`,
+        };
+      }
+      throw error;
     }
-    throw error;
-  }
 
-  const requiredProducts = requiredProductCount({
-    reportedTotal: raw.reportedTotal,
-    configuredMinimum: EXPECTED_MIN_PRODUCTS,
-    safeMinimum: MIN_SAFE_PRODUCTS,
-    completenessRatio: COMPLETENESS_RATIO,
-  });
-  if (raw.products.length < requiredProducts) {
-    const message = `Woo sync vrátil iba ${raw.products.length} produktov z ${raw.reportedTotal || "nezisteného počtu"}. Očakávam minimálne ${requiredProducts}. Cache sa neprepísala.`;
-    if (current?.products?.length) return { cache: current, refreshed: false, warning: message };
-    throw new Error(message);
-  }
-
-  const products = sortProducts(enrichProductsFromRelated(raw.products));
-  await recordAndAnnotatePrices(products).catch((error) => {
-    console.error('[TM price history] Zápis histórie zlyhal, údaj o 30-dňovej cene sa nezverejní:', error?.message || error);
-    for (const product of products) {
-      delete product.lowest_price_30d;
-      delete product.lowest_price_30d_valid;
-      delete product.price_reduction_started_at;
+    const requiredProducts = requiredProductCount({
+      reportedTotal: raw.reportedTotal,
+      configuredMinimum: EXPECTED_MIN_PRODUCTS,
+      safeMinimum: MIN_SAFE_PRODUCTS,
+      completenessRatio: COMPLETENESS_RATIO,
+    });
+    if (raw.products.length < requiredProducts) {
+      const message = `Woo sync vrátil iba ${raw.products.length} produktov z ${raw.reportedTotal || "nezisteného počtu"}. Očakávam minimálne ${requiredProducts}. Cache sa neprepísala.`;
+      if (current?.products?.length) return { cache: current, refreshed: false, warning: message };
+      throw new Error(message);
     }
-  });
-  const fullNext: CacheFile = {
-    ok: true,
-    version: CACHE_VERSION,
-    generated_at: new Date().toISOString(),
-    total: products.length,
-    woo_reported_total: raw.reportedTotal || products.length,
-    products,
-  };
 
-  // Before replacing the catalog, preserve every observed old product slug by stable Woo ID.
-  // This makes future slug changes SEO-safe: old URLs can always 301 to the product's current slug.
-  await rememberProductSlugChanges(current?.products || [], products).catch((error) => {
-    console.error('[TM slug history] Zápis histórie slugov zlyhal:', error?.message || error);
-  });
+    const products = sortProducts(enrichProductsFromRelated(raw.products));
+    await recordAndAnnotatePrices(products).catch((error) => {
+      console.error('[TM price history] Zápis histórie zlyhal, údaj o 30-dňovej cene sa nezverejní:', error?.message || error);
+      for (const product of products) {
+        delete product.lowest_price_30d;
+        delete product.lowest_price_30d_valid;
+        delete product.price_reduction_started_at;
+      }
+    });
+    const fullNext: CacheFile = {
+      ok: true,
+      version: CACHE_VERSION,
+      generated_at: new Date().toISOString(),
+      total: products.length,
+      woo_reported_total: raw.reportedTotal || products.length,
+      products,
+    };
 
-  const next = await writeSplitCache(fullNext, current?.details_file);
+    // Before replacing the catalog, preserve every observed old product slug by stable Woo ID.
+    // This makes future slug changes SEO-safe: old URLs can always 301 to the product's current slug.
+    await rememberProductSlugChanges(current?.products || [], products).catch((error) => {
+      console.error('[TM slug history] Zápis histórie slugov zlyhal:', error?.message || error);
+    });
 
-  globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
-  globalStore.__TM_PRODUCTS_FILE_PATH__ = CACHE_FILE;
-  globalStore.__TM_PRODUCTS_FILE_SIGNATURE__ = fileSignature(await stat(CACHE_FILE));
-  globalStore.__TM_PRODUCTS_FILE_STAT_AT__ = Date.now();
-  delete globalStore.__TM_PUBLIC_PRODUCTS_CACHE__;
-  delete globalStore.__TM_PRODUCTS_LOOKUP_INDEX__;
-  globalStore.__TM_PRODUCT_DETAILS_CACHE__?.clear();
-  globalStore.__TM_PRODUCTS_API_RESULT_CACHE__?.clear();
-  const indexNow = await notifyIndexNowAfterProductSync(current?.products || [], products)
-    .catch((error: any): IndexNowResult => ({
-      attempted: 0,
-      accepted: 0,
-      status: 'failed',
-      error: String(error?.message || error || 'IndexNow zlyhal').slice(0, 300),
-    }));
-  return { cache: next, refreshed: true, sync: raw, indexNow };
+    const next = await writeSplitCache(fullNext, current?.details_file, detailsWriter);
+
+    globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
+    globalStore.__TM_PRODUCTS_FILE_PATH__ = CACHE_FILE;
+    globalStore.__TM_PRODUCTS_FILE_SIGNATURE__ = fileSignature(await stat(CACHE_FILE));
+    globalStore.__TM_PRODUCTS_FILE_STAT_AT__ = Date.now();
+    delete globalStore.__TM_PUBLIC_PRODUCTS_CACHE__;
+    delete globalStore.__TM_PRODUCTS_LOOKUP_INDEX__;
+    globalStore.__TM_PRODUCT_DETAILS_CACHE__?.clear();
+    globalStore.__TM_PRODUCTS_API_RESULT_CACHE__?.clear();
+    const indexNow = await notifyIndexNowAfterProductSync(current?.products || [], products)
+      .catch((error: any): IndexNowResult => ({
+        attempted: 0,
+        accepted: 0,
+        status: 'failed',
+        error: String(error?.message || error || 'IndexNow zlyhal').slice(0, 300),
+      }));
+    return { cache: next, refreshed: true, sync: raw, indexNow };
+  } finally {
+    // Failure, truncation and retries must never leave an unpublished generation
+    // or replace the old complete catalogue. A published generation is retained.
+    await detailsWriter.discard();
+  }
 }
 
 export async function syncProductsCache(options: { force?: boolean } = {}): Promise<ProductsSyncResult> {

@@ -46,6 +46,7 @@ type PrinterItem = { title: string; brand: string; product_count: number; url: s
 
 const globalStore = globalThis as typeof globalThis & {
   __TM_PRINTERS_INDEX__?: Map<string, { generatedAt: string; items: PrinterItem[] }>;
+  __TM_PRINTERS_INDEX_GENERATION__?: string;
 };
 
 function cleanBrand(value: string) {
@@ -125,6 +126,13 @@ export function buildPrinterIndex(products: any[], selectedBrand = "") {
 function getPrinterIndex(cache: any, brand = ""): PrinterItem[] {
   const indexes = globalStore.__TM_PRINTERS_INDEX__ || new Map();
   globalStore.__TM_PRINTERS_INDEX__ = indexes;
+  if (globalStore.__TM_PRINTERS_INDEX_GENERATION__ !== cache.generated_at) {
+    indexes.clear();
+    globalStore.__TM_PRINTERS_INDEX_GENERATION__ = cache.generated_at;
+  }
+  // buildPrinterIndex only emits BRANDS. Unknown values have always produced
+  // empty results, but previously accumulated an unbounded Map of URL inputs.
+  if (brand && !BRANDS.includes(brand)) return [];
   const indexKey = brand || "__all__";
   const current = indexes.get(indexKey);
   if (current && current.generatedAt === cache.generated_at) return current.items;

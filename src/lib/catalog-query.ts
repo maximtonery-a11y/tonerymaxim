@@ -1,5 +1,5 @@
 export type CatalogProduct = Record<string, any>;
-import { sameConsumablePrinterFamily } from "./printer-model-family.ts";
+import { consumablePrinterFamilyKey } from "./printer-model-family.ts";
 
 function normalize(value: unknown) {
   return String(value || "")
@@ -34,6 +34,36 @@ export const CATALOG_BRANDS = [
   "Philips",
   "IBM",
 ] as const;
+
+// These rules are constant. Rebuilding all brand expressions for every
+// product/printer comparison blocked unrelated storefront requests.
+const BRAND_MATCHERS = CATALOG_BRANDS.map((brand) => ({
+  brand,
+  compact: compactKey(brand),
+  pattern: new RegExp(`(^|[^a-z0-9])${normalize(brand).replace(/\s+/g, "[\\s-]*")}([^a-z0-9]|$)`, "i"),
+}));
+
+type PrinterMatchMetadata = { brandKeys: string[]; family: string };
+const PRINTER_MATCH_METADATA = new Map<string, PrinterMatchMetadata>();
+const PRINTER_MATCH_METADATA_MAX = 8_192;
+
+function printerMatchMetadata(value: unknown): PrinterMatchMetadata {
+  const raw = String(value || "");
+  const cached = PRINTER_MATCH_METADATA.get(raw);
+  if (cached) return cached;
+  const next = { brandKeys: detectBrands(raw).map(compactKey), family: consumablePrinterFamilyKey(raw) };
+  // Metadata depends only on this string, so it stays correct across catalogue
+  // generations. Oversized values still match normally without being retained.
+  if (raw.length <= 512) {
+    PRINTER_MATCH_METADATA.set(raw, next);
+    while (PRINTER_MATCH_METADATA.size > PRINTER_MATCH_METADATA_MAX) {
+      const oldest = PRINTER_MATCH_METADATA.keys().next().value;
+      if (oldest === undefined) break;
+      PRINTER_MATCH_METADATA.delete(oldest);
+    }
+  }
+  return next;
+}
 
 export type CatalogQueryAnalysis = {
   raw: string;
@@ -158,12 +188,9 @@ function detectBrands(value: unknown) {
   const normalized = normalize(value);
   const compact = compactKey(value);
 
-  const detected = CATALOG_BRANDS.filter((brand) => {
-    const normalizedBrand = normalize(brand);
-    const compactBrand = compactKey(brand);
-    if (new RegExp(`(^|[^a-z0-9])${normalizedBrand.replace(/\s+/g, "[\\s-]*")}([^a-z0-9]|$)`, "i").test(normalized)) return true;
-    return compact.startsWith(compactBrand) && /\d/.test(compact.slice(compactBrand.length));
-  });
+  const detected = BRAND_MATCHERS.filter(({ pattern, compact: compactBrand }) =>
+    pattern.test(normalized) || compact.startsWith(compactBrand) && /\d/.test(compact.slice(compactBrand.length))
+  ).map(({ brand }) => brand);
 
   // Zákazníci bežne skracujú Konica Minolta iba na „Konica“.
   if (/(^|[^a-z0-9])konica([^a-z0-9]|$)/.test(normalized) && !detected.includes("Konica Minolta")) {
@@ -528,16 +555,17 @@ export function productPrinterValues(product: CatalogProduct) {
 export function exactPrinterModelMatch(value: unknown, analysis: CatalogQueryAnalysis) {
   if (!analysis.hasReference) return false;
 
-  const printerBrands = detectBrands(value);
-  if (analysis.brands.length && printerBrands.length) {
-    const hasSameBrand = analysis.brands.some((queryBrand) => printerBrands.some((printerBrand) => compactKey(queryBrand) === compactKey(printerBrand)));
+  const printer = printerMatchMetadata(value);
+  if (analysis.brands.length && printer.brandKeys.length) {
+    const hasSameBrand = analysis.brands.some((queryBrand) => printer.brandKeys.includes(compactKey(queryBrand)));
     if (!hasSameBrand) return false;
   }
 
   // Pri Xeroxe koncovky B/BI/N/DN/DNI/V označujú výbavu rovnakého modelu,
   // nie inú tonerovú rodinu. Dotaz „Xerox Phaser 3020“ preto musí zahrnúť
   // aj 3020B a 3020BI. Toto pravidlo sa zámerne nevzťahuje na HP/HP+.
-  if (sameConsumablePrinterFamily(analysis.raw, value)) return true;
+  const queryFamily = consumablePrinterFamilyKey(analysis.raw);
+  if (queryFamily && queryFamily === printer.family) return true;
 
   // Bez rozkladania M652 na všeobecné číslo 652. To je kľúčové, aby sa
   // produktové rodiny a modely tlačiarní navzájom nemiešali.
@@ -553,9 +581,9 @@ export function exactPrinterModelMatch(value: unknown, analysis: CatalogQueryAna
 export function partialPrinterModelMatch(value: unknown, analysis: CatalogQueryAnalysis) {
   if (!analysis.hasReference) return false;
 
-  const printerBrands = detectBrands(value);
-  if (analysis.brands.length && printerBrands.length) {
-    const hasSameBrand = analysis.brands.some((queryBrand) => printerBrands.some((printerBrand) => compactKey(queryBrand) === compactKey(printerBrand)));
+  const printer = printerMatchMetadata(value);
+  if (analysis.brands.length && printer.brandKeys.length) {
+    const hasSameBrand = analysis.brands.some((queryBrand) => printer.brandKeys.includes(compactKey(queryBrand)));
     if (!hasSameBrand) return false;
   }
 
