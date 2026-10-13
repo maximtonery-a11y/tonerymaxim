@@ -1,0 +1,107 @@
+{
+  "checkedCommit": "d4966875b1c8d46bb239eaa0144f3901ef2cb16c",
+  "startedAt": "2026-10-13T17:28:59.652Z",
+  "finishedAt": "2026-10-13T17:52:04.363Z",
+  "durationMinutes": 23.1,
+  "catalogProducts": 7932,
+  "exactSearchCases": 300,
+  "passedExactSearchCases": 300,
+  "additionalGetChecks": 162,
+  "serverRssMb": {
+    "start": 207,
+    "sampledMaximum": 269,
+    "final": 259
+  },
+  "serverHeapMb": {
+    "start": 100,
+    "final": 112
+  },
+  "cgroupMb": {
+    "start": 182,
+    "final": 234
+  },
+  "sameProcessThroughout": true,
+  "syncObserved": false,
+  "newSearchResponses": {
+    "n": 19,
+    "appMedianMs": 224.8,
+    "appMaxMs": 469.6,
+    "networkMedianMs": 580,
+    "networkMaxMs": 1159
+  },
+  "concurrentHomeResponseMs": {
+    "min": 511,
+    "max": 579
+  },
+  "fullDetails": [
+    {
+      "id": 52649,
+      "htmlChars": 660,
+      "attributes": 9,
+      "printers": 5
+    },
+    {
+      "id": 37640,
+      "htmlChars": 675,
+      "attributes": 9,
+      "printers": 5
+    },
+    {
+      "id": 44051,
+      "htmlChars": 686,
+      "attributes": 9,
+      "printers": 14
+    },
+    {
+      "id": 43993,
+      "htmlChars": 816,
+      "attributes": 9,
+      "printers": 4
+    },
+    {
+      "id": 37584,
+      "htmlChars": 812,
+      "attributes": 9,
+      "printers": 2
+    },
+    {
+      "id": 37856,
+      "htmlChars": 811,
+      "attributes": 9,
+      "printers": 4
+    }
+  ],
+  "unknownBrands": {
+    "requests": 40,
+    "before": 0,
+    "after": 0
+  },
+  "finalDiagnostics": {
+    "revision": "memory-v1",
+    "catalogGeneratedAt": "2026-10-13T05:07:09.499Z",
+    "catalogProducts": 7932,
+    "detailCacheEntries": 53,
+    "productApiCacheEntries": 100,
+    "printerApiIndexEntries": 4,
+    "printerPositiveEntries": 7125,
+    "printerNegativeEntries": 4,
+    "printerNegativeLimit": 512,
+    "printerNegativeTtlSeconds": 300,
+    "syncRunning": false,
+    "lastSync": null
+  },
+  "uiChecks": {
+    "cf53Products": 14,
+    "firstResultIsCompatibleCmykPack": true,
+    "detailImageLoaded": true,
+    "cartAddRemove": true,
+    "quantityTwoDiscountPercent": 10,
+    "cartCheckoutTotalsMatch": true,
+    "goPayDpdGlsOptionsVisible": true,
+    "aiRecommendedSamePack": true,
+    "aiWebsiteLinkOpensCorrectResults": true,
+    "testCartRestoredEmpty": true,
+    "orderSubmitted": false,
+    "paymentMade": false
+  }
+}
