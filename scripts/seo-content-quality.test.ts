@@ -16,20 +16,34 @@ function productNamed(pattern: RegExp) {
 }
 
 test("HP W1420XL má presný názov a vecný popis pre Google", () => {
-  const product = productNamed(/HP 142XL \(W1420XL\).*kompatibilný toner/i);
+  const product = productNamed(/HP (?:142XL \(W1420XL\)|W1420XL \(142XL\)).*kompatibilný toner/i);
   const seo = buildProductSeo(product, products);
   assert.equal(seo.title, "HP W1420XL čierny kompatibilný toner | ToneryMaxim.sk");
-  assert.match(seo.description, /HP 142XL \(W1420XL\)/i);
+  assert.match(seo.description, /HP (?:142XL \(W1420XL\)|W1420XL \(142XL\))/i);
+  if (/nefunguje v HP\+/i.test(String(product.name))) assert.match(seo.description, /nefunguje v HP\+/i);
   assert.match(seo.description, /2[ .]000 strán/i);
   assert.match(seo.description, /M110w/i);
   assert.doesNotMatch(seo.title, /toner alebo náplň/i);
 });
 
 test("sada PG-545 XL + CL-546 XL nestratí druhú náplň", () => {
-  const product = productNamed(/PG-545 XL \+ CL-546 XL/i);
+  const product = productNamed(/PG-545 XL(?: čierna)? \+ CL-546 XL/i);
   const title = buildProductSeo(product, products).title;
   assert.match(title, /PG-545 XL \+ CL-546 XL/i);
   assert.match(title, /sada (?:atramentových )?náplní/i);
+});
+
+test("kódy oboch náplní zostanú v titulku aj s farbou medzi kódom a plusom", () => {
+  for (const name of [
+    'Canon PG-545 XL + CL-546 XL originálna sada',
+    'Canon PG-545 XL čierna + CL-546 XL farebná originálna sada + GP-501',
+    'Canon PG-545 XL black + CL-546 XL colour original ink set',
+  ]) {
+    const title = buildProductSeo({ name, slug: 'canon-pair-fixture', price: '57.99', product_type_key: 'original', categories: [{ name: 'Atramentové náplne' }] } as any).title;
+    assert.match(title, /PG-545 XL \+ CL-546 XL/);
+    assert.match(title, /originálna sada/);
+    assert.ok(title.length <= 65, title);
+  }
 });
 
 test("C-EXV 21 varianty majú toner, kód aj správnu farbu", () => {
@@ -46,7 +60,21 @@ test("C-EXV 21 varianty majú toner, kód aj správnu farbu", () => {
 
 test("Merchant názvy používajú rovnakú presnú identitu a správny slovenský rod", () => {
   const merchant = buildMerchantProducts(catalog.products, "https://www.tonerymaxim.sk");
-  assert.equal(merchant.length, products.length);
+  // Indexable office supplies are valid web products but not printer-feed
+  // material. Check the actual exported rows and their exact source identities.
+  assert.ok(merchant.length > 0);
+  assert.equal(new Set(merchant.map(item => item.id)).size, merchant.length);
+  for (const item of merchant) {
+    const source = products.find((product: any) => String(product.id) === item.id);
+    assert.ok(source, `Merchant ID nemá indexovateľný zdroj: ${item.id}`);
+    assert.equal(item.name, buildProductSeo(source, products).title.replace(/ \| ToneryMaxim\.sk$/, ""));
+  }
+  const exportedUrls = new Set(merchant.map(item => item.url));
+  for (const product of products) {
+    if (!['compatible', 'original', 'renovated', 'product'].includes(String(product.product_type_key))) continue;
+    if (!/toner|atrament|optick.*valec/i.test(String(product.name))) continue;
+    assert.ok(exportedUrls.has(`https://www.tonerymaxim.sk/produkt/${encodeURIComponent(product.slug)}`), `V Merchant feede chýba náplň: ${product.name}`);
+  }
   assert.equal(merchant.filter((item) => /Kompatibilný atramentová|Originálny atramentová|Renovovaný atramentová/i.test(item.name)).length, 0);
   const w1420 = merchant.find((item) => /w1420xl/i.test(item.slug));
   assert.equal(w1420?.name, "HP W1420XL čierny kompatibilný toner");

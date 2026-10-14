@@ -232,7 +232,9 @@ function codeFromProductName(product: TmProduct): string {
 
   // Sady dvoch rôznych kaziet nesmú v titulku stratiť druhý kód
   // (napr. Canon PG-545 XL + CL-546 XL).
-  const pair = name.match(/\b([A-Z]{1,6}-?\d{2,5}[A-Z]*)\s*(XL|XXL)?\s*\+\s*([A-Z]{1,6}-?\d{2,5}[A-Z]*)\s*(XL|XXL)?\b/i);
+  // Suppliers may label each cartridge's colour between its code and "+".
+  const pairName = name.replace(/(?:^|\s)(?:black|colour|color|čierna|čierny|farebná|farebný)(?=\s|$)/gi, ' ');
+  const pair = pairName.match(/\b([A-Z]{1,6}-?\d{2,5}[A-Z]*)\s*(XL|XXL)?\s*\+\s*([A-Z]{1,6}-?\d{2,5}[A-Z]*)\s*(XL|XXL)?\b/i);
   if (pair) {
     const first = `${pair[1]}${pair[2] ? ` ${pair[2]}` : ""}`.toUpperCase();
     const second = `${pair[3]}${pair[4] ? ` ${pair[4]}` : ""}`.toUpperCase();

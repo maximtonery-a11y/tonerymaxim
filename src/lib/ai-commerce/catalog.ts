@@ -166,15 +166,16 @@ export async function resolveCommerceProducts(query: string, snapshot?: Awaited<
   // štruktúrovaných priradení, takže produkt nemôže vypadnúť iba preto, že
   // jeho skrátený search_text neobsahuje celý model.
   const loose = filterProducts(allProducts, { search: query });
+  const assignmentIndex = printerAssignmentIndex(allProducts);
+  const directlyAssigned = assignmentIndex.exact.get(normalizedQuery) || [];
   // "Epson 102" is a named ink family, not a shortened XP-102 printer.
-  // Prefer its exact product identities when a brand + numeric family exists.
+  // A fully assigned numeric printer such as Xerox 700 remains authoritative;
+  // product titles containing that printer may also name drums or spare parts.
   const explicitNumericFamily = /^\s*(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh)\s+\d{2,4}[a-z]{0,3}\s*$/i.test(query);
-  const familyIdentities = explicitNumericFamily
+  const familyIdentities = explicitNumericFamily && !directlyAssigned.length
     ? findExactProductIdentityMatches(allProducts, query).map(m => m.product)
       .filter(isValidOffer).filter((product: any) => !isPrinterDevice(product))
     : [];
-  const assignmentIndex = printerAssignmentIndex(allProducts);
-  const directlyAssigned = assignmentIndex.exact.get(normalizedQuery) || [];
   const familyAssigned = assignmentIndex.family.get(consumablePrinterFamilyKey(query)) || [];
   const structuredLoose = findExactPrinterModelMatches(loose, query).map(m => m.product);
   // Širší rodinný alias musí zachovať produktovú radu. Samsung C430W sa má

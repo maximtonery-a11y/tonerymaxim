@@ -972,7 +972,7 @@ function safeDetailsFile(value: unknown): string {
 
 type ProductCacheWriter = Awaited<ReturnType<typeof createProductCacheWriter>>;
 
-async function writeSplitCache(source: CacheFile, oldDetailsFile = "", staged?: ProductCacheWriter): Promise<CacheFile> {
+async function writeSplitCache(source: CacheFile, staged?: ProductCacheWriter): Promise<CacheFile> {
   const writer = staged || await createProductCacheWriter(CACHE_DIR, CACHE_FILE);
   // Staged products are private to this import. Reuse them instead of keeping
   // a second object for every product beside the old live generation.
@@ -997,10 +997,6 @@ async function writeSplitCache(source: CacheFile, oldDetailsFile = "", staged?: 
     await writer.publish(metadata, products);
   } finally {
     if (!staged) await writer.discard();
-  }
-  const previous = safeDetailsFile(oldDetailsFile);
-  if (previous && previous !== writer.detailsFile) {
-    await rm(path.join(CACHE_DIR, previous), { force: true }).catch(() => undefined);
   }
   return next;
 }
@@ -1097,9 +1093,9 @@ async function compactLargeCacheFile(file:string):Promise<void>{
   }catch(error){await output.close().catch(()=>undefined);await handle.close().catch(()=>undefined);await rm(temp,{force:true}).catch(()=>undefined);throw error;}
 }
 
-export async function readProductsCache(): Promise<CacheFile | null> {
+export async function readProductsCache(options: { forceDiskRead?: boolean } = {}): Promise<CacheFile | null> {
   if (globalStore.__TM_PRODUCTS_READ_PROMISE__) return globalStore.__TM_PRODUCTS_READ_PROMISE__;
-  if (globalStore.__TM_PRODUCTS_FILE_CACHE__) {
+  if (!options.forceDiskRead && globalStore.__TM_PRODUCTS_FILE_CACHE__) {
     if (!(await productCacheFileChanged())) return globalStore.__TM_PRODUCTS_FILE_CACHE__;
     clearRuntimeProductCaches();
   }
@@ -1360,7 +1356,7 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
       console.error('[TM slug history] Zápis histórie slugov zlyhal:', error?.message || error);
     });
 
-    const next = await writeSplitCache(fullNext, current?.details_file, detailsWriter);
+    const next = await writeSplitCache(fullNext, detailsWriter);
     sampleCatalogSync('publication');
 
     globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
@@ -1371,6 +1367,13 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
     delete globalStore.__TM_PRODUCTS_LOOKUP_INDEX__;
     globalStore.__TM_PRODUCT_DETAILS_CACHE__?.clear();
     globalStore.__TM_PRODUCTS_API_RESULT_CACHE__?.clear();
+    // Readers that already hold the previous catalogue can still be opening
+    // its detail file. Make the new generation available before retiring it;
+    // getProductFromCache retries the entire lookup if that open loses the race.
+    const previous = safeDetailsFile(current?.details_file);
+    if (previous && previous !== next.details_file) {
+      await rm(path.join(CACHE_DIR, previous), { force: true }).catch(() => undefined);
+    }
     const indexNow = await notifyIndexNowAfterProductSync(current?.products || [], products)
       .catch((error: any): IndexNowResult => ({
         attempted: 0,
@@ -1460,13 +1463,38 @@ function getProductLookupIndex(cache: CacheFile) {
 }
 
 export async function getProductFromCache(input: { id?: unknown; slug?: unknown }) {
-  const cache = await getProductsCache();
-  const index = getProductLookupIndex(cache);
+  let cache = await getProductsCache();
   const id = String(input.id || "").trim();
   const slug = String(input.slug || "").trim();
-  const compactProduct = (id ? index.byId.get(id) : undefined) || (slug ? index.bySlug.get(slug) : undefined) || null;
-  const product = compactProduct ? await loadProductDetail(cache, compactProduct) : null;
-  return { cache, product };
+  for (let attempt = 0; ; attempt++) {
+    const index = getProductLookupIndex(cache);
+    const compactProduct = (id ? index.byId.get(id) : undefined) || (slug ? index.bySlug.get(slug) : undefined) || null;
+    if (!compactProduct) return { cache, product: null };
+    try {
+      return { cache, product: await loadProductDetail(cache, compactProduct) };
+    } catch (error: any) {
+      if (error?.code !== 'ENOENT') throw error;
+      if (attempt < 2) {
+        const current = globalStore.__TM_PRODUCTS_FILE_CACHE__;
+        const latest = current && current.details_file !== cache.details_file
+          ? current : await readProductsCache({ forceDiskRead: true });
+        if (latest && latest.details_file !== cache.details_file) {
+          // Price, offsets, HTML and response metadata must all use the same
+          // catalogue. Retrying only the file read would mix generations.
+          cache = publicCatalogCache(latest);
+          continue;
+        }
+      }
+      // An actually missing/corrupt detail file still has the prior graceful
+      // fallback. Never turn that existing recovery into a storefront 500.
+      return { cache, product: compactProductDetail(compactProduct) };
+    }
+  }
+}
+
+function compactProductDetail(product: TmProduct): TmProduct {
+  return canonicalWarrantyProduct({ ...product, attributes_all: Array.isArray(product.attributes) ? product.attributes : [],
+    printers: Array.isArray(product.compatible_printers) ? product.compatible_printers : [] });
 }
 
 function canonicalWarrantyProduct(product: TmProduct): TmProduct {
@@ -1517,7 +1545,8 @@ async function loadProductDetail(cache: CacheFile, product: TmProduct): Promise<
       detailCache.delete(oldest);
     }
     return merged;
-  } catch {
+  } catch (error: any) {
+    if (error?.code === 'ENOENT') throw error;
     return canonicalWarrantyProduct({ ...product, ...aliases });
   } finally {
     await handle?.close().catch(() => undefined);

@@ -37,6 +37,8 @@ const fixtures = [
   product(36585, 'Epson T1812XL kompatibilná atramentová náplň', '2.36', ['Epson Home XP-102'], 'Azúrová'),
   product(55010, 'Canon PFI-120BK čierna originálna atramentová náplň', '85.80', ['Canon imagePROGRAF TM-200'], 'Čierna', 'original'),
   product(55011, 'Epson T3357 (33XL) 5-farebná kompatibilná sada atramentových náplní', '11.20', ['Epson XP-530'], 'CMYK'),
+  product(41401, 'Xerox 700 (006R01379) čierny originálny toner', '120.00', ['Xerox 700', 'Xerox 700I'], 'Čierna', 'original'),
+  product(41434, 'Xerox 700 (013R00655) originálny optický valec', '140.00', ['Xerox 700', 'Xerox 700I'], '', 'original'),
   { ...product(53300, 'Lexmark 56F2H0E čierny kompatibilný toner', '30.00', []), capacity: '' },
   { ...product(53282, 'Kompatibilný toner pre Lexmark 56F2X0E Black 20000 strán', '299.64', []), sku: '16043', capacity: '' },
 ];
@@ -67,6 +69,19 @@ test('Epson 102 ink family wins over XP-102 but explicit XP-102 remains a printe
   const printer = await resolveCommerceProducts('Epson XP-102');
   assert.equal(printer.source, 'printer');
   assert.deepEqual(printer.products.map(p => p.id), [36585]);
+});
+
+test('exact numeric printers offer consumables while explicit drum codes and SKUs remain available', async () => {
+  for (const query of ['Xerox 700', 'Xerox 700I']) {
+    const result = await resolveCommerceProducts(query);
+    assert.equal(result.source, 'printer', query);
+    assert.deepEqual(result.products.map(p => p.id), [41401], query);
+  }
+  for (const query of ['013R00655', 'SKU-41434']) {
+    const result = await resolveCommerceProducts(query);
+    assert.equal(result.source, 'product', query);
+    assert.deepEqual(result.products.map(p => p.id), [41434], query);
+  }
 });
 
 test('Canon pack quote, repeat, follow-up and explicit purchase use the same real product', async () => {

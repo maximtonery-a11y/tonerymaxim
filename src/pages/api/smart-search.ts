@@ -6,6 +6,7 @@ import { entitySlug, printerBrandForName } from "../../lib/seo-catalog.ts";
 export const prerender = false;
 
 const BRANDS = ["HP", "Canon", "Brother", "Epson", "Xerox", "Samsung", "Lexmark", "Kyocera", "OKI", "Ricoh", "Utax", "Toshiba", "Panasonic", "Dell", "Konica Minolta", "Sharp", "Pantum", "Philips", "IBM"];
+const NORMALIZED_BRANDS = BRANDS.map(brand => ({ brand, text: normalize(brand) }));
 const CATEGORIES = [
   { label: "Tonery", value: "tonery" },
   { label: "Atramentové náplne", value: "atramentove-naplne" },
@@ -89,7 +90,7 @@ globalStore.__TM_SMART_SEARCH_RESULT_CACHE__ = resultCache;
 
 function productBrand(product: any) {
   const text = normalize(`${product.name || ""} ${product.sku || ""} ${(product.categories || []).map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ")}`);
-  return BRANDS.find((brand) => text.includes(normalize(brand))) || "";
+  return NORMALIZED_BRANDS.find(brand => text.includes(brand.text))?.brand || "";
 }
 
 function words(value: unknown) {
@@ -302,6 +303,7 @@ function addPrefix(prefixMap: Map<string, number[]>, prefix: string, index: numb
 // Malá dávka drží najdlhší CPU úsek hlboko pod timeoutom reverznej proxy
 // aj na slabšom VPS. Celkový index je rovnaký, medzi dávkami iba pustíme I/O.
 const INDEX_BUILD_BATCH_SIZE = 25;
+const INDEX_BUILD_MAX_CPU_MS = 8;
 
 function yieldToRequests() {
   return new Promise<void>((resolve) => setImmediate(resolve));
@@ -309,11 +311,14 @@ function yieldToRequests() {
 
 async function buildPrefixMap(items: IndexedProduct[]) {
   const prefixMap = new Map<string, number[]>();
+  let sliceStarted = performance.now();
 
   for (let itemIndex = 0; itemIndex < items.length; itemIndex += 1) {
     const item = items[itemIndex];
     for (const token of item.candidateTokens || []) {
-      const compact = compactKey(token);
+      // makeIndexedProduct already compacts every candidate token (including
+      // printer fragments). Avoid normalizing the same token a second time.
+      const compact = token;
       if (compact.length < 2) continue;
       const max = Math.min(10, compact.length);
       for (let len = 2; len <= max; len += 1) addPrefix(prefixMap, compact.slice(0, len), item.index);
@@ -321,7 +326,10 @@ async function buildPrefixMap(items: IndexedProduct[]) {
       // Modelové kódy ľudia často zadávajú bez začiatku alebo s pomlčkou, preto pridáme aj celý kompaktný token.
       if (/\d/.test(compact)) addPrefix(prefixMap, compact, item.index);
     }
-    if ((itemIndex + 1) % INDEX_BUILD_BATCH_SIZE === 0) await yieldToRequests();
+    if ((itemIndex + 1) % INDEX_BUILD_BATCH_SIZE === 0 && performance.now() - sliceStarted >= INDEX_BUILD_MAX_CPU_MS) {
+      await yieldToRequests();
+      sliceStarted = performance.now();
+    }
   }
 
   return prefixMap;
@@ -331,13 +339,18 @@ async function buildSearchIndex(cache: any): Promise<SearchIndexCache> {
   const printerMap = new Map<string, IndexedPrinter>();
   const sortedProducts = sortProducts(cache.products);
   const items: IndexedProduct[] = [];
+  let sliceStarted = performance.now();
   for (let index = 0; index < sortedProducts.length; index += 1) {
     items.push(makeIndexedProduct(sortedProducts[index], index, printerMap));
-    if ((index + 1) % INDEX_BUILD_BATCH_SIZE === 0) await yieldToRequests();
+    if ((index + 1) % INDEX_BUILD_BATCH_SIZE === 0 && performance.now() - sliceStarted >= INDEX_BUILD_MAX_CPU_MS) {
+      await yieldToRequests();
+      sliceStarted = performance.now();
+    }
   }
   const printers = [...printerMap.values()];
   const prefixMap = await buildPrefixMap(items);
   const codes = new Map<string, string>();
+  sliceStarted = performance.now();
   for (let itemIndex = 0; itemIndex < items.length; itemIndex += 1) {
     const item = items[itemIndex];
     const product = item.product || {};
@@ -357,7 +370,10 @@ async function buildSearchIndex(cache: any): Promise<SearchIndexCache> {
         if (!codes.has(key)) codes.set(key, clean);
       }
     }
-    if ((itemIndex + 1) % INDEX_BUILD_BATCH_SIZE === 0) await yieldToRequests();
+    if ((itemIndex + 1) % INDEX_BUILD_BATCH_SIZE === 0 && performance.now() - sliceStarted >= INDEX_BUILD_MAX_CPU_MS) {
+      await yieldToRequests();
+      sliceStarted = performance.now();
+    }
   }
   // Kandidátske tokeny sú potrebné iba počas zostavenia prefixovej mapy.
   // Ich ďalšie držanie v RAM zdvojuje časť vyhľadávacieho indexu.
