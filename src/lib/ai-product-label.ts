@@ -11,6 +11,9 @@ const reference = /\b(?=[a-z0-9_-]{4,}\b)(?=[a-z0-9_-]*[a-z])(?=[a-z0-9_-]*\d)[a
 export function customerProductLabel(productQuery: unknown, message: unknown, source: unknown) {
   const query = clean(productQuery);
   if (String(source || '') === 'printer') return query || clean(message);
+  // A routed "Epson 104" family must keep its label even when the question
+  // also mentions a printer such as L3250.
+  if (/^(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh)\s+\d{2,4}[a-z]{0,3}$/i.test(query)) return query;
 
   // Router môže opraviť zákaznícky prepis na kanonický kód (napr. D1111 na
   // MLT-D111S), preto má samostatný kód z productQuery prednosť.

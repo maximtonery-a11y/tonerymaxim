@@ -37,6 +37,14 @@
   align-items: start;
 }
 
+/* Author display rules must never override the empty-cart guard. */
+.checkout-layout[hidden],
+.checkout-empty[hidden],
+.checkout-mobile-guide[hidden],
+.checkout-mobile-sticky[hidden] {
+  display: none !important;
+}
+
 .checkout-form {
   display: grid;
   gap: 18px;

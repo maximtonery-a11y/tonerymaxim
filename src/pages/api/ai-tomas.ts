@@ -152,10 +152,19 @@ export const POST: APIRoute = async ({ request }) => {
     }
     const ambiguousCode=ambiguousNumericReference(message,state);
     if(ambiguousCode){
-      const answer=`Označenie ${ambiguousCode} nie je bez značky alebo modelu tlačiarne jednoznačné. Napíšte, prosím, značku a celý OEM kód náplne alebo značku a presný model tlačiarne. Podľa neúplného čísla hádať nebudem.`;
+      const answer=`Označenie ${ambiguousCode} nie je bez značky alebo modelu tlačiarne jednoznačné. Napíšte, prosím, výrobcu a model tlačiarne zo štítku alebo značku a celý OEM kód náplne. Podľa neúplného čísla hádať nebudem.`;
       state.lastIntent='ADVICE';state.lastProductQuery=null;state.currentType=null;state.currentColor=null;state.currentPrinter=null;state.currentProductId=null;state.selectedProductId=null;state.pendingQuestion=null;
       state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
       return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRODUCT'}},{headers:{'Cache-Control':'no-store'}});
+    }
+    const shortHpCode=normalized(message).match(/\b(\d{2,3}[ax])\b/)?.[1];
+    const unknownPrinter=/\b(?:neviem|nepoznam)\b(?:\s+\w+){0,3}\s+\bmodel\w*\b|\bmodel\w*\b(?:\s+\w+){0,3}\s+\b(?:neviem|nepoznam)\b/.test(normalized(message));
+    if(shortHpCode&&unknownPrinter&&/\bhp\b/.test(normalized(message))
+      && !/\b(?:cf|ce|q|w)[- ]?\d{3,}[a-z0-9]*\b/.test(normalized(message))){
+      const answer=`Pri skrátenom označení ${shortHpCode.toUpperCase()} potrebujem potvrdiť presný model tlačiarne HP alebo celý OEM kód z kazety. Pozrite, prosím, výrobný štítok tlačiarne alebo označenie kazety; podľa neúplného údaja kompatibilitu nepotvrdím.`;
+      state.lastProductQuery=null;state.currentProductId=null;state.selectedProductId=null;state.pendingQuestion=null;state.currentPrinter=null;state.currentType=null;state.currentColor=null;
+      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
+      return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
     }
     if (isGeneralDiaryQuestion(message)) {
       const answer = [
@@ -329,7 +338,10 @@ export const POST: APIRoute = async ({ request }) => {
     }
     // Apply a requested single colour before EVERY purchase branch, including
     // a previously selected ID. Never fall back to a different colour.
-    const setRequest=wantsCompleteSet(message)||Boolean((state.checkoutDraft as any)?.guidedSet&&wasPendingType);
+    const previousSelection=candidates.find((p:any)=>String(p.id)===String(state.selectedProductId||state.currentProductId||''));
+    const rememberedSet=!isNewProduct&&!color&&isPackProduct(previousSelection);
+    const exactSet=candidates.length===1&&isPackProduct(candidates[0])&&!color;
+    const setRequest=wantsCompleteSet(message)||Boolean((state.checkoutDraft as any)?.guidedSet&&wasPendingType)||rememberedSet||exactSet;
     if(state.currentColor&&commerce&&commerce.source!=='calendar'&&!setRequest){
       const beforeColor=candidates;
       candidates=candidates.filter((p:any)=>p.color===state.currentColor&&!isPackProduct(p));
@@ -350,14 +362,16 @@ export const POST: APIRoute = async ({ request }) => {
     // motív/rozmer. Nikdy svojvoľne neotvoríme množstvo prvého výsledku.
     const ambiguousCalendarSelection = calendarRoute && candidates.filter(canBuy).length > 1;
     const singleCandidates=candidates.filter((p:any)=>!isPackProduct(p));
-    const selected=singleCandidates.find((p:any)=>canBuy(p)&&String(p.id)===String(state.selectedProductId||state.currentProductId||''))
+    const completeSetRequested=setRequest;
+    const completeSet=completeSetRequested?chooseCompleteSet(commerce?.presentation?.sets||[],state.currentType,message):null;
+    // One identity drives the visible offer, quote, follow-up and cart action.
+    // Never quote a single colour while presenting the CMYK pack below it.
+    const selected=completeSetRequested ? completeSet?.products[0] || null : singleCandidates.find((p:any)=>canBuy(p)&&String(p.id)===String(state.selectedProductId||state.currentProductId||''))
       || singleCandidates.find((p:any)=>canBuy(p)&&(!state.currentType||p.type===state.currentType)&&(!state.currentColor||p.color===state.currentColor))
       || null;
     if(selected&&!ambiguousCalendarSelection){state.currentProductId=String(selected.id);if((type&&!wasPendingType)||color||route.intents.includes('BUY_INTENT'))state.selectedProductId=String(selected.id);}
     const n=normalized(message);const qty=requestedQuantity(message);let action:any=null;
-    const completeSetRequested=wantsCompleteSet(message)||Boolean((state.checkoutDraft as any)?.guidedSet&&wasPendingType);
     if(commerce?.presentation)commerce={...commerce,presentation:{...commerce.presentation,setIntent:completeSetRequested}};
-    const completeSet=completeSetRequested?chooseCompleteSet(commerce?.presentation?.sets||[],state.currentType,message):null;
     if(!cartMutationForbidden&&wasPendingQuantity&&qty&&selected){state.pendingQuestion=null;const total=upsertCart(state,selected,qty);action={kind:'ADD_TO_CART',product:selected,quantity:qty};advisor={...advisor,answer:[`Pridal som ${qty} ks produktu ${selected.name} do nákupu. ${fulfilmentSentence(selected,total)}`]};commerce=null;}
     else if(wasPendingType&&type){
       const guidedQty=Number(qty||(state.checkoutDraft as any)?.guidedQuantity||0);
@@ -410,7 +424,7 @@ export const POST: APIRoute = async ({ request }) => {
       }else{
         const productLabel=customerProductLabel(route.productQuery||state.lastProductQuery,message,commerce?.source);
         commerce={...commerce,products:[],presentation:{...(commerce.presentation||{}),sets:[],colors:[]}};
-        advisor={...advisor,answer:[`Pre ${productLabel} som v aktuálnom katalógu nenašiel samostatný hotový produkt požadovanej sady. Jednotlivé farby som nespojil ani nezobrazil ako náhradu.`],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false};
+        if(!requestedTypeUnavailable)advisor={...advisor,answer:[`Pre ${productLabel} som v aktuálnom katalógu nenašiel samostatný hotový produkt požadovanej sady. Jednotlivé farby som nespojil ani nezobrazil ako náhradu.`],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false};
       }
     }
     if(cartMutationForbidden){
@@ -435,6 +449,11 @@ export const POST: APIRoute = async ({ request }) => {
     if(commerce&&commerce?.source!=='calendar'){
       const productLabel=customerProductLabel(route.productQuery||state.lastProductQuery,message,commerce?.source);
       commerce={...commerce,queryLabel:productLabel};
+    }
+    const missingCompatibility=[...(commerce?.products||[]),...(action?.product?[action.product]:[])].filter((p:any)=>!(p.compatible_printers||[]).length&&commerce?.source!=='calendar'&&!calendarRoute);
+    if(missingCompatibility.length){
+      const names=missingCompatibility.slice(0,3).map((p:any)=>p.name).join('; ');
+      advisor={...advisor,answer:[...(advisor.answer||[]),`Pri produkte ${names} chýba v katalógu zoznam kompatibilných tlačiarní. Kompatibilitu s vaším modelom nemám potvrdenú; pred objednaním ju overte s nami podľa presného modelu tlačiarne.`]};
     }
     if(advisor?.unanswered===true||advisor?.intent==='fallback'||Number(advisor?.confidence||0)<0.35){void saveAiUnanswered({message,page,intent:String(advisor?.intent||'fallback'),confidence:Number(advisor?.confidence||0),kind:advisor?.unanswered===true||advisor?.intent==='fallback'?'unknown_question':'low_confidence'}).catch(()=>undefined);}
     state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:(advisor.answer||[]).join(' ')}].slice(-20);

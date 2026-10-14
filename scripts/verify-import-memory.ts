@@ -1,5 +1,5 @@
-// Offline, two-generation import benchmark. No production services are called.
-// node --expose-gc --experimental-strip-types scripts/verify-import-memory.ts [repo-root]
+// Offline repeated import benchmark with natural garbage collection.
+// node --experimental-strip-types scripts/verify-import-memory.ts [repo-root] [generations]
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -14,6 +14,7 @@ Object.assign(process.env, { TM_CACHE_DIR: directory, WOO_URL: 'https://example.
   WOO_SYNC_MIN_PRODUCTS: '1', WOO_SYNC_EXPECTED_MIN_PRODUCTS: '1', WOO_SYNC_PAGE_DELAY_MS: '120', TM_DISABLE_INDEXNOW: '1' });
 delete process.env.TM_PERSISTENT_DATA_DIR;
 const count = 2_500;
+const generations = Math.max(1, Math.min(30, Number(process.argv[3]) || 3));
 let generation = 1;
 const originalFetch = globalThis.fetch;
 globalThis.fetch = async (input: any) => {
@@ -42,22 +43,28 @@ function canonical(value: any): any {
 try {
   const { syncProductsCache, getProductsCache, getProductFromCache } = await import(pathToFileURL(join(root, 'src/lib/tm-products-cache.ts')).href);
   const durations = [];
-  for (generation = 1; generation <= 2; generation++) {
+  const samples = [];
+  const mb = (bytes: number) => Math.round(bytes / 1048576);
+  for (generation = 1; generation <= generations; generation++) {
     const start = performance.now();
     await syncProductsCache({ force: true });
     durations.push(Math.round(performance.now() - start));
-    (globalThis as any).gc?.();
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const memory = process.memoryUsage();
+    const sample = { generation, durationMs: durations.at(-1), rssMb: mb(memory.rss), heapMb: mb(memory.heapUsed), externalMb: mb(memory.external), peakRssMb: Math.round(process.resourceUsage().maxRSS / 1024) };
+    samples.push(sample);
+    console.log('GENERATION ' + JSON.stringify(sample));
   }
   const memory = process.memoryUsage();
   const peakRssMb = Math.round(process.resourceUsage().maxRSS / 1024);
   const cache = await getProductsCache();
   const runtime = cache.products.map(({ _detail_offset, _detail_length, ...product }: any) => canonical(product));
   const hash = createHash('sha256').update(JSON.stringify(runtime));
-  for (const id of [1, 100, 501, 1250, 2500]) {
+  for (const id of Array.from({ length: count }, (_, n) => n + 1)) {
     const { product } = await getProductFromCache({ id });
     assert.ok(product && product.description_html && product.attributes.length >= 10);
     hash.update(JSON.stringify(canonical({ description_html: product.description_html, short_description_html: product.short_description_html, attributes: product.attributes })));
   }
-  console.log(JSON.stringify({ products: cache.total, generations: 2, durationsMs: durations, peakRssMb,
+  console.log(JSON.stringify({ products: cache.total, generations, forcedGc: false, checkedCompleteDetails: count, samples, durationsMs: durations, peakRssMb,
     rssMb: Math.round(memory.rss / 1048576), heapMb: Math.round(memory.heapUsed / 1048576), dataSha256: hash.digest('hex') }));
 } finally { globalThis.fetch = originalFetch; await rm(directory, { recursive: true, force: true }); }

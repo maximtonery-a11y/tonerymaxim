@@ -221,7 +221,10 @@ function brandlessQuery(value: string, brands: string[]) {
 }
 
 function referenceTokensFromQuery(value: string, brands: string[]) {
-  const withoutBrand = brandlessQuery(value, brands);
+  // Order quantities are not OEM/model references. Otherwise "3 ks a 4 ks"
+  // creates synthetic codes such as "a4" and steals a quote's follow-up.
+  const withoutQuantities = value.replace(/\b\d{1,3}\s*(?:ks|kus|kusy|kusov)\b/gi, ' ');
+  const withoutBrand = brandlessQuery(withoutQuantities, brands);
   const aliases = referenceAliases(withoutBrand.normalized, false);
   // Zachovaj explicitné prefixové kódy aj vo vetách. Samotný tokenizer môže
   // pri „Hľadám MC-G02 odpadovú nádobu“ vidieť iba koncovku G02; celý OEM
@@ -233,19 +236,24 @@ function referenceTokensFromQuery(value: string, brands: string[]) {
   // Celý kompaktný zápis je užitočný pri samotnom kóde (CRG-054, HP305),
   // ale nie pri bežnej vete. Zo súvislej vety by vznikol jeden obrovský
   // alfanumerický token, ktorý následne potlačí presný číselný kód.
-  const compactTokens = alphanumericTokens(withoutBrand.normalized);
+  const compactTokens = alphanumericTokens(withoutBrand.normalized)
+    .filter((token) => !QUERY_FILLER_WORDS.has(token));
   const isStandaloneCode = compactTokens.length > 0 && compactTokens.length <= 2
+    && compactTokens.filter((token) => /\d/.test(token)).length === 1
     && compactTokens.every((token) => /\d/.test(token) || /^[a-z]{1,4}$/.test(token));
-  if (withoutBrand.compact && /\d/.test(withoutBrand.compact) && isStandaloneCode) {
-    aliases.add(withoutBrand.compact);
+  // Use only the code tokens: "Máte HP CF230X?" must not become
+  // "matehpcf230x" and then discard its real CF230X reference.
+  const standaloneCode = compactTokens.join('');
+  if (isStandaloneCode) {
+    aliases.add(standaloneCode);
     // Pri krátkom presnom kóde nesmie jeho koncovka fungovať ako druhý,
     // všeobecný OEM kód. MC-G02 tak zostane mcg02 a nevytvorí aj alias g02,
     // ktorý predtým priťahoval Konica A0WG02H. Rovnako WT-223CL nesmie
     // degradovať na všeobecné 223cl.
-    if (/[a-z]/.test(withoutBrand.compact)) {
+    if (/[a-z]/.test(standaloneCode)) {
       for (const token of [...aliases]) {
-        if (token !== withoutBrand.compact && token.length >= 2
-          && (withoutBrand.compact.startsWith(token) || withoutBrand.compact.endsWith(token))) aliases.delete(token);
+        if (token !== standaloneCode && token.length >= 2
+          && (standaloneCode.startsWith(token) || standaloneCode.endsWith(token))) aliases.delete(token);
       }
     }
   }

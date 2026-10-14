@@ -166,6 +166,13 @@ export async function resolveCommerceProducts(query: string, snapshot?: Awaited<
   // štruktúrovaných priradení, takže produkt nemôže vypadnúť iba preto, že
   // jeho skrátený search_text neobsahuje celý model.
   const loose = filterProducts(allProducts, { search: query });
+  // "Epson 102" is a named ink family, not a shortened XP-102 printer.
+  // Prefer its exact product identities when a brand + numeric family exists.
+  const explicitNumericFamily = /^\s*(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh)\s+\d{2,4}[a-z]{0,3}\s*$/i.test(query);
+  const familyIdentities = explicitNumericFamily
+    ? findExactProductIdentityMatches(allProducts, query).map(m => m.product)
+      .filter(isValidOffer).filter((product: any) => !isPrinterDevice(product))
+    : [];
   const assignmentIndex = printerAssignmentIndex(allProducts);
   const directlyAssigned = assignmentIndex.exact.get(normalizedQuery) || [];
   const familyAssigned = assignmentIndex.family.get(consumablePrinterFamilyKey(query)) || [];
@@ -175,7 +182,7 @@ export async function resolveCommerceProducts(query: string, snapshot?: Awaited<
   // s HP LaserJet 2100 iba preto, že zdieľajú číslo 2100.
   const familyFallback = familyAssigned.filter((product: any) => samePrinterSeries(product, query));
   const structuredFallback = structuredLoose.filter((product: any) => samePrinterSeries(product, query));
-  const printer = [...new Map([...directlyAssigned, ...familyFallback, ...structuredFallback].map((p: any) => [String(p.id), p])).values()]
+  const printer = familyIdentities.length ? [] : [...new Map([...directlyAssigned, ...familyFallback, ...structuredFallback].map((p: any) => [String(p.id), p])).values()]
     .filter(isValidOffer)
     .filter((product: any) => !isPrinterDevice(product));
   // Presné štruktúrované priradenie tlačiarne je autoritatívne. Predošlá
@@ -186,7 +193,7 @@ export async function resolveCommerceProducts(query: string, snapshot?: Awaited<
   // predvýberu. Pri vete s dvoma rodinami (BT6000 + BT5000) môže fulltext
   // vrátiť iba prvú časť alebo nič, zatiaľ čo katalógový parser pozná oba
   // presné kódy aj značku.
-  const exactIdentity = printer.length ? [] : findExactProductIdentityMatches(allProducts, query).map(m => m.product)
+  const exactIdentity = familyIdentities.length ? familyIdentities : printer.length ? [] : findExactProductIdentityMatches(allProducts, query).map(m => m.product)
     .filter(isValidOffer).filter((product: any) => !isPrinterDevice(product));
   // Pri presnom OEM kóde doplníme rovnocenné typy pre tie isté tlačiarne.
   // Typický príklad: kompatibilný/renovovaný Samsung MLT-D111L a originálny

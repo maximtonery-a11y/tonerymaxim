@@ -6,11 +6,13 @@ export const prerender = false;
 type ProductsApiCacheEntry = {
   expiresAt: number;
   body: string;
+  bytes: number;
 };
 
 const buildEnv = (import.meta as ImportMeta & { env?: Record<string, unknown> }).env || {};
 const RESULT_CACHE_TTL_MS = Number(process.env.PRODUCTS_API_CACHE_TTL_MS || buildEnv.PRODUCTS_API_CACHE_TTL_MS || 60_000);
 const RESULT_CACHE_MAX_ITEMS = Math.min(100, Math.max(20, Number(process.env.PRODUCTS_API_CACHE_MAX_ITEMS || buildEnv.PRODUCTS_API_CACHE_MAX_ITEMS || 80)));
+const RESULT_CACHE_MAX_BYTES = 8 * 1024 * 1024;
 
 const globalStore = globalThis as typeof globalThis & {
   __TM_PRODUCTS_API_RESULT_CACHE__?: Map<string, ProductsApiCacheEntry>;
@@ -31,6 +33,8 @@ function canonicalCacheKey(input: Record<string, string | number>) {
 }
 
 function getCachedBody(key: string) {
+  // TTL must release one-off searches too, even if that exact query never repeats.
+  for (const [entryKey, entry] of resultCache) if (entry.expiresAt <= Date.now()) resultCache.delete(entryKey);
   const cached = resultCache.get(key);
   if (!cached) return "";
   if (cached.expiresAt <= Date.now()) {
@@ -46,11 +50,15 @@ function getCachedBody(key: string) {
 
 function setCachedBody(key: string, body: string) {
   if (RESULT_CACHE_TTL_MS <= 0) return;
-  resultCache.set(key, { body, expiresAt: Date.now() + RESULT_CACHE_TTL_MS });
+  const bytes = Buffer.byteLength(body);
+  if (bytes > RESULT_CACHE_MAX_BYTES) return;
+  resultCache.set(key, { body, bytes, expiresAt: Date.now() + RESULT_CACHE_TTL_MS });
+  let retainedBytes = [...resultCache.values()].reduce((sum, entry) => sum + entry.bytes, 0);
 
-  while (resultCache.size > RESULT_CACHE_MAX_ITEMS) {
+  while (resultCache.size > RESULT_CACHE_MAX_ITEMS || retainedBytes > RESULT_CACHE_MAX_BYTES) {
     const firstKey = resultCache.keys().next().value;
     if (!firstKey) break;
+    retainedBytes -= resultCache.get(firstKey)!.bytes;
     resultCache.delete(firstKey);
   }
 }

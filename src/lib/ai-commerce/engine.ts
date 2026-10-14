@@ -30,7 +30,8 @@ function colorOf(p:any) {
   return '';
 }
 export function familyOf(p:any){const raw=`${p.name||''} ${p.sku||''}`.toUpperCase();let m=raw.match(/\bTN[- ]?(\d{3,4})(?:BK|C|M|Y|\b)/);if(m)return`TN${m[1]}`;m=raw.match(/\bCRG[- ]?(\d{3})(H?)(?:BK|C|M|Y|\b)/);if(m)return`CRG${m[1]}${m[2]}`;m=raw.match(/\b(?:CF|CE)(\d{2})[0-3]?([AX])\b/);if(m)return`HP${m[1]}X${m[2]}`;m=raw.match(/\bCLT[- ]?(?:[KCMY])?(\d+)([LS])\b/);if(m)return`CLT${m[1]}${m[2]}`;m=raw.match(/\bT(\d{3})[1-4]?(XXL|XL)?\b/);if(m)return`EPSON-T${m[1]}${m[2]||''}`;return'';}
-const commerceCache: Map<string,{expires:number,value:any}> = (globalThis as any).__TM_AI_COMMERCE_SEARCH_CACHE__ ||= new Map();
+const commerceCache: Map<string,{expires:number,value:any,bytes:number}> = (globalThis as any).__TM_AI_COMMERCE_SEARCH_CACHE__ ||= new Map();
+const COMMERCE_CACHE_MAX_JSON_BYTES = 8 * 1024 * 1024;
 const commerceInFlight: Map<string,Promise<any>> = (globalThis as any).__TM_AI_COMMERCE_IN_FLIGHT__ ||= new Map();
 const catalogTokens = new WeakMap<object, number>();
 let nextCatalogToken = 0;
@@ -52,6 +53,7 @@ export async function searchCommerce(query:string) {
     }
   }
   const cacheKey=generation+'|'+query.toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+  for (const [key, entry] of commerceCache) if (entry.expires <= Date.now()) commerceCache.delete(key);
   const cached=commerceCache.get(cacheKey);if(cached&&cached.expires>Date.now())return cached.value;
   // Pri prvom dotaze po deployi moze prist viac rovnakych poziadaviek naraz.
   // Jedna spolocna Promise zabrani paralelnemu filtrovaniu celeho katalogu,
@@ -72,8 +74,13 @@ export async function searchCommerce(query:string) {
   // Štyri samostatné farby sa nikdy neskladajú do virtuálneho balenia — ani
   // interne. Tým sa nemôže syntetická sada omylom dostať do iného klienta API.
   const value={...result,products,presentation:{isColorPrinter,sets,colors:[...colors]}};
-  if (calendar || generation === activeCatalogGeneration) commerceCache.set(cacheKey,{expires:Date.now()+5*60_000,value});
-  if(commerceCache.size>500){const oldest=commerceCache.keys().next().value;if(oldest)commerceCache.delete(oldest);}
+  const bytes = Buffer.byteLength(JSON.stringify(value));
+  if (bytes <= COMMERCE_CACHE_MAX_JSON_BYTES && (calendar || generation === activeCatalogGeneration)) commerceCache.set(cacheKey,{expires:Date.now()+5*60_000,value,bytes});
+  let retainedBytes = [...commerceCache.values()].reduce((sum, entry) => sum + entry.bytes, 0);
+  while(commerceCache.size>500 || retainedBytes>COMMERCE_CACHE_MAX_JSON_BYTES){
+    const oldest=commerceCache.keys().next().value;if(oldest===undefined)break;
+    retainedBytes-=commerceCache.get(oldest)!.bytes;commerceCache.delete(oldest);
+  }
   return value;
   })();
   commerceInFlight.set(cacheKey,operation);

@@ -904,6 +904,10 @@ import { normalizeDpdPickup as normalizeDpdPoint } from "../lib/dpd-pickup.ts";
     const cart = readCart();
     const empty = document.querySelector("[data-checkout-empty]");
     const form = document.querySelector("[data-checkout-form]");
+    const mobileGuide = document.querySelector("[data-checkout-mobile-guide]");
+    const mobileSticky = document.querySelector("[data-checkout-mobile-sticky]");
+    if (mobileGuide) mobileGuide.hidden = cart.length === 0;
+    if (mobileSticky && cart.length === 0) mobileSticky.hidden = true;
 
     list.innerHTML = "";
 
@@ -1029,7 +1033,6 @@ import { normalizeDpdPickup as normalizeDpdPoint } from "../lib/dpd-pickup.ts";
     const mobileSummaryTotal = document.querySelector("[data-mobile-summary-total]");
     if (mobileSummaryTotal) mobileSummaryTotal.textContent = money(total);
 
-    const mobileSticky = document.querySelector("[data-checkout-mobile-sticky]");
     if (mobileSticky) mobileSticky.hidden = cart.length === 0;
 
     const freeBox = document.querySelector("[data-free-shipping]");

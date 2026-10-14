@@ -298,6 +298,15 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     ],
   },
   {
+    id: 'toner-valec-odpadova-nadoba', intent: 'support', title: 'Toner, optický valec a odpadová nádoba', priority: 116,
+    triggers: ['toner valec odpadova nadoba', 'rozdiel odpadova nadoba', 'co je odpadova nadoba', 'waste toner'],
+    answer: [
+      'Toner dodáva prášok na tlač. Optický valec (drum) vytvára obraz a prenáša toner; môže byť samostatný alebo súčasťou tonerovej kazety.',
+      'Odpadová nádoba zachytáva zvyškový toner, ktorý sa pri tlači nepoužil. Nie je náhradou tonera ani optického valca; pri hlásení o jej naplnení sa postupuje podľa návodu konkrétnej tlačiarne.',
+      'Napíšte presný model tlačiarne a chybové hlásenie, aby sme určili správny diel.',
+    ],
+  },
+  {
     id: 'kontakt', intent: 'contact', title: 'Kontakt na ToneryMaxim', priority: 100,
     triggers: ['kontakt', 'telefon', 'mail', 'email', 'pracovna doba', 'kedy vam mozem volat', 'cislo', 'pracujete v sobotu', 'volam vecer', 'otvorene v sobotu'],
     answer: [

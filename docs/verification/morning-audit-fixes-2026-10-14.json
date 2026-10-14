@@ -1,0 +1,1155 @@
+{
+  "date": "2026-10-14",
+  "baseCommit": "d4966875b1c8d46bb239eaa0144f3901ef2cb16c",
+  "deployment": "pending user redeploy",
+  "production": {
+    "before": {
+      "ok": true,
+      "service": "tonerymaxim-storefront",
+      "checks": {
+        "server": true,
+        "middlewareIsolated": true,
+        "adsInStorefront": false,
+        "analyticsInStorefront": false,
+        "analyticsEndpointDisabled": true,
+        "rssMb": 388,
+        "heapMb": 163,
+        "heapTotalMb": 184,
+        "externalMb": 21,
+        "arrayBuffersMb": 2,
+        "cgroupCurrentMb": 392,
+        "cgroupLimitMb": null,
+        "effectiveMemoryLimitMb": null,
+        "memoryUsagePercent": null,
+        "memoryLimitConfigured": false,
+        "uptimeSeconds": 46552,
+        "pid": 20
+      },
+      "diagnostics": {
+        "revision": "memory-v1",
+        "catalogGeneratedAt": "2026-10-14T05:07:13.231Z",
+        "catalogProducts": 7932,
+        "detailCacheEntries": 100,
+        "productApiCacheEntries": 46,
+        "printerApiIndexEntries": 1,
+        "printerPositiveEntries": 7125,
+        "printerNegativeEntries": 11,
+        "printerNegativeLimit": 512,
+        "printerNegativeTtlSeconds": 300,
+        "syncRunning": false,
+        "lastSync": {
+          "startedAt": "2026-10-14T05:00:08.609Z",
+          "status": "refreshed",
+          "before": {
+            "rss": 364613632,
+            "heapTotal": 193536000,
+            "heapUsed": 181094384,
+            "external": 22037038,
+            "arrayBuffers": 1430727
+          },
+          "finishedAt": "2026-10-14T05:07:19.131Z",
+          "durationMs": 430522,
+          "after": {
+            "rss": 462028800,
+            "heapTotal": 323997696,
+            "heapUsed": 285293696,
+            "external": 22581377,
+            "arrayBuffers": 1975066
+          }
+        }
+      },
+      "timestamp": "2026-10-14T06:22:35.808Z"
+    },
+    "after": {
+      "status": 200,
+      "serverTiming": "app;dur=1.5",
+      "ok": true,
+      "service": "tonerymaxim-storefront",
+      "checks": {
+        "server": true,
+        "middlewareIsolated": true,
+        "adsInStorefront": false,
+        "analyticsInStorefront": false,
+        "analyticsEndpointDisabled": true,
+        "rssMb": 390,
+        "heapMb": 170,
+        "heapTotalMb": 185,
+        "externalMb": 21,
+        "arrayBuffersMb": 1,
+        "cgroupCurrentMb": 395,
+        "cgroupLimitMb": null,
+        "effectiveMemoryLimitMb": null,
+        "memoryUsagePercent": null,
+        "memoryLimitConfigured": false,
+        "uptimeSeconds": 65920,
+        "pid": 20
+      },
+      "diagnostics": {
+        "revision": "memory-v1",
+        "catalogGeneratedAt": "2026-10-14T05:07:13.231Z",
+        "catalogProducts": 7932,
+        "detailCacheEntries": 100,
+        "productApiCacheEntries": 75,
+        "printerApiIndexEntries": 2,
+        "printerPositiveEntries": 7125,
+        "printerNegativeEntries": 66,
+        "printerNegativeLimit": 512,
+        "printerNegativeTtlSeconds": 300,
+        "syncRunning": false,
+        "lastSync": {
+          "startedAt": "2026-10-14T05:00:08.609Z",
+          "status": "refreshed",
+          "before": {
+            "rss": 364613632,
+            "heapTotal": 193536000,
+            "heapUsed": 181094384,
+            "external": 22037038,
+            "arrayBuffers": 1430727
+          },
+          "finishedAt": "2026-10-14T05:07:19.131Z",
+          "durationMs": 430522,
+          "after": {
+            "rss": 462028800,
+            "heapTotal": 323997696,
+            "heapUsed": 285293696,
+            "external": 22581377,
+            "arrayBuffers": 1975066
+          }
+        }
+      },
+      "timestamp": "2026-10-14T11:45:23.914Z"
+    },
+    "apiAiRequests": [
+      {
+        "message": null,
+        "status": 200,
+        "ms": 6260,
+        "timing": "app;dur=0.2"
+      },
+      {
+        "message": "Aký je rozdiel medzi tonerom, optickým valcom a odpadovou nádobou?",
+        "status": 200,
+        "ms": 248,
+        "timing": "app;dur=14.4",
+        "route": {
+          "intents": [
+            "ADVICE",
+            "PRODUCT_COMPARE"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "answer": [
+          "Rozdiel medzi tonerom a optickým valcom:",
+          "Toner je kazeta s tonerovým práškom, ktorý sa pri tlači prenáša na papier. Optický valec (drum) vytvára obraz a prenáša toner; nejde o ten istý diel.",
+          "Niektoré tlačiarne majú toner a valec oddelené, iné ich majú spojené v jednej kazete. Preto treba výmenu určiť podľa presného modelu tlačiarne a chybového hlásenia.",
+          "Ak napíšete model tlačiarne, overím, či používa samostatný toner, samostatný valec alebo kombinovanú kazetu."
+        ]
+      },
+      {
+        "message": "Máte HP CF230X?",
+        "status": 200,
+        "ms": 688,
+        "timing": "app;dur=454.0",
+        "route": {
+          "intents": [
+            "PRODUCT_SEARCH",
+            "PRINTER_SEARCH"
+          ],
+          "productQuery": "Máte HP CF230X?",
+          "needsProducts": true
+        },
+        "answer": [
+          "Podľa zadaného označenia som nenašiel bezpečnú zhodu. Napíšte, prosím, celý model tlačiarne zo štítku alebo presný kód toneru."
+        ],
+        "products": [],
+        "action": "CLARIFY_PRODUCT"
+      },
+      {
+        "message": "Máte Brother TN-1050 a DR-1050?",
+        "status": 200,
+        "ms": 659,
+        "timing": "app;dur=421.6",
+        "route": {
+          "intents": [
+            "PRODUCT_SEARCH",
+            "PRINTER_SEARCH"
+          ],
+          "productQuery": "Máte Brother TN-1050 a DR-1050?",
+          "needsProducts": true
+        },
+        "answer": [
+          "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+        ],
+        "products": [
+          {
+            "id": 44044,
+            "sku": "TN-1050-KOM-14079",
+            "name": "Brother TN-1050 čierny kompatibilný toner",
+            "price": 8.07,
+            "capacity": "1 000 strán",
+            "printers": [
+              "Brother DCP-1510E",
+              "Brother DCP-1512E",
+              "Brother DCP-1610WE",
+              "Brother HL-1110E",
+              "Brother HL-1112E",
+              "Brother HL-1210WE",
+              "Brother HL-1212W",
+              "Brother HL-1212WE",
+              "Brother MFC-1810E",
+              "Brother MFC-1910WE"
+            ]
+          },
+          {
+            "id": 43973,
+            "sku": "DR-1050-KOM-13968",
+            "name": "Brother DR-1050 kompatibilný optický valec",
+            "price": 13.44,
+            "capacity": "10 000 strán",
+            "printers": [
+              "Brother DCP-1510E",
+              "Brother DCP-1512E",
+              "Brother DCP-1610WE",
+              "Brother HL-1110E",
+              "Brother HL-1112E",
+              "Brother HL-1210WE",
+              "Brother HL-1212W",
+              "Brother HL-1212WE",
+              "Brother MFC-1810E",
+              "Brother MFC-1910WE"
+            ]
+          },
+          {
+            "id": 38576,
+            "sku": "3085",
+            "name": "Brother TN-1050 čierny renovovaný toner",
+            "price": 23.24,
+            "capacity": "1 500 strán",
+            "printers": [
+              "Brother DCP-1510E",
+              "Brother DCP-1512E",
+              "Brother DCP-1610WE",
+              "Brother HL-1110E",
+              "Brother HL-1112E",
+              "Brother HL-1210WE",
+              "Brother HL-1212W",
+              "Brother HL-1212WE",
+              "Brother MFC-1810E",
+              "Brother MFC-1910WE"
+            ]
+          },
+          {
+            "id": 38583,
+            "sku": "3092",
+            "name": "Brother DR-1050 renovovaný optický valec",
+            "price": 35.02,
+            "capacity": "10 000 strán",
+            "printers": [
+              "Brother DCP-1510E",
+              "Brother DCP-1512E",
+              "Brother DCP-1610WE",
+              "Brother HL-1110E",
+              "Brother HL-1112E",
+              "Brother HL-1210WE",
+              "Brother HL-1212W",
+              "Brother HL-1212WE",
+              "Brother MFC-1810E",
+              "Brother MFC-1910WE"
+            ]
+          }
+        ]
+      },
+      {
+        "message": "Hľadám Epson 102 pre Epson ET-2700",
+        "status": 200,
+        "ms": 243,
+        "timing": "app;dur=9.1",
+        "route": {
+          "intents": [
+            "PRODUCT_SEARCH",
+            "PRINTER_SEARCH"
+          ],
+          "productQuery": "Epson 102",
+          "needsProducts": true
+        },
+        "answer": [
+          "Podľa zadaného označenia som nenašiel bezpečnú zhodu. Napíšte, prosím, celý model tlačiarne zo štítku alebo presný kód toneru."
+        ],
+        "products": [],
+        "action": "CLARIFY_PRODUCT"
+      },
+      {
+        "message": "30X do HP, neviem model",
+        "status": 200,
+        "ms": 535,
+        "timing": "app;dur=302.7",
+        "route": {
+          "intents": [
+            "PRODUCT_SEARCH"
+          ],
+          "productQuery": "30X do HP, neviem model",
+          "needsProducts": true
+        },
+        "answer": [
+          "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+        ],
+        "products": [
+          {
+            "id": 37637,
+            "sku": "13114",
+            "name": "HP CF230X (30X) čierny kompatibilný toner",
+            "price": 12.39,
+            "capacity": "3 500 strán",
+            "printers": [
+              "HP LaserJet Pro M203dn",
+              "HP LaserJet Pro M203dw",
+              "HP LaserJet Pro MFP M227fdn",
+              "HP LaserJet Pro MFP M227fdw",
+              "HP LaserJet Pro MFP M227sdn"
+            ]
+          },
+          {
+            "id": 38181,
+            "sku": "037540",
+            "name": "HP CF230X (30X) čierny originálny toner",
+            "price": 145.16,
+            "capacity": "3 500 strán",
+            "printers": [
+              "HP LaserJet Pro M203dn",
+              "HP LaserJet Pro M203dw",
+              "HP LaserJet Pro MFP M227fdn",
+              "HP LaserJet Pro MFP M227fdw",
+              "HP LaserJet Pro MFP M227sdn"
+            ]
+          },
+          {
+            "id": 41611,
+            "sku": "1271",
+            "name": "HP CF230X (30X) čierny renovovaný toner Patent Free",
+            "price": 30.5,
+            "capacity": "3 500 strán",
+            "printers": [
+              "HP LaserJet Pro M203dn",
+              "HP LaserJet Pro M203dw",
+              "HP LaserJet Pro MFP M227fdn",
+              "HP LaserJet Pro MFP M227fdw",
+              "HP LaserJet Pro MFP M227sdn"
+            ]
+          }
+        ]
+      },
+      {
+        "message": "Máte kompatibilný Lexmark 56F2X0E?",
+        "status": 200,
+        "ms": 275,
+        "timing": "app;dur=40.7",
+        "route": {
+          "intents": [
+            "PRODUCT_SEARCH",
+            "PRINTER_SEARCH",
+            "COMPATIBILITY",
+            "COLOR_TYPE_FILTER"
+          ],
+          "productQuery": "Lexmark 56F2X0E",
+          "needsProducts": true
+        },
+        "answer": [
+          "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+        ],
+        "products": [
+          {
+            "id": 53282,
+            "sku": "16043",
+            "name": "Kompatibilný toner pre Lexmark 56F2X0E Black 20000 strán",
+            "price": 299.64,
+            "capacity": "",
+            "printers": []
+          }
+        ]
+      },
+      {
+        "message": "Koľko stoja 3 ks a 4 ks kompatibilnej sady Canon CRG-045 CMYK po množstevnej zľave?",
+        "status": 200,
+        "ms": 987,
+        "timing": "app;dur=755.0",
+        "route": {
+          "intents": [
+            "PRODUCT_SEARCH",
+            "PRINTER_SEARCH",
+            "COMPATIBILITY",
+            "COLOR_TYPE_FILTER"
+          ],
+          "productQuery": "Koľko stoja 3 ks a 4 ks kompatibilnej sady Canon CRG-045 CMYK po množstevnej zľave?",
+          "needsProducts": true
+        },
+        "answer": [
+          "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:",
+          "Pri rovnakom kompatibilnom produkte platí zľava 10 % pri 2–3 ks a 25 % pri 4 a viac kusoch.",
+          "Canon CRG-045C azúrový kompatibilný toner — 3 ks: 55,97 € spolu; 4 ks: 62,19 € spolu. Sumy sú po množstevnej zľave, bez dopravy a ďalších zliav."
+        ],
+        "products": [
+          {
+            "id": 52830,
+            "sku": "SET-CAN-CRG-045-KOM-4PK",
+            "name": "Canon CRG-045 CMYK kompatibilná sada tonerov (4 ks)",
+            "price": 75.2,
+            "capacity": "Čierna: 1400 strán; Azúrová: 1300 strán; Purpurová: 1300 strán; Žltá: 1300 strán",
+            "printers": [
+              "Canon i-SENSYS LBP611Cn",
+              "Canon i-SENSYS LBP612Cdw",
+              "Canon i-SENSYS LBP613Cdw",
+              "Canon i-SENSYS MF631Cn",
+              "Canon i-SENSYS MF632Cdw",
+              "Canon i-SENSYS MF633Cdw",
+              "Canon i-SENSYS MF635Cx"
+            ]
+          }
+        ]
+      },
+      {
+        "message": "Aké máte možnosti dopravy a platby?",
+        "status": 200,
+        "ms": 244,
+        "timing": "app;dur=11.0",
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "answer": [
+          "Doprava a platba:",
+          "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+          "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+          "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+          "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+          "Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni.",
+          "Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH.",
+          "Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom."
+        ]
+      }
+    ],
+    "domainTimingComparison": [
+      {
+        "host": "https://tonerymaxim.sk",
+        "finalUrl": "https://www.tonerymaxim.sk/api/ai-tomas",
+        "redirected": true,
+        "status": 200,
+        "totalMs": 11972,
+        "timing": "app;dur=379.3",
+        "products": [
+          {
+            "id": 37637,
+            "name": "HP CF230X (30X) čierny kompatibilný toner"
+          },
+          {
+            "id": 38181,
+            "name": "HP CF230X (30X) čierny originálny toner"
+          },
+          {
+            "id": 41611,
+            "name": "HP CF230X (30X) čierny renovovaný toner Patent Free"
+          }
+        ],
+        "answer": [
+          "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+        ]
+      },
+      {
+        "host": "https://www.tonerymaxim.sk",
+        "finalUrl": "https://www.tonerymaxim.sk/api/ai-tomas",
+        "redirected": false,
+        "status": 200,
+        "totalMs": 236,
+        "timing": "app;dur=2.4",
+        "products": [
+          {
+            "id": 37637,
+            "name": "HP CF230X (30X) čierny kompatibilný toner"
+          },
+          {
+            "id": 38181,
+            "name": "HP CF230X (30X) čierny originálny toner"
+          },
+          {
+            "id": 41611,
+            "name": "HP CF230X (30X) čierny renovovaný toner Patent Free"
+          }
+        ],
+        "answer": [
+          "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+        ]
+      },
+      {
+        "host": "https://www.tonerymaxim.sk",
+        "finalUrl": "https://www.tonerymaxim.sk/api/ai-tomas",
+        "redirected": false,
+        "status": 200,
+        "totalMs": 236,
+        "timing": "app;dur=1.3",
+        "products": [
+          {
+            "id": 37637,
+            "name": "HP CF230X (30X) čierny kompatibilný toner"
+          },
+          {
+            "id": 38181,
+            "name": "HP CF230X (30X) čierny originálny toner"
+          },
+          {
+            "id": 41611,
+            "name": "HP CF230X (30X) čierny renovovaný toner Patent Free"
+          }
+        ],
+        "answer": [
+          "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+        ]
+      }
+    ]
+  },
+  "offline": {
+    "importBaseline": {
+      "products": 2500,
+      "generations": 3,
+      "forcedGc": false,
+      "checkedCompleteDetails": 2500,
+      "samples": [
+        {
+          "generation": 1,
+          "durationMs": 9645,
+          "rssMb": 459,
+          "heapMb": 150,
+          "externalMb": 29,
+          "peakRssMb": 481
+        },
+        {
+          "generation": 2,
+          "durationMs": 9313,
+          "rssMb": 494,
+          "heapMb": 237,
+          "externalMb": 45,
+          "peakRssMb": 514
+        },
+        {
+          "generation": 3,
+          "durationMs": 9109,
+          "rssMb": 489,
+          "heapMb": 127,
+          "externalMb": 19,
+          "peakRssMb": 534
+        }
+      ],
+      "durationsMs": [
+        9645,
+        9313,
+        9109
+      ],
+      "peakRssMb": 534,
+      "rssMb": 489,
+      "heapMb": 127,
+      "dataSha256": "47262a3f00d5acf49d9f9c0be5ae45c973125aefe2e6cc36e629a0a5b8a18b43"
+    },
+    "importFixedFirstRun": {
+      "products": 2500,
+      "generations": 3,
+      "forcedGc": false,
+      "checkedCompleteDetails": 2500,
+      "samples": [
+        {
+          "generation": 1,
+          "durationMs": 8024,
+          "rssMb": 327,
+          "heapMb": 83,
+          "externalMb": 51,
+          "peakRssMb": 347
+        },
+        {
+          "generation": 2,
+          "durationMs": 7749,
+          "rssMb": 326,
+          "heapMb": 97,
+          "externalMb": 31,
+          "peakRssMb": 368
+        },
+        {
+          "generation": 3,
+          "durationMs": 7601,
+          "rssMb": 328,
+          "heapMb": 87,
+          "externalMb": 31,
+          "peakRssMb": 370
+        }
+      ],
+      "durationsMs": [
+        8024,
+        7749,
+        7601
+      ],
+      "peakRssMb": 370,
+      "rssMb": 328,
+      "heapMb": 87,
+      "dataSha256": "47262a3f00d5acf49d9f9c0be5ae45c973125aefe2e6cc36e629a0a5b8a18b43"
+    },
+    "importFixedFinalRun": {
+      "products": 2500,
+      "generations": 3,
+      "forcedGc": false,
+      "checkedCompleteDetails": 2500,
+      "samples": [
+        {
+          "generation": 1,
+          "durationMs": 9336,
+          "rssMb": 289,
+          "heapMb": 67,
+          "externalMb": 24,
+          "peakRssMb": 324
+        },
+        {
+          "generation": 2,
+          "durationMs": 8313,
+          "rssMb": 378,
+          "heapMb": 106,
+          "externalMb": 69,
+          "peakRssMb": 379
+        },
+        {
+          "generation": 3,
+          "durationMs": 8510,
+          "rssMb": 356,
+          "heapMb": 90,
+          "externalMb": 41,
+          "peakRssMb": 395
+        }
+      ],
+      "durationsMs": [
+        9336,
+        8313,
+        8510
+      ],
+      "peakRssMb": 395,
+      "rssMb": 356,
+      "heapMb": 90,
+      "dataSha256": "47262a3f00d5acf49d9f9c0be5ae45c973125aefe2e6cc36e629a0a5b8a18b43"
+    },
+    "importEndurance": {
+      "products": 2500,
+      "generations": 10,
+      "forcedGc": false,
+      "checkedCompleteDetails": 2500,
+      "samples": [
+        {
+          "generation": 1,
+          "durationMs": 7595,
+          "rssMb": 266,
+          "heapMb": 62,
+          "externalMb": 17,
+          "peakRssMb": 327
+        },
+        {
+          "generation": 2,
+          "durationMs": 7456,
+          "rssMb": 315,
+          "heapMb": 79,
+          "externalMb": 23,
+          "peakRssMb": 373
+        },
+        {
+          "generation": 3,
+          "durationMs": 7396,
+          "rssMb": 301,
+          "heapMb": 74,
+          "externalMb": 17,
+          "peakRssMb": 373
+        },
+        {
+          "generation": 4,
+          "durationMs": 7227,
+          "rssMb": 353,
+          "heapMb": 104,
+          "externalMb": 52,
+          "peakRssMb": 375
+        },
+        {
+          "generation": 5,
+          "durationMs": 7451,
+          "rssMb": 367,
+          "heapMb": 105,
+          "externalMb": 58,
+          "peakRssMb": 383
+        },
+        {
+          "generation": 6,
+          "durationMs": 7423,
+          "rssMb": 361,
+          "heapMb": 73,
+          "externalMb": 25,
+          "peakRssMb": 383
+        },
+        {
+          "generation": 7,
+          "durationMs": 7627,
+          "rssMb": 329,
+          "heapMb": 95,
+          "externalMb": 25,
+          "peakRssMb": 383
+        },
+        {
+          "generation": 8,
+          "durationMs": 7459,
+          "rssMb": 372,
+          "heapMb": 119,
+          "externalMb": 36,
+          "peakRssMb": 383
+        },
+        {
+          "generation": 9,
+          "durationMs": 7208,
+          "rssMb": 347,
+          "heapMb": 91,
+          "externalMb": 38,
+          "peakRssMb": 386
+        },
+        {
+          "generation": 10,
+          "durationMs": 7536,
+          "rssMb": 349,
+          "heapMb": 90,
+          "externalMb": 38,
+          "peakRssMb": 386
+        }
+      ],
+      "durationsMs": [
+        7595,
+        7456,
+        7396,
+        7227,
+        7451,
+        7423,
+        7627,
+        7459,
+        7208,
+        7536
+      ],
+      "peakRssMb": 386,
+      "rssMb": 349,
+      "heapMb": 90,
+      "dataSha256": "142202a415448bf46f17fdaa99a4127f9d5e0f8e9fcfbc5c0c137f40631bedb9"
+    },
+    "regressions": {
+      "tests": 682,
+      "pass": 682,
+      "fail": 0
+    },
+    "paymentShippingPriceHistory": {
+      "tests": 54,
+      "pass": 54,
+      "fail": 0
+    },
+    "checkout": {
+      "tests": 3,
+      "pass": 3,
+      "fail": 0
+    },
+    "search": {
+      "cases": 300,
+      "passed": 300,
+      "checks": 1111,
+      "failed": 0
+    },
+    "ssr": {
+      "ok": true,
+      "checks": [
+        {
+          "path": "/",
+          "status": 200,
+          "timing": "app;dur=9.3"
+        },
+        {
+          "path": "/produkty",
+          "status": 200,
+          "timing": "app;dur=181.7"
+        },
+        {
+          "path": "/tlaciarne",
+          "status": 200,
+          "timing": "app;dur=2.0"
+        },
+        {
+          "path": "/kosik",
+          "status": 200,
+          "timing": "app;dur=0.8"
+        },
+        {
+          "path": "/doprava-a-platba",
+          "status": 200,
+          "timing": "app;dur=2.9"
+        },
+        {
+          "path": "/api/health",
+          "status": 200,
+          "timing": "app;dur=1.0"
+        },
+        {
+          "path": "/api/storefront-check",
+          "status": 200,
+          "timing": "app;dur=5.3"
+        },
+        {
+          "path": "/pokladna",
+          "status": 200,
+          "timing": "app;dur=1.0"
+        },
+        {
+          "message": "Koľko stoja 3 ks a 4 ks kompatibilnej sady Canon CRG-045 CMYK po množstevnej zľave?",
+          "status": 200,
+          "timing": "app;dur=672.3",
+          "answer": [
+            "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:",
+            "Pri rovnakom kompatibilnom produkte platí zľava 10 % pri 2–3 ks a 25 % pri 4 a viac kusoch.",
+            "Canon CRG-045 CMYK kompatibilná sada tonerov (4 ks) — 3 ks: 203,04 € spolu; 4 ks: 225,60 € spolu. Sumy sú po množstevnej zľave, bez dopravy a ďalších zliav."
+          ],
+          "products": [
+            {
+              "id": 52830,
+              "name": "Canon CRG-045 CMYK kompatibilná sada tonerov (4 ks)",
+              "capacity": "Čierna: 1400 strán; Azúrová: 1300 strán; Purpurová: 1300 strán; Žltá: 1300 strán",
+              "printers": [
+                "Canon i-SENSYS LBP611Cn",
+                "Canon i-SENSYS LBP612Cdw",
+                "Canon i-SENSYS LBP613Cdw",
+                "Canon i-SENSYS MF631Cn",
+                "Canon i-SENSYS MF632Cdw",
+                "Canon i-SENSYS MF633Cdw",
+                "Canon i-SENSYS MF635Cx"
+              ]
+            }
+          ]
+        },
+        {
+          "message": "A koľko stoja 3 ks a 4 ks?",
+          "status": 200,
+          "timing": "app;dur=3.9",
+          "answer": [
+            "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:",
+            "Canon CRG-045 CMYK kompatibilná sada tonerov (4 ks) — 3 ks: 203,04 € spolu; 4 ks: 225,60 € spolu. Sumy sú po množstevnej zľave, bez dopravy a ďalších zliav."
+          ],
+          "products": [
+            {
+              "id": 52830,
+              "name": "Canon CRG-045 CMYK kompatibilná sada tonerov (4 ks)",
+              "capacity": "Čierna: 1400 strán; Azúrová: 1300 strán; Purpurová: 1300 strán; Žltá: 1300 strán",
+              "printers": [
+                "Canon i-SENSYS LBP611Cn",
+                "Canon i-SENSYS LBP612Cdw",
+                "Canon i-SENSYS LBP613Cdw",
+                "Canon i-SENSYS MF631Cn",
+                "Canon i-SENSYS MF632Cdw",
+                "Canon i-SENSYS MF633Cdw",
+                "Canon i-SENSYS MF635Cx"
+              ]
+            }
+          ]
+        },
+        {
+          "message": "Hľadám Epson 102 pre Epson ET-2700",
+          "status": 200,
+          "timing": "app;dur=137.1",
+          "answer": [
+            "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+          ],
+          "products": [
+            {
+              "id": 52991,
+              "name": "Epson 102 (C13T03R340) purpurová kompatibilná atramentová náplň",
+              "capacity": "70 ml",
+              "printers": [
+                "Epson EcoTank ET-15000",
+                "Epson EcoTank ET-2700",
+                "Epson EcoTank ET-2750",
+                "Epson EcoTank ET-2756",
+                "Epson EcoTank ET-2850",
+                "Epson EcoTank ET-2851",
+                "Epson EcoTank ET-2856",
+                "Epson EcoTank ET-2950",
+                "Epson EcoTank ET-2951",
+                "Epson EcoTank ET-2955",
+                "Epson EcoTank ET-2956",
+                "Epson EcoTank ET-2959",
+                "Epson EcoTank ET-3700",
+                "Epson EcoTank ET-3750",
+                "Epson EcoTank ET-3850",
+                "Epson EcoTank ET-3950",
+                "Epson EcoTank ET-3956",
+                "Epson EcoTank ET-4750",
+                "Epson EcoTank ET-4850",
+                "Epson EcoTank ET-4856",
+                "Epson EcoTank ET-4950",
+                "Epson EcoTank ET-4951",
+                "Epson EcoTank ET-4955",
+                "Epson EcoTank ET-4956"
+              ]
+            },
+            {
+              "id": 52990,
+              "name": "Epson 102 (C13T03R240) azúrová kompatibilná atramentová náplň",
+              "capacity": "70 ml",
+              "printers": [
+                "Epson EcoTank ET-15000",
+                "Epson EcoTank ET-2700",
+                "Epson EcoTank ET-2750",
+                "Epson EcoTank ET-2756",
+                "Epson EcoTank ET-2850",
+                "Epson EcoTank ET-2851",
+                "Epson EcoTank ET-2856",
+                "Epson EcoTank ET-2950",
+                "Epson EcoTank ET-2951",
+                "Epson EcoTank ET-2955",
+                "Epson EcoTank ET-2956",
+                "Epson EcoTank ET-2959",
+                "Epson EcoTank ET-3700",
+                "Epson EcoTank ET-3750",
+                "Epson EcoTank ET-3850",
+                "Epson EcoTank ET-3950",
+                "Epson EcoTank ET-3956",
+                "Epson EcoTank ET-4750",
+                "Epson EcoTank ET-4850",
+                "Epson EcoTank ET-4856",
+                "Epson EcoTank ET-4950",
+                "Epson EcoTank ET-4951",
+                "Epson EcoTank ET-4955",
+                "Epson EcoTank ET-4956"
+              ]
+            },
+            {
+              "id": 52992,
+              "name": "Epson 102 (C13T03R440) žltá kompatibilná atramentová náplň",
+              "capacity": "70 ml",
+              "printers": [
+                "Epson EcoTank ET-15000",
+                "Epson EcoTank ET-2700",
+                "Epson EcoTank ET-2750",
+                "Epson EcoTank ET-2756",
+                "Epson EcoTank ET-2850",
+                "Epson EcoTank ET-2851",
+                "Epson EcoTank ET-2856",
+                "Epson EcoTank ET-2950",
+                "Epson EcoTank ET-2951",
+                "Epson EcoTank ET-2955",
+                "Epson EcoTank ET-2956",
+                "Epson EcoTank ET-2959",
+                "Epson EcoTank ET-3700",
+                "Epson EcoTank ET-3750",
+                "Epson EcoTank ET-3850",
+                "Epson EcoTank ET-3950",
+                "Epson EcoTank ET-3956",
+                "Epson EcoTank ET-4750",
+                "Epson EcoTank ET-4850",
+                "Epson EcoTank ET-4856",
+                "Epson EcoTank ET-4950",
+                "Epson EcoTank ET-4951",
+                "Epson EcoTank ET-4955",
+                "Epson EcoTank ET-4956"
+              ]
+            },
+            {
+              "id": 52989,
+              "name": "Epson 102 (C13T03R140) čierna kompatibilná atramentová náplň",
+              "capacity": "130 ml",
+              "printers": [
+                "Epson EcoTank ET-15000",
+                "Epson EcoTank ET-2700",
+                "Epson EcoTank ET-2750",
+                "Epson EcoTank ET-2756",
+                "Epson EcoTank ET-2850",
+                "Epson EcoTank ET-2851",
+                "Epson EcoTank ET-2856",
+                "Epson EcoTank ET-2950",
+                "Epson EcoTank ET-2951",
+                "Epson EcoTank ET-2955",
+                "Epson EcoTank ET-2956",
+                "Epson EcoTank ET-2959",
+                "Epson EcoTank ET-3700",
+                "Epson EcoTank ET-3750",
+                "Epson EcoTank ET-3850",
+                "Epson EcoTank ET-3950",
+                "Epson EcoTank ET-3956",
+                "Epson EcoTank ET-4750",
+                "Epson EcoTank ET-4850",
+                "Epson EcoTank ET-4856",
+                "Epson EcoTank ET-4950",
+                "Epson EcoTank ET-4951",
+                "Epson EcoTank ET-4955",
+                "Epson EcoTank ET-4956"
+              ]
+            },
+            {
+              "id": 53054,
+              "name": "Epson 102 (C13T03R640) CMYK kompatibilná sada atramentových náplní (4 ks)",
+              "capacity": "130 ml + 3 × 70 ml (spolu 340 ml)",
+              "printers": [
+                "Epson EcoTank ET-15000",
+                "Epson EcoTank ET-2700",
+                "Epson EcoTank ET-2750",
+                "Epson EcoTank ET-2756",
+                "Epson EcoTank ET-2850",
+                "Epson EcoTank ET-2851",
+                "Epson EcoTank ET-2856",
+                "Epson EcoTank ET-2950",
+                "Epson EcoTank ET-2951",
+                "Epson EcoTank ET-2955",
+                "Epson EcoTank ET-2956",
+                "Epson EcoTank ET-2959",
+                "Epson EcoTank ET-3700",
+                "Epson EcoTank ET-3750",
+                "Epson EcoTank ET-3850",
+                "Epson EcoTank ET-3950",
+                "Epson EcoTank ET-3956",
+                "Epson EcoTank ET-4750",
+                "Epson EcoTank ET-4850",
+                "Epson EcoTank ET-4856",
+                "Epson EcoTank ET-4950",
+                "Epson EcoTank ET-4951",
+                "Epson EcoTank ET-4955",
+                "Epson EcoTank ET-4956"
+              ]
+            }
+          ]
+        },
+        {
+          "message": "30X do HP, neviem model",
+          "status": 200,
+          "timing": "app;dur=2.4",
+          "answer": [
+            "Pri skrátenom označení 30X potrebujem potvrdiť presný model tlačiarne HP alebo celý OEM kód z kazety. Pozrite, prosím, výrobný štítok tlačiarne alebo označenie kazety; podľa neúplného údaja kompatibilitu nepotvrdím."
+          ],
+          "action": "CLARIFY_PRINTER"
+        },
+        {
+          "message": "Máte HP CF230X?",
+          "status": 200,
+          "timing": "app;dur=367.2",
+          "answer": [
+            "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+          ],
+          "products": [
+            {
+              "id": 37637,
+              "name": "HP CF230X (30X) čierny kompatibilný toner",
+              "capacity": "3 500 strán",
+              "printers": [
+                "HP LaserJet Pro M203dn",
+                "HP LaserJet Pro M203dw",
+                "HP LaserJet Pro MFP M227fdn",
+                "HP LaserJet Pro MFP M227fdw",
+                "HP LaserJet Pro MFP M227sdn"
+              ]
+            },
+            {
+              "id": 38181,
+              "name": "HP CF230X (30X) čierny originálny toner",
+              "capacity": "3 500 strán",
+              "printers": [
+                "HP LaserJet Pro M203dn",
+                "HP LaserJet Pro M203dw",
+                "HP LaserJet Pro MFP M227fdn",
+                "HP LaserJet Pro MFP M227fdw",
+                "HP LaserJet Pro MFP M227sdn"
+              ]
+            },
+            {
+              "id": 41611,
+              "name": "HP CF230X (30X) čierny renovovaný toner Patent Free",
+              "capacity": "3 500 strán",
+              "printers": [
+                "HP LaserJet Pro M203dn",
+                "HP LaserJet Pro M203dw",
+                "HP LaserJet Pro MFP M227fdn",
+                "HP LaserJet Pro MFP M227fdw",
+                "HP LaserJet Pro MFP M227sdn"
+              ]
+            }
+          ]
+        },
+        {
+          "message": "Máte kompatibilný Lexmark 56F2X0E?",
+          "status": 200,
+          "timing": "app;dur=189.3",
+          "answer": [
+            "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+          ],
+          "products": [
+            {
+              "id": 53282,
+              "name": "Kompatibilný toner pre Lexmark 56F2X0E Black 20000 strán",
+              "capacity": "20 000 strán",
+              "printers": [
+                "Lexmark MX521de",
+                "Lexmark MS421dw",
+                "Lexmark MS521dn",
+                "Lexmark MX521ade",
+                "Lexmark MX622ade",
+                "Lexmark MS621dn",
+                "Lexmark MX522adhe",
+                "Lexmark MS622de",
+                "Lexmark MX622adhe",
+                "Lexmark MS421dn",
+                "Lexmark MX421ade"
+              ]
+            }
+          ]
+        },
+        {
+          "message": "Aký je rozdiel medzi tonerom, optickým valcom a odpadovou nádobou?",
+          "status": 200,
+          "timing": "app;dur=12.2",
+          "answer": [
+            "Toner, optický valec a odpadová nádoba:",
+            "Toner dodáva prášok na tlač. Optický valec (drum) vytvára obraz a prenáša toner; môže byť samostatný alebo súčasťou tonerovej kazety.",
+            "Odpadová nádoba zachytáva zvyškový toner, ktorý sa pri tlači nepoužil. Nie je náhradou tonera ani optického valca; pri hlásení o jej naplnení sa postupuje podľa návodu konkrétnej tlačiarne.",
+            "Napíšte presný model tlačiarne a chybové hlásenie, aby sme určili správny diel."
+          ]
+        },
+        {
+          "path": "/api/product?id=53282",
+          "status": 200,
+          "timing": "app;dur=4.0"
+        },
+        {
+          "path": "/produkt/kompatibilny-toner-pre-lexmark-56f2x0e-black-20000-stran",
+          "status": 200,
+          "timing": "app;dur=462.2"
+        },
+        {
+          "path": "/api/products?search=56F2X0E&per_page=10",
+          "status": 200,
+          "timing": "app;dur=344.7"
+        },
+        {
+          "path": "/tlaciarne/lexmark/lexmark-ms521dn",
+          "status": 200,
+          "timing": "app;dur=10.6"
+        },
+        {
+          "path": "/morning-verification-url-does-not-exist",
+          "status": 404
+        }
+      ]
+    },
+    "astroCheck": {
+      "errors": 0,
+      "warnings": 0,
+      "existingHints": 25
+    },
+    "build": "passed"
+  },
+  "limitations": [
+    "No new production import has yet used this patch.",
+    "The exact retained/native split of the historical 124 MB cannot be assigned without a process profile.",
+    "The original audit timing method is unavailable; redirects reproduce similar latency but do not prove all audit requests used that route.",
+    "New checkout visual browser QA remains for redeploy: local-file navigation was blocked by browser URL policy. Actual checkout renderer, hidden CSS rules, server-rendered markup and pricing were tested.",
+    "Container memory limit requires Coolify host configuration and is not changed by this Git commit.",
+    "Three product images remain placeholders; no verified photograph for the supplied compatible product was available. Manufacturer OEM compatibility is inferred from the supplier record naming this exact replacement code."
+  ]
+}

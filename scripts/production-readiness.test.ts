@@ -90,7 +90,8 @@ test("storefront chráni pamäť a neposiela skryté stovky variantov", async ()
   const search = await readFile(new URL("../src/pages/api/smart-search.ts", import.meta.url), "utf8");
 
   assert.match(cache, /__TM_PUBLIC_PRODUCTS_CACHE__/);
-  assert.match(cache, /result\.products\.map\(mapProduct\)/);
+  // Page normalization, detail preservation and failed-import retention are
+  // exercised by product-cache-streaming.test.ts rather than callback syntax.
   assert.doesNotMatch(cache, /detailLines\.join/);
   assert.match(productsPage, /const special_variants: any\[\] = \[\]/);
   assert.match(productsApi, /special_variants: \[\]/);

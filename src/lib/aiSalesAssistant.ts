@@ -235,7 +235,7 @@ function relevantProducts(products: Product[], message: string) {
   // Pôvodný univerzálny matcher prechádzal pri každom kandidátovi aj tisíce
   // kompatibilných modelov tlačiarní a na produkcii vedel trvať niekoľko sekúnd.
   // Pri OEM kóde stačí identita produktu (SKU/názov), takže kompatibility vôbec neskenujeme.
-  const explicitOemFast = normalize(raw).match(/\b(cf|ce|crg|tn|dr|wt|mc|w|q|clt|mlt|tk|pgi|cli|lc)\s*-?\s*(\d{2,}[a-z0-9]*)\b/i);
+  const explicitOemFast = normalize(raw).match(/\b(cf|ce|crg|tn|dr|wt|mc|w|q|clt|mlt|tk|pgi|pfi|cli|lc)\s*-?\s*(\d{2,}[a-z0-9]*)\b/i);
   if (explicitOemFast) {
     const wanted = compactKey(`${explicitOemFast[1]}${explicitOemFast[2]}`);
     let fastMatches = products.filter((product) => {
@@ -278,7 +278,7 @@ function relevantProducts(products: Product[], message: string) {
 
   // Pri explicitnom OEM prefixe nesmie samotné číslo (napr. 737) pritiahnuť
   // nesúvisiaci produkt inej značky.
-  const explicitOem = normalize(raw).match(/\b(cf|ce|crg|tn|dr|wt|mc|w|q|clt|mlt|tk|pgi|cli|lc)\s*-?\s*(\d{2,}[a-z0-9]*)\b/i);
+  const explicitOem = normalize(raw).match(/\b(cf|ce|crg|tn|dr|wt|mc|w|q|clt|mlt|tk|pgi|pfi|cli|lc)\s*-?\s*(\d{2,}[a-z0-9]*)\b/i);
   if (explicitOem) {
     const wanted = compactKey(`${explicitOem[1]}${explicitOem[2]}`);
     const strict = exactIdentityMatches.filter((match) => compactKey(productSearchValue(match.product)).includes(wanted));
@@ -584,6 +584,13 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   if (/\b(?:aky je rozdiel|rozdiel|co je)\b.*\btoner\w*\b.*\batrament\w*\b|\btoner\w*\b.*\b(?:alebo|versus|vs)\b.*\batrament\w*\b/.test(normalizedMessage)) {
     const material = aiKnowledge.find((item) => item.id === 'toner-atrament');
     if (material) return { answer: [`${material.title}:`, ...material.answer], products: [], groups: [], intent: 'support', faq: material.id, confidence: 0.99 };
+  }
+
+  if (/\b(?:odpadov\w*|waste)\b/.test(normalizedMessage)
+    && /\b(?:rozdiel|co je|vysvetli|toner\w*|valc\w*|valec|drum\w*)\b/.test(normalizedMessage)
+    && !hasProductCodeOrModel(originalMessage)) {
+    const components = aiKnowledge.find((item) => item.id === 'toner-valec-odpadova-nadoba');
+    if (components) return { answer: [`${components.title}:`, ...components.answer], products: [], groups: [], intent: 'support', faq: components.id, confidence: 0.99 };
   }
 
   if (/\b(?:aky je rozdiel|rozdiel|co je|je to iste)\b.*\btoner\w*\b.*\b(?:optick\w*\s+valc\w*|valc\w*|drum\w*)\b|\btoner\w*\b.*\b(?:alebo|versus|vs)\b.*\b(?:optick\w*\s+valc\w*|valc\w*|drum\w*)\b/.test(normalizedMessage)) {

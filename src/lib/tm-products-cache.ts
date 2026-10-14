@@ -1,4 +1,6 @@
-import { beginCatalogSync, finishCatalogSync } from "./storefront-memory-diagnostics.ts";
+import { beginCatalogSync, finishCatalogSync, sampleCatalogSync } from "./storefront-memory-diagnostics.ts";
+import { parsePageYieldValue } from './ai-page-yield.ts';
+import { fillVerifiedCompatibility } from '../data/catalog-verified-compatibility.ts';
 import { mkdir, open, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TM_PRODUCT_CACHE_ROOT } from './runtime-paths.ts';
@@ -642,7 +644,7 @@ function bestRelatedPrinters(product: TmProduct, related: TmProduct[]) {
 }
 
 
-function enrichProductsFromRelated(products: TmProduct[]) {
+function enrichProductsFromRelated(products: TmProduct[], buildSearchText = true) {
   const byOem = new Map<string, TmProduct[]>();
 
   products.forEach((product) => {
@@ -664,7 +666,7 @@ function enrichProductsFromRelated(products: TmProduct[]) {
 
     const related = selectRelatedProducts(product, byOem);
     if (!related.length) {
-      mergeSearchText(product);
+      if (buildSearchText) mergeSearchText(product);
       return;
     }
 
@@ -688,7 +690,7 @@ function enrichProductsFromRelated(products: TmProduct[]) {
       }
     }
 
-    mergeSearchText(product);
+    if (buildSearchText) mergeSearchText(product);
   });
 
   return products;
@@ -712,22 +714,41 @@ export function sortProducts(products: TmProduct[]) {
   });
 }
 
-export function mapProduct(product: any): TmProduct {
+function pageYieldFromTitle(name: unknown) {
+  if (!/\b(?:stran(?:a|y|ok)?|pages?)\b/i.test(normalize(name))) return '';
+  const pages = parsePageYieldValue(name);
+  return pages === null ? '' : `${pages.toLocaleString('sk-SK').replace(/\u00a0/g, ' ')} strán`;
+}
+
+function fillMissingPageYield(product: TmProduct) {
+  const capacity = product.capacity || product.kapacita || product.yield || '';
+  const pageYield = product.page_yield || normalizeWooPageYield(capacity) || pageYieldFromTitle(product.name);
+  if (!pageYield) return;
+  if (isMissingValue(capacity)) product.capacity = pageYield;
+  if (isMissingValue(product.page_yield)) product.page_yield = pageYield;
+  if (isMissingValue(product.yield_pages)) product.yield_pages = pageYield;
+}
+
+export function mapProduct(product: any, options: { includeSearchText?: boolean } = {}): TmProduct {
   const type = detectType(product);
   const wooAttributes = ensureDefaultWarrantyAttribute(extractWooAttributes(product));
   const warrantyValue = normalizeWooWarranty(getWooAttributeValue(wooAttributes, ["Záruka", "Zaruka", "Warranty"]));
   const description = normalizeDescriptionWarranty(product.description, warrantyValue);
   const shortDescription = normalizeDescriptionWarranty(product.short_description, warrantyValue);
-  const compatiblePrinters = extractPrinters(product);
+  const compatibility = { id: product.id, sku: product.sku, name: product.name, compatible_printers: extractPrinters(product), compatibility_source: '' };
+  fillVerifiedCompatibility(compatibility);
+  const compatiblePrinters = compatibility.compatible_printers;
   const attributeCapacity = normalizeWooCapacity(getWooAttributeValue(wooAttributes, ["Kapacita", "Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages", "Objem", "ML"]));
   const attributePageYield = normalizeWooPageYield(getWooAttributeValue(wooAttributes, ["Výťažnosť", "Vytaznost", "Počet strán", "Pocet stran", "Page yield", "Yield", "Pages"]), true)
     || normalizeWooPageYield(getWooAttributeValue(wooAttributes, ["Kapacita"]));
   const metaPageYield = normalizeWooPageYield(getWooMetaValue(product, ["_ciq_yield_pages", "ciq_yield_pages", "yield_pages"]), true);
+  const titlePageYield = !attributePageYield && !metaPageYield ? pageYieldFromTitle(product.name) : '';
   const categories = Array.isArray(product.categories) ? product.categories.map((cat: any) => ({ id: cat.id, name: cat.name, slug: cat.slug })) : [];
   const tagText = Array.isArray(product.tags) ? product.tags.map((tag: any) => `${tag.name || ""} ${tag.slug || ""}`).join(" ") : "";
   const categoryText = categories.map((cat: any) => `${cat.name || ""} ${cat.slug || ""}`).join(" ");
-  const plainText = stripHtml(`${shortDescription}\n${description}`);
-  const searchableText = normalize(`${product.name || ""} ${product.sku || ""} ${categoryText} ${tagText} ${wooAttributeText(wooAttributes)} ${plainText} ${compatiblePrinters.join(" ")}`);
+  // Import search text is rebuilt once from the final canonical fields.
+  // Do not allocate a full HTML/attribute-derived copy for every Woo page.
+  const searchableText = options.includeSearchText === false ? '' : normalize(`${product.name || ""} ${product.sku || ""} ${categoryText} ${tagText} ${wooAttributeText(wooAttributes)} ${stripHtml(`${shortDescription}\n${description}`)} ${compatiblePrinters.join(" ")}`);
   const normalizedImages = normalizeProductImages(product.images, product);
   const primaryImage = normalizedImages[0] || TM_PRODUCT_PLACEHOLDER_IMAGE;
   const taxonomyBrand = Array.isArray(product.brands)
@@ -850,14 +871,15 @@ export function mapProduct(product: any): TmProduct {
     attributes_all: wooAttributes,
     color: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])) || detectColor(product),
     farba: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])) || detectColor(product),
-    capacity: attributeCapacity || metaPageYield,
-    kapacita: attributeCapacity || metaPageYield,
-    yield: attributePageYield || metaPageYield || attributeCapacity,
-    page_yield: attributePageYield || metaPageYield,
-    yield_pages: metaPageYield || attributePageYield,
+    capacity: attributeCapacity || metaPageYield || titlePageYield,
+    kapacita: attributeCapacity || metaPageYield || titlePageYield,
+    yield: attributePageYield || metaPageYield || attributeCapacity || titlePageYield,
+    page_yield: attributePageYield || metaPageYield || titlePageYield,
+    yield_pages: metaPageYield || attributePageYield || titlePageYield,
     warranty: warrantyValue,
     zaruka: warrantyValue,
     compatible_printers: compatiblePrinters,
+    ...(compatibility.compatibility_source ? { compatibility_source: compatibility.compatibility_source } : {}),
     printers: compatiblePrinters,
     categories,
     search_text: searchableText,
@@ -880,6 +902,12 @@ function parseCacheFile(text: string): CacheFile | null {
       || Number(data.total || 0) !== data.products.length
     ) return null;
 
+    // Fill explicitly labelled yields from existing titles immediately after
+    // redeploy, as well as during later imports. Never invent printer models.
+    for (const product of data.products) {
+      fillMissingPageYield(product);
+      if (fillVerifiedCompatibility(product) && data.runtime_compact) compactRuntimeProduct(product);
+    }
     // Staršie cache súbory obsahujú kompatibilné aliasy ako dve samostatné
     // JSON polia. Po načítaní zdieľajú jednu hodnotu, čím sa uvoľnia duplicitné
     // objekty bez zmeny verejného tvaru produktu alebo výsledkov vyhľadávania.
@@ -946,7 +974,9 @@ type ProductCacheWriter = Awaited<ReturnType<typeof createProductCacheWriter>>;
 
 async function writeSplitCache(source: CacheFile, oldDetailsFile = "", staged?: ProductCacheWriter): Promise<CacheFile> {
   const writer = staged || await createProductCacheWriter(CACHE_DIR, CACHE_FILE);
-  const products: TmProduct[] = [];
+  // Staged products are private to this import. Reuse them instead of keeping
+  // a second object for every product beside the old live generation.
+  const products: TmProduct[] = staged ? source.products : [];
   const next: CacheFile = {
     ...source,
     version: CACHE_VERSION,
@@ -959,9 +989,9 @@ async function writeSplitCache(source: CacheFile, oldDetailsFile = "", staged?: 
       const location = staged
         ? { _detail_offset: product._detail_offset, _detail_length: product._detail_length }
         : await writer.appendDetail(productDetail(product));
-      const compact = runtimeProduct(product);
+      const compact = staged ? compactRuntimeProduct(product) : runtimeProduct(product);
       Object.assign(compact, location);
-      products.push(compact);
+      if (!staged) products.push(compact);
     }
     const { products: _products, ...metadata } = next;
     await writer.publish(metadata, products);
@@ -1237,7 +1267,7 @@ async function fetchAllWooProducts(detailsWriter: ProductCacheWriter) {
     // až potom vytvorili runtime produkty, webový proces má naraz starú cache,
     // celý surový katalóg aj nový katalóg a môže prekročiť 512 MB. Každú stranu
     // preto normalizujeme hneď a surovú odpoveď necháme uvoľniť.
-    const mapped = result.products.map(mapProduct);
+    const mapped = result.products.map((product: any) => mapProduct(product, { includeSearchText: false }));
     for (const product of mapped) {
       // Keep full descriptions and attributes on disk from the very first page.
       // Enrichment below uses canonical fields, aliases, plain description,
@@ -1251,6 +1281,7 @@ async function fetchAllWooProducts(detailsWriter: ProductCacheWriter) {
       delete product.search_text;
     }
     all.push(...mapped);
+    sampleCatalogSync('woo-page');
 
     if (reportedTotalPages && page >= reportedTotalPages) break;
     if (!reportedTotalPages && result.products.length < WOO_SYNC_PER_PAGE) break;
@@ -1304,7 +1335,8 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
       throw new Error(message);
     }
 
-    const products = sortProducts(enrichProductsFromRelated(raw.products));
+    const products = sortProducts(enrichProductsFromRelated(raw.products, false));
+    sampleCatalogSync('enrichment');
     await recordAndAnnotatePrices(products).catch((error) => {
       console.error('[TM price history] Zápis histórie zlyhal, údaj o 30-dňovej cene sa nezverejní:', error?.message || error);
       for (const product of products) {
@@ -1329,6 +1361,7 @@ async function syncProductsCacheInternal(options: { force?: boolean } = {}): Pro
     });
 
     const next = await writeSplitCache(fullNext, current?.details_file, detailsWriter);
+    sampleCatalogSync('publication');
 
     globalStore.__TM_PRODUCTS_FILE_CACHE__ = next;
     globalStore.__TM_PRODUCTS_FILE_PATH__ = CACHE_FILE;
