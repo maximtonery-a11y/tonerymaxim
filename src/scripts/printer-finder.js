@@ -1,3 +1,5 @@
+import { exactPrinterName, matchingPrinterName } from '../lib/printer-name-search.ts';
+
 (() => {
   const roots = Array.from(document.querySelectorAll("[data-printer-finder]"));
   if (!roots.length) return;
@@ -255,12 +257,9 @@
     }
 
     function filterPrinters(query) {
-      const q = normalize(query);
-      const qc = compactKey(query);
-      if (!q) return printers;
-      return printers.filter((printer) => {
-        const title = printer.title || "";
-        return normalize(title).includes(q) || compactKey(title).includes(qc) || q.split(/\s+/).every((part) => normalize(title).includes(part));
+      return printers.flatMap((printer) => {
+        const title = matchingPrinterName(printer, query);
+        return title ? [{ ...printer, title }] : [];
       });
     }
 
@@ -361,7 +360,7 @@
       const target = selectedPrinter || input.value.trim();
       if (!target) return;
       event.preventDefault();
-      const match = printers.find((printer) => compactKey(printer.title) === compactKey(target));
+      const match = printers.find((printer) => exactPrinterName(printer, target));
       window.location.href = match?.url || printerUrl(target, brand);
     });
 
@@ -370,7 +369,7 @@
       if (!button) return;
       const target = button.dataset.printerChoice || "";
       if (!target) return;
-      const match = printers.find((printer) => compactKey(printer.title) === compactKey(target));
+      const match = printers.find((printer) => exactPrinterName(printer, target));
       window.location.href = match?.url || printerUrl(target, brand);
     });
 
@@ -386,7 +385,7 @@
     submitButton?.addEventListener("click", () => {
       const target = selectedPrinter || input?.value?.trim();
       if (!target) return;
-      const match = printers.find((printer) => compactKey(printer.title) === compactKey(target));
+      const match = printers.find((printer) => exactPrinterName(printer, target));
       window.location.href = match?.url || printerUrl(target, brand);
     });
 

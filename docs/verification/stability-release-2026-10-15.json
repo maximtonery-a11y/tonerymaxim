@@ -1,0 +1,335 @@
+{
+  "baseCommit": "a1fc76bb71797e0512be11a1bc34a8a3379afb49",
+  "date": "2026-10-15",
+  "environment": "isolated local checks, not the redeployed production release",
+  "node": "24.19.0",
+  "fullRegressions": {
+    "results": [
+      {
+        "name": "ads",
+        "startedAt": "2026-10-15T08:13:53.684Z",
+        "exitCode": 0,
+        "durationMs": 1303,
+        "tests": 85,
+        "pass": 85,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "search",
+        "startedAt": "2026-10-15T08:13:54.988Z",
+        "exitCode": 0,
+        "durationMs": 358,
+        "tests": 41,
+        "pass": 41,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "performance",
+        "startedAt": "2026-10-15T08:13:55.347Z",
+        "exitCode": 0,
+        "durationMs": 1442,
+        "tests": 20,
+        "pass": 20,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "woo",
+        "startedAt": "2026-10-15T08:13:56.790Z",
+        "exitCode": 0,
+        "durationMs": 1517,
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "dpd",
+        "startedAt": "2026-10-15T08:13:58.307Z",
+        "exitCode": 0,
+        "durationMs": 287,
+        "tests": 36,
+        "pass": 36,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "seo",
+        "startedAt": "2026-10-15T08:13:58.595Z",
+        "exitCode": 0,
+        "durationMs": 3011,
+        "tests": 71,
+        "pass": 71,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "migration",
+        "startedAt": "2026-10-15T08:14:01.607Z",
+        "exitCode": 0,
+        "durationMs": 136,
+        "tests": 7,
+        "pass": 7,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "migration-gate",
+        "startedAt": "2026-10-15T08:14:01.743Z",
+        "exitCode": 0,
+        "durationMs": 315,
+        "tests": 0,
+        "pass": 0,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "security",
+        "startedAt": "2026-10-15T08:14:02.059Z",
+        "exitCode": 0,
+        "durationMs": 111,
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "price-history",
+        "startedAt": "2026-10-15T08:14:02.171Z",
+        "exitCode": 0,
+        "durationMs": 162,
+        "tests": 5,
+        "pass": 5,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "production",
+        "startedAt": "2026-10-15T08:14:02.333Z",
+        "exitCode": 0,
+        "durationMs": 44262,
+        "tests": 251,
+        "pass": 251,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "ai:regression",
+        "startedAt": "2026-10-15T08:14:46.596Z",
+        "exitCode": 0,
+        "durationMs": 27610,
+        "tests": 566,
+        "pass": 566,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      },
+      {
+        "name": "extra-purchase",
+        "startedAt": "2026-10-15T08:15:14.207Z",
+        "exitCode": 0,
+        "durationMs": 385,
+        "tests": 40,
+        "pass": 40,
+        "fail": 0,
+        "skipped": 0,
+        "failures": []
+      }
+    ],
+    "totals": {
+      "tests": 1126,
+      "pass": 1126,
+      "fail": 0,
+      "skipped": 0
+    },
+    "scope": "before final cold-start monitor test; final monitor covered by releaseGuard"
+  },
+  "releaseGuard": {
+    "tests": 93,
+    "passed": 93,
+    "failed": 0,
+    "externalFetch": "blocked",
+    "productionCredentials": "not inherited"
+  },
+  "search": {
+    "mode": "local API handlers against production catalog snapshot",
+    "cases": 300,
+    "passed": 300,
+    "checks": 1111,
+    "failed": 0
+  },
+  "purchase": {
+    "ok": true,
+    "realWooOrders": 0,
+    "realPayments": 0,
+    "emailsSent": 0,
+    "otherOutbound": 0,
+    "verifiedTotals": {
+      "threeSetsCod": 204.24,
+      "fourSetsGoPay": 225.6,
+      "cancelledGoPayConvertedToCod": 226.8,
+      "smallOrder": 16.29,
+      "changedLivePrice": 18.4
+    },
+    "scenarios": 27
+  },
+  "builtApplication": {
+    "ok": true,
+    "checks": [
+      {
+        "name": "Liveness",
+        "path": "/api/health",
+        "ok": true,
+        "status": 200,
+        "ms": 28,
+        "serverTiming": "app;dur=1.9"
+      },
+      {
+        "name": "Home page",
+        "path": "/",
+        "ok": true,
+        "status": 200,
+        "ms": 22,
+        "serverTiming": "app;dur=6.1"
+      },
+      {
+        "name": "OEM search",
+        "path": "/api/products?search=HP%20CF230X&per_page=12",
+        "ok": true,
+        "status": 200,
+        "ms": 443,
+        "serverTiming": "app;dur=437.0"
+      },
+      {
+        "name": "Memory and catalogue",
+        "path": "/api/storefront-check",
+        "ok": true,
+        "status": 200,
+        "ms": 6,
+        "serverTiming": "app;dur=1.1",
+        "catalogProducts": 7734,
+        "catalogGeneratedAt": "2026-10-15T08:21:33.064Z",
+        "lastSync": null
+      },
+      {
+        "name": "Prefix search and sets",
+        "path": "/api/smart-search?q=CF53",
+        "ok": true,
+        "status": 200,
+        "ms": 649,
+        "serverTiming": "app;dur=643.9"
+      },
+      {
+        "name": "Printer variant alias",
+        "path": "/api/printers?brand=samsung&q=ML-2165W",
+        "ok": true,
+        "status": 200,
+        "ms": 67,
+        "serverTiming": "app;dur=62.1"
+      },
+      {
+        "name": "Canonical pack and price",
+        "path": "/api/product?id=52830",
+        "ok": true,
+        "status": 200,
+        "ms": 11,
+        "serverTiming": "app;dur=6.0",
+        "unitPrice": 75.2
+      },
+      {
+        "name": "Empty checkout",
+        "path": "/pokladna",
+        "ok": true,
+        "status": 200,
+        "ms": 8,
+        "serverTiming": "app;dur=1.7"
+      },
+      {
+        "name": "Empty cart rejected",
+        "path": "/api/order-create",
+        "ok": true,
+        "status": 400,
+        "ms": 36,
+        "serverTiming": "app;dur=3.9"
+      },
+      {
+        "name": "Empty cart rejected",
+        "path": "/api/gopay-create",
+        "ok": true,
+        "status": 400,
+        "ms": 6,
+        "serverTiming": "app;dur=1.2"
+      },
+      {
+        "name": "AI pack calculation",
+        "path": "/api/ai-tomas",
+        "ok": true,
+        "status": 200,
+        "ms": 487,
+        "serverTiming": "app;dur=478.6"
+      },
+      {
+        "name": "Not-found page",
+        "path": "/__tm_stability_missing_page__",
+        "ok": true,
+        "status": 404,
+        "ms": 12,
+        "serverTiming": "app;dur=2.4"
+      }
+    ],
+    "compiledAliasNavigation": {
+      "printer": {
+        "title": "Samsung ML-2165",
+        "aliases": [
+          "Samsung ML-2165W"
+        ],
+        "brand": "Samsung",
+        "product_count": 3,
+        "url": "/tlaciarne/samsung/samsung-ml-2165"
+      },
+      "status": 200,
+      "ok": true
+    },
+    "fixture": {
+      "products": 7734,
+      "originalGeneratedAt": "2026-10-13T05:07:09.499Z",
+      "freshnessTimestampAdjustedForFixture": true,
+      "outboundFetch": "blocked in server"
+    }
+  },
+  "check": {
+    "files": 506,
+    "errors": 0,
+    "warnings": 0,
+    "existingHints": 25
+  },
+  "build": "passed including prebuild",
+  "unverified": [
+    "Coolify settings and hard RAM limit",
+    "new desktop header pixels after redeploy",
+    "first real morning import after redeploy",
+    "long-term leak absence",
+    "delivery of failure notifications"
+  ],
+  "fingerprints": {
+    "src/pages/api/printers.ts": "196090b38621b20d5927bcaf60038939d9338bd1026346baf82ad7ecb9fd3165",
+    "src/lib/printer-name-search.ts": "8a00579f440ea1f01a2acf201b8f7a058e67d5ab821d6e3ce25e58192acfbb44",
+    "src/scripts/printer-finder.js": "b4e7bd54682a353cee9cd774ec1b4e20dd1b227a1b2b21982a8f117dfc430120",
+    "src/styles/global.css": "3a19ac0b233eb4f7ed9e2137068e949928b52684b142aa024799f70362a91d0e",
+    "scripts/release-guard.mjs": "7029b227a44ddbc94733420616e10b42b1ab071ff69e621492ec56970b6f40dc",
+    "scripts/verify-live-stability.mjs": "a266fe9714ac83d2c6270679284c099cb8aaf614ad8cbafb3308af744c971686"
+  }
+}

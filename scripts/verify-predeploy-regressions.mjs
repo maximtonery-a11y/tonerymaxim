@@ -2,7 +2,7 @@
 // node scripts/verify-predeploy-regressions.mjs --catalog /abs/products.json --output /abs/report-directory
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFile, writeFile, mkdtemp, mkdir, copyFile, rm } from 'node:fs/promises';
+import { readFile, writeFile, mkdtemp, mkdir, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -16,10 +16,17 @@ const guard = join(temp, 'offline.mjs');
 const fixture = join(root, '.tm-cache', 'products.json');
 const previousFixture = await readFile(fixture).catch(() => null);
 await mkdir(output, { recursive: true }); await mkdir(join(root, '.tm-cache'), { recursive: true });
+// Public API snapshots omit the internal runtime full-text field. Reconstruct
+// that derived field for verification; prices, models and supplier data stay intact.
+const catalog = JSON.parse(await readFile(input, 'utf8'));
+for (const p of catalog.products) if (!p.search_text) p.search_text = [p.name, p.sku, p.slug, p.product_type_label,
+  p.color, p.capacity, p.warranty, ...(p.categories || []).map(c => typeof c === 'string' ? c : c.name),
+  ...(p.compatible_printers || [])].filter(Boolean).join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const preparedCatalog = JSON.stringify(catalog);
 // A few historical catalogue assertions explicitly read this development path.
 // Preserve any existing file and restore it after the run.
-if (input !== fixture) await copyFile(input, fixture);
-await mkdir(join(temp, 'cache')); await copyFile(input, join(temp, 'cache', 'products.json'));
+if (input !== fixture) await writeFile(fixture, preparedCatalog);
+await mkdir(join(temp, 'cache')); await writeFile(join(temp, 'cache', 'products.json'), preparedCatalog);
 await writeFile(guard, `const original=globalThis.fetch;globalThis.fetch=async(input,...args)=>{const url=new URL(typeof input==='string'||input instanceof URL?String(input):input.url);if(!['127.0.0.1','localhost','[::1]'].includes(url.hostname))throw new Error('Predeploy test prohibits external requests: '+url.origin);return original(input,...args);};`);
 const env = { PATH: process.env.PATH, NODE_ENV: 'test', TM_CACHE_DIR: join(temp, 'cache'),
   TM_DISABLE_BACKGROUND_WORKERS: '1', TM_DISABLE_INDEXNOW: '1', OPENAI_ASSISTANT_ENABLED: '0' };

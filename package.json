@@ -6,6 +6,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "prebuild": "node scripts/release-guard.mjs",
     "dev": "astro dev",
     "build": "astro build",
     "start": "node ./dist/server/entry.mjs",
@@ -15,7 +16,9 @@
     "test": "npm run test:ads && npm run test:search && npm run test:performance && npm run test:woo && npm run test:dpd && npm run test:seo && npm run test:migration && npm run test:security && npm run test:price-history && npm run test:production && npm run test:ai:regression",
     "test:ads": "node --experimental-strip-types --test scripts/ads-intelligence.test.ts scripts/google-ads-readonly.test.ts scripts/ads-intelligence-api.test.ts scripts/marketing-v2.test.ts scripts/data-attribution-v3.test.ts scripts/marketing-optimization-v2.test.ts",
     "test:search": "node --experimental-strip-types --test scripts/search-quality.test.ts scripts/search-prefix-regression.test.ts scripts/search-pack-order.test.ts scripts/search-client-resilience.test.mjs",
-    "test:performance": "node --experimental-strip-types --test scripts/printer-api-cache.test.ts scripts/product-cache-streaming.test.ts scripts/product-cache-generation-race.test.ts scripts/memory-v1-regression.test.ts scripts/memory-v1-sync.test.ts",
+    "test:performance": "node --experimental-strip-types --test scripts/printer-api-cache.test.ts scripts/printer-alias-regression.test.ts scripts/live-stability-check.test.mjs scripts/product-cache-streaming.test.ts scripts/product-cache-generation-race.test.ts scripts/memory-v1-regression.test.ts scripts/memory-v1-sync.test.ts",
+    "test:release": "node scripts/release-guard.mjs",
+    "test:live": "node scripts/verify-live-stability.mjs",
     "test:woo": "node --experimental-strip-types --test scripts/woocommerce-catalog.test.ts",
     "test:dpd": "node --experimental-strip-types --test scripts/dpd-pickup-regression.test.ts scripts/dpd-pickup-order-integration.test.ts",
     "test:seo": "node --experimental-strip-types --test scripts/seo-foundation.test.ts scripts/seo-index-cache.test.ts scripts/seo-snippet.test.ts scripts/product-publication-policy.test.ts scripts/seo-content-quality.test.ts scripts/conversion-system.test.ts",

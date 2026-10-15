@@ -291,6 +291,38 @@ input {
   font-weight: 800;
 }
 
+/* Keep the cart reachable when the signed-in account label grows. */
+@media (min-width: 1101px) {
+  .header-actions { flex-shrink: 0; }
+  .header-actions .account-link {
+    display: block;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 36px;
+  }
+  .header-actions .cart-btn { flex: 0 0 26px; margin-right: 9px; }
+}
+
+/* All header controls remain available on ordinary laptop widths. */
+@media (min-width: 1101px) and (max-width: 1600px) and (hover: hover) and (pointer: fine) {
+  body { padding-top: 163px; }
+  .site-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: 44px 44px;
+    height: 124px;
+    padding: 12px 24px;
+    gap: 12px 24px;
+  }
+  .site-logo-link { grid-column: 1; grid-row: 1; }
+  .site-logo { width: 178px; }
+  .site-nav { grid-column: 2; grid-row: 1; min-width: 0; justify-content: center; gap: 16px; }
+  .header-actions { grid-column: 3; grid-row: 1; }
+  .header-search-area { grid-column: 1 / -1; grid-row: 2; width: 100%; min-width: 0; max-width: none; }
+  .tm-trust-bar { top: 123px; }
+}
+
 .primary-btn {
   border: 0;
   border-radius: 13px;
