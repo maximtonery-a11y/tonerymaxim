@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
-import { buildCustomerCareHtml, buildCustomerCareText, customerCareAdminEmail, sanitizeCustomerCarePayload, saveCustomerCareCase, validateCustomerCarePayload } from "../../../lib/customer-care";
-import { sendMail } from "../../../lib/mail";
+import { deliverCustomerCareCase, sanitizeCustomerCarePayload, saveCustomerCareCase, validateCustomerCarePayload } from "../../../lib/customer-care";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -14,15 +13,15 @@ export const POST: APIRoute = async ({ request }) => {
       referer: request.headers.get("referer") || "",
     });
 
-    const text = buildCustomerCareText("reklamacia", record.caseNumber, payload);
-    const html = buildCustomerCareHtml("reklamacia", record.caseNumber, payload);
-
-    await Promise.allSettled([
-      sendMail({ to: payload.email, subject: `Reklamácia ${record.caseNumber} bola prijatá | ToneryMAXIM.sk`, text, html }),
-      sendMail({ to: customerCareAdminEmail(), subject: `Nová reklamácia ${record.caseNumber}`, text, html, replyTo: payload.email }),
-    ]);
-
-    return new Response(JSON.stringify({ ok: true, caseNumber: record.caseNumber }), { status: 200 });
+    const delivery = await deliverCustomerCareCase(record);
+    return new Response(JSON.stringify({
+      ok: true, caseNumber: record.caseNumber,
+      emailSent: delivery.customer,
+      emailPending: !delivery.customer,
+      message: delivery.customer
+        ? "Podanie bolo uložené a potvrdenie odoslané."
+        : "Podanie bolo bezpečne uložené. Potvrdzovací e-mail sa nepodarilo odoslať a systém ho zopakuje automaticky.",
+    }), { status: 200 });
   } catch (error: any) {
     console.error("Customer care claim error:", error?.message || error);
     return new Response(JSON.stringify({ ok: false, error: "Reklamáciu sa nepodarilo odoslať." }), { status: 500 });
