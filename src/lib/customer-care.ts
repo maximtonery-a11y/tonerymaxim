@@ -1,5 +1,7 @@
 import { join } from "node:path";
-import { TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
+import { readdir } from "node:fs/promises";
+import { sendMail } from "./mail";
+import { TM_DATA_ROOT, readSignedJson, writeSignedJson } from './secure-persistence';
 
 export type CustomerCareKind = "reklamacia" | "odstupenie";
 
@@ -58,6 +60,7 @@ export async function saveCustomerCareCase(kind: CustomerCareKind, payload: Retu
     kind,
     caseNumber,
     status: "received",
+    delivery: { customer: false, admin: false, attempts: 0 },
     createdAt: new Date().toISOString(),
     payload,
     requestMeta,
@@ -119,4 +122,49 @@ export function escapeHtml(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+type CareRecord = Awaited<ReturnType<typeof saveCustomerCareCase>>;
+const inflight = new Set<string>();
+
+/** Saved first; delivery is attempted independently for each recipient. */
+export async function deliverCustomerCareCase(record: CareRecord): Promise<{ customer: boolean; admin: boolean }> {
+  if (inflight.has(record.caseNumber)) return { customer: record.delivery.customer, admin: record.delivery.admin };
+  inflight.add(record.caseNumber);
+  try {
+    const file = join(STORE_DIR, record.caseNumber + ".json");
+    const persisted = await readSignedJson<CareRecord>(file);
+    if (!persisted) throw new Error("Customer care record missing or invalid");
+    const state = persisted.delivery || { customer: false, admin: false, attempts: 0 };
+    const text = buildCustomerCareText(persisted.kind, persisted.caseNumber, persisted.payload);
+    const html = buildCustomerCareHtml(persisted.kind, persisted.caseNumber, persisted.payload);
+    const label = persisted.kind === "reklamacia" ? "Reklamácia" : "Odstúpenie";
+    const tasks: Array<Promise<void>> = [];
+    if (!state.customer) tasks.push(sendMail({ to: persisted.payload.email, subject: `${label} ${persisted.caseNumber} bolo prijaté | ToneryMAXIM.sk`, text, html }).then(() => { state.customer = true; }).catch(e => console.error("[TM care] customer delivery failed", persisted.caseNumber, String(e?.message || e))));
+    if (!state.admin) tasks.push(sendMail({ to: customerCareAdminEmail(), subject: `Nové podanie ${label} ${persisted.caseNumber}`, text, html, replyTo: persisted.payload.email }).then(() => { state.admin = true; }).catch(e => console.error("[TM care] admin delivery failed", persisted.caseNumber, String(e?.message || e))));
+    await Promise.all(tasks);
+    state.attempts += 1;
+    persisted.delivery = state;
+    await writeSignedJson(file, persisted);
+    return { customer: state.customer, admin: state.admin };
+  } finally {
+    inflight.delete(record.caseNumber);
+  }
+}
+
+let careWorkerStarted = false;
+export function ensureCustomerCareDeliveryWorkerStarted(): void {
+  if (careWorkerStarted) return;
+  careWorkerStarted = true;
+  const scan = async () => {
+    let names: string[] = [];
+    try { names = await readdir(STORE_DIR); } catch (e: any) { if (e?.code !== "ENOENT") console.error("[TM care] scan failed", e); return; }
+    for (const name of names.filter(n => /^[RO][0-9A-Z-]+\\.json$/.test(n)).slice(-1000)) {
+      const record = await readSignedJson<CareRecord>(join(STORE_DIR, name));
+      if (!record || (record.delivery?.customer && record.delivery?.admin)) continue;
+      try { await deliverCustomerCareCase(record); } catch (e) { console.error("[TM care] retry failed", name, e); }
+    }
+  };
+  setTimeout(() => { void scan(); }, 10_000).unref?.();
+  setInterval(() => { void scan(); }, 15 * 60_000).unref?.();
 }
