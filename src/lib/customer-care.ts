@@ -161,7 +161,7 @@ export function ensureCustomerCareDeliveryWorkerStarted(): void {
     try { names = await readdir(STORE_DIR); } catch (e: any) { if (e?.code !== "ENOENT") console.error("[TM care] scan failed", e); return; }
     for (const name of names.filter(n => /^[RO][0-9A-Z-]+\.json$/.test(n)).slice(-1000)) {
       const record = await readSignedJson<CareRecord>(join(STORE_DIR, name));
-      if (!record || (record.delivery?.customer && record.delivery?.admin)) continue;
+      if (!record || !record.delivery || (record.delivery.customer && record.delivery.admin)) continue;
       try { await deliverCustomerCareCase(record); } catch (e) { console.error("[TM care] retry failed", name, e); }
     }
   };
