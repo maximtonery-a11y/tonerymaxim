@@ -136,8 +136,11 @@ export async function deliverCustomerCareCase(record: CareRecord): Promise<{ cus
     const persisted = await readSignedJson<CareRecord>(file);
     if (!persisted) throw new Error("Customer care record missing or invalid");
     const state = persisted.delivery || { customer: false, admin: false, attempts: 0 };
-    const text = buildCustomerCareText(persisted.kind, persisted.caseNumber, persisted.payload);
-    const html = buildCustomerCareHtml(persisted.kind, persisted.caseNumber, persisted.payload);
+    const submissionDate = new Intl.DateTimeFormat("sk-SK", { dateStyle: "medium", timeStyle: "medium", timeZone: "Europe/Bratislava" }).format(new Date(persisted.createdAt));
+    const content = buildCustomerCareText(persisted.kind, persisted.caseNumber, persisted.payload);
+    const text = `${content}\nDátum a čas doručenia podania: ${submissionDate}\n`;
+    const html = buildCustomerCareHtml(persisted.kind, persisted.caseNumber, persisted.payload)
+      + `<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;padding:0 24px 24px"><p><strong>Dátum a čas prijatia:</strong> ${escapeHtml(submissionDate)}</p><h2 style="font-size:17px">Obsah podania</h2><pre style="white-space:pre-wrap;font:13px/1.6 Arial,sans-serif;background:#f5f8fd;padding:14px;border-radius:12px">${escapeHtml(content)}</pre></div>`;
     const label = persisted.kind === "reklamacia" ? "Reklamácia" : "Odstúpenie";
     const tasks: Array<Promise<void>> = [];
     if (!state.customer) tasks.push(sendMail({ to: persisted.payload.email, subject: `${label} ${persisted.caseNumber} bolo prijaté | ToneryMAXIM.sk`, text, html }).then(() => { state.customer = true; }).catch(e => console.error("[TM care] customer delivery failed", persisted.caseNumber, String(e?.message || e))));
