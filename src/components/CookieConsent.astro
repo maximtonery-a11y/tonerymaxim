@@ -347,7 +347,7 @@
   }
 
   function readConsent() {
-    try { return parse(window.localStorage.getItem(STORAGE_KEY)); } catch (error) { return null; }
+    try { var value = parse(window.localStorage.getItem(STORAGE_KEY)); return value && value.necessary === true && typeof value.analytics === "boolean" && typeof value.marketing === "boolean" ? value : null; } catch (error) { return null; }
   }
 
   function cleanOldKeys() {
@@ -398,6 +398,7 @@
   }
 
   function saveConsent(analyticsValue, marketingValue) {
+    var previous = readConsent();
     var consent = {
       necessary: true,
       analytics: !!analyticsValue,
@@ -415,6 +416,7 @@
     setChecks(consent);
     emit(consent);
     closePanel();
+    if (previous && ((previous.analytics && !consent.analytics) || (previous.marketing && !consent.marketing))) window.location.reload();
     return consent;
   }
 
@@ -425,13 +427,16 @@
   }
 
   function resetConsent() {
+    var previous = readConsent();
     try {
       window.localStorage.removeItem(STORAGE_KEY);
       cleanOldKeys();
     } catch (error) {}
     setChecks({ analytics: false, marketing: false });
     writeAnalyticsConsent(false);
+    emit({ necessary: true, analytics: false, marketing: false, savedAt: null });
     openPanel();
+    if (previous && (previous.analytics || previous.marketing)) window.location.reload();
   }
 
   function bind() {
