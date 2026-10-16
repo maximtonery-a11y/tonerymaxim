@@ -13,10 +13,11 @@ const SEO_ORIGIN = "https://www.tonerymaxim.sk";
 const canonical = `${SEO_ORIGIN}/spatny-odber-tonerov`;
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname.toLowerCase());
 const faq = [
-  { q: "Môže si bezplatný zvoz objednať neregistrovaný zákazník?", a: "Nie. Bezplatný spätný odber je dostupný iba registrovaným zákazníkom s oprávneným počtom dokončených nákupov za posledných 12 mesiacov." },
-  { q: "Ktorý kuriér použitý toner vyzdvihne?", a: "Podľa adresy a dostupnosti zvolíme DPD alebo GLS. Presné pokyny dostanete po schválení zvozu." },
-  { q: "Môžem odovzdať toner, ktorý som nekúpil v ToneryMaxim?", a: "Zvoz je určený prednostne na prázdne tonery a atramentové náplne z nákupov v ToneryMaxim. Iné kazety prijmeme iba po individuálnom odsúhlasení." },
-  { q: "Musí byť toner zabalený?", a: "Áno. Každá náplň musí byť uzavretá vo vrecku alebo pôvodnom obale a všetky kusy musia byť uložené v pevnej uzavretej krabici." },
+  { q: "Kto môže využiť spätný odber?", a: "Služba je určená pre aktívnych zákazníkov ToneryMaxim, ktorí u nás nakupujú. Registrácia ani minimálny počet objednávok nie sú podmienkou." },
+  { q: "Ako vrátim použité tonery pri ďalšej objednávke?", a: "Pred doručením novej objednávky nás kontaktujte. Po dohode zabezpečíme prevzatie bezpečne zabalených náplní kuriérom ako spätný balík. Tento spôsob odporúčame." },
+  { q: "Kam môžem použité náplne poslať?", a: "Na vlastné náklady ich môžete po predchádzajúcom oznámení poslať na adresu Roman Babčan INkarus, Tajov 265, 976 34 Tajov." },
+  { q: "Môžem požiadať o zvoz aj bez objednávky?", a: "Výnimočne áno, po individuálnej dohode môžeme zabezpečiť samostatné vyzdvihnutie kuriérom." },
+  { q: "Musí byť toner zabalený?", a: "Áno. Každú náplň vložte do ochranného vrecka alebo pôvodného obalu a všetky kusy do pevnej uzavretej krabice." },
 ];
 const jsonLd = [
   breadcrumbJsonLd(SEO_ORIGIN, [
@@ -38,7 +39,7 @@ const jsonLd = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <SeoHead
       title="Spätný odber použitých tonerov | ToneryMaxim.sk"
-      description="Presné pravidlá bezplatného zvozu použitých tonerov a atramentových náplní cez DPD alebo GLS, nárok podľa nákupov a návod na bezpečné balenie."
+      description="Spätný odber použitých tonerov pre aktívnych zákazníkov ToneryMaxim. Vrátenie pri ďalšej objednávke, zaslanie na našu adresu alebo zvoz kuriérom po dohode."
       canonical={canonical}
       noindex={noindex}
       jsonLd={jsonLd}
@@ -52,40 +53,24 @@ const jsonLd = [
           active="/spatny-odber-tonerov"
           eyebrow="Ekologické odovzdanie prázdnych kaziet"
           title="Spätný odber použitých tonerov"
-          intro="Prázdne tonery a pravidelne odoberané atramentové náplne odovzdáme odbornému odpadovému alebo renovačnému partnerovi. Bezplatný zvoz poskytujeme podľa nákupov za posledných 12 mesiacov."
+          intro="Pomáhame našim zákazníkom ekologicky odovzdať použité tonery a atramentové náplne. Kazety odovzdávame odborným partnerom na renováciu alebo ekologické spracovanie."
         >
           <section class="return-intro">
             <article><i>♻</i><div><strong>Odborné spracovanie</strong><p>Použiteľné kazety môžu smerovať na renováciu, ostatné na odborné zhodnotenie.</p></div></article>
             <article><i>▣</i><div><strong>Jedna spoločná krabica</strong><p>Viac prázdnych náplní zabalíte spolu, čím sa zníži počet jázd kuriéra.</p></div></article>
-            <article><i>↗</i><div><strong>DPD alebo GLS</strong><p>Dopravcu určíme podľa adresy a aktuálnych možností zvozu.</p></div></article>
+            <article><i>↗</i><div><strong>Tri možnosti odovzdania</strong><p>Pri novej objednávke, poštou na našu adresu alebo výnimočne samostatným zvozom.</p></div></article>
           </section>
 
           <section class="return-panel">
-            <div class="return-panel-head"><span>Presné pravidlá</span><h2>Kto má nárok na bezplatný zvoz</h2><p>Počítajú sa dokončené nákupy na registrovanom účte za priebežných posledných 12 mesiacov.</p></div>
-            <div class="return-table-wrap">
-              <table class="return-table">
-                <thead><tr><th>Typ zákazníka a odber</th><th>Nárok</th><th>Frekvencia</th></tr></thead>
-                <tbody>
-                  <tr><td><strong>Neregistrovaný zákazník</strong><span>Bez histórie nákupov v účte</span></td><td><b class="no">Bez bezplatného zvozu</b></td><td>—</td></tr>
-                  <tr><td><strong>1–5 laserových tonerov</strong><span>Napríklad jeden toner ročne</span></td><td><b class="no">Bez samostatného zvozu</b></td><td>—</td></tr>
-                  <tr><td><strong>6–11 laserových tonerov</strong><span>Pravidelnejšia spotreba</span></td><td><b class="yes">Bezplatný zvoz</b></td><td>1× za 12 mesiacov</td></tr>
-                  <tr><td><strong>12 a viac laserových tonerov</strong><span>Približne jeden toner mesačne alebo viac</span></td><td><b class="yes">Bezplatný zvoz</b></td><td>2× za 12 mesiacov</td></tr>
-                  <tr><td><strong>1–5 atramentových náplní</strong><span>Občasný nákup</span></td><td><b class="no">Bez samostatného zvozu</b></td><td>—</td></tr>
-                  <tr><td><strong>6 a viac atramentových náplní</strong><span>Pravidelný nákup</span></td><td><b class="yes">Bezplatný zvoz</b></td><td>1× za 12 mesiacov</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p class="return-small-note">Do počtu sa započítavajú kusy, nie počet objednávok. Zrušené, vrátené a neuhradené objednávky sa nezapočítavajú.</p>
+            <div class="return-panel-head"><span>Jednoduchá podmienka</span><h2>Pre koho je spätný odber určený?</h2><p>Pre našich aktívnych zákazníkov, ktorí nakupujú v ToneryMaxim. Nemusíte byť registrovaní a nie je stanovený minimálny počet objednávok ani zakúpených náplní.</p></div>
           </section>
 
           <section class="return-panel">
-            <div class="return-panel-head"><span>Postup</span><h2>Ako zvoz funguje</h2></div>
+            <div class="return-panel-head"><span>Tri spôsoby odovzdania</span><h2>Ako nám odovzdať použité tonery?</h2></div>
             <div class="return-steps">
-              <article><i>1</i><h3>Skontrolujeme nárok</h3><p>Prihlásený zákazník nás kontaktuje z e-mailu svojho účtu. Overíme nákupy za posledných 12 mesiacov.</p></article>
-              <article><i>2</i><h3>Potvrdíme prijateľné kusy</h3><p>Oznámite približný počet a typ prázdnych náplní. V prípade nejasnosti si vyžiadame fotografiu.</p></article>
-              <article><i>3</i><h3>Bezpečne ich zabalíte</h3><p>Náplne uzavriete do vreciek alebo pôvodných obalov a vložíte do pevnej krabice.</p></article>
-              <article><i>4</i><h3>Objednáme kuriéra</h3><p>Pošleme termín a pokyny pre DPD alebo GLS. Zásielku odovzdáte podľa potvrdených pokynov.</p></article>
-              <article><i>5</i><h3>Partner ich spracuje</h3><p>Kazety prevezme odpadový alebo renovačný partner podľa ich stavu a ďalšej použiteľnosti.</p></article>
+              <article><i>1</i><h3>Pri ďalšej objednávke – odporúčame</h3><p>Kontaktujte nás vopred. Po dohode zabezpečíme, aby kuriér pri doručení vašej novej objednávky prevzal aj pripravenú krabicu s použitými náplňami ako spätný balík.</p></article>
+              <article><i>2</i><h3>Zaslaním na našu adresu</h3><p>Použité náplne môžete po predchádzajúcom oznámení poslať na vlastné náklady na adresu <strong>Roman Babčan INkarus, Tajov 265, 976 34 Tajov</strong>.</p></article>
+              <article><i>3</i><h3>Samostatný zvoz kuriérom</h3><p>Výnimočne môžeme zabezpečiť vyzdvihnutie použitých tonerov aj bez novej objednávky. Táto možnosť je dostupná po individuálnej dohode.</p></article>
             </div>
           </section>
 
@@ -113,8 +98,8 @@ const jsonLd = [
           </section>
 
           <section class="return-contact">
-            <div><span>Chcete objednať zvoz?</span><h2>Najprv si pripravte počet a typ náplní</h2><p>Kontaktujte nás z e-mailovej adresy registrovanej vo vašom účte. Nárok overíme a pošleme ďalší postup.</p></div>
-            <div><a class="primary-pill" href="mailto:info@tonerymaxim.sk?subject=Sp%C3%A4tn%C3%BD%20odber%20pou%C5%BEit%C3%BDch%20tonerov">Požiadať o zvoz</a><a href="/kontakt">Kontaktné údaje</a></div>
+            <div><span>Máte použité tonery?</span><h2>Dohodnime spôsob odovzdania</h2><p>Napíšte nám na info@tonerymaxim.sk alebo zavolajte na +421 917 859 206. Najradšej zabezpečíme spätný balík pri vašej ďalšej objednávke.</p></div>
+            <div><a class="primary-pill" href="mailto:info@tonerymaxim.sk?subject=Sp%C3%A4tn%C3%BD%20odber%20pou%C5%BEit%C3%BDch%20tonerov">Dohodnúť spätný odber</a><a href="/kontakt">Kontaktné údaje</a></div>
           </section>
 
           <section class="return-faq">
@@ -150,7 +135,7 @@ const jsonLd = [
   .return-table b.yes { background:#eaf8ef; color:#087a38; }
   .return-table b.no { background:#f1f5f9; color:#64748b; }
   .return-small-note { margin:13px 0 0; color:#64748b; font-size:12px; line-height:1.5; }
-  .return-steps { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-top:20px; }
+  .return-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:20px; }
   .return-steps article { padding:16px; border:1px solid #e1ebf6; border-radius:17px; background:#f8fbff; }
   .return-steps i { display:grid; width:30px; height:30px; place-items:center; border-radius:50%; background:#061735; color:#fff; font-style:normal; font-weight:950; }
   .return-steps h3 { margin:13px 0 6px; color:#061735; font-size:14px; }
@@ -170,7 +155,7 @@ const jsonLd = [
   .return-faq details:first-of-type { margin-top:18px; }
   .return-faq summary { padding:16px 0; color:#061735; font-weight:900; cursor:pointer; }
   .return-faq details p { padding:0 0 16px; }
-  @media(max-width:1000px){.return-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.return-steps article:last-child{grid-column:1/-1}}
+  @media(max-width:1000px){.return-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media(max-width:760px){.return-intro,.return-two-columns{grid-template-columns:1fr}.return-contact{align-items:flex-start;flex-direction:column}.return-contact>div:last-child{align-items:flex-start;flex-direction:column}}
-  @media(max-width:560px){.return-steps{grid-template-columns:1fr}.return-steps article:last-child{grid-column:auto}.return-panel,.return-contact,.return-faq{padding:20px}}
+  @media(max-width:560px){.return-steps{grid-template-columns:1fr}.return-panel,.return-contact,.return-faq{padding:20px}}
 </style>
