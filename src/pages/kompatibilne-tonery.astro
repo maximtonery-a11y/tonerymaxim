@@ -19,7 +19,7 @@ const stats = catalogStats(products);
   answer={`V ponuke je ${stats.total} kompatibilných produktov s platnou cenou, z toho ${stats.inStock} je aktuálne skladom. Kompatibilný toner vyberte podľa OEM označenia a následne potvrďte presný model tlačiarne v detaile produktu.`}
   generatedAt={cache.generated_at}
   breadcrumbs={[{ name: "Kompatibilné tonery", path: "/kompatibilne-tonery" }]}
-  entityFacts={["Iba kompatibilné produkty", "Cena s DPH", "Záruka 24 mesiacov"]}
+  entityFacts={["Iba kompatibilné produkty", "Cena s DPH", "Zákonná zodpovednosť za vady"]}
   relatedLinks={[
     { href: "/tonery", label: "Všetky tonery" },
     { href: "/originalne-tonery", label: "Originálne tonery" },
@@ -27,8 +27,8 @@ const stats = catalogStats(products);
     { href: "/tlaciarne", label: "Vybrať podľa tlačiarne" },
   ]}
   faq={[
-    { question: "Bude kompatibilný toner fungovať v mojej tlačiarni?", answer: "Áno, ak je presný model vašej tlačiarne uvedený v kompatibilite konkrétneho produktu. Model odporúčame skontrolovať priamo na štítku tlačiarne." },
-    { question: "Majú kompatibilné tonery záruku?", answer: "Na kompatibilné tonery ToneryMaxim poskytujeme 24-mesačnú záruku. Presné podmienky sú uvedené v reklamačných podmienkach." },
+    { question: "Ako zistím, či bude kompatibilný toner fungovať v mojej tlačiarni?", answer: "Porovnajte presný model tlačiarne a označenie tonera. Naše kompatibilné tonery sú určené pre zariadenia uvedené v zozname kompatibility. Pri niektorých modeloch môže funkčnosť ovplyvniť aj verzia firmvéru alebo čipu. Ak si nie ste istí, radi vám pred nákupom poradíme." },
+    { question: "Aké práva mám pri vadnom kompatibilnom toneri?", answer: "Na kompatibilné tonery sa vzťahujú práva zo zodpovednosti za vady podľa platných právnych predpisov. Pri spotrebiteľskom nákupe zodpovedáme za vady, ktoré sa prejavia do dvoch rokov od dodania tovaru, za zákonom stanovených podmienok. Ak toner nefunguje správne, kontaktujte nás a pomôžeme vám problém vyriešiť." },
   ]}
   contentSections={[
     {
