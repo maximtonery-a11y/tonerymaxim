@@ -129,7 +129,7 @@ const inflight = new Set<string>();
 
 /** Saved first; delivery is attempted independently for each recipient. */
 export async function deliverCustomerCareCase(record: CareRecord): Promise<{ customer: boolean; admin: boolean }> {
-  if (inflight.has(record.caseNumber)) return { customer: record.delivery.customer, admin: record.delivery.admin };
+  if (inflight.has(record.caseNumber)) return { customer: Boolean(record.delivery?.customer), admin: Boolean(record.delivery?.admin) };
   inflight.add(record.caseNumber);
   try {
     const file = join(STORE_DIR, record.caseNumber + ".json");
@@ -159,7 +159,7 @@ export function ensureCustomerCareDeliveryWorkerStarted(): void {
   const scan = async () => {
     let names: string[] = [];
     try { names = await readdir(STORE_DIR); } catch (e: any) { if (e?.code !== "ENOENT") console.error("[TM care] scan failed", e); return; }
-    for (const name of names.filter(n => /^[RO][0-9A-Z-]+\\.json$/.test(n)).slice(-1000)) {
+    for (const name of names.filter(n => /^[RO][0-9A-Z-]+\.json$/.test(n)).slice(-1000)) {
       const record = await readSignedJson<CareRecord>(join(STORE_DIR, name));
       if (!record || (record.delivery?.customer && record.delivery?.admin)) continue;
       try { await deliverCustomerCareCase(record); } catch (e) { console.error("[TM care] retry failed", name, e); }
