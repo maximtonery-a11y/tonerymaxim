@@ -45,7 +45,7 @@ const baseAdviceArticles: Array<Omit<AdviceArticle, "category">> = [
       },
       {
         heading: "Kedy sa oplatí originálny toner",
-        paragraphs: ["Originál je rozumný pri zariadeniach v záruke, pri kritickej firemnej tlači, pri špeciálnych požiadavkách na farebnú zhodu alebo ak tlačiareň odmieta dostupné alternatívy."],
+        paragraphs: ["Originál môže byť vhodný pri kritickej firemnej tlači, špeciálnych požiadavkách na farebnú zhodu alebo ak tlačiareň odmieta dostupné alternatívy. Samotné použitie kompatibilného tonera automaticky neruší zákonné práva zo zodpovednosti za vady tlačiarne."],
         bullets: ["Potrebujete maximálnu predvídateľnosť.", "Tlačiareň je kľúčová pre dennú prevádzku.", "Tlačíte materiály citlivé na presnú farebnosť.", "Výrobca zariadenia vyžaduje konkrétnu kazetu."],
       },
       {
@@ -56,7 +56,7 @@ const baseAdviceArticles: Array<Omit<AdviceArticle, "category">> = [
       },
     ],
     faq: [
-      { question: "Poškodí kompatibilný toner tlačiareň?", answer: "Správne vyrobený toner určený pre konkrétny model by tlačiareň poškodiť nemal. Riziko rastie pri neznámom pôvode, nesprávnej kazete alebo mechanickej chybe produktu." },
+      { question: "Poškodí kompatibilný toner tlačiareň?", answer: "Kvalitný kompatibilný toner určený pre správny model tlačiarne spravidla nespôsobuje poškodenie. Dôležité je však overiť celý OEM kód, konkrétny model a pri niektorých zariadeniach aj čip či firmvér. Pri nesprávnej kazete alebo mechanickej chybe produktu môže vzniknúť problém; v prípade neistoty vám poradíme." },
       { question: "Je originálny toner vždy kvalitnejší?", answer: "Originál poskytuje najpredvídateľnejšiu zhodu s tlačiarňou. Kvalitná alternatíva však môže byť pre bežnú tlač plne postačujúca a ekonomicky výhodnejšia." },
       { question: "Ako porovnať cenu tonerov?", answer: "Porovnajte cenu s DPH, deklarovanú výťažnosť, pokrytie stránky, kapacitu a podmienky záruky. Samotná najnižšia cena kazety nestačí." },
     ],
