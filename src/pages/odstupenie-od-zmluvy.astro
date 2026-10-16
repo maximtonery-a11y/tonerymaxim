@@ -94,7 +94,7 @@ const jsonLd = [
           });
           const data = await response.json().catch(() => ({}));
           if (!response.ok || !data.ok) throw new Error(data.error || 'Odstúpenie sa nepodarilo odoslať.');
-          result.textContent = `Odstúpenie bolo prijaté. Číslo: ${data.caseNumber}`;
+          result.textContent = data.emailPending ? `Podanie bolo bezpečne uložené. Číslo: ${data.caseNumber}. Potvrdzovací e-mail sa nepodarilo odoslať, systém to automaticky zopakuje.` : `Odstúpenie bolo prijaté. Číslo: ${data.caseNumber}`;
           result.classList.add('is-ok');
           form.reset();
         } catch (error) {
