@@ -3,6 +3,7 @@
   var script = document.currentScript;
   var id = String(script && (script.dataset.googleTagId || script.dataset.gtmId) || '').toUpperCase();
   var loaded = false;
+  var allowed = false;
   var scheduled = false;
   var fallbackTimer = 0;
   var interactionEvents = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
@@ -39,6 +40,8 @@
 
   function update(value) {
     value = value || {};
+    allowed = value.analytics === true || value.marketing === true;
+    if (allowed && !loaded) start();
     gtag('consent', 'update', {
       analytics_storage: value.analytics ? 'granted' : 'denied',
       ad_storage: value.marketing ? 'granted' : 'denied',
@@ -61,7 +64,7 @@
   }
 
   function start() {
-    if (scheduled || loaded) return;
+    if (scheduled || loaded || !allowed) return;
     scheduled = true;
     if (fallbackTimer) window.clearTimeout(fallbackTimer);
     removeInteractionListeners();
@@ -86,5 +89,6 @@
     else window.addEventListener('load', armFallback, { once: true });
   }
 
+  // No Google script is requested unless an optional consent was granted.
   scheduleLoad();
 })();
