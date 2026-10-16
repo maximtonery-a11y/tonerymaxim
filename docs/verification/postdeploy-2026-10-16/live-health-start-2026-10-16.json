@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-16T05:43:03.333960+00:00",
+  "url": "https://www.tonerymaxim.sk/api/health",
+  "status": 200,
+  "elapsedMs": 6173,
+  "data": {
+    "ok": true,
+    "service": "tonerymaxim",
+    "timestamp": "2026-10-16T05:43:03.251Z"
+  }
+}

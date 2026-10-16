@@ -1,0 +1,807 @@
+[
+  {
+    "path": "/api/product?id=53282",
+    "status": 200,
+    "ms": 5845,
+    "serverTiming": "app;dur=1.9",
+    "data": {
+      "ok": true,
+      "product": {
+        "id": 53282,
+        "name": "Kompatibilný toner pre Lexmark 56F2X0E Black 20000 strán",
+        "sku": "16043",
+        "slug": "kompatibilny-toner-pre-lexmark-56f2x0e-black-20000-stran",
+        "price": 299.64,
+        "stock_status": "outofstock",
+        "stock_quantity": 0,
+        "capacity": "20 000 strán",
+        "compatible_printers": [
+          "Lexmark MX521de",
+          "Lexmark MS421dw",
+          "Lexmark MS521dn",
+          "Lexmark MX521ade",
+          "Lexmark MX622ade",
+          "Lexmark MS621dn",
+          "Lexmark MX522adhe",
+          "Lexmark MS622de",
+          "Lexmark MX622adhe",
+          "Lexmark MS421dn",
+          "Lexmark MX421ade"
+        ],
+        "image": "/images/tm-product-placeholder-box.jpg",
+        "product_type_label": "KOMPATIBILNÝ"
+      }
+    }
+  },
+  {
+    "path": "/api/product?id=52830",
+    "status": 200,
+    "ms": 234,
+    "serverTiming": "app;dur=0.4",
+    "data": {
+      "ok": true,
+      "product": {
+        "id": 52830,
+        "name": "Canon CRG-045 CMYK kompatibilná sada tonerov (4 ks)",
+        "sku": "SET-CAN-CRG-045-KOM-4PK",
+        "slug": "canon-crg-045-cmyk-kompatibilna-sada-tonerov-4-ks",
+        "price": 75.2,
+        "stock_status": "instock",
+        "stock_quantity": null,
+        "capacity": "Čierna: 1400 strán; Azúrová: 1300 strán; Purpurová: 1300 strán; Žltá: 1300 strán",
+        "compatible_printers": [
+          "Canon i-SENSYS LBP611Cn",
+          "Canon i-SENSYS LBP612Cdw",
+          "Canon i-SENSYS LBP613Cdw",
+          "Canon i-SENSYS MF631Cn",
+          "Canon i-SENSYS MF632Cdw",
+          "Canon i-SENSYS MF633Cdw",
+          "Canon i-SENSYS MF635Cx"
+        ],
+        "image": "https://www.coloriq.store/wp-content/uploads/2026/09/canon-set-set-can-crg-045-kom-4pk.png",
+        "product_type_label": "KOMPATIBILNÝ"
+      }
+    }
+  },
+  {
+    "path": "/api/products?search=Canon%20CRG-054&per_page=48",
+    "status": 200,
+    "ms": 793,
+    "serverTiming": "app;dur=212.3",
+    "data": {
+      "ok": true,
+      "total": 28,
+      "page": 1,
+      "per_page": 48,
+      "products": [
+        {
+          "id": 52837,
+          "name": "Canon CRG-054 CMYK kompatibilná sada tonerov (4 ks)",
+          "sku": "SET-CAN-CRG-054-KOM-4PK",
+          "slug": "canon-crg-054-cmyk-kompatibilna-sada-tonerov-4-ks",
+          "price": 75.2,
+          "stock_status": "instock",
+          "stock_quantity": null,
+          "capacity": "Čierna: 1400 strán; Azúrová: 1300 strán; Purpurová: 1300 strán; Žltá: 1300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/09/canon-set-set-can-crg-054-kom-4pk.png",
+          "product_type_label": "KOMPATIBILNÝ"
+        },
+        {
+          "id": 52838,
+          "name": "Canon CRG-054 CMYK renovovaná sada tonerov (4 ks)",
+          "sku": "SET-CAN-CRG-054-REN-4PK",
+          "slug": "canon-crg-054-cmyk-renovovana-sada-tonerov-4-ks",
+          "price": 96.23,
+          "stock_status": "instock",
+          "stock_quantity": null,
+          "capacity": "Čierna: 1400 strán; Azúrová: 1300 strán; Purpurová: 1300 strán; Žltá: 1300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/09/canon-set-set-can-crg-054-ren-4pk.png",
+          "product_type_label": "RENOVOVANÝ"
+        },
+        {
+          "id": 52839,
+          "name": "Canon CRG-054H CMYK kompatibilná sada tonerov (4 ks)",
+          "sku": "SET-CAN-CRG-054H-KOM-4PK",
+          "slug": "canon-crg-054h-cmyk-kompatibilna-sada-tonerov-4-ks",
+          "price": 78.49,
+          "stock_status": "instock",
+          "stock_quantity": null,
+          "capacity": "Čierna: 3200 strán; Azúrová: 2500 strán; Purpurová: 2500 strán; Žltá: 2500 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/09/canon-set-set-can-crg-054h-kom-4pk.png",
+          "product_type_label": "KOMPATIBILNÝ"
+        },
+        {
+          "id": 52840,
+          "name": "Canon CRG-054H CMYK renovovaná sada tonerov (4 ks)",
+          "sku": "SET-CAN-CRG-054H-REN-4PK",
+          "slug": "canon-crg-054h-cmyk-renovovana-sada-tonerov-4-ks",
+          "price": 136.26,
+          "stock_status": "onbackorder",
+          "stock_quantity": null,
+          "capacity": "Čierna: 3200 strán; Azúrová: 2500 strán; Purpurová: 2500 strán; Žltá: 2500 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/09/canon-set-set-can-crg-054h-ren-4pk.png",
+          "product_type_label": "RENOVOVANÝ"
+        },
+        {
+          "id": 43881,
+          "name": "Canon CRG-054BK čierny kompatibilný toner",
+          "sku": "CRG-054BK-KOM-13846",
+          "slug": "canon-crg-054bk-kompatibilny-toner",
+          "price": 21.3,
+          "stock_status": "instock",
+          "stock_quantity": 119,
+          "capacity": "1400 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "/images/tm-product-placeholder-box.jpg",
+          "product_type_label": "KOMPATIBILNÝ"
+        },
+        {
+          "id": 38878,
+          "name": "Canon CRG-054BK čierny renovovaný toner",
+          "sku": "1253",
+          "slug": "canon-crg-054bk-renovovany-toner",
+          "price": 27,
+          "stock_status": "instock",
+          "stock_quantity": 2,
+          "capacity": "1400 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/1253-v7-eac3e4263e8011f0dc65e0904b087e18.jpg",
+          "product_type_label": "RENOVOVANÝ"
+        },
+        {
+          "id": 43884,
+          "name": "Canon CRG-054C azúrový kompatibilný toner",
+          "sku": "CRG-054C-KOM-13850",
+          "slug": "canon-crg-054c-kompatibilny-toner",
+          "price": 20.73,
+          "stock_status": "instock",
+          "stock_quantity": 146,
+          "capacity": "1300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "/images/tm-product-placeholder-box.jpg",
+          "product_type_label": "KOMPATIBILNÝ"
+        },
+        {
+          "id": 38879,
+          "name": "Canon CRG-054C azúrový renovovaný toner",
+          "sku": "1254",
+          "slug": "canon-crg-054c-renovovany-toner",
+          "price": 26.64,
+          "stock_status": "instock",
+          "stock_quantity": 14,
+          "capacity": "1300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/1254-v7-25f8980c4f429ed8170eae31fdfa400f.jpg",
+          "product_type_label": "RENOVOVANÝ"
+        },
+        {
+          "id": 43917,
+          "name": "Canon CRG-054HBK čierny kompatibilný toner",
+          "sku": "CRG-054HBK-KOM-13894",
+          "slug": "canon-crg-054hbk-kompatibilny-toner",
+          "price": 22.98,
+          "stock_status": "instock",
+          "stock_quantity": 332,
+          "capacity": "3200 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "/images/tm-product-placeholder-box.jpg",
+          "product_type_label": "KOMPATIBILNÝ"
+        },
+        {
+          "id": 38882,
+          "name": "Canon CRG-054HBK čierny renovovaný toner",
+          "sku": "1257",
+          "slug": "canon-crg-054hbk-renovovany-toner",
+          "price": 39.92,
+          "stock_status": "instock",
+          "stock_quantity": 10,
+          "capacity": "3200 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/1257-v7-ed3c4f87cd887e5f3eb8aaa428239691.jpg",
+          "product_type_label": "RENOVOVANÝ"
+        },
+        {
+          "id": 43920,
+          "name": "Canon CRG-054HC azúrový kompatibilný toner",
+          "sku": "CRG-054HC-KOM-13898",
+          "slug": "canon-crg-054hc-kompatibilny-toner",
+          "price": 21.54,
+          "stock_status": "instock",
+          "stock_quantity": 238,
+          "capacity": "2500 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "/images/tm-product-placeholder-box.jpg",
+          "product_type_label": "KOMPATIBILNÝ"
+        },
+        {
+          "id": 38883,
+          "name": "Canon CRG-054HC azúrový renovovaný toner",
+          "sku": "1258",
+          "slug": "canon-crg-054hc-renovovany-toner",
+          "price": 37.16,
+          "stock_status": "instock",
+          "stock_quantity": 10,
+          "capacity": "2500 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/1258-v7-73de5a0fcbdc3179aa40f8de89b5dba5.jpg",
+          "product_type_label": "RENOVOVANÝ"
+        },
+        {
+          "id": 43926,
+          "name": "Canon CRG-054HM purpurový kompatibilný toner",
+          "sku": "CRG-054HM-KOM-13906",
+          "slug": "canon-crg-054hm-kompatibilny-toner",
+          "price": 21.24,
+          "stock_status": "instock",
+          "stock_quantity": 125,
+          "capacity": "2500 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "/images/tm-product-placeholder-box.jpg",
+          "product_type_label": "KOMPATIBILNÝ"
+        },
+        {
+          "id": 43923,
+          "name": "Canon CRG-054HY žltý kompatibilný toner",
+          "sku": "CRG-054HY-KOM-13902",
+          "slug": "canon-crg-054hy-kompatibilny-toner",
+          "price": 21.45,
+          "stock_status": "instock",
+          "stock_quantity": 258,
+          "capacity": "2500 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "/images/tm-product-placeholder-box.jpg",
+          "product_type_label": "KOMPATIBILNÝ"
+        },
+        {
+          "id": 38884,
+          "name": "Canon CRG-054HY žltý renovovaný toner",
+          "sku": "1259",
+          "slug": "canon-crg-054hm-renovovany-toner",
+          "price": 37.16,
+          "stock_status": "instock",
+          "stock_quantity": 16,
+          "capacity": "2500 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/1259-v7-0328e1aa5af8c9e8bbb9f34ea8b478d2.jpg",
+          "product_type_label": "RENOVOVANÝ"
+        },
+        {
+          "id": 43890,
+          "name": "Canon CRG-054M purpurový kompatibilný toner",
+          "sku": "CRG-054M-KOM-13858",
+          "slug": "canon-crg-054m-kompatibilny-toner",
+          "price": 20.76,
+          "stock_status": "instock",
+          "stock_quantity": 146,
+          "capacity": "1300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "/images/tm-product-placeholder-box.jpg",
+          "product_type_label": "KOMPATIBILNÝ"
+        },
+        {
+          "id": 38881,
+          "name": "Canon CRG-054M purpurový renovovaný toner",
+          "sku": "1256",
+          "slug": "canon-crg-054y-renovovany-toner",
+          "price": 26.64,
+          "stock_status": "instock",
+          "stock_quantity": 5,
+          "capacity": "1300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/1256-v7-83e4bfd0587b820b95fb9d6a8f6166bb.jpg",
+          "product_type_label": "RENOVOVANÝ"
+        },
+        {
+          "id": 43887,
+          "name": "Canon CRG-054Y žltý kompatibilný toner",
+          "sku": "CRG-054Y-KOM-13854",
+          "slug": "canon-crg-054y-kompatibilny-toner",
+          "price": 20.76,
+          "stock_status": "instock",
+          "stock_quantity": 138,
+          "capacity": "1300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "/images/tm-product-placeholder-box.jpg",
+          "product_type_label": "KOMPATIBILNÝ"
+        },
+        {
+          "id": 38880,
+          "name": "Canon CRG-054Y žltý renovovaný toner",
+          "sku": "1255",
+          "slug": "canon-crg-054m-renovovany-toner",
+          "price": 26.64,
+          "stock_status": "instock",
+          "stock_quantity": 2,
+          "capacity": "1300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/1255-v7-98080937c71107f1ade8ce324ca3d34d.jpg",
+          "product_type_label": "RENOVOVANÝ"
+        },
+        {
+          "id": 38055,
+          "name": "Canon CRG-054BK čierny originálny toner",
+          "sku": "043478",
+          "slug": "canon-crg-054bk-originalny-toner",
+          "price": 85.19,
+          "stock_status": "outofstock",
+          "stock_quantity": 0,
+          "capacity": "1500 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/043478-v7-9fc6a61b3a0e5dd473b1044cb742049e.jpg",
+          "product_type_label": "ORIGINÁL"
+        },
+        {
+          "id": 38056,
+          "name": "Canon CRG-054C azúrový originálny toner",
+          "sku": "043479",
+          "slug": "canon-crg-054c-originalny-toner",
+          "price": 78.64,
+          "stock_status": "outofstock",
+          "stock_quantity": 0,
+          "capacity": "1200 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/043479-v7-9048528fb49ca6d0e7319c69088a5754.jpg",
+          "product_type_label": "ORIGINÁL"
+        },
+        {
+          "id": 38059,
+          "name": "Canon CRG-054HBK čierny originálny toner",
+          "sku": "043482",
+          "slug": "canon-crg-054hbk-originalny-toner",
+          "price": 111.11,
+          "stock_status": "outofstock",
+          "stock_quantity": 0,
+          "capacity": "3100 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/043482-v7-279e571fe846c8cf653298ea013d6a0f.jpg",
+          "product_type_label": "ORIGINÁL"
+        },
+        {
+          "id": 38060,
+          "name": "Canon CRG-054HC azúrový originálny toner",
+          "sku": "043483",
+          "slug": "canon-crg-054hc-originalny-toner",
+          "price": 100.96,
+          "stock_status": "outofstock",
+          "stock_quantity": 0,
+          "capacity": "2300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/043483-v7-454120bcb588eced8ed656ced4fc740c.jpg",
+          "product_type_label": "ORIGINÁL"
+        },
+        {
+          "id": 38061,
+          "name": "Canon CRG-054HM purpurový originálny toner",
+          "sku": "043484",
+          "slug": "canon-crg-054hm-originalny-toner",
+          "price": 100.96,
+          "stock_status": "outofstock",
+          "stock_quantity": 0,
+          "capacity": "2300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/043484-v7-4e601fe12d366baa3d4015d7b94c811d.jpg",
+          "product_type_label": "ORIGINÁL"
+        },
+        {
+          "id": 38885,
+          "name": "Canon CRG-054HM purpurový renovovaný toner",
+          "sku": "1260",
+          "slug": "canon-crg-054hy-renovovany-toner",
+          "price": 37.16,
+          "stock_status": "outofstock",
+          "stock_quantity": 0,
+          "capacity": "2500 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/1260-v7-3c20182ebffdff101c839252703e0a3b.jpg",
+          "product_type_label": "RENOVOVANÝ"
+        },
+        {
+          "id": 38062,
+          "name": "Canon CRG-054HY žltý originálny toner",
+          "sku": "043485",
+          "slug": "canon-crg-054hy-originalny-toner",
+          "price": 100.96,
+          "stock_status": "outofstock",
+          "stock_quantity": 0,
+          "capacity": "2300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/043485-v7-28044af5d37af5bf16f5d7ca6e34371f.jpg",
+          "product_type_label": "ORIGINÁL"
+        },
+        {
+          "id": 38057,
+          "name": "Canon CRG-054M purpurový originálny toner",
+          "sku": "043480",
+          "slug": "canon-crg-054m-originalny-toner",
+          "price": 78.64,
+          "stock_status": "outofstock",
+          "stock_quantity": 0,
+          "capacity": "1200 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/043480-v7-fce97180b3a484c37c043d13b558762f.jpg",
+          "product_type_label": "ORIGINÁL"
+        },
+        {
+          "id": 38058,
+          "name": "Canon CRG-054Y žltý originálny toner",
+          "sku": "043481",
+          "slug": "canon-crg-054y-originalny-toner",
+          "price": 78.64,
+          "stock_status": "outofstock",
+          "stock_quantity": 0,
+          "capacity": "1200 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP621Cw",
+            "Canon i-SENSYS LBP623Cdw",
+            "Canon i-SENSYS MF641Cw",
+            "Canon i-SENSYS MF642Cdw",
+            "Canon i-SENSYS MF643Cdw",
+            "Canon i-SENSYS MF644Cdw",
+            "Canon i-SENSYS MF645Cx"
+          ],
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/043481-v7-2fcac414032bd73c25c3c54a50390abd.jpg",
+          "product_type_label": "ORIGINÁL"
+        }
+      ]
+    }
+  },
+  {
+    "path": "/api/smart-search?q=Epson%20102",
+    "status": 200,
+    "ms": 302,
+    "serverTiming": "app;dur=42.0",
+    "data": {
+      "ok": true,
+      "products": [
+        {
+          "id": 53054,
+          "title": "Epson 102 (C13T03R640) CMYK kompatibilná sada atramentových náplní (4 ks)",
+          "sku": "SET-EPS-102-C13T03R640-KOM-4PK",
+          "url": "/produkt/epson-102-c13t03r640-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+          "price": 11.84,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/09/epson-102-c13t03r640-cmyk-sada-compatible-profi-final.jpg"
+        },
+        {
+          "id": 53006,
+          "title": "Epson T1816 (18XL) CMYK kompatibilná sada atramentových náplní (4 ks)",
+          "sku": "SET-EPS-T1816-18XL-KOM-4PK",
+          "url": "/produkt/epson-t1816-18xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+          "price": 8.71,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/09/epson-SET-EPS-18XL-KOM-4PK-final-v5.jpg"
+        },
+        {
+          "id": 39719,
+          "title": "Epson C13T180640 (no. 18) Multipack CMYK originálne atramentové náplne",
+          "sku": "029746",
+          "url": "/produkt/epson-c13t180640-no-18-multipack-cmyk-originalne-atramentove-naplne",
+          "price": 64.1,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/029746-v7-6a4d2e0f78e216b749e494681ec18be0.jpg"
+        },
+        {
+          "id": 39803,
+          "title": "Epson C13T181640 (no. 18XL) Multipack CMYK originálne atramentové náplne",
+          "sku": "021437",
+          "url": "/produkt/epson-c13t181640-no-18xl-multipack-cmyk-originalne-atramentove-naplne",
+          "price": 103.84,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/021437-v7-41e8a634861b47ecb91aaee73a5bf20b.jpg"
+        },
+        {
+          "id": 52989,
+          "title": "Epson 102 (C13T03R140) čierna kompatibilná atramentová náplň",
+          "sku": "NEW-EPS-102-KOM-BK",
+          "url": "/produkt/epson-102-c13t03r140-cierna-kompatibilna-atramentova-napln",
+          "price": 4.36,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/09/epson-102-c13t03r140-cierna-compatible-profi-final.jpg"
+        },
+        {
+          "id": 52990,
+          "title": "Epson 102 (C13T03R240) azúrová kompatibilná atramentová náplň",
+          "sku": "NEW-EPS-102-KOM-C",
+          "url": "/produkt/epson-102-c13t03r240-azurova-kompatibilna-atramentova-napln",
+          "price": 2.96,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/09/epson-102-c13t03r240-azurova-compatible-profi-final.jpg"
+        },
+        {
+          "id": 52991,
+          "title": "Epson 102 (C13T03R340) purpurová kompatibilná atramentová náplň",
+          "sku": "NEW-EPS-102-KOM-M",
+          "url": "/produkt/epson-102-c13t03r340-purpurova-kompatibilna-atramentova-napln",
+          "price": 2.88,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/09/epson-102-c13t03r340-purpurova-compatible-profi-final.jpg"
+        },
+        {
+          "id": 52992,
+          "title": "Epson 102 (C13T03R440) žltá kompatibilná atramentová náplň",
+          "sku": "NEW-EPS-102-KOM-Y",
+          "url": "/produkt/epson-102-c13t03r440-zlta-kompatibilna-atramentova-napln",
+          "price": 2.96,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/09/epson-102-c13t03r440-zlta-compatible-profi-final.jpg"
+        },
+        {
+          "id": 36584,
+          "title": "Epson T1811XL kompatibilná atramentová náplň",
+          "sku": "527",
+          "url": "/produkt/epson-t1811xl-kompatibilna-atramentova-napln",
+          "price": 2.6,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/527-v7-ac520778464fb036bb9ca5648d4e38a6.jpg"
+        },
+        {
+          "id": 36585,
+          "title": "Epson T1812XL kompatibilná atramentová náplň",
+          "sku": "528",
+          "url": "/produkt/epson-t1812xl-kompatibilna-atramentova-napln",
+          "price": 2.36,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/528-v7-76d3f6a064db741aba3623d815266f12.jpg"
+        },
+        {
+          "id": 36586,
+          "title": "Epson T1813XL kompatibilná atramentová náplň",
+          "sku": "529",
+          "url": "/produkt/epson-t1813xl-kompatibilna-atramentova-napln",
+          "price": 2.36,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/529-v7-4ac2df2baa7dfead8a75a6fea4953f8e.jpg"
+        },
+        {
+          "id": 36587,
+          "title": "Epson T1814XL kompatibilná atramentová náplň",
+          "sku": "530",
+          "url": "/produkt/epson-t1814xl-kompatibilna-atramentova-napln",
+          "price": 2.36,
+          "image": "https://www.coloriq.store/wp-content/uploads/2026/04/530-v7-f050b44555edd21045fc2897e6f3e887.jpg"
+        }
+      ],
+      "printers": [
+        {
+          "title": "Epson Expression Home XP-102",
+          "subtitle": "Tlačiareň · zobraziť kompatibilné produkty",
+          "url": "/tlaciarne/epson/epson-expression-home-xp-102",
+          "relevance": 217
+        },
+        {
+          "title": "Epson Home XP-102",
+          "subtitle": "Tlačiareň · zobraziť kompatibilné produkty",
+          "url": "/tlaciarne/epson/epson-home-xp-102",
+          "relevance": 217
+        }
+      ]
+    }
+  },
+  {
+    "path": "/api/printers?brand=epson&q=ET-2700",
+    "status": 200,
+    "ms": 980,
+    "serverTiming": "app;dur=266.7",
+    "data": {
+      "ok": true,
+      "total": 1,
+      "printers": [
+        {
+          "title": "Epson EcoTank ET-2700",
+          "brand": "Epson",
+          "product_count": 6,
+          "url": "/tlaciarne/epson/epson-ecotank-et-2700"
+        }
+      ]
+    }
+  }
+]

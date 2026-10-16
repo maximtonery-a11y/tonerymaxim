@@ -1,0 +1,54 @@
+[
+  {
+    "url": "https://www.tonerymaxim.sk/api/health",
+    "at": "2026-10-16T05:54:09.411608+00:00",
+    "exitCode": 0,
+    "samples": [
+      {
+        "status": 200,
+        "dnsSeconds": 2.1e-05,
+        "connectSeconds": 6.5e-05,
+        "tlsSeconds": 3.331003,
+        "ttfbSeconds": 4.059829,
+        "totalSeconds": 4.10198,
+        "newConnections": 1
+      },
+      {
+        "status": 200,
+        "dnsSeconds": 9.6e-05,
+        "connectSeconds": 0.0,
+        "tlsSeconds": 0.0,
+        "ttfbSeconds": 0.213821,
+        "totalSeconds": 0.255855,
+        "newConnections": 0
+      }
+    ],
+    "error": null
+  },
+  {
+    "url": "https://github.com/maximtonery-a11y/tonerymaxim",
+    "at": "2026-10-16T05:54:10.193247+00:00",
+    "exitCode": 0,
+    "samples": [
+      {
+        "status": 200,
+        "dnsSeconds": 3e-05,
+        "connectSeconds": 0.000112,
+        "tlsSeconds": 4.156735,
+        "ttfbSeconds": 4.893796,
+        "totalSeconds": 5.009934,
+        "newConnections": 1
+      },
+      {
+        "status": 200,
+        "dnsSeconds": 2e-05,
+        "connectSeconds": 0.0,
+        "tlsSeconds": 0.0,
+        "ttfbSeconds": 0.059734,
+        "totalSeconds": 0.129759,
+        "newConnections": 0
+      }
+    ],
+    "error": null
+  }
+]

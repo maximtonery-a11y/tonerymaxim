@@ -1,0 +1,130 @@
+{
+  "observedAt": "2026-10-16T05:44:21.301Z",
+  "origin": "https://www.tonerymaxim.sk",
+  "ok": true,
+  "checks": [
+    {
+      "name": "Liveness",
+      "path": "/api/health",
+      "ok": true,
+      "status": 200,
+      "ms": 5284,
+      "serverTiming": "app;dur=0.2"
+    },
+    {
+      "name": "Home page",
+      "path": "/",
+      "ok": true,
+      "status": 200,
+      "ms": 331,
+      "serverTiming": "app;dur=1.2"
+    },
+    {
+      "name": "OEM search",
+      "path": "/api/products?search=HP%20CF230X&per_page=12",
+      "ok": true,
+      "status": 200,
+      "ms": 845,
+      "serverTiming": "app;dur=643.3"
+    },
+    {
+      "name": "Memory and catalogue",
+      "path": "/api/storefront-check",
+      "ok": true,
+      "status": 200,
+      "ms": 204,
+      "serverTiming": "app;dur=1.6",
+      "memory": {
+        "server": true,
+        "middlewareIsolated": true,
+        "adsInStorefront": false,
+        "analyticsInStorefront": false,
+        "analyticsEndpointDisabled": true,
+        "rssMb": 213,
+        "heapMb": 107,
+        "heapTotalMb": 127,
+        "externalMb": 20,
+        "arrayBuffersMb": 0,
+        "cgroupCurrentMb": 186,
+        "cgroupLimitMb": null,
+        "effectiveMemoryLimitMb": null,
+        "memoryUsagePercent": null,
+        "memoryLimitConfigured": false,
+        "uptimeSeconds": 178,
+        "pid": 20
+      },
+      "catalogProducts": 7932,
+      "catalogGeneratedAt": "2026-10-16T05:07:12.813Z",
+      "lastSync": null
+    },
+    {
+      "name": "Prefix search and sets",
+      "path": "/api/smart-search?q=CF53",
+      "ok": true,
+      "status": 200,
+      "ms": 316,
+      "serverTiming": "app;dur=111.6"
+    },
+    {
+      "name": "Printer variant alias",
+      "path": "/api/printers?brand=samsung&q=ML-2165W",
+      "ok": true,
+      "status": 200,
+      "ms": 301,
+      "serverTiming": "app;dur=97.4"
+    },
+    {
+      "name": "Canonical pack and price",
+      "path": "/api/product?id=52830",
+      "ok": true,
+      "status": 200,
+      "ms": 207,
+      "serverTiming": "app;dur=2.4",
+      "unitPrice": 75.2
+    },
+    {
+      "name": "Empty checkout",
+      "path": "/pokladna",
+      "ok": true,
+      "status": 200,
+      "ms": 293,
+      "serverTiming": "app;dur=1.6"
+    },
+    {
+      "name": "Empty cart rejected",
+      "path": "/api/order-create",
+      "ok": true,
+      "status": 400,
+      "ms": 376,
+      "serverTiming": "app;dur=164.5"
+    },
+    {
+      "name": "Empty cart rejected",
+      "path": "/api/gopay-create",
+      "ok": true,
+      "status": 400,
+      "ms": 372,
+      "serverTiming": "app;dur=162.1"
+    },
+    {
+      "name": "AI pack calculation",
+      "path": "/api/ai-tomas",
+      "ok": true,
+      "status": 200,
+      "ms": 1180,
+      "serverTiming": "app;dur=911.0"
+    },
+    {
+      "name": "Not-found page",
+      "path": "/__tm_stability_missing_page__",
+      "ok": true,
+      "status": 404,
+      "ms": 333,
+      "serverTiming": "app;dur=1.5"
+    }
+  ],
+  "warnings": [
+    "Coolify memory limit is not configured"
+  ],
+  "finishedAt": "2026-10-16T05:44:31.344Z"
+}

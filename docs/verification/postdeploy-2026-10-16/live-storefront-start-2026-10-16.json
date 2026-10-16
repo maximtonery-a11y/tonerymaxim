@@ -1,0 +1,48 @@
+{
+  "at": "2026-10-16T05:43:34.225518+00:00",
+  "status": 200,
+  "ms": 5761,
+  "data": {
+    "ok": true,
+    "service": "tonerymaxim-storefront",
+    "checks": {
+      "server": true,
+      "middlewareIsolated": true,
+      "adsInStorefront": false,
+      "analyticsInStorefront": false,
+      "analyticsEndpointDisabled": true,
+      "rssMb": 187,
+      "heapMb": 101,
+      "heapTotalMb": 105,
+      "externalMb": 20,
+      "arrayBuffersMb": 0,
+      "cgroupCurrentMb": 160,
+      "cgroupLimitMb": null,
+      "effectiveMemoryLimitMb": null,
+      "memoryUsagePercent": null,
+      "memoryLimitConfigured": false,
+      "uptimeSeconds": 124,
+      "pid": 20
+    },
+    "diagnostics": {
+      "revision": "memory-v1",
+      "catalogGeneratedAt": "2026-10-16T05:07:12.813Z",
+      "catalogProducts": 7932,
+      "detailCacheEntries": 6,
+      "productApiCacheEntries": 0,
+      "productApiCacheBytes": 0,
+      "productApiCacheByteLimit": 8388608,
+      "aiCommerceCacheEntries": 0,
+      "aiCommerceCacheJsonBytes": 0,
+      "aiCommerceCacheJsonByteLimit": 8388608,
+      "printerApiIndexEntries": 0,
+      "printerPositiveEntries": 7130,
+      "printerNegativeEntries": 0,
+      "printerNegativeLimit": 512,
+      "printerNegativeTtlSeconds": 300,
+      "syncRunning": false,
+      "lastSync": null
+    },
+    "timestamp": "2026-10-16T05:43:34.143Z"
+  }
+}

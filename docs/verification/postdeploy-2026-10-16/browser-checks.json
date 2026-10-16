@@ -1,0 +1,66 @@
+{
+  "observedAt": "2026-10-16T05:54:05.038997+00:00",
+  "origin": "https://www.tonerymaxim.sk",
+  "mode": "Observed browser interactions; no order submission",
+  "existingTestLoginObserved": true,
+  "credentialsEntered": false,
+  "checks": {
+    "emptyCheckout": {
+      "before": true,
+      "afterCleanup": true,
+      "visibleOrderButtons": 0
+    },
+    "prefixCF53": {
+      "autocompleteFirstIsSet": true,
+      "fullSearchTotal": 14,
+      "fullSearchFirstIsSet": true
+    },
+    "canonCart": {
+      "id": 52830,
+      "unitPrice": 75.2,
+      "addedQuantity": 4,
+      "drawerQuantityDiscountTotal": 225.6,
+      "changedQuantity": 3,
+      "threeSetsBeforeExistingAccountCoupon": 203.04,
+      "existingAccountCouponDiscount": 14.21,
+      "checkoutTotalAfterAccountCoupon": 188.83,
+      "checkoutFormVisibleWithItems": true,
+      "checkoutShippingPrice": 0,
+      "selectedPayment": "GoPay",
+      "testProductRemoved": true,
+      "finalCartCount": 0
+    },
+    "printerFinder": {
+      "typed": "ML2165W",
+      "offered": "Samsung ML-2165W",
+      "resultUrl": "https://www.tonerymaxim.sk/tlaciarne/samsung/samsung-ml-2165",
+      "productCount": 3,
+      "productFamily": "MLT-D101S"
+    },
+    "aiChat": {
+      "message": "30X do HP, neviem model",
+      "askedForExactPrinterOrOem": true
+    },
+    "header": {
+      "viewport": 1363,
+      "documentClientWidth": 1348,
+      "cartLeft": 1289,
+      "cartRight": 1315,
+      "cartFullyInside": true,
+      "horizontalOverflow": false
+    },
+    "console": {
+      "siteErrorsObserved": 0,
+      "extensionErrorsObserved": true,
+      "inspection": "Last 100 error records; Chrome extension records excluded"
+    }
+  },
+  "realOrdersCreated": 0,
+  "realPaymentsCreated": 0,
+  "emailsSent": 0,
+  "limitations": [
+    "No real order submission, payment, or email delivery was performed.",
+    "Existing test login and account coupon were observed; anonymous browser status is not claimed.",
+    "Coupon codes, email, and other account identifiers are omitted from this report."
+  ]
+}

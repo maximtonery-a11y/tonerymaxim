@@ -1,0 +1,3911 @@
+{
+  "mode": "https://www.tonerymaxim.sk",
+  "selection": "300 distinct toner designations across 10 brands, round-robin by brand, prioritising available stock; not a sales ranking",
+  "catalogGeneratedAt": "2026-10-05T05:07:45.029Z",
+  "cases": 300,
+  "passed": 300,
+  "checks": 300,
+  "failed": 0,
+  "rows": [
+    {
+      "query": "Brother TN-3410",
+      "expectedId": 44051,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 6317
+    },
+    {
+      "query": "Epson C13S050709",
+      "expectedId": 37584,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 6545
+    },
+    {
+      "query": "Canon CRG-047",
+      "expectedId": 43993,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 6792
+    },
+    {
+      "query": "HP W1420A",
+      "expectedId": 39951,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 805
+    },
+    {
+      "query": "Kyocera TK-1160",
+      "expectedId": 37755,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 815
+    },
+    {
+      "query": "Lexmark 70C2HY0",
+      "expectedId": 39050,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 924
+    },
+    {
+      "query": "OKI 46508709",
+      "expectedId": 37779,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 697
+    },
+    {
+      "query": "Ricoh 406522",
+      "expectedId": 37809,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 648
+    },
+    {
+      "query": "Samsung MLT-D111L",
+      "expectedId": 37850,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 526
+    },
+    {
+      "query": "Brother TN-3480",
+      "expectedId": 37501,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 457
+    },
+    {
+      "query": "Xerox B205",
+      "expectedId": 37856,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 7,
+      "ok": true,
+      "ms": 838
+    },
+    {
+      "query": "Canon CRG-726",
+      "expectedId": 43978,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 655
+    },
+    {
+      "query": "Epson T04D1",
+      "expectedId": 37185,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 635
+    },
+    {
+      "query": "HP CF217A",
+      "expectedId": 37635,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 4,
+      "ok": true,
+      "ms": 736
+    },
+    {
+      "query": "Lexmark 70C2HK0",
+      "expectedId": 39047,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 492
+    },
+    {
+      "query": "Kyocera TK-5280K",
+      "expectedId": 37748,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 888
+    },
+    {
+      "query": "OKI 44973536",
+      "expectedId": 37793,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 540
+    },
+    {
+      "query": "Ricoh 407246",
+      "expectedId": 37807,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 468
+    },
+    {
+      "query": "Samsung MLT-D111XL",
+      "expectedId": 37811,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 500
+    },
+    {
+      "query": "Xerox B225",
+      "expectedId": 37894,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 6,
+      "ok": true,
+      "ms": 516
+    },
+    {
+      "query": "Brother TN-2421",
+      "expectedId": 37471,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 600
+    },
+    {
+      "query": "Canon CRG-728",
+      "expectedId": 43977,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 616
+    },
+    {
+      "query": "Epson C13S050612",
+      "expectedId": 37581,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 652
+    },
+    {
+      "query": "HP W1350X",
+      "expectedId": 39950,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 663
+    },
+    {
+      "query": "Kyocera TK-5280Y",
+      "expectedId": 37750,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 653
+    },
+    {
+      "query": "OKI 45807106",
+      "expectedId": 37780,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 360
+    },
+    {
+      "query": "Lexmark 71B20K0",
+      "expectedId": 39073,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 808
+    },
+    {
+      "query": "Ricoh 407254",
+      "expectedId": 37806,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 478
+    },
+    {
+      "query": "Samsung MLT-D116L",
+      "expectedId": 37823,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 548
+    },
+    {
+      "query": "Xerox C230",
+      "expectedId": 37889,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 13,
+      "ok": true,
+      "ms": 496
+    },
+    {
+      "query": "Brother TN-2590XL",
+      "expectedId": 39938,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 596
+    },
+    {
+      "query": "Epson C13S050613",
+      "expectedId": 37580,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 468
+    },
+    {
+      "query": "Canon CRG-051H",
+      "expectedId": 44072,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 864
+    },
+    {
+      "query": "HP CF259X",
+      "expectedId": 37665,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 736
+    },
+    {
+      "query": "Kyocera TK-5230C",
+      "expectedId": 37738,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 716
+    },
+    {
+      "query": "Lexmark 12016SE",
+      "expectedId": 37764,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 700
+    },
+    {
+      "query": "OKI 46490605",
+      "expectedId": 37784,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 584
+    },
+    {
+      "query": "Ricoh 407166",
+      "expectedId": 37805,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 511
+    },
+    {
+      "query": "Samsung MLT-D1042S",
+      "expectedId": 37817,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 488
+    },
+    {
+      "query": "Xerox B305",
+      "expectedId": 44202,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 9,
+      "ok": true,
+      "ms": 528
+    },
+    {
+      "query": "Brother TN-247BK",
+      "expectedId": 37462,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 604
+    },
+    {
+      "query": "Canon CRG-703",
+      "expectedId": 44000,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 653
+    },
+    {
+      "query": "Epson C13S110078",
+      "expectedId": 37576,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 733
+    },
+    {
+      "query": "HP Q2612A",
+      "expectedId": 37585,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 764
+    },
+    {
+      "query": "Kyocera TK-5240K",
+      "expectedId": 37741,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 767
+    },
+    {
+      "query": "Lexmark 80C2SK0",
+      "expectedId": 39082,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 788
+    },
+    {
+      "query": "OKI 44973535",
+      "expectedId": 37794,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 664
+    },
+    {
+      "query": "Ricoh 408294",
+      "expectedId": 37810,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 552
+    },
+    {
+      "query": "Samsung MLT-D1052L",
+      "expectedId": 37828,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 456
+    },
+    {
+      "query": "Xerox B410",
+      "expectedId": 38474,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 514
+    },
+    {
+      "query": "Brother TN-2420XXL",
+      "expectedId": 37467,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 612
+    },
+    {
+      "query": "Canon FX-10",
+      "expectedId": 43999,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 640
+    },
+    {
+      "query": "HP CB435X",
+      "expectedId": 43962,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 480
+    },
+    {
+      "query": "Epson C13S050614",
+      "expectedId": 37579,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 923
+    },
+    {
+      "query": "Kyocera TK-3100",
+      "expectedId": 37763,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 661
+    },
+    {
+      "query": "Lexmark 71B20C0",
+      "expectedId": 39074,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 607
+    },
+    {
+      "query": "OKI 46508711",
+      "expectedId": 37777,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 520
+    },
+    {
+      "query": "Ricoh 841925",
+      "expectedId": 41173,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 455
+    },
+    {
+      "query": "Samsung CLT-K404S",
+      "expectedId": 37843,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 448
+    },
+    {
+      "query": "Xerox C320",
+      "expectedId": 38475,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 5,
+      "ok": true,
+      "ms": 500
+    },
+    {
+      "query": "Brother TN-247C",
+      "expectedId": 37463,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 649
+    },
+    {
+      "query": "Canon CRG-719",
+      "expectedId": 43976,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 6,
+      "ok": true,
+      "ms": 784
+    },
+    {
+      "query": "Epson C13S050611",
+      "expectedId": 37582,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 804
+    },
+    {
+      "query": "HP CB436X",
+      "expectedId": 43963,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 796
+    },
+    {
+      "query": "Kyocera TK-5230Y",
+      "expectedId": 37740,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 668
+    },
+    {
+      "query": "Lexmark 71B20M0",
+      "expectedId": 39075,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 652
+    },
+    {
+      "query": "OKI 46508712",
+      "expectedId": 37776,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 523
+    },
+    {
+      "query": "Ricoh 405783",
+      "expectedId": 39935,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 460
+    },
+    {
+      "query": "Samsung MLT-D119S",
+      "expectedId": 37812,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 512
+    },
+    {
+      "query": "Brother TN-247Y",
+      "expectedId": 37465,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 448
+    },
+    {
+      "query": "Xerox C310",
+      "expectedId": 39337,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 21,
+      "ok": true,
+      "ms": 761
+    },
+    {
+      "query": "Canon CRG-719H",
+      "expectedId": 43944,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 616
+    },
+    {
+      "query": "Epson C13S110079",
+      "expectedId": 37575,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 617
+    },
+    {
+      "query": "HP CE278X",
+      "expectedId": 37677,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 699
+    },
+    {
+      "query": "Lexmark 51F2H00",
+      "expectedId": 39072,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 460
+    },
+    {
+      "query": "Kyocera TK-5230M",
+      "expectedId": 37739,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 884
+    },
+    {
+      "query": "OKI 44973534",
+      "expectedId": 37795,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 529
+    },
+    {
+      "query": "Ricoh 841919",
+      "expectedId": 38421,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 474
+    },
+    {
+      "query": "Samsung CLT-M4072S",
+      "expectedId": 37826,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 468
+    },
+    {
+      "query": "Xerox 700",
+      "expectedId": 41401,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 6,
+      "ok": true,
+      "ms": 467
+    },
+    {
+      "query": "Brother TN-247M",
+      "expectedId": 37464,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 544
+    },
+    {
+      "query": "Epson C13S050691",
+      "expectedId": 37583,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 424
+    },
+    {
+      "query": "Canon CRG-720",
+      "expectedId": 43945,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 764
+    },
+    {
+      "query": "HP CE285X",
+      "expectedId": 43964,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 708
+    },
+    {
+      "query": "Kyocera TK-5280M",
+      "expectedId": 37749,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 724
+    },
+    {
+      "query": "Lexmark B232000",
+      "expectedId": 44195,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 756
+    },
+    {
+      "query": "OKI 46508710",
+      "expectedId": 37778,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 592
+    },
+    {
+      "query": "Ricoh 841920",
+      "expectedId": 38422,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 512
+    },
+    {
+      "query": "Samsung M4072S",
+      "expectedId": 44008,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 4,
+      "ok": true,
+      "ms": 452
+    },
+    {
+      "query": "Xerox D95",
+      "expectedId": 41396,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 444
+    },
+    {
+      "query": "Brother TN-B023",
+      "expectedId": 37932,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 528
+    },
+    {
+      "query": "Canon CRG-712",
+      "expectedId": 44092,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 572
+    },
+    {
+      "query": "Epson C13S050595",
+      "expectedId": 38128,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 680
+    },
+    {
+      "query": "HP CE278A",
+      "expectedId": 37595,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 860
+    },
+    {
+      "query": "Kyocera TK-5230K",
+      "expectedId": 37737,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 807
+    },
+    {
+      "query": "Lexmark 71B2HC0",
+      "expectedId": 39078,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 788
+    },
+    {
+      "query": "OKI 46490606",
+      "expectedId": 37783,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 519
+    },
+    {
+      "query": "Ricoh 841921",
+      "expectedId": 38423,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 481
+    },
+    {
+      "query": "Samsung M4092S",
+      "expectedId": 44009,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 456
+    },
+    {
+      "query": "Brother TN-1030",
+      "expectedId": 37478,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 576
+    },
+    {
+      "query": "Canon CRG-713",
+      "expectedId": 44093,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 668
+    },
+    {
+      "query": "Epson C9345",
+      "expectedId": 37217,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 692
+    },
+    {
+      "query": "HP CF230X",
+      "expectedId": 37637,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 632
+    },
+    {
+      "query": "Kyocera TK-5280C",
+      "expectedId": 39962,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 400
+    },
+    {
+      "query": "Lexmark 56F2U00",
+      "expectedId": 37767,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 388
+    },
+    {
+      "query": "OKI 44973533",
+      "expectedId": 37796,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 364
+    },
+    {
+      "query": "Ricoh SP150",
+      "expectedId": 37808,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 572
+    },
+    {
+      "query": "Samsung MLT-D1092S",
+      "expectedId": 37816,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 616
+    },
+    {
+      "query": "Brother TN-1050",
+      "expectedId": 44044,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 696
+    },
+    {
+      "query": "Canon CRG-051BK",
+      "expectedId": 43994,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 736
+    },
+    {
+      "query": "Epson C13S050435",
+      "expectedId": 37577,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 708
+    },
+    {
+      "query": "HP Q2612X",
+      "expectedId": 37647,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 716
+    },
+    {
+      "query": "Kyocera TK-1140",
+      "expectedId": 37762,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 676
+    },
+    {
+      "query": "Lexmark 70C2HC0",
+      "expectedId": 39048,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 656
+    },
+    {
+      "query": "OKI 44469706",
+      "expectedId": 37790,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 528
+    },
+    {
+      "query": "Ricoh 406475",
+      "expectedId": 41168,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 460
+    },
+    {
+      "query": "Samsung C4072S",
+      "expectedId": 44006,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 460
+    },
+    {
+      "query": "Brother TN-3600XXL",
+      "expectedId": 37521,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 572
+    },
+    {
+      "query": "Canon CRG-045HBK",
+      "expectedId": 43918,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 688
+    },
+    {
+      "query": "HP CE505A",
+      "expectedId": 37588,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 499
+    },
+    {
+      "query": "Epson T6712",
+      "expectedId": 37310,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 948
+    },
+    {
+      "query": "Kyocera TK-5240C",
+      "expectedId": 37742,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 688
+    },
+    {
+      "query": "Lexmark 71B2HM0",
+      "expectedId": 39079,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 632
+    },
+    {
+      "query": "OKI 44469705",
+      "expectedId": 37791,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 560
+    },
+    {
+      "query": "Ricoh 406476",
+      "expectedId": 41185,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 452
+    },
+    {
+      "query": "Samsung C4092S",
+      "expectedId": 44007,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 464
+    },
+    {
+      "query": "Brother TN-245Y",
+      "expectedId": 37484,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 540
+    },
+    {
+      "query": "Canon CRG-054HBK",
+      "expectedId": 43917,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 656
+    },
+    {
+      "query": "Epson C13S050651",
+      "expectedId": 39945,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 679
+    },
+    {
+      "query": "Kyocera TK-5240M",
+      "expectedId": 39007,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 404
+    },
+    {
+      "query": "HP CF280A",
+      "expectedId": 43975,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 944
+    },
+    {
+      "query": "Lexmark 71B2HY0",
+      "expectedId": 39080,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 657
+    },
+    {
+      "query": "OKI 44469804",
+      "expectedId": 37785,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 604
+    },
+    {
+      "query": "Ricoh 406477",
+      "expectedId": 41184,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 444
+    },
+    {
+      "query": "Samsung CLT-C4072S",
+      "expectedId": 37825,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 471
+    },
+    {
+      "query": "Canon CRG-725",
+      "expectedId": 44055,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 420
+    },
+    {
+      "query": "Brother TN-245M",
+      "expectedId": 37483,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 768
+    },
+    {
+      "query": "Epson C13S050523",
+      "expectedId": 41580,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 632
+    },
+    {
+      "query": "HP W1106A",
+      "expectedId": 37662,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 624
+    },
+    {
+      "query": "Kyocera TK-5270Y",
+      "expectedId": 37747,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 628
+    },
+    {
+      "query": "Lexmark 80C20M0",
+      "expectedId": 39057,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 612
+    },
+    {
+      "query": "OKI 46490607",
+      "expectedId": 37782,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 537
+    },
+    {
+      "query": "Ricoh 406479",
+      "expectedId": 41179,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 444
+    },
+    {
+      "query": "Samsung MLT-D101S",
+      "expectedId": 39294,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 468
+    },
+    {
+      "query": "Brother TN-245C",
+      "expectedId": 37482,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 563
+    },
+    {
+      "query": "Canon CRG-071H",
+      "expectedId": 37533,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 684
+    },
+    {
+      "query": "HP CE505X",
+      "expectedId": 37589,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 484
+    },
+    {
+      "query": "Epson C13S050554",
+      "expectedId": 38731,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 920
+    },
+    {
+      "query": "Kyocera TK-5270C",
+      "expectedId": 37745,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 640
+    },
+    {
+      "query": "Lexmark 80C2HM0",
+      "expectedId": 39061,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 603
+    },
+    {
+      "query": "OKI 43979202",
+      "expectedId": 37799,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 516
+    },
+    {
+      "query": "Ricoh 406480",
+      "expectedId": 41180,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 472
+    },
+    {
+      "query": "Samsung MLT-D203L",
+      "expectedId": 37839,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 489
+    },
+    {
+      "query": "Brother TN-2110",
+      "expectedId": 37475,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 635
+    },
+    {
+      "query": "Canon CRG-737",
+      "expectedId": 44057,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 708
+    },
+    {
+      "query": "Epson C13S050584",
+      "expectedId": 37578,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 716
+    },
+    {
+      "query": "HP CF280X",
+      "expectedId": 43943,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 713
+    },
+    {
+      "query": "Lexmark 80C2SC0",
+      "expectedId": 39083,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 460
+    },
+    {
+      "query": "Kyocera TK-3170",
+      "expectedId": 39002,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 884
+    },
+    {
+      "query": "OKI 44469723",
+      "expectedId": 37787,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 532
+    },
+    {
+      "query": "Ricoh 406481",
+      "expectedId": 41181,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 484
+    },
+    {
+      "query": "Samsung CLT-C404S",
+      "expectedId": 37844,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 504
+    },
+    {
+      "query": "Brother TN-2120",
+      "expectedId": 44041,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 600
+    },
+    {
+      "query": "Canon CRG-052",
+      "expectedId": 43985,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 6,
+      "ok": true,
+      "ms": 684
+    },
+    {
+      "query": "Epson C13S050555",
+      "expectedId": 38730,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 656
+    },
+    {
+      "query": "HP CB435A",
+      "expectedId": 44090,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 668
+    },
+    {
+      "query": "Kyocera TK-5240Y",
+      "expectedId": 39008,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 652
+    },
+    {
+      "query": "Lexmark 55B2H00",
+      "expectedId": 37765,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 664
+    },
+    {
+      "query": "Ricoh 406482",
+      "expectedId": 41182,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 384
+    },
+    {
+      "query": "OKI 45807111",
+      "expectedId": 37804,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 748
+    },
+    {
+      "query": "Samsung CLT-M404S",
+      "expectedId": 37845,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 544
+    },
+    {
+      "query": "Brother TN-625XLY",
+      "expectedId": 52058,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 595
+    },
+    {
+      "query": "Canon CRG-716BK",
+      "expectedId": 43894,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 4,
+      "ok": true,
+      "ms": 704
+    },
+    {
+      "query": "Epson C13S050556",
+      "expectedId": 41584,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 692
+    },
+    {
+      "query": "HP CB436A",
+      "expectedId": 44091,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 717
+    },
+    {
+      "query": "Kyocera TK-5270K",
+      "expectedId": 37744,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 648
+    },
+    {
+      "query": "Lexmark 52D2X00",
+      "expectedId": 39067,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 640
+    },
+    {
+      "query": "OKI 44469724",
+      "expectedId": 37786,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 503
+    },
+    {
+      "query": "Ricoh 407629",
+      "expectedId": 41175,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 432
+    },
+    {
+      "query": "Samsung CLT-Y4072S",
+      "expectedId": 37827,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 428
+    },
+    {
+      "query": "Brother TN-1090",
+      "expectedId": 37962,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 552
+    },
+    {
+      "query": "Epson C13S050557",
+      "expectedId": 38734,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 508
+    },
+    {
+      "query": "Canon CRG-731HBK",
+      "expectedId": 43895,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 907
+    },
+    {
+      "query": "HP CE285A",
+      "expectedId": 37594,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 712
+    },
+    {
+      "query": "Kyocera TK-5270M",
+      "expectedId": 37746,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 656
+    },
+    {
+      "query": "Lexmark T650H11E",
+      "expectedId": 39036,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 752
+    },
+    {
+      "query": "Ricoh 407630",
+      "expectedId": 41176,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 384
+    },
+    {
+      "query": "OKI 46490608",
+      "expectedId": 37781,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 736
+    },
+    {
+      "query": "Samsung Y4072S",
+      "expectedId": 44010,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 4,
+      "ok": true,
+      "ms": 404
+    },
+    {
+      "query": "Brother TN-2510XL",
+      "expectedId": 39937,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 536
+    },
+    {
+      "query": "Canon CRG-045HY",
+      "expectedId": 43924,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 1388
+    },
+    {
+      "query": "Epson C13S050166",
+      "expectedId": 41585,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 1424
+    },
+    {
+      "query": "HP CF279X",
+      "expectedId": 37648,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 2188
+    },
+    {
+      "query": "Kyocera TK-590C",
+      "expectedId": 37752,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 1400
+    },
+    {
+      "query": "Lexmark 55B2000",
+      "expectedId": 38270,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 1556
+    },
+    {
+      "query": "OKI 44574702",
+      "expectedId": 37800,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 4,
+      "ok": true,
+      "ms": 1428
+    },
+    {
+      "query": "Ricoh 407631",
+      "expectedId": 41177,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 1368
+    },
+    {
+      "query": "Samsung Y4092S",
+      "expectedId": 44011,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 1786
+    },
+    {
+      "query": "Canon CRG-054HY",
+      "expectedId": 43923,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 4,
+      "ok": true,
+      "ms": 962
+    },
+    {
+      "query": "Brother TN-2590",
+      "expectedId": 37912,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 6,
+      "ok": true,
+      "ms": 1356
+    },
+    {
+      "query": "Epson C13S050582",
+      "expectedId": 38732,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 714
+    },
+    {
+      "query": "HP W2070A",
+      "expectedId": 37685,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 866
+    },
+    {
+      "query": "Kyocera TK-590K",
+      "expectedId": 37751,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 888
+    },
+    {
+      "query": "Lexmark 60F2H00",
+      "expectedId": 39045,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 848
+    },
+    {
+      "query": "OKI 44469722",
+      "expectedId": 37788,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 692
+    },
+    {
+      "query": "Ricoh 407632",
+      "expectedId": 41178,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 551
+    },
+    {
+      "query": "Samsung CLT-K4072S",
+      "expectedId": 37824,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 680
+    },
+    {
+      "query": "Brother TN-2420",
+      "expectedId": 38607,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 732
+    },
+    {
+      "query": "Canon CRG-045HC",
+      "expectedId": 43921,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 837
+    },
+    {
+      "query": "Epson C13S050167",
+      "expectedId": 40214,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 684
+    },
+    {
+      "query": "HP CF230A",
+      "expectedId": 37636,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 712
+    },
+    {
+      "query": "Kyocera TK-3130",
+      "expectedId": 38991,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 684
+    },
+    {
+      "query": "Lexmark 70C2HM0",
+      "expectedId": 39049,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 941
+    },
+    {
+      "query": "OKI 44469704",
+      "expectedId": 39199,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 834
+    },
+    {
+      "query": "Ricoh 821034",
+      "expectedId": 41162,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 752
+    },
+    {
+      "query": "Samsung K4072S",
+      "expectedId": 44004,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 4,
+      "ok": true,
+      "ms": 439
+    },
+    {
+      "query": "Brother TN-2320",
+      "expectedId": 38587,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 522
+    },
+    {
+      "query": "Epson C13S050195",
+      "expectedId": 40208,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 432
+    },
+    {
+      "query": "Canon CRG-054HC",
+      "expectedId": 43920,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 876
+    },
+    {
+      "query": "HP W1490X",
+      "expectedId": 37692,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 724
+    },
+    {
+      "query": "Kyocera TK-330",
+      "expectedId": 38966,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 712
+    },
+    {
+      "query": "Lexmark 80C20K0",
+      "expectedId": 39055,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 656
+    },
+    {
+      "query": "OKI 45862838",
+      "expectedId": 39106,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 544
+    },
+    {
+      "query": "Ricoh 841295",
+      "expectedId": 41164,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 476
+    },
+    {
+      "query": "Samsung K4092S",
+      "expectedId": 44005,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 456
+    },
+    {
+      "query": "Brother TN-2010",
+      "expectedId": 44042,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 557
+    },
+    {
+      "query": "Canon CRG-708H",
+      "expectedId": 43941,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 676
+    },
+    {
+      "query": "Epson C13S050196",
+      "expectedId": 40207,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 699
+    },
+    {
+      "query": "Kyocera TK-170",
+      "expectedId": 37760,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 412
+    },
+    {
+      "query": "HP CF400X",
+      "expectedId": 43916,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 935
+    },
+    {
+      "query": "Lexmark 80C2XC0",
+      "expectedId": 39064,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 685
+    },
+    {
+      "query": "OKI 43979102",
+      "expectedId": 37798,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 616
+    },
+    {
+      "query": "Ricoh 841296",
+      "expectedId": 41163,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 480
+    },
+    {
+      "query": "Samsung CLT-Y404S",
+      "expectedId": 37846,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 464
+    },
+    {
+      "query": "Brother TN-2220",
+      "expectedId": 37476,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 564
+    },
+    {
+      "query": "Canon CRG-715H",
+      "expectedId": 43942,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 644
+    },
+    {
+      "query": "Epson C13S050197",
+      "expectedId": 40206,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 660
+    },
+    {
+      "query": "HP CF540X",
+      "expectedId": 37643,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 672
+    },
+    {
+      "query": "Kyocera TK-3060",
+      "expectedId": 41677,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 660
+    },
+    {
+      "query": "OKI 45862837",
+      "expectedId": 39107,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 324
+    },
+    {
+      "query": "Lexmark 80C2XM0",
+      "expectedId": 39065,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 748
+    },
+    {
+      "query": "Ricoh 841297",
+      "expectedId": 41165,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 424
+    },
+    {
+      "query": "Samsung MLT-D111S",
+      "expectedId": 37849,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 496
+    },
+    {
+      "query": "Brother TN-2310",
+      "expectedId": 37477,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 536
+    },
+    {
+      "query": "Canon CRG-716Y",
+      "expectedId": 43902,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 4,
+      "ok": true,
+      "ms": 628
+    },
+    {
+      "query": "Epson C13S050198",
+      "expectedId": 40205,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 640
+    },
+    {
+      "query": "HP W2071A",
+      "expectedId": 37686,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 648
+    },
+    {
+      "query": "Kyocera TK-590Y",
+      "expectedId": 37754,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 624
+    },
+    {
+      "query": "Lexmark E460X11E",
+      "expectedId": 39031,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 605
+    },
+    {
+      "query": "OKI 44469803",
+      "expectedId": 37789,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 500
+    },
+    {
+      "query": "Ricoh 841298",
+      "expectedId": 41166,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 431
+    },
+    {
+      "query": "Samsung MLT-D205E",
+      "expectedId": 37841,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 463
+    },
+    {
+      "query": "Brother TN-241BK",
+      "expectedId": 37481,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 556
+    },
+    {
+      "query": "Canon CRG-731Y",
+      "expectedId": 43903,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 673
+    },
+    {
+      "query": "Epson C13S050242",
+      "expectedId": 40204,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 661
+    },
+    {
+      "query": "HP W2072A",
+      "expectedId": 39947,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 712
+    },
+    {
+      "query": "Lexmark 51B2H00",
+      "expectedId": 39967,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 463
+    },
+    {
+      "query": "Kyocera TK-580C",
+      "expectedId": 37757,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 875
+    },
+    {
+      "query": "OKI 44973508",
+      "expectedId": 39234,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 532
+    },
+    {
+      "query": "Ricoh 841337",
+      "expectedId": 41161,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 472
+    },
+    {
+      "query": "Samsung MLT-D205L",
+      "expectedId": 37840,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 476
+    },
+    {
+      "query": "Brother TN-325BK",
+      "expectedId": 37492,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 572
+    },
+    {
+      "query": "Canon CRG-716M",
+      "expectedId": 43906,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 4,
+      "ok": true,
+      "ms": 676
+    },
+    {
+      "query": "Epson C13S050243",
+      "expectedId": 40203,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 680
+    },
+    {
+      "query": "HP CF283X",
+      "expectedId": 37616,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 704
+    },
+    {
+      "query": "Kyocera TK-580M",
+      "expectedId": 37758,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 660
+    },
+    {
+      "query": "Lexmark 50F2000",
+      "expectedId": 40676,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 636
+    },
+    {
+      "query": "OKI 47095704",
+      "expectedId": 39259,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 516
+    },
+    {
+      "query": "Ricoh 841813",
+      "expectedId": 38420,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 452
+    },
+    {
+      "query": "Samsung CLT-K504S",
+      "expectedId": 37830,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 504
+    },
+    {
+      "query": "Brother TN-119",
+      "expectedId": 37919,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 676
+    },
+    {
+      "query": "Canon CRG-731M",
+      "expectedId": 43907,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 814
+    },
+    {
+      "query": "HP W2073A",
+      "expectedId": 37687,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 504
+    },
+    {
+      "query": "Epson C13S050244",
+      "expectedId": 40202,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 1136
+    },
+    {
+      "query": "Kyocera TK-580Y",
+      "expectedId": 37759,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 758
+    },
+    {
+      "query": "Lexmark 51B2000",
+      "expectedId": 38266,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 720
+    },
+    {
+      "query": "OKI 44844508",
+      "expectedId": 39243,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 512
+    },
+    {
+      "query": "Ricoh D2233680",
+      "expectedId": 41174,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 496
+    },
+    {
+      "query": "Samsung CLT-C406S",
+      "expectedId": 37820,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 492
+    },
+    {
+      "query": "Brother TN-423BK",
+      "expectedId": 37958,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 600
+    },
+    {
+      "query": "Epson C13S050245",
+      "expectedId": 40201,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 532
+    },
+    {
+      "query": "Canon CRG-045M",
+      "expectedId": 43891,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 940
+    },
+    {
+      "query": "HP CF279A",
+      "expectedId": 37634,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 749
+    },
+    {
+      "query": "Kyocera TK-590M",
+      "expectedId": 37753,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 680
+    },
+    {
+      "query": "Lexmark B222000",
+      "expectedId": 38267,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 655
+    },
+    {
+      "query": "OKI 45862839",
+      "expectedId": 39105,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 591
+    },
+    {
+      "query": "Samsung CLT-C506L",
+      "expectedId": 37835,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 516
+    },
+    {
+      "query": "Brother TN-423C",
+      "expectedId": 37959,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 544
+    },
+    {
+      "query": "Epson C13S050316",
+      "expectedId": 40212,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 453
+    },
+    {
+      "query": "Canon CRG-054M",
+      "expectedId": 43890,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 4,
+      "ok": true,
+      "ms": 836
+    },
+    {
+      "query": "HP CF217XXL",
+      "expectedId": 37650,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 708
+    },
+    {
+      "query": "Kyocera TK-3160",
+      "expectedId": 39001,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 663
+    },
+    {
+      "query": "Lexmark B222H00",
+      "expectedId": 38268,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 626
+    },
+    {
+      "query": "OKI 44574802",
+      "expectedId": 37801,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 508
+    },
+    {
+      "query": "Samsung MLT-D204L",
+      "expectedId": 37829,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 524
+    },
+    {
+      "query": "Brother TN-423M",
+      "expectedId": 37960,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 551
+    },
+    {
+      "query": "Canon CRG-045C",
+      "expectedId": 43885,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 632
+    },
+    {
+      "query": "Epson C13S050317",
+      "expectedId": 40211,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 1,
+      "ok": true,
+      "ms": 628
+    },
+    {
+      "query": "HP CF226A",
+      "expectedId": 37617,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 3,
+      "ok": true,
+      "ms": 652
+    },
+    {
+      "query": "Kyocera TK-3190",
+      "expectedId": 39003,
+      "checks": [
+        {
+          "kind": "exact",
+          "ok": true
+        }
+      ],
+      "total": 2,
+      "ok": true,
+      "ms": 652
+    }
+  ]
+}

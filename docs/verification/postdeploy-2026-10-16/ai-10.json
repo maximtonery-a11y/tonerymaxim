@@ -1,0 +1,542 @@
+{
+  "observedAt": "2026-10-16T05:46:08.754Z",
+  "origin": "https://www.tonerymaxim.sk",
+  "count": 10,
+  "medianMs": 917.5,
+  "maxMs": 6777,
+  "over10sec": 0,
+  "rows": [
+    {
+      "key": "hp",
+      "message": "Hľadám kompatibilný toner HP CF230X. Aké máte možnosti?",
+      "at": "2026-10-16T05:45:54.052Z",
+      "status": 200,
+      "ms": 6777,
+      "serverTiming": "app;dur=670.5",
+      "ok": true,
+      "answer": [
+        "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+      ],
+      "products": [
+        {
+          "id": 37637,
+          "name": "HP CF230X (30X) čierny kompatibilný toner",
+          "price": 12.39,
+          "capacity": "3 500 strán",
+          "compatible_printers": [
+            "HP LaserJet Pro M203dn",
+            "HP LaserJet Pro M203dw",
+            "HP LaserJet Pro MFP M227fdn",
+            "HP LaserJet Pro MFP M227fdw",
+            "HP LaserJet Pro MFP M227sdn"
+          ]
+        }
+      ],
+      "action": null,
+      "cart": [],
+      "contentReview": {
+        "status": "pass",
+        "note": "Correct CF230X compatible product."
+      }
+    },
+    {
+      "key": "brother",
+      "message": "Aký je rozdiel medzi Brother TN-1050 a DR-1050?",
+      "at": "2026-10-16T05:46:00.830Z",
+      "status": 200,
+      "ms": 1325,
+      "serverTiming": "app;dur=681.6",
+      "ok": true,
+      "answer": [
+        "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+      ],
+      "products": [
+        {
+          "id": 44044,
+          "name": "Brother TN-1050 čierny kompatibilný toner",
+          "price": 8.07,
+          "capacity": "1 000 strán",
+          "compatible_printers": [
+            "Brother DCP-1510E",
+            "Brother DCP-1512E",
+            "Brother DCP-1610WE",
+            "Brother HL-1110E",
+            "Brother HL-1112E",
+            "Brother HL-1210WE",
+            "Brother HL-1212W",
+            "Brother HL-1212WE",
+            "Brother MFC-1810E",
+            "Brother MFC-1910WE"
+          ]
+        },
+        {
+          "id": 43973,
+          "name": "Brother DR-1050 kompatibilný optický valec",
+          "price": 13.44,
+          "capacity": "10 000 strán",
+          "compatible_printers": [
+            "Brother DCP-1510E",
+            "Brother DCP-1512E",
+            "Brother DCP-1610WE",
+            "Brother HL-1110E",
+            "Brother HL-1112E",
+            "Brother HL-1210WE",
+            "Brother HL-1212W",
+            "Brother HL-1212WE",
+            "Brother MFC-1810E",
+            "Brother MFC-1910WE"
+          ]
+        },
+        {
+          "id": 38576,
+          "name": "Brother TN-1050 čierny renovovaný toner",
+          "price": 23.24,
+          "capacity": "1 500 strán",
+          "compatible_printers": [
+            "Brother DCP-1510E",
+            "Brother DCP-1512E",
+            "Brother DCP-1610WE",
+            "Brother HL-1110E",
+            "Brother HL-1112E",
+            "Brother HL-1210WE",
+            "Brother HL-1212W",
+            "Brother HL-1212WE",
+            "Brother MFC-1810E",
+            "Brother MFC-1910WE"
+          ]
+        },
+        {
+          "id": 38583,
+          "name": "Brother DR-1050 renovovaný optický valec",
+          "price": 35.02,
+          "capacity": "10 000 strán",
+          "compatible_printers": [
+            "Brother DCP-1510E",
+            "Brother DCP-1512E",
+            "Brother DCP-1610WE",
+            "Brother HL-1110E",
+            "Brother HL-1112E",
+            "Brother HL-1210WE",
+            "Brother HL-1212W",
+            "Brother HL-1212WE",
+            "Brother MFC-1810E",
+            "Brother MFC-1910WE"
+          ]
+        }
+      ],
+      "action": null,
+      "cart": [],
+      "contentReview": {
+        "status": "partial",
+        "note": "Partial: TN-1050 and DR-1050 products are present, but the requested explanation of toner versus drum is absent."
+      }
+    },
+    {
+      "key": "canon-set",
+      "message": "Hľadám kompatibilnú sadu Canon CRG-045 CMYK, všetky štyri farby.",
+      "at": "2026-10-16T05:46:02.155Z",
+      "status": 200,
+      "ms": 1491,
+      "serverTiming": "app;dur=668.9",
+      "ok": true,
+      "answer": [
+        "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+      ],
+      "products": [
+        {
+          "id": 52830,
+          "name": "Canon CRG-045 CMYK kompatibilná sada tonerov (4 ks)",
+          "price": 75.2,
+          "capacity": "Čierna: 1400 strán; Azúrová: 1300 strán; Purpurová: 1300 strán; Žltá: 1300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP611Cn",
+            "Canon i-SENSYS LBP612Cdw",
+            "Canon i-SENSYS LBP613Cdw",
+            "Canon i-SENSYS MF631Cn",
+            "Canon i-SENSYS MF632Cdw",
+            "Canon i-SENSYS MF633Cdw",
+            "Canon i-SENSYS MF635Cx"
+          ]
+        }
+      ],
+      "action": null,
+      "cart": [],
+      "contentReview": {
+        "status": "pass",
+        "note": "Exact compatible CMYK set ID 52830."
+      }
+    },
+    {
+      "key": "samsung",
+      "message": "Hľadám kompatibilný toner Samsung MLT-D101S.",
+      "at": "2026-10-16T05:46:03.646Z",
+      "status": 200,
+      "ms": 1104,
+      "serverTiming": "app;dur=488.4",
+      "ok": true,
+      "answer": [
+        "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+      ],
+      "products": [
+        {
+          "id": 37818,
+          "name": "Samsung MLT-D101S kompatibilný toner",
+          "price": 15.33,
+          "capacity": "1500 strán",
+          "compatible_printers": [
+            "Samsung ML-2160",
+            "Samsung ML-2162",
+            "Samsung ML-2165",
+            "Samsung ML-2165W",
+            "Samsung ML-2168",
+            "Samsung SCX-3400",
+            "Samsung SCX-3400F",
+            "Samsung SCX-3405",
+            "Samsung SCX-3405F",
+            "Samsung SCX-3405FW",
+            "Samsung SCX-3405W",
+            "Samsung SF-760P",
+            "Samsung SF-765P"
+          ]
+        }
+      ],
+      "action": null,
+      "cart": [],
+      "contentReview": {
+        "status": "pass",
+        "note": "Correct compatible MLT-D101S."
+      }
+    },
+    {
+      "key": "delivery",
+      "message": "Aká je cena dopravy, od akej sumy je zdarma a ako môžem zaplatiť?",
+      "at": "2026-10-16T05:46:04.751Z",
+      "status": 200,
+      "ms": 464,
+      "serverTiming": "app;dur=38.9",
+      "ok": true,
+      "answer": [
+        "Doprava a platba:",
+        "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+        "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+        "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+        "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+        "Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni.",
+        "Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH.",
+        "Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom."
+      ],
+      "products": [],
+      "action": null,
+      "cart": [],
+      "contentReview": {
+        "status": "pass",
+        "note": "Courier/pickup prices, free-shipping threshold and payment options stated."
+      }
+    },
+    {
+      "key": "components",
+      "message": "Aký je rozdiel medzi tonerom, optickým valcom a odpadovou nádobou?",
+      "at": "2026-10-16T05:46:05.215Z",
+      "status": 200,
+      "ms": 855,
+      "serverTiming": "app;dur=18.1",
+      "ok": true,
+      "answer": [
+        "Toner, optický valec a odpadová nádoba:",
+        "Toner dodáva prášok na tlač. Optický valec (drum) vytvára obraz a prenáša toner; môže byť samostatný alebo súčasťou tonerovej kazety.",
+        "Odpadová nádoba zachytáva zvyškový toner, ktorý sa pri tlači nepoužil. Nie je náhradou tonera ani optického valca; pri hlásení o jej naplnení sa postupuje podľa návodu konkrétnej tlačiarne.",
+        "Napíšte presný model tlačiarne a chybové hlásenie, aby sme určili správny diel."
+      ],
+      "products": [],
+      "action": null,
+      "cart": [],
+      "contentReview": {
+        "status": "pass",
+        "note": "Toner, drum and waste container explained."
+      }
+    },
+    {
+      "key": "epson",
+      "message": "Epson 102 pre ET-2700",
+      "at": "2026-10-16T05:46:06.070Z",
+      "status": 200,
+      "ms": 692,
+      "serverTiming": "app;dur=156.7",
+      "ok": true,
+      "answer": [
+        "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+      ],
+      "products": [
+        {
+          "id": 52991,
+          "name": "Epson 102 (C13T03R340) purpurová kompatibilná atramentová náplň",
+          "price": 2.88,
+          "capacity": "70 ml",
+          "compatible_printers": [
+            "Epson EcoTank ET-15000",
+            "Epson EcoTank ET-2700",
+            "Epson EcoTank ET-2750",
+            "Epson EcoTank ET-2756",
+            "Epson EcoTank ET-2850",
+            "Epson EcoTank ET-2851",
+            "Epson EcoTank ET-2856",
+            "Epson EcoTank ET-2950",
+            "Epson EcoTank ET-2951",
+            "Epson EcoTank ET-2955",
+            "Epson EcoTank ET-2956",
+            "Epson EcoTank ET-2959",
+            "Epson EcoTank ET-3700",
+            "Epson EcoTank ET-3750",
+            "Epson EcoTank ET-3850",
+            "Epson EcoTank ET-3950",
+            "Epson EcoTank ET-3956",
+            "Epson EcoTank ET-4750",
+            "Epson EcoTank ET-4850",
+            "Epson EcoTank ET-4856",
+            "Epson EcoTank ET-4950",
+            "Epson EcoTank ET-4951",
+            "Epson EcoTank ET-4955",
+            "Epson EcoTank ET-4956"
+          ]
+        },
+        {
+          "id": 52990,
+          "name": "Epson 102 (C13T03R240) azúrová kompatibilná atramentová náplň",
+          "price": 2.96,
+          "capacity": "70 ml",
+          "compatible_printers": [
+            "Epson EcoTank ET-15000",
+            "Epson EcoTank ET-2700",
+            "Epson EcoTank ET-2750",
+            "Epson EcoTank ET-2756",
+            "Epson EcoTank ET-2850",
+            "Epson EcoTank ET-2851",
+            "Epson EcoTank ET-2856",
+            "Epson EcoTank ET-2950",
+            "Epson EcoTank ET-2951",
+            "Epson EcoTank ET-2955",
+            "Epson EcoTank ET-2956",
+            "Epson EcoTank ET-2959",
+            "Epson EcoTank ET-3700",
+            "Epson EcoTank ET-3750",
+            "Epson EcoTank ET-3850",
+            "Epson EcoTank ET-3950",
+            "Epson EcoTank ET-3956",
+            "Epson EcoTank ET-4750",
+            "Epson EcoTank ET-4850",
+            "Epson EcoTank ET-4856",
+            "Epson EcoTank ET-4950",
+            "Epson EcoTank ET-4951",
+            "Epson EcoTank ET-4955",
+            "Epson EcoTank ET-4956"
+          ]
+        },
+        {
+          "id": 52992,
+          "name": "Epson 102 (C13T03R440) žltá kompatibilná atramentová náplň",
+          "price": 2.96,
+          "capacity": "70 ml",
+          "compatible_printers": [
+            "Epson EcoTank ET-15000",
+            "Epson EcoTank ET-2700",
+            "Epson EcoTank ET-2750",
+            "Epson EcoTank ET-2756",
+            "Epson EcoTank ET-2850",
+            "Epson EcoTank ET-2851",
+            "Epson EcoTank ET-2856",
+            "Epson EcoTank ET-2950",
+            "Epson EcoTank ET-2951",
+            "Epson EcoTank ET-2955",
+            "Epson EcoTank ET-2956",
+            "Epson EcoTank ET-2959",
+            "Epson EcoTank ET-3700",
+            "Epson EcoTank ET-3750",
+            "Epson EcoTank ET-3850",
+            "Epson EcoTank ET-3950",
+            "Epson EcoTank ET-3956",
+            "Epson EcoTank ET-4750",
+            "Epson EcoTank ET-4850",
+            "Epson EcoTank ET-4856",
+            "Epson EcoTank ET-4950",
+            "Epson EcoTank ET-4951",
+            "Epson EcoTank ET-4955",
+            "Epson EcoTank ET-4956"
+          ]
+        },
+        {
+          "id": 52989,
+          "name": "Epson 102 (C13T03R140) čierna kompatibilná atramentová náplň",
+          "price": 4.36,
+          "capacity": "130 ml",
+          "compatible_printers": [
+            "Epson EcoTank ET-15000",
+            "Epson EcoTank ET-2700",
+            "Epson EcoTank ET-2750",
+            "Epson EcoTank ET-2756",
+            "Epson EcoTank ET-2850",
+            "Epson EcoTank ET-2851",
+            "Epson EcoTank ET-2856",
+            "Epson EcoTank ET-2950",
+            "Epson EcoTank ET-2951",
+            "Epson EcoTank ET-2955",
+            "Epson EcoTank ET-2956",
+            "Epson EcoTank ET-2959",
+            "Epson EcoTank ET-3700",
+            "Epson EcoTank ET-3750",
+            "Epson EcoTank ET-3850",
+            "Epson EcoTank ET-3950",
+            "Epson EcoTank ET-3956",
+            "Epson EcoTank ET-4750",
+            "Epson EcoTank ET-4850",
+            "Epson EcoTank ET-4856",
+            "Epson EcoTank ET-4950",
+            "Epson EcoTank ET-4951",
+            "Epson EcoTank ET-4955",
+            "Epson EcoTank ET-4956"
+          ]
+        },
+        {
+          "id": 53054,
+          "name": "Epson 102 (C13T03R640) CMYK kompatibilná sada atramentových náplní (4 ks)",
+          "price": 11.84,
+          "capacity": "130 ml + 3 × 70 ml (spolu 340 ml)",
+          "compatible_printers": [
+            "Epson EcoTank ET-15000",
+            "Epson EcoTank ET-2700",
+            "Epson EcoTank ET-2750",
+            "Epson EcoTank ET-2756",
+            "Epson EcoTank ET-2850",
+            "Epson EcoTank ET-2851",
+            "Epson EcoTank ET-2856",
+            "Epson EcoTank ET-2950",
+            "Epson EcoTank ET-2951",
+            "Epson EcoTank ET-2955",
+            "Epson EcoTank ET-2956",
+            "Epson EcoTank ET-2959",
+            "Epson EcoTank ET-3700",
+            "Epson EcoTank ET-3750",
+            "Epson EcoTank ET-3850",
+            "Epson EcoTank ET-3950",
+            "Epson EcoTank ET-3956",
+            "Epson EcoTank ET-4750",
+            "Epson EcoTank ET-4850",
+            "Epson EcoTank ET-4856",
+            "Epson EcoTank ET-4950",
+            "Epson EcoTank ET-4951",
+            "Epson EcoTank ET-4955",
+            "Epson EcoTank ET-4956"
+          ]
+        }
+      ],
+      "action": null,
+      "cart": [],
+      "contentReview": {
+        "status": "pass",
+        "note": "Epson 102 single colours and CMYK set; ET-2700 compatibility present."
+      }
+    },
+    {
+      "key": "ambiguous",
+      "message": "30X do HP, neviem model",
+      "at": "2026-10-16T05:46:06.762Z",
+      "status": 200,
+      "ms": 688,
+      "serverTiming": "app;dur=2.0",
+      "ok": true,
+      "answer": [
+        "Pri skrátenom označení 30X potrebujem potvrdiť presný model tlačiarne HP alebo celý OEM kód z kazety. Pozrite, prosím, výrobný štítok tlačiarne alebo označenie kazety; podľa neúplného údaja kompatibilitu nepotvrdím."
+      ],
+      "products": [],
+      "action": {
+        "kind": "CLARIFY_PRINTER"
+      },
+      "cart": [],
+      "contentReview": {
+        "status": "pass",
+        "note": "Requests exact printer or full OEM; no cart change."
+      }
+    },
+    {
+      "key": "lexmark",
+      "message": "Hľadám kompatibilný Lexmark 56F2X0E. Aká je kapacita a do ktorých tlačiarní je vhodný?",
+      "at": "2026-10-16T05:46:07.450Z",
+      "status": 200,
+      "ms": 980,
+      "serverTiming": "app;dur=302.2",
+      "ok": true,
+      "answer": [
+        "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:"
+      ],
+      "products": [
+        {
+          "id": 53282,
+          "name": "Kompatibilný toner pre Lexmark 56F2X0E Black 20000 strán",
+          "price": 299.64,
+          "capacity": "20 000 strán",
+          "compatible_printers": [
+            "Lexmark MX521de",
+            "Lexmark MS421dw",
+            "Lexmark MS521dn",
+            "Lexmark MX521ade",
+            "Lexmark MX622ade",
+            "Lexmark MS621dn",
+            "Lexmark MX522adhe",
+            "Lexmark MS622de",
+            "Lexmark MX622adhe",
+            "Lexmark MS421dn",
+            "Lexmark MX421ade"
+          ]
+        }
+      ],
+      "action": null,
+      "cart": [],
+      "contentReview": {
+        "status": "pass",
+        "note": "Product includes capacity 20,000 pages and 11 printer names."
+      }
+    },
+    {
+      "key": "discount",
+      "message": "Koľko stoja 3 ks a 4 ks kompatibilnej sady Canon CRG-045 CMYK po množstevnej zľave?",
+      "at": "2026-10-16T05:46:08.431Z",
+      "status": 200,
+      "ms": 324,
+      "serverTiming": "app;dur=4.9",
+      "ok": true,
+      "answer": [
+        "Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:",
+        "Pri rovnakom kompatibilnom produkte platí zľava 10 % pri 2–3 ks a 25 % pri 4 a viac kusoch.",
+        "Canon CRG-045 CMYK kompatibilná sada tonerov (4 ks) — 3 ks: 203,04 € spolu; 4 ks: 225,60 € spolu. Sumy sú po množstevnej zľave, bez dopravy a ďalších zliav."
+      ],
+      "products": [
+        {
+          "id": 52830,
+          "name": "Canon CRG-045 CMYK kompatibilná sada tonerov (4 ks)",
+          "price": 75.2,
+          "capacity": "Čierna: 1400 strán; Azúrová: 1300 strán; Purpurová: 1300 strán; Žltá: 1300 strán",
+          "compatible_printers": [
+            "Canon i-SENSYS LBP611Cn",
+            "Canon i-SENSYS LBP612Cdw",
+            "Canon i-SENSYS LBP613Cdw",
+            "Canon i-SENSYS MF631Cn",
+            "Canon i-SENSYS MF632Cdw",
+            "Canon i-SENSYS MF633Cdw",
+            "Canon i-SENSYS MF635Cx"
+          ]
+        }
+      ],
+      "action": null,
+      "cart": [],
+      "contentReview": {
+        "status": "pass",
+        "note": "Correct Canon set: 3 sets 203.04 and 4 sets 225.60 before other discounts."
+      }
+    }
+  ],
+  "contentReviewSummary": {
+    "pass": 9,
+    "partial": 1,
+    "failedTransport": 0,
+    "bannedProductNamesFound": false
+  }
+}
