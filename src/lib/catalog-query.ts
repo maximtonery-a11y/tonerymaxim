@@ -302,13 +302,21 @@ export function analyzeCatalogQuery(value: unknown): CatalogQueryAnalysis {
   };
 }
 
+function abbreviatedPackOems(product: CatalogProduct) {
+  const name = String(product.name || "");
+  if (!/sada|súprava|pack|bundle/i.test(name)) return "";
+  return [...name.matchAll(/\b([A-Z0-9]*[A-Z][A-Z0-9]*?\d{2,5})((?:-\d){1,5})([A-Z]{1,2})\b/gi)]
+    .flatMap(match => [match[1] + match[3], ...match[2].slice(1).split('-').map(digit => match[1].slice(0, -1) + digit + match[3])]).join(' ');
+}
+
 export function productOemIdentityValue(product: CatalogProduct) {
   const attributes = Array.isArray(product.attributes_all) ? product.attributes_all
     : Array.isArray(product.attributes) ? product.attributes : [];
-  return [String(product.oem_codes || ''), ...attributes.filter((attribute: any) =>
+  const explicit = [String(product.oem_codes || ''), ...attributes.filter((attribute: any) =>
     [attribute?.name, attribute?.slug].some(value => /^(?:pa)?oem$/.test(compactKey(value))))
     .flatMap((attribute: any) => [attribute?.value, ...(Array.isArray(attribute?.values) ? attribute.values : []), ...(Array.isArray(attribute?.options) ? attribute.options : [])])
-    .filter(value => typeof value === 'string')].join(' ');
+    .filter(value => typeof value === 'string')].join(' ').trim();
+  return explicit || abbreviatedPackOems(product);
 }
 
 export function productIdentityValue(product: CatalogProduct) {

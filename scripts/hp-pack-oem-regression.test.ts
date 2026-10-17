@@ -45,3 +45,12 @@ test('CF383A stays with compatible products before originals and renovations, in
   const data = await (await smartGet({ url: new URL('http://localhost/api/smart-search?q=CF383A') } as any)).json() as any;
   assert.deepEqual(data.products.map((p: any) => p.id), [43956, 40360, 38858]);
 });
+
+test('abbreviated CF530 pack remains searchable in the previous compact cache before its first refresh', () => {
+  const pack = packs.find((p: any) => p.id === 52649);
+  const compact = { ...pack, attributes: undefined, attributes_all: undefined, oem_codes: undefined };
+  for (const code of ['CF530A', 'CF531A', 'CF532A', 'CF533A']) {
+    assert.ok(filterProducts([compact], { search: code }).some((p: any) => p.id === 52649), code);
+  }
+  assert.equal(filterProducts([compact], { search: 'CF541A' }).length, 0);
+});
