@@ -302,8 +302,19 @@ export function analyzeCatalogQuery(value: unknown): CatalogQueryAnalysis {
   };
 }
 
+export function productOemIdentityValue(product: CatalogProduct) {
+  const attributes = Array.isArray(product.attributes_all) ? product.attributes_all
+    : Array.isArray(product.attributes) ? product.attributes : [];
+  return [String(product.oem_codes || ''), ...attributes.filter((attribute: any) =>
+    [attribute?.name, attribute?.slug].some(value => /^(?:pa)?oem$/.test(compactKey(value))))
+    .flatMap((attribute: any) => [attribute?.value, ...(Array.isArray(attribute?.values) ? attribute.values : []), ...(Array.isArray(attribute?.options) ? attribute.options : [])])
+    .filter(value => typeof value === 'string')].join(' ');
+}
+
 export function productIdentityValue(product: CatalogProduct) {
-  return `${product.name || ""} ${product.sku || ""} ${product.slug || ""}`;
+  // A pack's abbreviated title does not spell every component code (CF530-1-2-3A).
+  // Explicit OEM attributes are product identity, unlike printer compatibility or prose.
+  return `${product.name || ""} ${product.sku || ""} ${product.slug || ""} ${productOemIdentityValue(product)}`;
 }
 
 /** Browsing fallback only: a truncated OEM such as CF53 may match CF530A.
@@ -315,7 +326,7 @@ export function partialProductCodeMatch(product: CatalogProduct, analysis: Catal
   const reference = analysis.referenceTokens[0];
   if (reference.length < 4 || !/^(?=.*[a-z])(?=.*\d)[a-z0-9]+\d$/.test(reference)) return false;
   if (analysis.brands.length && !analysis.brands.some((brand) => compactKey(brand) === compactKey(productBrand(product)))) return false;
-  const aliases = referenceAliases(`${product.name || ""} ${product.sku || ""}`, false);
+  const aliases = referenceAliases(`${product.name || ""} ${product.sku || ""} ${productOemIdentityValue(product)}`, false);
   return [...aliases].some((alias) => alias.length > reference.length && alias.startsWith(reference));
 }
 

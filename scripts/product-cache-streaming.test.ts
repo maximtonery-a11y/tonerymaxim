@@ -14,7 +14,7 @@ test('page-streamed sync preserves Unicode details, enrichment, duplicate IDs an
   const makeProduct = (id: number, complete = true) => ({ id, sku: `CF226A-${id}`, name: `HP CF226A čierny kompatibilný toner ${id}`,
     slug: `hp-toner-${id}`, price: '17.88', regular_price: '17.88', stock_status: 'instock', stock_quantity: id,
     description: `<p>Žltý text 漢字 🖨️ ${id} ${'opis výrobku '.repeat(600)}</p>`, short_description: '<p>Krátky slovenský opis</p>', images: [], categories: [],
-    attributes: complete ? [ { name: 'Kapacita', options: ['3 100 strán'] }, { name: 'Kompatibilné tlačiarne', options: ['HP LaserJet M402n', 'HP LaserJet M402dw'] } ] : [], meta_data: [] });
+    attributes: complete ? [ { name: 'OEM', options: ['CF226A', 'CF227A'] }, { name: 'Kapacita', options: ['3 100 strán'] }, { name: 'Kompatibilné tlačiarne', options: ['HP LaserJet M402n', 'HP LaserJet M402dw'] } ] : [], meta_data: [] });
   globalThis.fetch = async (input: any) => {
     const url = new URL(String(input));
     assert.ok(url.pathname.includes('/wp-json/wc/v3/products'));
@@ -26,9 +26,10 @@ test('page-streamed sync preserves Unicode details, enrichment, duplicate IDs an
     return Response.json(payload, { headers: { 'x-wp-total': mode === 'truncated' ? '500' : '101', 'x-wp-totalpages': '2' } });
   };
   try {
-    const { syncProductsCache, getProductFromCache, mapProduct } = await import('../src/lib/tm-products-cache.ts');
+    const { syncProductsCache, getProductFromCache, mapProduct, filterProducts } = await import('../src/lib/tm-products-cache.ts');
     const result = await syncProductsCache({ force: true });
     assert.equal(result.cache.total, 101);
+    assert.ok(filterProducts(result.cache.products, { search: 'CF227A' }).some((p: any) => p.id === 100), 'explicit OEM survives compact streaming cache');
     // Cross-page enrichment still uses every product, even though details were
     // already written. The duplicate retains its last value, as before.
     const enriched = result.cache.products.find((p: any) => p.id === 101)!;

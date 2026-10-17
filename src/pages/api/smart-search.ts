@@ -669,11 +669,12 @@ function filteredStaticSuggestions(query: QueryInfo) {
 
 function sortSuggestionProducts(items: any[], query: string) {
   return [...items].sort((a, b) => {
+    const typeDiff = (TYPE_ORDER[a.type] || 99) - (TYPE_ORDER[b.type] || 99);
+    if (!explicitlyRequestsSpecialChipVariant(query) && typeDiff) return typeDiff;
     const packDiff = searchPackPriority(b, query) - searchPackPriority(a, query);
     if (packDiff) return packDiff;
     const relevanceDiff = Number(b.relevance || 0) - Number(a.relevance || 0);
     if (relevanceDiff) return relevanceDiff;
-    const typeDiff = (TYPE_ORDER[a.type] || 99) - (TYPE_ORDER[b.type] || 99);
     if (typeDiff) return typeDiff;
     return String(a.title || "").localeCompare(String(b.title || ""), "sk");
   });

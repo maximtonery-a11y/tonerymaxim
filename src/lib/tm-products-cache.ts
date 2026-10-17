@@ -4,7 +4,7 @@ import { fillVerifiedCompatibility } from '../data/catalog-verified-compatibilit
 import { mkdir, open, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TM_PRODUCT_CACHE_ROOT } from './runtime-paths.ts';
-import { analyzeCatalogQuery, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, partialProductCodeMatch, productPrinterValues, relatedPrefixPacks, searchPackPriority } from './catalog-query.ts';
+import { analyzeCatalogQuery, productOemIdentityValue, exactPrinterModelMatch, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, partialProductCodeMatch, productPrinterValues, relatedPrefixPacks, searchPackPriority } from './catalog-query.ts';
 import { normalizedCompletenessRatio, requiredProductCount } from './product-cache-policy.ts';
 import { notifyIndexNowAfterProductSync, type IndexNowResult } from './indexnow.ts';
 import { recordAndAnnotatePrices } from './price-history.ts';
@@ -867,6 +867,7 @@ export function mapProduct(product: any, options: { includeSearchText?: boolean 
     product_type_detail_label: type.detailLabel,
     product_type_note: type.note,
     product_type_icon: type.icon,
+    oem_codes: productOemIdentityValue({ attributes: wooAttributes }),
     attributes: wooAttributes,
     attributes_all: wooAttributes,
     color: normalizeWooColor(getWooAttributeValue(wooAttributes, ["Farba", "Color", "Colour", "Barva"])) || detectColor(product),
@@ -922,6 +923,7 @@ function parseCacheFile(text: string): CacheFile | null {
 }
 
 function compactRuntimeProduct(product: TmProduct): TmProduct {
+  product.oem_codes = productOemIdentityValue(product).trim();
   // Polia attributes a povodny search_text opakovali modely tlaciarni a dalsie
   // udaje vo viacerych podobach. Pri 7 000+ produktoch zvacsovali JSON na
   // desiatky MB a po rozbaleni drzali stovky MB RAM. Vsetky udaje potrebne na
@@ -1824,7 +1826,8 @@ export function filterProducts(products: TmProduct[], filters: { search?: string
     return searchAnalysis.referenceTokens.some((reference) => name.includes(reference)) ? 1 : 0;
   };
   const ranked = search ? filtered.sort((left, right) =>
-    searchPackPriority(right, filters.search || '') - searchPackPriority(left, filters.search || '')
+    (explicitlyRequestsSpecialChipVariant(filters.search || '') ? 0 : typeRank(left.product_type_key) - typeRank(right.product_type_key))
+    || searchPackPriority(right, filters.search || '') - searchPackPriority(left, filters.search || '')
     || visibleReferenceRank(right) - visibleReferenceRank(left)
     || Number(exactSearchScores.get(right) || 0) - Number(exactSearchScores.get(left) || 0)
     || String(left.name || "").localeCompare(String(right.name || ""), "sk")) : filtered;
