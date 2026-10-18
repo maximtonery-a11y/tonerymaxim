@@ -4,6 +4,7 @@ import { isOrderRepeatCommand } from '../ai-order-question.ts';
 import { analyzeCatalogQuery } from '../catalog-query.ts';
 import { isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../calendar-ai-catalog.ts';
 import { forbidsCartMutation, hasExplicitCartAddCommand, isNonExecutingShoppingRequest } from '../ai-cart-safety.ts';
+import { isGeneralProductTypeComparison } from '../ai-product-type-question.ts';
 
 const norm = (v: unknown) => String(v || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const productCode = /\b(?:(?:cf|ce|crg|tn|dr|wt|mc|q|clt|mlt|tk|pgi|pfi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*|\d{2,}[a-z]{1,5}\d{2,}[a-z0-9-]*)\b/i;
@@ -12,6 +13,7 @@ const printer = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|r
 export function routeCommerceMessage(message: string, state: CommerceState) {
   const n = norm(message); const intents: AiIntent[] = [];
   const catalogQuery = analyzeCatalogQuery(message);
+  const generalTypeComparison = isGeneralProductTypeComparison(message);
   const explicitSkuMention = message.match(/\bsku\s*[:#-]?\s*([a-z0-9][a-z0-9_-]{1,99})\b/i)?.[1] || null;
   const explicitReference = message.match(/\b(?=[A-Z0-9_-]{4,}\b)(?=[A-Z0-9_-]*[A-Z])(?=[A-Z0-9_-]*\d)[A-Z0-9]+(?:[-_][A-Z0-9]+)*\b/i)?.[0] || null;
   // Číselné rodiny atramentov sa často píšu ako značka + číslo (Epson 104,
@@ -56,7 +58,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   const catalogQuestionWithPolicy = sharedCatalogReference
     && /\b(?:najd|hlad|potreb|ukaz|cena|stoji|sklad|produkt|toner|napln)\w*\b/.test(n);
   const humanRequest = /(clovek|operator|predajca|zavolajte|kontaktujte ma)/.test(n);
-  const blocksCatalogQuery = (serviceQuestion && !catalogQuestionWithPolicy) || humanRequest;
+  const blocksCatalogQuery = (serviceQuestion && !catalogQuestionWithPolicy) || humanRequest || generalTypeComparison;
   const pendingAnswer = state.pendingQuestion === 'quantity'
     ? /^(?:\s*(?:\d{1,2}|jeden|jednu|jedno|dva|dve|tri|styri|pat)\s*(?:ks|kus|kusy|kusov)?\s*)$/.test(n)
     : state.pendingQuestion === 'product_type'
@@ -76,6 +78,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // Všeobecný dopyt bez modelu/kódu potrebuje vysvetľujúcu otázku, nie
   // COLOR_TYPE_FILTER s prázdnou odpoveďou ani náhodný výpis katalógu.
   if (genericConsumableQuestion) add('ADVICE');
+  if (generalTypeComparison) add('ADVICE');
   if (serviceQuestion) add('POLICY');
   if (/\b(porad\w*|alternativ\w*|lacnejs\w*)\b/.test(n)) add('ADVICE');
   if (explicitConsumableSearch&&sharedCatalogReference) add('PRODUCT_SEARCH');
@@ -97,7 +100,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   if (/(ako|preco|kolko stran|vydrz|vytaznost|pasy|pruhy|ciary|smuhy|slaba tlac|cip)/.test(n)) add('ADVICE');
   if (/(reklam|vraten|odstup|registr|vernost|obchodne podmienky)/.test(n)) add('POLICY');
   const explicitProductFollowUp = /\b(?:ten|ho|ich|do\s+nej|a\s+original\w*|a\s+kompatibil\w*|a\s+renov\w*|original\w*|kompatibil\w*|renov\w*|repas\w*|je\s+skladom|kolko\s+stran|chcem|zoberiem|pridaj\w*|kus(?:y|ov)?|ks|kosik\w*|pokladn\w*)\b/.test(n);
-  if (!serviceQuestion && !humanRequest && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (explicitProductFollowUp || pendingAnswer || productPriceQuestion)) add('FOLLOW_UP');
+  if (!serviceQuestion && !humanRequest && !generalTypeComparison && !productCode.test(message) && !printer.test(message) && state.lastProductQuery && (explicitProductFollowUp || pendingAnswer || productPriceQuestion)) add('FOLLOW_UP');
   if (!intents.length) add('UNKNOWN');
   const brand = String(state.currentPrinter || '').match(/^(hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?|minolta|minoltu)/i)?.[0];
   // Pri presnom kalendárovom SKU posielame katalógu iba kód. Celá veta

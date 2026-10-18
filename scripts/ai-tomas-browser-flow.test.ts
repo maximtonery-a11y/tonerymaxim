@@ -10,11 +10,12 @@ import { isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder } fro
 // Executes the real browser dispatcher with fake DOM/network boundaries.
 // This covers branches before the API call; it does not replace visual QA.
 async function browserFlow(pathname = '/') {
+  const pageUrl = new URL(pathname, 'http://localhost');
   const source = await readFile(new URL('../src/scripts/ai-sales-assistant.js', import.meta.url), 'utf8');
   const code = source.slice(source.indexOf('  async function unifiedAsk('), source.indexOf('  function looksLikeShopping('));
   assert.ok(code.length > 1000);
   const state: any = { mode: 'advice', busy: false, cart: [], commerceState: emptyCommerceState('browser-flow'), profile: { lastOrder: { products: [{ id: 'old', name: 'Old product' }] } } };
-  const calls: string[] = [], messages: any[] = [], errors: unknown[] = [];
+  const calls: string[] = [], messages: any[] = [], errors: unknown[] = [], requests: any[] = [];
   let verifications = 0;
   const noop = () => {};
   const scope: any = {
@@ -28,16 +29,17 @@ async function browserFlow(pathname = '/') {
     openHandoff: noop, renderCommerceResults: noop, renderSafeProducts: noop,
     cartKey: (p: any) => p.id, updateLiveCart: noop, quantityChooser: noop, renderTypeQuestion: noop,
     renderCart: noop, prepareHandoff: noop, saveCommerceSession: noop, requestAnimationFrame: (fn: () => void) => fn(),
-    location: { pathname }, console: { error: (...args: any[]) => errors.push(args) },
+    location: { pathname: pageUrl.pathname, search: pageUrl.search }, URLSearchParams, console: { error: (...args: any[]) => errors.push(args) },
     fetch: async (url: string, options: any) => {
       calls.push(url);
       if (url === '/api/ai-order-status') return Response.json({ ok: true, orders: [{ number: '300950', statusLabel: 'Nová' }, { number: '300945', statusLabel: 'Vybavená' }] });
       assert.equal(url, '/api/ai-tomas');
+      requests.push(JSON.parse(options.body));
       return POST({ request: new Request(`http://localhost${url}`, options) } as any);
     },
   };
   const ask = vm.runInNewContext(`${code}; unifiedAsk`, scope);
-  return { ask, state, calls, messages, errors, verifications: () => verifications };
+  return { ask, state, calls, messages, errors, requests, verifications: () => verifications };
 }
 
 test('prehliadač rešpektuje zákaz košíka aj pri zopakovaní objednávky', async () => {
@@ -99,6 +101,32 @@ test('browser dispatcher sends the product page and renders its exact compatibil
     assert.deepEqual(flow.calls, ['/api/ai-tomas']);
     assert.deepEqual(flow.state.cart, []);
     assert.deepEqual(flow.errors, []);
+  } finally {
+    if (previous) g.__TM_PRODUCTS_FILE_CACHE__ = previous; else delete g.__TM_PRODUCTS_FILE_CACHE__;
+    delete g.__TM_PUBLIC_PRODUCTS_CACHE__;
+    delete g.__TM_PRODUCTS_LOOKUP_INDEX__;
+  }
+});
+
+test('browser sends current catalogue search and drops unrelated URL parameters', async () => {
+  const g = globalThis as any;
+  const previous = g.__TM_PRODUCTS_FILE_CACHE__;
+  g.__TM_PRODUCTS_FILE_CACHE__ = { ok: true, version: 4, runtime_compact: true, generated_at: 'browser-search-context', total: 2, products: [
+    { id: 220, sku: 'HP-220A-SET', name: 'HP 220A CMYK kompatibilná sada', slug: 'hp-220a-cmyk', price: 116.34, compatible_printers: ['HP Color LaserJet Pro MFP 4302dw'] },
+    { id: 2421, sku: 'BRO-TN2421-K', name: 'Brother TN-2421 čierny kompatibilný toner', slug: 'brother-tn-2421', price: 12.96, product_type_key: 'compatible', compatible_printers: ['Brother HL-L2352DW'] },
+  ] };
+  delete g.__TM_PUBLIC_PRODUCTS_CACHE__;
+  delete g.__TM_PRODUCTS_LOOKUP_INDEX__;
+  try {
+    const flow = await browserFlow('/produkty?s=Brother+TN-2421&email=private@example.sk&token=private');
+    flow.state.commerceState.currentProductId = '220';
+    flow.state.commerceState.lastProductQuery = 'HP 220A';
+    await flow.ask('Do ktorých tlačiarní pasuje tento produkt?');
+    assert.equal(flow.requests.at(-1).page, '/produkty?s=Brother+TN-2421');
+    assert.match(flow.messages.at(-1).innerHTML, /Brother TN-2421/);
+    assert.doesNotMatch(flow.messages.at(-1).innerHTML, /HP 220A/);
+    assert.deepEqual(flow.errors, []);
+    assert.deepEqual(flow.state.cart, []);
   } finally {
     if (previous) g.__TM_PRODUCTS_FILE_CACHE__ = previous; else delete g.__TM_PRODUCTS_FILE_CACHE__;
     delete g.__TM_PUBLIC_PRODUCTS_CACHE__;

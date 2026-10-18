@@ -222,3 +222,60 @@ test('model attribute fallback splits and deduplicates model values without mixi
   const result = await ask();
   assert.deepEqual(result.advisor.answer.filter((line: string) => line.startsWith('• ')), hpPrinters.map(printer => `• ${printer}`));
 });
+
+test('the exact comparison quick prompt explains all toner types instead of falling back', async () => {
+  const result = await ask('Aký je rozdiel medzi originálnym a kompatibilným tonerom?');
+  assert.equal(result.advisor.faq, 'kompatibilny-original-renovovany');
+  assert.match(text(result), /Originálny toner vyrába výrobca tlačiarne/);
+  assert.match(text(result), /Kompatibilný toner vyrába iný výrobca/);
+  assert.match(text(result), /Renovovaný toner/);
+  assert.equal(result.advisor.unanswered, false);
+  assert.equal(result.action, null);
+});
+
+test('a general comparison after a product stays an explanation without repeating the old offer', async () => {
+  const first = await ask();
+  for (const question of ['Aký je rozdiel medzi originálnym a kompatibilným tonerom?', 'Je do tlačiarne lepší originálny alebo kompatibilný toner?', 'Originál alebo kompatibilný?', 'Aký je rozdiel medzi renovovaným a kompatibilným tonerom?']) {
+    const result = await ask(question, hpPage, first.state);
+    assert.equal(result.advisor.faq, 'kompatibilny-original-renovovany', question);
+    assert.equal(result.commerce, null, question);
+    assert.doesNotMatch(text(result), /Myslíte produkt|220A|Overil som aktuálny katalóg/, question);
+  }
+});
+
+test('current web search results take precedence over a previously viewed HP product', async () => {
+  const previous = (await ask()).state;
+  const result = await ask(question, '/produkty?s=Brother%20TN-2421', previous);
+  assert.match(text(result), /Brother TN-2421/);
+  assert.match(text(result), /HL-L2352DW/);
+  assert.doesNotMatch(text(result), /HP 220A|4302dw/);
+  assert.equal(result.state.currentProductId, '2421');
+});
+
+test('multiple web search variants ask for a specific product and never use the stale HP selection', async () => {
+  const previous = (await ask()).state;
+  install([...catalog(), product(2422, 'Brother TN-2421 čierny originálny toner', 'tn-2421-original', ['Brother HL-L2352DW'], { product_type_key: 'original' })]);
+  const result = await ask(question, '/produkty?s=Brother+TN-2421', previous);
+  assert.equal(result.action.kind, 'CLARIFY_PRODUCT');
+  assert.match(text(result), /Brother TN-2421 čierny kompatibilný toner/);
+  assert.match(text(result), /Brother TN-2421 čierny originálny toner/);
+  assert.doesNotMatch(text(result), /HP 220A|4302dw/);
+});
+
+test('an explicit product still wins over the web search and an empty search never borrows the old product', async () => {
+  const previous = (await ask()).state;
+  const explicit = await ask('Do ktorých tlačiarní pasuje HP CF226A?', '/produkty?s=Brother+TN-2421', previous);
+  assert.match(text(explicit), /CF226A/);
+  assert.doesNotMatch(text(explicit), /Brother/);
+  const missing = await ask(question, '/produkty?s=NEEXISTUJUCI-TONER-999999', previous);
+  assert.equal(missing.action.kind, 'CLARIFY_PRODUCT');
+  assert.doesNotMatch(text(missing), /HP 220A|4302dw/);
+});
+
+test('web search filters select only the visible toner variant', async () => {
+  install([...catalog(), product(2422, 'Brother TN-2421 čierny originálny toner', 'tn-2421-original', ['Brother HL-L2352DW'], { product_type_key: 'original' })]);
+  const result = await ask(question, '/produkty?s=Brother+TN-2421&type=original');
+  assert.equal(result.state.currentProductId, '2422');
+  assert.match(text(result), /originálny toner/);
+  assert.doesNotMatch(text(result), /kompatibilný toner/);
+});

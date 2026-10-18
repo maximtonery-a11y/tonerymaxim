@@ -726,7 +726,13 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
     state.busy=true; state.lastQuestion=question;trackEvent('question',{question:String(question).slice(0,300)});
     addMessage('user',`<p>${escapeHtml(question)}</p>`); const loading=addMessage('bot','<p>Overujem informácie a katalóg…</p>');
     try{
-      const r=await fetch('/api/ai-tomas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:question,page:location.pathname,state:state.commerceState})});
+      let page=location.pathname;
+      if(/^\/produkty\/?$/.test(page)){
+        const query=new URLSearchParams(location.search||'');const catalogue=new URLSearchParams();
+        for(const key of ['s','search','q','sku','printer','brand','type','color'])if(query.has(key))catalogue.set(key,String(query.get(key)||'').slice(0,160));
+        if(catalogue.size)page+='?'+catalogue.toString();
+      }
+      const r=await fetch('/api/ai-tomas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:question,page,state:state.commerceState})});
       const d=await r.json(); if(!r.ok||!d?.ok)throw new Error(d?.error||'Požiadavka zlyhala.');
       if(cartMutationForbidden){
         if(d.state)d.state.cart=commerceCartBefore;

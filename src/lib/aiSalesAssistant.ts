@@ -1,4 +1,5 @@
 import { productPageYield } from './ai-page-yield.ts';
+import { isGeneralProductTypeComparison } from './ai-product-type-question.ts';
 import { isDeliveredButMissingQuestion } from './ai-order-question.ts';
 import { compactKey, getProductsCache, normalize } from './tm-products-cache.ts';
 import { aiKnowledge, type AiKnowledgeItem } from '../data/ai-knowledge.ts';
@@ -534,6 +535,10 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
 
   // Jednoznačné obchodné témy routujeme priamo, aby ich všeobecné slová ako „nákup“ neprebili.
   const normalizedMessage = normalize(originalMessage);
+  if (isGeneralProductTypeComparison(rawMessage)) {
+    const comparison = aiKnowledge.find((item) => item.id === 'kompatibilny-original-renovovany');
+    if (comparison) return { answer: [`${comparison.title}:`, ...comparison.answer], products: [], groups: [], intent: 'compatibility', faq: comparison.id, confidence: 1, unanswered: false };
+  }
 
   // Súhrnná otázka na dopravu A platbu musí vrátiť obe časti. Generické
   // skórovanie vedomostí predtým vybralo iba dopravu a zamlčalo GoPay aj

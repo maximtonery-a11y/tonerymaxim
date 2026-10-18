@@ -1,10 +1,11 @@
-import { getProductFromCache, getProductsCache } from '../tm-products-cache.ts';
+import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductFromCache, getProductsCache, isSpecialChipVariantProduct } from '../tm-products-cache.ts';
 import { analyzeCatalogQuery, exactPrinterModelMatch, findExactProductIdentityMatches } from '../catalog-query.ts';
 import { currentProductSlug } from '../product-slug-aliases.ts';
 import { productIdForHistoricalSlug } from '../product-slug-history.ts';
 import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from '../product-availability.ts';
 import { aiKnowledge } from '../../data/ai-knowledge.ts';
 import type { CommerceState } from './domain.ts';
+import { isGeneralProductTypeComparison } from '../ai-product-type-question.ts';
 
 const norm = (value: unknown) => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const key = (value: unknown) => norm(value).replace(/[^a-z0-9]/g, '');
@@ -13,13 +14,29 @@ const brandedPrinter = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|le
 
 // A path is an identity hint only. Resolve it against our catalogue, never
 // fetch a customer-supplied URL or infer compatibility from words in a slug.
-function productSlug(page: string) {
+function sitePage(page: string) {
   try {
     const url = new URL(page, 'https://www.tonerymaxim.sk');
     if (!['tonerymaxim.sk', 'www.tonerymaxim.sk', 'tonerymaxim.info', 'www.tonerymaxim.info'].includes(url.hostname)) return null;
-    const match = url.pathname.match(/^\/produkt\/([^/]+)\/?$/i);
+    return url;
+  } catch { return null; }
+}
+
+function productSlug(page: string) {
+  try {
+    const match = sitePage(page)?.pathname.match(/^\/produkt\/([^/]+)\/?$/i);
     return match ? decodeURIComponent(match[1]) : null;
   } catch { return null; }
+}
+
+function catalogueSearch(page: string) {
+  const url = sitePage(page);
+  if (!url || !/^\/produkty\/?$/i.test(url.pathname)) return null;
+  const read = (name: string) => String(url.searchParams.get(name) || '').trim().slice(0, 160);
+  const search = read('s') || read('search') || read('q') || read('sku');
+  const printer = read('printer');
+  if (!search && !printer) return null;
+  return { search, printer, brand: read('brand'), type: read('type'), color: read('color') };
 }
 
 function printerMentions(message: string) {
@@ -90,6 +107,16 @@ async function resolveProduct(message: string, page: string, state: CommerceStat
     return { product: null, choices: matches };
   }
   if (onDetail) return { product: pageProduct, choices: [] };
+  const search = catalogueSearch(page);
+  if (search) {
+    const cache = await getProductsCache();
+    const visible = filterProducts(cache.products, search).filter(product => explicitlyRequestsSpecialChipVariant(search.search) || !isSpecialChipVariantProduct(product));
+    const matches = narrowProducts(visible, `${search.search} ${search.printer}`);
+    if (matches.length === 1) return { product: (await getProductFromCache({ id: matches[0].id })).product, choices: [] };
+    // A new storefront search is the current context even when it is empty
+    // or offers several variants. Never resurrect the previous detail page.
+    return { product: null, choices: matches };
+  }
   const selectedId = state.selectedProductId || state.currentProductId;
   if (selectedId) return { product: (await getProductFromCache({ id: selectedId })).product, choices: [] };
   if (state.lastProductQuery) {
@@ -104,7 +131,7 @@ async function resolveProduct(message: string, page: string, state: CommerceStat
 /** Factual product questions bypass purchasing and the generative fallback. */
 export async function productContextAnswer(message: string, page: string, state: CommerceState, route: { intents: string[]; productQuery: string | null }) {
   const n = norm(message);
-  if (route.intents.includes('HUMAN_ESCALATION')) return null;
+  if (route.intents.includes('HUMAN_ESCALATION') || isGeneralProductTypeComparison(message)) return null;
   const list = /\b(?:do|pre|s)\s+(?:ktorych|ktorymi|akych|akymi|akej|ktorej)\s+tlaciarn\w*\b|\b(?:zoznam|ktore)\s+(?:kompatibilnych\s+)?tlaciarn\w*\b/.test(n);
   const compatibility = list || /\b(?:pasuje|pasuju|hodi|fungovat|funguje|funguju)\b/.test(n) && /\b(?:tlaciarn\w*|produkt\w*|toner\w*|napln\w*|sada|sady|sadu)\b/.test(n)
     || /\b(?:je|su|bude|budu)\b.*\b(?:kompatibiln|vhodn)\w*\b/.test(n) && /\btlaciarn\w*\b/.test(n);
@@ -119,7 +146,7 @@ export async function productContextAnswer(message: string, page: string, state:
   const generalExplanation = /\b(?:ako\s+funguj\w*|preco|rozdiel)\b/.test(n);
   if (!list && !refersToProduct && !firmware && (printerToTonerSearch || generalExplanation)) return null;
   if (!compatibility && !firmware && route.intents.some(intent => ['POLICY', 'BUY_INTENT', 'ADVICE', 'PRODUCT_COMPARE'].includes(intent))) return null;
-  const hasContext = Boolean(productSlug(page) || state.currentProductId || state.selectedProductId || state.lastProductQuery || route.productQuery);
+  const hasContext = Boolean(productSlug(page) || catalogueSearch(page) || state.currentProductId || state.selectedProductId || state.lastProductQuery || route.productQuery);
   if (!list && !hasContext) return null;
 
   const { product, choices } = await resolveProduct(message, page, state, route.intents.includes('PRODUCT_SEARCH'));
