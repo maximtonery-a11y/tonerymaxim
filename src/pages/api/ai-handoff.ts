@@ -29,10 +29,10 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     const body = await request.json().catch(() => ({}));
     if (clean(body?.website, 100)) return new Response(JSON.stringify({ ok:true }), { status:200, headers:{'Content-Type':'application/json'} });
     const phone = clean(body?.phone, 40); const email = clean(body?.email, 120).toLowerCase();
-    const question = clean(body?.question, 1000); const page = clean(body?.page, 300) || '/';
+    const question = clean(body?.question, 4000); const page = clean(body?.page, 300) || '/';
     const reason = clean(body?.reason, 40) === 'unanswered' ? 'AI Tomáš nepoznal spoľahlivú odpoveď' : 'Zákazník požiadal o človeka';
     const history = Array.isArray(body?.history) ? body.history.slice(-12).map((turn:any) => ({
-      role: turn?.role === 'assistant' ? 'AI Tomáš' : 'Zákazník', content: clean(turn?.content, 500),
+      role: turn?.role === 'assistant' ? 'AI Tomáš' : 'Zákazník', content: clean(turn?.content, 4000),
     })).filter((turn:any)=>turn.content) : [];
     if (body?.consent !== true) throw new Error('Potrebujeme súhlas s kontaktovaním.');
     if (!phone && !email) throw new Error('Zadajte telefón alebo e-mail.');

@@ -9,7 +9,7 @@ import { isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder } fro
 
 // Executes the real browser dispatcher with fake DOM/network boundaries.
 // This covers branches before the API call; it does not replace visual QA.
-async function browserFlow() {
+async function browserFlow(pathname = '/') {
   const source = await readFile(new URL('../src/scripts/ai-sales-assistant.js', import.meta.url), 'utf8');
   const code = source.slice(source.indexOf('  async function unifiedAsk('), source.indexOf('  function looksLikeShopping('));
   assert.ok(code.length > 1000);
@@ -28,7 +28,7 @@ async function browserFlow() {
     openHandoff: noop, renderCommerceResults: noop, renderSafeProducts: noop,
     cartKey: (p: any) => p.id, updateLiveCart: noop, quantityChooser: noop, renderTypeQuestion: noop,
     renderCart: noop, prepareHandoff: noop, saveCommerceSession: noop, requestAnimationFrame: (fn: () => void) => fn(),
-    location: { pathname: '/' }, console: { error: (...args: any[]) => errors.push(args) },
+    location: { pathname }, console: { error: (...args: any[]) => errors.push(args) },
     fetch: async (url: string, options: any) => {
       calls.push(url);
       if (url === '/api/ai-order-status') return Response.json({ ok: true, orders: [{ number: '300950', statusLabel: 'Nová' }, { number: '300945', statusLabel: 'Vybavená' }] });
@@ -81,4 +81,27 @@ test('celý dispatcher prejde PFI → diagnostika → neprevzatá zásielka → 
   assert.ok(flow.calls.every(url => url === '/api/ai-tomas'));
   assert.deepEqual(flow.state.cart, []);
   assert.deepEqual(flow.errors, []);
+});
+
+test('browser dispatcher sends the product page and renders its exact compatibility answer', async () => {
+  const g = globalThis as any;
+  const previous = g.__TM_PRODUCTS_FILE_CACHE__;
+  g.__TM_PRODUCTS_FILE_CACHE__ = { ok: true, version: 4, runtime_compact: true, generated_at: 'browser-product-context', total: 1, products: [
+    { id: 52658, sku: 'SET-HP-220A-KOM-CIP', name: 'HP 220A CMYK kompatibilná sada', slug: 'hp-220a-cmyk', price: 116.34, stock_status: 'instock', stock_quantity: null, compatible_printers: ['HP Color LaserJet Pro MFP 4302dw'] },
+  ] };
+  delete g.__TM_PUBLIC_PRODUCTS_CACHE__;
+  delete g.__TM_PRODUCTS_LOOKUP_INDEX__;
+  try {
+    const flow = await browserFlow('/produkt/hp-220a-cmyk');
+    await flow.ask('Do ktorých tlačiarní pasuje tento produkt?');
+    assert.match(flow.messages.at(-1).innerHTML, /Myslíte.*HP 220A/);
+    assert.match(flow.messages.at(-1).innerHTML, /HP Color LaserJet Pro MFP 4302dw/);
+    assert.deepEqual(flow.calls, ['/api/ai-tomas']);
+    assert.deepEqual(flow.state.cart, []);
+    assert.deepEqual(flow.errors, []);
+  } finally {
+    if (previous) g.__TM_PRODUCTS_FILE_CACHE__ = previous; else delete g.__TM_PRODUCTS_FILE_CACHE__;
+    delete g.__TM_PUBLIC_PRODUCTS_CACHE__;
+    delete g.__TM_PRODUCTS_LOOKUP_INDEX__;
+  }
 });

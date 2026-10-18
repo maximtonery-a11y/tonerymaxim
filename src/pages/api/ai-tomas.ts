@@ -12,6 +12,7 @@ import { advisorLinks } from '../../lib/ai-advisor-links.ts';
 import { calendarOverviewFacts, calendarOverviewLinks, diaryOverviewLinks, isCalendarQuery, isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../../lib/calendar-ai-catalog.ts';
 import { answerWithOpenAi } from '../../lib/openai-sales-assistant.ts';
 import { customerProductLabel } from '../../lib/ai-product-label.ts';
+import { productContextAnswer } from '../../lib/ai-commerce/product-context.ts';
 
 export const prerender = false;
 const clean = (v: unknown, max=500) => String(v || '').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);
@@ -131,13 +132,26 @@ function ambiguousNumericReference(message:string, state:any){
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json().catch(() => ({}));
-    const message = clean(body?.message); if (!message) return Response.json({ok:false,error:'Napíšte otázku alebo produkt.'},{status:400});
+    const message = clean(body?.message,4000); if (!message) return Response.json({ok:false,error:'Napíšte otázku alebo produkt.'},{status:400});
     const state = normalizeCommerceState(body?.state); if (!state.sessionId) state.sessionId=randomUUID();
     const explicitCartBan=forbidsCartMutation(message);
     const cartMutationForbidden=explicitCartBan||isNonExecutingShoppingRequest(message);
     const cartBeforeRequest=state.cart.map((item:any)=>({...item}));
     const route = routeCommerceMessage(message,state);
     const page = clean(body?.page,300) || '/';
+    const contextAnswer = await productContextAnswer(message,page,state,route);
+    if(contextAnswer){
+      const {product,advisor}=contextAnswer;
+      state.currentProductId=product?String(product.id):null;
+      state.selectedProductId=product?String(product.id):null;
+      state.lastProductQuery=product?String(product.sku||product.name):null;
+      state.currentColor=null;state.currentType=null;state.pendingQuestion=null;
+      state.checkoutDraft={...state.checkoutDraft,guidedQuantity:null,guidedSet:null};
+      state.lastIntent='ADVICE';
+      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:advisor.answer.join(' ')}].slice(-20);
+      const action=advisor.handoffSuggested?{kind:'OPEN_HANDOFF',reason:'unanswered'}:product?null:{kind:'CLARIFY_PRODUCT'};
+      return Response.json({ok:true,route,advisor,commerce:null,state,action},{headers:{'Cache-Control':'no-store'}});
+    }
     if(!cartMutationForbidden&&hasInvalidRequestedQuantity(message)&&(hasExplicitCartAddCommand(message)||state.pendingQuestion==='quantity')){
       const answer='Množstvo musí byť celé číslo od 1 do 99. Nič som nepridal; napíšte, prosím, požadovaný počet kusov.';
       state.lastProductQuery=route.productQuery||state.lastProductQuery;

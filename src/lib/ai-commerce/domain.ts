@@ -32,7 +32,7 @@ const clean = (v: unknown, max = 500) => String(v ?? '').replace(/[\u0000-\u001f
 export function normalizeCommerceState(raw: any): CommerceState {
   const base = emptyCommerceState(clean(raw?.sessionId, 80));
   const history = Array.isArray(raw?.history) ? raw.history.slice(-20).map((x: any) => ({
-    role: x?.role === 'assistant' ? 'assistant' as const : 'user' as const, content: clean(x?.content),
+    role: x?.role === 'assistant' ? 'assistant' as const : 'user' as const, content: clean(x?.content, 4000),
   })).filter((x: ConversationTurn) => x.content) : [];
   const cart = Array.isArray(raw?.cart) ? raw.cart.slice(0, 30).map((x: any) => ({
     id: clean(x?.id, 40), sku: clean(x?.sku, 100), quantity: Math.min(99, Math.max(1, Math.floor(Number(x?.quantity ?? x?.qty) || 1))),
