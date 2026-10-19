@@ -146,12 +146,15 @@ export const POST: APIRoute = async ({ request }) => {
       state.selectedProductId=product?String(product.id):null;
       state.lastProductQuery=product?String(product.sku||product.name):null;
       state.currentColor=null;state.currentType=null;state.pendingQuestion=null;
+      state.pendingProductQuestion=contextAnswer.pendingProductQuestion;
       state.checkoutDraft={...state.checkoutDraft,guidedQuantity:null,guidedSet:null};
       state.lastIntent='ADVICE';
       state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:advisor.answer.join(' ')}].slice(-20);
       const action=advisor.handoffSuggested?{kind:'OPEN_HANDOFF',reason:'unanswered'}:product?null:{kind:'CLARIFY_PRODUCT'};
       return Response.json({ok:true,route,advisor,commerce:null,state,action},{headers:{'Cache-Control':'no-store'}});
     }
+    // A new subject or purchase ends an informational product clarification.
+    state.pendingProductQuestion=null;
     if(!cartMutationForbidden&&hasInvalidRequestedQuantity(message)&&(hasExplicitCartAddCommand(message)||state.pendingQuestion==='quantity')){
       const answer='Množstvo musí byť celé číslo od 1 do 99. Nič som nepridal; napíšte, prosím, požadovaný počet kusov.';
       state.lastProductQuery=route.productQuery||state.lastProductQuery;

@@ -9,12 +9,17 @@ import { isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder } fro
 
 // Executes the real browser dispatcher with fake DOM/network boundaries.
 // This covers branches before the API call; it does not replace visual QA.
-async function browserFlow(pathname = '/') {
+async function browserFlow(pathname = '/', savedSession: any = null) {
   const pageUrl = new URL(pathname, 'http://localhost');
   const source = await readFile(new URL('../src/scripts/ai-sales-assistant.js', import.meta.url), 'utf8');
   const code = source.slice(source.indexOf('  async function unifiedAsk('), source.indexOf('  function looksLikeShopping('));
   assert.ok(code.length > 1000);
-  const state: any = { mode: 'advice', busy: false, cart: [], commerceState: emptyCommerceState('browser-flow'), profile: { lastOrder: { products: [{ id: 'old', name: 'Old product' }] } } };
+  let persisted: any = null;
+  const hydration = savedSession ? vm.runInNewContext(
+    source.slice(source.indexOf('  const state = { busy:'), source.indexOf('  function trackEvent(')) + '; ({state, saveCommerceSession})',
+    { saved: savedSession, SESSION_KEY: 'tm_ai_tomas_state_v1', messages: { innerHTML: '' }, sessionStorage: { setItem: (_key: string, value: string) => { persisted = JSON.parse(value); } } },
+  ) : null;
+  const state: any = hydration?.state || { mode: 'advice', busy: false, cart: [], commerceState: emptyCommerceState('browser-flow'), profile: { lastOrder: { products: [{ id: 'old', name: 'Old product' }] } } };
   const calls: string[] = [], messages: any[] = [], errors: unknown[] = [], requests: any[] = [];
   let verifications = 0;
   const noop = () => {};
@@ -28,7 +33,7 @@ async function browserFlow(pathname = '/') {
     textToHtml: (lines: string[]) => lines.join(' '), appendSources: noop, attachFeedback: noop,
     openHandoff: noop, renderCommerceResults: noop, renderSafeProducts: noop,
     cartKey: (p: any) => p.id, updateLiveCart: noop, quantityChooser: noop, renderTypeQuestion: noop,
-    renderCart: noop, prepareHandoff: noop, saveCommerceSession: noop, requestAnimationFrame: (fn: () => void) => fn(),
+    renderCart: noop, prepareHandoff: noop, saveCommerceSession: hydration?.saveCommerceSession || noop, requestAnimationFrame: (fn: () => void) => fn(),
     location: { pathname: pageUrl.pathname, search: pageUrl.search }, URLSearchParams, console: { error: (...args: any[]) => errors.push(args) },
     fetch: async (url: string, options: any) => {
       calls.push(url);
@@ -39,7 +44,7 @@ async function browserFlow(pathname = '/') {
     },
   };
   const ask = vm.runInNewContext(`${code}; unifiedAsk`, scope);
-  return { ask, state, calls, messages, errors, requests, verifications: () => verifications };
+  return { ask, state, calls, messages, errors, requests, verifications: () => verifications, persisted: () => persisted };
 }
 
 test('prehliadač rešpektuje zákaz košíka aj pri zopakovaní objednávky', async () => {
@@ -69,20 +74,31 @@ test('prehliadač zobrazí žiadané TM číslo a pri chýbajúcom ponúkne over
 });
 
 test('celý dispatcher prejde PFI → diagnostika → neprevzatá zásielka → doprava a platba', async () => {
-  const flow = await browserFlow();
-  const questions = [
-    ['Canon PFI-102', /katalóg/],
-    ['Podávač papiera cvaká. Čo mám skontrolovať?', /odpojte od elektriny/i],
-    ['Zásielka je doručená, ale neprevzal som ju.', /GPS|záznamu o odovzdaní/i],
-    ['Chcem kompletný prehľad dopravy a platby.', /GoPay/],
-  ] as const;
-  for (const [question, expected] of questions) {
-    await flow.ask(question);
-    assert.match(flow.messages.at(-1).innerHTML, expected, question);
+  const g = globalThis as any;
+  const previous = g.__TM_PRODUCTS_FILE_CACHE__;
+  g.__TM_PRODUCTS_FILE_CACHE__ = { ok: true, version: 4, runtime_compact: true, generated_at: 'browser-missing-pfi', total: 0, products: [] };
+  delete g.__TM_PUBLIC_PRODUCTS_CACHE__;
+  delete g.__TM_PRODUCTS_LOOKUP_INDEX__;
+  try {
+    const flow = await browserFlow();
+    const questions = [
+      ['Canon PFI-102', /nenašiel bezpečnú zhodu/],
+      ['Podávač papiera cvaká. Čo mám skontrolovať?', /odpojte od elektriny/i],
+      ['Zásielka je doručená, ale neprevzal som ju.', /GPS|záznamu o odovzdaní/i],
+      ['Chcem kompletný prehľad dopravy a platby.', /GoPay/],
+    ] as const;
+    for (const [question, expected] of questions) {
+      await flow.ask(question);
+      assert.match(flow.messages.at(-1).innerHTML, expected, question);
+    }
+    assert.ok(flow.calls.every(url => url === '/api/ai-tomas'));
+    assert.deepEqual(flow.state.cart, []);
+    assert.deepEqual(flow.errors, []);
+  } finally {
+    if (previous) g.__TM_PRODUCTS_FILE_CACHE__ = previous; else delete g.__TM_PRODUCTS_FILE_CACHE__;
+    delete g.__TM_PUBLIC_PRODUCTS_CACHE__;
+    delete g.__TM_PRODUCTS_LOOKUP_INDEX__;
   }
-  assert.ok(flow.calls.every(url => url === '/api/ai-tomas'));
-  assert.deepEqual(flow.state.cart, []);
-  assert.deepEqual(flow.errors, []);
 });
 
 test('browser dispatcher sends the product page and renders its exact compatibility answer', async () => {
@@ -127,6 +143,43 @@ test('browser sends current catalogue search and drops unrelated URL parameters'
     assert.doesNotMatch(flow.messages.at(-1).innerHTML, /HP 220A/);
     assert.deepEqual(flow.errors, []);
     assert.deepEqual(flow.state.cart, []);
+  } finally {
+    if (previous) g.__TM_PRODUCTS_FILE_CACHE__ = previous; else delete g.__TM_PRODUCTS_FILE_CACHE__;
+    delete g.__TM_PUBLIC_PRODUCTS_CACHE__;
+    delete g.__TM_PRODUCTS_LOOKUP_INDEX__;
+  }
+});
+
+test('the real session initializer preserves the question across search → detail navigation and handles old saved sessions', async () => {
+  const g = globalThis as any;
+  const previous = g.__TM_PRODUCTS_FILE_CACHE__;
+  g.__TM_PRODUCTS_FILE_CACHE__ = { ok: true, version: 4, runtime_compact: true, generated_at: 'browser-deictic-navigation', total: 2, products: [
+    { id: 39951, sku: '13276', name: 'HP W1420A (142A) čierny kompatibilný toner nefunguje v HP+', slug: 'hp-w1420a-no-142a-kompatibilny-toner', product_type_key: 'compatible', price: 18.24, capacity: '950 strán', compatible_printers: ['HP LaserJet M110w', 'HP LaserJet MFP M140w'] },
+    { id: 38209, sku: '051475', name: 'HP W1420A (142A) čierny originálny toner', slug: 'hp-w1420a-originalny-toner', product_type_key: 'original', price: 59.46, compatible_printers: ['HP LaserJet M110we'] },
+  ] };
+  delete g.__TM_PUBLIC_PRODUCTS_CACHE__;
+  delete g.__TM_PRODUCTS_LOOKUP_INDEX__;
+  try {
+    const cart = [{ product: { id: 'keep', sku: 'KEEP', price: 26.91 }, qty: 1 }];
+    const search = await browserFlow('/produkty?s=HP+W1420A', { uiMode: 'advice', uiCart: cart });
+    await search.ask('ako funguje tento toner?');
+    assert.match(search.messages.at(-1).innerHTML, /Ktorý konkrétny produkt/);
+    const saved = search.persisted();
+    assert.equal(saved.pendingProductQuestion, 'ako funguje tento toner?');
+    for (const legacy of [false, true]) {
+      const session = JSON.parse(JSON.stringify(saved));
+      if (legacy) delete session.pendingProductQuestion;
+      const detail = await browserFlow('/produkt/hp-w1420a-no-142a-kompatibilny-toner', session);
+      await detail.ask('tento');
+      assert.match(detail.messages.at(-1).innerHTML, /prášok.*papier.*teplom/);
+      assert.match(detail.messages.at(-1).innerHTML, /950.*strán/);
+      assert.doesNotMatch(detail.messages.at(-1).innerHTML, /M110we|Na túto otázku nemám/);
+      assert.equal(detail.requests.at(-1).page, '/produkt/hp-w1420a-no-142a-kompatibilny-toner');
+      assert.deepEqual(JSON.parse(JSON.stringify(detail.state.cart)), cart);
+      assert.equal(detail.persisted().pendingProductQuestion, null);
+      assert.deepEqual(detail.errors, []);
+    }
+    assert.deepEqual(search.errors, []);
   } finally {
     if (previous) g.__TM_PRODUCTS_FILE_CACHE__ = previous; else delete g.__TM_PRODUCTS_FILE_CACHE__;
     delete g.__TM_PUBLIC_PRODUCTS_CACHE__;

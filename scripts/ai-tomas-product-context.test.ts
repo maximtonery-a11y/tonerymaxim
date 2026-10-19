@@ -279,3 +279,128 @@ test('web search filters select only the visible toner variant', async () => {
   assert.match(text(result), /originálny toner/);
   assert.doesNotMatch(text(result), /kompatibilný toner/);
 });
+
+const w1420Page = '/produkt/hp-w1420a-no-142a-kompatibilny-toner';
+function installW1420() {
+  install([
+    product(39951, 'HP W1420A (142A) čierny kompatibilný toner nefunguje v HP+', w1420Page.split('/').at(-1)!, ['HP LaserJet M110w', 'HP LaserJet MFP M140w'], { sku: '13276', capacity: '950 strán', color: 'Čierna' }),
+    product(38209, 'HP W1420A (142A) čierny originálny toner', 'hp-w1420a-originalny-toner', ['HP LaserJet M110w', 'HP LaserJet M110we', 'HP LaserJet MFP M140w', 'HP LaserJet MFP M140we'], { sku: '051475', product_type_key: 'original', capacity: '950 strán' }),
+  ]);
+}
+
+test('screenshot flow: search clarification → open detail → "tento" answers the original how-it-works question', async () => {
+  installW1420();
+  const cart = [{ id: 'keep', sku: 'KEEP', quantity: 1 }];
+  const first = await ask('ako funguje tento toner?', '/produkty?s=HP+W1420A', { ...emptyCommerceState(), cart });
+  assert.equal(first.action.kind, 'CLARIFY_PRODUCT');
+  assert.equal(first.state.pendingProductQuestion, 'ako funguje tento toner?');
+  const resumed = await ask('tento', w1420Page, JSON.parse(JSON.stringify(first.state)));
+  assert.match(text(resumed), /Myslíte produkt HP W1420A.*kompatibilný/);
+  assert.match(text(resumed), /prášok.*papier.*teplom/);
+  assert.match(text(resumed), /iný výrobca/);
+  assert.match(text(resumed), /950.*strán/);
+  assert.match(text(resumed), /HP LaserJet M110w/);
+  assert.match(text(resumed), /nefunguje v HP\+/);
+  assert.doesNotMatch(text(resumed), /M110we|M140we|Na túto otázku nemám|Ktorý konkrétny produkt/);
+  assert.equal(resumed.state.selectedProductId, '39951');
+  assert.equal(resumed.state.pendingProductQuestion, null);
+  assert.deepEqual(resumed.state.cart, cart);
+  assert.equal(resumed.commerce, null);
+  assert.equal(resumed.action, null);
+  assert.equal(resumed.state.history.at(-2).content, 'tento');
+});
+
+test('legacy saved conversations recover the question from the immediate clarification', async () => {
+  installW1420();
+  const first = await ask('ako funguje tento toner?', '/produkty?s=HP+W1420A');
+  delete first.state.pendingProductQuestion;
+  const result = await ask('tento', w1420Page, first.state);
+  assert.match(text(result), /prášok.*papier.*teplom/);
+  assert.equal(result.action, null);
+});
+
+test('the opened original variant supplies its own printer list and manufacturer explanation', async () => {
+  installW1420();
+  const first = await ask('ako funguje tento toner?', '/produkty?s=HP+W1420A');
+  const result = await ask('tento', '/produkt/hp-w1420a-originalny-toner', first.state);
+  assert.equal(result.state.currentProductId, '38209');
+  assert.match(text(result), /Originálny toner vyrába výrobca tlačiarne/);
+  assert.match(text(result), /HP LaserJet M110we/);
+  assert.doesNotMatch(text(result), /nefunguje v HP\+|Kompatibilný toner vyrába/);
+});
+
+test('a pending compatibility question remains compatibility after selecting the detail', async () => {
+  installW1420();
+  const first = await ask(question, '/produkty?s=HP+W1420A');
+  const result = await ask('tento toner', w1420Page, first.state);
+  assert.deepEqual(result.advisor.answer.filter((line: string) => line.startsWith('• ')), ['• HP LaserJet M110w', '• HP LaserJet MFP M140w']);
+  assert.doesNotMatch(text(result), /prášok.*papier/);
+  assert.equal(result.action, null);
+});
+
+test('a clarification can also be answered with the SKU or the visible compatible variant', async () => {
+  installW1420();
+  const first = await ask('ako funguje tento toner?', '/produkty?s=HP+W1420A');
+  for (const message of ['SKU: 13276', 'ten kompatibilný', 'HP W1420A kompatibilný toner']) {
+    const result = await ask(message, '/produkty?s=HP+W1420A', first.state);
+    assert.equal(result.state.currentProductId, '39951', message);
+    assert.match(text(result), /prášok.*papier.*teplom/, message);
+    assert.equal(result.action, null, message);
+  }
+});
+
+test('repeated deictic replies keep asking for the product until a real detail is opened', async () => {
+  installW1420();
+  const first = await ask('ako funguje tento toner?', '/produkty?s=HP+W1420A');
+  const ambiguous = await ask('tento', '/produkty?s=HP+W1420A', first.state);
+  assert.equal(ambiguous.action.kind, 'CLARIFY_PRODUCT');
+  assert.equal(ambiguous.state.pendingProductQuestion, 'ako funguje tento toner?');
+  const result = await ask('tento', w1420Page, ambiguous.state);
+  assert.match(text(result), /prášok.*papier.*teplom/);
+  assert.equal(result.action, null);
+});
+
+test('a new service topic clears the pending question and a later reference uses current product facts', async () => {
+  installW1420();
+  const first = await ask('Je tento produkt skladom?', '/produkty?s=HP+W1420A');
+  const shipping = await ask('Koľko stojí doprava?', w1420Page, first.state);
+  assert.equal(shipping.state.pendingProductQuestion, null);
+  const result = await ask('tento', w1420Page, shipping.state);
+  assert.match(text(result), /prášok.*papier.*teplom/);
+  assert.doesNotMatch(text(result), /Skladom 5 ks/);
+  assert.equal(result.action, null);
+});
+
+test('a deictic reference alone resolves the current detail and never guesses from the cart', async () => {
+  installW1420();
+  const direct = await ask('tento', w1420Page);
+  assert.match(text(direct), /HP W1420A.*kompatibilný/);
+  assert.equal(direct.action, null);
+  const missing = await ask('tento', '/', { ...emptyCommerceState(), cart: [{ id: '39951', sku: '13276', quantity: 1 }] });
+  assert.equal(missing.action.kind, 'CLARIFY_PRODUCT');
+  assert.doesNotMatch(text(missing), /M110w|950/);
+  const afterDetail = await ask('tento', w1420Page, missing.state);
+  assert.match(text(afterDetail), /prášok.*papier.*teplom/);
+});
+
+test('how a delivery works remains a service answer on a product detail', async () => {
+  const result = await ask('Ako funguje toto doručenie?');
+  assert.doesNotMatch(text(result), /Myslíte produkt|prášok.*papier/);
+  assert.equal(result.state.pendingProductQuestion, null);
+});
+
+test('short selections retain stock, yield and firmware questions rather than replacing them with an overview', async () => {
+  installW1420();
+  for (const [question, expected] of [
+    ['Je tento produkt skladom?', /Skladom 5 ks/],
+    ['Koľko strán vytlačí tento toner?', /950.*strán/],
+    ['Bude tento toner fungovať s mojím firmvérom?', /nemám overené.*nemôžem potvrdiť/],
+  ] as const) {
+    const first = await ask(question, '/produkty?s=HP+W1420A');
+    assert.equal(first.action.kind, 'CLARIFY_PRODUCT', question);
+    const result = await ask('tento', w1420Page, first.state);
+    assert.match(text(result), expected, question);
+    assert.doesNotMatch(text(result), /prášok.*papier/);
+    assert.deepEqual(result.state.cart, []);
+  }
+});

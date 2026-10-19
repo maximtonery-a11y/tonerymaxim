@@ -6,6 +6,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from '../pr
 import { aiKnowledge } from '../../data/ai-knowledge.ts';
 import type { CommerceState } from './domain.ts';
 import { isGeneralProductTypeComparison } from '../ai-product-type-question.ts';
+import { productPageYield } from '../ai-page-yield.ts';
 
 const norm = (value: unknown) => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const key = (value: unknown) => norm(value).replace(/[^a-z0-9]/g, '');
@@ -80,6 +81,32 @@ function narrowProducts(products: any[], message: string) {
   return result;
 }
 
+const shortProductReference = (message: string) => /^(?:(?:myslim|ano)[, ]+)?(?:tento|tato|tieto|tuto|toto|ten|ta|to)(?:\s+(?:produkt|toner|napln|sada|sadu|kompatibilny|originalny|renovovany)){0,3}[.!?]*$/.test(norm(message).trim());
+
+// Old saved conversations have no pendingProductQuestion. Recover only from
+// the immediately preceding product clarification, never from an older topic.
+function pendingProductQuestion(state: CommerceState): string | null {
+  const turns = state.history.slice(-8);
+  const clarification = (value: string) => /ktory konkretny produkt myslite|napiste, prosim, presne oznacenie tonera alebo produktu/.test(norm(value));
+  if (turns.at(-1)?.role !== 'assistant' || !clarification(turns.at(-1)!.content)) return null;
+  if (state.pendingProductQuestion && !shortProductReference(state.pendingProductQuestion)) return state.pendingProductQuestion;
+  for (let i = turns.length - 2; i >= 0; i -= 2) {
+    const turn = turns[i];
+    if (turn?.role !== 'user') return null;
+    if (!shortProductReference(turn.content)) return turn.content;
+    if (turns[i - 1]?.role !== 'assistant' || !clarification(turns[i - 1].content)) return null;
+  }
+  return null;
+}
+
+function productSelection(message: string) {
+  const n = norm(message).trim().replace(/[.!?]+$/, '');
+  return shortProductReference(message)
+    || /^(?:ten\s+)?(?:kompatibilny|originalny|renovovany)(?:\s+(?:toner|produkt))?$/.test(n)
+    || /^(?:sku|kod produktu)\s*[:#-]?\s*[a-z0-9_-]+$/.test(n)
+    || productCode.test(n) && !/\b(?:ako|preco|kolko|pasuje|funguje|hladam|potrebujem|chcem|najdi|pridaj|kup|objednaj|doprav\w*|plat\w*)\b/.test(n) && n.split(/\s+/).length <= 8;
+}
+
 async function resolveProduct(message: string, page: string, state: CommerceState, explicitSearch: boolean) {
   const slug = productSlug(page);
   const onDetail = /^\/produkt\//i.test(page) || slug !== null;
@@ -111,7 +138,7 @@ async function resolveProduct(message: string, page: string, state: CommerceStat
   if (search) {
     const cache = await getProductsCache();
     const visible = filterProducts(cache.products, search).filter(product => explicitlyRequestsSpecialChipVariant(search.search) || !isSpecialChipVariantProduct(product));
-    const matches = narrowProducts(visible, `${search.search} ${search.printer}`);
+    const matches = narrowProducts(narrowProducts(visible, `${search.search} ${search.printer}`), message);
     if (matches.length === 1) return { product: (await getProductFromCache({ id: matches[0].id })).product, choices: [] };
     // A new storefront search is the current context even when it is empty
     // or offers several variants. Never resurrect the previous detail page.
@@ -130,31 +157,38 @@ async function resolveProduct(message: string, page: string, state: CommerceStat
 
 /** Factual product questions bypass purchasing and the generative fallback. */
 export async function productContextAnswer(message: string, page: string, state: CommerceState, route: { intents: string[]; productQuery: string | null }) {
-  const n = norm(message);
   if (route.intents.includes('HUMAN_ESCALATION') || isGeneralProductTypeComparison(message)) return null;
+  const pending = productSelection(message) ? pendingProductQuestion(state) : null;
+  const question = pending || message;
+  const n = norm(question);
+  const overview = !pending && shortProductReference(message);
+  const explanation = /\bako\s+funguj\w*\b/.test(n)
+    && (!route.intents.includes('POLICY') || /\b(?:produkt\w*|toner\w*|napln\w*|sada|sady|sadu)\b/.test(n));
+  const capacity = /\b(?:vytaznost|kapacita|vydrz|kolko\s+stran)\b/.test(n);
   const list = /\b(?:do|pre|s)\s+(?:ktorych|ktorymi|akych|akymi|akej|ktorej)\s+tlaciarn\w*\b|\b(?:zoznam|ktore)\s+(?:kompatibilnych\s+)?tlaciarn\w*\b/.test(n);
-  const compatibility = list || /\b(?:pasuje|pasuju|hodi|fungovat|funguje|funguju)\b/.test(n) && /\b(?:tlaciarn\w*|produkt\w*|toner\w*|napln\w*|sada|sady|sadu)\b/.test(n)
+  const compatibility = list || !explanation && /\b(?:pasuje|pasuju|hodi|fungovat|funguje|funguju)\b/.test(n) && /\b(?:tlaciarn\w*|produkt\w*|toner\w*|napln\w*|sada|sady|sadu)\b/.test(n)
     || /\b(?:je|su|bude|budu)\b.*\b(?:kompatibiln|vhodn)\w*\b/.test(n) && /\btlaciarn\w*\b/.test(n);
   const firmware = /firmware|firmver|hp\s*\+|cartridge\s+(?:protection|policy)|authorized\s+hp|nerozpozna|\bcip\w*\b/.test(n)
     && /potvrd|over|fung|pasuj|kompatibil/.test(n);
   const stock = /\b(?:skladom|dostupnost|dostupny|dostupna|dostupne)\b/.test(n);
   // Do not turn service questions, general explanations or purchase commands
   // into a page lookup just because a product detail happens to be open.
-  if (!compatibility && !firmware && !stock) return null;
+  if (!compatibility && !firmware && !stock && !explanation && !overview && !capacity) return null;
   const refersToProduct = /\b(?:tento|tato|tieto|tuto|ten|ta|ho|uvedeny|uvedena|uvedene)\b/.test(n);
   const printerToTonerSearch = /\b(?:aky|ktory|najdi|najdite|hladam|potrebujem)\b.*\b(?:toner|napln|atrament)\w*\b/.test(n);
   const generalExplanation = /\b(?:ako\s+funguj\w*|preco|rozdiel)\b/.test(n);
-  if (!list && !refersToProduct && !firmware && (printerToTonerSearch || generalExplanation)) return null;
-  if (!compatibility && !firmware && route.intents.some(intent => ['POLICY', 'BUY_INTENT', 'ADVICE', 'PRODUCT_COMPARE'].includes(intent))) return null;
+  if (!list && !refersToProduct && !firmware && !pending && !overview && (printerToTonerSearch || generalExplanation)) return null;
+  if (!compatibility && !firmware && !explanation && !overview && !capacity && route.intents.some(intent => ['POLICY', 'BUY_INTENT', 'ADVICE', 'PRODUCT_COMPARE'].includes(intent))) return null;
   const hasContext = Boolean(productSlug(page) || catalogueSearch(page) || state.currentProductId || state.selectedProductId || state.lastProductQuery || route.productQuery);
-  if (!list && !hasContext) return null;
+  if (!list && !hasContext && !refersToProduct && !overview) return null;
 
   const { product, choices } = await resolveProduct(message, page, state, route.intents.includes('PRODUCT_SEARCH'));
   if (!product) return {
     product: null,
+    pendingProductQuestion: question,
     advisor: {
       answer: choices.length ? ['Ktorý konkrétny produkt myslíte? Napíšte jeho presné označenie alebo otvorte jeho detail.', ...choices.slice(0, 5).map(product => `• ${product.name} (SKU: ${product.sku})`)]
-        : ['Napíšte, prosím, presné označenie tonera alebo produktu, prípadne otvorte jeho produktovú stránku. Bez konkrétneho produktu nemôžem spoľahlivo určiť zoznam tlačiarní.'],
+        : ['Napíšte, prosím, presné označenie tonera alebo produktu, prípadne otvorte jeho produktovú stránku. Potom odpoviem na vašu otázku ku konkrétnemu produktu.'],
       products: [], groups: [], intent: 'product_clarification', confidence: 1, unanswered: false, handoffSuggested: false, sources: [],
     },
   };
@@ -162,8 +196,23 @@ export async function productContextAnswer(message: string, page: string, state:
   const answer = [`Myslíte produkt ${product.name}? Ak nie, napíšte presné označenie tonera alebo produktu. Ak áno:`];
   const sources = [{ label: 'Zobraziť produkt', url: `/produkt/${encodeURIComponent(product.slug)}` }];
   const printers = productPrinters(product);
-  if (compatibility || firmware) {
-    for (const printer of printerMentions(message)) {
+  if (explanation || overview) {
+    const toner = /\btoner\w*\b/.test(norm(product.name)) && !/\b(?:valec|nadoba)\b/.test(norm(product.name));
+    if (toner) answer.push('Ide o tonerovú kazetu s práškom pre laserovú tlačiareň. Pri tlači sa prášok prenesie na papier a zafixuje teplom.');
+    const type = product.product_type_key || (/original/.test(norm(product.name)) ? 'original' : /renov|repas/.test(norm(product.name)) ? 'renovated' : /kompatibil/.test(norm(product.name)) ? 'compatible' : null);
+    const definition = aiKnowledge.find(item => item.id === 'kompatibilny-original-renovovany')?.answer;
+    const typeIndex = ['original', 'compatible', 'renovated'].indexOf(type);
+    if (toner && definition && typeIndex >= 0) answer.push(definition[typeIndex]);
+    const color = String(product.color || product.farba || '').trim();
+    if (color) answer.push(`Farba podľa katalógu: ${color}.`);
+  }
+  if (capacity || explanation || overview) {
+    const pages = productPageYield(product);
+    if (pages) answer.push(`Katalógová výťažnosť: ${pages.toLocaleString('sk-SK')} strán. Skutočný počet závisí od obsahu a pokrytia tlačených strán.`);
+    else if (capacity) answer.push('Pri tomto produkte nemám overený počet vytlačených strán; výťažnosť nechcem odhadovať.');
+  }
+  if (compatibility || firmware || explanation || overview) {
+    for (const printer of printerMentions(question)) {
       const assigned = printers.some(value => exactPrinterModelMatch(value, analyzeCatalogQuery(printer)));
       answer.push(assigned ? `Model ${printer} je uvedený v katalógovom zozname kompatibilných tlačiarní tohto produktu.`
         : `Model ${printer} nie je uvedený v katalógovom zozname tohto produktu; kompatibilitu s týmto presným modelom nemám potvrdenú.`);
@@ -171,7 +220,7 @@ export async function productContextAnswer(message: string, page: string, state:
     if (printers.length) answer.push('Podľa katalógu je produkt určený pre tieto tlačiarne:', ...printers.map(printer => `• ${printer}`));
     else answer.push('Pri tomto produkte v katalógu chýba zoznam kompatibilných tlačiarní. Napíšte presný model zo štítku tlačiarne; kompatibilitu musí pred objednaním preveriť pracovník.');
     if (/nefunguje\s+v\s+hp\s*\+|nie\s+je\s+(?:urcen\w*|vhodn\w*)\s+pre\s+hp\s*\+/.test(norm(product.name))) {
-      answer.push('Upozornenie uvedené pri produkte: táto kompatibilná sada nefunguje v HP+. Ak je vaša tlačiareň aktivovaná v HP+, tento produkt nepoužite.');
+      answer.push('Upozornenie uvedené pri produkte: tento produkt nefunguje v HP+. Ak je vaša tlačiareň aktivovaná v HP+, tento produkt nepoužite.');
     }
   }
   if (stock) answer.push(`${storefrontStockText(product)}.${isAvailableNow(product) ? '' : ` ${ORDER_DELIVERY_LABEL}.`}`);
@@ -189,6 +238,7 @@ export async function productContextAnswer(message: string, page: string, state:
   }
   return {
     product,
-    advisor: { answer, products: [], groups: [], intent: 'compatibility', confidence: 1, unanswered: false, handoffSuggested: firmware || !printers.length && compatibility, sources },
+    pendingProductQuestion: null,
+    advisor: { answer, products: [], groups: [], intent: compatibility || firmware ? 'compatibility' : 'product_info', confidence: 1, unanswered: false, handoffSuggested: firmware || !printers.length && compatibility, sources },
   };
 }

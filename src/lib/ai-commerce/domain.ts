@@ -20,12 +20,13 @@ export type CommerceState = {
   lastProductQuery: string | null;
   lastIntent: AiIntent | null;
   pendingQuestion: string | null;
+  pendingProductQuestion: string | null;
 };
 
 export function emptyCommerceState(sessionId = ''): CommerceState {
   return { version: 1, sessionId, history: [], currentPrinter: null, currentProductId: null,
     selectedProductId: null, currentColor: null, currentType: null, cart: [], checkoutDraft: {},
-    lastProductQuery: null, lastIntent: null, pendingQuestion: null };
+    lastProductQuery: null, lastIntent: null, pendingQuestion: null, pendingProductQuestion: null };
 }
 
 const clean = (v: unknown, max = 500) => String(v ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max);
@@ -43,5 +44,6 @@ export function normalizeCommerceState(raw: any): CommerceState {
     currentProductId: clean(raw?.currentProductId, 40) || null, selectedProductId: clean(raw?.selectedProductId, 40) || null,
     currentColor: color, currentType: type, checkoutDraft: raw?.checkoutDraft && typeof raw.checkoutDraft === 'object' ? raw.checkoutDraft : {},
     lastProductQuery: clean(raw?.lastProductQuery, 160) || null, lastIntent: raw?.lastIntent || null,
-    pendingQuestion: clean(raw?.pendingQuestion, 500) || null };
+    pendingQuestion: clean(raw?.pendingQuestion, 500) || null,
+    pendingProductQuestion: clean(raw?.pendingProductQuestion, 4000) || null };
 }
