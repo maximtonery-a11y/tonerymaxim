@@ -7,6 +7,7 @@ import { aiKnowledge } from '../../data/ai-knowledge.ts';
 import type { CommerceState } from './domain.ts';
 import { isGeneralProductTypeComparison } from '../ai-product-type-question.ts';
 import { productPageYield } from '../ai-page-yield.ts';
+import { HP_TONER_HELP_LABEL, HP_TONER_HELP_PATH } from '../hp-toner-help.ts';
 
 const norm = (value: unknown) => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const key = (value: unknown) => norm(value).replace(/[^a-z0-9]/g, '');
@@ -61,6 +62,15 @@ function productPrinters(product: any): string[] {
     if (/\d/.test(model) && !printers.has(key(model))) printers.set(key(model), model);
   }
   return [...printers.values()];
+}
+
+function isTonerProduct(product: any) {
+  const attributes = [...(Array.isArray(product.attributes_all) ? product.attributes_all : []), ...(Array.isArray(product.attributes) ? product.attributes : [])];
+  const kind = attributes.find((attribute: any) => norm(attribute.name) === 'typ produktu');
+  const values = Array.isArray(kind?.values) ? kind.values : Array.isArray(kind?.options) ? kind.options : [];
+  const material = kind ? `${kind.value || ''} ${values.join(' ')}`
+    : `${product.name} ${(Array.isArray(product.categories) ? product.categories : []).map((category: any) => category.name).join(' ')}`;
+  return /\btoner\w*\b/.test(norm(material)) && !/\b(?:valec|nadoba)\b/.test(norm(product.name));
 }
 
 function narrowProducts(products: any[], message: string) {
@@ -195,38 +205,44 @@ export async function productContextAnswer(message: string, page: string, state:
 
   const answer = [`Myslíte produkt ${product.name}? Ak nie, napíšte presné označenie tonera alebo produktu. Ak áno:`];
   const sources = [{ label: 'Zobraziť produkt', url: `/produkt/${encodeURIComponent(product.slug)}` }];
+  const hpProduct = /\bhp\b/.test(norm(product.name));
+  const addHpHelp = () => {
+    if (!sources.some(source => source.url === HP_TONER_HELP_PATH)) sources.push({ label: HP_TONER_HELP_LABEL, url: HP_TONER_HELP_PATH });
+  };
   const printers = productPrinters(product);
+  const toner = isTonerProduct(product);
   if (explanation || overview) {
-    const toner = /\btoner\w*\b/.test(norm(product.name)) && !/\b(?:valec|nadoba)\b/.test(norm(product.name));
     if (toner) answer.push('Ide o tonerovú kazetu s práškom pre laserovú tlačiareň. Pri tlači sa prášok prenesie na papier a zafixuje teplom.');
     const type = product.product_type_key || (/original/.test(norm(product.name)) ? 'original' : /renov|repas/.test(norm(product.name)) ? 'renovated' : /kompatibil/.test(norm(product.name)) ? 'compatible' : null);
     const definition = aiKnowledge.find(item => item.id === 'kompatibilny-original-renovovany')?.answer;
     const typeIndex = ['original', 'compatible', 'renovated'].indexOf(type);
     if (toner && definition && typeIndex >= 0) answer.push(definition[typeIndex]);
     const color = String(product.color || product.farba || '').trim();
-    if (color) answer.push(`Farba podľa katalógu: ${color}.`);
+    if (color) answer.push(`Farba: ${color}.`);
   }
   if (capacity || explanation || overview) {
     const pages = productPageYield(product);
-    if (pages) answer.push(`Katalógová výťažnosť: ${pages.toLocaleString('sk-SK')} strán. Skutočný počet závisí od obsahu a pokrytia tlačených strán.`);
+    if (pages) answer.push(`Výťažnosť: ${pages.toLocaleString('sk-SK')} strán. Skutočný počet závisí od obsahu a pokrytia tlačených strán.`);
     else if (capacity) answer.push('Pri tomto produkte nemám overený počet vytlačených strán; výťažnosť nechcem odhadovať.');
   }
   if (compatibility || firmware || explanation || overview) {
     for (const printer of printerMentions(question)) {
       const assigned = printers.some(value => exactPrinterModelMatch(value, analyzeCatalogQuery(printer)));
-      answer.push(assigned ? `Model ${printer} je uvedený v katalógovom zozname kompatibilných tlačiarní tohto produktu.`
-        : `Model ${printer} nie je uvedený v katalógovom zozname tohto produktu; kompatibilitu s týmto presným modelom nemám potvrdenú.`);
+      answer.push(assigned ? `Tento produkt je určený aj pre tlačiareň ${printer}.`
+        : `Kompatibilitu tohto produktu s presným modelom ${printer} nemám potvrdenú.`);
     }
-    if (printers.length) answer.push('Podľa katalógu je produkt určený pre tieto tlačiarne:', ...printers.map(printer => `• ${printer}`));
-    else answer.push('Pri tomto produkte v katalógu chýba zoznam kompatibilných tlačiarní. Napíšte presný model zo štítku tlačiarne; kompatibilitu musí pred objednaním preveriť pracovník.');
+    if (printers.length) answer.push(toner ? 'Tieto tonery sú určené pre tieto tlačiarne:' : 'Tento produkt je určený pre tieto tlačiarne:', ...printers.map(printer => `• ${printer}`));
+    else answer.push('Pri tomto produkte nemám uvedený zoznam kompatibilných tlačiarní. Napíšte presný model zo štítku tlačiarne; kompatibilitu musí pred objednaním preveriť pracovník.');
     if (/nefunguje\s+v\s+hp\s*\+|nie\s+je\s+(?:urcen\w*|vhodn\w*)\s+pre\s+hp\s*\+/.test(norm(product.name))) {
-      answer.push('Upozornenie uvedené pri produkte: tento produkt nefunguje v HP+. Ak je vaša tlačiareň aktivovaná v HP+, tento produkt nepoužite.');
+      answer.push('Tento produkt nefunguje v tlačiarni s aktivovaným HP+. Čo HP+ znamená a ako skontrolovať politiku kaziet, ochranu kaziet a aktualizácie firmvéru, vysvetľuje návod „HP+ a kompatibilné tonery“ v odkazoch nižšie.');
+      addHpHelp();
     }
   }
   if (stock) answer.push(`${storefrontStockText(product)}.${isAvailableNow(product) ? '' : ` ${ORDER_DELIVERY_LABEL}.`}`);
   if (firmware) {
-    answer.push(`Funkčnosť s konkrétnou verziou firmvéru${/\bhp\b/.test(norm(product.name)) ? ' ani stav aktivácie HP+' : ''} nemám overené, preto ich nemôžem potvrdiť. Katalógové priradenie modelu samo osebe nepotvrdzuje funkčnosť s daným firmvérom a čipom. Pred nákupom je potrebné preveriť presný model, verziu firmvéru a čip dodávanej náplne s pracovníkom.`);
-    sources.push({ label: 'Firmvér a kompatibilný toner', url: '/poradna/aktualizacia-firmveru-a-kompatibilny-toner' });
+    answer.push(`Funkčnosť s konkrétnou verziou firmvéru${hpProduct ? ' ani stav aktivácie HP+' : ''} nemám overené, preto ich nemôžem potvrdiť. Samotná zhoda modelu nepotvrdzuje funkčnosť s daným firmvérom a čipom. Pred nákupom je potrebné preveriť presný model, verziu firmvéru a čip dodávanej náplne s pracovníkom.`);
+    if (hpProduct) addHpHelp();
+    else sources.push({ label: 'Firmvér a kompatibilný toner', url: '/poradna/aktualizacia-firmveru-a-kompatibilny-toner' });
   }
   // A mixed technical/policy question must answer its final clauses too.
   for (const [pattern, id, url] of [

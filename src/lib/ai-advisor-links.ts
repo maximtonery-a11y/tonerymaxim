@@ -1,3 +1,5 @@
+import { HP_TONER_HELP_LABEL, HP_TONER_HELP_PATH } from './hp-toner-help.ts';
+
 export type AiAdvisorLink = { label: string; url: string };
 
 // Odkazy sú zámerne vyberané iba z pevného zoznamu interných stránok.
@@ -5,6 +7,7 @@ export type AiAdvisorLink = { label: string; url: string };
 export function advisorLinks(advisor: { intent?: unknown; faq?: unknown; sources?: unknown } | null | undefined): AiAdvisorLink[] {
   const intent = String(advisor?.intent || '');
   const faq = String(advisor?.faq || '');
+  if (faq === 'hp-plus-nastavenie') return [{ label: HP_TONER_HELP_LABEL, url: HP_TONER_HELP_PATH }];
 
   if (intent === 'calendar_overview' && Array.isArray(advisor?.sources)) {
     return (advisor.sources as any[]).filter((source) =>

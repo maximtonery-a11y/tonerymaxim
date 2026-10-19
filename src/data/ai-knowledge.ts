@@ -14,6 +14,15 @@ export const AI_CONTACT_FALLBACK = [
 
 export const aiKnowledge: AiKnowledgeItem[] = [
   {
+    id: 'hp-plus-nastavenie', intent: 'compatibility', title: 'HP+ a nastavenia pre kompatibilné tonery', priority: 120,
+    triggers: ['co je hp+', 'co znamena hp+', 'ako vypnut hp+', 'aktivovane hp+', 'cartridge policy', 'authorized hp cartridge policy', 'cartridge protection', 'kontrola originality hp', 'ochrana kaziet hp'],
+    answer: [
+      'Aktivované HP+ vyžaduje originálne kazety HP počas životnosti tlačiarne. Vypnutie Cartridge Policy alebo Cartridge Protection túto podmienku nezruší.',
+      'Pri tlačiarni bez HP+ nastavte dostupnú Cartridge Policy (politiku originálnych kaziet) aj Cartridge Protection (ochranu kaziet) na Vypnuté. Vypnite automatickú inštaláciu firmvéru; ak model ponúka Notify, ponechajte iba upozornenie a o inštalácii rozhodujte manuálne po overení čipu.',
+      'Nie každý model ponúka všetky voľby. Tieto nastavenia nevypínajú dynamické zabezpečenie a samotné nezaručia funkčnosť nesprávnej kazety alebo nepodporovaného čipu. Podrobný postup nájdete v návode v odkazoch nižšie.',
+    ],
+  },
+  {
     id: 'sortiment-prehlad', intent: 'support', title: 'Čo predáva ToneryMAXIM', priority: 190,
     triggers: ['co predavate', 'co robite', 'comu sa venujete', 'kto ste', 'co je tonerymaxim', 'ake sluzby ponukate', 'co mate v ponuke', 'aky mate sortiment', 'co sa tu da kupit', 's cim mi vies poradit', 'co ponukate', 'predstav ponuku'],
     answer: [

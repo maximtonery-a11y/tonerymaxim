@@ -2,6 +2,7 @@ import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { POST } from '../src/pages/api/ai-tomas.ts';
 import { emptyCommerceState } from '../src/lib/ai-commerce/domain.ts';
+import { HP_TONER_HELP_PATH } from '../src/lib/hp-toner-help.ts';
 
 process.env.OPENAI_ASSISTANT_ENABLED = '0';
 const g = globalThis as any;
@@ -48,6 +49,8 @@ test('product quick prompt identifies the exact HP 220A pack and lists its compl
   assert.equal(result.action, null);
   assert.deepEqual(result.state.cart, []);
   assert.ok(result.advisor.sources.some((source: any) => source.url === hpPage));
+  assert.ok(result.advisor.answer.includes('Tieto tonery sú určené pre tieto tlačiarne:'));
+  assert.doesNotMatch(text(result), /katalóg/i);
 });
 
 test('the current page wins over an earlier product, type, colour and pending purchase', async () => {
@@ -115,7 +118,7 @@ test('stock quick prompt uses the current detail and unknown stock is never inve
 
 test('compatibility for a named printer differentiates an assigned model from an unconfirmed one', async () => {
   const fits = await ask('Pasuje tento produkt do HP Color LaserJet Pro MFP 4302dw?');
-  assert.match(text(fits), /4302dw.*(?:uveden|priraden)|(?:uveden|priraden).*4302dw/i);
+  assert.match(text(fits), /určený aj pre tlačiareň HP Color LaserJet Pro MFP 4302dw/);
   const other = await ask('Pasuje tento produkt do HP Color LaserJet Pro MFP 4302dwe?');
   assert.match(text(other), /nemám.*potvrden|nie je.*uveden/i);
   assert.doesNotMatch(text(other), /Áno.*pasuje/i);
@@ -183,8 +186,9 @@ test('ambiguous variants ask for a precise product instead of combining unrelate
 test('product restrictions from the real HP 220A title are included in the compatibility answer', async () => {
   install([product(52658, 'HP 220A / W2200-1-2-3A CMYK – kompatibilná sada nefunguje v HP+ (4 ks)', hpPage.split('/').at(-1)!, hpPrinters, { sku: 'SET-HP-220A-KOM-CIP' })]);
   const result = await ask();
-  assert.match(text(result), /Upozornenie.*nefunguje v HP\+/);
-  assert.match(text(result), /aktivovaná v HP\+/);
+  assert.match(text(result), /nefunguje v tlačiarni s aktivovaným HP\+/);
+  assert.match(text(result), /politiku kaziet.*ochranu kaziet.*aktualizácie firmvéru/);
+  assert.equal(result.advisor.sources.filter((source: any) => source.url === HP_TONER_HELP_PATH).length, 1);
 });
 
 test('an explicit subsequent purchase keeps the exact product identified by the compatibility answer', async () => {

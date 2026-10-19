@@ -109,6 +109,13 @@ const jsonLd = [
                   {section.note && <aside class="advice-note"><strong>Dôležité:</strong> {section.note}</aside>}
                 </section>
               ))}
+              {article.sources?.length && (
+                <section aria-labelledby="article-sources">
+                  <h2 id="article-sources">Zdroje a návody HP</h2>
+                  <p>Postupy overené v dokumentácii výrobcu k dátumu aktualizácie článku. Konkrétne ponuky sa môžu líšiť podľa modelu a firmvéru.</p>
+                  <ul>{article.sources.map((source) => <li><a href={source.href} target="_blank" rel="noopener noreferrer">{source.label}</a></li>)}</ul>
+                </section>
+              )}
             </div>
 
             {article.slug === "aktualizacia-firmveru-a-kompatibilny-toner" && <FirmwareStatusPanel />}

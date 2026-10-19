@@ -1,8 +1,10 @@
 import type { AdviceArticle } from "./advice";
+import { hpPlusAdviceArticle } from './hp-plus-advice.ts';
 
 const dates = { published: "2026-08-14", updated: "2026-08-14" };
 
 export const additionalAdviceArticles: AdviceArticle[] = [
+  hpPlusAdviceArticle,
   {
     ...dates, category: "riesenie-problemov", slug: "hp-supply-memory-error-co-robit", readingMinutes: 6,
     title: "HP Supply Memory Error: čo chyba znamená a čo skontrolovať",
@@ -76,7 +78,7 @@ export const additionalAdviceArticles: AdviceArticle[] = [
     links: [{ href: "/poradna/toner-bez-cipu-no-chip-co-to-znamena", label: "Čo znamená No chip" }, { href: "/poradna/hp-supply-memory-error-co-robit", label: "Supply Memory Error" }, { href: "/kontakt", label: "Overiť variant kazety" }],
   },
   {
-    published: "2026-08-14", updated: "2026-09-02", category: "cipy-firmware", slug: "aktualizacia-firmveru-a-kompatibilny-toner", readingMinutes: 8,
+    published: "2026-08-14", updated: "2026-10-19", category: "cipy-firmware", slug: "aktualizacia-firmveru-a-kompatibilny-toner", readingMinutes: 8,
     title: "Aktualizácie firmvéru tlačiarní a kompatibilné tonery",
     description: "Aktuálny prehľad kompatibility čipov, vplyv firmvéru tlačiarne na alternatívne náplne a pomoc s preprogramovaním alebo výmenou čipu.",
     answer: "Firmvér riadi aj komunikáciu tlačiarne so spotrebným materiálom. Nová aktualizácia môže pri niektorých modeloch zmeniť rozpoznávanie kompatibilných čipov. Ak tlačiareň po aktualizácii náplň odmietne a je dostupná novšia verzia čipu, v ToneryMaxim ho vieme podľa typu náplne preprogramovať alebo vymeniť. Najskôr potrebujeme presný model tlačiarne, označenie náplne, verziu firmvéru a chybové hlásenie.",
@@ -92,7 +94,7 @@ export const additionalAdviceArticles: AdviceArticle[] = [
       { question: "Viete aktualizovať čip na mojej náplni?", answer: "Podľa typu náplne vieme dostupný čip preprogramovať alebo vymeniť. Potrebujeme náplň fyzicky doručiť a pred úpravou overiť model tlačiarne, označenie náplne, verziu firmvéru a dostupnosť vhodného čipu." },
       { question: "Ovplyvní aktualizácia originálny toner?", answer: "Spravidla nie negatívne, ale každú konkrétnu zmenu treba posudzovať podľa modelu a poznámok k vydaniu." },
     ],
-    links: [{ href: "/poradna/ako-funguje-cip-tonerovej-kazety", label: "Ako funguje čip" }, { href: "/poradna/tlaciaren-po-vymene-nerozpoznala-toner", label: "Toner nebol rozpoznaný" }, { href: "/kontakt", label: "Overiť kompatibilitu" }],
+    links: [{ href: `/poradna/${hpPlusAdviceArticle.slug}`, label: 'HP+ a nastavenia tlačiarne HP' }, { href: "/poradna/tlaciaren-po-vymene-nerozpoznala-toner", label: "Toner nebol rozpoznaný" }, { href: "/kontakt", label: "Overiť kompatibilitu" }],
   },
   {
     ...dates, category: "naklady-vytaznost", slug: "ako-vypocitat-cenu-za-stranu", readingMinutes: 6,

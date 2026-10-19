@@ -18,6 +18,7 @@ export type AdviceArticle = {
   }>;
   faq: Array<{ question: string; answer: string }>;
   links: Array<{ href: string; label: string }>;
+  sources?: Array<{ href: string; label: string }>;
   category: AdviceCategorySlug;
 };
 
