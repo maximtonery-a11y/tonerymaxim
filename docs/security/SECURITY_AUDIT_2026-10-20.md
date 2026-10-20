@@ -29,6 +29,28 @@ Nejde o potvrdenie, že e-shop nebol napadnutý, ani o úplný penetračný test
 - Bezpečnostný prehľad už neprezentuje aktívny limit v pamäti middleware ako
   persistentný. Limity platia pre jeden proces a po reštarte sa začínajú odznova.
 
+## Produkčné závislosti
+
+Audit pôvodného lockfile našiel 6 zraniteľných balíkov (5 high, 1 moderate).
+Závislosti sú uzamknuté na opravené verzie z npm registry, bez zmeny verzie
+Astro a Node adaptéra:
+
+| Balík | Predtým | Opravená verzia |
+| --- | --- | --- |
+| devalue | 5.8.2 | 5.9.4 |
+| http-cache-semantics | 4.2.0 | 4.3.0 |
+| nodemailer | 10.0.2 | 10.1.7 |
+| sharp | 0.35.4 | 0.35.5 |
+| smol-toml | 1.7.1 | 1.9.1 |
+| source-map-js | 1.2.1 | 1.2.2 |
+
+Aktualizované sú aj platformové balíky sharp/libvips. Po vyriešení závislostí
+prešiel build, regresie, 10 kôl HTTP skúšok a npm audit --omit=dev hlásil
+0 zraniteľností. Finálna kontrola používa čisté npm ci z commitnutého lockfile;
+CI pri bežnom builde závislosti automaticky neaktualizuje.
+Test mail-security overuje 10 kôl vytvorenia slovenského textového/HTML e-mailu
+v pamäti bez SMTP spojenia. Skutočné doručenie e-mailu tým nie je potvrdené.
+
 ## Proxy v Coolify
 
 Bez explicitného TM_TRUSTED_PROXY_CIDRS sú akceptované loopback a súkromné
