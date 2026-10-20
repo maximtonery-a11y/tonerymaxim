@@ -2474,9 +2474,9 @@
     "binding": "PVC obal, väzba V1",
     "weight": "60 g",
     "availability": {
-      "raw": "Skladom",
-      "inStock": true,
-      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "raw": "Nedostupné",
+      "inStock": false,
+      "checkedAt": "2026-10-20T07:57:56.831Z",
       "source": "pressgroup.sk"
     }
   },
@@ -2531,9 +2531,9 @@
     "binding": "PVC obal, väzba V1",
     "weight": "60 g",
     "availability": {
-      "raw": "Skladom",
-      "inStock": true,
-      "checkedAt": "2026-08-29T10:56:20.825Z",
+      "raw": "Nedostupné",
+      "inStock": false,
+      "checkedAt": "2026-10-20T07:57:56.831Z",
       "source": "pressgroup.sk"
     }
   },
