@@ -112,6 +112,8 @@ AUTH_SECRET ani TM_PERSISTENCE_SECRET neotáčať bez plánovanej migrácie.
 - GitHub Release checks vykoná Astro check, bezpečnostné testy, DPD, históriu
   cien, migrácie, produkčné a výkonnostné regresie, produkčný build s kritickými
   regresnými testami, HTTP smoke a npm audit --omit=dev.
+  Samostatný job zopakuje bezpečnostné testy a celý build/HTTP smoke aj na Node 22;
+  hlavný job používa Node 24.
 - Výsledok CI treba kontrolovať na presnom commite. Tento dokument neoznačuje
   neuskutočnené testy alebo produkčné nasadenie za úspešné.
 

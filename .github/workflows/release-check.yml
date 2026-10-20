@@ -35,3 +35,22 @@ jobs:
       # npm prebuild runs the isolated release guard and blocks Astro on failure.
       - run: npm run build
       - run: npm audit --omit=dev
+  node-22-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TM_DISABLE_BACKGROUND_WORKERS: '1'
+      TM_DISABLE_INDEXNOW: '1'
+      OPENAI_ASSISTANT_ENABLED: '0'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:security
+      - run: npm run build
+      - run: npm audit --omit=dev
