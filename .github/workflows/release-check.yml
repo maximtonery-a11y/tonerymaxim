@@ -25,6 +25,12 @@ jobs:
         with:
           node-version: '24'
           cache: npm
+      - name: Resolve security patch versions
+        run: npm install --package-lock-only --ignore-scripts --save-exact nodemailer@10.1.7
+      - name: Resolve production dependency advisories
+        run: npm audit fix --package-lock-only --ignore-scripts --omit=dev
+      - name: Export reviewed security lockfile
+        run: node -e "const fs=require('node:fs');process.stdout.write('TM_SECURITY_LOCK_START\n'+fs.readFileSync('package-lock.json','utf8')+'TM_SECURITY_LOCK_END\n')"
       - run: npm ci
       - run: npm run check
       - run: npm run test:security
