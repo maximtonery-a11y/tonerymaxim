@@ -52,16 +52,27 @@ znovu adresu spojenia a celý reťazec. Kód nie je dôkazom správneho firewall
 
 V kontrolovaných zdrojoch nebolo produkčné HTTP volanie s tokenom v URL.
 Nočný worker a interné obnovovanie volajú syncProductsCache priamo.
-Externý cron, príkazy Coolify a hostingové plánovače nie sú dostupné na kontrolu.
-Pred redeployom overte, či niektorý z nich používa ?token=; taký proces treba
-najprv zmeniť na hlavičku. Používaný token sa nemení týmto commitom.
+V predchádzajúcom nastavení bola úloha Coolify „Task Woo Sync“ s curl volaním
+localhostu bez tokenu. Aktuálny príkaz a ďalšie plánovače nie sú dostupné na
+priamu kontrolu. Pred redeployom treba túto úlohu overiť a zmeniť na hlavičku;
+rovnako všetky prípadné volania s ?token=. Používaný token sa nemení týmto commitom.
 
 Príklad príkazu so SYNC_SECRET nastaveným bezpečne v prostredí:
 
 curl --fail --silent --show-error --request POST \
   --header "x-sync-token: $SYNC_SECRET" \
+  --header "Content-Type: application/json" --data "{}" \
   "https://www.tonerymaxim.sk/api/sync-products?force=1"
 
+POST bez prehliadačového Origin používa Content-Type: application/json;
+štandardná ochrana Astro checkOrigin ostáva zapnutá.
+Pri migrácii existujúcej úlohy možno použiť GET s rovnakou hlavičkou, ktorý
+funguje pred aj po oprave:
+
+curl -fsS --max-time 600 --header "x-sync-token: $SYNC_SECRET" \
+  "http://127.0.0.1:3000/api/sync-products?force=1"
+
+Pred spustením overiť, že úloha číta nakonfigurovaný SYNC_SECRET aplikácie.
 Token nevkladajte do zdrojov, dokumentácie, snímok obrazovky ani výstupov testov.
 Ak sa už používal v URL, preveriť záznamy a podľa potreby vymeniť iba SYNC_SECRET.
 AUTH_SECRET ani TM_PERSISTENCE_SECRET neotáčať bez plánovanej migrácie.

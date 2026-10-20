@@ -131,7 +131,7 @@ try {
     assert.equal(wooCalls, beforeLogin, 'invalid login attempts never access WooCommerce');
     result = await call('/api/auth/login', { ip: '198.51.100.' + (100 + round), method: 'POST', body: {}, headers: { origin: 'https://www.tonerymaxim.sk', 'content-type': 'application/json' } });
     assert.equal(result.response.status, 400, 'another legitimate client remains usable');
-    result = await call('/api/sync-products', { ip, method: 'POST', headers: { 'x-sync-token': syncSecret } });
+    result = await call('/api/sync-products', { ip, method: 'POST', body: {}, headers: { 'x-sync-token': syncSecret, 'content-type': 'application/json' } });
     assert.equal(result.response.status, 200, 'scheduled header-authenticated POST still works without Origin');
     const synced = JSON.parse(result.text);
     assert.equal(synced.ok, true);
