@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 const FILE = new URL("../src/data/calendar-products.json", import.meta.url);
 const BASE = "https://www.pressgroup.sk";
-const MAX_AGE_HOURS = 26;
+
 const decode = (s) => s.replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&[a-z]+;|&#\d+;/gi," ");
 const text = (html) => decode(html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi," ").replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/\s+/g," "));
 const status = (chunk) => {
@@ -16,7 +16,12 @@ async function fetchHtml(url) {
   try {
     const response = await fetch(url,{headers:{"User-Agent":"ToneryMaximCalendarStockBot/1.0 (+https://tonerymaxim.sk/kalendare)",Accept:"text/html"},signal:controller.signal});
     if (!response.ok) throw new Error(url+": HTTP "+response.status);
-    const html=await response.text();
+    const bytes=await response.arrayBuffer();
+    const headerCharset=(response.headers.get("content-type")||"").match(/charset=([^; ]+)/i)?.[1];
+    const utf8=new TextDecoder("utf-8").decode(bytes);
+    const declared=headerCharset||utf8.match(/<meta[^>]+charset=["']?([^"' >]+)/i)?.[1]||utf8.match(/charset=["']?([^"' >]+)/i)?.[1];
+    const charset=declared&&/^(?:utf-8|windows-1250|iso-8859-2|windows-1252)$/i.test(declared)?declared:"windows-1250";
+    const html=new TextDecoder(charset).decode(bytes);
     if (html.length<1000 || html.length>3_000_000) throw new Error("Unexpected HTML size: "+url);
     return html;
   } finally { clearTimeout(timer); }
@@ -38,7 +43,6 @@ while(queue.length && visited.size<90) {
   const html=await fetchHtml(url);
   const flat=text(html);
   const matches=[...flat.matchAll(/Obj\.\s*č[ií]slo\s*:\s*([A-Z]{1,3}-[A-Z0-9-]+)/gi)];
-  if (url.includes("/minidiare/")) console.log(JSON.stringify({debugUrl:url,htmlBytes:html.length,flatBytes:flat.length,skuMentions:flat.match(/D-03-[1-4]-27/g)?.slice(0,8),objMentions:flat.match(/Obj.{0,35}/gi)?.slice(0,6),rawHtmlSample:html.slice(0,260)}));
   let prev=0;
   for(const m of matches) {
     const sku=m[1].toUpperCase();
