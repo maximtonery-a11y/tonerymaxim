@@ -5,10 +5,10 @@ const BASE = "https://www.pressgroup.sk";
 const decode = (s) => s.replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&[a-z]+;|&#\d+;/gi," ");
 const text = (html) => decode(html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi," ").replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/\s+/g," "));
 const status = (chunk) => {
-  const hits = [...chunk.matchAll(/(Skladom|Nedostupné|VYPREDANÉ)/gi)];
+  const hits = [...chunk.matchAll(/(Skladom|Nedostupné|VYPREDANÉ|V obmedzenom množstve)/gi)];
   if (!hits.length) return null;
   const word = hits.at(-1)[1].toLowerCase();
-  return word === "skladom";
+  return word === "skladom" || word === "v obmedzenom množstve";
 };
 async function fetchHtml(url) {
   const controller = new AbortController();
@@ -28,7 +28,7 @@ async function fetchHtml(url) {
 }
 const products=JSON.parse(await readFile(FILE,"utf8"));
 const known=new Set(products.map(p=>p.sku));
-const urls=new Set([BASE+"/eshop/minidiare/c-9.xhtml"]);
+const urls=new Set([BASE+"/eshop/minidiare/c-9.xhtml",BASE+"/eshop/nastenne-kalendare/c-1.xhtml",BASE+"/eshop/stolove-kalendare/c-2.xhtml",BASE+"/eshop/pracovne/c-12.xhtml",BASE+"/eshop/rocna-planovacia-mapa-2027/p-5676975.xhtml"]);
 const home=await fetchHtml(BASE+"/");
 for (const m of home.matchAll(/href=["']([^"'?#]+(?:\/c-\d+|\/cid\/\d+)\.xhtml)["']/gi)) {
   const url=new URL(m[1],BASE);
@@ -62,8 +62,8 @@ while(queue.length && visited.size<90) {
   }
  }catch(error){errors.push(String(error.message||error));}
 }
-if(found.size<Math.ceil(known.size*0.95)) {
- console.error(JSON.stringify({status:"FAILED_INCOMPLETE",found:found.size,total:known.size,pages:visited.size,errors},null,2));
+if(found.size!==known.size) {
+ console.error(JSON.stringify({status:"FAILED_INCOMPLETE",found:found.size,total:known.size,missing:[...known].filter(sku=>!found.has(sku)),pages:visited.size,errors},null,2));
  process.exit(1);
 }
 const stamp=new Date().toISOString();
