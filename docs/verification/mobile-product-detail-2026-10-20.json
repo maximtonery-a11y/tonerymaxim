@@ -1,0 +1,3177 @@
+{
+  "catalog_generated_at": "2026-10-20T05:07:05.833Z",
+  "catalog_total": 7898,
+  "browser": "153.0.8010.0",
+  "before": [
+    {
+      "width": 360,
+      "mobile": true,
+      "tested": 7898,
+      "affected": 487
+    },
+    {
+      "width": 393,
+      "mobile": true,
+      "tested": 7898,
+      "affected": 462
+    },
+    {
+      "width": 320,
+      "mobile": true,
+      "tested": 38,
+      "affected": 37
+    },
+    {
+      "width": 375,
+      "mobile": true,
+      "tested": 38,
+      "affected": 15
+    },
+    {
+      "width": 430,
+      "mobile": true,
+      "tested": 38,
+      "affected": 15
+    },
+    {
+      "width": 768,
+      "mobile": true,
+      "tested": 38,
+      "affected": 14
+    },
+    {
+      "width": 820,
+      "mobile": true,
+      "tested": 38,
+      "affected": 14
+    },
+    {
+      "width": 880,
+      "mobile": true,
+      "tested": 38,
+      "affected": 14
+    },
+    {
+      "width": 900,
+      "mobile": false,
+      "tested": 38,
+      "affected": 15
+    },
+    {
+      "width": 1024,
+      "mobile": false,
+      "tested": 38,
+      "affected": 15
+    },
+    {
+      "width": 1280,
+      "mobile": false,
+      "tested": 38,
+      "affected": 14
+    },
+    {
+      "width": 1440,
+      "mobile": false,
+      "tested": 38,
+      "affected": 15
+    },
+    {
+      "width": 1920,
+      "mobile": false,
+      "tested": 38,
+      "affected": 14
+    }
+  ],
+  "after": [
+    {
+      "width": 360,
+      "mobile": true,
+      "tested": 7898,
+      "affected": 0
+    },
+    {
+      "width": 393,
+      "mobile": true,
+      "tested": 7898,
+      "affected": 0
+    },
+    {
+      "width": 320,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 375,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 430,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 768,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 820,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 880,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 900,
+      "mobile": false,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 1024,
+      "mobile": false,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 1280,
+      "mobile": false,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 1440,
+      "mobile": false,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 1920,
+      "mobile": false,
+      "tested": 38,
+      "affected": 0
+    }
+  ],
+  "final_sticky_button_checks": [
+    {
+      "width": 320,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 375,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 430,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 768,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 820,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 880,
+      "mobile": true,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 900,
+      "mobile": false,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 1024,
+      "mobile": false,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 1280,
+      "mobile": false,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 1440,
+      "mobile": false,
+      "tested": 38,
+      "affected": 0
+    },
+    {
+      "width": 1920,
+      "mobile": false,
+      "tested": 38,
+      "affected": 0
+    }
+  ],
+  "built_application": {
+    "products": 16,
+    "widths": [
+      320,
+      393,
+      768,
+      1024,
+      1440
+    ],
+    "page_checks": 80,
+    "overflow": 0,
+    "functional_checks": [
+      "compatibility modal: 10 printer links",
+      "description modal open/close",
+      "image zoom open/close",
+      "quantity increment",
+      "add 2 Epson 604XL sets: exact SKU and price",
+      "mobile search shortcut"
+    ]
+  },
+  "affected_products_at_360px": [
+    {
+      "id": 52828,
+      "sku": "SET-CAN-CRG-040H-KOM-4PK",
+      "slug": "canon-crg-040h-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-040H CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52830,
+      "sku": "SET-CAN-CRG-045-KOM-4PK",
+      "slug": "canon-crg-045-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-045 CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52832,
+      "sku": "SET-CAN-CRG-045H-KOM-4PK",
+      "slug": "canon-crg-045h-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-045H CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52835,
+      "sku": "SET-CAN-CRG-046H-KOM-4PK",
+      "slug": "canon-crg-046h-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-046H CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52837,
+      "sku": "SET-CAN-CRG-054-KOM-4PK",
+      "slug": "canon-crg-054-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-054 CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52839,
+      "sku": "SET-CAN-CRG-054H-KOM-4PK",
+      "slug": "canon-crg-054h-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-054H CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52842,
+      "sku": "SET-CAN-CRG-055H-KOM-4PK",
+      "slug": "canon-crg-055h-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-055H CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52845,
+      "sku": "SET-CAN-CRG-064H-KOM-4PK",
+      "slug": "canon-crg-064h-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-064H CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52847,
+      "sku": "SET-CAN-CRG-067-KOM-4PK",
+      "slug": "canon-crg-067-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-067 CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52849,
+      "sku": "SET-CAN-CRG-067H-KOM-4PK",
+      "slug": "canon-crg-067h-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-067H CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52853,
+      "sku": "SET-CAN-CRG-075-KOM-4PK",
+      "slug": "canon-crg-075-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-075 CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52854,
+      "sku": "SET-CAN-CRG-075H-KOM-4PK",
+      "slug": "canon-crg-075h-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-075H CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52856,
+      "sku": "SET-CAN-CRG-716-KOM-4PK",
+      "slug": "canon-crg-716-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-716 CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52858,
+      "sku": "SET-CAN-CRG-718-KOM-4PK",
+      "slug": "canon-crg-718-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-718 CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52861,
+      "sku": "SET-CAN-CRG-729-KOM-4PK",
+      "slug": "canon-crg-729-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-729 CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52864,
+      "sku": "SET-CAN-GI-41-KOM-4PK",
+      "slug": "canon-gi-41-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Canon GI-41 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 52865,
+      "sku": "SET-CAN-GI-51-KOM-4PK",
+      "slug": "canon-gi-51-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Canon GI-51 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 52885,
+      "sku": "SET-CAN-PGI-1500XL-KOM-4PK",
+      "slug": "canon-pgi-1500xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Canon PGI-1500XL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 52887,
+      "sku": "SET-CAN-PGI-2500XL-KOM-4PK",
+      "slug": "canon-pgi-2500xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Canon PGI-2500XL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 52891,
+      "sku": "SET-CAN-PGI-530XL-CLI-531XL-KOM-5PK",
+      "slug": "canon-pgi-530xl-cli-531xl-bkcmyk-kompatibilna-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PGI-530XL/CLI-531XL BK+CMYK kompatibilná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 36482,
+      "sku": "30000159",
+      "slug": "canon-pgi-580-cli-581-multipack-kompatibilne-atramentove-naplne",
+      "name": "Canon PGI-580/CLI-581 Multipack kompatibilné atramentové náplne"
+    },
+    {
+      "id": 53121,
+      "sku": "SET-EPS-112-C13T06C64A-KOM-4PK",
+      "slug": "epson-112-c13t06c64a-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson 112 (C13T06C64A) CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53123,
+      "sku": "SET-EPS-113-C13T06B640-KOM-4PK",
+      "slug": "epson-113-c13t06b640-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson 113 (C13T06B640) CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53008,
+      "sku": "SET-EPS-26XL-KOM-5PK",
+      "slug": "epson-26xl-5-farebna-kompatibilna-sada-atramentovych-naplni-5-ks",
+      "name": "Epson 26XL 5-farebná kompatibilná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 53014,
+      "sku": "SET-EPS-405XL-KOM-4PK",
+      "slug": "epson-405xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson 405XL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53015,
+      "sku": "SET-EPS-407XL-KOM-4PK",
+      "slug": "epson-407xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson 407XL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53016,
+      "sku": "SET-EPS-408L-KOM-4PK",
+      "slug": "epson-408l-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson 408L CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53017,
+      "sku": "SET-EPS-502XL-KOM-4PK",
+      "slug": "epson-502xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson 502XL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53019,
+      "sku": "SET-EPS-603XL-KOM-4PK",
+      "slug": "epson-603xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson 603XL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53020,
+      "sku": "SET-EPS-604XL-KOM-4PK",
+      "slug": "epson-604xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson 604XL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53021,
+      "sku": "SET-EPS-664-KOM-4PK",
+      "slug": "epson-664-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson 664 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53026,
+      "sku": "SET-EPS-T01D-KOM-4PK",
+      "slug": "epson-t01d-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T01D CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 36682,
+      "sku": "672",
+      "slug": "epson-t03p1-110-111kompatibilna-atramentova-napln",
+      "name": "Epson T03P1 (110/111)kompatibilná atramentová náplň"
+    },
+    {
+      "id": 53027,
+      "sku": "SET-EPS-T0445-KOM-4PK",
+      "slug": "epson-t0445-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T0445 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53028,
+      "sku": "SET-EPS-T0487-KOM-6PK",
+      "slug": "epson-t0487-6-farebna-kompatibilna-sada-atramentovych-naplni-6-ks",
+      "name": "Epson T0487 6-farebná kompatibilná sada atramentových náplní (6 ks)"
+    },
+    {
+      "id": 53029,
+      "sku": "SET-EPS-T04A-KOM-4PK",
+      "slug": "epson-t04a-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T04A CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53030,
+      "sku": "SET-EPS-T04B-KOM-4PK",
+      "slug": "epson-t04b-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T04B CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53031,
+      "sku": "SET-EPS-T0556-KOM-4PK",
+      "slug": "epson-t0556-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T0556 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53032,
+      "sku": "SET-EPS-T05A-KOM-4PK",
+      "slug": "epson-t05a-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T05A CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53033,
+      "sku": "SET-EPS-T0615-KOM-4PK",
+      "slug": "epson-t0615-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T0615 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53034,
+      "sku": "SET-EPS-T0807-KOM-6PK",
+      "slug": "epson-t0807-6-farebna-kompatibilna-sada-atramentovych-naplni-6-ks",
+      "name": "Epson T0807 6-farebná kompatibilná sada atramentových náplní (6 ks)"
+    },
+    {
+      "id": 53036,
+      "sku": "SET-EPS-T1006-KOM-4PK",
+      "slug": "epson-t1006-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T1006 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53037,
+      "sku": "SET-EPS-T11C-KOM-4PK",
+      "slug": "epson-t11c-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T11C CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53038,
+      "sku": "SET-EPS-T11D-KOM-4PK",
+      "slug": "epson-t11d-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T11D CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53039,
+      "sku": "SET-EPS-T11N-KOM-4PK",
+      "slug": "epson-t11n-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T11N CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53040,
+      "sku": "SET-EPS-T11P-KOM-4PK",
+      "slug": "epson-t11p-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T11P CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53041,
+      "sku": "SET-EPS-T1306-KOM-4PK",
+      "slug": "epson-t1306-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T1306 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53005,
+      "sku": "SET-EPS-T1636-16XL-KOM-4PK",
+      "slug": "epson-t1636-16xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T1636 (16XL) CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53006,
+      "sku": "SET-EPS-T1816-18XL-KOM-4PK",
+      "slug": "epson-t1816-18xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T1816 (18XL) CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53007,
+      "sku": "SET-EPS-T2438-24XL-KOM-6PK",
+      "slug": "epson-t2438-24xl-6-farebna-kompatibilna-sada-atramentovych-naplni-6-ks",
+      "name": "Epson T2438 (24XL) 6-farebná kompatibilná sada atramentových náplní (6 ks)"
+    },
+    {
+      "id": 53009,
+      "sku": "SET-EPS-T2715-27XL-KOM-4PK",
+      "slug": "epson-t2715-27xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T2715 (27XL) CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53010,
+      "sku": "SET-EPS-T2996-29XL-KOM-4PK",
+      "slug": "epson-t2996-29xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T2996 (29XL) CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53011,
+      "sku": "SET-EPS-T3357-33XL-KOM-5PK",
+      "slug": "epson-t3357-33xl-5-farebna-kompatibilna-sada-atramentovych-naplni-5-ks",
+      "name": "Epson T3357 (33XL) 5-farebná kompatibilná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 53012,
+      "sku": "SET-EPS-T3476-34XL-KOM-4PK",
+      "slug": "epson-t3476-34xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T3476 (34XL) CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53013,
+      "sku": "SET-EPS-T3596-35XL-KOM-4PK",
+      "slug": "epson-t3596-35xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T3596 (35XL) CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53043,
+      "sku": "SET-EPS-T378XL-KOM-6PK",
+      "slug": "epson-t378xl-6-farebna-kompatibilna-sada-atramentovych-naplni-6-ks",
+      "name": "Epson T378XL 6-farebná kompatibilná sada atramentových náplní (6 ks)"
+    },
+    {
+      "id": 53044,
+      "sku": "SET-EPS-T40D-KOM-4PK",
+      "slug": "epson-t40d-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T40D CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53045,
+      "sku": "SET-EPS-T701XXL-KOM-4PK",
+      "slug": "epson-t701xxl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T701XXL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53046,
+      "sku": "SET-EPS-T789XXL-KOM-4PK",
+      "slug": "epson-t789xxl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T789XXL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53047,
+      "sku": "SET-EPS-T908XL-KOM-4PK",
+      "slug": "epson-t908xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T908XL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53048,
+      "sku": "SET-EPS-T944-KOM-4PK",
+      "slug": "epson-t944-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T944 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53049,
+      "sku": "SET-EPS-T945-KOM-4PK",
+      "slug": "epson-t945-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T945 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53050,
+      "sku": "SET-EPS-T973-KOM-4PK",
+      "slug": "epson-t973-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T973 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 52656,
+      "sku": "SET-HP-117A-KOM-CIP",
+      "slug": "hp-117a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 117A / W2070-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52643,
+      "sku": "SET-HP-CB540A-CB541A-CB542A-CB543A-KOM",
+      "slug": "hp-cb540a-cb541a-cb542a-cb543a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 125A / CB540-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52645,
+      "sku": "SET-HP-126A-KOM",
+      "slug": "hp-126a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 126A / CE310-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 53649,
+      "sku": "SET-HP-128A-KOM",
+      "slug": "hp-ce320a-ce321a-ce322a-ce323a-kompatibilna-sada-4-ks",
+      "name": "HP 128A / CE320-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 53685,
+      "sku": "SET-HP-CF350A-CF351A-CF352A-CF353A-KOM",
+      "slug": "hp-130a-cf350-1-2-3a-cmyk-kompatibilna-sada-4-ks",
+      "name": "HP 130A / CF350-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 53687,
+      "sku": "SET-HP-CF210X-CF211A-CF212A-CF213A-KOM",
+      "slug": "hp-131x-131a-cf210x-cf211-2-3a-cmyk-kompatibilna-sada-4-ks",
+      "name": "HP 131X/131A / CF210X, CF211-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 53689,
+      "sku": "SET-HP-CF400A-CF401A-CF402A-CF403A-KOM",
+      "slug": "hp-201a-cf400-1-2-3a-cmyk-kompatibilna-sada-4-ks",
+      "name": "HP 201A / CF400-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 53690,
+      "sku": "SET-HP-CF400X-CF401X-CF402X-CF403X-KOM",
+      "slug": "hp-201x-cf400-1-2-3x-cmyk-kompatibilna-sada-4-ks",
+      "name": "HP 201X / CF400-1-2-3X CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52651,
+      "sku": "SET-HP-203A-KOM",
+      "slug": "hp-203a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 203A / CF540-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52650,
+      "sku": "SET-HP-203X-KOM",
+      "slug": "hp-203x-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 203X / CF540-1-2-3X CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52649,
+      "sku": "SET-HP-205A-KOM",
+      "slug": "hp-205a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 205A / CF530-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52652,
+      "sku": "SET-HP-207A-KOM-CIP",
+      "slug": "hp-207a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 207A / W2210-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52654,
+      "sku": "SET-HP-207X-KOM-CIP",
+      "slug": "hp-207x-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 207X / W2210-1-2-3X CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52659,
+      "sku": "SET-HP-212X-KOM-CIP",
+      "slug": "hp-212x-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 212X / W2120-1-2-3X CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52664,
+      "sku": "SET-HP-213A-KOM-CIP",
+      "slug": "hp-213a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 213A / W2130-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52663,
+      "sku": "SET-HP-213X-KOM-CIP",
+      "slug": "hp-213x-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 213X / W2130-1-2-3X CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52655,
+      "sku": "SET-HP-216A-KOM-CIP",
+      "slug": "hp-216a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 216A / W2410-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52658,
+      "sku": "SET-HP-220A-KOM-CIP",
+      "slug": "hp-220a-cmyk-kompatibilna-sada-tonerov-nefunguje-v-hp",
+      "name": "HP 220A / W2200-1-2-3A CMYK – kompatibilná sada nefunguje v HP+ (4 ks)"
+    },
+    {
+      "id": 52644,
+      "sku": "SET-HP-CC530A-CC531A-CC532A-CC533A-KOM",
+      "slug": "hp-cc530a-cc531a-cc532a-cc533a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 304A / CC530-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 53650,
+      "sku": "SET-HP-305X-KOM",
+      "slug": "hp-ce410x-ce411a-ce412a-ce413a-kompatibilna-sada-4-ks",
+      "name": "HP 305X/305A / CE410X, CE411-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 53651,
+      "sku": "SET-HP-312X-KOM",
+      "slug": "hp-cf380x-cf381a-cf382a-cf383a-kompatibilna-sada-4-ks",
+      "name": "HP 312X/312A / CF380X, CF381-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52789,
+      "sku": "SET-HP-363-6-KOM",
+      "slug": "hp-363-363xl-kompletna-6-farebna-kompatibilna-sada-atramentovych-naplni",
+      "name": "HP 363/363XL / C8719EE, C8771-2-3-4-5EE – kompatibilná sada 6-farebná (6 ks)"
+    },
+    {
+      "id": 36740,
+      "sku": "10000121",
+      "slug": "hp-364xl-multipack-kompatibilne-atramentove-naplne",
+      "name": "HP 364XL / CB321EE, CB323EE, CB324EE, CB325EE CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52646,
+      "sku": "SET-HP-410A-KOM",
+      "slug": "hp-410a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 410A / CF410-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52647,
+      "sku": "SET-HP-410X-KOM",
+      "slug": "hp-410x-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 410X / CF410-1-2-3X CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52657,
+      "sku": "SET-HP-415A-KOM-CIP",
+      "slug": "hp-415a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 415A / W2030-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52653,
+      "sku": "SET-HP-415X-KOM-CIP",
+      "slug": "hp-415x-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 415X / W2030-1-2-3X CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 53698,
+      "sku": "SET-HP-CE250X-CE251A-CE252A-CE253A-KOM",
+      "slug": "hp-504x-504a-ce250x-ce251-2-3a-cmyk-kompatibilna-sada-4-ks",
+      "name": "HP 504X/504A / CE250X, CE251-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 53701,
+      "sku": "SET-HP-CE400X-CE401A-CE402A-CE403A-KOM",
+      "slug": "hp-507x-507a-ce400x-ce401-2-3a-cmyk-kompatibilna-sada-4-ks",
+      "name": "HP 507X/507A / CE400X, CE401-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52648,
+      "sku": "SET-HP-508X-KOM",
+      "slug": "hp-508x-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 508X / CF360-1-2-3X CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52641,
+      "sku": "SET-HP-655-KOM",
+      "slug": "hp-655-cmyk-kompatibilna-sada-atramentovych-naplni",
+      "name": "HP 655 / CZ109AE, CZ110-1-2AE CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52642,
+      "sku": "SET-HP-711-KOM",
+      "slug": "hp-711-cmyk-kompatibilna-sada-atramentovych-naplni",
+      "name": "HP 711 / CZ130-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52638,
+      "sku": "SET-HP-88XL-KOM",
+      "slug": "hp-88xl-cmyk-kompatibilna-sada-atramentovych-naplni",
+      "name": "HP 88XL / C9391-2-3-6AE CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52640,
+      "sku": "SET-HP-920XL-KOM",
+      "slug": "hp-920xl-cmyk-kompatibilna-sada-atramentovych-naplni",
+      "name": "HP 920XL / CD972-3-4-5AE CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52783,
+      "sku": "SET-HP-924E-KOM",
+      "slug": "hp-924e-cmyk-kompatibilna-sada-atramentovych-naplni-nefunguje-v-hp",
+      "name": "HP 924E / 4K0U7-8-9NE, 4K0V0NE CMYK – kompatibilná sada nefunguje v HP+ (4 ks)"
+    },
+    {
+      "id": 52785,
+      "sku": "SET-HP-932XL-933XL-KOM",
+      "slug": "hp-932xl-933xl-cmyk-kompatibilna-sada-atramentovych-naplni",
+      "name": "HP 932XL/933XL / CN053-4-5-6AE CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52639,
+      "sku": "SET-HP-940XL-KOM",
+      "slug": "hp-940xl-cmyk-kompatibilna-sada-atramentovych-naplni",
+      "name": "HP 940XL / C4906-7-8-9AE CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 53647,
+      "sku": "SET-HP-950XL-951XL-KOM",
+      "slug": "hp-cn045ae-cn046ae-cn047ae-cn048ae-kompatibilna-sada-4-ks",
+      "name": "HP 950XL/951XL / CN045-6-7-8AE CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52851,
+      "sku": "SET-CAN-CRG-069-KOM-4PK",
+      "slug": "canon-crg-069-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-069 CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52852,
+      "sku": "SET-CAN-CRG-069H-KOM-4PK",
+      "slug": "canon-crg-069h-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon CRG-069H CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52892,
+      "sku": "SET-CAN-T12-KOM-4PK",
+      "slug": "canon-t12-cmyk-kompatibilna-sada-tonerov-4-ks",
+      "name": "Canon T12 CMYK kompatibilná sada tonerov (4 ks)"
+    },
+    {
+      "id": 53018,
+      "sku": "SET-EPS-503XL-KOM-4PK",
+      "slug": "epson-503xl-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson 503XL CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53025,
+      "sku": "SET-EPS-T01C-KOM-4PK",
+      "slug": "epson-t01c-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T01C CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53042,
+      "sku": "SET-EPS-T202XL-KOM-5PK",
+      "slug": "epson-t202xl-5-farebna-kompatibilna-sada-atramentovych-naplni-5-ks",
+      "name": "Epson T202XL 5-farebná kompatibilná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 53051,
+      "sku": "SET-EPS-T974-KOM-4PK",
+      "slug": "epson-t974-cmyk-kompatibilna-sada-atramentovych-naplni-4-ks",
+      "name": "Epson T974 CMYK kompatibilná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 52661,
+      "sku": "SET-HP-219A-KOM-CIP",
+      "slug": "hp-219a-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 219A / W2190-1-2-3A CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52662,
+      "sku": "SET-HP-219X-KOM-CIP",
+      "slug": "hp-219x-cmyk-kompatibilna-sada-tonerov",
+      "name": "HP 219X / W2190-1-2-3X CMYK – kompatibilná sada (4 ks)"
+    },
+    {
+      "id": 52660,
+      "sku": "SET-HP-220X-KOM-CIP",
+      "slug": "hp-220x-cmyk-kompatibilna-sada-tonerov-nefunguje-v-hp",
+      "name": "HP 220X / W2200-1-2-3X CMYK – kompatibilná sada nefunguje v HP+ (4 ks)"
+    },
+    {
+      "id": 52782,
+      "sku": "SET-HP-937E-KOM",
+      "slug": "hp-937e-cmyk-kompatibilna-sada-atramentovych-naplni-nefunguje-v-hp",
+      "name": "HP 937E / 4S6W6-7-8-9NE CMYK – kompatibilná sada nefunguje v HP+ (4 ks)"
+    },
+    {
+      "id": 51430,
+      "sku": "058013",
+      "slug": "brother-original-bt-d100-c-m-y-pack-dcp-t230-t430-t530-t730-mfc-t930-3x-5000-str",
+      "name": "BROTHER Originál BT-D100 C/M/Y Pack DCP-T230/T430/T530/T730, MFC-T930 (3x 5000 str.)"
+    },
+    {
+      "id": 53250,
+      "sku": "059984",
+      "slug": "brother-original-lc-528-black-mfc-j5010dw-j5110dw-j6975dw-j6977dw-6000-str",
+      "name": "BROTHER Originál LC-528 Black MFC-J5010DW/J5110DW/J6975DW/J6977DW (6000 str.)"
+    },
+    {
+      "id": 53251,
+      "sku": "059985",
+      "slug": "brother-original-lc-528-cyan-mfc-j5010dw-j5110dw-j6975dw-j6977dw-5000-str",
+      "name": "BROTHER Originál LC-528 Cyan MFC-J5010DW/J5110DW/J6975DW/J6977DW (5000 str.)"
+    },
+    {
+      "id": 53252,
+      "sku": "059986",
+      "slug": "brother-original-lc-528-magenta-mfc-j5010dw-j5110dw-j6975dw-j6977dw-5000-str",
+      "name": "BROTHER Originál LC-528 Magenta MFC-J5010DW/J5110DW/J6975DW/J6977DW (5000 str.)"
+    },
+    {
+      "id": 53253,
+      "sku": "059987",
+      "slug": "brother-original-lc-528-yellow-mfc-j5010dw-j5110dw-j6975dw-j6977dw-5000-str",
+      "name": "BROTHER Originál LC-528 Yellow MFC-J5010DW/J5110DW/J6975DW/J6977DW (5000 str.)"
+    },
+    {
+      "id": 37044,
+      "sku": "022818",
+      "slug": "canon-cli-42-bk-gy-lgy-c-m-y-pc-pm-pack-originalne-atramentove-naplne",
+      "name": "Canon CLI-42 BK/GY/LGY/C/M/Y/PC/PM PACK originálne atramentové náplne"
+    },
+    {
+      "id": 51573,
+      "sku": "057578",
+      "slug": "canon-original-crg-072-black-i-sensyns-mf272dw-275dw-287dw-1400-str",
+      "name": "CANON originál CRG-072 black i-SENSYNS MF272dw/275dw/287dw (1400 str.)"
+    },
+    {
+      "id": 51575,
+      "sku": "057579",
+      "slug": "canon-original-crg-072h-black-i-sensyns-mf272dw-275dw-287dw-4100-str",
+      "name": "CANON originál CRG-072H black i-SENSYNS MF272dw/275dw/287dw (4100 str.)"
+    },
+    {
+      "id": 51544,
+      "sku": "054974",
+      "slug": "canon-original-toner-canon-c-exv64bk-black-irac3922i-ac3926i-ac3930i-ac3935i-38000-str",
+      "name": "CANON originál toner CANON C-EXV64BK black iRAC3922i/AC3926i/AC3930i/AC3935i (38000 str.)"
+    },
+    {
+      "id": 51546,
+      "sku": "054975",
+      "slug": "canon-original-toner-canon-c-exv64c-cyan-irac3922i-ac3926i-ac3930i-ac3935i-25500-str",
+      "name": "CANON originál toner CANON C-EXV64C cyan iRAC3922i/AC3926i/AC3930i/AC3935i (25500 str.)"
+    },
+    {
+      "id": 51548,
+      "sku": "054976",
+      "slug": "canon-original-toner-canon-c-exv64m-magenta-irac3922i-ac3926i-ac3930i-ac3935i-25500-str",
+      "name": "CANON originál toner CANON C-EXV64M magenta iRAC3922i/AC3926i/AC3930i/AC3935i (25500 str.)"
+    },
+    {
+      "id": 37173,
+      "sku": "055286",
+      "slug": "canon-pgi-1500-multipack-originalne-atramentove-naplne",
+      "name": "Canon PGI-1500 Multipack originálne atramentové náplne"
+    },
+    {
+      "id": 37174,
+      "sku": "055287",
+      "slug": "canon-pgi-1500-xl-multipack-originalne-atramentove-naplne",
+      "name": "Canon PGI-1500 XL Multipack originálne atramentové náplne"
+    },
+    {
+      "id": 37167,
+      "sku": "055289",
+      "slug": "canon-pgi-2500-xl-cmyk-originalne-atramentove-naplne",
+      "name": "Canon PGI-2500 XL CMYK originálne atramentové náplne"
+    },
+    {
+      "id": 37046,
+      "sku": "024900",
+      "slug": "canon-pgi-29-mbk-pbk-dgy-gy-lgy-pack-originalne-atramentove-naplne",
+      "name": "Canon PGI-29 MBK/PBK/DGY/GY/LGY PACK originálne atramentové náplne"
+    },
+    {
+      "id": 37186,
+      "sku": "042441",
+      "slug": "epson-202-multipack-originalne-atramentove-naplne",
+      "name": "Epson 202 Multipack originálne atramentové náplne"
+    },
+    {
+      "id": 37187,
+      "sku": "042447",
+      "slug": "epson-202-xl-multipack-originalne-atramentove-naplne",
+      "name": "Epson 202 XL Multipack originálne atramentové náplne"
+    },
+    {
+      "id": 39818,
+      "sku": "021992",
+      "slug": "epson-c13t26164010-no-26-multipack-cmyk-originalne-atramentove-naplne",
+      "name": "Epson C13T26164010 (no. 26) Multipack CMYK originálne atramentové náplne"
+    },
+    {
+      "id": 39819,
+      "sku": "021993",
+      "slug": "epson-c13t26364010-no-26xl-multipack-cmyk-originalne-atramentove-naplne",
+      "name": "Epson C13T26364010 (no. 26XL) Multipack CMYK originálne atramentové náplne"
+    },
+    {
+      "id": 50759,
+      "sku": "023942",
+      "slug": "epson-original-8750-fx850-fx870-fx880-lx300-lx400-lx850-lx350-black",
+      "name": "EPSON originál  8750 FX850/FX870/FX880/LX300/LX400/LX850/LX350 black"
+    },
+    {
+      "id": 50761,
+      "sku": "024589",
+      "slug": "epson-original-7753-lq350-lq300-lq400-lq570-lq580-lq800-lq850-lq870-black",
+      "name": "EPSON originál 7753/LQ350/LQ300/LQ400/LQ570/LQ580/LQ800/LQ850/LQ870 black"
+    },
+    {
+      "id": 40342,
+      "sku": "025844",
+      "slug": "hp-cf371am-ce321ace322ace323a-troj-pack-cmy-originalne-tonery",
+      "name": "HP 128A / CF371AM CMY – originálna sada (3 ks)"
+    },
+    {
+      "id": 38156,
+      "sku": "025845",
+      "slug": "hp-cf370am-ce411ace412ace413a-troj-pack-cmy-originalne-tonery",
+      "name": "HP 305A / CF370AM CMY – originálna sada (3 ks)"
+    },
+    {
+      "id": 38176,
+      "sku": "033952",
+      "slug": "hp-cf440am-cf381acf382acf383a-troj-pack-cmy-originalne-tonery",
+      "name": "HP 312A / CF440AM CMY – originálna sada (3 ks)"
+    },
+    {
+      "id": 51274,
+      "sku": "051884",
+      "slug": "hp-original-6zc74ae-4-pack-no-912-cierna-azurova-purpurova-zlta-320-stran",
+      "name": "HP 912 / 6ZC74AE CMYK – originálna sada (4 ks)"
+    },
+    {
+      "id": 37445,
+      "sku": "056745",
+      "slug": "hp-6c3z1ne-no-924-cmyk-originalne-atramentove-naplne",
+      "name": "HP 924 / 6C3Z1NE CMYK – originálna sada (4 ks)"
+    },
+    {
+      "id": 38145,
+      "sku": "013551",
+      "slug": "hp-ce314a-originalny-opticky-valec",
+      "name": "HP CE314A (126A) CMYK originálny optický valec"
+    },
+    {
+      "id": 44181,
+      "sku": "043761",
+      "slug": "hp-l0h25a-maintenance-kit-originalna-udrzbova-sada",
+      "name": "HP L0H25A Maintenance Kit originálna údržbová sada bez farby"
+    },
+    {
+      "id": 40291,
+      "sku": "001695",
+      "slug": "hp-q3964a-122a-originalny-opticky-valec",
+      "name": "HP Q3964A (122A) CMYK originálny optický valec"
+    },
+    {
+      "id": 38210,
+      "sku": "050004",
+      "slug": "hp-w1120a-originalny-opticky-valec",
+      "name": "HP W1120A CMYK originálny optický valec"
+    },
+    {
+      "id": 50881,
+      "sku": "003271",
+      "slug": "original-paska-star-sp-200-212-298-500-512-2000-black",
+      "name": "Original páska STAR SP 200/212/298/500/512/2000 black"
+    },
+    {
+      "id": 51189,
+      "sku": "054584",
+      "slug": "sharp-original-odp-nadobka-bp-hb700-bp-50c26-50c31-50c36-50c45-50c55-50c65-50000-str",
+      "name": "SHARP original odp. nádobka BP-HB700 BP-50C26/50C31/50C36/50C45/50C55/50C65 (50000 str.)"
+    },
+    {
+      "id": 51595,
+      "sku": "054585",
+      "slug": "sharp-original-toner-bp-gt70ba-black-bp-50c26-50c31-50c36-50c45-50c55-50c65-40000-str",
+      "name": "SHARP originál toner BP-GT70BA Black BP-50C26/50C31/50C36/50C45/50C55/50C65 (40000 str.)"
+    },
+    {
+      "id": 51597,
+      "sku": "054586",
+      "slug": "sharp-original-toner-bp-gt70ca-cyan-bp-50c26-50c31-50c36-50c45-50c55-50c65-24000-str",
+      "name": "SHARP originál toner BP-GT70CA Cyan BP-50C26/50C31/50C36/50C45/50C55/50C65 (24000 str.)"
+    },
+    {
+      "id": 51599,
+      "sku": "054587",
+      "slug": "sharp-original-toner-bp-gt70ma-magenta-bp-50c26-50c31-50c36-50c45-50c55-50c65-24000-str",
+      "name": "SHARP originál toner BP-GT70MA Magenta BP-50C26/50C31/50C36/50C45/50C55/50C65 (24000 str.)"
+    },
+    {
+      "id": 51601,
+      "sku": "054588",
+      "slug": "sharp-original-toner-bp-gt70ya-yellow-bp-50c26-50c31-50c36-50c45-50c55-50c65-24000-str",
+      "name": "SHARP originál toner BP-GT70YA Yellow BP-50C26/50C31/50C36/50C45/50C55/50C65 (24000 str.)"
+    },
+    {
+      "id": 51114,
+      "sku": "031899",
+      "slug": "sharp-original-toner-mx-237gt-ar-6020-6023-6026-6031",
+      "name": "SHARP originál toner MX-237GT AR-6020/6023/6026/6031"
+    },
+    {
+      "id": 51180,
+      "sku": "043456",
+      "slug": "sharp-original-toner-mx-61gtbb-black-mx-3050n-3060n-3070n-3550n-3560n-3570n-20000-str",
+      "name": "SHARP originál toner MX-61GTBB Black MX-3050N/3060N/3070N/3550N/3560N/3570N (20000 str.)"
+    },
+    {
+      "id": 51182,
+      "sku": "043457",
+      "slug": "sharp-original-toner-mx-61gtcb-cyan-mx-3050n-3060n-3070n-3550n-3560n-3570n-12000-str",
+      "name": "SHARP originál toner MX-61GTCB Cyan MX-3050N/3060N/3070N/3550N/3560N/3570N (12000 str.)"
+    },
+    {
+      "id": 51184,
+      "sku": "043458",
+      "slug": "sharp-original-toner-mx-61gtmb-magenta-mx-3050n-3060n-3070n-3550n-3560n-3570n-12000-str",
+      "name": "SHARP originál toner MX-61GTMB Magenta MX-3050N/3060N/3070N/3550N/3560N/3570N (12000 str.)"
+    },
+    {
+      "id": 51186,
+      "sku": "043459",
+      "slug": "sharp-original-toner-mx-61gtyb-yellow-mx-3050n-3060n-3070n-3550n-3560n-3570n-12000-str",
+      "name": "SHARP originál toner MX-61GTYB Yellow MX-3050N/3060N/3070N/3550N/3560N/3570N (12000 str.)"
+    },
+    {
+      "id": 52831,
+      "sku": "SET-CAN-CRG-045-REN-4PK",
+      "slug": "canon-crg-045-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-045 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52833,
+      "sku": "SET-CAN-CRG-045H-REN-4PK",
+      "slug": "canon-crg-045h-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-045H CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52834,
+      "sku": "SET-CAN-CRG-046-REN-4PK",
+      "slug": "canon-crg-046-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-046 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52836,
+      "sku": "SET-CAN-CRG-046H-REN-4PK",
+      "slug": "canon-crg-046h-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-046H CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52841,
+      "sku": "SET-CAN-CRG-055-REN-4PK",
+      "slug": "canon-crg-055-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-055 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52843,
+      "sku": "SET-CAN-CRG-055H-REN-4PK",
+      "slug": "canon-crg-055h-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-055H CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52848,
+      "sku": "SET-CAN-CRG-067-REN-4PK",
+      "slug": "canon-crg-067-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-067 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52855,
+      "sku": "SET-CAN-CRG-711-REN-4PK",
+      "slug": "canon-crg-711-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-711 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52857,
+      "sku": "SET-CAN-CRG-716-REN-4PK",
+      "slug": "canon-crg-716-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-716 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52859,
+      "sku": "SET-CAN-CRG-718-REN-4PK",
+      "slug": "canon-crg-718-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-718 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52862,
+      "sku": "SET-CAN-CRG-729-REN-4PK",
+      "slug": "canon-crg-729-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-729 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52863,
+      "sku": "SET-CAN-CRG-732-REN-4PK",
+      "slug": "canon-crg-732-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-732 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52868,
+      "sku": "SET-CAN-PFI-102-REN-6PK",
+      "slug": "canon-pfi-102-bkcmyk-renovovana-sada-atramentovych-naplni-6-ks",
+      "name": "Canon PFI-102 BK+CMYK renovovaná sada atramentových náplní (6 ks)"
+    },
+    {
+      "id": 52870,
+      "sku": "SET-CAN-PFI-107-REN-5PK",
+      "slug": "canon-pfi-107-bkcmyk-renovovana-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PFI-107 BK+CMYK renovovaná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 52871,
+      "sku": "SET-CAN-PFI-120-REN-5PK",
+      "slug": "canon-pfi-120-bkcmyk-renovovana-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PFI-120 BK+CMYK renovovaná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 52886,
+      "sku": "SET-CAN-PGI-1500XL-REN-4PK",
+      "slug": "canon-pgi-1500xl-cmyk-renovovana-sada-atramentovych-naplni-4-ks",
+      "name": "Canon PGI-1500XL CMYK renovovaná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 52888,
+      "sku": "SET-CAN-PGI-2500XL-REN-4PK",
+      "slug": "canon-pgi-2500xl-cmyk-renovovana-sada-atramentovych-naplni-4-ks",
+      "name": "Canon PGI-2500XL CMYK renovovaná sada atramentových náplní (4 ks)"
+    },
+    {
+      "id": 53022,
+      "sku": "SET-EPS-ACULASER-C1600-CX16-REN-4PK",
+      "slug": "epson-aculaser-c1600cx16-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Epson AcuLaser C1600,CX16 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 53640,
+      "sku": "SET-HP-10XL-REN-PREMIUM",
+      "slug": "hp-c4844a-c4841a-c4843a-c4842a-renovovana-sada-4-ks",
+      "name": "HP 10XL/10 / C4841-2-3-4A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52686,
+      "sku": "SET-HP-117A-REN-CIP",
+      "slug": "hp-117a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 117A / W2070-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52696,
+      "sku": "SET-HP-124A-REN",
+      "slug": "hp-124a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 124A / Q6000-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52674,
+      "sku": "SET-HP-125A-REN",
+      "slug": "hp-125a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 125A / CB540-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52677,
+      "sku": "SET-HP-126A-REN",
+      "slug": "hp-126a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 126A / CE310-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52668,
+      "sku": "SET-HP-130A-REN",
+      "slug": "hp-130a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 130A / CF350-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52681,
+      "sku": "SET-HP-131A-REN",
+      "slug": "hp-131a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 131A / CF210-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 53688,
+      "sku": "SET-HP-CF210X-CF211A-CF212A-CF213A-REN",
+      "slug": "hp-131x-131a-cf210x-cf211-2-3a-cmyk-renovovana-sada-patent-free-4-ks",
+      "name": "HP 131X/131A / CF210X, CF211-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52687,
+      "sku": "SET-HP-201A-REN",
+      "slug": "hp-201a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 201A / CF400-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52671,
+      "sku": "SET-HP-201X-REN",
+      "slug": "hp-201x-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 201X / CF400-1-2-3X CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52693,
+      "sku": "SET-HP-205A-REN",
+      "slug": "hp-205a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 205A / CF530-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52690,
+      "sku": "SET-HP-207A-REN-CIP",
+      "slug": "hp-207a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 207A / W2210-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52701,
+      "sku": "SET-HP-212A-REN-CIP",
+      "slug": "hp-212a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 212A / W2120-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52702,
+      "sku": "SET-HP-212X-REN-CIP",
+      "slug": "hp-212x-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 212X / W2120-1-2-3X CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52692,
+      "sku": "SET-HP-216A-REN-CIP",
+      "slug": "hp-216a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 216A / W2410-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52700,
+      "sku": "SET-HP-219A-REN-CIP",
+      "slug": "hp-219a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 219A / W2190-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52721,
+      "sku": "SET-HP-219X-REN-CIP",
+      "slug": "hp-219x-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 219X / W2190-1-2-3X CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52665,
+      "sku": "SET-HP-304A-REN",
+      "slug": "hp-304a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 304A / CC530-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52680,
+      "sku": "SET-HP-305A-REN",
+      "slug": "hp-305a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 305A / CE410-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 53694,
+      "sku": "SET-HP-CE410X-CE411A-CE412A-CE413A-REN",
+      "slug": "hp-305x-305a-ce410x-ce411-2-3a-cmyk-renovovana-sada-patent-free-4-ks",
+      "name": "HP 305X/305A / CE410X, CE411-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52682,
+      "sku": "SET-HP-307A-REN",
+      "slug": "hp-307a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 307A / CE740-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52697,
+      "sku": "SET-HP-Q2670A-Q2671A-Q2672A-Q2673A-REN",
+      "slug": "hp-q2670a-q2671a-q2672a-q2673a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 308A/309A / Q2670-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52669,
+      "sku": "SET-HP-312A-REN",
+      "slug": "hp-312a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 312A / CF380-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 53696,
+      "sku": "SET-HP-CF380X-CF381A-CF382A-CF383A-REN",
+      "slug": "hp-312x-312a-cf380x-cf381-2-3a-cmyk-renovovana-sada-patent-free-4-ks",
+      "name": "HP 312X/312A / CF380X, CF381-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 53639,
+      "sku": "SET-HP-364XL-REN-PREMIUM",
+      "slug": "hp-cb321ee-cb323ee-cb324ee-cb325ee-renovovana-sada-4-ks",
+      "name": "HP 364XL / CB321EE, CB323EE, CB324EE, CB325EE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 53641,
+      "sku": "SET-HP-40-REN-PREMIUM",
+      "slug": "hp-51640ae-51640ce-51640me-51640ye-renovovana-sada-4-ks",
+      "name": "HP 40 / 51640AE, 51640CE, 51640ME, 51640YE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52672,
+      "sku": "SET-HP-410A-REN",
+      "slug": "hp-410a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 410A / CF410-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52673,
+      "sku": "SET-HP-410X-REN",
+      "slug": "hp-410x-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 410X / CF410-1-2-3X CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52688,
+      "sku": "SET-HP-415A-REN-CIP",
+      "slug": "hp-415a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 415A / W2030-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52689,
+      "sku": "SET-HP-415X-REN-CIP",
+      "slug": "hp-415x-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 415X / W2030-1-2-3X CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52698,
+      "sku": "SET-HP-Q6470A-Q6471A-Q6472A-Q6473A-REN",
+      "slug": "hp-q6470a-q6471a-q6472a-q6473a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 501A/502A / Q6470-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52675,
+      "sku": "SET-HP-504A-REN",
+      "slug": "hp-504a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 504A / CE250-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 53699,
+      "sku": "SET-HP-CE250X-CE251A-CE252A-CE253A-REN",
+      "slug": "hp-504x-504a-ce250x-ce251-2-3a-cmyk-renovovana-sada-patent-free-4-ks",
+      "name": "HP 504X/504A / CE250X, CE251-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52684,
+      "sku": "SET-HP-507A-REN",
+      "slug": "hp-507a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 507A / CE400-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 53702,
+      "sku": "SET-HP-CE400X-CE401A-CE402A-CE403A-REN",
+      "slug": "hp-507x-507a-ce400x-ce401-2-3a-cmyk-renovovana-sada-patent-free-4-ks",
+      "name": "HP 507X/507A / CE400X, CE401-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52694,
+      "sku": "SET-HP-508A-REN",
+      "slug": "hp-508a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 508A / CF360-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52695,
+      "sku": "SET-HP-508X-REN",
+      "slug": "hp-508x-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 508X / CF360-1-2-3X CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52699,
+      "sku": "SET-HP-642A-REN",
+      "slug": "hp-642a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 642A / CB400-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52666,
+      "sku": "SET-HP-643A-REN",
+      "slug": "hp-643a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 643A / Q5950-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52683,
+      "sku": "SET-HP-644A-REN",
+      "slug": "hp-644a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 644A / Q6460-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52685,
+      "sku": "SET-HP-645A-REN",
+      "slug": "hp-645a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 645A / C9730-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 53703,
+      "sku": "SET-HP-CE264X-CF031A-CF032A-CF033A-REN",
+      "slug": "hp-646x-646a-ce264x-cf031-2-3a-cmyk-renovovana-sada-patent-free-4-ks",
+      "name": "HP 646X/646A / CE264X, CF031-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52678,
+      "sku": "SET-HP-CE260A-CE261A-CE262A-CE263A-REN",
+      "slug": "hp-ce260a-ce261a-ce262a-ce263a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 647A/648A / CE260-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52679,
+      "sku": "SET-HP-650A-REN",
+      "slug": "hp-650a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 650A / CE270-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52670,
+      "sku": "SET-HP-651A-REN",
+      "slug": "hp-651a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 651A / CE340-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52711,
+      "sku": "SET-HP-655-REN-PREMIUM",
+      "slug": "hp-655-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 655 / CZ109AE, CZ110-1-2AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52707,
+      "sku": "SET-HP-711-REN-PREMIUM",
+      "slug": "hp-711-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 711 / CZ130-1-2-3A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52791,
+      "sku": "SET-HP-72-6-REN-PREMIUM",
+      "slug": "hp-72-kompletna-6-farebna-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 72 / C9370-1-2-3-4A, C9403A – renovovaná sada Premium 6-farebná (6 ks)"
+    },
+    {
+      "id": 52792,
+      "sku": "SET-HP-727-130ML-6-REN-PREMIUM",
+      "slug": "hp-727-130-ml-kompletna-6-farebna-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 727 / B3P19A, B3P20-1-2-3-4A – renovovaná sada Premium 6-farebná (6 ks)"
+    },
+    {
+      "id": 52793,
+      "sku": "SET-HP-727-300ML-6-REN-PREMIUM",
+      "slug": "hp-727-300-ml-kompletna-6-farebna-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 727 / C1Q12A, F9J76-7-8-9A, F9J80A – renovovaná sada Premium 6-farebná (6 ks)"
+    },
+    {
+      "id": 53684,
+      "sku": "SET-HP-F9J65A-F9J66A-F9J67A-F9J68A-REN-PREMIUM",
+      "slug": "hp-728-f9j65-6-7-8a-cmyk-renovovana-sada-premium-4-ks",
+      "name": "HP 728 / F9J65-6-7-8A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52708,
+      "sku": "SET-HP-82-REN-PREMIUM",
+      "slug": "hp-82-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 82 / C4911-2-3A, CH565A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52667,
+      "sku": "SET-HP-CB380A-CB381A-CB382A-CB383A-REN",
+      "slug": "hp-cb380a-cb381a-cb382a-cb383a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 823A/824A / CB380-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52703,
+      "sku": "SET-HP-827A-REN-CIP",
+      "slug": "hp-827a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 827A / CF300-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52704,
+      "sku": "SET-HP-88XL-REN-PREMIUM",
+      "slug": "hp-88xl-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 88XL / C9391-2-3-6AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52709,
+      "sku": "SET-HP-903XL-REN-PREMIUM",
+      "slug": "hp-903xl-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 903XL / T6M03-7AE, T6M11-5AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52713,
+      "sku": "SET-HP-912XL-REN-PREMIUM",
+      "slug": "hp-912xl-cmyk-renovovana-sada-atramentovych-naplni-premium-nefunguje-v-hp",
+      "name": "HP 912XL / 3YL81-2-3-4AE CMYK – renovovaná sada Premium nefunguje v HP+ (4 ks)"
+    },
+    {
+      "id": 52715,
+      "sku": "SET-HP-913A-REN-PREMIUM",
+      "slug": "hp-913a-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 913A / F6T77-8-9AE, L0R95AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52705,
+      "sku": "SET-HP-920XL-REN-PREMIUM",
+      "slug": "hp-920xl-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 920XL / CD972-3-4-5AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52786,
+      "sku": "SET-HP-932XL-933XL-REN-PREMIUM",
+      "slug": "hp-932xl-933xl-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 932XL/933XL / CN053-4-5-6AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52706,
+      "sku": "SET-HP-940XL-REN-PREMIUM",
+      "slug": "hp-940xl-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 940XL / C4906-7-8-9AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 53648,
+      "sku": "SET-HP-950XL-951XL-REN-PREMIUM",
+      "slug": "hp-cn045ae-cn046ae-cn047ae-cn048ae-renovovana-sada-4-ks",
+      "name": "HP 950XL/951XL / CN045-6-7-8AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52710,
+      "sku": "SET-HP-953XL-REN-PREMIUM",
+      "slug": "hp-953xl-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 953XL / F6U16-7-8AE, L0S70AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52712,
+      "sku": "SET-HP-963XL-REN-PREMIUM",
+      "slug": "hp-963xl-cmyk-renovovana-sada-atramentovych-naplni-premium-nefunguje-v-hp",
+      "name": "HP 963XL / 3JA27-8-9AE, 3JA30AE CMYK – renovovaná sada Premium nefunguje v HP+ (4 ks)"
+    },
+    {
+      "id": 52787,
+      "sku": "SET-HP-970XL-971XL-REN-PREMIUM",
+      "slug": "hp-970xl-971xl-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 970XL/971XL / CN625-6-7-8AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52714,
+      "sku": "SET-HP-973X-REN-PREMIUM",
+      "slug": "hp-973x-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 973X / F6T81-2-3AE, L0S07AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52716,
+      "sku": "SET-HP-981A-REN-PREMIUM",
+      "slug": "hp-981a-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 981A / J3M68-9A, J3M70-1A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52717,
+      "sku": "SET-HP-981X-REN-PREMIUM",
+      "slug": "hp-981x-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 981X / L0R09A, L0R10-1-2A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52718,
+      "sku": "SET-HP-981Y-REN-PREMIUM",
+      "slug": "hp-981y-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 981Y / L0R13-4-5-6A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52827,
+      "sku": "SET-CAN-CRG-040-REN-4PK",
+      "slug": "canon-crg-040-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-040 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52829,
+      "sku": "SET-CAN-CRG-040H-REN-4PK",
+      "slug": "canon-crg-040h-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-040H CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52838,
+      "sku": "SET-CAN-CRG-054-REN-4PK",
+      "slug": "canon-crg-054-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-054 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52840,
+      "sku": "SET-CAN-CRG-054H-REN-4PK",
+      "slug": "canon-crg-054h-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-054H CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52844,
+      "sku": "SET-CAN-CRG-064-REN-4PK",
+      "slug": "canon-crg-064-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-064 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52846,
+      "sku": "SET-CAN-CRG-064H-REN-4PK",
+      "slug": "canon-crg-064h-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-064H CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52850,
+      "sku": "SET-CAN-CRG-067H-REN-4PK",
+      "slug": "canon-crg-067h-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-067H CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52860,
+      "sku": "SET-CAN-CRG-723-REN-4PK",
+      "slug": "canon-crg-723-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Canon CRG-723 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52866,
+      "sku": "SET-CAN-PFI-030-REN-5PK",
+      "slug": "canon-pfi-030-bkcmyk-renovovana-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PFI-030 BK+CMYK renovovaná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 52873,
+      "sku": "SET-CAN-PFI-207-REN-5PK",
+      "slug": "canon-pfi-207-bkcmyk-renovovana-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PFI-207 BK+CMYK renovovaná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 52877,
+      "sku": "SET-CAN-PFI-307-REN-5PK",
+      "slug": "canon-pfi-307-bkcmyk-renovovana-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PFI-307 BK+CMYK renovovaná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 52878,
+      "sku": "SET-CAN-PFI-320-REN-5PK",
+      "slug": "canon-pfi-320-bkcmyk-renovovana-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PFI-320 BK+CMYK renovovaná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 52880,
+      "sku": "SET-CAN-PFI-703-REN-5PK",
+      "slug": "canon-pfi-703-bkcmyk-renovovana-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PFI-703 BK+CMYK renovovaná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 52883,
+      "sku": "SET-CAN-PFI-707-REN-5PK",
+      "slug": "canon-pfi-707-bkcmyk-renovovana-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PFI-707 BK+CMYK renovovaná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 52884,
+      "sku": "SET-CAN-PFI-710-REN-5PK",
+      "slug": "canon-pfi-710-bkcmyk-renovovana-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PFI-710 BK+CMYK renovovaná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 52889,
+      "sku": "SET-CAN-PGI-525-CLI-526-REN-5PK",
+      "slug": "canon-pgi-525-cli-526-bkcmyk-renovovana-sada-atramentovych-naplni-5-ks",
+      "name": "Canon PGI-525/CLI-526 BK+CMYK renovovaná sada atramentových náplní (5 ks)"
+    },
+    {
+      "id": 52890,
+      "sku": "SET-CAN-PGI-525-CLI-526-REN-6PK",
+      "slug": "canon-pgi-525-cli-526-bkcmykgy-renovovana-sada-atramentovych-naplni-6-ks",
+      "name": "Canon PGI-525/CLI-526 BK+CMYK+GY renovovaná sada atramentových náplní (6 ks)"
+    },
+    {
+      "id": 53024,
+      "sku": "SET-EPS-ACULASER-C2800-REN-4PK",
+      "slug": "epson-aculaser-c2800-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Epson AcuLaser C2800 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 53023,
+      "sku": "SET-EPS-ACULASER-C3800-REN-4PK",
+      "slug": "epson-aculaser-c3800-cmyk-renovovana-sada-tonerov-4-ks",
+      "name": "Epson AcuLaser C3800 CMYK renovovaná sada tonerov (4 ks)"
+    },
+    {
+      "id": 52676,
+      "sku": "SET-HP-128A-REN",
+      "slug": "hp-128a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 128A / CE320-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 53691,
+      "sku": "SET-HP-CF540A-CF541A-CF542A-CF543A-REN-OTHER",
+      "slug": "hp-203a-cf540-1-2-3a-cmyk-renovovana-sada-4-ks",
+      "name": "HP 203A / CF540-1-2-3A CMYK – renovovaná sada (4 ks)"
+    },
+    {
+      "id": 53692,
+      "sku": "SET-HP-CF540X-CF541X-CF542X-CF543X-REN-OTHER",
+      "slug": "hp-203x-cf540-1-2-3x-cmyk-renovovana-sada-4-ks",
+      "name": "HP 203X / CF540-1-2-3X CMYK – renovovaná sada (4 ks)"
+    },
+    {
+      "id": 52691,
+      "sku": "SET-HP-207X-REN-CIP",
+      "slug": "hp-207x-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 207X / W2210-1-2-3X CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52719,
+      "sku": "SET-HP-213A-REN-CIP",
+      "slug": "hp-213a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 213A / W2130-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52720,
+      "sku": "SET-HP-213X-REN-CIP",
+      "slug": "hp-213x-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 213X / W2130-1-2-3X CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 52790,
+      "sku": "SET-HP-363XL-6-REN-PREMIUM",
+      "slug": "hp-363xl-kompletna-6-farebna-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 363XL / C8719EE, C8771-2-3-4-5EE – renovovaná sada Premium 6-farebná (6 ks)"
+    },
+    {
+      "id": 52784,
+      "sku": "SET-HP-CF320A-CF321A-CF322A-CF323A-REN",
+      "slug": "hp-cf320a-cf321a-cf322a-cf323a-cmyk-renovovana-sada-tonerov-patent-free",
+      "name": "HP 652A/653A / CF320-1-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 53638,
+      "sku": "SET-HP-654A-REN",
+      "slug": "hp-cf330a-cf331a-cf333a-cf332a-renovovana-sada-4-ks",
+      "name": "HP 654A / CF330-1-2-3A CMYK – renovovaná sada (4 ks)"
+    },
+    {
+      "id": 53704,
+      "sku": "SET-HP-CF330X-CF331A-CF332A-CF333A-REN",
+      "slug": "hp-654x-654a-cf330x-cf331-2-3a-cmyk-renovovana-sada-patent-free-4-ks",
+      "name": "HP 654X/654A / CF330X, CF331-2-3A CMYK – renovovaná sada Patent Free (4 ks)"
+    },
+    {
+      "id": 53683,
+      "sku": "SET-HP-C9390A-C9448A-C9449A-C9451A-C9452A-C9453A-C9454A-C9455A-REN-PREMIUM",
+      "slug": "hp-70-c9448-9a-c9451-2-3-4-5a-c9390a-8-farebna-renovovana-sada-premium-8-ks",
+      "name": "HP 70 / C9448-9A, C9451-2-3-4-5A, C9390A 8-farebná – renovovaná sada Premium (8 ks)"
+    },
+    {
+      "id": 52788,
+      "sku": "SET-HP-712XL-712-REN-PREMIUM",
+      "slug": "hp-712xl-712-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 712XL/712 / 3ED67-8-9A, 3ED71A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52794,
+      "sku": "SET-HP-730-300ML-6-REN-PREMIUM",
+      "slug": "hp-730-300-ml-kompletna-6-farebna-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 730 / P2V68-9A, P2V70-1-2-3A – renovovaná sada Premium 6-farebná (6 ks)"
+    },
+    {
+      "id": 52795,
+      "sku": "SET-HP-761-6-REN-PREMIUM",
+      "slug": "hp-761-kompletna-6-farebna-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 761 / CM992-3-4-5-6-7A – renovovaná sada Premium 6-farebná (6 ks)"
+    },
+    {
+      "id": 52722,
+      "sku": "SET-HP-80XL-REN-PREMIUM",
+      "slug": "hp-80xl-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 80XL / C4846-7-8A, C4871A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 53642,
+      "sku": "SET-HP-81-REN-PREMIUM",
+      "slug": "hp-c4930a-c4931a-c4932a-c4933a-c4934a-c4935a-renovovana-sada-6-ks",
+      "name": "HP 81 / C4930-1-2-3-4-5A 6-farebná – renovovaná sada Premium (6 ks)"
+    },
+    {
+      "id": 53643,
+      "sku": "SET-HP-90-REN-PREMIUM",
+      "slug": "hp-c5059a-c5061a-c5063a-c5065a-renovovana-sada-4-ks",
+      "name": "HP 90 / C5059A, C5061A, C5063A, C5065A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 53646,
+      "sku": "SET-HP-972A-REN-PREMIUM",
+      "slug": "hp-f6t80an-l0r86an-l0r89an-l0r92an-renovovana-sada-4-ks",
+      "name": "HP 972A / F6T80AN, L0R86AN, L0R89AN, L0R92AN CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 53644,
+      "sku": "SET-HP-972X-REN-PREMIUM",
+      "slug": "hp-f6t84an-l0r98an-l0s01an-l0s04an-renovovana-sada-4-ks",
+      "name": "HP 972X / F6T84AN, L0R98AN, L0S01AN, L0S04AN CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 53645,
+      "sku": "SET-HP-976Y-REN-PREMIUM",
+      "slug": "hp-l0r08a-l0r05a-l0r06a-l0r07a-renovovana-sada-4-ks",
+      "name": "HP 976Y / L0R05-6-7-8A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52723,
+      "sku": "SET-HP-980-REN-PREMIUM",
+      "slug": "hp-980-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 980 / D8J07-8-9A, D8J10A CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 52724,
+      "sku": "SET-HP-991X-REN-PREMIUM",
+      "slug": "hp-991x-cmyk-renovovana-sada-atramentovych-naplni-premium",
+      "name": "HP 991X / M0J90-4-8AE, M0K02AE CMYK – renovovaná sada Premium (4 ks)"
+    },
+    {
+      "id": 50779,
+      "sku": "09003001",
+      "slug": "epson-erc-black-30-34-38-300-200-370-375-tm270-300-tmu375-270-300a-300b-300d-tmu370",
+      "name": "EPSON ERC black 30/34/38/300/200/370/375, TM270/300/TMU375/270/300A/300B/300D, TMU370"
+    },
+    {
+      "id": 50781,
+      "sku": "09003002",
+      "slug": "epson-erc-red-black-30-34-38-300-200-370-375-tm270-300-tmu375-270-300a-300b-300d-tmu370",
+      "name": "EPSON ERC red-black 30/34/38/300/200/370/375, TM270/300/TMU375/270/300A/300B/300D, TMU370"
+    },
+    {
+      "id": 50799,
+      "sku": "09080000",
+      "slug": "epson-lq800-lq300-lq200-400-450-570-580-850-870-lx-300-400-800-850-fx-800-870",
+      "name": "EPSON LQ800/LQ300/LQ200/400/450/570/580/850/870, LX 300/400/800/850, FX 800/870"
+    },
+    {
+      "id": 50837,
+      "sku": "09552100",
+      "slug": "oki-5521-5520-5590-5591",
+      "name": "OKI 5521/5520/5590/5591"
+    },
+    {
+      "id": 51089,
+      "sku": "05100010",
+      "slug": "1000l-1010-4000-4010-7000",
+      "name": "1000L/1010/4000/4010/7000"
+    },
+    {
+      "id": 51025,
+      "sku": "05105004A",
+      "slug": "101-b-ep-1050-1052-1080-1081-1083-2010-develop-1500-1850agfa-x-120-2-x-270-g",
+      "name": "101 B EP 1050/1052/1080/1081/1083/2010 DEVELOP 1500/1850,AGFA X 120 2 x 270 g"
+    },
+    {
+      "id": 51090,
+      "sku": "05120510A",
+      "slug": "1205-ft-3613-3813-4015-4018-4615-4618-4815-rex-rotary-8715-8718-gestetner-2715-2718-nash-1-x-215-g",
+      "name": "1205 FT 3613/3813/4015/4018/4615/4618/4815 REX ROTARY 8715/8718, GESTETNER 2715/2718, NASH 1 x 215 g"
+    },
+    {
+      "id": 50991,
+      "sku": "05212003a",
+      "slug": "1211-1212-1311-1312-1511-1512-1513-1514-4-x-50-g",
+      "name": "1211/1212/1311/1312/1511/1512/1513/1514 4 x 50 g"
+    },
+    {
+      "id": 51092,
+      "sku": "05122010A",
+      "slug": "1220d-aficio-1015-1018nahuatec-1315-1505-1805gestetner-1502-1802infotec-4151mf-4181mf-1-x-260g",
+      "name": "1220D Aficio 1015/1018,Nahuatec 1315/1505/1805,Gestetner 1502/1802,Infotec 4151MF/4181MF 1 x 260g"
+    },
+    {
+      "id": 51093,
+      "sku": "05123000a",
+      "slug": "1230d-aficio-2015-2016-2018-2018d-2020-2020d-mp-1500-1600-1600l-1600spf-2000-2000l-2000ln-1-x-260g",
+      "name": "1230D Aficio 2015/2016/2018/2018D/2020/2020D, MP 1500/1600/1600L/1600SPF/2000/2000L/2000LN 1 x 260g"
+    },
+    {
+      "id": 51094,
+      "sku": "05127010a",
+      "slug": "1270d-aficio-1515-1515f-1515mf-1515ps-mp-161-161f-161l-161ln-161spf-171spf-savin-3515-35-1-x-230g",
+      "name": "1270D Aficio 1515/1515F/1515MF/1515PS, MP 161/161F/161L/161LN/161SPF/171SPF, SAVIN 3515/35 1 x 230g"
+    },
+    {
+      "id": 50994,
+      "sku": "05105004B",
+      "slug": "1500-1502-1850-1801-2-x-270-g",
+      "name": "1500/1502/1850/1801 2 x 270 g"
+    },
+    {
+      "id": 51007,
+      "sku": "05015220A",
+      "slug": "153lid-1536id-1650id-183-lid-1836id-2050id-2-x-413-g",
+      "name": "153liD/1536iD/1650iD/183 liD/ 1836iD/2050iD 2 x 413 g"
+    },
+    {
+      "id": 51031,
+      "sku": "05251060a",
+      "slug": "205b-303b-di-2010-2510-3010-3510-2-x-420g",
+      "name": "205B/303B Di 2010/2510/3010/3510 2 x 420g"
+    },
+    {
+      "id": 51110,
+      "sku": "05021603",
+      "slug": "216-lt-sf-2116-2016-2118-2120-2020-1-x-200g",
+      "name": "216 LT SF 2116/2016/2118/2120/2020 1 x 200g"
+    },
+    {
+      "id": 51096,
+      "sku": "05222000e",
+      "slug": "2220d-aficio-1022-1027-1032-2022-2027-2032-3025-3030mp-2510-2550-3010-3350-3550-savin-25-1-x-360g",
+      "name": "2220D Aficio 1022/1027/1032/2022/2027/2032/3025/3030,MP 2510/2550/3010/3350/3550, SAVIN 25 1 x 360g"
+    },
+    {
+      "id": 51107,
+      "sku": "05023402",
+      "slug": "234-lt-sf-2314-2414-2514-1014-1-x-200g",
+      "name": "234 LT SF 2314/2414/2514/1014 1 x 200g"
+    },
+    {
+      "id": 51015,
+      "sku": "05323100",
+      "slug": "3231-3331-3240-3340-1-x-500g",
+      "name": "3231/3331/3240/3340 1 x 500g"
+    },
+    {
+      "id": 51109,
+      "sku": "05036000",
+      "slug": "360-lt-sd-2060-2260-3062-sf2050-2052-1-x-930g",
+      "name": "360 LT SD 2060/2260/3062/SF2050/2052 1 x 930g"
+    },
+    {
+      "id": 51059,
+      "sku": "05160503c",
+      "slug": "3916-3916z-3916l-3916d-2-x-180-g-cena-za-balenie",
+      "name": "3916/3916Z/3916L/3916D 2 x 180 g (cena za balenie)"
+    },
+    {
+      "id": 51056,
+      "sku": "05061012",
+      "slug": "4345-4355-4365-4651-4660-4670-lahev-infotec-5501-5601-5701ricoh-610-ft-6645-6655-6665-1-x-285-g",
+      "name": "4345/4355/4365/4651/4660/4670 láhev, Infotec 5501/5601/5701,Ricoh 610 FT 6645/6655/6665 1 x 285 g"
+    },
+    {
+      "id": 51013,
+      "sku": "05400010b",
+      "slug": "501-b-ep-3050-4000-4050-5000-develop-3550-4050-4550-5050-4-x-650-g",
+      "name": "501 B EP 3050/4000/4050/5000 DEVELOP 3550/4050/4550/5050 4 x 650 g"
+    },
+    {
+      "id": 51050,
+      "sku": "05501000a",
+      "slug": "5130-5131-7125-7125s-7130-7140-1-x-300-g",
+      "name": "5130/5131/7125/7125S/7130/7140 1 x 300 g"
+    },
+    {
+      "id": 50968,
+      "sku": "05600002",
+      "slug": "6-7-8000-np-5020-5060-6150-6650-6850-6880-6885-7050-7550-8070-8530-8570-8580-1-x-15-kg",
+      "name": "6/7/8000 NP 5020/5060/6150/6650/6850/6880/6885/7050/7550/8070/8530/8570/8580 1 x 1,5 kg"
+    },
+    {
+      "id": 51081,
+      "sku": "05621000",
+      "slug": "6210d-aficio-1060-1075-2051-2060-2075-1-x-1100g",
+      "name": "6210D Aficio 1060/1075/2051/2060/2075 1 x 1100g"
+    },
+    {
+      "id": 51105,
+      "sku": "05073000",
+      "slug": "730-mt-sf-7300-7320-7350-7370-lanier-l-6113-6213-6413-6514-1-x-260g",
+      "name": "730 MT SF 7300/7320/7350/7370, Lanier L 6113/6213/6413/6514 1 x 260g"
+    },
+    {
+      "id": 51111,
+      "sku": "05015210",
+      "slug": "ar-152lt-122e-122en-123e-151-152e-152en-f152-153e-153en-156-157e-157en-m150-m155-m155x-168-cartridge",
+      "name": "AR 152LT 122E/122EN/123E/151/152E/152EN/F152/153E/153EN/156/157E/157EN/M150/M155/M155X/168 cartridge"
+    },
+    {
+      "id": 50927,
+      "sku": "41101002",
+      "slug": "brother-1010-1020-1030-1170-1270-1570mc-mfc-1970mc-pc-201-202-202rf-204-300-2-x-217-x-135",
+      "name": "BROTHER 1010/1020/1030/1170/1270/1570MC, MFC 1970MC (PC 201/202/202RF/204/300) 2 x 217 x 135"
+    },
+    {
+      "id": 50923,
+      "sku": "41115002",
+      "slug": "brother-1150p-1200-1250-1700p-pc-101-102-104-2-x-217-x-200",
+      "name": "BROTHER 1150P/1200/1250/1700P (PC 101/102/104) 2 x 217 x 200"
+    },
+    {
+      "id": 50925,
+      "sku": "41091002",
+      "slug": "brother-fax-750-770-775-870-870mc-885mc-910-917-920-921-930-931-940-945-970-985mc-mfc-925-2-x-217-x",
+      "name": "BROTHER FAX 750/770/775/870/870MC/885MC/910/917/920/921/930/931/940/945/970/985MC, MFC 925 2 x 217 x"
+    },
+    {
+      "id": 50924,
+      "sku": "41056000",
+      "slug": "brother-fax-465-560-636-645-685-727-728-780-816-960-fax-580mc-676mc-685mc-737mc-1280-1980-2-x-217-x",
+      "name": "BROTHER Fax-465/560/636/645/685/727/728/780/816/960, Fax-580MC/676MC/685MC/737MC/1280/1980 2 x 217 x"
+    },
+    {
+      "id": 50926,
+      "sku": "41100002",
+      "slug": "brother-fax-900-950-980-980m-1000p-1500m-1500ml-1850m-1350m-1150-1250-1450c-1550mc-1650-2-x-217-x-1",
+      "name": "BROTHER FAX-900/950/980/980M/1000P/1500M/1500ML/1850M/1350M/1150/1250/1450C/1550MC/1650/ 2 x 217 x 1"
+    },
+    {
+      "id": 50928,
+      "sku": "41007404",
+      "slug": "brother-t-72-74-76-78-82-84-86-94-96-98-104-106-fax-575-pc-70rf-pc-72rf-pc-74rf-2-x-217-x-47",
+      "name": "BROTHER T 72/74/76/78/82/84/86/94/96/98/104/106, Fax-575 (PC 70RF, PC 72RF, PC 74RF) 2 x 217 x 47"
+    },
+    {
+      "id": 50964,
+      "sku": "05500020",
+      "slug": "c-exv1-ir-4600-5000-6000-7200-1-x-1650-g",
+      "name": "C-EXV1 iR 4600/5000/6000/7200 1 x 1650 g"
+    },
+    {
+      "id": 50983,
+      "sku": "05227002",
+      "slug": "c-exv11-ir-2230-2270-2830-2870-1-x-1060-g",
+      "name": "C-EXV11 iR 2230/2270/2830/2870 1 x 1060 g"
+    },
+    {
+      "id": 50948,
+      "sku": "05101804",
+      "slug": "c-exv18-ir-1018-1018j-1019-1022a-1022f-1022i-1022if-1023-h-1-x-430-g",
+      "name": "C-EXV18 iR 1018/1018J/1019/1022A/1022F/1022i/1022iF/1023 „H“ 1 x 430 g"
+    },
+    {
+      "id": 50957,
+      "sku": "05288013",
+      "slug": "c-exv21-bk-irc-2380i-2550-2550i-2880-2880i-3080-3080i-3380-3380i-3480-3480i-3580-3580i-b-1-x-575-g",
+      "name": "C-EXV21 Bk iRC 2380I/2550/2550I/2880/2880I/3080/3080I/3380/3380I/3480/3480I/3580/3580I - b 1 x 575 g"
+    },
+    {
+      "id": 50958,
+      "sku": "05288014",
+      "slug": "c-exv21-c-irc-2380i-2550-2550i-2880-2880i-3080-3080i-3380-3380i-3480-3480i-3580-3580i-cy-1-x-260-g",
+      "name": "C-EXV21 C iRC 2380I/2550/2550I/2880/2880I/3080/3080I/3380/3380I/3480/3480I/3580/3580I - cy 1 x 260 g"
+    },
+    {
+      "id": 50959,
+      "sku": "05288015",
+      "slug": "c-exv21-m-irc-2380i-2550-2550i-2880-2880i-3080-3080i-3380-3380i-3480-3480i-3580-3580i-ma-1-x-260-g",
+      "name": "C-EXV21 M iRC 2380I/2550/2550I/2880/2880I/3080/3080I/3380/3380I/3480/3480I/3580/3580I - ma 1 x 260 g"
+    },
+    {
+      "id": 50960,
+      "sku": "05288016",
+      "slug": "c-exv21-y-irc-2380i-2550-2550i-2880-2880i-3080-3080i-3380-3380i-3480-3480i-3580-3580i-ye-1-x-260-g",
+      "name": "C-EXV21 Y iRC 2380I/2550/2550I/2880/2880I/3080/3080I/3380/3380I/3480/3480I/3580/3580I - ye 1 x 260 g"
+    },
+    {
+      "id": 50974,
+      "sku": "05102105",
+      "slug": "c-exv26-bk-irc102li-102lif-1028-1028i-black",
+      "name": "C-EXV26 bk iRC102li/102liF/1028/1028i - black"
+    },
+    {
+      "id": 50975,
+      "sku": "05102106",
+      "slug": "c-exv26-c-irc102li-102lif-1028-1028i-cyan",
+      "name": "C-EXV26 c iRC102li/102liF/1028/1028i - cyan"
+    },
+    {
+      "id": 50976,
+      "sku": "05102107",
+      "slug": "c-exv26-m-irc102li-102lif-1028-1028i-magenta",
+      "name": "C-EXV26 m iRC102li/102liF/1028/1028i - magenta"
+    },
+    {
+      "id": 50977,
+      "sku": "05102108",
+      "slug": "c-exv26-y-irc102li-102lif-1028-1028i-yellow",
+      "name": "C-EXV26 y iRC102li/102liF/1028/1028i - yellow"
+    },
+    {
+      "id": 50982,
+      "sku": "05220022",
+      "slug": "c-exv3-ir-2200-2220n-2220i-2800-3300-3320n-3320i-h-1-x-795-g",
+      "name": "C-EXV3 iR 2200/2220N/2220I/2800/3300/3320N/3320I  „H“ 1 x 795 g"
+    },
+    {
+      "id": 50981,
+      "sku": "05201603",
+      "slug": "c-exv5-c-exv14-ir-1600-1605-1610f-2000-2010f-2016-2016i-2018-2020-2020i-h-1-x-440-g",
+      "name": "C-EXV5/C-EXV14 iR 1600/1605/1610F/2000/2010F/2016/2016i/2018/2020/2020i „H“ 1 x 440 g"
+    },
+    {
+      "id": 50978,
+      "sku": "05121022",
+      "slug": "c-exv7-ir-1210-1230-1237n-1270f-1310-1330-1370f-1510-1530-1570-h-1-x-300-g",
+      "name": "C-EXV7 iR 1210/1230/1237N/1270F/1310/1330/1370F/1510/1530/1570 „H“ 1 x 300 g"
+    },
+    {
+      "id": 50752,
+      "sku": "09012000",
+      "slug": "citizen-swift-24-120d-9-24e-90-90c-200-200s-240-glx-140-gsx130-gsx140",
+      "name": "CITIZEN SWIFT 24/120D/9/24E/90/90C/200/200S/240/GLX 140/GSX130/GSX140"
+    },
+    {
+      "id": 50750,
+      "sku": "09002400",
+      "slug": "citizen-swift-24sx-24x-9sx-9x-200s-90x-200gx-fifteen-gsx145",
+      "name": "CITIZEN SWIFT 24SX/24X/9SX/9X/200S/90X, 200GX FIFTEEN, GSX145"
+    },
+    {
+      "id": 51039,
+      "sku": "05120503B",
+      "slug": "dc-1205-1255-1415-1435-1455-1-x-65-g",
+      "name": "DC 1205/1255/1415/1435/1455 1 x 65 g"
+    },
+    {
+      "id": 51035,
+      "sku": "05156000",
+      "slug": "dc-1560-1860-2060-2360-2560-2-x-205-g-cena-za-balenie",
+      "name": "DC 1560/1860/2060/2360/2560 2 x 205 g (cena za balenie)"
+    },
+    {
+      "id": 51036,
+      "sku": "05160503d",
+      "slug": "dc-1605-1656-1657-1685-1555-1855-2155-gestetner-2316-2318z-oce-2040-rex-rotary-8016z-sa-2-x-180-g",
+      "name": "DC 1605/1656/1657/1685/1555/1855/2155 GESTETNER 2316/2318Z, OCE 2040, REX ROTARY 8016Z, SA 2 x 180 g"
+    },
+    {
+      "id": 51048,
+      "sku": "05568500",
+      "slug": "dc-5685-5655-5660-5690-7090-2-x-400-g-cena-za-balenie",
+      "name": "DC 5685/5655/5660/5690/7090 2 x 400 g (cena za balenie)"
+    },
+    {
+      "id": 50996,
+      "sku": "05025000",
+      "slug": "develop-2500-id-3500-id-konica-minolta-302-b-di-250-251-251f-350-351-351f-2-x-413g",
+      "name": "Develop 2500 iD/3500 iD, Konica Minolta 302 B Di 250/251/251F/350/351/351F 2 x 413g"
+    },
+    {
+      "id": 51061,
+      "sku": "05231000",
+      "slug": "dq-tu15-dp-2310-2330-3010-3030-1-x-555-g",
+      "name": "DQ-TU15 DP-2310/2330/3010/3030 1 x 555 g"
+    },
+    {
+      "id": 51057,
+      "sku": "05127010c",
+      "slug": "dsm-415-415f-415p-415pf-mp-161l-1-x-230g",
+      "name": "DSm 415/415f/415p/415pf, MP 161L 1 x 230g"
+    },
+    {
+      "id": 51053,
+      "sku": "05123000c",
+      "slug": "dsm-615-616-618-618d-620-mp-1600-1600l-2000-1-x-260g",
+      "name": "DSm 615/616/618/618d/620, MP 1600/1600L/2000 1 x 260g"
+    },
+    {
+      "id": 51030,
+      "sku": "05212003b",
+      "slug": "ep-2120-2150-2121-2130-2131-develop-1211-1212-1311-1312-1511-1512-1513-1514-4-x-50-g",
+      "name": "EP 2120/2150/2121/2130/2131 DEVELOP 1211/1212/1311/1312/1511/1512/1513/1514 4 x 50 g"
+    },
+    {
+      "id": 50789,
+      "sku": "09000300",
+      "slug": "epson-erc-03-220-240m220-210-240-casio-204-2200-2202-2204-2820-3202-3205-3207-3600-3604",
+      "name": "EPSON ERC 03/220-240,M220/210/240, CASIO 204/2200/2202/2204/2820/3202/3205/3207/3600/3604/"
+    },
+    {
+      "id": 50791,
+      "sku": "09000500",
+      "slug": "epson-erc-05-150ii-m150ii-m160-163-163-164-ec7000-c-itoh-150-sharp-el7000-7001-h-1200",
+      "name": "EPSON ERC 05, 150II/M150II/M160/163/163/164, EC7000, C.ITOH 150, SHARP EL7000/ 7001/H-1200"
+    },
+    {
+      "id": 50793,
+      "sku": "09000900",
+      "slug": "epson-erc-09-80-hx-20-40-m160-161-180-181-182-183-185-190-191-192-195-150-163-164-fujit",
+      "name": "EPSON ERC 09/80, HX 20/40, M160/161/180/181/182/183/185/190/191/192/195/150/163/164, FUJIT"
+    },
+    {
+      "id": 50771,
+      "sku": "09001800",
+      "slug": "epson-erc-18-m2260-2630-2631-2632-2635-2636-2637-2640-2641-2642-2645-2646-2647-2660-2661-2",
+      "name": "EPSON ERC 18/M2260/2630/2631/2632/2635/2636/2637/2640/2641/2642/2645/2646/2647/2660/2661/2"
+    },
+    {
+      "id": 50767,
+      "sku": "09002201",
+      "slug": "epson-erc-22-40-norand-480-long-life-for-m-180-190-epson-m1810-190casio-ce-250-violet",
+      "name": "EPSON ERC 22/40, NORAND 480 LONG LIFE FOR  M-180/190, EPSON M1810/190,CASIO CE-250 violet"
+    },
+    {
+      "id": 50769,
+      "sku": "09002302",
+      "slug": "epson-erc-23-m250-255-257-260-262-267-m264-265-270-280-280a-300-26-rp265-rp270-tm-267-t",
+      "name": "EPSON ERC 23, M250/255/257/260/262/267, M264/265/270/280/280A/300/26, RP265/RP270/TM-267/T"
+    },
+    {
+      "id": 50775,
+      "sku": "09002800",
+      "slug": "epson-erc-28-m2000-norand-815-4000-4815-4820-dp815-np815-fujitsu-29745-at3000-black",
+      "name": "EPSON ERC 28, M2000, NORAND 815/4000/4815/4820/DP815/NP815, FUJITSU 29745/AT3000 black"
+    },
+    {
+      "id": 50783,
+      "sku": "09003100",
+      "slug": "epson-erc-31-m930-tm-930ii-tm900-tm930-950-tm-u950-tm-h5000ii-tm-u590-tm925-omron-rs6000",
+      "name": "EPSON ERC 31, M930/TM-930II/TM900/TM930/950/TM-U950/TM-H5000II/TM-U590/TM925, OMRON RS6000"
+    },
+    {
+      "id": 50785,
+      "sku": "09003200",
+      "slug": "epson-erc-32-tm930-935-m820-m825-tm-u1550-tm-h6000-tm-u65-casio-ce4200-ce4700-tk2300-tk3",
+      "name": "EPSON ERC 32, TM930/935/M820/M825/TM-U1550/TM-H6000/TM-U65, CASIO CE4200/CE4700/TK2300/TK3"
+    },
+    {
+      "id": 50777,
+      "sku": "09003000",
+      "slug": "epson-erc-violet-30-34-38-300-200-370-375-tm270-300-tmu375-270-300a-300b-300d-tmu370",
+      "name": "EPSON ERC violet 30/34/38/300/200/370/375, TM270/300/TMU375/270/300A/300B/300D, TMU370"
+    },
+    {
+      "id": 50797,
+      "sku": "09100000",
+      "slug": "epson-lq-1000-1010-1050-1050-1070-1070-1170-mx-100-105-rx-100-105fx-100-105-185-286-2",
+      "name": "EPSON LQ 1000/1010/1050/1050+/1070/1070+/1170, MX 100/105, RX 100/105,FX 100/105/185/286/2"
+    },
+    {
+      "id": 50803,
+      "sku": "09217000",
+      "slug": "epson-lq-2170-2070-2080-2180-fx-2170-2180",
+      "name": "EPSON LQ 2170/2070/2080/2180, FX 2170/2180"
+    },
+    {
+      "id": 50811,
+      "sku": "09067000",
+      "slug": "epson-lq-670-680-860-1060-2500-2550-860-lx-800-100-m3c-vp-3000-ex-800",
+      "name": "EPSON LQ 670/680/860/1060/2500/2550/860, LX 800/100, M3C, VP 3000, EX 800"
+    },
+    {
+      "id": 51066,
+      "sku": "05150000",
+      "slug": "fp-1500-1520-2500-2520-2625-2626-2600-2620-1-x-200-g",
+      "name": "FP 1500/1520/2500/2520/2625/2626/2600/2620 1 x 200 g"
+    },
+    {
+      "id": 51067,
+      "sku": "05151000b",
+      "slug": "fp-1510-1530-1307-1540-omega-3015-4-x-190-g-cena-za-balenie",
+      "name": "FP 1510/1530/1307/1540, OMEGA 3015 4 x 190 g (cena za balenie)"
+    },
+    {
+      "id": 51076,
+      "sku": "05303000",
+      "slug": "fp-3030-3007-3040-4650-3037-5060-4630-1-x-420-g",
+      "name": "FP 3030/3007/3040/4650/3037/5060/4630 1 x 420 g"
+    },
+    {
+      "id": 51077,
+      "sku": "05267000",
+      "slug": "fq-ta-20-fp-2670-2680-3270-3280-3380-7127-7133-1-x-500-g",
+      "name": "FQ-TA 20 FP 2670/2680/3270/3280/3380/7127/7133 1 x 500 g"
+    },
+    {
+      "id": 51078,
+      "sku": "05771800",
+      "slug": "fq-tk-10-fp-7718-7722-7818-7824-1-x-462-g",
+      "name": "FQ-TK 10 FP 7718/7722/7818/7824 1 x 462 g"
+    },
+    {
+      "id": 51079,
+      "sku": "05772800",
+      "slug": "fq-tk-20-fp-7728-7735-7742-7750-7830-7835-7845-7850-1-x-660-g",
+      "name": "FQ-TK 20 FP 7728/7735/7742/7750/7830/7835/7845/7850 1 x 660 g"
+    },
+    {
+      "id": 51085,
+      "sku": "05501000c",
+      "slug": "ft-5010-5520-5560-4410-4430-4470-4480-4490-5000-ds-320-1-x-300-g",
+      "name": "FT 5010/5520/5560/4410/4430/4470/4480/4490/5000, DS 320 1 x 300 g"
+    },
+    {
+      "id": 51083,
+      "sku": "05700000",
+      "slug": "ft-7060-7770-7870-7000-1-x-600-g",
+      "name": "FT 7060/7770/7870/7000 1 x 600 g"
+    },
+    {
+      "id": 50821,
+      "sku": "09110000",
+      "slug": "fujitsu-dl-1100-900-700-100-1150-1150c-1200-1250-1260-f-1000-m-3368b",
+      "name": "FUJITSU DL 1100/900/700/100/1150/1150C/1200/1250/1260/F 1000/M 3368B"
+    },
+    {
+      "id": 50972,
+      "sku": "05021500",
+      "slug": "gp-200-200f-211-215-216-210-220-225-285-334-335-405ir200-210-210s-210n-1-x-530-g",
+      "name": "GP 200/200F/211/215/216/210/220/225/285/334/335/405,iR200/210/210S/210N 1 x 530 g"
+    },
+    {
+      "id": 51113,
+      "sku": "05950000",
+      "slug": "jx-95-tc-sharp-jx-9500-9500e-9500h-9500ps-fo4900-5200-5210-5300-6000-6100-9600amstrad-ld",
+      "name": "JX 95 TC SHARP JX 9500/9500E/9500H/9500PS, FO4900/5200/5210/5300/6000/6100/9600,AMSTRAD LD"
+    },
+    {
+      "id": 51045,
+      "sku": "05253000",
+      "slug": "km-2530-3035-3530-4030-4035-5035-1-x-1900-g",
+      "name": "KM 2530/3035/3530/4030/4035/5035 1 x 1900 g"
+    },
+    {
+      "id": 51068,
+      "sku": "05050110",
+      "slug": "kx-fa76a-kx-fl-501-502-503-523-kx-flm-551-552-553kx-flb-750-751-752-753-755-756-758",
+      "name": "KX-FA76A KX-FL 501/502/503/523, KX-FLM 551/552/553,KX-FLB 750/751/752/753/755/756/758"
+    },
+    {
+      "id": 51069,
+      "sku": "05051300",
+      "slug": "kx-fa83e-kx-fl-513-511-512-540-541-543-611-613",
+      "name": "KX-FA83E KX-FL 513/511/512/540/541/543/611/613"
+    },
+    {
+      "id": 51071,
+      "sku": "05080303",
+      "slug": "kx-fa85-kx-flb-801-802-803-811-812-813-833-851-852-853-888",
+      "name": "KX-FA85 KX-FLB 801/802/803/811/812/813/833/851/852/853/888"
+    },
+    {
+      "id": 51072,
+      "sku": "05026300",
+      "slug": "kx-fat92e-kx-mb-263-263hx-772-773-773ex-778-783-783ex",
+      "name": "KX-FAT92E KX-MB 263/263HX/772/773/773EX/778/783/783EX"
+    },
+    {
+      "id": 51074,
+      "sku": "05440000",
+      "slug": "kx-p-455-kx-p-4400-4401-5400-100-kx-f-2900-3000g-3100-511-551",
+      "name": "KX-P 455 KX-P 4400/4401/5400/100, KX-F 2900/3000G/3100/511/551"
+    },
+    {
+      "id": 51049,
+      "sku": "632500050",
+      "slug": "kyocera-tk-6325-400240035002500360026003-35000-stran",
+      "name": "Kyocera TK-6325 , 4002,4003,5002,5003,6002,6003 35000 strán"
+    },
+    {
+      "id": 51051,
+      "sku": "05010000",
+      "slug": "nashuatec-5115-6115-8115-infotec-9016-9016z-9115z-ricoh-m-100-ft-2010-2050-2070-2220-22-4-x-170-g",
+      "name": "Nashuatec 5115/6115/8115, Infotec 9016/9016Z/9115Z, Ricoh M 100, FT 2010/2050/2070/2220/22 4 x 170 g"
+    },
+    {
+      "id": 50829,
+      "sku": "09002000",
+      "slug": "nec-p2-p20-p30-p32-p1200-p1300-p2000-p3200-3300-pz300-piq-22q-32q",
+      "name": "NEC P2/P20/P30/P32/P1200/P1300/P2000/P3200/3300/PZ300/PIQ/22Q/32Q"
+    },
+    {
+      "id": 50979,
+      "sku": "05121506",
+      "slug": "npg-1-np-1015-1215-1218-1318-1510-1520-1530-1550-1820-2010-2020-6020-6116-6216-6220-6221-6-4-x-190-g",
+      "name": "NPG-1 NP 1015/1215/1218/1318/1510/1520/1530/1550/1820/2010/2020/6020/6116/6216/6220/6221/6 4 x 190 g"
+    },
+    {
+      "id": 50835,
+      "sku": "09039300",
+      "slug": "oki-ml-393-392-395-3410-8360",
+      "name": "OKI ML 393/392/395/3410/8360"
+    },
+    {
+      "id": 50841,
+      "sku": "09005000",
+      "slug": "olivetti-pr-50-60-54-98-900x-910d-9100-cx880-wenger-fb220-alcatel-9353",
+      "name": "OLIVETTI PR 50/60/54/98, 900X/910D/9100/CX880, WENGER FB220, ALCATEL 9353"
+    },
+    {
+      "id": 50933,
+      "sku": "41101502",
+      "slug": "panasonic-kx-f-110-969-1010-1015-1016-1110-1510-1810-1820-1830kx-fp-101ce-105-195-200-245-2-x-220-x",
+      "name": "PANASONIC KX-F 110/969/1010/1015/1016/1110/1510/1810/1820/1830,KX-FP 101CE/105/195/200/245 2 x 220 x"
+    },
+    {
+      "id": 50934,
+      "sku": "41100012",
+      "slug": "panasonic-kx-f-929-929cn-1000-1000b-1006-1020-1050-1070-1100-1100b-1150-1200-1220-kx-fa-1-2-x-220-x",
+      "name": "PANASONIC KX-F 929/929CN/1000/1000B/1006/1020/1050/1070/1100/1100B/1150/1200/1220 (KX-FA 1 2 x 220 x"
+    },
+    {
+      "id": 50930,
+      "sku": "41014101",
+      "slug": "panasonic-kx-fp-141-142-143-145-146-148-248-kx-fpg-371-376-377-381kx-fc-235-238-245-kx-2-x-213-x",
+      "name": "PANASONIC KX-FP 141/142/143/145/146/148/248, KX-FPG 371/376/377/381,KX-FC 235/238/245 (KX- 2 x 213 x"
+    },
+    {
+      "id": 50931,
+      "sku": "41020700",
+      "slug": "panasonic-kx-fp-205-207-208-215-218-kx-fc-225-226-228-253-255-258kx-fg-2452-2658-2858-56-2-x-213-x",
+      "name": "PANASONIC KX-FP 205/207/208/215/218, KX-FC 225/226/228/253/255/258,KX-FG 2452/2658/2858/56 2 x 213 x"
+    },
+    {
+      "id": 50932,
+      "sku": "41036301",
+      "slug": "panasonic-kx-fp-341-342-343-361-362-363-701-kx-fhd-332-333-351-352-353-kx-fa-57e-1-x-213-x-70",
+      "name": "PANASONIC KX-FP 341/342/343/361/362/363/701, KX-FHD 332/333/351/352/353 (KX-FA 57E) 1 x 213 x 70"
+    },
+    {
+      "id": 50929,
+      "sku": "41008201",
+      "slug": "panasonic-kx-fp-80-81-81al82-85-85al-86-88-89-150-151-152-153-155-158-181-185-308-328-kx-2-x-220-x",
+      "name": "PANASONIC KX-FP 80/81/81AL82/85/85AL/86/88/89/150/151/152/153/155/158/181/185/308/328, KX- 2 x 220 x"
+    },
+    {
+      "id": 50853,
+      "sku": "09108000",
+      "slug": "panasonic-kx-p-1080-1090-110-115-120-145-624-1090-1095-1150-1123-1124-1191-1592-1595",
+      "name": "PANASONIC KX-P 1080/1090/110/115/120/145/624/1090/1095/1150/1123/1124/1191/1592/1595"
+    },
+    {
+      "id": 50843,
+      "sku": "09015000",
+      "slug": "panasonic-kx-p-150-150c-2123-2124-2180-3124",
+      "name": "PANASONIC KX-P 150/150C/2123/2124/2180/3124"
+    },
+    {
+      "id": 50937,
+      "sku": "41000302",
+      "slug": "philips-magic-3-series-pfa331-ppf531-571-575-581-585-1-x-217-x-45",
+      "name": "PHILIPS MAGIC 3 Series, PFA331 - PPF531/571/575/581/585 1 x 217 x 45"
+    },
+    {
+      "id": 51288,
+      "sku": "76500010",
+      "slug": "ricoh-mp2554mp3054mp3554-842125-841994-24000-stran",
+      "name": "Ricoh MP2554,MP3054,MP3554, 842125, 841994 24000 strán"
+    },
+    {
+      "id": 51098,
+      "sku": "76500006",
+      "slug": "ricoh-mpc2503sp-mpc2003sp-841925-black-15000-stran",
+      "name": "Ricoh MPC2503SP/MPC2003SP-841925 Black 15000 strán"
+    },
+    {
+      "id": 51101,
+      "sku": "76500009",
+      "slug": "ricoh-mpc2503sp-mpc2003sp-841926-yellow-9500-stran",
+      "name": "Ricoh MPC2503SP/MPC2003SP-841926 Yellow 9500 strán"
+    },
+    {
+      "id": 51100,
+      "sku": "76500008",
+      "slug": "ricoh-mpc2503sp-mpc2003sp-841927-magenta-9500-stran",
+      "name": "Ricoh MPC2503SP/MPC2003SP-841927 Magenta 9500 strán"
+    },
+    {
+      "id": 51099,
+      "sku": "76500007",
+      "slug": "ricoh-mpc2503sp-mpc2003sp-841928-cyan-9500-stran",
+      "name": "Ricoh MPC2503SP/MPC2003SP-841928 Cyan 9500 strán"
+    },
+    {
+      "id": 50857,
+      "sku": "09001004",
+      "slug": "seikosha-sbp10-10ai-10ax-10cx-10l-10tx-10-plus-1051-10051-sb-10-bp7800-5780-6000-9000-bp",
+      "name": "SEIKOSHA SBP10/10AI/10AX/10CX/10L/10TX/10 PLUS/1051/10051, SB 10, BP7800/5780/6000/9000/BP"
+    },
+    {
+      "id": 50855,
+      "sku": "09080010",
+      "slug": "seikosha-sp-800-1000-1200-1600-1900-2000-2400",
+      "name": "SEIKOSHA SP 800/1000/1200/1600/1900/2000/2400"
+    },
+    {
+      "id": 50939,
+      "sku": "41073000",
+      "slug": "sharp-730-fo-720-730-760-775l-780-781-785-880-885-nx-100-530-670ux-300-305-310-345l-370-2-x-220-x",
+      "name": "SHARP 730, FO 720/730/760/775L/780/781/785/880/885, NX 100/530/670,UX 300/305/310/345L/370 2 x 220 x"
+    },
+    {
+      "id": 50941,
+      "sku": "41146002",
+      "slug": "sharp-fo-1450-1460-1650-1850-ux-500-510-600-100-1100-1150m-1300-1400-1500m-ux-10-15-16c-2-x-218-x",
+      "name": "SHARP FO 1450/1460/1650/1850, UX 500/510/600/100/1100/1150M/1300/1400, 1500M (UX 10/15/16C 2 x 218 x"
+    },
+    {
+      "id": 50940,
+      "sku": "41145000",
+      "slug": "sharp-fo-1450-1500m-1650-1660-1850-ux-1000-1100-1300-1400-2100-3500-1-x-218-x-200",
+      "name": "SHARP FO 1450/1500M/1650/1660/1850, UX-1000/1100/1300/1400/2100/3500 1 x 218 x 200"
+    },
+    {
+      "id": 50863,
+      "sku": "09001000",
+      "slug": "star-lc-9-9c-10-10ii-10c-20-100-1000-lx-10-nx-1000-1000ii-1000c-1001-1040",
+      "name": "STAR LC 9/9C/10/10II/10C/20/100/1000, LX 10, NX 1000/1000II/1000C/1001/1040"
+    },
+    {
+      "id": 50859,
+      "sku": "09001010",
+      "slug": "star-nl-10-24-10-nd-nl-np-nr-nx-10-amt525i-nb2410-n2410-samsung-sp2411-2422-2412-0912",
+      "name": "STAR NL 10/24-10, ND/NL/NP/NR/NX 10/AMT525I, NB2410/N2410, SAMSUNG SP2411/2422/2412/0912,"
+    },
+    {
+      "id": 50873,
+      "sku": "09020011",
+      "slug": "star-sp-200-298-500-2000-mp200-212f-216-221sp-242sp-292n-scp700-rc200p-black",
+      "name": "STAR SP 200-298/500/2000, MP200/212F/216/221SP/242SP/292N, SCP700 (RC200P) black"
+    },
+    {
+      "id": 50871,
+      "sku": "09020010",
+      "slug": "star-sp-200-298-500-2000-mp200-212f-216-221sp-242sp-292n-scp700-rc200p-violet",
+      "name": "STAR SP 200-298/500/2000, MP200/212F/216/221SP/242SP/292N, SCP700 (RC200P) violet"
+    },
+    {
+      "id": 51131,
+      "sku": "05171000",
+      "slug": "t-1710-1710-2310-2500-1650-2050-2540-1-x-300-g",
+      "name": "T 1710 1710/2310/2500/1650/2050/2540 1 x 300 g"
+    },
+    {
+      "id": 51121,
+      "sku": "05022000",
+      "slug": "t-220p-t-88p-4910-5910-7910-8510-1-x-375-g",
+      "name": "T 220P/T 88P 4910/5910/7910/8510 1 x 375 g"
+    },
+    {
+      "id": 51130,
+      "sku": "05251000",
+      "slug": "t-2510-2510-2550-3220-4010-1-x-450-g",
+      "name": "T 2510 2510/2550/3220/4010 1 x 450 g"
+    },
+    {
+      "id": 51125,
+      "sku": "05005600",
+      "slug": "t-56-p-4111-4121-4130-4140-1-x-250-g",
+      "name": "T 56 P 4111/4121/4130/4140 1 x 250 g"
+    },
+    {
+      "id": 51118,
+      "sku": "05006800",
+      "slug": "t-68-p-9100-9110-9230-9240-1-x-275-g",
+      "name": "T 68 P 9100/9110/9230/9240 1 x 275 g"
+    },
+    {
+      "id": 51128,
+      "sku": "05120042",
+      "slug": "t-1200e-e-studio-12-15-120-150-162-162d-1-x-210-g",
+      "name": "T-1200E e-STUDIO 12/15/120/150/162/162D 1 x 210 g"
+    },
+    {
+      "id": 51120,
+      "sku": "05016303",
+      "slug": "t-1640e-hc-e-studio-163-165-166-167-203-205-206-207-237-1-x-675-g",
+      "name": "T-1640E HC e-STUDIO 163/165/166/167/203/205/206/207/237 1 x 675 g"
+    },
+    {
+      "id": 51122,
+      "sku": "05023210",
+      "slug": "t-2340e-e-studio-200l-202l-230-232-280-282-1-x-675-g",
+      "name": "T-2340E e-STUDIO 200L/202L/230/232/280/282 1 x 675 g"
+    },
+    {
+      "id": 51032,
+      "sku": "05130500b",
+      "slug": "tec-lb-1305-1305b-1306-1306c-1321c-1321ce-1321e-1323ce-1323s-1325lf-3600-3600dx-mannesma",
+      "name": "TEC LB 1305/1305B/1306/1306C/1321C/1321CE/1321E/1323CE/1323S/1325,LF 3600/3600DX, MANNESMA"
+    },
+    {
+      "id": 51124,
+      "sku": "05050100",
+      "slug": "tk-04-tk-12-toshiba-tf-501-505-601-605-610-tf2100-2300-tec-lb1000-c-itoh-ci-44facit-p8",
+      "name": "TK 04/TK 12 TOSHIBA TF 501/505/601/605/610, TF2100/2300, TEC LB1000, C.ITOH CI-44,FACIT P8"
+    },
+    {
+      "id": 51016,
+      "sku": "05702200",
+      "slug": "tn-301-black-7022-7130-7222-7228-1-x-676g",
+      "name": "TN - 301 black -7022/7130/7222/7228 1 x 676g"
+    },
+    {
+      "id": 52727,
+      "sku": "SET-HP-207X-KOM-BEZ-CIPU",
+      "slug": "hp-207x-cmyk-kompatibilna-sada-tonerov-bez-cipu",
+      "name": "HP 207X / W2210-1-2-3X CMYK – kompatibilná sada bez čipu (4 ks)"
+    },
+    {
+      "id": 52728,
+      "sku": "SET-HP-219X-KOM-BEZ-CIPU",
+      "slug": "hp-219x-cmyk-kompatibilna-sada-tonerov-bez-cipu",
+      "name": "HP 219X / W2190-1-2-3X CMYK – kompatibilná sada bez čipu (4 ks)"
+    },
+    {
+      "id": 52725,
+      "sku": "SET-HP-415A-KOM-BEZ-CIPU",
+      "slug": "hp-415a-cmyk-kompatibilna-sada-tonerov-bez-cipu",
+      "name": "HP 415A / W2030-1-2-3A CMYK – kompatibilná sada bez čipu (4 ks)"
+    },
+    {
+      "id": 52774,
+      "sku": "SET-HP-415A-HAT",
+      "slug": "hp-415a-cmyk-renovovana-sada-tonerov-hatona-bez-cipu",
+      "name": "HP 415A / W2030-1-2-3A CMYK – renovovaná sada Hatona bez čipu (4 ks)"
+    },
+    {
+      "id": 52726,
+      "sku": "SET-HP-415X-KOM-BEZ-CIPU",
+      "slug": "hp-415x-cmyk-kompatibilna-sada-tonerov-bez-cipu",
+      "name": "HP 415X / W2030-1-2-3X CMYK – kompatibilná sada bez čipu (4 ks)"
+    },
+    {
+      "id": 52775,
+      "sku": "SET-HP-415X-HAT",
+      "slug": "hp-415x-cmyk-renovovana-sada-tonerov-hatona-bez-cipu",
+      "name": "HP 415X / W2030-1-2-3X CMYK – renovovaná sada Hatona bez čipu (4 ks)"
+    },
+    {
+      "id": 52776,
+      "sku": "SET-HP-207A-HAT-OEM-CIP",
+      "slug": "hp-207a-cmyk-renovovana-sada-tonerov-hatona-s-oem-cipom",
+      "name": "HP 207A / W2210-1-2-3A CMYK – renovovaná sada Hatona s OEM čipom (4 ks)"
+    },
+    {
+      "id": 52731,
+      "sku": "SET-HP-207A-REN-OEM-CIP",
+      "slug": "hp-207a-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 207A / W2210-1-2-3A CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52777,
+      "sku": "SET-HP-207X-HAT-OEM-CIP",
+      "slug": "hp-207x-cmyk-renovovana-sada-tonerov-hatona-s-oem-cipom",
+      "name": "HP 207X / W2210-1-2-3X CMYK – renovovaná sada Hatona s OEM čipom (4 ks)"
+    },
+    {
+      "id": 52732,
+      "sku": "SET-HP-207X-REN-OEM-CIP",
+      "slug": "hp-207x-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 207X / W2210-1-2-3X CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52738,
+      "sku": "SET-HP-212A-REN-OEM-CIP",
+      "slug": "hp-212a-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 212A / W2120-1-2-3A CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52739,
+      "sku": "SET-HP-212X-REN-OEM-CIP",
+      "slug": "hp-212x-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 212X / W2120-1-2-3X CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52734,
+      "sku": "SET-HP-213A-REN-OEM-CIP",
+      "slug": "hp-213a-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 213A / W2130-1-2-3A CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52735,
+      "sku": "SET-HP-213X-REN-OEM-CIP",
+      "slug": "hp-213x-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 213X / W2130-1-2-3X CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52764,
+      "sku": "SET-HP-216A-HAT-OEM-CIP",
+      "slug": "hp-216a-cmyk-renovovana-sada-tonerov-hatona-s-oem-cipom",
+      "name": "HP 216A / W2410-1-2-3A CMYK – renovovaná sada Hatona s OEM čipom (4 ks)"
+    },
+    {
+      "id": 52733,
+      "sku": "SET-HP-216A-REN-OEM-CIP",
+      "slug": "hp-216a-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 216A / W2410-1-2-3A CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52736,
+      "sku": "SET-HP-219A-REN-OEM-CIP",
+      "slug": "hp-219a-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 219A / W2190-1-2-3A CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52737,
+      "sku": "SET-HP-219X-REN-OEM-CIP",
+      "slug": "hp-219x-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 219X / W2190-1-2-3X CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52729,
+      "sku": "SET-HP-415A-REN-OEM-CIP",
+      "slug": "hp-415a-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 415A / W2030-1-2-3A CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52730,
+      "sku": "SET-HP-415X-REN-OEM-CIP",
+      "slug": "hp-415x-cmyk-renovovana-sada-tonerov-s-oem-cipom-patent-free",
+      "name": "HP 415X / W2030-1-2-3X CMYK – renovovaná sada s OEM čipom Patent Free (4 ks)"
+    },
+    {
+      "id": 52767,
+      "sku": "SET-HP-117A-HAT",
+      "slug": "hp-117a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 117A / W2070-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52740,
+      "sku": "SET-HP-124A-HAT",
+      "slug": "hp-124a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 124A / Q6000-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52742,
+      "sku": "SET-HP-125A-HAT",
+      "slug": "hp-125a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 125A / CB540-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52747,
+      "sku": "SET-HP-126A-HAT",
+      "slug": "hp-126a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 126A / CE310-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52745,
+      "sku": "SET-HP-128A-HAT",
+      "slug": "hp-128a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 128A / CE320-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52755,
+      "sku": "SET-HP-130A-HAT",
+      "slug": "hp-130a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 130A / CF350-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52756,
+      "sku": "SET-HP-131A-HAT",
+      "slug": "hp-131a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 131A / CF210-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 53686,
+      "sku": "SET-HP-CF210X-CF211A-CF212A-CF213A-HAT",
+      "slug": "hp-131x-131a-cf210x-cf211-2-3a-cmyk-renovovana-sada-hatona-4-ks",
+      "name": "HP 131X/131A / CF210X, CF211-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52748,
+      "sku": "SET-HP-201A-HAT",
+      "slug": "hp-201a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 201A / CF400-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52749,
+      "sku": "SET-HP-201X-HAT",
+      "slug": "hp-201x-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 201X / CF400-1-2-3X CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52771,
+      "sku": "SET-HP-203A-HAT",
+      "slug": "hp-203a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 203A / CF540-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52772,
+      "sku": "SET-HP-203X-HAT",
+      "slug": "hp-203x-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 203X / CF540-1-2-3X CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52773,
+      "sku": "SET-HP-205A-HAT",
+      "slug": "hp-205a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 205A / CF530-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52770,
+      "sku": "SET-HP-207A-HAT-CIP",
+      "slug": "hp-207a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 207A / W2210-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52769,
+      "sku": "SET-HP-207X-HAT-CIP",
+      "slug": "hp-207x-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 207X / W2210-1-2-3X CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52765,
+      "sku": "SET-HP-212A-HAT",
+      "slug": "hp-212a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 212A / W2120-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52768,
+      "sku": "SET-HP-212X-HAT-CIP",
+      "slug": "hp-212x-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 212X / W2120-1-2-3X CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52766,
+      "sku": "SET-HP-212X-HAT-CIP-T10",
+      "slug": "hp-212x-cmyk-renovovana-sada-tonerov-hatona-t10",
+      "name": "HP 212X / W2120-1-2-3X CMYK – renovovaná sada Hatona T10 (4 ks)"
+    },
+    {
+      "id": 52763,
+      "sku": "SET-HP-216A-HAT-CIP",
+      "slug": "hp-216a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 216A / W2410-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52780,
+      "sku": "SET-HP-219A-HAT-CIP",
+      "slug": "hp-219a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 219A / W2190-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52781,
+      "sku": "SET-HP-219X-HAT-CIP",
+      "slug": "hp-219x-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 219X / W2190-1-2-3X CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52762,
+      "sku": "SET-HP-220X-HAT-CIP",
+      "slug": "hp-220x-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 220X / W2200-1-2-3X CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52743,
+      "sku": "SET-HP-304A-HAT",
+      "slug": "hp-304a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 304A / CC530-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52746,
+      "sku": "SET-HP-305A-HAT",
+      "slug": "hp-305a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 305A / CE410-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 53693,
+      "sku": "SET-HP-CE410X-CE411A-CE412A-CE413A-HAT",
+      "slug": "hp-305x-305a-ce410x-ce411-2-3a-cmyk-renovovana-sada-hatona-4-ks",
+      "name": "HP 305X/305A / CE410X, CE411-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52760,
+      "sku": "SET-HP-307A-HAT",
+      "slug": "hp-307a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 307A / CE740-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52754,
+      "sku": "SET-HP-312A-HAT",
+      "slug": "hp-312a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 312A / CF380-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 53695,
+      "sku": "SET-HP-CF380X-CF381A-CF382A-CF383A-HAT",
+      "slug": "hp-312x-312a-cf380x-cf381-2-3a-cmyk-renovovana-sada-hatona-4-ks",
+      "name": "HP 312X/312A / CF380X, CF381-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52752,
+      "sku": "SET-HP-410A-HAT",
+      "slug": "hp-410a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 410A / CF410-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52753,
+      "sku": "SET-HP-410X-HAT",
+      "slug": "hp-410x-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 410X / CF410-1-2-3X CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52778,
+      "sku": "SET-HP-415A-HAT-CIP",
+      "slug": "hp-415a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 415A / W2030-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52779,
+      "sku": "SET-HP-415X-HAT-CIP",
+      "slug": "hp-415x-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 415X / W2030-1-2-3X CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52744,
+      "sku": "SET-HP-504A-HAT",
+      "slug": "hp-504a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 504A / CE250-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 53697,
+      "sku": "SET-HP-CE250X-CE251A-CE252A-CE253A-HAT",
+      "slug": "hp-504x-504a-ce250x-ce251-2-3a-cmyk-renovovana-sada-hatona-4-ks",
+      "name": "HP 504X/504A / CE250X, CE251-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52757,
+      "sku": "SET-HP-507A-HAT",
+      "slug": "hp-507a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 507A / CE400-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 53700,
+      "sku": "SET-HP-CE400X-CE401A-CE402A-CE403A-HAT",
+      "slug": "hp-507x-507a-ce400x-ce401-2-3a-cmyk-renovovana-sada-hatona-4-ks",
+      "name": "HP 507X/507A / CE400X, CE401-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52750,
+      "sku": "SET-HP-508A-HAT",
+      "slug": "hp-508a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 508A / CF360-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52751,
+      "sku": "SET-HP-508X-HAT",
+      "slug": "hp-508x-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 508X / CF360-1-2-3X CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52741,
+      "sku": "SET-HP-642A-HAT",
+      "slug": "hp-642a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 642A / CB400-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52759,
+      "sku": "SET-HP-647A-HAT",
+      "slug": "hp-647a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 647A / CE260-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52758,
+      "sku": "SET-HP-650A-HAT",
+      "slug": "hp-650a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 650A / CE270-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 52761,
+      "sku": "SET-HP-651A-HAT",
+      "slug": "hp-651a-cmyk-renovovana-sada-tonerov-hatona",
+      "name": "HP 651A / CE340-1-2-3A CMYK – renovovaná sada Hatona (4 ks)"
+    },
+    {
+      "id": 43508,
+      "sku": "555000704",
+      "slug": "renovovany-valec-hatona-pre-hp-ce314a-126a-lj-cp1025-opc",
+      "name": "HP CE314A (126A) CMYK renovovaný optický valec Hatona"
+    },
+    {
+      "id": 43695,
+      "sku": "555000010",
+      "slug": "renovovany-toner-hatona-pre-lexmark-58d2h-ms-mx-721722725822823825826-15k-black",
+      "name": "Renovovaný toner HATONA pre Lexmark 58D2H MS/MX 721,722,725,822,823,825,826 15K Black"
+    },
+    {
+      "id": 43704,
+      "sku": "555001189",
+      "slug": "renovovany-toner-hatona-pre-lexmark-58d2u-ms-mx-722725822823825826-55k-black",
+      "name": "Renovovaný toner HATONA pre Lexmark 58D2U MS/MX 722,725,822,823,825,826 55K Black"
+    },
+    {
+      "id": 43711,
+      "sku": "555000859",
+      "slug": "renovovany-toner-hatona-pre-oki-b412-432-512-mb472-492-562-black-7k",
+      "name": "Renovovaný toner HATONA pre OKI B412/432/512/MB472/492/562 Black 7K"
+    },
+    {
+      "id": 43757,
+      "sku": "555000706",
+      "slug": "renovovany-toner-hatona-pre-oki-c3300-3400-3450-3600-black-25k",
+      "name": "Renovovaný toner HATONA pre OKI C3300/3400/3450/3600 Black 2,5K"
+    },
+    {
+      "id": 43758,
+      "sku": "555000707",
+      "slug": "renovovany-toner-hatona-pre-oki-c3300-3400-3450-3600-cyan-25k",
+      "name": "Renovovaný toner HATONA pre OKI C3300/3400/3450/3600 Cyan 2,5K"
+    },
+    {
+      "id": 43759,
+      "sku": "555000708",
+      "slug": "renovovany-toner-hatona-pre-oki-c3300-3400-3450-3600-magenta-25k",
+      "name": "Renovovaný toner HATONA pre OKI C3300/3400/3450/3600 Magenta 2,5K"
+    },
+    {
+      "id": 43760,
+      "sku": "555000709",
+      "slug": "renovovany-toner-hatona-pre-oki-c3300-3400-3450-3600-yellow-25k",
+      "name": "Renovovaný toner HATONA pre OKI C3300/3400/3450/3600 Yellow 2,5K"
+    },
+    {
+      "id": 43777,
+      "sku": "555000726",
+      "slug": "renovovany-toner-hatona-pre-oki-c510-511-530-531-mc561-562-cyan-5k",
+      "name": "Renovovaný toner HATONA pre OKI C510/511/530/531/MC561/562 Cyan 5K"
+    },
+    {
+      "id": 43778,
+      "sku": "555000727",
+      "slug": "renovovany-toner-hatona-pre-oki-c510-511-530-531-mc561-562-magenta-5k",
+      "name": "Renovovaný toner HATONA pre OKI C510/511/530/531/MC561/562 Magenta 5K"
+    },
+    {
+      "id": 43779,
+      "sku": "555000728",
+      "slug": "renovovany-toner-hatona-pre-oki-c510-511-530-531-mc561-562-yellow-5k",
+      "name": "Renovovaný toner HATONA pre OKI C510/511/530/531/MC561/562 Yellow 5K"
+    },
+    {
+      "id": 43727,
+      "sku": "555001144",
+      "slug": "renovovany-toner-hatona-pre-oki-c532-542-mc563-573-black-7k",
+      "name": "Renovovaný toner HATONA pre OKI C532/542/MC563/573 Black 7K"
+    },
+    {
+      "id": 43728,
+      "sku": "555001145",
+      "slug": "renovovany-toner-hatona-pre-oki-c532-542-mc563-573-cyan-6k",
+      "name": "Renovovaný toner HATONA pre OKI C532/542/MC563/573 Cyan 6K"
+    },
+    {
+      "id": 43729,
+      "sku": "555001146",
+      "slug": "renovovany-toner-hatona-pre-oki-c532-542-mc563-573-magenta-6k",
+      "name": "Renovovaný toner HATONA pre OKI C532/542/MC563/573 Magenta 6K"
+    },
+    {
+      "id": 43730,
+      "sku": "555001147",
+      "slug": "renovovany-toner-hatona-pre-oki-c532-542-mc563-573-yellow-6k",
+      "name": "Renovovaný toner HATONA pre OKI C532/542/MC563/573 Yellow 6K"
+    },
+    {
+      "id": 43708,
+      "sku": "555001251",
+      "slug": "renovovany-valec-hatona-pre-lexmark-optra-e-230-232-240-330-332-340-342-series-fotomodul",
+      "name": "Renovovaný valec HATONA pre Lexmark Optra E 230/232/240/330/332/340/342 series fotomodul"
+    }
+  ]
+}
