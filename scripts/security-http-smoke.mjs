@@ -150,7 +150,7 @@ try {
   assert.equal(wooCalls, beforePurchase, 'empty checkout cannot create an external order or payment');
   result = await call('/api/ai-order-status');
   assert.equal(result.response.status, 401, 'private order data requires a session');
-  for (const path of ['/prihlasenie', '/kosik', '/pokladna', '/produkty', '/produkt/hp-security-1']) {
+  for (const path of ['/', '/prihlasenie', '/kosik', '/pokladna', '/produkty', '/produkt/hp-security-1']) {
     result = await call(path);
     assert.ok([200, 302, 303, 307, 308].includes(result.response.status), path + ' stays usable: ' + result.response.status);
     if (result.response.status !== 200) assert.match(result.response.headers.get('location') || '', /^\/(kosik|prihlasenie|pokladna)/);
@@ -161,6 +161,21 @@ try {
   });
   assert.equal(result.response.status, 413, 'oversized declared request body is rejected');
   headersOk(result.response);
+  const streamedBody = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode('{"padding":"'));
+      for (let index = 0; index < 17; index++) controller.enqueue(new Uint8Array(65536).fill(97));
+      controller.enqueue(new TextEncoder().encode('"}'));
+      controller.close();
+    },
+  });
+  const streamed = await fetch(base + '/api/auth/login', {
+    method: 'POST', body: streamedBody, duplex: 'half',
+    headers: { origin: 'https://www.tonerymaxim.sk', 'content-type': 'application/json', 'x-forwarded-for': '198.51.100.238' },
+    signal: AbortSignal.timeout(20000),
+  });
+  await streamed.text();
+  assert.ok([400, 413].includes(streamed.status), 'oversized chunked body is rejected without Content-Length');
   result = await call('/api/health');
   assert.equal(result.response.status, 200, 'healthcheck remains available after adversarial traffic');
   assert.ok(wooCalls >= 1 && wooCalls <= 3, 'only the intentional fixture catalogue refresh reaches WooCommerce');

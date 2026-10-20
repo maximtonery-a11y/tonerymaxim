@@ -76,10 +76,16 @@ AUTH_SECRET ani TM_PERSISTENCE_SECRET neotáčať bez plánovanej migrácie.
   a lokálnych výnimiek, funkčné GET/POST s hlavičkou, súkromie objednávok,
   bezpečné odmietnutie prázdnej pokladne a dostupnosť hlavných stránok.
   HTTP fixture neodosiela skutočné objednávky, platby ani e-maily.
-- GitHub Release checks vykoná Astro check, celú testovaciu sadu, produkčný
-  build s predbežnými regresnými testami, HTTP smoke a npm audit --omit=dev.
+- GitHub Release checks vykoná Astro check, bezpečnostné testy, DPD, históriu
+  cien, migrácie, produkčné a výkonnostné regresie, produkčný build s kritickými
+  regresnými testami, HTTP smoke a npm audit --omit=dev.
 - Výsledok CI treba kontrolovať na presnom commite. Tento dokument neoznačuje
   neuskutočnené testy alebo produkčné nasadenie za úspešné.
+
+Plný npm test bol v prvom CI behu spustený. V časti Ads prešlo 83/85 testov;
+2 testy vyžadovali lokálny produkčný katalóg .tm-cache/products.json a skončili
+na chýbajúcich dátach/Woo credentials. Ďalšie časti tohto príkazu sa nespustili.
+Nejde o úspešný beh celej sady. Tieto dátové testy sa týmto patchom nemenia.
 
 ## Zostáva mimo dostupného overenia
 
