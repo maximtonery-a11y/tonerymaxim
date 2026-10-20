@@ -73,12 +73,13 @@ const child = spawn(process.execPath, ['--import', shim, join(root, 'dist/server
   env: { PATH: process.env.PATH, HOST: '127.0.0.1', PORT: String(port), NODE_ENV: 'production',
     TM_PERSISTENT_DATA_DIR: temp, TM_CACHE_DIR: cacheRoot, TM_DISABLE_BACKGROUND_WORKERS: '1', TM_DISABLE_INDEXNOW: '1',
     WOO_URL: wooOrigin, WOO_CONSUMER_KEY: 'ck_local', WOO_CONSUMER_SECRET: 'cs_local', WOO_SYNC_PAGE_DELAY_MS: '120',
-    WOO_SYNC_MIN_PRODUCTS: '7000', WOO_SYNC_EXPECTED_MIN_PRODUCTS: '7000', OPENAI_ASSISTANT_ENABLED: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
+    WOO_SYNC_MIN_PRODUCTS: '7000', WOO_SYNC_EXPECTED_MIN_PRODUCTS: '7000', OPENAI_ASSISTANT_ENABLED: '0',
+    SYNC_SECRET: 'offline-predeploy-sync-token-2026-10-20' }, stdio: ['ignore', 'pipe', 'pipe'] });
 child.stdout.on('data', data => logs += data); child.stderr.on('data', data => logs += data);
 const exit = new Promise(r => child.once('exit', r));
 async function request(path, method = 'GET', body, diagnostic = false) {
   const start = performance.now();
-  const response = await fetch(base + path, { method, redirect: 'manual', headers: { Origin: base, 'X-Forwarded-For': clientContext.getStore() || '192.0.2.100', ...(body ? { 'Content-Type': 'application/json' } : {}) },
+  const response = await fetch(base + path, { method, redirect: 'manual', headers: { Origin: base, 'X-Forwarded-For': clientContext.getStore() || '192.0.2.100', ...(path.startsWith('/api/sync-products') ? { 'x-sync-token': 'offline-predeploy-sync-token-2026-10-20' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
     ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(path.startsWith('/api/sync-products') ? 180000 : 15000) });
   const text = await response.text(), ms = performance.now() - start;
   assert.ok(response.status === 200 || (diagnostic && response.status === 503), `${path}: HTTP ${response.status}: ${text.slice(0,200)}`);

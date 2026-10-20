@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { clientIp } from '../../lib/request-security.ts';
 import { sendMail } from '../../lib/mail.ts';
 
 export const prerender = false;
@@ -13,7 +14,7 @@ function validPhone(v: string) { return !v || /^[+\d][\d\s().-]{6,24}$/.test(v);
 
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   try {
-    const key = String(clientAddress || request.headers.get('x-forwarded-for') || 'unknown').split(',')[0].trim();
+    const key = clientIp(request, clientAddress);
     const now = Date.now(); const current = attempts.get(key);
     if (!current || current.reset < now) {
       for (const [attemptKey, value] of attempts) if (value.reset < now) attempts.delete(attemptKey);

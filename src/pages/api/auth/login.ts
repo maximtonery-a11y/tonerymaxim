@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { safeLoginRedirect } from "../../../lib/request-security.ts";
 import { findWooCustomerByEmail, verifyWordPressLogin } from "../../../lib/woo-client";
 import { setCustomerCookie } from "../../../lib/auth-session";
 import { markMissingRegistrationCompleted, recordMissingRegistrationAttempt } from "../../../lib/missing-registration";
@@ -57,7 +58,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         first_name: customer.first_name,
         last_name: customer.last_name,
       },
-      redirect: next.startsWith("/") ? next : "/ucet",
+      redirect: safeLoginRedirect(next),
     });
   } catch (error: any) {
     return json({ ok: false, error: error?.message || "Prihlásenie sa nepodarilo." }, 500);
