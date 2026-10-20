@@ -42,7 +42,7 @@ while(queue.length && visited.size<90) {
  try {
   const html=await fetchHtml(url);
   const flat=text(html);
-  const matches=[...flat.matchAll(/Obj\.\s*č[ií]slo\s*:\s*([A-Z]{1,3}-[A-Z0-9-]+)/gi)];
+  const matches=[...flat.matchAll(/Obj\.\s*(?:č[ií]slo|.islo|cislo)\s*:\s*([A-Z]{1,3}-[A-Z0-9-]+)/gi)];
   let prev=0;
   for(const m of matches) {
     const sku=m[1].toUpperCase();
