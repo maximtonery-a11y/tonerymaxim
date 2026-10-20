@@ -17,7 +17,8 @@ test('patched Nodemailer preserves Slovak transactional mail in 10 offline round
       });
       assert.equal(result.envelope.from, 'shop@example.invalid');
       assert.deepEqual(result.envelope.to, ['customer@example.invalid']);
-      const message = Buffer.from(result.message).toString('utf8');
+      if (!Buffer.isBuffer(result.message)) throw new Error('Expected buffered offline message');
+      const message = result.message.toString('utf8');
       assert.match(message, /^From: .+<shop@example\.invalid>/m);
       assert.match(message, /Reply-To: support@example\.invalid/);
       assert.match(message, /Content-Type: multipart\/alternative/i);
