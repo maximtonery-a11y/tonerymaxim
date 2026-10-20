@@ -505,8 +505,8 @@
     "technical_info": "Formát: 320 × 310 mm. Vario špirála, natieraný lesklý papier, 7 listov. Cena za 1 ks výrobku.",
     "weight": "153 g",
     "availability": {
-      "raw": "Skladom",
-      "inStock": true,
+      "raw": "Dostupnosť neoverená",
+      "inStock": false,
       "checkedAt": "2026-08-29T10:56:20.825Z",
       "source": "pressgroup.sk"
     }
@@ -1627,8 +1627,8 @@
     "technical_info": "Formát: 300 × 140 mm. Vario špirála, ofsetový papier, 64 strán. Cena za 1 ks výrobku.",
     "weight": "187 g",
     "availability": {
-      "raw": "Skladom",
-      "inStock": true,
+      "raw": "Dostupnosť neoverená",
+      "inStock": false,
       "checkedAt": "2026-08-29T10:56:20.825Z",
       "source": "pressgroup.sk"
     }
@@ -2947,8 +2947,8 @@
     "technical_info": "Formát: 680 × 480 mm. Orez, natieraný matný papier, 1 list. Cena za 1 ks výrobku.",
     "weight": "66 g",
     "availability": {
-      "raw": "Skladom",
-      "inStock": true,
+      "raw": "Dostupnosť neoverená",
+      "inStock": false,
       "checkedAt": "2026-08-29T10:56:20.825Z",
       "source": "pressgroup.sk"
     }
