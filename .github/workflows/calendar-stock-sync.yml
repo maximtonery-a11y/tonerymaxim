@@ -1,0 +1,31 @@
+name: Pressgroup calendar stock sync
+on:
+  schedule:
+    - cron: '30 5,13 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: calendar-stock-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Pressgroup stock
+        run: node scripts/sync-calendar-stock.mjs
+      - name: Commit verified availability
+        run: |
+          if git diff --quiet -- src/data/calendar-products.json; then exit 0; fi
+          git config user.name "tonerymaxim-stock-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/calendar-products.json
+          git commit -m "chore(calendars): sync verified Pressgroup availability"
+          git push
