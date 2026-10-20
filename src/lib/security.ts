@@ -1,7 +1,10 @@
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
 import { persistenceSecret, readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
-import { isStrongSecret } from './secret-validation';
+import { isStrongSecret } from './secret-validation.ts';
+import { clientIp, localDevelopmentHost, requestOriginAllowed, securityPath } from './request-security.ts';
+import { REQUEST_RATE_RULES, requestRateRule } from './rate-policy.ts';
+export { clientIp } from './request-security.ts';
 
 export type SecurityEvent = {
   ts: string;
@@ -12,7 +15,6 @@ export type SecurityEvent = {
   detail?: string;
 };
 
-type RateRule = { limit: number; windowMs: number };
 type Bucket = { count: number; resetAt: number };
 
 const buckets = new Map<string, Bucket>();
@@ -25,38 +27,7 @@ const events: SecurityEvent[] = [];
 const MAX_EVENTS = 300;
 const RATE_STATE_FLUSH_MS = 5_000;
 
-const RATE_RULES: Array<{ match: RegExp; methods?: string[]; rule: RateRule }> = [
-  // Prihlásenie: dostatočná rezerva pre reálnych zákazníkov aj firemné siete,
-  // stále však blokuje automatizované brute-force pokusy.
-  { match: /^\/api\/auth\/login$/, methods: ['POST'], rule: { limit: 30, windowMs: 60_000 } },
-
-  // Registrácia a obnova hesla: vyšší bezpečný limit, aby neblokoval legitímne opakovanie formulára.
-  { match: /^\/api\/auth\/(register|forgot-password|reset-password)$/, methods: ['POST'], rule: { limit: 15, windowMs: 10 * 60_000 } },
-  { match: /^\/api\/newsletter\/(subscribe|unsubscribe|account-unsubscribe)$/, methods: ['POST'], rule: { limit: 12, windowMs: 10 * 60_000 } },
-
-  // Checkout a GoPay: rezerva pre dvojklik, opakovanie po chybe a viac používateľov za jednou IP.
-  { match: /^\/api\/(order-create|gopay-create)$/, methods: ['POST'], rule: { limit: 30, windowMs: 60_000 } },
-
-  // GoPay stav môže frontend krátko pollingovať po návrate z platobnej brány.
-  { match: /^\/api\/gopay-status$/, methods: ['GET'], rule: { limit: 180, windowMs: 60_000 } },
-
-  { match: /^\/api\/contact$/, methods: ['POST'], rule: { limit: 12, windowMs: 10 * 60_000 } },
-  { match: /^\/api\/customer-care\//, methods: ['POST'], rule: { limit: 12, windowMs: 10 * 60_000 } },
-
-  // Citlivé účtové a platobné operácie.
-  { match: /^\/api\/account\/change-password$/, methods: ['POST'], rule: { limit: 10, windowMs: 10 * 60_000 } },
-  { match: /^\/api\/auth\/logout$/, methods: ['POST'], rule: { limit: 60, windowMs: 60_000 } },
-  { match: /^\/api\/(gopay-retry|gopay-change-payment)$/, methods: ['POST'], rule: { limit: 10, windowMs: 10 * 60_000 } },
-  { match: /^\/api\/sync-products$/, methods: ['GET', 'POST'], rule: { limit: 6, windowMs: 10 * 60_000 } },
-
-  // Analytika a vyhľadávanie generujú viac požiadaviek pri bežnom používaní.
-  { match: /^\/api\/analytics$/, methods: ['POST'], rule: { limit: 600, windowMs: 60_000 } },
-  { match: /^\/api\/(smart-search|products|product|printers)$/, methods: ['GET'], rule: { limit: 600, windowMs: 60_000 } },
-
-  // AI odpovede môžu využívať platené API. Limit chráni náklady, no ponecháva
-  // dostatočnú rezervu pre normálny rozhovor zákazníka s Tomášom.
-  { match: /^\/api\/ai-sales-assistant$/, methods: ['POST'], rule: { limit: 30, windowMs: 10 * 60_000 } },
-];
+const RATE_RULES = REQUEST_RATE_RULES;
 
 const TEST_ROUTES = new Set([
   '/api/test-woo',
@@ -66,10 +37,6 @@ const TEST_ROUTES = new Set([
   '/design/icons-test',
   '/design/product-detail',
   '/design/product-list',
-]);
-
-const ORIGIN_EXEMPT = new Set([
-  '/api/gopay-notify',
 ]);
 
 
@@ -112,7 +79,7 @@ function persistBuckets(immediate = false): void {
 }
 
 function env(name: string): string {
-  return String(process.env[name] || import.meta.env[name] || '').trim();
+  return String(process.env[name] || (import.meta as any).env?.[name] || '').trim();
 }
 
 export function isLocalHost(hostname: string): boolean {
@@ -120,10 +87,6 @@ export function isLocalHost(hostname: string): boolean {
   return host === 'localhost' || host === '127.0.0.1' || host === '::1';
 }
 
-export function clientIp(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-  return forwarded || request.headers.get('x-real-ip') || request.headers.get('cf-connecting-ip') || 'unknown';
-}
 
 export function hashIp(ip: string): string {
   return createHash('sha256').update(`${ip}|${persistenceSecret()}|tm-security`).digest('hex').slice(0, 12);
@@ -145,7 +108,9 @@ export function requestId(request: Request): string {
 
 export async function rateLimitFor(path: string, method: string, request: Request): Promise<{ ok: true } | { ok: false; retryAfter: number }> {
   await loadPersistentBuckets();
-  const matched = RATE_RULES.find((item) => item.match.test(path) && (!item.methods || item.methods.includes(method)));
+  path = securityPath(path);
+  method = method.toUpperCase();
+  const matched = requestRateRule(path, method);
   if (!matched) return { ok: true };
 
   const now = Date.now();
@@ -162,14 +127,14 @@ export async function rateLimitFor(path: string, method: string, request: Reques
       if (typeof oldestKey !== 'string') break;
       buckets.delete(oldestKey);
     }
-    buckets.set(key, { count: 1, resetAt: now + matched.rule.windowMs });
+    buckets.set(key, { count: 1, resetAt: now + matched.windowMs });
     persistBuckets(needsImmediatePersistence);
     return { ok: true };
   }
 
   current.count += 1;
   persistBuckets(needsImmediatePersistence);
-  if (current.count <= matched.rule.limit) return { ok: true };
+  if (current.count <= matched.limit) return { ok: true };
 
   const retryAfter = Math.max(1, Math.ceil((current.resetAt - now) / 1000));
   logEvent({ type: 'rate-limit', path, method, ipHash: hashIp(ip), detail: `retry-after=${retryAfter}s` });
@@ -177,34 +142,11 @@ export async function rateLimitFor(path: string, method: string, request: Reques
 }
 
 export function shouldBlockTestRoute(path: string, hostname: string): boolean {
-  return TEST_ROUTES.has(path) && !isLocalHost(hostname) && env('TM_ALLOW_TEST_ENDPOINTS') !== '1';
+  return TEST_ROUTES.has(securityPath(path)) && !localDevelopmentHost(hostname);
 }
 
 export function validateOrigin(request: Request, url: URL): boolean {
-  const method = request.method.toUpperCase();
-  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return true;
-  if (ORIGIN_EXEMPT.has(url.pathname)) return true;
-
-  const origin = request.headers.get('origin');
-  const referer = request.headers.get('referer');
-  if (!origin && !referer) {
-    const fetchSite = String(request.headers.get('sec-fetch-site') || '').toLowerCase();
-    if (fetchSite === 'same-origin' || fetchSite === 'same-site') return true;
-
-    // Synchronizácia katalógu je server-to-server volanie chránené vlastným
-    // tajomstvom. Ostatné mutácie bez preukázateľného pôvodu odmietneme.
-    if (url.pathname === '/api/sync-products') {
-      return Boolean(request.headers.get('authorization') || request.headers.get('x-sync-secret'));
-    }
-    return false;
-  }
-
-  try {
-    const source = new URL(origin || referer || '');
-    return source.host === url.host;
-  } catch {
-    return false;
-  }
+  return requestOriginAllowed(request, url);
 }
 
 export function bodyTooLarge(request: Request, maxBytes = 1_000_000): boolean {
@@ -273,14 +215,14 @@ export function securityStatus(hostname: string) {
     ok: warnings.length === 0,
     warnings,
     hostname,
-    local: isLocalHost(hostname),
+    local: localDevelopmentHost(hostname),
     dedicatedAuthSecret: isStrongSecret(authSecret, 32),
     syncProtected: isStrongSecret(syncSecret, 24),
     adminProtected: isStrongSecret(adminSecret, 24),
-    testEndpointsBlocked: !isLocalHost(hostname) && env('TM_ALLOW_TEST_ENDPOINTS') !== '1',
+    testEndpointsBlocked: !localDevelopmentHost(hostname),
     rateLimitRules: RATE_RULES.length,
     persistentDataDir: TM_DATA_ROOT,
-    rateLimitPersistent: true,
+    rateLimitPersistent: false,
     recentEvents: readSecurityEvents(50),
   };
 }

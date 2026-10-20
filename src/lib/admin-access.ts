@@ -1,4 +1,5 @@
 import { isStrongSecret } from './secret-validation.ts';
+import { localDevelopmentHost, secureTokenEqual } from './request-security.ts';
 
 export function getAdminAccessKey(locals?: any): string {
   const runtime = locals?.runtime?.env || {};
@@ -7,20 +8,15 @@ export function getAdminAccessKey(locals?: any): string {
     runtime.ADMIN_API_SECRET ||
     process.env.TM_ANALYTICS_ADMIN_KEY ||
     process.env.ADMIN_API_SECRET ||
-    import.meta.env.TM_ANALYTICS_ADMIN_KEY ||
-    import.meta.env.ADMIN_API_SECRET ||
+    (import.meta as any).env?.TM_ANALYTICS_ADMIN_KEY ||
+    (import.meta as any).env?.ADMIN_API_SECRET ||
     ''
   ).trim();
   return isStrongSecret(value, 24) ? value : '';
 }
 
 export function constantTimeEqual(left: string, right: string): boolean {
-  if (!left || !right || left.length !== right.length) return false;
-  let result = 0;
-  for (let index = 0; index < left.length; index += 1) {
-    result |= left.charCodeAt(index) ^ right.charCodeAt(index);
-  }
-  return result === 0;
+  return secureTokenEqual(left, right);
 }
 
 export function isAdminLocked(options: {
@@ -30,7 +26,7 @@ export function isAdminLocked(options: {
   hostname?: string;
 }): boolean {
   const hostname = String(options.hostname || '').toLowerCase();
-  const local = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  const local = localDevelopmentHost(hostname);
   if (options.allowLocal && local) return false;
   if (!options.adminKey) return true;
   return !constantTimeEqual(options.adminKey, options.suppliedKey);

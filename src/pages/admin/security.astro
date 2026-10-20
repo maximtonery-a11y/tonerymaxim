@@ -10,14 +10,14 @@ const locked = isAdminLocked({ adminKey, suppliedKey, hostname: Astro.url.hostna
 const status = securityStatus(Astro.url.hostname);
 const checks = [
   { label: 'Bezpečnostné HTTP hlavičky', ok: true, note: 'Aktívne cez Astro middleware.' },
-  { label: 'Persistentný rate limit', ok: status.rateLimitPersistent, note: `${status.rateLimitRules} pravidiel; stav sa podpisuje a ukladá do ${status.persistentDataDir}.` },
+  { label: 'Obmedzenie počtu požiadaviek', ok: true, note: `${status.rateLimitRules} spoločných pravidiel. Aktívne limity platia v jednom procese; reštart ich vynuluje.` },
   { label: 'Kontrola pôvodu POST požiadaviek', ok: true, note: 'Cudzie weby nemôžu odosielať bežné formuláre do API.' },
   { label: 'Produkčné test endpointy', ok: status.local || status.testEndpointsBlocked, note: status.local ? 'Na localhoste sú dostupné na testovanie.' : 'V produkcii sú skryté.' },
   { label: 'Samostatný AUTH_SECRET', ok: status.dedicatedAuthSecret, note: status.dedicatedAuthSecret ? 'Nastavený a dostatočne dlhý.' : 'V produkcii je povinný a musí mať aspoň 32 znakov.' },
-  { label: 'SYNC_SECRET', ok: status.syncProtected, note: status.syncProtected ? 'Synchronizácia je chránená.' : 'Na localhoste môže byť bez tokenu; v produkcii odporúčame aspoň 24 znakov.' },
+  { label: 'SYNC_SECRET', ok: status.syncProtected, note: status.syncProtected ? 'Synchronizácia je chránená.' : 'Povinný token aspoň 24 znakov, odovzdávaný iba v hlavičke aj pri lokálnom produkčnom volaní.' },
   { label: 'Chránené objednávkové fronty', ok: true, note: 'Citlivé súbory sú šifrované, autentizované, zapisované atomicky a poškodené dáta idú do karantény.' },
   { label: 'Presné GoPay overovanie', ok: true, note: 'Pred spracovaním sa cez GoPay API porovná ID, číslo objednávky, suma, mena, GoID a stav platby.' },
-  { label: 'Admin prehľady', ok: status.local || status.adminProtected, note: status.local ? 'Na localhoste sú dostupné bez kľúča.' : (status.adminProtected ? 'Chránené kľúčom.' : 'V produkcii je povinný ADMIN_API_SECRET alebo TM_ANALYTICS_ADMIN_KEY.') },
+  { label: 'Admin prehľady', ok: status.local || status.adminProtected, note: status.local ? 'Vo vývojovom prostredí sú dostupné bez kľúča.' : (status.adminProtected ? 'Chránené kľúčom.' : 'V produkcii je povinný ADMIN_API_SECRET alebo TM_ANALYTICS_ADMIN_KEY.') },
 ];
 const fmt = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'short', timeStyle: 'medium' });
 ---

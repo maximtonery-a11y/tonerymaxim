@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { clientIp } from '../../lib/request-security.ts';
 import { readCustomerSession } from '../../lib/auth-session';
 import { getWooCustomerOrders } from '../../lib/woo-client';
 import { wooRequest } from '../../lib/woo-client';
@@ -22,7 +23,7 @@ const clean = (value: unknown, max: number) => String(value || '').trim().slice(
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   const length = Number(request.headers.get('content-length') || 0);
   if (length > 4096) return json({ ok:false, error:genericFailure }, 413);
-  const key = clean(clientAddress || request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown', 100);
+  const key = clientIp(request, clientAddress);
   const now = Date.now(); const current = attempts.get(key);
   if (!current || current.reset <= now) {
     for (const [bucket, value] of attempts) if (value.reset <= now) attempts.delete(bucket);

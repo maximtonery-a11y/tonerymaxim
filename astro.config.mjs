@@ -8,6 +8,7 @@ export default defineConfig({
   trailingSlash: 'ignore',
   output: 'server',
   adapter: node({
-    mode: 'standalone'
+    mode: 'standalone',
+    bodySizeLimit: 1_000_000
   })
 });

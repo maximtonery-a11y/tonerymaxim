@@ -73,8 +73,11 @@ Merchant feed navyše:
 - pri neočakávane malom výsledku vráti `503` a neodošle poškodený feed.
 
 Po nasadení a nastavení WooCommerce premenných obnovte produktovú cache cez
-chránený endpoint `/api/sync-products?force=1` a následne skontrolujte
-`/merchant-feed.xml`. Minimálny počet položiek a doprava sa nastavujú pomocou
+chránený endpoint `/api/sync-products?force=1` s hlavičkou `x-sync-token`
+alebo `Authorization: Bearer` a následne skontrolujte `/merchant-feed.xml`.
+Token neposielajte v URL. Platný `SYNC_SECRET` je povinný aj pri produkčnom
+volaní na localhost. Podporované sú GET aj POST; pre plánované úlohy používajte POST.
+Podrobný postup a hranice overenia sú v `docs/security/SECURITY_AUDIT_2026-10-20.md`. Minimálny počet položiek a doprava sa nastavujú pomocou
 premenných `MERCHANT_*` uvedených v `.env.production.example`.
 
 ## TM SEO Dominator
