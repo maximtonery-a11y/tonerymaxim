@@ -68,6 +68,8 @@ try {
       TM_DISABLE_BACKGROUND_WORKERS: '1', TM_DISABLE_INDEXNOW: '1', TM_TONER_CARE_ENABLED: '0',
       TM_PRICE_HISTORY_ENABLED: '0', OPENAI_ASSISTANT_ENABLED: '0', ABIX_FIRMWARE_ENABLED: '0',
       WOO_URL: 'http://127.0.0.1:' + wooPort, WOO_CONSUMER_KEY: 'ck_fixture', WOO_CONSUMER_SECRET: 'cs_fixture',
+      GOPAY_GOID: '123456', GOPAY_RETURN_URL: base + '/platba-dokoncena', GOPAY_NOTIFY_URL: base + '/api/gopay-notify',
+      GOPAY_CLIENT_ID: 'fixture', GOPAY_CLIENT_SECRET: 'fixture',
       WOO_SYNC_MIN_PRODUCTS: '1', WOO_SYNC_EXPECTED_MIN_PRODUCTS: '1', WOO_SYNC_PAGE_DELAY_MS: '0',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -144,7 +146,7 @@ try {
   const beforePurchase = wooCalls;
   for (const path of ['/api/order-create', '/api/gopay-create']) {
     result = await call(path, { method: 'POST', body: {}, headers: { origin: 'https://www.tonerymaxim.sk', 'content-type': 'application/json' } });
-    assert.equal(result.response.status, 400, 'empty purchase is rejected safely');
+    assert.equal(result.response.status, 400, 'empty purchase is rejected safely: ' + path + ': ' + result.text.slice(0,500));
     headersOk(result.response);
   }
   assert.equal(wooCalls, beforePurchase, 'empty checkout cannot create an external order or payment');
