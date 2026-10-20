@@ -38,6 +38,7 @@ while(queue.length && visited.size<90) {
   const html=await fetchHtml(url);
   const flat=text(html);
   const matches=[...flat.matchAll(/Obj\.\s*č[ií]slo\s*:\s*([A-Z]{1,3}-[A-Z0-9-]+)/gi)];
+  if (url.includes("/minidiare/")) console.log(JSON.stringify({debugUrl:url,htmlBytes:html.length,flatBytes:flat.length,skuMentions:flat.match(/D-03-[1-4]-27/g)?.slice(0,8),objMentions:flat.match(/Obj.{0,35}/gi)?.slice(0,6),rawHtmlSample:html.slice(0,260)}));
   let prev=0;
   for(const m of matches) {
     const sku=m[1].toUpperCase();
