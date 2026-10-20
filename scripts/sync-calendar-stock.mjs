@@ -5,7 +5,7 @@ const MAX_AGE_HOURS = 26;
 const decode = (s) => s.replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&[a-z]+;|&#\d+;/gi," ");
 const text = (html) => decode(html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi," ").replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/\s+/g," "));
 const status = (chunk) => {
-  const hits = [...chunk.matchAll(/\b(Skladom|Nedostupné|VYPREDANÉ)\b/gi)];
+  const hits = [...chunk.matchAll(/(Skladom|Nedostupné|VYPREDANÉ)/gi)];
   if (!hits.length) return null;
   const word = hits.at(-1)[1].toLowerCase();
   return word === "skladom";
