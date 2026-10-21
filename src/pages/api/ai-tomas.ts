@@ -143,7 +143,8 @@ export const POST: APIRoute = async ({ request }) => {
     const guidedQuantity=state.pendingQuestion==='quantity'&&/^\s*(?:-?\d+(?:[.,]\d+)?|jeden|jednu|jedno|dva|dve|tri|styri|pat)\s*(?:ks|kus\w*)?[.! ]*$/.test(normalized(rawMessage));
     const guidedType=state.pendingQuestion==='product_type'&&/^\s*(?:(?:a|ten|chcem|prosim)\s+)*(?:original\w*|kompatibil\w*|renov\w*|repas\w*)(?:\s+(?:toner\w*|napln\w*|sadu|sada|produkt\w*))*[?.! ]*$/.test(normalized(rawMessage));
     let modelStatus:ConversationAiStatus='skipped';
-    const contextPlan=guidedQuantity||guidedType?null:await interpretConversation(rawMessage,page,state.conversationHistory,status=>{modelStatus=status;});
+    let modelRetryAfterSeconds:number|undefined;
+    const contextPlan=guidedQuantity||guidedType?null:await interpretConversation(rawMessage,page,state.conversationHistory,(status,retryAfterSeconds)=>{modelStatus=status;modelRetryAfterSeconds=retryAfterSeconds;});
     const conversation=applyConversationPlan(rawMessage,state.conversationHistory,fallbackContext,contextPlan);
     const message=conversation.question;
     let identifiedProductSku:string|null=null;
@@ -163,7 +164,7 @@ export const POST: APIRoute = async ({ request }) => {
         const productPage=conversationProductPage(page);if((topic==='product'||data.advisor?.faq==='product-discounts')&&productPage&&sku)turn.productPage=productPage;
       }
       if(data.state)data.state.conversationHistory=conversationArchive([...state.conversationHistory,...data.state.history.slice(-2)]);
-      return Response.json({...data,conversation:{relation:conversation.relation,topic,engine:conversation!==fallbackContext?'model':'rules',aiEnabled:isConversationAiEnabled(),modelStatus}},init);
+      return Response.json({...data,conversation:{relation:conversation.relation,topic,engine:conversation!==fallbackContext?'model':'rules',aiEnabled:isConversationAiEnabled(),modelStatus,...(modelRetryAfterSeconds?{modelRetryAfterSeconds}:{})}},init);
     };
     if(conversation.resetSelection){
       state.pendingQuestion=null;state.pendingProductQuestion=null;state.selectedProductId=null;
@@ -529,7 +530,7 @@ export const POST: APIRoute = async ({ request }) => {
       if(totals.length)advisor={...advisor,answer:[...(advisor.answer||[]),`${selected.name} — ${totals.join('; ')}. Sumy sú po množstevnej zľave, bez dopravy a ďalších zliav.`]};
     }
     if(commerce&&commerce?.source!=='calendar'){
-      const productLabel=customerProductLabel(route.productQuery||state.lastProductQuery,message,commerce?.source);
+      const productLabel=customerProductLabel(route.productQuery||state.lastProductQuery,message,commerce?.source,commerce?.products);
       commerce={...commerce,queryLabel:productLabel};
     }
     const missingCompatibility=[...(commerce?.products||[]),...(action?.product?[action.product]:[])].filter((p:any)=>!(p.compatible_printers||[]).length&&commerce?.source!=='calendar'&&!calendarRoute);

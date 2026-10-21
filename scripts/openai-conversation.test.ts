@@ -4,11 +4,12 @@ import {POST} from '../src/pages/api/ai-tomas.ts';
 import {interpretConversation,applyConversationPlan} from '../src/lib/openai-conversation.ts';
 import {resolveConversationContext,conversationArchive} from '../src/lib/ai-conversation-context.ts';
 import {emptyCommerceState} from '../src/lib/ai-commerce/domain.ts';
+import {answerWithOpenAi} from '../src/lib/openai-sales-assistant.ts';
 const globals=globalThis as any,originalFetch=globalThis.fetch;
 const previous={enabled:process.env.OPENAI_ASSISTANT_ENABLED,key:process.env.OPENAI_API_KEY,context:process.env.OPENAI_CONTEXT_ENABLED};
 const plan={relation:'resume',topic:'product',anchor:0,deliveryPrice:true,quantity:2,subject:'',confidence:0.99};
-let requests:any[]=[];
-beforeEach(()=>{requests=[];process.env.OPENAI_ASSISTANT_ENABLED='1';process.env.OPENAI_CONTEXT_ENABLED='1';process.env.OPENAI_API_KEY='test-only-placeholder-not-a-real-key';globalThis.fetch=async(_url,options)=>{requests.push(JSON.parse(String(options?.body)));return Response.json({output_text:JSON.stringify(plan)});};
+let requests:any[]=[],testSequence=0;
+beforeEach(()=>{requests=[];process.env.OPENAI_ASSISTANT_ENABLED='1';process.env.OPENAI_CONTEXT_ENABLED='1';process.env.OPENAI_API_KEY=`test-only-placeholder-not-a-real-key-${++testSequence}`;globalThis.fetch=async(_url,options)=>{requests.push(JSON.parse(String(options?.body)));return Response.json({output_text:JSON.stringify(plan)});};
  globals.__TM_PRODUCTS_FILE_CACHE__={ok:true,version:4,runtime_compact:true,generated_at:Math.random().toString(),total:1,products:[{id:142,sku:'HP-C',name:'HP W1420A čierny kompatibilný toner',slug:'hp-compatible',price:18.24,product_type_key:'compatible',stock_status:'instock',stock_quantity:10,compatible_printers:['HP LaserJet M110w']}]};delete globals.__TM_PUBLIC_PRODUCTS_CACHE__;delete globals.__TM_PRODUCTS_LOOKUP_INDEX__;
 });
 afterEach(()=>{globalThis.fetch=originalFetch;for(const [key,value]of Object.entries({OPENAI_ASSISTANT_ENABLED:previous.enabled,OPENAI_API_KEY:previous.key,OPENAI_CONTEXT_ENABLED:previous.context})){if(value===undefined)delete process.env[key];else process.env[key]=value;}});
@@ -60,13 +61,40 @@ test('model nepreberie odpoveď na množstvo v už autorizovanom nákupnom toku'
 });
 
 test('API rozlíši chybu prihlásenia, kvótu a výpadok bez úniku textu chyby alebo kľúča',async()=>{
- for(const [httpStatus,code,expected]of [[401,'invalid_api_key','authentication_failed'],[403,'permission_denied','permission_denied'],[404,'model_not_found','model_unavailable'],[429,'insufficient_quota','quota_exceeded'],[429,'rate_limit_exceeded','rate_limited'],[400,'invalid_request_error','request_rejected'],[503,'server_error','provider_unavailable']] as const){
-  globalThis.fetch=async()=>Response.json({error:{code,message:'SECRET-PROVIDER-MESSAGE customer@example.org sk-test-secret'}},{status:httpStatus});
+ const failures=[
+  [401,'invalid_api_key','authentication_failed'],[403,'permission_denied','permission_denied'],[404,'model_not_found','model_unavailable'],
+  [429,'insufficient_quota','quota_exceeded'],[429,'credit_balance_exhausted','credit_balance_exhausted'],[429,'organization_usage_limit_exceeded','organization_usage_limit_exceeded'],[429,'organization_spend_limit_exceeded','organization_spend_limit_exceeded'],[429,'project_spend_limit_exceeded','project_spend_limit_exceeded'],
+  [429,'rate_limit_exceeded','rate_limited'],[429,'slow_down','rate_limited'],[429,'new_quota_code','quota_exceeded','insufficient_quota'],[429,'unknown_code','provider_limited'],
+  [400,'invalid_request_error','request_rejected'],[503,'server_error','provider_unavailable'],
+ ] as const;
+ for(const [index,[httpStatus,code,expected,...extra]]of failures.entries()){
+  process.env.OPENAI_API_KEY=`test-only-placeholder-failure-${testSequence}-${index}`;
+  globalThis.fetch=async()=>Response.json({error:{code,type:extra[0],message:'SECRET-PROVIDER-MESSAGE customer@example.org sk-test-secret'}},{status:httpStatus});
   const state={...emptyCommerceState(),history:initial,conversationHistory:initial};
   const response=await POST({request:new Request('http://localhost/api/ai-tomas',{method:'POST',body:JSON.stringify({message:'Koľko bude stáť toner aj s dopravou?',state})})} as any);const body=await response.json();
   assert.equal(body.conversation.modelStatus,expected);assert.equal(body.conversation.engine,'rules');assert.equal(body.quote.sku,'HP-C');assert.deepEqual(body.state.cart,[]);
   assert.doesNotMatch(JSON.stringify(body),/SECRET-PROVIDER|customer@example|sk-test-secret|test-only-placeholder/);
  }
+});
+
+test('interpretácia aj generovanie rešpektujú Retry-After a počas čakania odpovedá bezpečná vetva',async()=>{
+ const originalNow=Date.now;let now=Date.UTC(2026,9,21,12);Date.now=()=>now;
+ try{
+  for(const header of ['120',new Date(now+120000).toUTCString()]){
+   process.env.OPENAI_API_KEY=`test-only-placeholder-cooldown-${testSequence}-${header}`;let calls=0,status='',retry=0;
+   globalThis.fetch=async()=>{calls++;return Response.json({error:{code:'credit_balance_exhausted',type:'insufficient_quota',message:'SECRET-PROVIDER-MESSAGE'}},{status:429,headers:{'Retry-After':header}});};
+   await interpretConversation('Koľko spolu?','/',initial,(value,seconds)=>{status=value;retry=seconds||0;});assert.equal(status,'credit_balance_exhausted');assert.equal(retry,120);assert.equal(calls,1);
+   assert.equal(await answerWithOpenAi('Aké mám možnosti odoslania?'),null);assert.equal(calls,1);
+   const state={...emptyCommerceState(),history:initial,conversationHistory:initial};
+   const response=await POST({request:new Request('http://localhost/api/ai-tomas',{method:'POST',body:JSON.stringify({message:'Koľko bude stáť toner aj s dopravou?',state})})} as any);const data=await response.json();
+   assert.equal(data.conversation.modelStatus,'credit_balance_exhausted');assert.equal(data.conversation.modelRetryAfterSeconds,120);assert.equal(data.quote.sku,'HP-C');assert.deepEqual(data.state.cart,[]);assert.equal(calls,1);
+   assert.doesNotMatch(JSON.stringify(data),/test-only-placeholder|SECRET-PROVIDER/);
+   now+=119000;await interpretConversation('Koľko spolu?','/',initial);assert.equal(calls,1);
+   now+=2000;globalThis.fetch=async()=>{calls++;return Response.json({output_text:JSON.stringify(plan)});};
+   assert.deepEqual(await interpretConversation('Koľko spolu?','/',initial),plan);assert.equal(calls,2);
+   now=Date.UTC(2026,9,21,12);
+  }
+ }finally{Date.now=originalNow;}
 });
 test('časový limit, neúplná odpoveď a chybný odkaz sa odlíšia od úspešného modelu',async()=>{
  const cases=[

@@ -53,6 +53,10 @@ const acknowledgement = /^(?:(?:dobre|ok|okay|dakujem|vdaka|super|rozumiem|jasne
 const quantity = /^(?:(?:a|tak|prosim)\s+)?-?\d+(?:[.,]\d+)?\s*(?:ks|kus\w*)?[?.! ]*$/;
 const productModifier = /\b(?:original\w*|kompatibiln\w*|renovovan\w*|repasovan\w*|skladom|vytaznost|kapacita|vydrz|kolko\s+stran)\b/;
 
+export function isConversationRepairQuestion(message:string){
+  return /^(?:(?:prepacte|prosim|ale|a)\s+)*(?:co\s+(?:to\s+)?pises|co\s+(?:to\s+)?pisete|o\s+com\s+hovoris|o\s+com\s+hovorite|co\s+je\s+to\s+za\s+odpoved|tomu\s+nerozumiem|to\s+nedava\s+zmysel|to\s+som\s+sa\s+nepytal)[?.! ]*$/.test(norm(message));
+}
+
 export function conversationProductReference(message: string): string | null {
   const sku = message.match(/\b(?:sku|k[oó]d\s+produktu)\s*[:#-]?\s*([a-z0-9_-]+)/i);
   if (sku) return `SKU: ${sku[1]}`;
@@ -166,6 +170,7 @@ export function resolveConversationContext(message: string, history: Conversatio
   const newCue = /\b(?:ina\s+otazka|zmenme\s+temu|nova\s+otazka|teraz\s+nieco\s+ine)\b/.test(n);
   const result: ConversationContext = { relation: 'new', topic: explicit, question, contextHistory: [], productQuery: null, orderNumber:null, explicitProductReturn: false, resetSelection: false, clarification: null };
   if (!question) return result;
+  if(isConversationRepairQuestion(question))return {...result,relation:'clarify',topic:null,clarification:'Prepáčte, moja predchádzajúca odpoveď nebola zrozumiteľná. Ktorú časť mám vysvetliť alebo opraviť?'};
   const productPage=conversationProductPage(page);
   if(isProductDiscountQuestion(question)){
     const named=conversationProductReference(question);

@@ -1,12 +1,11 @@
 import { aiKnowledge } from "../data/ai-knowledge.ts";
+import { requestOpenAi } from './openai-request.ts';
 
 type OpenAiAssistantResult = {
   status: "answer" | "clarify" | "handoff";
   answer: string[];
   confidence: number;
 };
-
-const OPENAI_ENDPOINT = "https://api.openai.com/v1/responses";
 
 function env(name: string) {
   return String(process.env[name] || (import.meta as any).env?.[name] || "").trim();
@@ -94,12 +93,8 @@ export async function answerWithOpenAi(message: string, page = "", verifiedFacts
   ].join("\n");
 
   try {
-    const response = await fetch(OPENAI_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env("OPENAI_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
+    const result = await requestOpenAi({
+      apiKey: env("OPENAI_API_KEY"),
       body: JSON.stringify({
         model: env("OPENAI_MODEL") || "gpt-5.6-sol",
         store: false,
@@ -148,7 +143,8 @@ export async function answerWithOpenAi(message: string, page = "", verifiedFacts
       signal: controller.signal,
     });
 
-    if (!response.ok) return null;
+    if (result.failure) return null;
+    const response = result.response;
 
     const payload = await response.json().catch(() => null);
     const text = responseText(payload);

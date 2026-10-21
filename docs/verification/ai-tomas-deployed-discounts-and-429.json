@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-21",
+  "scope": "Two live anonymous advisory requests after eda915d deployment",
+  "cases": [
+    {
+      "question": "kolko stoji tento toner?",
+      "status": 200,
+      "ms": 8564,
+      "conversation": {
+        "relation": "new",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": true,
+        "modelStatus": "no_history"
+      },
+      "answer": [
+        "Myslíte produkt HP CF259X (59X) čierny kompatibilný toner? Ak nie, napíšte presné označenie tonera alebo produktu. Ak áno:",
+        "Cena za 1 ks je 33,72 € s DPH, bez dopravy a ďalších zliav."
+      ],
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "ake su moznosti zliav pri tomto tonery?",
+      "status": 200,
+      "ms": 1327,
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "discount",
+        "engine": "rules",
+        "aiEnabled": true,
+        "modelStatus": "rate_limited"
+      },
+      "answer": [
+        "Pri produkte HP CF259X (59X) čierny kompatibilný toner môžete využiť tieto zľavy:",
+        "• Množstevná zľava: pri 2–3 ks rovnakého produktu 10 %, pri 4 a viac ks 25 %.",
+        "2 ks stoja 60,70 € spolu s DPH; 4 ks stoja 101,16 € spolu s DPH. Ide o cenu po množstevnej zľave, pred kupónom a použitím bodov.",
+        "V košíku stačí nastaviť počet rovnakých kusov; registráciu ani kupón na množstevnú zľavu nepotrebujete. Odpočet uvidíte v riadku „Množstevná / sadová zľava“.",
+        "• Uvítací kupón 5 %: pri novej registrácii na prvý nákup, ak je ešte platný a nepoužitý. Nájdete ho po prihlásení v Môj účet → Moje odmeny.",
+        "• Ak už máte platnú 7 % odmenu z predchádzajúcej dokončenej objednávky, môžete ju využiť aj na tento kompatibilný toner. Nájdete ju v Môj účet → Moje odmeny.",
+        "Použiteľný kupón sa po prihlásení načíta v košíku automaticky; vyberie sa jeden s najvyššou úsporou. Kupóny 5 % a 7 % sa nesčítavajú. Odpočet uvidíte ako „Kupónová zľava“. Vydaný kód môžete zadať aj cez „Máte zľavový kupón?“ → „Použiť“.",
+        "• Vernostné body: ak máte aspoň 20 bodov, môžete ich použiť na zostávajúcu cenu tovaru. Stav je v Môj účet → Vernostný program; v košíku nechajte zapnuté „Použiť vernostnú zľavu v tejto objednávke“. Odpočet uvidíte ako „Vernostná zľava“.",
+        "V mobile otvoríte odmeny cez „Menu účtu“; v pokladni rozbaľte súhrn „Objednávka“. Na PC sú odpočty v súhrne vpravo."
+      ],
+      "discounts": {
+        "sku": "13264",
+        "type": "compatible",
+        "offers": [
+          {
+            "quantity": 2,
+            "discountPercent": 10,
+            "unitPrice": 30.35,
+            "totalPrice": 60.7
+          },
+          {
+            "quantity": 4,
+            "discountPercent": 25,
+            "unitPrice": 25.29,
+            "totalPrice": 101.16
+          }
+        ]
+      },
+      "action": null,
+      "cart": []
+    }
+  ]
+}

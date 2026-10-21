@@ -7,10 +7,11 @@ import { emptyCommerceState } from '../src/lib/ai-commerce/domain.ts';
 import { forbidsCartMutation, isCartChangingAction } from '../src/lib/ai-cart-safety.ts';
 import { isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder } from '../src/lib/ai-order-question.ts';
 import { resolveConversationContext, conversationArchive } from '../src/lib/ai-conversation-context.ts';
+import { readAiJson, aiRequestErrorMessage } from '../src/lib/ai-http-response.ts';
 
 // Executes the real browser dispatcher with fake DOM/network boundaries.
 // This covers branches before the API call; it does not replace visual QA.
-async function browserFlow(pathname = '/', savedSession: any = null) {
+async function browserFlow(pathname = '/', savedSession: any = null, responseOverride?:()=>Promise<Response>) {
   const pageUrl = new URL(pathname, 'http://localhost');
   const source = await readFile(new URL('../src/scripts/ai-sales-assistant.js', import.meta.url), 'utf8');
   const code = source.slice(source.indexOf('  async function unifiedAsk('), source.indexOf('  function looksLikeShopping('));
@@ -23,16 +24,17 @@ async function browserFlow(pathname = '/', savedSession: any = null) {
   const state: any = hydration?.state || { mode: 'advice', busy: false, cart: [], commerceState: emptyCommerceState('browser-flow'), profile: { lastOrder: { products: [{ id: 'old', name: 'Old product' }] } } };
   const calls: string[] = [], messages: any[] = [], errors: unknown[] = [], requests: any[] = [];
   let verifications = 0;
+  const presentation:any[]=[];
   const noop = () => {};
   const scope: any = {
-    state, isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder, forbidsCartMutation, isCartChangingAction, resolveConversationContext, conversationArchive,
+    state, isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder, forbidsCartMutation, isCartChangingAction, resolveConversationContext, conversationArchive,readAiJson,aiRequestErrorMessage,
     beginSession: noop, looksLikeShopping: () => false, escapeHtml: (v: unknown) => String(v),
     addMessage: (role: string, html: string) => { const node = { role, innerHTML: html, textContent: 'response', scrollIntoView: noop }; messages.push(node); return node; },
     renderGuestOrderVerification: () => { verifications++; },
     addCommerceItem: (product: any, qty: number) => state.cart.push({ product, qty }),
     askNextStep: noop, trackEvent: noop, autoPanelSize: noop, setExperience: noop,
-    textToHtml: (lines: string[]) => lines.join(' '), appendSources: noop, attachFeedback: noop,
-    openHandoff: noop, renderCommerceResults: noop, renderSafeProducts: noop,
+    textToHtml: (lines: string[]) => lines.join(' '), appendSources: noop, attachFeedback: (target:any)=>presentation.push({kind:'feedback',target}),
+    openHandoff: noop, renderCommerceResults: (_data:any,options:any)=>presentation.push({kind:'products',target:options?.target}), renderSafeProducts: noop,
     cartKey: (p: any) => p.id, updateLiveCart: noop, quantityChooser: noop, renderTypeQuestion: noop,
     renderCart: noop, prepareHandoff: noop, saveCommerceSession: hydration?.saveCommerceSession || noop, requestAnimationFrame: (fn: () => void) => fn(),
     location: { pathname: pageUrl.pathname, search: pageUrl.search }, URLSearchParams, console: { error: (...args: any[]) => errors.push(args) },
@@ -41,12 +43,33 @@ async function browserFlow(pathname = '/', savedSession: any = null) {
       if (url === '/api/ai-order-status') return Response.json({ ok: true, orders: [{ number: '300950', statusLabel: 'Nová' }, { number: '300945', statusLabel: 'Vybavená' }] });
       assert.equal(url, '/api/ai-tomas');
       requests.push(JSON.parse(options.body));
+      if(responseOverride)return responseOverride();
       return POST({ request: new Request(`http://localhost${url}`, options) } as any);
     },
   };
   const ask = vm.runInNewContext(`${code}; unifiedAsk`, scope);
-  return { ask, state, calls, messages, errors, requests, verifications: () => verifications, persisted: () => persisted };
+  return { ask, state, calls, messages, errors, requests,presentation, verifications: () => verifications, persisted: () => persisted };
 }
+
+test('proxy 502, HTML a neplatný JSON nikdy nevypíšu technickú chybu do chatu',async()=>{
+ for(const makeResponse of [async()=>new Response('Bad Gateway',{status:502}),async()=>new Response('<html>upstream</html>',{status:503}),async()=>new Response('Bad Gateway'),async()=>{throw new TypeError('Failed to fetch')}]){
+  const flow=await browserFlow('/produkt/hp-cf259x-59x-kompatibilny-toner',null,makeResponse);
+  flow.state.cart=[{product:{id:'keep'},qty:2}];const before=JSON.stringify(flow.state.commerceState);
+  await flow.ask('ok, ale ake su moznosti zliav pri tomto tonery?');
+  assert.match(flow.messages.at(-1).innerHTML,/nepodarilo načítať odpoveď.*znova/);
+  assert.doesNotMatch(flow.messages.at(-1).innerHTML,/Unexpected token|Bad Gateway|JSON|Failed to fetch/);
+  assert.equal(flow.state.busy,false);assert.equal(flow.calls.length,1);assert.equal(JSON.stringify(flow.state.commerceState),before);assert.equal(flow.state.cart[0].qty,2);
+ }
+});
+
+test('dispatcher odovzdá karty do tej istej odpovede a hodnotenie pripojí až po nich',async()=>{
+ const g=globalThis as any,previous=g.__TM_PRODUCTS_FILE_CACHE__;
+ g.__TM_PRODUCTS_FILE_CACHE__={ok:true,version:4,runtime_compact:true,generated_at:'single-answer',total:1,products:[{id:13264,sku:'13264',name:'HP CF259X čierny kompatibilný toner',slug:'hp-cf259x',price:33.72,product_type_key:'compatible',compatible_printers:['HP LaserJet M404dn']}]};delete g.__TM_PUBLIC_PRODUCTS_CACHE__;delete g.__TM_PRODUCTS_LOOKUP_INDEX__;
+ try{
+  const flow=await browserFlow();await flow.ask('Ukáž kompatibilný HP CF259X.');
+  const bot=flow.messages.filter(message=>message.role==='bot');assert.equal(bot.length,1);assert.deepEqual(flow.presentation.map(item=>item.kind),['products','feedback']);assert.ok(flow.presentation.every(item=>item.target===bot[0]));assert.deepEqual(flow.errors,[]);
+ }finally{if(previous)g.__TM_PRODUCTS_FILE_CACHE__=previous;else delete g.__TM_PRODUCTS_FILE_CACHE__;delete g.__TM_PUBLIC_PRODUCTS_CACHE__;delete g.__TM_PRODUCTS_LOOKUP_INDEX__;}
+});
 
 test('prehliadač rešpektuje zákaz košíka aj pri zopakovaní objednávky', async () => {
   const flow = await browserFlow();

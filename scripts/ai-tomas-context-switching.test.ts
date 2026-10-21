@@ -26,6 +26,12 @@ async function ask(question:string,state:any=emptyCommerceState('conversation-te
 }
 const text=(result:any)=>result.advisor.answer.join(' ');
 const ids=(result:any)=>[...(result.commerce?.products||[]),...(result.advisor?.products||[])].map((p:any)=>p.id);
+test('čo to píšeš je žiadosť o opravu odpovede, nie o novú ponuku zo starého SKU',async()=>{
+ const first=await ask('Ukáž kompatibilný HP W1420A.');
+ for(const question of ['co to pises?','Čo to píšete?','Tomu nerozumiem.','To nedáva zmysel.']){
+  const result=await ask(question,first.state);assert.equal(result.commerce,null);assert.equal(result.action,null);assert.match(text(result),/predchádzajúca odpoveď/);assert.doesNotMatch(text(result),/ponuke|HP142|Naša ponuka|13264/);assert.deepEqual(result.state.cart,[]);
+ }
+});
 const dialogs=[
   {name:'heslo a nedoručený e-mail',steps:[['Zabudol som heslo.','ucet-heslo'],['E-mail mi neprišiel.','ucet-heslo'],['ani v spame ho nemám','ucet-heslo']]},
   {name:'dobierka a príplatok',steps:[['Ako môžem platiť na dobierku?','platba-moznosti'],['je za to príplatok?','platba-moznosti'],['a dá sa aj kartou?','platba-moznosti']]},

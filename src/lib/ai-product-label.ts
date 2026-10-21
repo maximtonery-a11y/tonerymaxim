@@ -8,8 +8,10 @@ const clean = (value: unknown, max = 120) => String(value || '')
 // naďalej dostáva pôvodný celý dopyt, aby sa nemenila presnosť vyhľadávania.
 const reference = /\b(?=[a-z0-9_-]{4,}\b)(?=[a-z0-9_-]*[a-z])(?=[a-z0-9_-]*\d)[a-z0-9]+(?:[-_][a-z0-9]+)*\b/i;
 
-export function customerProductLabel(productQuery: unknown, message: unknown, source: unknown) {
+export function customerProductLabel(productQuery: unknown, message: unknown, source: unknown, products:Array<{sku?:unknown;name?:unknown}>=[]) {
   const query = clean(productQuery);
+  if(products.length===1&&!/\bsku\b|k[oó]d\s+produktu/i.test(clean(message))
+    &&(/^(?:sku\s*:\s*)?\d{3,}$/i.test(query)||query.toLowerCase()===`sku: ${clean(products[0].sku)}`.toLowerCase()))return clean(products[0].name)||'tento produkt';
   if (String(source || '') === 'printer') return query || clean(message);
   // A routed "Epson 104" family must keep its label even when the question
   // also mentions a printer such as L3250.

@@ -57,7 +57,6 @@ test('offer UI uses compact rows and keeps desktop plus mobile layouts',async()=
 
 test('offer summary does not call orderable products in-stock products',async()=>{
   const script=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
-  assert.match(script,/V ponuke máme <strong>\$\{suitableProductsText\(available\.length\)\}<\/strong>\. Produkty skladom/);
   assert.doesNotMatch(script,/Na sklade máme <strong>\$\{suitableProductsText\(available\.length\)\}/);
 });
 

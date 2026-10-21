@@ -99,6 +99,7 @@ function renderer() {
     dispatchSentence:()=> 'najbližší pracovný deň',escapeHtml:(v:unknown)=>String(v),
     money:(v:number)=>`${v.toFixed(2)} €`,discount:()=>0,unitPrice:(p:any)=>p.price,
     addMessage:(_role:string,html:string)=>{output.push(html);return node;},
+    appendAiContent:(_target:any,html:string)=>{output.push(html);return node;},
     openCommerceStage:(html:string)=>output.push(html),commerceBack:noop,
     commerce:{querySelector:()=>({onclick:null,addEventListener:noop}),querySelectorAll:()=>[]},
     renderSafeProducts:(products:any[])=>products.forEach(p=>output.push(api.productOfferCard(p,0))),
