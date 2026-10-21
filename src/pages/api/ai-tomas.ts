@@ -12,9 +12,10 @@ import { advisorLinks } from '../../lib/ai-advisor-links.ts';
 import { calendarOverviewFacts, calendarOverviewLinks, diaryOverviewLinks, isCalendarQuery, isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../../lib/calendar-ai-catalog.ts';
 import { answerWithOpenAi } from '../../lib/openai-sales-assistant.ts';
 import { customerProductLabel } from '../../lib/ai-product-label.ts';
-import { productContextAnswer } from '../../lib/ai-commerce/product-context.ts';
+import { productContextAnswer, productDeliveryAnswer } from '../../lib/ai-commerce/product-context.ts';
 import { discountHelpAnswer } from '../../lib/ai-discount-help.ts';
-import { resolveConversationContext, conversationProductPage } from '../../lib/ai-conversation-context.ts';
+import { resolveConversationContext, conversationProductPage, conversationArchive } from '../../lib/ai-conversation-context.ts';
+import { interpretConversation, applyConversationPlan, isConversationAiEnabled } from '../../lib/openai-conversation.ts';
 
 export const prerender = false;
 const clean = (v: unknown, max=500) => String(v || '').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);
@@ -137,7 +138,11 @@ export const POST: APIRoute = async ({ request }) => {
     const rawMessage = clean(body?.message,4000); if (!rawMessage) return Response.json({ok:false,error:'Napíšte otázku alebo produkt.'},{status:400});
     const state = normalizeCommerceState(body?.state); if (!state.sessionId) state.sessionId=randomUUID();
     const page = clean(body?.page,300) || '/';
-    const conversation=resolveConversationContext(rawMessage,state.history,state,page);
+    const fallbackContext=resolveConversationContext(rawMessage,state.history,state,page);
+    const guidedQuantity=state.pendingQuestion==='quantity'&&/^\s*(?:-?\d+(?:[.,]\d+)?|jeden|jednu|jedno|dva|dve|tri|styri|pat)\s*(?:ks|kus\w*)?[.! ]*$/.test(normalized(rawMessage));
+    const guidedType=state.pendingQuestion==='product_type'&&/^\s*(?:(?:a|ten|chcem|prosim)\s+)*(?:original\w*|kompatibil\w*|renov\w*|repas\w*)(?:\s+(?:toner\w*|napln\w*|sadu|sada|produkt\w*))*[?.! ]*$/.test(normalized(rawMessage));
+    const contextPlan=guidedQuantity||guidedType?null:await interpretConversation(rawMessage,page,state.conversationHistory);
+    const conversation=applyConversationPlan(rawMessage,state.conversationHistory,fallbackContext,contextPlan);
     const message=conversation.question;
     let identifiedProductSku:string|null=null;
     const respond=(data:any,init?:ResponseInit)=>{
@@ -148,9 +153,11 @@ export const POST: APIRoute = async ({ request }) => {
       for(const turn of (data.state?.history||[]).slice(-2)){
         turn.topic=topic||'other';turn.relation=conversation.relation;
         if(topic==='product'&&sku&&/^[a-z0-9][a-z0-9_. -]*$/i.test(sku))turn.productReference=`SKU: ${sku}`.slice(0,160);
+        if(topic==='product'&&data.quote?.quantity)turn.productQuantity=data.quote.quantity;
         const productPage=conversationProductPage(page);if(topic==='product'&&productPage&&sku)turn.productPage=productPage;
       }
-      return Response.json({...data,conversation:{relation:conversation.relation,topic}},init);
+      if(data.state)data.state.conversationHistory=conversationArchive([...state.conversationHistory,...data.state.history.slice(-2)]);
+      return Response.json({...data,conversation:{relation:conversation.relation,topic,engine:conversation!==fallbackContext?'model':'rules',aiEnabled:isConversationAiEnabled()}},init);
     };
     if(conversation.resetSelection){
       state.pendingQuestion=null;state.pendingProductQuestion=null;state.selectedProductId=null;
@@ -171,7 +178,7 @@ export const POST: APIRoute = async ({ request }) => {
     const cartMutationForbidden=explicitCartBan||isNonExecutingShoppingRequest(rawMessage);
     const cartBeforeRequest=state.cart.map((item:any)=>({...item}));
     const route = routeCommerceMessage(rawMessage,state,conversation);
-    const discountHelp = discountHelpAnswer(message,conversation.contextHistory);
+    const discountHelp = !conversation.deliveryPrice && discountHelpAnswer(message,conversation.contextHistory);
     if(discountHelp){
       // Discount instructions are factual service answers even on a toner
       // detail, with an old quantity selection or with a coupon resembling SKU.
@@ -183,7 +190,11 @@ export const POST: APIRoute = async ({ request }) => {
       return respond({ok:true,route,advisor,commerce:null,state,action:null},{headers:{'Cache-Control':'no-store'}});
     }
     const conversationalReference=conversation.explicitProductReturn||conversation.topic==='product'&&conversation.relation!=='new'&&!/\b(?:tento|tato|tieto|tuto|uvedeny|uvedena)\b/.test(normalized(message))?conversation.productQuery:null;
-    const contextAnswer = await productContextAnswer(message,page,state,route,conversationalReference);
+    const quoteNumber=(text:string)=>requestedQuantity(text)||requestedQuantity(normalized(text).match(/\b(?:jeden|jednu|jedno|dva|dve|tri|styri|pat)\s+(?:ks|kus\w*)\b/)?.[0]||'');
+    const quantity=quoteNumber(rawMessage)||conversation.quoteQuantity||conversation.contextHistory.filter(turn=>turn.role==='user').reverse().map(turn=>quoteNumber(turn.content)||turn.productQuantity).find(Boolean)||1;
+    const contextAnswer = conversation.deliveryPrice
+      ? await productDeliveryAnswer(rawMessage,page,state,conversation.productQuery,quantity,hasInvalidRequestedQuantity(rawMessage)||[...rawMessage.matchAll(/\b\d+\s*(?:ks|kus\w*)\b/gi)].length>1)
+      : await productContextAnswer(message,page,state,route,conversationalReference);
     if(contextAnswer){
       const {product,advisor}=contextAnswer;
       identifiedProductSku=product?.sku||null;
@@ -196,7 +207,7 @@ export const POST: APIRoute = async ({ request }) => {
       state.lastIntent='ADVICE';
       state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:advisor.answer.join(' ')}].slice(-20);
       const action=advisor.handoffSuggested?{kind:'OPEN_HANDOFF',reason:'unanswered'}:product?null:{kind:'CLARIFY_PRODUCT'};
-      return respond({ok:true,route,advisor,commerce:null,state,action},{headers:{'Cache-Control':'no-store'}});
+      return respond({ok:true,route,advisor,commerce:null,state,action,...('quote'in contextAnswer?{quote:contextAnswer.quote}:{})},{headers:{'Cache-Control':'no-store'}});
     }
     // A new subject or purchase ends an informational product clarification.
     state.pendingProductQuestion=null;

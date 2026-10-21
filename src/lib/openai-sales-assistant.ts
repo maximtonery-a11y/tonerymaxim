@@ -137,7 +137,7 @@ export async function answerWithOpenAi(message: string, page = "", verifiedFacts
                 type: "input_text",
                 text: [
                   `Aktuálna stránka: ${page || "neuvedená"}`,
-                  history.length ? `Posledný kontext konverzácie:\n${history.slice(-6).map((item) => `${item.role}: ${item.content}`).join("\n")}` : "",
+                  history.length ? `Kontext konverzácie:\n${history.slice(-20).map((item) => `${item.role}: ${item.content}`).join("\n")}` : "",
                   `Otázka zákazníka: ${message}`,
                 ].filter(Boolean).join("\n"),
               },

@@ -9,6 +9,7 @@ import { isGeneralProductTypeComparison } from '../ai-product-type-question.ts';
 import { productPageYield } from '../ai-page-yield.ts';
 import { HP_TONER_HELP_LABEL, HP_TONER_HELP_PATH } from '../hp-toner-help.ts';
 import { isProductPriceQuestion } from './price-question.ts';
+import { productDeliveryQuote } from './delivery-quote.ts';
 
 const norm = (value: unknown) => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const key = (value: unknown) => norm(value).replace(/[^a-z0-9]/g, '');
@@ -167,6 +168,15 @@ async function resolveProduct(message: string, page: string, state: CommerceStat
     return { product: null, choices: matches };
   }
   return { product: null, choices: [] };
+}
+
+export async function productDeliveryAnswer(message:string,page:string,state:CommerceState,reference:string|null,quantity:number,invalidQuantity=false){
+  const {product,choices}=await resolveProduct(reference?`${message} ${reference}`:message,page,state,Boolean(reference));
+  const answer=!product
+    ? ['Pri ktorom produkte mám cenu s dopravou vypočítať? Vyberte jednu konkrétnu možnosť alebo otvorte jej detail.',...choices.slice(0,5).map(p=>`• ${p.name} (SKU: ${p.sku})`)]
+    : invalidQuantity?['Na aký počet kusov mám cenu vypočítať? Zadajte jedno celé číslo od 1 do 99.']:null;
+  const result=answer?{answer,quote:null}:productDeliveryQuote(product,message,state.conversationHistory.length?state.conversationHistory:state.history,quantity);
+  return {product,pendingProductQuestion:null,quote:result.quote,advisor:{answer:result.answer,products:[],groups:[],intent:'product_info',faq:result.quote?'product-delivery-quote':'product-delivery-clarification',confidence:1,unanswered:false,handoffSuggested:false,clarification:!result.quote,sources:product?[{label:'Zobraziť produkt',url:`/produkt/${encodeURIComponent(product.slug)}`},{label:'Doprava a platba',url:'/doprava-a-platba'}]:[]}};
 }
 
 /** Factual product questions bypass purchasing and the generative fallback. */

@@ -1,0 +1,271 @@
+{
+  "at": "2026-10-21T11:43:10.011Z",
+  "base": "http://127.0.0.1:43821",
+  "scope": "Production build over HTTP with isolated catalogue fixtures; model disabled",
+  "passed": true,
+  "cases": [
+    {
+      "question": "Ukáž mi kompatibilný toner HP W1420A.",
+      "status": 200,
+      "ms": 126,
+      "answer": [
+        "V našej ponuke máme tieto produkty:"
+      ],
+      "conversation": {
+        "relation": "new",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false
+      },
+      "products": [
+        {
+          "sku": "13276",
+          "price": 18.24
+        }
+      ],
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Koľko stojí doprava?",
+      "status": 200,
+      "ms": 64,
+      "answer": [
+        "Cena dopravy:",
+        "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+        "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+        "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+        "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+      ],
+      "conversation": {
+        "relation": "new",
+        "topic": "shipping",
+        "engine": "rules",
+        "aiEnabled": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Koľko bude stáť toner aj s dopravou?",
+      "status": 200,
+      "ms": 57,
+      "answer": [
+        "Počítam 1 ks produktu HP W1420A čierny kompatibilný toner. Cena tovaru je 18,24 € s DPH.",
+        "• Kuriér GLS/DPD na adresu: doprava 3,90 €; spolu 22,14 €.",
+        "• Výdajné miesto alebo box GLS/DPD: doprava 2,90 €; spolu 21,14 €.",
+        "Pri dobierke sa k uvedeným sumám pripočíta 1,20 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "resume",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false
+      },
+      "quote": {
+        "productId": "39951",
+        "sku": "13276",
+        "quantity": 1,
+        "unitPrice": 18.24,
+        "goodsTotal": 18.24,
+        "quantityDiscountPercent": 0,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 3.9,
+            "payment": 0,
+            "total": 22.14
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 2.9,
+            "payment": 0,
+            "total": 21.14
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Koľko budú stáť 2 kusy aj s dopravou?",
+      "status": 200,
+      "ms": 39,
+      "answer": [
+        "Počítam 2 ks produktu HP W1420A čierny kompatibilný toner. Cena tovaru je 32,83 € s DPH po množstevnej zľave 10 %.",
+        "Doprava je zdarma. Spolu zaplatíte 32,83 €.",
+        "Pri dobierke sa k uvedeným sumám pripočíta 1,20 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false
+      },
+      "quote": {
+        "productId": "39951",
+        "sku": "13276",
+        "quantity": 2,
+        "unitPrice": 18.24,
+        "goodsTotal": 32.83,
+        "quantityDiscountPercent": 10,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 0,
+            "payment": 0,
+            "total": 32.83
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 0,
+            "payment": 0,
+            "total": 32.83
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "A koľko to bude spolu na dobierku?",
+      "status": 200,
+      "ms": 12,
+      "answer": [
+        "Počítam 2 ks produktu HP W1420A čierny kompatibilný toner. Cena tovaru je 32,83 € s DPH po množstevnej zľave 10 %.",
+        "Doprava je zdarma. Spolu aj s dobierkou zaplatíte 34,03 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false
+      },
+      "quote": {
+        "productId": "39951",
+        "sku": "13276",
+        "quantity": 2,
+        "unitPrice": 18.24,
+        "goodsTotal": 32.83,
+        "quantityDiscountPercent": 10,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 0,
+            "payment": 1.2,
+            "total": 34.03
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 0,
+            "payment": 1.2,
+            "total": 34.03
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Ukáž mi kompatibilný toner Brother TN2421.",
+      "status": 200,
+      "ms": 20,
+      "answer": [
+        "V našej ponuke máme tieto produkty:"
+      ],
+      "conversation": {
+        "relation": "new",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false
+      },
+      "products": [
+        {
+          "sku": "15048",
+          "price": 12.96
+        }
+      ],
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Môžem zaplatiť kartou?",
+      "status": 200,
+      "ms": 29,
+      "answer": [
+        "Možnosti platby:",
+        "Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni.",
+        "Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH.",
+        "Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom."
+      ],
+      "conversation": {
+        "relation": "new",
+        "topic": "payment",
+        "engine": "rules",
+        "aiEnabled": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "A koľko zaplatím spolu aj s dopravou?",
+      "status": 200,
+      "ms": 11,
+      "answer": [
+        "Počítam 1 ks produktu Brother TN2421 čierny kompatibilný toner. Cena tovaru je 12,96 € s DPH.",
+        "• Kuriér GLS/DPD na adresu: doprava 3,90 €; spolu 16,86 €.",
+        "• Výdajné miesto alebo box GLS/DPD: doprava 2,90 €; spolu 15,86 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "resume",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false
+      },
+      "quote": {
+        "productId": "15048",
+        "sku": "15048",
+        "quantity": 1,
+        "unitPrice": 12.96,
+        "goodsTotal": 12.96,
+        "quantityDiscountPercent": 0,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 3.9,
+            "payment": 0,
+            "total": 16.86
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 2.9,
+            "payment": 0,
+            "total": 15.86
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    }
+  ]
+}

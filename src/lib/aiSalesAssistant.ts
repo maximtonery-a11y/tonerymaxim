@@ -977,7 +977,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     };
   }
 
-  const aiResult = await answerWithOpenAi(originalMessage, page);
+  const aiResult = await answerWithOpenAi(originalMessage, page, [], history);
   if (aiResult) {
     return {
       answer: aiResult.answer,

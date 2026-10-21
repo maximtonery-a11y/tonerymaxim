@@ -6,7 +6,7 @@ import { POST } from '../src/pages/api/ai-tomas.ts';
 import { emptyCommerceState } from '../src/lib/ai-commerce/domain.ts';
 import { forbidsCartMutation, isCartChangingAction } from '../src/lib/ai-cart-safety.ts';
 import { isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder } from '../src/lib/ai-order-question.ts';
-import { resolveConversationContext } from '../src/lib/ai-conversation-context.ts';
+import { resolveConversationContext, conversationArchive } from '../src/lib/ai-conversation-context.ts';
 
 // Executes the real browser dispatcher with fake DOM/network boundaries.
 // This covers branches before the API call; it does not replace visual QA.
@@ -18,14 +18,14 @@ async function browserFlow(pathname = '/', savedSession: any = null) {
   let persisted: any = null;
   const hydration = savedSession ? vm.runInNewContext(
     source.slice(source.indexOf('  const state = { busy:'), source.indexOf('  function trackEvent(')) + '; ({state, saveCommerceSession})',
-    { saved: savedSession, SESSION_KEY: 'tm_ai_tomas_state_v1', messages: { innerHTML: '' }, sessionStorage: { setItem: (_key: string, value: string) => { persisted = JSON.parse(value); } } },
+    { saved: savedSession, conversationArchive, SESSION_KEY: 'tm_ai_tomas_state_v1', messages: { innerHTML: '' }, sessionStorage: { setItem: (_key: string, value: string) => { persisted = JSON.parse(value); } } },
   ) : null;
   const state: any = hydration?.state || { mode: 'advice', busy: false, cart: [], commerceState: emptyCommerceState('browser-flow'), profile: { lastOrder: { products: [{ id: 'old', name: 'Old product' }] } } };
   const calls: string[] = [], messages: any[] = [], errors: unknown[] = [], requests: any[] = [];
   let verifications = 0;
   const noop = () => {};
   const scope: any = {
-    state, isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder, forbidsCartMutation, isCartChangingAction, resolveConversationContext,
+    state, isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder, forbidsCartMutation, isCartChangingAction, resolveConversationContext, conversationArchive,
     beginSession: noop, looksLikeShopping: () => false, escapeHtml: (v: unknown) => String(v),
     addMessage: (role: string, html: string) => { const node = { role, innerHTML: html, textContent: 'response', scrollIntoView: noop }; messages.push(node); return node; },
     renderGuestOrderVerification: () => { verifications++; },

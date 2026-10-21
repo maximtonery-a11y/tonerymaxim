@@ -1,0 +1,293 @@
+{
+  "at": "2026-10-21T11:30:30.759Z",
+  "base": "https://www.tonerymaxim.sk",
+  "scope": "Before the new model context and combined delivery quote fix; anonymous advisory messages only",
+  "dialogs": [
+    {
+      "name": "hp",
+      "cases": [
+        {
+          "question": "Ukáž mi kompatibilný toner HP W1420A.",
+          "status": 200,
+          "ms": 6662,
+          "conversation": {
+            "relation": "new",
+            "topic": "product"
+          },
+          "faq": null,
+          "answer": [
+            "V našej ponuke máme tieto produkty:"
+          ],
+          "products": [
+            {
+              "sku": "13276",
+              "name": "HP W1420A (142A) čierny kompatibilný toner nefunguje v HP+",
+              "price": 18.24
+            }
+          ]
+        },
+        {
+          "question": "Koľko stojí doprava?",
+          "status": 200,
+          "ms": 273,
+          "conversation": {
+            "relation": "new",
+            "topic": "shipping"
+          },
+          "faq": "doprava-ceny",
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": []
+        },
+        {
+          "question": "Koľko bude stáť toner aj s dopravou?",
+          "status": 200,
+          "ms": 197,
+          "conversation": {
+            "relation": "new",
+            "topic": "shipping"
+          },
+          "faq": "doprava-ceny",
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": []
+        }
+      ]
+    },
+    {
+      "name": "brother",
+      "cases": [
+        {
+          "question": "Ukáž mi kompatibilný toner Brother TN2421.",
+          "status": 200,
+          "ms": 6535,
+          "conversation": {
+            "relation": "new",
+            "topic": "product"
+          },
+          "faq": null,
+          "answer": [
+            "V našej ponuke máme tieto produkty:"
+          ],
+          "products": [
+            {
+              "sku": "15048",
+              "name": "Brother TN-2421 čierny kompatibilný toner",
+              "price": 12.96
+            }
+          ]
+        },
+        {
+          "question": "Môžem zaplatiť kartou?",
+          "status": 200,
+          "ms": 210,
+          "conversation": {
+            "relation": "new",
+            "topic": "payment"
+          },
+          "faq": "platba-moznosti",
+          "answer": [
+            "Možnosti platby:",
+            "Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni.",
+            "Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH.",
+            "Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom."
+          ],
+          "products": []
+        },
+        {
+          "question": "Koľko bude stáť toner aj s dopravou?",
+          "status": 200,
+          "ms": 202,
+          "conversation": {
+            "relation": "new",
+            "topic": "shipping"
+          },
+          "faq": "doprava-ceny",
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": []
+        }
+      ]
+    },
+    {
+      "name": "canon",
+      "cases": [
+        {
+          "question": "Ukáž mi žltý kompatibilný toner Canon CRG-055.",
+          "status": 200,
+          "ms": 804,
+          "conversation": {
+            "relation": "new",
+            "topic": "product"
+          },
+          "faq": null,
+          "answer": [
+            "V našej ponuke máme tieto produkty:"
+          ],
+          "products": [
+            {
+              "sku": "14023a",
+              "name": "Canon CRG-055HY žltý kompatibilný toner",
+              "price": 35.46
+            }
+          ]
+        },
+        {
+          "question": "Koľko stojí doprava kuriérom?",
+          "status": 200,
+          "ms": 199,
+          "conversation": {
+            "relation": "new",
+            "topic": "shipping"
+          },
+          "faq": "doprava-ceny",
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": []
+        },
+        {
+          "question": "A koľko ma to vyjde spolu aj s dopravou?",
+          "status": 200,
+          "ms": 185,
+          "conversation": {
+            "relation": "follow_up",
+            "topic": "shipping"
+          },
+          "faq": "doprava-ceny",
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": []
+        }
+      ]
+    },
+    {
+      "name": "password",
+      "cases": [
+        {
+          "question": "Zabudol som heslo.",
+          "status": 200,
+          "ms": 213,
+          "conversation": {
+            "relation": "new",
+            "topic": "account"
+          },
+          "faq": "ucet-heslo",
+          "answer": [
+            "Účet a zabudnuté heslo:",
+            "Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo.",
+            "Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu.",
+            "Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk."
+          ],
+          "products": []
+        },
+        {
+          "question": "ani v spame ho nemám",
+          "status": 200,
+          "ms": 186,
+          "conversation": {
+            "relation": "follow_up",
+            "topic": "account"
+          },
+          "faq": "ucet-heslo",
+          "answer": [
+            "Účet a zabudnuté heslo:",
+            "Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo.",
+            "Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu.",
+            "Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk."
+          ],
+          "products": []
+        }
+      ]
+    },
+    {
+      "name": "discount",
+      "cases": [
+        {
+          "question": "Ako uplatním zľavu za registráciu?",
+          "status": 200,
+          "ms": 182,
+          "conversation": {
+            "relation": "new",
+            "topic": "discount"
+          },
+          "faq": "registracia-zlava",
+          "answer": [
+            "Registrácia a uvítacia zľava:",
+            "Nakúpiť môžete aj bez registrácie.",
+            "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+            "Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti.",
+            "Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách.",
+            "Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní.",
+            "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+          ],
+          "products": []
+        },
+        {
+          "question": "Koľko stojí doprava?",
+          "status": 200,
+          "ms": 184,
+          "conversation": {
+            "relation": "new",
+            "topic": "shipping"
+          },
+          "faq": "doprava-ceny",
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": []
+        },
+        {
+          "question": "Vráťme sa k tej zľave, kde ju nájdem?",
+          "status": 200,
+          "ms": 184,
+          "conversation": {
+            "relation": "resume",
+            "topic": "discount"
+          },
+          "faq": "registracia-zlava",
+          "answer": [
+            "Registrácia a uvítacia zľava:",
+            "Nakúpiť môžete aj bez registrácie.",
+            "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+            "Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti.",
+            "Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách.",
+            "Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní.",
+            "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+          ],
+          "products": []
+        }
+      ]
+    }
+  ]
+}

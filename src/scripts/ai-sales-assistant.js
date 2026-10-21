@@ -1,7 +1,7 @@
 import { productPageYield } from '../lib/ai-page-yield.ts';
 import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-cart.js";
 import { isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder } from "../lib/ai-order-question.ts";
-import { resolveConversationContext } from "../lib/ai-conversation-context.ts";
+import { resolveConversationContext, conversationArchive } from "../lib/ai-conversation-context.ts";
 import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety.ts";
 
 (function () {
@@ -44,7 +44,7 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
   let customerProfileLoadStarted = false;
   let nudgeTimer = 0;
   const state = { busy: false, history: Array.isArray(saved.history)?saved.history.slice(-20):[], lastQuestion: saved.lastProductQuery||'', mode: saved.uiMode||'auto', size: saved.uiSize==='expanded'?'expanded':'compact', manualSize:Boolean(saved.uiManualSize), cart: Array.isArray(saved.uiCart)?saved.uiCart:[], offerSets:Array.isArray(saved.uiOfferSets)?saved.uiOfferSets:[], offerSingles:Array.isArray(saved.uiOfferSingles)?saved.uiOfferSingles:[], profile: null, started: Boolean(saved.uiStarted),
-    commerceState: {version:1,sessionId:saved.sessionId||'',history:Array.isArray(saved.history)?saved.history.slice(-20):[],currentPrinter:saved.currentPrinter||null,currentProductId:saved.currentProductId||null,selectedProductId:saved.selectedProductId||null,currentColor:saved.currentColor||null,currentType:saved.currentType||null,cart:Array.isArray(saved.cart)?saved.cart:[],checkoutDraft:saved.checkoutDraft||{},lastProductQuery:saved.lastProductQuery||null,lastIntent:saved.lastIntent||null,pendingQuestion:saved.pendingQuestion||null,pendingProductQuestion:saved.pendingProductQuestion||null} };
+    commerceState: {version:1,sessionId:saved.sessionId||'',conversationHistory:conversationArchive(saved.conversationHistory||saved.history),history:Array.isArray(saved.history)?saved.history.slice(-20):[],currentPrinter:saved.currentPrinter||null,currentProductId:saved.currentProductId||null,selectedProductId:saved.selectedProductId||null,currentColor:saved.currentColor||null,currentType:saved.currentType||null,cart:Array.isArray(saved.cart)?saved.cart:[],checkoutDraft:saved.checkoutDraft||{},lastProductQuery:saved.lastProductQuery||null,lastIntent:saved.lastIntent||null,pendingQuestion:saved.pendingQuestion||null,pendingProductQuestion:saved.pendingProductQuestion||null} };
   function saveCommerceSession(){
     state.commerceState.history=state.history.slice(-20);
     state.commerceState.cart=state.cart.map(x=>({id:x.product?.id||'',sku:x.product?.sku||'',quantity:x.qty}));
@@ -705,7 +705,7 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
     if(state.mode==='auto')state.mode=looksLikeShopping(question)?'shop':'advice';
     beginSession(); if(!question||state.busy)return;
     const conversation=resolveConversationContext(question,state.commerceState?.history||[],state.commerceState||{},location.pathname);
-    const rememberExternal=(answer)=>{state.commerceState={...state.commerceState,pendingQuestion:null,pendingProductQuestion:null,selectedProductId:null,history:[...(state.commerceState?.history||[]),{role:'user',content:String(question).slice(0,4000),topic:'order'},{role:'assistant',content:answer,topic:'order'}].slice(-20)};saveCommerceSession();};
+    const rememberExternal=(answer)=>{state.commerceState={...state.commerceState,pendingQuestion:null,pendingProductQuestion:null,selectedProductId:null,history:[...(state.commerceState?.history||[]),{role:'user',content:String(question).slice(0,4000),topic:'order'},{role:'assistant',content:answer,topic:'order'}].slice(-20)};state.commerceState.conversationHistory=conversationArchive([...(state.commerceState.conversationHistory||[]),...state.commerceState.history.slice(-2)]);state.history=state.commerceState.history;saveCommerceSession();};
     const contextualOrder=conversation.topic==='order'&&['follow_up','resume'].includes(conversation.relation)&&/kde|stav|track|sled|kedy/.test(String(question).toLowerCase());
     if(options.forceOrderStatus===true||isOrderStatusQuestion(question)||contextualOrder){
       state.busy=true;state.lastQuestion=question;addMessage('user',`<p>${escapeHtml(question)}</p>`);const loading=addMessage('bot','<p>Načítavam vašu objednávku…</p>');

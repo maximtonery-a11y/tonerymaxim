@@ -2,9 +2,9 @@
 // History identifies a subject; it never supplies prices, policy or permission
 // to purchase. Only the current customer message can authorize an action.
 import { hasExplicitCartAddCommand } from './ai-cart-safety.ts';
-import { isProductPriceQuestion } from './ai-commerce/price-question.ts';
+import { isProductPriceQuestion, isProductDeliveryPriceQuestion } from './ai-commerce/price-question.ts';
 export type ConversationTopic = 'product' | 'calendar' | 'discount' | 'shipping' | 'payment' | 'account' | 'claim' | 'diagnostic' | 'order' | 'contact' | 'legal';
-export type ConversationTurn = { role: string; content: string; topic?: ConversationTopic | 'other'; relation?: string; productPage?: string; productReference?: string };
+export type ConversationTurn = { role: string; content: string; topic?: ConversationTopic | 'other'; relation?: string; productPage?: string; productReference?: string; productQuantity?: number };
 export function conversationTopicTag(value: unknown): ConversationTopic | 'other' | undefined {
   return ['product','calendar','discount','shipping','payment','account','claim','diagnostic','order','contact','legal','other'].includes(String(value)) ? value as ConversationTopic|'other' : undefined;
 }
@@ -23,7 +23,28 @@ export type ConversationContext = {
   explicitProductReturn: boolean;
   resetSelection: boolean;
   clarification: string | null;
+  deliveryPrice?: boolean;
+  quoteQuantity?: number;
 };
+
+// Separate conversation memory from the small history used by legacy routes.
+// Bound it by characters as well as turns to keep API payloads below 1 MB.
+export function conversationArchive(value:unknown):ConversationTurn[]{
+  if(!Array.isArray(value))return [];
+  const result:ConversationTurn[]=[];let characters=0;
+  for(const raw of value.slice(-512).reverse()){
+    const content=String(raw?.content||'').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,4000);
+    if(!content)continue;if(characters+content.length>180000)break;characters+=content.length;
+    result.push({role:raw.role==='assistant'?'assistant':'user',content,
+      ...(conversationTopicTag(raw.topic)?{topic:conversationTopicTag(raw.topic)}:{}),
+      ...(['new','follow_up','resume','clarify','acknowledge'].includes(raw.relation)?{relation:raw.relation}:{}),
+      ...(conversationProductPage(raw.productPage)?{productPage:conversationProductPage(raw.productPage)}:{}),
+      ...(/^SKU:\s*[a-z0-9][a-z0-9_. -]{0,155}$/i.test(String(raw.productReference||''))?{productReference:raw.productReference}:{}),
+      ...(Number.isInteger(raw.productQuantity)&&raw.productQuantity>=1&&raw.productQuantity<=99?{productQuantity:raw.productQuantity}:{}),
+    });
+  }
+  return result.reverse();
+}
 const norm = (value: unknown) => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 const referenceWords = /\b(?:ten|tento|ta|tato|tieto|tuto|to|toho|tohto|tom|ho|ju|jej|ich|tam|takto|teda|potom|to iste)\b/;
 const explicitReturn = /\b(?:vratme|vrat|vratit|spat|naspat|povodn\w*|predchadzajuc\w*|predtym|este\s+k)\b/;
@@ -145,6 +166,13 @@ export function resolveConversationContext(message: string, history: Conversatio
   const result: ConversationContext = { relation: 'new', topic: explicit, question, contextHistory: [], productQuery: null, orderNumber:null, explicitProductReturn: false, resetSelection: false, clarification: null };
   if (!question) return result;
   const productPage=conversationProductPage(page);
+  const deliveryContext=frames.some(frame=>frame.topic==='shipping'||frame.topic==='payment')||turns.some(turn=>turn.role==='user'&&isProductDeliveryPriceQuestion(turn.content));
+  if(isProductDeliveryPriceQuestion(question,deliveryContext)&&!hasExplicitCartAddCommand(question)){
+    const named=conversationProductReference(question);
+    const product=returns&&/povodn/.test(n)?frames.find(frame=>frame.topic==='product'):frames.findLast(frame=>frame.topic==='product');
+    const currentDetail=productPage&&/\b(?:tento|tato|tieto|uvedeny)\b/.test(n)&&productPage!==product?.page;
+    return {...result,topic:'product',deliveryPrice:true,relation:named||currentDetail?'new':product?active===product?'follow_up':'resume':'new',productQuery:named||(currentDetail?null:product?.reference)||null,contextHistory:!named&&!currentDetail&&product?turns.slice(product.start,product.end+1):[]};
+  }
   if(quantity.test(n)&&active&&!['product','calendar','discount'].includes(active.topic))return {...result,relation:'clarify',topic:null,resetSelection:true,clarification:'Čo znamená tento počet — kusy produktu, číslo objednávky alebo iný údaj? Napíšte, prosím, k čomu sa vzťahuje.'};
   if(productPage&&active?.topic==='product'&&active.page&&productPage!==active.page&&!reference&&(explicit==='product'||/\b(?:cena|cenu|stoji|tento|ten|to)\b/.test(n)))return {...result,topic:'product',resetSelection:true};
   if (acknowledgement.test(n) && !/^(ano|nie)[.! ]*$/.test(n)) return { ...result, relation: 'acknowledge', topic: active?.topic || null, contextHistory: active ? turns.slice(active.start, active.end + 1) : [] };
