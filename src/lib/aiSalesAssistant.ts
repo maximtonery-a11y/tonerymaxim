@@ -5,6 +5,7 @@ import { compactKey, getProductsCache, normalize } from './tm-products-cache.ts'
 import { aiKnowledge, type AiKnowledgeItem } from '../data/ai-knowledge.ts';
 import { findExactPrinterModelMatches, findExactProductIdentityMatches } from './catalog-query.ts';
 import { answerWithOpenAi } from './openai-sales-assistant.ts';
+import { discountHelpAnswer } from './ai-discount-help.ts';
 
 export type AiIntent = 'product_search' | 'shipping' | 'payment' | 'claim' | 'order' | 'diagnostic' | 'compatibility' | 'support' | 'account' | 'loyalty' | 'legal' | 'contact' | 'fallback' | 'empty';
 
@@ -515,19 +516,23 @@ function contextualizeFollowUp(message: string, history: AiConversationTurn[] = 
 
 export async function buildAssistantAnswer(message: string, page = '', history: AiConversationTurn[] = []) {
   const rawMessage = String(message || '').trim();
+  const discountHelp = discountHelpAnswer(rawMessage, history);
+  if (discountHelp) return discountHelp;
   const originalMessage = contextualizeFollowUp(rawMessage, history);
   const isContextualProductFollowUp = originalMessage !== rawMessage && hasProductCodeOrModel(originalMessage);
   if (!rawMessage) return { answer: ['Napíšte model tlačiarne, označenie toneru alebo otázku.'], products: [], groups: [], intent: 'empty' };
 
   const classified = classifyIntent(originalMessage);
 
-  // Neexistujúcu zľavu si Tomáš nesmie vymyslieť. Overené automatické percentá sú 5 % a 7 %.
-  const discountMatch = normalize(originalMessage).match(/\b(\d{1,3})\s*(?:%|percent)/);
-  if (/zlavu|zlavovy|zľavu|zľavovy/i.test(originalMessage) && discountMatch && !['5', '7'].includes(discountMatch[1])) {
+  // Check every percentage and every inflection, including „zľavový kód“.
+  // Quantity discounts are real offers, too; they are not coupon promises.
+  const discountMatch = [...normalize(originalMessage).matchAll(/\b(\d{1,3})\s*(?:%|percent)/g)].find(match => !['5', '7', '10', '15', '25'].includes(match[1]));
+  if (/\b(?:zlav|kupon)\w*/.test(normalize(originalMessage)) && discountMatch) {
     return {
       answer: [
         `Zľavu ${discountMatch[1]} % nemám v overených ponukách ToneryMAXIM, preto vám taký zľavový kód nebudem sľubovať.`,
         'Overené sú uvítacia zľava 5 % po registrácii a 7 % odmena na ďalší nákup kompatibilných tonerov po dokončenej objednávke.',
+        'Množstevné zľavy sa počítajú samostatne podľa druhu produktu a počtu rovnakých kusov; nie sú to univerzálne zľavové kódy.',
       ],
       products: [], groups: [], intent: 'fallback', confidence: 0.98, unanswered: true,
     };

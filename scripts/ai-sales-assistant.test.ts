@@ -205,7 +205,7 @@ test('servisné odpovede ponúkajú iba bezpečné interné odkazy', async () =>
     { label: 'Prejsť na prihlásenie', url: '/prihlasenie' },
   ]);
   assert.equal(advisorLinks({ intent: 'claim', faq: 'reklamacia-postup' })[0]?.url, '/reklamacia-online');
-  assert.equal(advisorLinks({ intent: 'loyalty', faq: 'registracia-zlava' })[0]?.url, '/registracia');
+  assert.equal(advisorLinks({ intent: 'loyalty', faq: 'registracia-zlava' })[0]?.url, '/ucet/odmeny');
   for (const link of advisorLinks({ intent: 'account', faq: 'ucet-heslo' })) {
     assert.match(link.url, /^\/[a-z0-9/_-]+$/);
     assert.doesNotMatch(link.url, /\.info|https?:/i);

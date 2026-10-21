@@ -63,6 +63,33 @@ test('prehliadač na priamy pokyn skutočne zopakuje objednávku', async () => {
   assert.deepEqual(flow.errors, []);
 });
 
+test('prehliadač zachová registračnú zľavu pri otázkach na e-mail a mobil', async () => {
+  const flow = await browserFlow('/ucet');
+  for (const question of ['ako uplatním zľavu za registráciu', 'kde mi ta zľava príde zatiaľ neprišla', 'a kde to najdem na mobile?', 'Kam zadám kupón?']) {
+    await flow.ask(question);
+    assert.match(flow.messages.at(-1).innerHTML, /Moje odmeny/);
+    assert.match(flow.messages.at(-1).innerHTML, /Kupónová zľava/);
+    assert.doesNotMatch(flow.messages.at(-1).innerHTML, /nemám.*spoľahlivú odpoveď/);
+    assert.deepEqual(flow.state.cart, []);
+  }
+  assert.deepEqual(flow.calls, Array(4).fill('/api/ai-tomas'));
+  assert.deepEqual(flow.errors, []);
+});
+
+test('prehliadač neposiela otázky na odmeny a body na kontrolu objednávky', async () => {
+  const flow = await browserFlow('/ucet');
+  for (const question of ['Kde nájdem 7 % zľavu za objednávku?', 'Kde sú vernostné body po expedovaní objednávky?', 'Kde zadám kupón z dokončenej objednávky?']) {
+    await flow.ask(question);
+    assert.match(flow.messages.at(-1).innerHTML, /Kupónová zľava|Vernostná zľava/);
+  }
+  assert.deepEqual(flow.calls, Array(3).fill('/api/ai-tomas'));
+  assert.equal(flow.verifications(), 0);
+  assert.deepEqual(flow.state.cart, []);
+  assert.deepEqual(flow.errors, []);
+  assert.equal(isOrderStatusQuestion('Kde je moja objednávka so zľavou?'), true);
+  assert.equal(isOrderStatusQuestion('Over stav objednávky 300945 s kupónom.'), true);
+});
+
 test('prehliadač zobrazí žiadané TM číslo a pri chýbajúcom ponúkne overenie', async () => {
   const flow = await browserFlow();
   await flow.ask('Kde je objednávka 300945?');

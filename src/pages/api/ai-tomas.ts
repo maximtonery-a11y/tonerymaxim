@@ -13,6 +13,7 @@ import { calendarOverviewFacts, calendarOverviewLinks, diaryOverviewLinks, isCal
 import { answerWithOpenAi } from '../../lib/openai-sales-assistant.ts';
 import { customerProductLabel } from '../../lib/ai-product-label.ts';
 import { productContextAnswer } from '../../lib/ai-commerce/product-context.ts';
+import { discountHelpAnswer } from '../../lib/ai-discount-help.ts';
 
 export const prerender = false;
 const clean = (v: unknown, max=500) => String(v || '').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);
@@ -139,6 +140,17 @@ export const POST: APIRoute = async ({ request }) => {
     const cartBeforeRequest=state.cart.map((item:any)=>({...item}));
     const route = routeCommerceMessage(message,state);
     const page = clean(body?.page,300) || '/';
+    const discountHelp = discountHelpAnswer(message,state.history);
+    if(discountHelp){
+      // Discount instructions are factual service answers even on a toner
+      // detail, with an old quantity selection or with a coupon resembling SKU.
+      state.pendingQuestion=null;state.pendingProductQuestion=null;state.selectedProductId=null;
+      state.checkoutDraft={...state.checkoutDraft,guidedQuantity:null,guidedSet:null};
+      state.lastIntent='POLICY';
+      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:discountHelp.answer.join(' ')}].slice(-20);
+      const advisor={...discountHelp,sources:advisorLinks(discountHelp)};
+      return Response.json({ok:true,route,advisor,commerce:null,state,action:null},{headers:{'Cache-Control':'no-store'}});
+    }
     const contextAnswer = await productContextAnswer(message,page,state,route);
     if(contextAnswer){
       const {product,advisor}=contextAnswer;

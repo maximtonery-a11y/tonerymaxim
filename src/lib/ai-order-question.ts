@@ -39,6 +39,11 @@ export function selectRequestedOrder<T extends { number?: unknown }>(orders: T[]
 
 export function isOrderStatusQuestion(value: unknown) {
   const text = normalizeOrderQuestion(value);
+  // „Kde nájdem 7 % odmenu za objednávku?“ asks about a benefit, not the
+  // customer's last order. Keep it in advice, including before the API call.
+  const benefitQuestion = /\b(?:zlav|kupon|vernost|odmen)\w*\b|\bbod(?:y|ov|mi|och|u|om)?\b/.test(text);
+  const explicitOrderStatus = /\b(?:stav\w*\s+objednavk\w*|tracking|sledovanie\s+zasielk\w*)\b|\bkde\s+(?:je|su)\s+(?:(?:moja|moje|ta|tato)\s+)?(?:objednavk|zasielk|balik)\w*\b/.test(text);
+  if (benefitQuestion && !explicitOrderStatus) return false;
   // Storno, zmena, reklamácia, vrátenie či refundácia sú servisné otázky.
   // Ani slová „pred expedíciou“ ich nesmú presmerovať na poslednú objednávku.
   if (/\b(?:storno|stornovat|zrusit|zmena|zmenit|upravit|reklam|vratit|vraten|odstup|refund|peniaz|platb)\w*\b/.test(text)) return false;

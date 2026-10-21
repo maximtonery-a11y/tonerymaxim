@@ -88,7 +88,8 @@ export function hasExplicitCartAddCommand(value: unknown) {
   const text = normalize(value);
   if (!text || forbidsCartMutation(text) || isNonExecutingShoppingRequest(text)) return false;
 
-  return /\b(?:pridaj|pridat|vloz|vlozit|objednaj|objednat|kup|kupit|zober|zobrat)\w*\b/.test(text)
+  // „kupón“/„kupóny“ are nouns, never the imperative „kúp“.
+  return /\b(?:pridaj|pridat|vloz|vlozit|objednaj|objednat|zober|zobrat)\w*\b|\bkup(?:it|te|uj(?:te)?)?\b/.test(text)
     || /\bdaj\s+mi\b(?:\s+\w+){0,8}\s+\b(?:do\s+)?(?:kosik|nakup)\w*\b/.test(text)
     || /\bchcem\s+(?:si\s+)?(?:kupit|objednat|zobrat)\b/.test(text);
 }

@@ -5,12 +5,14 @@ import { analyzeCatalogQuery } from '../catalog-query.ts';
 import { isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../calendar-ai-catalog.ts';
 import { forbidsCartMutation, hasExplicitCartAddCommand, isNonExecutingShoppingRequest } from '../ai-cart-safety.ts';
 import { isGeneralProductTypeComparison } from '../ai-product-type-question.ts';
+import { discountFaqForMessage } from '../ai-discount-help.ts';
 
 const norm = (v: unknown) => String(v || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const productCode = /\b(?:(?:cf|ce|crg|tn|dr|wt|mc|q|clt|mlt|tk|pgi|pfi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*|\d{2,}[a-z]{1,5}\d{2,}[a-z0-9-]*)\b/i;
 const printer = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|utax|ibm|panasonic|philips|konica(?:\s+minolta)?|minolta|minoltu)(?:\s+[a-z][a-z-]*){0,5}\s+[a-z-]*\d{1,}[a-z0-9-]*\b/i;
 
 export function routeCommerceMessage(message: string, state: CommerceState) {
+  if (discountFaqForMessage(message, state.history)) return { intents: ['POLICY'] as AiIntent[], productQuery: null, needsProducts: false };
   const n = norm(message); const intents: AiIntent[] = [];
   const catalogQuery = analyzeCatalogQuery(message);
   const generalTypeComparison = isGeneralProductTypeComparison(message);
@@ -56,7 +58,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // množstevnú zľavu. POLICY zostáva aktívne, ale nesmie vymazať katalógový
   // dopyt ani presný OEM kód.
   const catalogQuestionWithPolicy = sharedCatalogReference
-    && /\b(?:najd|hlad|potreb|ukaz|cena|stoji|sklad|produkt|toner|napln)\w*\b/.test(n);
+    && (/\b(?:najd|hlad|potreb|ukaz|cena|stoji|sklad|produkt|toner|napln)\w*\b/.test(n) || hasExplicitCartAddCommand(message));
   const humanRequest = /(clovek|operator|predajca|zavolajte|kontaktujte ma)/.test(n);
   const blocksCatalogQuery = (serviceQuestion && !catalogQuestionWithPolicy) || humanRequest || generalTypeComparison;
   const pendingAnswer = state.pendingQuestion === 'quantity'

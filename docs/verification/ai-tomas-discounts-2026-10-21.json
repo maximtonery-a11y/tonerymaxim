@@ -1,0 +1,2083 @@
+{
+  "generatedAt": "2026-10-21T04:50:04.759Z",
+  "base": "http://127.0.0.1:43821",
+  "scope": "local production build, real HTTP and middleware",
+  "cases": [
+    {
+      "question": "Ako uplatním zľavu za registráciu?",
+      "expectedFaq": "registracia-zlava",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 13,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Registrácia a uvítacia zľava:",
+            "Nakúpiť môžete aj bez registrácie.",
+            "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+            "Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti.",
+            "Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách.",
+            "Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní.",
+            "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "registracia-zlava",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny – registračná zľava",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Vytvoriť účet",
+              "url": "/registracia"
+            },
+            {
+              "label": "Výhody registrácie",
+              "url": "/vyhody-registracie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "dfd1bd2b-0d83-40cb-b3f0-04c71383c13f",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním zľavu za registráciu?"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "kde mi ta zľava príde zatiaľ neprišla",
+      "expectedFaq": "registracia-zlava",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 4,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Registrácia a uvítacia zľava:",
+            "Nakúpiť môžete aj bez registrácie.",
+            "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+            "Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti.",
+            "Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách.",
+            "Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní.",
+            "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "registracia-zlava",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny – registračná zľava",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Vytvoriť účet",
+              "url": "/registracia"
+            },
+            {
+              "label": "Výhody registrácie",
+              "url": "/vyhody-registracie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "dfd1bd2b-0d83-40cb-b3f0-04c71383c13f",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním zľavu za registráciu?"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            },
+            {
+              "role": "user",
+              "content": "kde mi ta zľava príde zatiaľ neprišla"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "a kde to najdem na mobile?",
+      "expectedFaq": "registracia-zlava",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 3,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Registrácia a uvítacia zľava:",
+            "Nakúpiť môžete aj bez registrácie.",
+            "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+            "Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti.",
+            "Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách.",
+            "Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní.",
+            "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "registracia-zlava",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny – registračná zľava",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Vytvoriť účet",
+              "url": "/registracia"
+            },
+            {
+              "label": "Výhody registrácie",
+              "url": "/vyhody-registracie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "dfd1bd2b-0d83-40cb-b3f0-04c71383c13f",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním zľavu za registráciu?"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            },
+            {
+              "role": "user",
+              "content": "kde mi ta zľava príde zatiaľ neprišla"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            },
+            {
+              "role": "user",
+              "content": "a kde to najdem na mobile?"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "musim ju zotriet?",
+      "expectedFaq": "registracia-zlava",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Registrácia a uvítacia zľava:",
+            "Nakúpiť môžete aj bez registrácie.",
+            "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+            "Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti.",
+            "Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách.",
+            "Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní.",
+            "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "registracia-zlava",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny – registračná zľava",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Vytvoriť účet",
+              "url": "/registracia"
+            },
+            {
+              "label": "Výhody registrácie",
+              "url": "/vyhody-registracie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "dfd1bd2b-0d83-40cb-b3f0-04c71383c13f",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním zľavu za registráciu?"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            },
+            {
+              "role": "user",
+              "content": "kde mi ta zľava príde zatiaľ neprišla"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            },
+            {
+              "role": "user",
+              "content": "a kde to najdem na mobile?"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            },
+            {
+              "role": "user",
+              "content": "musim ju zotriet?"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "ani v e-maile ju nemam",
+      "expectedFaq": "registracia-zlava",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Registrácia a uvítacia zľava:",
+            "Nakúpiť môžete aj bez registrácie.",
+            "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+            "Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti.",
+            "Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách.",
+            "Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní.",
+            "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "registracia-zlava",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny – registračná zľava",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Vytvoriť účet",
+              "url": "/registracia"
+            },
+            {
+              "label": "Výhody registrácie",
+              "url": "/vyhody-registracie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "dfd1bd2b-0d83-40cb-b3f0-04c71383c13f",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním zľavu za registráciu?"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            },
+            {
+              "role": "user",
+              "content": "kde mi ta zľava príde zatiaľ neprišla"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            },
+            {
+              "role": "user",
+              "content": "a kde to najdem na mobile?"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            },
+            {
+              "role": "user",
+              "content": "musim ju zotriet?"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            },
+            {
+              "role": "user",
+              "content": "ani v e-maile ju nemam"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Kde nájdem 7 % zľavu?",
+      "expectedFaq": "odmena-7-percent",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "7 % odmena na ďalší nákup:",
+            "Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov.",
+            "Táto odmena sa eviduje samostatne od vernostných bodov.",
+            "Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách.",
+            "Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím.",
+            "Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo.",
+            "Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "odmena-7-percent",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "b82edac4-ec2d-490f-837f-3e7eccb26dc3",
+          "history": [
+            {
+              "role": "user",
+              "content": "Kde nájdem 7 % zľavu?"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "a ako ju zadam bez registracie?",
+      "expectedFaq": "odmena-7-percent",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "7 % odmena na ďalší nákup:",
+            "Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov.",
+            "Táto odmena sa eviduje samostatne od vernostných bodov.",
+            "Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách.",
+            "Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím.",
+            "Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo.",
+            "Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "odmena-7-percent",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "b82edac4-ec2d-490f-837f-3e7eccb26dc3",
+          "history": [
+            {
+              "role": "user",
+              "content": "Kde nájdem 7 % zľavu?"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou."
+            },
+            {
+              "role": "user",
+              "content": "a ako ju zadam bez registracie?"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Kde vidím svoje body a ako ich použijem?",
+      "expectedFaq": "vernost-body",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Vernostné body:",
+            "Za každé minuté 1 € z dokončenej objednávky získate 1 vernostný bod.",
+            "100 bodov má hodnotu 1 € zľavy. Stav bodov vidíte po prihlásení vo svojom účte.",
+            "Vernostné body sú samostatné od 7 % odmeny na ďalší nákup.",
+            "Presný zostatok, hodnotu zľavy a históriu nájdete v Môj účet → Vernostný program. V mobile otvorte „Menu účtu“ → „Vernostný program“. Body sa pripisujú po expedovaní alebo dokončení objednávky, nie už samotnou registráciou či vytvorením objednávky.",
+            "Peňažnú zľavu možno použiť od 20 bodov, teda 0,20 €. Prihlásenému zákazníkovi je predvolene zapnutá: v košíku skontrolujte „Použiť vernostnú zľavu v tejto objednávke“, v pokladni „Použiť zľavu“. Ak ste voľbu vypli, znovu ju zaškrtnite.",
+            "Výsledok je v súhrne košíka aj pokladne ako „Vernostná zľava“. Body sa odpočítajú pri objednávke; zľava neprekročí zostávajúcu cenu tovaru po množstevnej a kupónovej zľave. V mobile v pokladni rozbaľte „Objednávka“; na PC nájdete súhrn vpravo."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "vernost-body",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje body a história",
+              "url": "/ucet/vernost"
+            },
+            {
+              "label": "Použiť body v košíku",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "0d7273f8-65cb-4471-b473-c651075ee00d",
+          "history": [
+            {
+              "role": "user",
+              "content": "Kde vidím svoje body a ako ich použijem?"
+            },
+            {
+              "role": "assistant",
+              "content": "Vernostné body: Za každé minuté 1 € z dokončenej objednávky získate 1 vernostný bod. 100 bodov má hodnotu 1 € zľavy. Stav bodov vidíte po prihlásení vo svojom účte. Vernostné body sú samostatné od 7 % odmeny na ďalší nákup. Presný zostatok, hodnotu zľavy a históriu nájdete v Môj účet → Vernostný program. V mobile otvorte „Menu účtu“ → „Vernostný program“. Body sa pripisujú po expedovaní alebo dokončení objednávky, nie už samotnou registráciou či vytvorením objednávky. Peňažnú zľavu možno použiť od 20 bodov, teda 0,20 €. Prihlásenému zákazníkovi je predvolene zapnutá: v košíku skontrolujte „Použiť vernostnú zľavu v tejto objednávke“, v pokladni „Použiť zľavu“. Ak ste voľbu vypli, znovu ju zaškrtnite. Výsledok je v súhrne košíka aj pokladne ako „Vernostná zľava“. Body sa odpočítajú pri objednávke; zľava neprekročí zostávajúcu cenu tovaru po množstevnej a kupónovej zľave. V mobile v pokladni rozbaľte „Objednávka“; na PC nájdete súhrn vpravo."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "a kde to mam zapnut na mobile?",
+      "expectedFaq": "vernost-body",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Vernostné body:",
+            "Za každé minuté 1 € z dokončenej objednávky získate 1 vernostný bod.",
+            "100 bodov má hodnotu 1 € zľavy. Stav bodov vidíte po prihlásení vo svojom účte.",
+            "Vernostné body sú samostatné od 7 % odmeny na ďalší nákup.",
+            "Presný zostatok, hodnotu zľavy a históriu nájdete v Môj účet → Vernostný program. V mobile otvorte „Menu účtu“ → „Vernostný program“. Body sa pripisujú po expedovaní alebo dokončení objednávky, nie už samotnou registráciou či vytvorením objednávky.",
+            "Peňažnú zľavu možno použiť od 20 bodov, teda 0,20 €. Prihlásenému zákazníkovi je predvolene zapnutá: v košíku skontrolujte „Použiť vernostnú zľavu v tejto objednávke“, v pokladni „Použiť zľavu“. Ak ste voľbu vypli, znovu ju zaškrtnite.",
+            "Výsledok je v súhrne košíka aj pokladne ako „Vernostná zľava“. Body sa odpočítajú pri objednávke; zľava neprekročí zostávajúcu cenu tovaru po množstevnej a kupónovej zľave. V mobile v pokladni rozbaľte „Objednávka“; na PC nájdete súhrn vpravo."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "vernost-body",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje body a história",
+              "url": "/ucet/vernost"
+            },
+            {
+              "label": "Použiť body v košíku",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "0d7273f8-65cb-4471-b473-c651075ee00d",
+          "history": [
+            {
+              "role": "user",
+              "content": "Kde vidím svoje body a ako ich použijem?"
+            },
+            {
+              "role": "assistant",
+              "content": "Vernostné body: Za každé minuté 1 € z dokončenej objednávky získate 1 vernostný bod. 100 bodov má hodnotu 1 € zľavy. Stav bodov vidíte po prihlásení vo svojom účte. Vernostné body sú samostatné od 7 % odmeny na ďalší nákup. Presný zostatok, hodnotu zľavy a históriu nájdete v Môj účet → Vernostný program. V mobile otvorte „Menu účtu“ → „Vernostný program“. Body sa pripisujú po expedovaní alebo dokončení objednávky, nie už samotnou registráciou či vytvorením objednávky. Peňažnú zľavu možno použiť od 20 bodov, teda 0,20 €. Prihlásenému zákazníkovi je predvolene zapnutá: v košíku skontrolujte „Použiť vernostnú zľavu v tejto objednávke“, v pokladni „Použiť zľavu“. Ak ste voľbu vypli, znovu ju zaškrtnite. Výsledok je v súhrne košíka aj pokladne ako „Vernostná zľava“. Body sa odpočítajú pri objednávke; zľava neprekročí zostávajúcu cenu tovaru po množstevnej a kupónovej zľave. V mobile v pokladni rozbaľte „Objednávka“; na PC nájdete súhrn vpravo."
+            },
+            {
+              "role": "user",
+              "content": "a kde to mam zapnut na mobile?"
+            },
+            {
+              "role": "assistant",
+              "content": "Vernostné body: Za každé minuté 1 € z dokončenej objednávky získate 1 vernostný bod. 100 bodov má hodnotu 1 € zľavy. Stav bodov vidíte po prihlásení vo svojom účte. Vernostné body sú samostatné od 7 % odmeny na ďalší nákup. Presný zostatok, hodnotu zľavy a históriu nájdete v Môj účet → Vernostný program. V mobile otvorte „Menu účtu“ → „Vernostný program“. Body sa pripisujú po expedovaní alebo dokončení objednávky, nie už samotnou registráciou či vytvorením objednávky. Peňažnú zľavu možno použiť od 20 bodov, teda 0,20 €. Prihlásenému zákazníkovi je predvolene zapnutá: v košíku skontrolujte „Použiť vernostnú zľavu v tejto objednávke“, v pokladni „Použiť zľavu“. Ak ste voľbu vypli, znovu ju zaškrtnite. Výsledok je v súhrne košíka aj pokladne ako „Vernostná zľava“. Body sa odpočítajú pri objednávke; zľava neprekročí zostávajúcu cenu tovaru po množstevnej a kupónovej zľave. V mobile v pokladni rozbaľte „Objednávka“; na PC nájdete súhrn vpravo."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Kam zadám kupón?",
+      "expectedFaq": "kupony-uplatnenie",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Kde a ako použiť kupón:",
+            "Aktívne kupóny svojho účtu nájdete po prihlásení v Môj účet → Moje odmeny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri neprázdnom košíku sa z účtu automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách.",
+            "Máte vydaný kód napríklad z kampane alebo z predchádzajúceho nákupu bez účtu? V košíku alebo pokladni kliknite „Máte zľavový kupón?“ → vložte kód do „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Úspešné uplatnenie spoznáte podľa hlásenia „Kupón … je uplatnený“ a riadku „Kupónová zľava“ s odpočítanou sumou. Kódy sa nesčítavajú; naraz sa používa jeden kupón.",
+            "Pri chybe skontrolujte presný kód, platnosť, jednorazové použitie, podmienky sortimentu a prihlásenie do účtu, ak je kupón viazaný na účet. Výšku a platnosť marketingového kupónu potvrdí až jeho overenie v košíku; z neznámeho kódu ich neviem určiť."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "kupony-uplatnenie",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny a kupóny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Moje vernostné body",
+              "url": "/ucet/vernost"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "04e27bc4-ec7c-49ae-b5ba-9119db1ddb2a",
+          "history": [
+            {
+              "role": "user",
+              "content": "Kam zadám kupón?"
+            },
+            {
+              "role": "assistant",
+              "content": "Kde a ako použiť kupón: Aktívne kupóny svojho účtu nájdete po prihlásení v Môj účet → Moje odmeny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri neprázdnom košíku sa z účtu automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Máte vydaný kód napríklad z kampane alebo z predchádzajúceho nákupu bez účtu? V košíku alebo pokladni kliknite „Máte zľavový kupón?“ → vložte kód do „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Úspešné uplatnenie spoznáte podľa hlásenia „Kupón … je uplatnený“ a riadku „Kupónová zľava“ s odpočítanou sumou. Kódy sa nesčítavajú; naraz sa používa jeden kupón. Pri chybe skontrolujte presný kód, platnosť, jednorazové použitie, podmienky sortimentu a prihlásenie do účtu, ak je kupón viazaný na účet. Výšku a platnosť marketingového kupónu potvrdí až jeho overenie v košíku; z neznámeho kódu ich neviem určiť."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Ako použiť zľavový kód MAXIM123456?",
+      "expectedFaq": "kupony-uplatnenie",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Kde a ako použiť kupón:",
+            "Aktívne kupóny svojho účtu nájdete po prihlásení v Môj účet → Moje odmeny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri neprázdnom košíku sa z účtu automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách.",
+            "Máte vydaný kód napríklad z kampane alebo z predchádzajúceho nákupu bez účtu? V košíku alebo pokladni kliknite „Máte zľavový kupón?“ → vložte kód do „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Úspešné uplatnenie spoznáte podľa hlásenia „Kupón … je uplatnený“ a riadku „Kupónová zľava“ s odpočítanou sumou. Kódy sa nesčítavajú; naraz sa používa jeden kupón.",
+            "Pri chybe skontrolujte presný kód, platnosť, jednorazové použitie, podmienky sortimentu a prihlásenie do účtu, ak je kupón viazaný na účet. Výšku a platnosť marketingového kupónu potvrdí až jeho overenie v košíku; z neznámeho kódu ich neviem určiť."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "kupony-uplatnenie",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny a kupóny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Moje vernostné body",
+              "url": "/ucet/vernost"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "0747d255-43b4-4f62-be28-963ac11685c9",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako použiť zľavový kód MAXIM123456?"
+            },
+            {
+              "role": "assistant",
+              "content": "Kde a ako použiť kupón: Aktívne kupóny svojho účtu nájdete po prihlásení v Môj účet → Moje odmeny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri neprázdnom košíku sa z účtu automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Máte vydaný kód napríklad z kampane alebo z predchádzajúceho nákupu bez účtu? V košíku alebo pokladni kliknite „Máte zľavový kupón?“ → vložte kód do „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Úspešné uplatnenie spoznáte podľa hlásenia „Kupón … je uplatnený“ a riadku „Kupónová zľava“ s odpočítanou sumou. Kódy sa nesčítavajú; naraz sa používa jeden kupón. Pri chybe skontrolujte presný kód, platnosť, jednorazové použitie, podmienky sortimentu a prihlásenie do účtu, ak je kupón viazaný na účet. Výšku a platnosť marketingového kupónu potvrdí až jeho overenie v košíku; z neznámeho kódu ich neviem určiť."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Dostal som marketingový kupón na 20 %, kde ho zadám?",
+      "expectedFaq": "kupony-uplatnenie",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Kde a ako použiť kupón:",
+            "Aktívne kupóny svojho účtu nájdete po prihlásení v Môj účet → Moje odmeny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri neprázdnom košíku sa z účtu automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách.",
+            "Máte vydaný kód napríklad z kampane alebo z predchádzajúceho nákupu bez účtu? V košíku alebo pokladni kliknite „Máte zľavový kupón?“ → vložte kód do „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Úspešné uplatnenie spoznáte podľa hlásenia „Kupón … je uplatnený“ a riadku „Kupónová zľava“ s odpočítanou sumou. Kódy sa nesčítavajú; naraz sa používa jeden kupón.",
+            "Pri chybe skontrolujte presný kód, platnosť, jednorazové použitie, podmienky sortimentu a prihlásenie do účtu, ak je kupón viazaný na účet. Výšku a platnosť marketingového kupónu potvrdí až jeho overenie v košíku; z neznámeho kódu ich neviem určiť."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "kupony-uplatnenie",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny a kupóny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Moje vernostné body",
+              "url": "/ucet/vernost"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "cd5a8048-833b-4c40-bd05-0281dc827449",
+          "history": [
+            {
+              "role": "user",
+              "content": "Dostal som marketingový kupón na 20 %, kde ho zadám?"
+            },
+            {
+              "role": "assistant",
+              "content": "Kde a ako použiť kupón: Aktívne kupóny svojho účtu nájdete po prihlásení v Môj účet → Moje odmeny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri neprázdnom košíku sa z účtu automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Máte vydaný kód napríklad z kampane alebo z predchádzajúceho nákupu bez účtu? V košíku alebo pokladni kliknite „Máte zľavový kupón?“ → vložte kód do „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Úspešné uplatnenie spoznáte podľa hlásenia „Kupón … je uplatnený“ a riadku „Kupónová zľava“ s odpočítanou sumou. Kódy sa nesčítavajú; naraz sa používa jeden kupón. Pri chybe skontrolujte presný kód, platnosť, jednorazové použitie, podmienky sortimentu a prihlásenie do účtu, ak je kupón viazaný na účet. Výšku a platnosť marketingového kupónu potvrdí až jeho overenie v košíku; z neznámeho kódu ich neviem určiť."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Ako uplatním 10 % zľavu na kompatibilné tonery?",
+      "expectedFaq": "mnozstevne-zlavy-tonery",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 1,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Množstevná zľava na kompatibilné produkty:",
+            "Pri 2–3 ks rovnakého kompatibilného produktu je množstevná zľava 10 %, pri 4 a viac ks 25 %. Stačí nastaviť počet kusov pri danej položke v košíku; kupón ani registráciu nepotrebujete.",
+            "Počítajú sa kusy rovnakého produktu (SKU), nie súčet rôznych tonerov alebo farieb. Pri hotovej sade sa počíta počet rovnakých balení sady, nie počet kaziet v jednom balení. Originálne ani renovované produkty túto množstevnú zľavu nemajú.",
+            "Zľavnenú cenu uvidíte pri položke a celkový odpočet v košíku aj pokladni v riadku „Množstevná / sadová zľava“. V mobile je súhrn košíka pod položkami; v pokladni ho rozbaľte tlačidlom „Objednávka“. Na PC je súhrn vpravo."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "mnozstevne-zlavy-tonery",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Skontrolovať množstvo v košíku",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "a424a917-5f34-407a-9ac8-e607e52136a9",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním 10 % zľavu na kompatibilné tonery?"
+            },
+            {
+              "role": "assistant",
+              "content": "Množstevná zľava na kompatibilné produkty: Pri 2–3 ks rovnakého kompatibilného produktu je množstevná zľava 10 %, pri 4 a viac ks 25 %. Stačí nastaviť počet kusov pri danej položke v košíku; kupón ani registráciu nepotrebujete. Počítajú sa kusy rovnakého produktu (SKU), nie súčet rôznych tonerov alebo farieb. Pri hotovej sade sa počíta počet rovnakých balení sady, nie počet kaziet v jednom balení. Originálne ani renovované produkty túto množstevnú zľavu nemajú. Zľavnenú cenu uvidíte pri položke a celkový odpočet v košíku aj pokladni v riadku „Množstevná / sadová zľava“. V mobile je súhrn košíka pod položkami; v pokladni ho rozbaľte tlačidlom „Objednávka“. Na PC je súhrn vpravo."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Kde sa zobrazuje 25 % zľava?",
+      "expectedFaq": "mnozstevne-zlavy-tonery",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 1,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Množstevná zľava na kompatibilné produkty:",
+            "Pri 2–3 ks rovnakého kompatibilného produktu je množstevná zľava 10 %, pri 4 a viac ks 25 %. Stačí nastaviť počet kusov pri danej položke v košíku; kupón ani registráciu nepotrebujete.",
+            "Počítajú sa kusy rovnakého produktu (SKU), nie súčet rôznych tonerov alebo farieb. Pri hotovej sade sa počíta počet rovnakých balení sady, nie počet kaziet v jednom balení. Originálne ani renovované produkty túto množstevnú zľavu nemajú.",
+            "Zľavnenú cenu uvidíte pri položke a celkový odpočet v košíku aj pokladni v riadku „Množstevná / sadová zľava“. V mobile je súhrn košíka pod položkami; v pokladni ho rozbaľte tlačidlom „Objednávka“. Na PC je súhrn vpravo."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "mnozstevne-zlavy-tonery",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Skontrolovať množstvo v košíku",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "a70d62e8-b659-4ec0-b24c-73171b0101ef",
+          "history": [
+            {
+              "role": "user",
+              "content": "Kde sa zobrazuje 25 % zľava?"
+            },
+            {
+              "role": "assistant",
+              "content": "Množstevná zľava na kompatibilné produkty: Pri 2–3 ks rovnakého kompatibilného produktu je množstevná zľava 10 %, pri 4 a viac ks 25 %. Stačí nastaviť počet kusov pri danej položke v košíku; kupón ani registráciu nepotrebujete. Počítajú sa kusy rovnakého produktu (SKU), nie súčet rôznych tonerov alebo farieb. Pri hotovej sade sa počíta počet rovnakých balení sady, nie počet kaziet v jednom balení. Originálne ani renovované produkty túto množstevnú zľavu nemajú. Zľavnenú cenu uvidíte pri položke a celkový odpočet v košíku aj pokladni v riadku „Množstevná / sadová zľava“. V mobile je súhrn košíka pod položkami; v pokladni ho rozbaľte tlačidlom „Objednávka“. Na PC je súhrn vpravo."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Je množstevná zľava aj na originály?",
+      "expectedFaq": "mnozstevne-zlavy-tonery",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Množstevná zľava na kompatibilné produkty:",
+            "Pri 2–3 ks rovnakého kompatibilného produktu je množstevná zľava 10 %, pri 4 a viac ks 25 %. Stačí nastaviť počet kusov pri danej položke v košíku; kupón ani registráciu nepotrebujete.",
+            "Počítajú sa kusy rovnakého produktu (SKU), nie súčet rôznych tonerov alebo farieb. Pri hotovej sade sa počíta počet rovnakých balení sady, nie počet kaziet v jednom balení. Originálne ani renovované produkty túto množstevnú zľavu nemajú.",
+            "Zľavnenú cenu uvidíte pri položke a celkový odpočet v košíku aj pokladni v riadku „Množstevná / sadová zľava“. V mobile je súhrn košíka pod položkami; v pokladni ho rozbaľte tlačidlom „Objednávka“. Na PC je súhrn vpravo."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "mnozstevne-zlavy-tonery",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Skontrolovať množstvo v košíku",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "5335eec8-cff3-473a-8350-103bfa4d4d4c",
+          "history": [
+            {
+              "role": "user",
+              "content": "Je množstevná zľava aj na originály?"
+            },
+            {
+              "role": "assistant",
+              "content": "Množstevná zľava na kompatibilné produkty: Pri 2–3 ks rovnakého kompatibilného produktu je množstevná zľava 10 %, pri 4 a viac ks 25 %. Stačí nastaviť počet kusov pri danej položke v košíku; kupón ani registráciu nepotrebujete. Počítajú sa kusy rovnakého produktu (SKU), nie súčet rôznych tonerov alebo farieb. Pri hotovej sade sa počíta počet rovnakých balení sady, nie počet kaziet v jednom balení. Originálne ani renovované produkty túto množstevnú zľavu nemajú. Zľavnenú cenu uvidíte pri položke a celkový odpočet v košíku aj pokladni v riadku „Množstevná / sadová zľava“. V mobile je súhrn košíka pod položkami; v pokladni ho rozbaľte tlačidlom „Objednávka“. Na PC je súhrn vpravo."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Ako sa ráta množstevná zľava pri sade tonerov?",
+      "expectedFaq": "mnozstevne-zlavy-tonery",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 1,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Množstevná zľava na kompatibilné produkty:",
+            "Pri 2–3 ks rovnakého kompatibilného produktu je množstevná zľava 10 %, pri 4 a viac ks 25 %. Stačí nastaviť počet kusov pri danej položke v košíku; kupón ani registráciu nepotrebujete.",
+            "Počítajú sa kusy rovnakého produktu (SKU), nie súčet rôznych tonerov alebo farieb. Pri hotovej sade sa počíta počet rovnakých balení sady, nie počet kaziet v jednom balení. Originálne ani renovované produkty túto množstevnú zľavu nemajú.",
+            "Zľavnenú cenu uvidíte pri položke a celkový odpočet v košíku aj pokladni v riadku „Množstevná / sadová zľava“. V mobile je súhrn košíka pod položkami; v pokladni ho rozbaľte tlačidlom „Objednávka“. Na PC je súhrn vpravo."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "mnozstevne-zlavy-tonery",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Skontrolovať množstvo v košíku",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "4e3f115d-4ff9-49ed-84c7-4813902884fc",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako sa ráta množstevná zľava pri sade tonerov?"
+            },
+            {
+              "role": "assistant",
+              "content": "Množstevná zľava na kompatibilné produkty: Pri 2–3 ks rovnakého kompatibilného produktu je množstevná zľava 10 %, pri 4 a viac ks 25 %. Stačí nastaviť počet kusov pri danej položke v košíku; kupón ani registráciu nepotrebujete. Počítajú sa kusy rovnakého produktu (SKU), nie súčet rôznych tonerov alebo farieb. Pri hotovej sade sa počíta počet rovnakých balení sady, nie počet kaziet v jednom balení. Originálne ani renovované produkty túto množstevnú zľavu nemajú. Zľavnenú cenu uvidíte pri položke a celkový odpočet v košíku aj pokladni v riadku „Množstevná / sadová zľava“. V mobile je súhrn košíka pod položkami; v pokladni ho rozbaľte tlačidlom „Objednávka“. Na PC je súhrn vpravo."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Ako uplatním 5 % zľavu pri 3 kalendároch?",
+      "expectedFaq": "kalendare-mnozstvo-zlavy",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 1,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Množstevné ceny kalendárov:",
+            "Bežný kalendár alebo diár môžete objednať už od 1 ks.",
+            "Pri 3–20 ks rovnakého produktu je jednotková cena automaticky nižšia o 5 %. Pri 21 a viac ks rovnakého produktu je zľava 15 %.",
+            "Zľava sa posudzuje pre rovnaký produkt; rôzne kalendáre sa na dosiahnutie množstva nesčítavajú.",
+            "Stačí nastaviť počet kusov rovnakého kalendára alebo diára v košíku. Pri 1–2 ks platí bežná cena; zľava nevyžaduje registráciu ani kupón.",
+            "Zníženú cenu uvidíte pri položke a v súhrne košíka aj pokladne v riadku „Množstevná / sadová zľava“. V mobile je kupón a súhrn pod položkami; v pokladni otvorte súhrn tlačidlom „Objednávka“."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "support",
+          "faq": "kalendare-mnozstvo-zlavy",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Skontrolovať množstvo v košíku",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "0d5e30ff-732b-4346-b627-dd1bc9c7baae",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním 5 % zľavu pri 3 kalendároch?"
+            },
+            {
+              "role": "assistant",
+              "content": "Množstevné ceny kalendárov: Bežný kalendár alebo diár môžete objednať už od 1 ks. Pri 3–20 ks rovnakého produktu je jednotková cena automaticky nižšia o 5 %. Pri 21 a viac ks rovnakého produktu je zľava 15 %. Zľava sa posudzuje pre rovnaký produkt; rôzne kalendáre sa na dosiahnutie množstva nesčítavajú. Stačí nastaviť počet kusov rovnakého kalendára alebo diára v košíku. Pri 1–2 ks platí bežná cena; zľava nevyžaduje registráciu ani kupón. Zníženú cenu uvidíte pri položke a v súhrne košíka aj pokladne v riadku „Množstevná / sadová zľava“. V mobile je kupón a súhrn pod položkami; v pokladni otvorte súhrn tlačidlom „Objednávka“."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Kde uvidím 15 % zľavu?",
+      "expectedFaq": "kalendare-mnozstvo-zlavy",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 1,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Množstevné ceny kalendárov:",
+            "Bežný kalendár alebo diár môžete objednať už od 1 ks.",
+            "Pri 3–20 ks rovnakého produktu je jednotková cena automaticky nižšia o 5 %. Pri 21 a viac ks rovnakého produktu je zľava 15 %.",
+            "Zľava sa posudzuje pre rovnaký produkt; rôzne kalendáre sa na dosiahnutie množstva nesčítavajú.",
+            "Stačí nastaviť počet kusov rovnakého kalendára alebo diára v košíku. Pri 1–2 ks platí bežná cena; zľava nevyžaduje registráciu ani kupón.",
+            "Zníženú cenu uvidíte pri položke a v súhrne košíka aj pokladne v riadku „Množstevná / sadová zľava“. V mobile je kupón a súhrn pod položkami; v pokladni otvorte súhrn tlačidlom „Objednávka“."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "support",
+          "faq": "kalendare-mnozstvo-zlavy",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Skontrolovať množstvo v košíku",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "2f07e11b-855a-46d5-ab0e-9bd9d873f0b0",
+          "history": [
+            {
+              "role": "user",
+              "content": "Kde uvidím 15 % zľavu?"
+            },
+            {
+              "role": "assistant",
+              "content": "Množstevné ceny kalendárov: Bežný kalendár alebo diár môžete objednať už od 1 ks. Pri 3–20 ks rovnakého produktu je jednotková cena automaticky nižšia o 5 %. Pri 21 a viac ks rovnakého produktu je zľava 15 %. Zľava sa posudzuje pre rovnaký produkt; rôzne kalendáre sa na dosiahnutie množstva nesčítavajú. Stačí nastaviť počet kusov rovnakého kalendára alebo diára v košíku. Pri 1–2 ks platí bežná cena; zľava nevyžaduje registráciu ani kupón. Zníženú cenu uvidíte pri položke a v súhrne košíka aj pokladne v riadku „Množstevná / sadová zľava“. V mobile je kupón a súhrn pod položkami; v pokladni otvorte súhrn tlačidlom „Objednávka“."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Môžem kombinovať 5 a 7 percent?",
+      "expectedFaq": "zlavy-kombinovanie",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 1,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Ako sa kombinujú zľavy:",
+            "Najprv sa z ceny tovaru odpočíta množstevná / sadová zľava, potom jeden platný kupón a nakoniec zapnutá vernostná zľava z bodov. Každý odpočet má v košíku aj pokladni samostatný riadok.",
+            "Uvítací kupón 5 % a odmena 7 % sa nesčítavajú na 12 %. Z použiteľných kupónov účtu sa automaticky vyberie jeden s najvyššou úsporou v eurách. Pri zmiešanom košíku nemusí vyhrať 7 %, pretože sa počíta iba z kompatibilných tonerov; 5 % platí na celý sortiment tovaru.",
+            "Kupóny nájdete v Môj účet → Moje odmeny, body v Môj účet → Vernostný program. Ručný kód zadáte cez „Máte zľavový kupón?“ → „Použiť“. Body ovládate voľbou „Použiť vernostnú zľavu v tejto objednávke“ v košíku, v pokladni „Použiť zľavu“.",
+            "V súhrne skontrolujte „Množstevná / sadová zľava“, „Kupónová zľava“ a „Vernostná zľava“. V mobile je kupón v košíku pod položkami a pokladničný súhrn rozbalíte cez „Objednávka“; na PC je súhrn vpravo. Doprava zdarma od 29 € sa posudzuje z hodnoty tovaru po všetkých zľavách; dobierka sa do hranice nepočíta."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "zlavy-kombinovanie",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny a kupóny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Moje vernostné body",
+              "url": "/ucet/vernost"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "a86f62db-73da-45bf-b172-174481110b18",
+          "history": [
+            {
+              "role": "user",
+              "content": "Môžem kombinovať 5 a 7 percent?"
+            },
+            {
+              "role": "assistant",
+              "content": "Ako sa kombinujú zľavy: Najprv sa z ceny tovaru odpočíta množstevná / sadová zľava, potom jeden platný kupón a nakoniec zapnutá vernostná zľava z bodov. Každý odpočet má v košíku aj pokladni samostatný riadok. Uvítací kupón 5 % a odmena 7 % sa nesčítavajú na 12 %. Z použiteľných kupónov účtu sa automaticky vyberie jeden s najvyššou úsporou v eurách. Pri zmiešanom košíku nemusí vyhrať 7 %, pretože sa počíta iba z kompatibilných tonerov; 5 % platí na celý sortiment tovaru. Kupóny nájdete v Môj účet → Moje odmeny, body v Môj účet → Vernostný program. Ručný kód zadáte cez „Máte zľavový kupón?“ → „Použiť“. Body ovládate voľbou „Použiť vernostnú zľavu v tejto objednávke“ v košíku, v pokladni „Použiť zľavu“. V súhrne skontrolujte „Množstevná / sadová zľava“, „Kupónová zľava“ a „Vernostná zľava“. V mobile je kupón v košíku pod položkami a pokladničný súhrn rozbalíte cez „Objednávka“; na PC je súhrn vpravo. Doprava zdarma od 29 € sa posudzuje z hodnoty tovaru po všetkých zľavách; dobierka sa do hranice nepočíta."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Môžem použiť množstevnú zľavu, kupón a body súčasne?",
+      "expectedFaq": "zlavy-kombinovanie",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Ako sa kombinujú zľavy:",
+            "Najprv sa z ceny tovaru odpočíta množstevná / sadová zľava, potom jeden platný kupón a nakoniec zapnutá vernostná zľava z bodov. Každý odpočet má v košíku aj pokladni samostatný riadok.",
+            "Uvítací kupón 5 % a odmena 7 % sa nesčítavajú na 12 %. Z použiteľných kupónov účtu sa automaticky vyberie jeden s najvyššou úsporou v eurách. Pri zmiešanom košíku nemusí vyhrať 7 %, pretože sa počíta iba z kompatibilných tonerov; 5 % platí na celý sortiment tovaru.",
+            "Kupóny nájdete v Môj účet → Moje odmeny, body v Môj účet → Vernostný program. Ručný kód zadáte cez „Máte zľavový kupón?“ → „Použiť“. Body ovládate voľbou „Použiť vernostnú zľavu v tejto objednávke“ v košíku, v pokladni „Použiť zľavu“.",
+            "V súhrne skontrolujte „Množstevná / sadová zľava“, „Kupónová zľava“ a „Vernostná zľava“. V mobile je kupón v košíku pod položkami a pokladničný súhrn rozbalíte cez „Objednávka“; na PC je súhrn vpravo. Doprava zdarma od 29 € sa posudzuje z hodnoty tovaru po všetkých zľavách; dobierka sa do hranice nepočíta."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "zlavy-kombinovanie",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny a kupóny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Moje vernostné body",
+              "url": "/ucet/vernost"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "625aaf6c-a233-47cd-8b7e-453497bd504f",
+          "history": [
+            {
+              "role": "user",
+              "content": "Môžem použiť množstevnú zľavu, kupón a body súčasne?"
+            },
+            {
+              "role": "assistant",
+              "content": "Ako sa kombinujú zľavy: Najprv sa z ceny tovaru odpočíta množstevná / sadová zľava, potom jeden platný kupón a nakoniec zapnutá vernostná zľava z bodov. Každý odpočet má v košíku aj pokladni samostatný riadok. Uvítací kupón 5 % a odmena 7 % sa nesčítavajú na 12 %. Z použiteľných kupónov účtu sa automaticky vyberie jeden s najvyššou úsporou v eurách. Pri zmiešanom košíku nemusí vyhrať 7 %, pretože sa počíta iba z kompatibilných tonerov; 5 % platí na celý sortiment tovaru. Kupóny nájdete v Môj účet → Moje odmeny, body v Môj účet → Vernostný program. Ručný kód zadáte cez „Máte zľavový kupón?“ → „Použiť“. Body ovládate voľbou „Použiť vernostnú zľavu v tejto objednávke“ v košíku, v pokladni „Použiť zľavu“. V súhrne skontrolujte „Množstevná / sadová zľava“, „Kupónová zľava“ a „Vernostná zľava“. V mobile je kupón v košíku pod položkami a pokladničný súhrn rozbalíte cez „Objednávka“; na PC je súhrn vpravo. Doprava zdarma od 29 € sa posudzuje z hodnoty tovaru po všetkých zľavách; dobierka sa do hranice nepočíta."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Kde sa uplatní papierová vernostná odmena?",
+      "expectedFaq": "vernost-papier",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 1,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Papierová vernostná odmena:",
+            "Postup a dostupné papierové odmeny nájdete po prihlásení v Môj účet → Moje odmeny → Odmeny za vernostné body, zostatok a históriu v Môj účet → Vernostný program. V mobile použite „Menu účtu“.",
+            "Odmeny sa počítajú z celkovo získaných bodov: pri hraniciach 500, 800 a 1 000 bodov v cykle pribudne 1, 2 a 3 balenia papiera. Po 1 000 bodoch sa začína nový cyklus. Použitie bodov na peňažnú zľavu tento postup neznižuje.",
+            "Dostupná ešte nevyčerpaná odmena sa prihlásenému zákazníkovi pridá automaticky do košíka ako „Vernostná odmena – Kancelársky papier A4, 80 g, 500 hárkov“ za 0,01 € za balenie. Skontrolujte ju ako samostatnú položku košíka aj pokladne; nejde o kupón ani percentuálny odpočet."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "vernost-papier",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "3b9989a1-9cad-45d3-848a-32401d859712",
+          "history": [
+            {
+              "role": "user",
+              "content": "Kde sa uplatní papierová vernostná odmena?"
+            },
+            {
+              "role": "assistant",
+              "content": "Papierová vernostná odmena: Postup a dostupné papierové odmeny nájdete po prihlásení v Môj účet → Moje odmeny → Odmeny za vernostné body, zostatok a históriu v Môj účet → Vernostný program. V mobile použite „Menu účtu“. Odmeny sa počítajú z celkovo získaných bodov: pri hraniciach 500, 800 a 1 000 bodov v cykle pribudne 1, 2 a 3 balenia papiera. Po 1 000 bodoch sa začína nový cyklus. Použitie bodov na peňažnú zľavu tento postup neznižuje. Dostupná ešte nevyčerpaná odmena sa prihlásenému zákazníkovi pridá automaticky do košíka ako „Vernostná odmena – Kancelársky papier A4, 80 g, 500 hárkov“ za 0,01 € za balenie. Skontrolujte ju ako samostatnú položku košíka aj pokladne; nejde o kupón ani percentuálny odpočet."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Kde je zľava za newsletter?",
+      "expectedFaq": "newsletter-zlava",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 1,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Newsletter a zľavové kódy:",
+            "Samotné prihlásenie na newsletter automaticky nevytvára pevnú zľavu ani uvítací kupón. Uvítacia zľava 5 % patrí k vytvoreniu zákazníckeho účtu a nájdete ju v Môj účet → Moje odmeny; nejde o odmenu za odber noviniek.",
+            "Ak ste dostali konkrétny marketingový kupón v e-maile, platia jeho podmienky. V košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte vydaný kód a kliknite „Použiť“. Overený odpočet sa zobrazí ako „Kupónová zľava“. V mobile je pole v košíku pod položkami a v pokladni v súhrne „Objednávka“; na PC v súhrne vpravo."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "newsletter-zlava",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Newsletter",
+              "url": "/newsletter"
+            },
+            {
+              "label": "Moje odmeny za nákupy",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "749d77bd-0963-4e45-a84c-330945486f75",
+          "history": [
+            {
+              "role": "user",
+              "content": "Kde je zľava za newsletter?"
+            },
+            {
+              "role": "assistant",
+              "content": "Newsletter a zľavové kódy: Samotné prihlásenie na newsletter automaticky nevytvára pevnú zľavu ani uvítací kupón. Uvítacia zľava 5 % patrí k vytvoreniu zákazníckeho účtu a nájdete ju v Môj účet → Moje odmeny; nejde o odmenu za odber noviniek. Ak ste dostali konkrétny marketingový kupón v e-maile, platia jeho podmienky. V košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte vydaný kód a kliknite „Použiť“. Overený odpočet sa zobrazí ako „Kupónová zľava“. V mobile je pole v košíku pod položkami a v pokladni v súhrne „Objednávka“; na PC v súhrne vpravo."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Ako sa zobrazí akciová cena v košíku?",
+      "expectedFaq": "akciove-ceny",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Akciová cena produktu:",
+            "Akciová cena je už aktuálnou cenou pri konkrétnom produkte a prenesie sa do položky košíka; netreba k nej zadávať kupón. Aktuálnu cenu skontrolujte pri produkte, v košíku a pred odoslaním objednávky v pokladni.",
+            "Množstevná / sadová zľava, jeden platný kupón a použitie vernostných bodov sa zobrazujú ako samostatné odpočty podľa ich podmienok. Konkrétnu akciu, cenu alebo platnosť bez zadaného produktu či vydaného kupónu nesľúbim."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "akciove-ceny",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Zobraziť produkty",
+              "url": "/produkty"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "d1a06a12-5664-4e1e-82a6-3c2539d39ae7",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako sa zobrazí akciová cena v košíku?"
+            },
+            {
+              "role": "assistant",
+              "content": "Akciová cena produktu: Akciová cena je už aktuálnou cenou pri konkrétnom produkte a prenesie sa do položky košíka; netreba k nej zadávať kupón. Aktuálnu cenu skontrolujte pri produkte, v košíku a pred odoslaním objednávky v pokladni. Množstevná / sadová zľava, jeden platný kupón a použitie vernostných bodov sa zobrazujú ako samostatné odpočty podľa ich podmienok. Konkrétnu akciu, cenu alebo platnosť bez zadaného produktu či vydaného kupónu nesľúbim."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "kde mi ta zľava príde zatiaľ neprišla",
+      "expectedFaq": "zlava-upresnenie",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 1,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Kde nájdete svoju zľavu:",
+            "Myslíte 5 % zľavu za registráciu, 7 % odmenu na ďalší nákup, množstevnú zľavu, vydaný kupón alebo vernostné body?",
+            "5 % aj 7 % odmenu nájdete po prihlásení v Môj účet → Moje odmeny; v mobile cez „Menu účtu“. Použiteľný kupón sa v neprázdnom košíku vyberie automaticky. Body nájdete v Môj účet → Vernostný program a množstevná zľava sa počíta z počtu rovnakých produktov.",
+            "Odpočty overíte v košíku aj pokladni v riadkoch „Kupónová zľava“, „Vernostná zľava“ a „Množstevná / sadová zľava“. Napíšte, o ktorý typ ide, a vysvetlím presný postup."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "zlava-upresnenie",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": true,
+          "sources": [
+            {
+              "label": "Moje odmeny a kupóny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Moje vernostné body",
+              "url": "/ucet/vernost"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "0aaaad02-1b1e-456d-a2bc-476fe2aab53e",
+          "history": [
+            {
+              "role": "user",
+              "content": "kde mi ta zľava príde zatiaľ neprišla"
+            },
+            {
+              "role": "assistant",
+              "content": "Kde nájdete svoju zľavu: Myslíte 5 % zľavu za registráciu, 7 % odmenu na ďalší nákup, množstevnú zľavu, vydaný kupón alebo vernostné body? 5 % aj 7 % odmenu nájdete po prihlásení v Môj účet → Moje odmeny; v mobile cez „Menu účtu“. Použiteľný kupón sa v neprázdnom košíku vyberie automaticky. Body nájdete v Môj účet → Vernostný program a množstevná zľava sa počíta z počtu rovnakých produktov. Odpočty overíte v košíku aj pokladni v riadkoch „Kupónová zľava“, „Vernostná zľava“ a „Množstevná / sadová zľava“. Napíšte, o ktorý typ ide, a vysvetlím presný postup."
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "productionBefore": {
+    "description": "Reproduction of customer questions on the public deployment before the fix; no customer account or session used",
+    "cases": [
+      {
+        "message": "ako uplatním zľavu za registráciu",
+        "status": 200,
+        "ms": 5269,
+        "response": {
+          "ok": true,
+          "route": {
+            "intents": [
+              "POLICY",
+              "ADVICE"
+            ],
+            "productQuery": null,
+            "needsProducts": false
+          },
+          "advisor": {
+            "answer": [
+              "Registrácia a uvítacia zľava:",
+              "Nakúpiť môžete aj bez registrácie.",
+              "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+              "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+            ],
+            "products": [],
+            "groups": [],
+            "intent": "loyalty",
+            "faq": "registracia-zlava",
+            "confidence": 0.99,
+            "sources": [
+              {
+                "label": "Vytvoriť účet",
+                "url": "/registracia"
+              },
+              {
+                "label": "Výhody registrácie",
+                "url": "/vyhody-registracie"
+              }
+            ]
+          },
+          "commerce": null,
+          "state": {
+            "version": 1,
+            "sessionId": "64bd577e-14d8-4e2b-b9d8-bff1111e1c6d",
+            "history": [
+              {
+                "role": "user",
+                "content": "ako uplatním zľavu za registráciu"
+              },
+              {
+                "role": "assistant",
+                "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+              }
+            ],
+            "currentPrinter": null,
+            "currentProductId": null,
+            "selectedProductId": null,
+            "currentColor": null,
+            "currentType": null,
+            "cart": [],
+            "checkoutDraft": {
+              "guidedQuantity": null,
+              "guidedSet": null
+            },
+            "lastProductQuery": null,
+            "lastIntent": "POLICY",
+            "pendingQuestion": null,
+            "pendingProductQuestion": null
+          },
+          "action": null
+        }
+      },
+      {
+        "message": "kde mi ta zľava príde zatiaľ neprišla",
+        "status": 200,
+        "ms": 2049,
+        "response": {
+          "ok": true,
+          "route": {
+            "intents": [
+              "POLICY"
+            ],
+            "productQuery": null,
+            "needsProducts": false
+          },
+          "advisor": {
+            "answer": [
+              "Na túto otázku nemám v overených informáciách spoľahlivú odpoveď, preto si nechcem nič vymýšľať.",
+              "Rád poradím s výberom toneru, náplne, kalendára alebo diára, kompatibilitou, dopravou, platbou, reklamáciou, účtom alebo problémom s tlačou. Pri inej otázke nás môžete kontaktovať na info@tonerymaxim.sk alebo +421 917 859 206."
+            ],
+            "products": [],
+            "groups": [],
+            "intent": "fallback",
+            "confidence": 0.2,
+            "unanswered": true,
+            "clarification": true,
+            "handoffSuggested": true,
+            "sources": []
+          },
+          "commerce": null,
+          "state": {
+            "version": 1,
+            "sessionId": "64bd577e-14d8-4e2b-b9d8-bff1111e1c6d",
+            "history": [
+              {
+                "role": "user",
+                "content": "ako uplatním zľavu za registráciu"
+              },
+              {
+                "role": "assistant",
+                "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+              },
+              {
+                "role": "user",
+                "content": "kde mi ta zľava príde zatiaľ neprišla"
+              },
+              {
+                "role": "assistant",
+                "content": "Na túto otázku nemám v overených informáciách spoľahlivú odpoveď, preto si nechcem nič vymýšľať. Rád poradím s výberom toneru, náplne, kalendára alebo diára, kompatibilitou, dopravou, platbou, reklamáciou, účtom alebo problémom s tlačou. Pri inej otázke nás môžete kontaktovať na info@tonerymaxim.sk alebo +421 917 859 206."
+              }
+            ],
+            "currentPrinter": null,
+            "currentProductId": null,
+            "selectedProductId": null,
+            "currentColor": null,
+            "currentType": null,
+            "cart": [],
+            "checkoutDraft": {
+              "guidedQuantity": null,
+              "guidedSet": null
+            },
+            "lastProductQuery": null,
+            "lastIntent": "POLICY",
+            "pendingQuestion": null,
+            "pendingProductQuestion": null
+          },
+          "action": {
+            "kind": "OPEN_HANDOFF",
+            "reason": "unanswered"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -44,9 +44,40 @@ export function advisorLinks(advisor: { intent?: unknown; faq?: unknown; sources
   ];
   if (faq === 'ucet-profil-heslo') return [{ label: 'Otvoriť profil a heslo', url: '/ucet/profil' }];
   if (faq === 'ucet-funkcie') return [{ label: 'Otvoriť zákaznícky účet', url: '/ucet' }];
-  if (faq === 'registracia-zlava' || faq === 'registracia-co-uklada') return [
+  if (faq === 'registracia-zlava') return [
+    { label: 'Moje odmeny – registračná zľava', url: '/ucet/odmeny' },
+    { label: 'Otvoriť košík', url: '/kosik' },
     { label: 'Vytvoriť účet', url: '/registracia' },
     { label: 'Výhody registrácie', url: '/vyhody-registracie' },
+  ];
+  if (faq === 'registracia-co-uklada') return [
+    { label: 'Vytvoriť účet', url: '/registracia' },
+    { label: 'Výhody registrácie', url: '/vyhody-registracie' },
+  ];
+  if (faq === 'vernost-body') return [
+    { label: 'Moje body a história', url: '/ucet/vernost' },
+    { label: 'Použiť body v košíku', url: '/kosik' },
+  ];
+  if (['odmena-7-percent', 'vernost-papier'].includes(faq)) return [
+    { label: 'Moje odmeny', url: '/ucet/odmeny' },
+    { label: 'Otvoriť košík', url: '/kosik' },
+  ];
+  if (['zlavy-prehlad', 'zlavy-kombinovanie', 'zlava-upresnenie', 'kupony-uplatnenie'].includes(faq)) return [
+    { label: 'Moje odmeny a kupóny', url: '/ucet/odmeny' },
+    { label: 'Otvoriť košík', url: '/kosik' },
+    { label: 'Moje vernostné body', url: '/ucet/vernost' },
+  ];
+  if (['mnozstevne-zlavy-tonery', 'kalendare-mnozstvo-zlavy'].includes(faq)) return [
+    { label: 'Skontrolovať množstvo v košíku', url: '/kosik' },
+  ];
+  if (faq === 'newsletter-zlava') return [
+    { label: 'Newsletter', url: '/newsletter' },
+    { label: 'Moje odmeny za nákupy', url: '/ucet/odmeny' },
+    { label: 'Otvoriť košík', url: '/kosik' },
+  ];
+  if (faq === 'akciove-ceny') return [
+    { label: 'Zobraziť produkty', url: '/produkty' },
+    { label: 'Otvoriť košík', url: '/kosik' },
   ];
   if (intent === 'account') return [
     { label: 'Prihlásenie', url: '/prihlasenie' },
