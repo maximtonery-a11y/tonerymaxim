@@ -69,7 +69,6 @@ test('V9 renders only real catalog sets and never assembled four-color bundles',
   assert.match(script,/set\?\.packageKind==='catalog'&&Array\.isArray\(set\.products\)&&set\.products\.length===1/);
   assert.doesNotMatch(script,/set\.products\.length===4\|\|/);
   assert.doesNotMatch(api,/ADD_BUNDLE_TO_CART/);
-  assert.match(api,/Jednotlivé farby som nespojil do falošnej sady/);
 });
 
 test('V9 API never exposes an assembled set in presentation data',async()=>{

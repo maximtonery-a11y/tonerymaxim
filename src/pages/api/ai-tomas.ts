@@ -298,7 +298,7 @@ export const POST: APIRoute = async ({ request }) => {
     // Poradenska znalostna vrstva a produktovy nakupca sa nacitavaju oddelene.
     // Bezna produktova otazka tak nedrzi v RAM aj cely poradensky modul.
     const advisorPromise = needsAdvisor ? import('../../lib/aiSalesAssistant.ts').then(({buildAssistantAnswer})=>buildAssistantAnswer(message,page,conversation.contextHistory as any)) : Promise.resolve({
-      answer: route.needsProducts ? ['Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:'] : ['Rozumiem.'],
+      answer: route.needsProducts ? ['V našej ponuke máme tieto produkty:'] : ['Rád vám pomôžem s výberom.'],
       products: [], groups: [], intent: 'commerce', confidence: 1, unanswered: false,
     });
     const commercePromise = route.needsProducts && route.productQuery ? searchCommerce(route.productQuery) : Promise.resolve(null);
@@ -334,18 +334,18 @@ export const POST: APIRoute = async ({ request }) => {
         answer: [diaryOverview
           ? `V ponuke máme štyri typy: denné diáre, týždenné diáre, mesačné diáre a minidiáre. Nižšie zobrazujem ${optionCount}; výber môžete spresniť typom alebo farbou.`
           : diarySubtype
-            ? `Našiel som ${optionCount} pre požadovaný typ diára. Nižšie sú iba zodpovedajúce produkty.`
+            ? `Pre tento typ diára máme v ponuke ${optionCount}. Vybrať si môžete nižšie.`
           : tableCalendarOverview
             ? `Máme viacero stolových kalendárov na rok 2027. Nižšie zobrazujem ${optionCount}. Hľadáte konkrétny motív, rozmer alebo cenovú úroveň?`
             : wallCalendarOverview
               ? `Máme viacero nástenných kalendárov na rok 2027. Nižšie zobrazujem ${optionCount}. Hľadáte konkrétny motív alebo rozmer?`
-              : `V aktuálnej ponuke som našiel ${count} ${count === 1 ? 'vhodný produkt' : count < 5 ? 'vhodné produkty' : 'vhodných produktov'}.`],
+              : `V našej ponuke máme ${count} ${count === 1 ? 'vhodný produkt' : count < 5 ? 'vhodné produkty' : 'vhodných produktov'}.`],
         products: [], groups: [], intent: 'calendar_search', faq: diaryOverview ? 'calendar-diary-overview' : advisor?.faq, confidence: 1, unanswered: false, handoffSuggested: false,
       };
     }
     const wantsHuman=route.intents.includes('HUMAN_ESCALATION');
     const needsHandoff=wantsHuman||advisor?.unanswered===true;
-    if(wantsHuman)advisor={...advisor,answer:['Rozumiem. Odovzdám vašu otázku pracovníkovi ToneryMAXIM. Doplňte telefón alebo e-mail; spolu s otázkou odošlem aj stručný kontext tejto konverzácie.'],products:[],groups:[],intent:'handoff',confidence:1,unanswered:false,handoffSuggested:true};
+    if(wantsHuman)advisor={...advisor,answer:['Samozrejme, môžete sa obrátiť na kolegu z našej podpory. Vyplňte telefón alebo e-mail vo formulári nižšie. Po jeho odoslaní dostane vašu otázku aj doterajší rozhovor, aby ste nemuseli všetko vysvetľovať odznova.'],products:[],groups:[],intent:'handoff',confidence:1,unanswered:false,handoffSuggested:true};
     else if(needsHandoff)advisor={...advisor,handoffSuggested:true};
     advisor={...advisor,sources:advisorLinks(advisor)};
     state.lastIntent=route.intents[0] || 'UNKNOWN';
@@ -446,7 +446,7 @@ export const POST: APIRoute = async ({ request }) => {
         advisor={...advisor,answer:[`Pridal som ${guidedQty} ${guidedQty===1?'kompletnú sadu':'kompletné sady'} ${completeSet.label} do nákupu. ${fulfilmentSentence(product,total)}`]};commerce=null;
       }else if(!completeSet&&completeSetRequested){
         const productLabel=customerProductLabel(state.lastProductQuery,message,commerce?.source);
-        advisor={...advisor,answer:[`Pre ${productLabel} momentálne nemáme samostatný katalógový produkt CMYK sady. Zobrazujem dostupné jednotlivé farby; nič som neposkladal ani nepridal do nákupu.`]};
+        advisor={...advisor,answer:[`Hotovú CMYK sadu pre ${productLabel} momentálne nemáme v ponuke. Jednotlivé farby si môžete pozrieť nižšie. Do nákupu som zatiaľ nič nepridal.`]};
       }else if(!cartMutationForbidden&&guidedQty>0&&purchasableCandidates.length===1&&selected){
         const total=upsertCart(state,selected,guidedQty);action={kind:'ADD_TO_CART',product:selected,quantity:guidedQty};advisor={...advisor,answer:[`Vybral som ${selected.name} a pridal ${guidedQty} ks do nákupu. ${fulfilmentSentence(selected,total)}`]};commerce=null;
       }else{
@@ -459,7 +459,7 @@ export const POST: APIRoute = async ({ request }) => {
       const product=completeSet.products[0];const total=upsertCart(state,product,amount);action={kind:'ADD_TO_CART',product,quantity:amount};advisor={...advisor,answer:[`Pridal som ${amount} ${amount===1?'kompletnú sadu':'kompletné sady'} ${completeSet.label} do nákupu. ${fulfilmentSentence(product,total)}`]};
       commerce=null;
     } else if(!action&&route.intents.includes('BUY_INTENT')&&completeSetRequested&&!completeSet&&!ambiguousCalendarSelection){
-      advisor={...advisor,answer:['Samostatný katalógový produkt tejto CMYK sady momentálne nemáme. Jednotlivé farby som nespojil do falošnej sady a nič som nepridal do nákupu.']};
+      advisor={...advisor,answer:['Túto hotovú CMYK sadu momentálne nemáme v ponuke. Do nákupu som zatiaľ nič nepridal.']};
     } else if(!action&&!cartMutationForbidden&&route.intents.includes('BUY_INTENT')&&selected&&!ambiguousCalendarSelection){
       if(explicitAdd||qty){const amount=qty||1;const already=state.cart.some((x:any)=>String(x.id)===String(selected.id));if(!already||qty){const total=upsertCart(state,selected,amount);action={kind:'ADD_TO_CART',product:selected,quantity:amount};advisor={...advisor,answer:[`Pridal som ${amount} ks produktu ${selected.name} do nákupu. ${fulfilmentSentence(selected,total)}`]};}else{action={kind:'OPEN_CART'};advisor={...advisor,answer:['Tento produkt už v nákupe máte. Otváram aktuálny nákup.']};}}
       else{state.pendingQuestion='quantity';action={kind:'OPEN_QUANTITY',product:selected};advisor={...advisor,answer:[`Vybrali ste ${selected.name}. Zvoľte množstvo.`]};}
@@ -470,8 +470,8 @@ export const POST: APIRoute = async ({ request }) => {
     }
     if(!action&&route.needsProducts&&commerce&&!(commerce.products||[]).length&&!requestedTypeUnavailable){
       const answer = calendarRoute
-        ? 'V aktuálnom katalógu som nenašiel presnú zhodu. Skúste uviesť typ (nástenný, stolový, denný, týždenný, mesačný alebo minidiár), motív alebo kód produktu.'
-        : 'Podľa zadaného označenia som nenašiel bezpečnú zhodu. Napíšte, prosím, celý model tlačiarne zo štítku alebo presný kód toneru.';
+        ? 'Takýto kalendár alebo diár som nenašiel. Aký typ, motív alebo kód produktu hľadáte?'
+        : 'Pod týmto označením som vhodnú náplň nenašiel. Aký je celý model tlačiarne zo štítku alebo presný kód pôvodnej náplne?';
       advisor={...advisor,answer:[answer],products:[],groups:[],intent:calendarRoute?'calendar_search':advisor?.intent,confidence:calendarRoute?1:advisor?.confidence,unanswered:false,handoffSuggested:false};
       action={kind:'CLARIFY_PRODUCT'};
     }
@@ -486,14 +486,14 @@ export const POST: APIRoute = async ({ request }) => {
       }else{
         const productLabel=customerProductLabel(route.productQuery||state.lastProductQuery,message,commerce?.source);
         commerce={...commerce,products:[],presentation:{...(commerce.presentation||{}),sets:[],colors:[]}};
-        if(!requestedTypeUnavailable)advisor={...advisor,answer:[`Pre ${productLabel} som v aktuálnom katalógu nenašiel samostatný hotový produkt požadovanej sady. Jednotlivé farby som nespojil ani nezobrazil ako náhradu.`],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false};
+        if(!requestedTypeUnavailable)advisor={...advisor,answer:[`Hotovú sadu pre ${productLabel} momentálne nemáme v ponuke. Ak máte záujem o jednotlivé farby, napíšte mi, ktoré potrebujete.`],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false};
       }
     }
     if(cartMutationForbidden){
       state.cart=cartBeforeRequest;
       state.pendingQuestion=null;
       if(isCartChangingAction(action?.kind))action=null;
-      const safeNotice='Rešpektujem váš pokyn: nič som nepridal do košíka ani nezmenil v nákupe. Zobrazujem iba overené možnosti.';
+      const safeNotice='Košík som ponechal bez zmien. Produkty si môžete pokojne prezrieť.';
       advisor={...advisor,answer:[...(explicitCartBan?[safeNotice]:[]),...(advisor.answer||[]).filter((line:string)=>!/^Pridal som|^Vybral som.*pridal/i.test(line))]};
     }
     if(cartMutationForbidden && commerce?.products?.length && /\bako\b.*\b(?:objednat|kupit|pridat|vlozit)\b/.test(normalized(message))) {
@@ -515,13 +515,13 @@ export const POST: APIRoute = async ({ request }) => {
     const missingCompatibility=[...(commerce?.products||[]),...(action?.product?[action.product]:[])].filter((p:any)=>!(p.compatible_printers||[]).length&&commerce?.source!=='calendar'&&!calendarRoute);
     if(missingCompatibility.length){
       const names=missingCompatibility.slice(0,3).map((p:any)=>p.name).join('; ');
-      advisor={...advisor,answer:[...(advisor.answer||[]),`Pri produkte ${names} chýba v katalógu zoznam kompatibilných tlačiarní. Kompatibilitu s vaším modelom nemám potvrdenú; pred objednaním ju overte s nami podľa presného modelu tlačiarne.`]};
+      advisor={...advisor,answer:[...(advisor.answer||[]),`Pri produkte ${names} nám chýba zoznam kompatibilných tlačiarní. Napíšte nám presný model zo štítku tlačiarne a pred objednaním spolu overíme, či bude pasovať.`]};
     }
     if(advisor?.unanswered===true||advisor?.intent==='fallback'||Number(advisor?.confidence||0)<0.35){void saveAiUnanswered({message:rawMessage,page,intent:String(advisor?.intent||'fallback'),confidence:Number(advisor?.confidence||0),kind:advisor?.unanswered===true||advisor?.intent==='fallback'?'unknown_question':'low_confidence'}).catch(()=>undefined);}
     state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:(advisor.answer||[]).join(' ')}].slice(-20);
     return respond({ok:true,route,advisor,commerce,state,action},{headers:{'Cache-Control':'no-store'}});
   } catch (error) {
     console.error('[AI Tomas unified]', error);
-    return Response.json({ok:false,error:'AI Tomáš teraz nedokáže bezpečne dokončiť požiadavku. Skúste akciu zopakovať.'},{status:500,headers:{'Cache-Control':'no-store'}});
+    return Response.json({ok:false,error:'Teraz sa mi nepodarilo pripraviť odpoveď. Skúste to, prosím, znova.'},{status:500,headers:{'Cache-Control':'no-store'}});
   }
 };

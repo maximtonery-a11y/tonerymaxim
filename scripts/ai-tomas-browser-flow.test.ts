@@ -125,7 +125,7 @@ test('celý dispatcher prejde PFI → diagnostika → neprevzatá zásielka → 
   try {
     const flow = await browserFlow();
     const questions = [
-      ['Canon PFI-102', /nenašiel bezpečnú zhodu/],
+      ['Canon PFI-102', /vhodnú náplň nenašiel/],
       ['Podávač papiera cvaká. Čo mám skontrolovať?', /odpojte od elektriny/i],
       ['Zásielka je doručená, ale neprevzal som ju.', /GPS|záznamu o odovzdaní/i],
       ['Chcem kompletný prehľad dopravy a platby.', /GoPay/],
@@ -206,7 +206,7 @@ test('the real session initializer preserves the question across search → deta
     const cart = [{ product: { id: 'keep', sku: 'KEEP', price: 26.91 }, qty: 1 }];
     const search = await browserFlow('/produkty?s=HP+W1420A', { uiMode: 'advice', uiCart: cart });
     await search.ask('ako funguje tento toner?');
-    assert.match(search.messages.at(-1).innerHTML, /Ktorý konkrétny produkt/);
+    assert.match(search.messages.at(-1).innerHTML, /Ktorý.*produkt/);
     const saved = search.persisted();
     assert.equal(saved.pendingProductQuestion, 'ako funguje tento toner?');
     for (const legacy of [false, true]) {

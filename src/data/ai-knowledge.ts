@@ -56,7 +56,7 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     answer: [
       'Firemnú potlač alebo personalizáciu je možné preveriť iba pri vybraných kalendároch a diároch. Minimálne množstvo, plocha potlače a podmienky sa líšia podľa konkrétneho produktu.',
       'Pošlite názov alebo kód produktu, množstvo, požadovaný termín a logo či grafiku v čo najvyššej kvalite na info@tonerymaxim.sk. Po kontrole dostanete potvrdenie možností a ceny.',
-      'AI Tomáš nesmie sám prisľúbiť realizáciu, termín ani cenu zákazkovej potlače bez individuálneho potvrdenia.',
+      'Možnosti potlače, termín a cenu vám potvrdíme individuálne podľa vašej požiadavky.',
     ],
   },
   {
@@ -163,7 +163,7 @@ export const aiKnowledge: AiKnowledgeItem[] = [
       'Registračnú zľavu aj 7 % odmenu nájdete po prihlásení v Môj účet → Moje odmeny. Pri nákupe sa vyberie jeden použiteľný kupón s najvyššou úsporou v eurách a zobrazí sa ako „Kupónová zľava“ v košíku aj pokladni.',
       'Vernostné body nájdete v Môj účet → Vernostný program. Ich použitie ovládate v košíku voľbou „Použiť vernostnú zľavu v tejto objednávke“; odpočet je v riadku „Vernostná zľava“. Množstevná zľava sa zobrazuje samostatne ako „Množstevná / sadová zľava“.',
       'V mobile otvoríte odmeny cez „Menu účtu“. Kupónové pole v košíku je pod položkami; v mobilnej pokladni rozbaľte súhrn „Objednávka“. Na PC sú zľavy v súhrne vpravo.',
-      'Individuálnu zľavu AI Tomáš nemôže schváliť. Pri väčšom firemnom odbere nás kontaktujte na info@tonerymaxim.sk.',
+      'Individuálnu zľavu vám nemôžem schváliť. Pri väčšom firemnom odbere nám napíšte na info@tonerymaxim.sk.',
     ],
   },
   {
@@ -486,7 +486,7 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     id: 'storno-objednavky', intent: 'order', title: 'Storno objednávky', priority: 125,
     triggers: ['storno objednavky', 'stornovat objednavku', 'stornovat', 'zrusit objednavku', 'zrus mi objednavku', 'chcem zrusit objednavku', 'zmena objednavky pred expediciou'],
     answer: [
-      'O storno objednávky môžete požiadať pred jej expedíciou. AI Tomáš objednávku sám nezruší ani nezmení.',
+      'O storno objednávky môžete požiadať pred jej expedíciou. Objednávku za vás priamo v chate nezruším ani nezmením.',
       'Kontaktujte nás čo najskôr na info@tonerymaxim.sk alebo +421 917 859 206. Ak už bola zásielka odovzdaná dopravcovi, postupuje sa podľa pravidiel pre odstúpenie od zmluvy alebo vrátenie tovaru.',
       'Ak bola objednávka zaplatená online a storno potvrdíme, refundáciu odošleme bez zbytočného odkladu rovnakým spôsobom platby. Pripísanie na účet potom závisí od banky a platobnej brány.',
     ],
@@ -504,7 +504,7 @@ export const aiKnowledge: AiKnowledgeItem[] = [
     triggers: ['zmenit heslo', 'zmena hesla', 'zmenit adresu v ucte', 'zmenit fakturacnu adresu', 'zmenit dodaciu adresu', 'upravit profil', 'zmenit telefon', 'zmenit osobne udaje'],
     answer: [
       'Po prihlásení môžete v zákazníckom účte spravovať osobné údaje, telefón, fakturačnú a dodaciu adresu a zmeniť heslo.',
-      'Uložené adresy sa dajú pri ďalšej objednávke vybrať v pokladni. AI Tomáš tieto údaje sám nemení.',
+      'Uložené adresy si pri ďalšej objednávke vyberiete v pokladni. Priamo v chate vám ich nezmením.',
     ],
   },
   {
@@ -611,7 +611,7 @@ export const aiKnowledge: AiKnowledgeItem[] = [
       'Orientačná cena spotrebného materiálu na jednu stranu sa vypočíta ako cena náplne delená deklarovanou výťažnosťou. Napríklad toner za 20 € s výťažnosťou 2 000 strán vychádza približne na 0,01 € za stranu, teda 1 cent.',
       'Výťažnosť tonerov sa zvyčajne udáva podľa normovanej metodiky pri približne 5 % pokrytí strany. Reálna cena preto závisí od toho, čo tlačíte; plné grafiky spotrebujú výrazne viac.',
       'Pri farebnej laserovej tlači treba počítať so spotrebou štyroch farieb CMYK a podľa tlačiarne aj s ďalšími spotrebnými dielmi, napríklad valcom, pásom alebo fixačnou jednotkou.',
-      'Ak mi zadáte presný model tlačiarne alebo označenie toneru, môžem porovnať vhodné náplne podľa ceny, kapacity a orientačnej ceny za stranu, ak sú tieto údaje v katalógu dostupné.',
+      'Napíšte mi presný model tlačiarne alebo označenie toneru. Ak máme uvedenú cenu a výťažnosť vhodných náplní, pomôžem vám ich porovnať aj podľa orientačnej ceny za stranu.',
     ],
   },
   {

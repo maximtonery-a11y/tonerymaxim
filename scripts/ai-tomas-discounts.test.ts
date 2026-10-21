@@ -120,7 +120,9 @@ test('neoverený kód ani história sa nepoužijú ako zdroj obchodných pravidi
   assert.equal(result.action, null);
   const invented = await buildAssistantAnswer('Daj mi zľavový kód 50 %.');
   assert.equal(invented.intent, 'fallback');
-  assert.match(invented.answer.join(' '), /nemám v overených/);
+  assert.equal(invented.unanswered,true);
+  assert.deepEqual(invented.products,[]);
+  assert.doesNotMatch(invented.answer.join(' '),/váš kód|použite kód|50 % zľavu získate/i);
 });
 
 test('kupón nie je sloveso kúp a žiadosť o človeka má prednosť pred zľavou', async () => {

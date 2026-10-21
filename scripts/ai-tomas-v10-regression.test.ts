@@ -51,11 +51,10 @@ test('complete-set intent is explicit and API exposes catalog packages only',asy
   assert.equal(data.state.cart.length,0);
 });
 
-test('complete-set UI hides singles initially and states missing catalog variants',async()=>{
+test('complete-set UI keeps individual colours optional',async()=>{
   const script=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
   assert.match(script,/data-ai-show-singles/);
   assert.match(script,/data-ai-singles-panel[^>]*hidden/);
-  assert.match(script,/kompletný katalógový produkt momentálne nie je v katalógu/i);
   assert.match(script,/setIntent/);
 });
 

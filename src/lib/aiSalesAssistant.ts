@@ -457,7 +457,7 @@ function enrichProductAnswer(message: string, answer: string[], products: Produc
   const extra = [...answer];
   if (/sklad|skladom|mate ho|mate ich/.test(text)) {
     const inStock = products.filter((p) => String(p.stock_status || 'instock') === 'instock').length;
-    extra.push(inStock ? `Z nájdených možností je ${inStock} aktuálne označených ako skladom.` : 'Pri nájdených produktoch si skladovosť overte v detaile produktu.');
+    extra.push(inStock ? `Skladom máme ${formatCount(inStock, 'produkt', 'produkty', 'produktov')}.` : 'Aktuálnu dostupnosť nájdete pri jednotlivých produktoch.');
   }
   if (/cesk|cesko|\bcr\b|\bcz\b|brno|praha/.test(text)) {
     extra.push('Do Českej republiky posielame iba klasickým kuriérom na adresu. Cena GLS alebo DPD kuriéra je 3,90 € s DPH, rovnako ako na Slovensku; doprava je zdarma od 29 € hodnoty tovaru po zľavách. GLS ParcelShop/Balíkomat ani DPD Pickup/Pickup Box máme nastavené iba pre Slovensko.');
@@ -535,8 +535,8 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   if (/\b(?:zlav|kupon)\w*/.test(normalize(originalMessage)) && discountMatch) {
     return {
       answer: [
-        `Zľavu ${discountMatch[1]} % nemám v overených ponukách ToneryMAXIM, preto vám taký zľavový kód nebudem sľubovať.`,
-        'Overené sú uvítacia zľava 5 % po registrácii a 7 % odmena na ďalší nákup kompatibilných tonerov po dokončenej objednávke.',
+        `Zľavový kód na ${discountMatch[1]} % nemám k dispozícii.`,
+        'Využiť môžete uvítaciu zľavu 5 % po registrácii alebo 7 % odmenu na ďalší nákup kompatibilných tonerov po dokončenej objednávke.',
         'Množstevné zľavy sa počítajú samostatne podľa druhu produktu a počtu rovnakých kusov; nie sú to univerzálne zľavové kódy.',
       ],
       products: [], groups: [], intent: 'fallback', confidence: 0.98, unanswered: true,
@@ -645,8 +645,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
       || /\b(urob|vystav|vytvor)\b.*\bfaktur/i.test(normalizedMessage)) {
     return {
       answer: [
-        'Túto úlohu priamo v AI Tomášovi neviem vykonať.',
-        'Rád však poradím s výberom toneru alebo náplne, kompatibilitou, dopravou, platbou, reklamáciou, účtom alebo problémom s tlačou.'
+        'S týmto vám neviem pomôcť. Rád vám poradím s nákupom alebo s používaním tonerov a náplní.'
       ],
       products: [], groups: [], intent: 'fallback', confidence: 0.98, unanswered: true,
     };
@@ -683,7 +682,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     if (dispatch) return { answer: [`${dispatch.title}:`, ...dispatch.answer], products: [], groups: [], intent: 'order', faq: dispatch.id, confidence: 0.99 };
   }
   if (/\b(kto (?:je )?prezident|kto vyhral|futbal|pocasie|milion zakaznikov|30 ?000 objednavok)\b/i.test(normalizedMessage)) {
-    return { answer: ['Na túto otázku nemám v overených informáciách ToneryMAXIM spoľahlivú odpoveď.'], products: [], groups: [], intent: 'fallback', confidence: 0.99, unanswered: true };
+    return { answer: ['S týmto vám neviem spoľahlivo poradiť. Rád vám pomôžem s nákupom alebo s používaním tonerov a náplní.'], products: [], groups: [], intent: 'fallback', confidence: 0.99, unanswered: true };
   }
 
   // Vrátenie peňazí je užšia téma než všeobecné vrátenie tovaru, preto musí
@@ -731,7 +730,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
     if (diag) return { answer: [`${diag.item.title}:`, ...diag.item.answer], products: [], groups: [], intent: 'diagnostic', faq: diag.item.id, confidence: 0.99 };
   }
   if (/\b(kto je majitel|zmen mi adresu objednavky)\b/i.test(normalizedMessage)) {
-    return { answer: ['Túto požiadavku neviem v AI Tomášovi bezpečne vykonať. Kontaktujte prosím zákaznícku podporu.'], products: [], groups: [], intent: 'fallback', confidence: 0.99, unanswered: true };
+    return { answer: ['Toto za vás nemôžem vybaviť. Pomôže vám naša zákaznícka podpora.'], products: [], groups: [], intent: 'fallback', confidence: 0.99, unanswered: true };
   }
 
   // Rýchle deterministické routovanie servisných otázok. Tieto otázky nikdy nesmú
@@ -796,7 +795,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
         const groups = groupProductsForQuestion(matches, originalMessage);
         return {
           answer: [
-            `Áno, v aktuálnom katalógu som našiel ${formatCount(matches.length, 'relevantný produkt', 'relevantné produkty', 'relevantných produktov')} pre „${rawWanted}“.`,
+            `Áno, v našej ponuke máme tieto produkty pre „${rawWanted}“:`,
             'Ak mi napíšete presný model tlačiarne alebo označenie pôvodného spotrebného materiálu, pomôžem vybrať správnu možnosť.'
           ],
           products: groups.flatMap((group) => group.products).slice(0, 12).map(asAiProduct),
@@ -806,8 +805,8 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
       }
       return {
         answer: [
-          `Pre „${rawWanted}“ som v aktuálnom katalógu nenašiel spoľahlivú zhodu. Nechcem preto tvrdiť, že tento sortiment predávame, ak to neviem overiť.`,
-          'Napíšte presný model tlačiarne alebo označenie produktu a skúsim ho preveriť presnejšie.'
+          `Pod označením „${rawWanted}“ som vhodný produkt nenašiel.`,
+          'Aký je presný model vašej tlačiarne alebo označenie pôvodnej náplne?'
         ], products: [], groups: [], intent: 'fallback', confidence: 0.55, unanswered: true, clarification: true,
       };
     }
@@ -891,7 +890,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
       const groups = groupProductsForQuestion(found, originalMessage);
       return {
         answer: enrichProductAnswer(originalMessage, [
-          `${conflict.requested.name || conflict.requested.sku || 'Zadaná náplň'} nie je v našich katalógových dátach vedená ako kompatibilná so zadaným modelom tlačiarne.`,
+          `Pri náplni ${conflict.requested.name || conflict.requested.sku || 's týmto označením'} nemám potvrdenú kompatibilitu s vaším modelom tlačiarne.`,
           `Pri modeloch ako Brother HL-L2350DW a HL-L2352DW však odporúčam najprv skontrolovať presné označenie priamo na štítku tlačiarne a zároveň označenie tonerovej kazety, ktorú v tlačiarni aktuálne používate.`,
           `Windows alebo ovládač tlačiarne môže v niektorých prípadoch zobrazovať podobné alebo regionálne označenie modelu, preto sa pri výbere náplne nespoliehajte iba na názov uvedený v počítači.`,
           `Ak je na tlačiarni naozaj HL-L2350DW, vyberajte z kompatibilných produktov zobrazených nižšie. Ak je na štítku HL-L2352DW alebo na používanej kazete nájdete TN-2421/TN-2411, napíšte mi toto označenie a overím správnu náplň.`
@@ -966,8 +965,8 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   if (hasProductCodeOrModel(originalMessage)) {
     return {
       answer: [
-        'Pri tomto označení si nechcem tipnúť nesprávny produkt.',
-        'Upresnite prosím značku a celé označenie náplne, napríklad „HP 652XL“, alebo napíšte presný model tlačiarne zo štítku.',
+        'Potrebujem ešte presnejšie označenie, aby som vám odporučil správnu náplň.',
+        'Aká značka a model sú na štítku tlačiarne? Prípadne napíšte celé označenie pôvodnej náplne.',
       ],
       products: [],
       groups: [],
@@ -994,8 +993,8 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
 
   return {
     answer: [
-      'Na túto otázku nemám v overených informáciách spoľahlivú odpoveď, preto si nechcem nič vymýšľať.',
-      'Rád poradím s výberom toneru, náplne, kalendára alebo diára, kompatibilitou, dopravou, platbou, reklamáciou, účtom alebo problémom s tlačou. Pri inej otázke nás môžete kontaktovať na info@tonerymaxim.sk alebo +421 917 859 206.',
+      'S týmto vám zatiaľ neviem spoľahlivo poradiť.',
+      'Napíšte nám na info@tonerymaxim.sk alebo zavolajte na +421 917 859 206 a radi vám pomôžeme.',
     ],
     products: [],
     groups: [],

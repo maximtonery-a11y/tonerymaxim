@@ -98,9 +98,12 @@ const shortProductReference = (message: string) => /^(?:(?:myslim|ano|a)[, ]+)?(
 // the immediately preceding product clarification, never from an older topic.
 function pendingProductQuestion(state: CommerceState): string | null {
   const turns = state.history.slice(-8);
-  const clarification = (value: string) => /ktory konkretny produkt myslite|napiste, prosim, presne oznacenie tonera alebo produktu/.test(norm(value));
-  if (turns.at(-1)?.role !== 'assistant' || !clarification(turns.at(-1)!.content)) return null;
+  const clarification = (value: string) => /ktory konkretny produkt myslite|napiste, prosim, presne oznacenie tonera alebo produktu|ktory z tychto produktov|o ktory toner alebo produkt ide/.test(norm(value));
+  if (turns.at(-1)?.role !== 'assistant') return null;
+  // Current sessions carry the unresolved question explicitly. Customer-facing
+  // wording is needed only to recover older saved sessions without that field.
   if (state.pendingProductQuestion && !shortProductReference(state.pendingProductQuestion)) return state.pendingProductQuestion;
+  if (!clarification(turns.at(-1)!.content)) return null;
   for (let i = turns.length - 2; i >= 0; i -= 2) {
     const turn = turns[i];
     if (turn?.role !== 'user') return null;
@@ -199,13 +202,14 @@ export async function productContextAnswer(message: string, page: string, state:
     product: null,
     pendingProductQuestion: question,
     advisor: {
-      answer: choices.length ? ['Ktorý konkrétny produkt myslíte? Napíšte jeho presné označenie alebo otvorte jeho detail.', ...choices.slice(0, 5).map(product => `• ${product.name} (SKU: ${product.sku})`)]
-        : ['Napíšte, prosím, presné označenie tonera alebo produktu, prípadne otvorte jeho produktovú stránku. Potom odpoviem na vašu otázku ku konkrétnemu produktu.'],
+      answer: choices.length ? ['Ktorý z týchto produktov máte na mysli? Môžete napísať jeho označenie alebo otvoriť jeho detail.', ...choices.slice(0, 5).map(product => `• ${product.name} (SKU: ${product.sku})`)]
+        : ['O ktorý toner alebo produkt ide? Napíšte, prosím, jeho presné označenie alebo otvorte detail produktu.'],
       products: [], groups: [], intent: 'product_clarification', confidence: 1, unanswered: false, handoffSuggested: false, sources: [],
     },
   };
 
-  const answer = [`Myslíte produkt ${product.name}? Ak nie, napíšte presné označenie tonera alebo produktu. Ak áno:`];
+  const sameProduct = !pending && String(state.currentProductId || state.selectedProductId || '') === String(product.id);
+  const answer = [sameProduct ? `${product.name}:` : `Myslíte produkt ${product.name}? Ak nie, napíšte presné označenie tonera alebo produktu. Ak áno:`];
   const sources = [{ label: 'Zobraziť produkt', url: `/produkt/${encodeURIComponent(product.slug)}` }];
   const hpProduct = /\bhp\b/.test(norm(product.name));
   const addHpHelp = () => {
@@ -213,7 +217,7 @@ export async function productContextAnswer(message: string, page: string, state:
   };
   const printers = productPrinters(product);
   const toner = isTonerProduct(product);
-  if(price)answer.push(Number(product.price)>0?`Cena za 1 ks je ${Number(product.price).toLocaleString('sk-SK',{minimumFractionDigits:2,maximumFractionDigits:2})} € s DPH, bez dopravy a ďalších zliav.`:'Pri tomto produkte nemám overenú aktuálnu cenu; pred objednaním ju overte na jeho detaile.');
+  if(price)answer.push(Number(product.price)>0?`Cena za 1 ks je ${Number(product.price).toLocaleString('sk-SK',{minimumFractionDigits:2,maximumFractionDigits:2})} € s DPH, bez dopravy a ďalších zliav.`:'Aktuálnu cenu tohto produktu vám teraz neviem povedať. Pozrite si, prosím, jeho detail.');
   if (explanation || overview) {
     if (toner) answer.push('Ide o tonerovú kazetu s práškom pre laserovú tlačiareň. Pri tlači sa prášok prenesie na papier a zafixuje teplom.');
     const type = product.product_type_key || (/original/.test(norm(product.name)) ? 'original' : /renov|repas/.test(norm(product.name)) ? 'renovated' : /kompatibil/.test(norm(product.name)) ? 'compatible' : null);
@@ -226,7 +230,7 @@ export async function productContextAnswer(message: string, page: string, state:
   if (capacity || explanation || overview) {
     const pages = productPageYield(product);
     if (pages) answer.push(`Výťažnosť: ${pages.toLocaleString('sk-SK')} strán. Skutočný počet závisí od obsahu a pokrytia tlačených strán.`);
-    else if (capacity) answer.push('Pri tomto produkte nemám overený počet vytlačených strán; výťažnosť nechcem odhadovať.');
+    else if (capacity) answer.push('Výťažnosť pri tomto produkte nemám uvedenú. Ak je pre vás dôležitá, pred objednaním ju s nami overte.');
   }
   if (compatibility || firmware || explanation || overview) {
     for (const printer of printerMentions(question)) {

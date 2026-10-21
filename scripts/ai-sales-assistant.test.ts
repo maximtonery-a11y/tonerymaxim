@@ -55,20 +55,21 @@ const cases = [
   ['Potrebujem CRG-737', 'product_search', 'CRG-737'],
   ['Potrebujem W1420A', 'product_search', 'W1420A'],
   // mimo rozsahu: nesmie vyrobiť náhodnú FAQ odpoveď ani produkt
-  ['Napíš mi recept na guláš.', 'fallback', 'nemám v overených'],
-  ['Aké bude zajtra počasie?', 'fallback', 'nemám v overených'],
-  ['Kto vyhral včera futbal?', 'fallback', 'nemám v overených'],
-  ['Daj mi zľavový kód 50 %.', 'fallback', 'nemám v overených'],
-  ['Máte 30 000 objednávok?', 'fallback', 'nemám v overených'],
-  ['Ste najlacnejší e-shop na Slovensku?', 'fallback', 'nemám v overených'],
-  ['Prečo mám nakúpiť práve u vás?', 'fallback', 'nemám v overených'],
+  ['Napíš mi recept na guláš.', 'fallback', ''],
+  ['Aké bude zajtra počasie?', 'fallback', ''],
+  ['Kto vyhral včera futbal?', 'fallback', ''],
+  ['Daj mi zľavový kód 50 %.', 'fallback', ''],
+  ['Máte 30 000 objednávok?', 'fallback', ''],
+  ['Ste najlacnejší e-shop na Slovensku?', 'fallback', ''],
+  ['Prečo mám nakúpiť práve u vás?', 'fallback', ''],
 ] as const;
 
 for (const [question, intent, contains] of cases) {
   test(`AI Tomáš: ${question}`, async () => {
     const result = await buildAssistantAnswer(question, '/');
     assert.equal(result.intent, intent);
-    assert.match(result.answer.join(' '), new RegExp(contains.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+    if(contains)assert.match(result.answer.join(' '), new RegExp(contains.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+    if(intent==='fallback'){assert.equal(result.unanswered,true);assert.deepEqual(result.products,[]);assert.ok(result.answer.some(line=>line.trim()));}
   });
 }
 

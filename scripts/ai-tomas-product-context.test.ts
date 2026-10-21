@@ -178,7 +178,7 @@ test('ambiguous variants ask for a precise product instead of combining unrelate
     product(2, 'HP CF226A čierny originálny toner', 'cf226a-original', ['HP LaserJet Pro M426fdw'], { product_type_key: 'original' }),
   ]);
   const result = await ask('Do ktorých tlačiarní pasuje HP CF226A?', '/');
-  assert.match(text(result), /Ktorý konkrétny produkt/);
+  assert.match(text(result), /Ktorý.*produkt/);
   assert.doesNotMatch(text(result), /M402dn|M426fdw/);
   assert.equal(result.action.kind, 'CLARIFY_PRODUCT');
 });
