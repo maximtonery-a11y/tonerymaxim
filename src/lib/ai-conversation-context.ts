@@ -192,7 +192,7 @@ export function resolveConversationContext(message: string, history: Conversatio
   if (/^\/produkt\//.test(page) && /^(?:(?:a|ano|myslim)[, ]+)?(?:tento|tato|tieto|tuto|ten|to)(?:\s+(?:produkt|toner|napln|sada|sadu|kompatibilny|originalny|renovovany)){0,3}[?.! ]*$/.test(n)) return {...result,topic:'product'};
   if(hasExplicitCartAddCommand(question)&&!explicit&&active?.topic==='product')return {...result,relation:'follow_up',topic:'product',productQuery:active.reference||state.lastProductQuery||null,contextHistory:turns.slice(active.start,active.end+1)};
   if(!explicit&&isProductPriceQuestion(question)){
-    const product=frames.findLast(frame=>frame.topic==='product');
+    const product=frames.findLast(frame=>frame.topic==='product'||frame.topic==='discount'&&Boolean(frame.reference));
     if(product)return {...result,relation:active===product?'follow_up':'resume',topic:'product',productQuery:product.reference||state.lastProductQuery||null,contextHistory:turns.slice(product.start,product.end+1)};
   }
   if(!explicit&&active?.topic==='product'&&/\b(?:cena|cenu|ceny|stoji|stoja)\b/.test(n))return {...result,relation:'follow_up',topic:'product',productQuery:active.reference||state.lastProductQuery||null,contextHistory:turns.slice(active.start,active.end+1)};

@@ -1,0 +1,687 @@
+{
+  "at": "2026-10-21T17:42:53.461Z",
+  "base": "http://127.0.0.1:43821",
+  "scope": "Production build over HTTP with isolated catalogue fixtures; model disabled",
+  "passed": true,
+  "cases": [
+    {
+      "question": "Ukáž mi kompatibilný toner HP W1420A.",
+      "status": 200,
+      "ms": 42,
+      "answer": [
+        "V našej ponuke máme tieto produkty:"
+      ],
+      "conversation": {
+        "relation": "new",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "products": [
+        {
+          "sku": "13276",
+          "price": 18.24
+        }
+      ],
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Aké sú možnosti zliav pri tomto toneri?",
+      "status": 200,
+      "ms": 15,
+      "answer": [
+        "Pri produkte HP W1420A čierny kompatibilný toner môžete využiť tieto zľavy:",
+        "• Množstevná zľava: pri 2–3 ks rovnakého produktu 10 %, pri 4 a viac ks 25 %.",
+        "2 ks stoja 32,83 € spolu s DPH; 4 ks stoja 54,72 € spolu s DPH. Ide o cenu po množstevnej zľave, pred kupónom a použitím bodov.",
+        "V košíku stačí nastaviť počet rovnakých kusov; registráciu ani kupón na množstevnú zľavu nepotrebujete. Odpočet uvidíte v riadku „Množstevná / sadová zľava“.",
+        "• Uvítací kupón 5 %: pri novej registrácii na prvý nákup, ak je ešte platný a nepoužitý. Nájdete ho po prihlásení v Môj účet → Moje odmeny.",
+        "• Ak už máte platnú 7 % odmenu z predchádzajúcej dokončenej objednávky, môžete ju využiť aj na tento kompatibilný toner. Nájdete ju v Môj účet → Moje odmeny.",
+        "Použiteľný kupón sa po prihlásení načíta v košíku automaticky; vyberie sa jeden s najvyššou úsporou. Kupóny 5 % a 7 % sa nesčítavajú. Odpočet uvidíte ako „Kupónová zľava“. Vydaný kód môžete zadať aj cez „Máte zľavový kupón?“ → „Použiť“.",
+        "• Vernostné body: ak máte aspoň 20 bodov, môžete ich použiť na zostávajúcu cenu tovaru. Stav je v Môj účet → Vernostný program; v košíku nechajte zapnuté „Použiť vernostnú zľavu v tejto objednávke“. Odpočet uvidíte ako „Vernostná zľava“.",
+        "V mobile otvoríte odmeny cez „Menu účtu“; v pokladni rozbaľte súhrn „Objednávka“. Na PC sú odpočty v súhrne vpravo."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "discount",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "discounts": {
+        "sku": "13276",
+        "type": "compatible",
+        "offers": [
+          {
+            "quantity": 2,
+            "discountPercent": 10,
+            "unitPrice": 16.42,
+            "totalPrice": 32.83
+          },
+          {
+            "quantity": 4,
+            "discountPercent": 25,
+            "unitPrice": 13.68,
+            "totalPrice": 54.72
+          }
+        ]
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Koľko stojí doprava?",
+      "status": 200,
+      "ms": 29,
+      "answer": [
+        "Cena dopravy:",
+        "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+        "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+        "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+        "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+      ],
+      "conversation": {
+        "relation": "new",
+        "topic": "shipping",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Koľko bude stáť toner aj s dopravou?",
+      "status": 200,
+      "ms": 8,
+      "answer": [
+        "Počítam 1 ks produktu HP W1420A čierny kompatibilný toner. Cena tovaru je 18,24 € s DPH.",
+        "• Kuriér GLS/DPD na adresu: doprava 3,90 €; spolu 22,14 €.",
+        "• Výdajné miesto alebo box GLS/DPD: doprava 2,90 €; spolu 21,14 €.",
+        "Pri dobierke sa k uvedeným sumám pripočíta 1,20 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "resume",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "quote": {
+        "productId": "39951",
+        "sku": "13276",
+        "quantity": 1,
+        "unitPrice": 18.24,
+        "goodsTotal": 18.24,
+        "quantityDiscountPercent": 0,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 3.9,
+            "payment": 0,
+            "total": 22.14
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 2.9,
+            "payment": 0,
+            "total": 21.14
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Koľko budú stáť 2 kusy aj s dopravou?",
+      "status": 200,
+      "ms": 4,
+      "answer": [
+        "Počítam 2 ks produktu HP W1420A čierny kompatibilný toner. Cena tovaru je 32,83 € s DPH po množstevnej zľave 10 %.",
+        "Doprava je zdarma. Spolu zaplatíte 32,83 €.",
+        "Pri dobierke sa k uvedeným sumám pripočíta 1,20 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "quote": {
+        "productId": "39951",
+        "sku": "13276",
+        "quantity": 2,
+        "unitPrice": 18.24,
+        "goodsTotal": 32.83,
+        "quantityDiscountPercent": 10,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 0,
+            "payment": 0,
+            "total": 32.83
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 0,
+            "payment": 0,
+            "total": 32.83
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "A koľko to bude spolu na dobierku?",
+      "status": 200,
+      "ms": 4,
+      "answer": [
+        "Počítam 2 ks produktu HP W1420A čierny kompatibilný toner. Cena tovaru je 32,83 € s DPH po množstevnej zľave 10 %.",
+        "Doprava je zdarma. Spolu aj s dobierkou zaplatíte 34,03 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "quote": {
+        "productId": "39951",
+        "sku": "13276",
+        "quantity": 2,
+        "unitPrice": 18.24,
+        "goodsTotal": 32.83,
+        "quantityDiscountPercent": 10,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 0,
+            "payment": 1.2,
+            "total": 34.03
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 0,
+            "payment": 1.2,
+            "total": 34.03
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Ukáž mi kompatibilný toner Brother TN2421.",
+      "status": 200,
+      "ms": 5,
+      "answer": [
+        "V našej ponuke máme tieto produkty:"
+      ],
+      "conversation": {
+        "relation": "new",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "products": [
+        {
+          "sku": "15048",
+          "price": 12.96
+        }
+      ],
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Môžem zaplatiť kartou?",
+      "status": 200,
+      "ms": 15,
+      "answer": [
+        "Možnosti platby:",
+        "Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni.",
+        "Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH.",
+        "Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom."
+      ],
+      "conversation": {
+        "relation": "new",
+        "topic": "payment",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "A koľko zaplatím spolu aj s dopravou?",
+      "status": 200,
+      "ms": 5,
+      "answer": [
+        "Počítam 1 ks produktu Brother TN2421 čierny kompatibilný toner. Cena tovaru je 12,96 € s DPH.",
+        "• Kuriér GLS/DPD na adresu: doprava 3,90 €; spolu 16,86 €.",
+        "• Výdajné miesto alebo box GLS/DPD: doprava 2,90 €; spolu 15,86 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "resume",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "quote": {
+        "productId": "15048",
+        "sku": "15048",
+        "quantity": 1,
+        "unitPrice": 12.96,
+        "goodsTotal": 12.96,
+        "quantityDiscountPercent": 0,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 3.9,
+            "payment": 0,
+            "total": 16.86
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 2.9,
+            "payment": 0,
+            "total": 15.86
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Ukáž mi kompatibilný toner HP CF259X.",
+      "status": 200,
+      "ms": 4,
+      "answer": [
+        "V našej ponuke máme tieto produkty:"
+      ],
+      "conversation": {
+        "relation": "new",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "products": [
+        {
+          "sku": "259-C",
+          "price": 33.72
+        }
+      ],
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "kolko stoji tento toner?",
+      "status": 200,
+      "ms": 7,
+      "answer": [
+        "HP CF259X (59X) čierny kompatibilný toner:",
+        "Cena za 1 ks je 33,72 € s DPH, bez dopravy a ďalších zliav."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "ake su moznosti zliav pri tomto tonery?",
+      "status": 200,
+      "ms": 5,
+      "answer": [
+        "Pri produkte HP CF259X (59X) čierny kompatibilný toner môžete využiť tieto zľavy:",
+        "• Množstevná zľava: pri 2–3 ks rovnakého produktu 10 %, pri 4 a viac ks 25 %.",
+        "2 ks stoja 60,70 € spolu s DPH; 4 ks stoja 101,16 € spolu s DPH. Ide o cenu po množstevnej zľave, pred kupónom a použitím bodov.",
+        "V košíku stačí nastaviť počet rovnakých kusov; registráciu ani kupón na množstevnú zľavu nepotrebujete. Odpočet uvidíte v riadku „Množstevná / sadová zľava“.",
+        "• Uvítací kupón 5 %: pri novej registrácii na prvý nákup, ak je ešte platný a nepoužitý. Nájdete ho po prihlásení v Môj účet → Moje odmeny.",
+        "• Ak už máte platnú 7 % odmenu z predchádzajúcej dokončenej objednávky, môžete ju využiť aj na tento kompatibilný toner. Nájdete ju v Môj účet → Moje odmeny.",
+        "Použiteľný kupón sa po prihlásení načíta v košíku automaticky; vyberie sa jeden s najvyššou úsporou. Kupóny 5 % a 7 % sa nesčítavajú. Odpočet uvidíte ako „Kupónová zľava“. Vydaný kód môžete zadať aj cez „Máte zľavový kupón?“ → „Použiť“.",
+        "• Vernostné body: ak máte aspoň 20 bodov, môžete ich použiť na zostávajúcu cenu tovaru. Stav je v Môj účet → Vernostný program; v košíku nechajte zapnuté „Použiť vernostnú zľavu v tejto objednávke“. Odpočet uvidíte ako „Vernostná zľava“.",
+        "V mobile otvoríte odmeny cez „Menu účtu“; v pokladni rozbaľte súhrn „Objednávka“. Na PC sú odpočty v súhrne vpravo."
+      ],
+      "conversation": {
+        "relation": "new",
+        "topic": "discount",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "discounts": {
+        "sku": "259-C",
+        "type": "compatible",
+        "offers": [
+          {
+            "quantity": 2,
+            "discountPercent": 10,
+            "unitPrice": 30.35,
+            "totalPrice": 60.7
+          },
+          {
+            "quantity": 4,
+            "discountPercent": 25,
+            "unitPrice": 25.29,
+            "totalPrice": 101.16
+          }
+        ]
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Koľko bude stáť toner aj s dopravou?",
+      "status": 200,
+      "ms": 6,
+      "answer": [
+        "Počítam 1 ks produktu HP CF259X (59X) čierny kompatibilný toner. Cena tovaru je 33,72 € s DPH.",
+        "Doprava je zdarma. Spolu zaplatíte 33,72 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "quote": {
+        "productId": "259",
+        "sku": "259-C",
+        "quantity": 1,
+        "unitPrice": 33.72,
+        "goodsTotal": 33.72,
+        "quantityDiscountPercent": 0,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 0,
+            "payment": 0,
+            "total": 33.72
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 0,
+            "payment": 0,
+            "total": 33.72
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Koľko budú stáť 2 ks tonera aj s dopravou?",
+      "status": 200,
+      "ms": 3,
+      "answer": [
+        "Počítam 2 ks produktu HP CF259X (59X) čierny kompatibilný toner. Cena tovaru je 60,70 € s DPH po množstevnej zľave 10 %.",
+        "Doprava je zdarma. Spolu zaplatíte 60,70 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "quote": {
+        "productId": "259",
+        "sku": "259-C",
+        "quantity": 2,
+        "unitPrice": 33.72,
+        "goodsTotal": 60.7,
+        "quantityDiscountPercent": 10,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 0,
+            "payment": 0,
+            "total": 60.7
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 0,
+            "payment": 0,
+            "total": 60.7
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Aké možnosti zliav mám pri tomto toneri?",
+      "status": 200,
+      "ms": 3,
+      "answer": [
+        "Pri produkte HP CF259X (59X) čierny kompatibilný toner môžete využiť tieto zľavy:",
+        "• Množstevná zľava: pri 2–3 ks rovnakého produktu 10 %, pri 4 a viac ks 25 %.",
+        "2 ks stoja 60,70 € spolu s DPH; 4 ks stoja 101,16 € spolu s DPH. Ide o cenu po množstevnej zľave, pred kupónom a použitím bodov.",
+        "V košíku stačí nastaviť počet rovnakých kusov; registráciu ani kupón na množstevnú zľavu nepotrebujete. Odpočet uvidíte v riadku „Množstevná / sadová zľava“.",
+        "• Uvítací kupón 5 %: pri novej registrácii na prvý nákup, ak je ešte platný a nepoužitý. Nájdete ho po prihlásení v Môj účet → Moje odmeny.",
+        "• Ak už máte platnú 7 % odmenu z predchádzajúcej dokončenej objednávky, môžete ju využiť aj na tento kompatibilný toner. Nájdete ju v Môj účet → Moje odmeny.",
+        "Použiteľný kupón sa po prihlásení načíta v košíku automaticky; vyberie sa jeden s najvyššou úsporou. Kupóny 5 % a 7 % sa nesčítavajú. Odpočet uvidíte ako „Kupónová zľava“. Vydaný kód môžete zadať aj cez „Máte zľavový kupón?“ → „Použiť“.",
+        "• Vernostné body: ak máte aspoň 20 bodov, môžete ich použiť na zostávajúcu cenu tovaru. Stav je v Môj účet → Vernostný program; v košíku nechajte zapnuté „Použiť vernostnú zľavu v tejto objednávke“. Odpočet uvidíte ako „Vernostná zľava“.",
+        "V mobile otvoríte odmeny cez „Menu účtu“; v pokladni rozbaľte súhrn „Objednávka“. Na PC sú odpočty v súhrne vpravo."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "discount",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "discounts": {
+        "sku": "259-C",
+        "type": "compatible",
+        "offers": [
+          {
+            "quantity": 2,
+            "discountPercent": 10,
+            "unitPrice": 30.35,
+            "totalPrice": 60.7
+          },
+          {
+            "quantity": 4,
+            "discountPercent": 25,
+            "unitPrice": 25.29,
+            "totalPrice": 101.16
+          }
+        ]
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "A koľko zaplatím spolu aj s dopravou?",
+      "status": 200,
+      "ms": 3,
+      "answer": [
+        "Počítam 2 ks produktu HP CF259X (59X) čierny kompatibilný toner. Cena tovaru je 60,70 € s DPH po množstevnej zľave 10 %.",
+        "Doprava je zdarma. Spolu zaplatíte 60,70 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "quote": {
+        "productId": "259",
+        "sku": "259-C",
+        "quantity": 2,
+        "unitPrice": 33.72,
+        "goodsTotal": 60.7,
+        "quantityDiscountPercent": 10,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 0,
+            "payment": 0,
+            "total": 60.7
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 0,
+            "payment": 0,
+            "total": 60.7
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "takze ked kupim 4 kusy aka cena bude za jeden kus?",
+      "status": 200,
+      "ms": 6,
+      "answer": [
+        "Pri nákupe 4 ks produktu HP CF259X (59X) čierny kompatibilný toner je cena 25,29 € za kus s DPH po množstevnej zľave 25 %.",
+        "Za 4 ks zaplatíte spolu 101,16 € s DPH.",
+        "Cena je bez dopravy, ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "quote": {
+        "productId": "259",
+        "sku": "259-C",
+        "quantity": 4,
+        "unitPrice": 33.72,
+        "discountedUnitPrice": 25.29,
+        "goodsTotal": 101.16,
+        "quantityDiscountPercent": 25,
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Aká je cena za kus?",
+      "status": 200,
+      "ms": 4,
+      "answer": [
+        "Pri nákupe 4 ks produktu HP CF259X (59X) čierny kompatibilný toner je cena 25,29 € za kus s DPH po množstevnej zľave 25 %.",
+        "Za 4 ks zaplatíte spolu 101,16 € s DPH.",
+        "Cena je bez dopravy, ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "quote": {
+        "productId": "259",
+        "sku": "259-C",
+        "quantity": 4,
+        "unitPrice": 33.72,
+        "discountedUnitPrice": 25.29,
+        "goodsTotal": 101.16,
+        "quantityDiscountPercent": 25,
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "A koľko zaplatím spolu aj s dopravou?",
+      "status": 200,
+      "ms": 3,
+      "answer": [
+        "Počítam 4 ks produktu HP CF259X (59X) čierny kompatibilný toner. Cena tovaru je 101,16 € s DPH po množstevnej zľave 25 %.",
+        "Doprava je zdarma. Spolu zaplatíte 101,16 €.",
+        "Výpočet platí pre uvedený produkt a počet kusov, bez ďalších kupónov a vernostných bodov."
+      ],
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": false,
+        "modelStatus": "disabled"
+      },
+      "quote": {
+        "productId": "259",
+        "sku": "259-C",
+        "quantity": 4,
+        "unitPrice": 33.72,
+        "goodsTotal": 101.16,
+        "quantityDiscountPercent": 25,
+        "country": "SK",
+        "options": [
+          {
+            "id": "courier",
+            "label": "Kuriér GLS/DPD na adresu",
+            "shipping": 0,
+            "payment": 0,
+            "total": 101.16
+          },
+          {
+            "id": "pickup",
+            "label": "Výdajné miesto alebo box GLS/DPD",
+            "shipping": 0,
+            "payment": 0,
+            "total": 101.16
+          }
+        ],
+        "otherDiscountsIncluded": false
+      },
+      "action": null,
+      "cart": []
+    }
+  ]
+}

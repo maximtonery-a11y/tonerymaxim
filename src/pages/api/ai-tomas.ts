@@ -1,4 +1,4 @@
-import { isProductPriceQuestion } from '../../lib/ai-commerce/price-question.ts';
+import { isProductPriceQuestion, productPriceQuantityText, productPriceQuantityCount } from '../../lib/ai-commerce/price-question.ts';
 import { priceForQuantity } from "../../lib/ai-commerce/pricing.ts";
 import type { APIRoute } from 'astro';
 import { randomUUID } from 'node:crypto';
@@ -12,7 +12,7 @@ import { advisorLinks } from '../../lib/ai-advisor-links.ts';
 import { calendarOverviewFacts, calendarOverviewLinks, diaryOverviewLinks, isCalendarQuery, isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../../lib/calendar-ai-catalog.ts';
 import { answerWithOpenAi } from '../../lib/openai-sales-assistant.ts';
 import { customerProductLabel } from '../../lib/ai-product-label.ts';
-import { productContextAnswer, productDeliveryAnswer, productDiscountAnswer } from '../../lib/ai-commerce/product-context.ts';
+import { productContextAnswer, productDeliveryAnswer, productDiscountAnswer, productQuantityPriceAnswer } from '../../lib/ai-commerce/product-context.ts';
 import { isProductDiscountQuestion } from '../../lib/ai-commerce/discount-question.ts';
 import { discountHelpAnswer } from '../../lib/ai-discount-help.ts';
 import { resolveConversationContext, conversationProductPage, conversationArchive } from '../../lib/ai-conversation-context.ts';
@@ -199,11 +199,15 @@ export const POST: APIRoute = async ({ request }) => {
     }
     const conversationalReference=conversation.explicitProductReturn||conversation.topic==='product'&&conversation.relation!=='new'&&!/\b(?:tento|tato|tieto|tuto|uvedeny|uvedena)\b/.test(normalized(message))?conversation.productQuery:null;
     const quoteNumber=(text:string)=>requestedQuantity(text)||requestedQuantity(normalized(text).match(/\b(?:jeden|jednu|jedno|dva|dve|tri|styri|pat)\s+(?:ks|kus\w*)\b/)?.[0]||'');
-    const quantity=quoteNumber(rawMessage)||conversation.quoteQuantity||conversation.contextHistory.filter(turn=>turn.role==='user').reverse().map(turn=>quoteNumber(turn.content)||turn.productQuantity).find(Boolean)||1;
+    const quantityText=productPriceQuantityText(rawMessage);
+    const quantity=quoteNumber(quantityText)||conversation.quoteQuantity||conversation.contextHistory.filter(turn=>turn.role==='user').reverse().map(turn=>turn.productQuantity||quoteNumber(productPriceQuantityText(turn.content))).find(Boolean)||1;
+    const quantityPriceQuestion=isProductPriceQuestion(rawMessage)&&!hasExplicitCartAddCommand(rawMessage)&&productPriceQuantityCount(rawMessage)<=1;
     const contextAnswer = specificDiscount
       ? await productDiscountAnswer(rawMessage,page,state,conversation.productQuery)
       : conversation.deliveryPrice
       ? await productDeliveryAnswer(rawMessage,page,state,conversation.productQuery,quantity,hasInvalidRequestedQuantity(rawMessage)||[...rawMessage.matchAll(/\b\d+\s*(?:ks|kus\w*)\b/gi)].length>1)
+      : quantityPriceQuestion
+      ? await productQuantityPriceAnswer(rawMessage,page,state,conversation.productQuery,quantity,hasInvalidRequestedQuantity(quantityText))
       : await productContextAnswer(message,page,state,route,conversationalReference);
     if(contextAnswer){
       const {product,advisor}=contextAnswer;

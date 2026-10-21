@@ -181,6 +181,28 @@ export async function productDeliveryAnswer(message:string,page:string,state:Com
   return {product,pendingProductQuestion:null,quote:result.quote,advisor:{answer:result.answer,products:[],groups:[],intent:'product_info',faq:result.quote?'product-delivery-quote':'product-delivery-clarification',confidence:1,unanswered:false,handoffSuggested:false,clarification:!result.quote,sources:product?[{label:'Zobraziť produkt',url:`/produkt/${encodeURIComponent(product.slug)}`},{label:'Doprava a platba',url:'/doprava-a-platba'}]:[]}};
 }
 
+export async function productQuantityPriceAnswer(message:string,page:string,state:CommerceState,reference:string|null,quantity:number,invalidQuantity=false){
+  const {product,choices}=await resolveProduct(reference?`${message} ${reference}`:message,page,state,true);
+  const sources=product?[{label:'Zobraziť produkt',url:`/produkt/${encodeURIComponent(product.slug)}`}]:[];
+  const price=Number(product?.price);
+  let quote=null;
+  let answer:string[];
+  if(!product)answer=['Pri ktorom produkte mám cenu vypočítať? Vyberte konkrétny produkt alebo otvorte jeho detail.',...choices.slice(0,5).map(p=>`• ${p.name} (SKU: ${p.sku})`)];
+  else if(invalidQuantity)answer=['Na aký počet kusov mám cenu vypočítať? Zadajte jedno celé číslo od 1 do 99.'];
+  else if(!Number.isFinite(price)||price<=0)answer=[`Pri produkte ${product.name} teraz nemám aktuálnu cenu. Pozrite si, prosím, jeho detail.`];
+  else{
+    const type=product.product_type_key||(/original/.test(norm(product.name))?'original':/renov|repas/.test(norm(product.name))?'renovated':null);
+    const goods=priceForQuantity(price,type,quantity);
+    const money=(value:number)=>`${value.toLocaleString('sk-SK',{minimumFractionDigits:2,maximumFractionDigits:2})} €`;
+    const approximate=Math.round(goods.unitPrice*quantity*100)!==Math.round(goods.totalPrice*100);
+    answer=[`Pri nákupe ${quantity} ks produktu ${product.name} je cena ${approximate?'približne ':''}${money(goods.unitPrice)} za kus s DPH${goods.discountPercent?` po množstevnej zľave ${goods.discountPercent} %`:''}.`,
+      `Za ${quantity} ks zaplatíte spolu ${money(goods.totalPrice)} s DPH.`,
+      'Cena je bez dopravy, ďalších kupónov a vernostných bodov.'];
+    quote={productId:String(product.id),sku:String(product.sku),quantity,unitPrice:price,discountedUnitPrice:goods.unitPrice,goodsTotal:goods.totalPrice,quantityDiscountPercent:goods.discountPercent,otherDiscountsIncluded:false};
+  }
+  return {product,pendingProductQuestion:null,quote,advisor:{answer,products:[],groups:[],intent:'product_info',faq:quote?'product-quantity-price':'product-price-clarification',confidence:1,unanswered:false,handoffSuggested:false,clarification:!quote,sources}};
+}
+
 export async function productDiscountAnswer(message:string,page:string,state:CommerceState,reference:string|null){
   const {product,choices}=await resolveProduct(reference?`${message} ${reference}`:message,page,state,Boolean(reference));
   const sources=product?[{label:'Zobraziť produkt',url:`/produkt/${encodeURIComponent(product.slug)}`}]:[];

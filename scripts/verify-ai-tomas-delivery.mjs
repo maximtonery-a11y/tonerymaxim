@@ -51,6 +51,12 @@ try{
  checkQuote(await request('Koľko budú stáť 2 ks tonera aj s dopravou?'),2);
  assert.equal((await request('Aké možnosti zliav mám pri tomto toneri?')).discounts.sku,currentSku);
  checkQuote(await request('A koľko zaplatím spolu aj s dopravou?'),2);
+ const unit=await request('takze ked kupim 4 kusy aka cena bude za jeden kus?');
+ assert.equal(unit.quote.sku,currentSku);assert.equal(unit.quote.quantity,4);
+ assert.equal(unit.quote.discountedUnitPrice,round(unitPrice*.75));assert.equal(unit.quote.goodsTotal,round(round(unitPrice*4)-round(round(unitPrice*4)*.25)));
+ const unitAgain=await request('Aká je cena za kus?','/doprava-a-platba');
+ assert.equal(unitAgain.quote.quantity,4);assert.equal(unitAgain.quote.discountedUnitPrice,unit.quote.discountedUnitPrice);
+ checkQuote(await request('A koľko zaplatím spolu aj s dopravou?','/doprava-a-platba'),4);
  if(requireModel)assert.ok(report.cases.some(item=>item.conversation?.engine==='model'),'No model plan was actually applied');
  report.passed=true;
 }catch(error){report.error=String(error.stack||error);process.exitCode=1;}

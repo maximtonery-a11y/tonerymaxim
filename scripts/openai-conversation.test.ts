@@ -49,6 +49,15 @@ test('model nesmie prepísať nový konkrétny kód starým produktom',()=>{
  const question='Koľko stojí Canon CRG-055 aj s dopravou?';const fallback=resolveConversationContext(question,initial);
  assert.equal(applyConversationPlan(question,initial,fallback,plan),fallback);
 });
+test('model nezamení cenu za jeden kus s novým množstvom jeden po ponuke na štyri',async()=>{
+ const history=[...initial,{role:'user',content:'Koľko stoja 4 ks?',topic:'product',productReference:'SKU: HP-C',productQuantity:4},{role:'assistant',content:'Za 4 ks spolu 54,72 €.',topic:'product',productReference:'SKU: HP-C',productQuantity:4}];
+ for(const relation of ['resume','new']){
+  globalThis.fetch=async()=>Response.json({output_text:JSON.stringify({...plan,relation,anchor:relation==='new'?null:2,quantity:1,deliveryPrice:false})});
+  const state={...emptyCommerceState(),history,conversationHistory:history,currentProductId:'142',selectedProductId:'142',lastProductQuery:'HP-C'};
+  const response=await POST({request:new Request('http://localhost/api/ai-tomas',{method:'POST',body:JSON.stringify({message:'Aká je cena za jeden kus?',state})})} as any);const result=await response.json();
+  assert.equal(result.conversation.modelStatus,'ok');assert.equal(result.quote.sku,'HP-C');assert.equal(result.quote.quantity,4);assert.equal(result.quote.discountedUnitPrice,13.68);assert.equal(result.quote.goodsTotal,54.72);assert.equal(result.action,null);assert.deepEqual(result.state.cart,[]);
+ }
+});
 test('model môže rozpoznať novú servisnú tému aj bez presnej kľúčovej frázy',()=>{
  const question='Aké mám možnosti odoslania?';const fallback=resolveConversationContext(question,initial);
  const applied=applyConversationPlan(question,initial,fallback,{...plan,relation:'new',topic:'shipping',anchor:null,deliveryPrice:false,quantity:null,subject:'doprava'});

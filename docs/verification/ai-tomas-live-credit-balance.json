@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-21",
+  "base": "https://www.tonerymaxim.sk",
+  "scope": "Live anonymous advisory API; no cart or account actions",
+  "cases": [
+    {
+      "question": "Koľko stojí tento toner?",
+      "status": 200,
+      "ms": 4617,
+      "ok": true,
+      "conversation": {
+        "relation": "new",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": true,
+        "modelStatus": "no_history"
+      },
+      "answer": [
+        "Myslíte produkt HP CF259X (59X) čierny kompatibilný toner? Ak nie, napíšte presné označenie tonera alebo produktu. Ak áno:",
+        "Cena za 1 ks je 33,72 € s DPH, bez dopravy a ďalších zliav."
+      ],
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "Koľko stojí doprava?",
+      "status": 200,
+      "ms": 6021,
+      "ok": true,
+      "conversation": {
+        "relation": "new",
+        "topic": "shipping",
+        "engine": "rules",
+        "aiEnabled": true,
+        "modelStatus": "credit_balance_exhausted",
+        "modelRetryAfterSeconds": 61
+      },
+      "answer": [
+        "Cena dopravy:",
+        "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+        "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+        "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+        "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+      ],
+      "action": null,
+      "cart": []
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { isOpenAiAssistantEnabled } from './openai-sales-assistant.ts';
 import { hasExplicitCartAddCommand } from './ai-cart-safety.ts';
 import { conversationProductReference, conversationTopicTag, isConversationRepairQuestion, type ConversationContext, type ConversationTurn } from './ai-conversation-context.ts';
 import { isProductDiscountQuestion } from './ai-commerce/discount-question.ts';
+import { isProductUnitPriceQuestion } from './ai-commerce/price-question.ts';
 import { requestOpenAi, type OpenAiFailureStatus } from './openai-request.ts';
 
 type ContextPlan={relation:string;topic:string|null;anchor:number|null;deliveryPrice:boolean;quantity:number|null;subject:string;confidence:number};
@@ -44,6 +45,9 @@ export async function interpretConversation(message:string,page:string,history:C
 
 export function applyConversationPlan(message:string,history:ConversationTurn[],fallback:ConversationContext,plan:ContextPlan|null):ConversationContext{
   if(!plan||isConversationRepairQuestion(message)||hasExplicitCartAddCommand(message)||conversationProductReference(message))return fallback;
+  // "Za jeden kus" asks for a unit price at the remembered purchase quantity.
+  // A model must not turn that denominator into a new order of one unit.
+  if(isProductUnitPriceQuestion(message)&&fallback.topic==='product'&&fallback.productQuery)return fallback;
   if(fallback.deliveryPrice&&!fallback.productQuery&&/\b(?:tento|tato|tieto|uvedeny)\b/i.test(message.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))return fallback;
   const topic=conversationTopicTag(plan.topic);
   if(plan.relation==='clarify')return {...fallback,relation:'clarify',topic:null,productQuery:null,resetSelection:true,deliveryPrice:false,clarification:'Čo konkrétne máte na mysli? Napíšte, prosím, ku ktorému produktu alebo časti rozhovoru sa vraciate.'};

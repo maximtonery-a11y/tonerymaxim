@@ -159,7 +159,8 @@ test('výslovný nákup so zľavou zachová správny produkt, množstvo a cenu',
     assert.equal(result.action?.quantity, 2);
     assert.deepEqual(result.state.cart.map((item: any) => ({ id: item.id, quantity: item.quantity })), [{ id: '2421', quantity: 2 }]);
     const quote = await ask('Koľko stoja 4 ks kompatibilného TN2421 so zľavou?', result.state);
-    assert.match(quote.advisor.answer.join(' '), /30,00 € spolu/);
+    assert.match(quote.advisor.answer.join(' '), /spolu 30,00 €/);
+    assert.equal(quote.quote.quantity,4);assert.equal(quote.quote.goodsTotal,30);assert.equal(quote.quote.discountedUnitPrice,7.5);
     assert.deepEqual(quote.state.cart, result.state.cart);
   } finally {
     globals.__TM_PRODUCTS_FILE_CACHE__ = previous;

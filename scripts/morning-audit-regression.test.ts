@@ -101,8 +101,8 @@ test('Canon pack quote, repeat, follow-up and explicit purchase use the same rea
   assert.equal(purchased.action.product.id, 52830);
   assert.deepEqual(purchased.state.cart, [{ id: '52830', sku: 'SKU-52830', quantity: 3 }]);
   const single = await ask('Koľko stoja 3 ks kompatibilného čierneho Canon CRG-045BK?', first.state);
-  assert.deepEqual(single.commerce.products.map((p: any) => p.id), [45101]);
-  assert.match(answer(single), /3 ks: 54,00 € spolu/);
+  assert.equal(single.quote.productId,'45101');assert.equal(single.quote.quantity,3);assert.equal(single.quote.goodsTotal,54);
+  assert.match(answer(single), /spolu 54,00 €/);assert.equal(single.commerce,null);
 });
 
 test('an uncertain abbreviated HP code requests a model while a full OEM remains usable', async () => {
