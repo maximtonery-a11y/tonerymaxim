@@ -1,0 +1,66 @@
+{
+  "at": "2026-10-21T12:28:23.912Z",
+  "cases": [
+    {
+      "question": "Ukáž mi kompatibilný toner HP CF259X.",
+      "page": "/",
+      "status": 200,
+      "ms": 7344,
+      "conversation": {
+        "relation": "new",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": true
+      },
+      "answer": [
+        "V našej ponuke máme tieto produkty:"
+      ],
+      "products": [
+        {
+          "sku": "13264",
+          "name": "HP CF259X (59X) čierny kompatibilný toner",
+          "price": 33.72,
+          "url": "/produkt/hp-cf259x-59x-kompatibilny-toner"
+        }
+      ],
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "kolko stoji tento toner?",
+      "page": "/produkt/hp-cf259x-59x-kompatibilny-toner",
+      "status": 200,
+      "ms": 1530,
+      "conversation": {
+        "relation": "follow_up",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": true
+      },
+      "answer": [
+        "HP CF259X (59X) čierny kompatibilný toner:",
+        "Cena za 1 ks je 33,72 € s DPH, bez dopravy a ďalších zliav."
+      ],
+      "action": null,
+      "cart": []
+    },
+    {
+      "question": "ake su moznosti zliav pri tomto tonery?",
+      "page": "/produkt/hp-cf259x-59x-kompatibilny-toner",
+      "status": 200,
+      "ms": 2005,
+      "conversation": {
+        "relation": "new",
+        "topic": "product",
+        "engine": "rules",
+        "aiEnabled": true
+      },
+      "answer": [
+        "Áno, tonery a náplne máme v ponuke.",
+        "Aby som vybral správny produkt, napíšte prosím presný model tlačiarne alebo celé označenie tonera či náplne."
+      ],
+      "action": null,
+      "cart": []
+    }
+  ]
+}

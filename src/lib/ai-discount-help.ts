@@ -4,7 +4,7 @@ import { hasExplicitCartAddCommand } from './ai-cart-safety.ts';
 import { resolveConversationContext } from './ai-conversation-context.ts';
 
 type Turn = { role: string; content: string };
-const norm = (value: string) => String(value || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const norm = (value: string) => String(value || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\bzliav/g, 'zlav');
 const percent = (text: string, value: number) => new RegExp(`\\b${value}\\s*(?:%|percent\\w*)`).test(text);
 const topic = /\b(?:zlav\w*|kupon\w*|vernost\w*|bod(?:y|ov|mi|och|u|om)?|odmen\w*|uvitac\w*)\b/;
 const followUp = /\b(?:kde|kam|ako|kedy|preco|nepris\w*|nevid\w*|nenaj\w*|najd\w*|zobraz\w*|uplat\w*|pouzi\w*|zad\w*|aktiv\w*|zotri\w*|plati|platnost|expiro\w*|automat\w*|e-?mail\w*|posta|spam|mobil\w*|pc|pocitac\w*|teda|takze|ano|nie)\b/;
@@ -48,7 +48,7 @@ function directFaq(message: string): string | null {
   if (/akciov|\bakci[auye]\b/.test(n)) return 'akciove-ceny';
   if (/\bkupon\w*\b|\bzlavov\w*\s+kod\w*\b/.test(n)) return 'kupony-uplatnenie';
   if (percent(n, 10) || percent(n, 25) || /mnozstevn/.test(n) && /toner|kompatibil|original|rovnak|sku/.test(n)) return 'mnozstevne-zlavy-tonery';
-  if (/\b(?:ake|aku|aka|aky|mate|ponukat\w*|ponukate|poskytn\w*|dostat|individual\w*|mnozstevn\w*|vsetk\w*|prehlad|vacsi\w*)\b/.test(n)) return 'zlavy-prehlad';
+  if (/\b(?:ake|aku|aka|aky|moznost\w*|mate|ponukat\w*|ponukate|poskytn\w*|dostat|individual\w*|mnozstevn\w*|vsetk\w*|prehlad|vacsi\w*)\b/.test(n)) return 'zlavy-prehlad';
   return isDiscount ? 'zlava-upresnenie' : null;
 }
 

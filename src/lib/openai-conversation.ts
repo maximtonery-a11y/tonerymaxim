@@ -1,14 +1,19 @@
 import { isOpenAiAssistantEnabled } from './openai-sales-assistant.ts';
 import { hasExplicitCartAddCommand } from './ai-cart-safety.ts';
 import { conversationProductReference, conversationTopicTag, type ConversationContext, type ConversationTurn } from './ai-conversation-context.ts';
+import { isProductDiscountQuestion } from './ai-commerce/discount-question.ts';
 
 type ContextPlan={relation:string;topic:string|null;anchor:number|null;deliveryPrice:boolean;quantity:number|null;subject:string;confidence:number};
+export type ConversationAiStatus='disabled'|'no_history'|'skipped'|'ok'|'authentication_failed'|'permission_denied'|'model_unavailable'|'quota_exceeded'|'rate_limited'|'request_rejected'|'provider_unavailable'|'timeout'|'network_error'|'incomplete_response'|'refusal'|'invalid_response'|'low_confidence'|'invalid_reference';
 const env=(name:string)=>String(process.env[name]||(import.meta as any).env?.[name]||'').trim();
 export function isConversationAiEnabled(){return isOpenAiAssistantEnabled()&&env('OPENAI_CONTEXT_ENABLED')!=='0';}
 
 /** A model interprets intent and references. It cannot set prices or authorize purchases. */
-export async function interpretConversation(message:string,page:string,history:ConversationTurn[]):Promise<ContextPlan|null>{
-  if(!isConversationAiEnabled()||!history.length||hasExplicitCartAddCommand(message)||/\b(?:cvv|cvc|pin|iban|cislo karty|heslo do banky)\b/i.test(message.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))return null;
+export async function interpretConversation(message:string,page:string,history:ConversationTurn[],diagnose:(status:ConversationAiStatus)=>void=()=>{}):Promise<ContextPlan|null>{
+  const fail=(status:ConversationAiStatus)=>{diagnose(status);return null;};
+  if(!isConversationAiEnabled())return fail('disabled');
+  if(!history.length)return fail('no_history');
+  if(hasExplicitCartAddCommand(message)||/\b(?:cvv|cvc|pin|iban|cislo karty|heslo do banky)\b/i.test(message.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))return fail('skipped');
   const redact=(text:string)=>text.replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g,'[e-mail]').replace(/\b[A-Z]{2}\d{2}(?:[\s-]?\d{4}){3,7}\b/gi,'[IBAN]').replace(/\b(?:\d[ -]?){13,19}\b/g,'[platobný údaj]').replace(/(?:\+?421|0)[ -]?\d{3}[ -]?\d{3}[ -]?\d{3}/g,'[telefón]').replace(/\b(?:cvv|cvc|pin)\s*(?:je|[:=])?\s*\d{3,8}|\b(?:heslo|password)\s*(?::|=|\bje\b)\s*\S+/gi,'[citlivý údaj]');
   try{
     const response=await fetch('https://api.openai.com/v1/responses',{
@@ -19,15 +24,29 @@ export async function interpretConversation(message:string,page:string,history:C
         text:{format:{type:'json_schema',name:'conversation_reference',strict:true,schema:{type:'object',additionalProperties:false,properties:{relation:{type:'string',enum:['new','follow_up','resume','clarify','acknowledge']},topic:{type:['string','null'],enum:['product','calendar','discount','shipping','payment','account','claim','diagnostic','order','contact','legal',null]},anchor:{type:['integer','null']},deliveryPrice:{type:'boolean'},quantity:{type:['integer','null']},subject:{type:'string'},confidence:{type:'number'}},required:['relation','topic','anchor','deliveryPrice','quantity','subject','confidence']}}},
       }),
     });
-    if(!response.ok)return null;const body=await response.json();
+    // Only an allowlisted category leaves this function. Never expose the
+    // provider's error text, credentials, request body or conversation.
+    if(!response.ok){
+      if(response.status===401)return fail('authentication_failed');
+      if(response.status===403)return fail('permission_denied');
+      if(response.status===404)return fail('model_unavailable');
+      if(response.status===429){const error=await response.json().catch(()=>null);return fail(['insufficient_quota','billing_hard_limit_reached'].includes(error?.error?.code)?'quota_exceeded':'rate_limited');}
+      return fail(response.status>=500?'provider_unavailable':'request_rejected');
+    }
+    const body=await response.json().catch(()=>null);
+    if(!body)return fail('invalid_response');
+    if(body.status==='incomplete')return fail('incomplete_response');
+    if((body.output||[]).some((item:any)=>(item.content||[]).some((content:any)=>content.type==='refusal')))return fail('refusal');
     const text=body.output_text||(body.output||[]).flatMap((item:any)=>item.content||[]).find((item:any)=>item.type==='output_text')?.text;
-    const plan=JSON.parse(text||'null');
-    if(!plan||!['new','follow_up','resume','clarify','acknowledge'].includes(plan.relation)||!Number.isFinite(plan.confidence)||plan.confidence<0.85||plan.confidence>1)return null;
-    if(plan.topic!==null&&!conversationTopicTag(plan.topic))return null;
-    if(plan.anchor!==null&&(!Number.isInteger(plan.anchor)||history[plan.anchor]?.role!=='user'))return null;
-    if(typeof plan.deliveryPrice!=='boolean'||typeof plan.subject!=='string'||plan.subject.length>160||plan.quantity!==null&&(!Number.isInteger(plan.quantity)||plan.quantity<1||plan.quantity>99))return null;
+    let plan;try{plan=JSON.parse(text||'null');}catch{return fail('invalid_response');}
+    if(!plan||!['new','follow_up','resume','clarify','acknowledge'].includes(plan.relation)||!Number.isFinite(plan.confidence)||plan.confidence<0||plan.confidence>1)return fail('invalid_response');
+    if(plan.confidence<0.85)return fail('low_confidence');
+    if(plan.topic!==null&&!conversationTopicTag(plan.topic))return fail('invalid_response');
+    if(plan.anchor!==null&&(!Number.isInteger(plan.anchor)||history[plan.anchor]?.role!=='user'))return fail('invalid_reference');
+    if(typeof plan.deliveryPrice!=='boolean'||typeof plan.subject!=='string'||plan.subject.length>160||plan.quantity!==null&&(!Number.isInteger(plan.quantity)||plan.quantity<1||plan.quantity>99))return fail('invalid_response');
+    diagnose('ok');
     return plan;
-  }catch{return null;}
+  }catch(error){return fail(error instanceof Error&&['TimeoutError','AbortError'].includes(error.name)?'timeout':'network_error');}
 }
 
 export function applyConversationPlan(message:string,history:ConversationTurn[],fallback:ConversationContext,plan:ContextPlan|null):ConversationContext{
@@ -40,8 +59,9 @@ export function applyConversationPlan(message:string,history:ConversationTurn[],
   if(plan.relation==='acknowledge')return {...fallback,relation:'acknowledge',topic,deliveryPrice:false};
   if(plan.relation==='new')return {...fallback,relation:'new',topic,contextHistory:[],productQuery:null,resetSelection:true,deliveryPrice:topic==='product'&&plan.deliveryPrice,quoteQuantity:plan.quantity||undefined,question:topic==='product'||!subject?message:`${message} ${subject}.`};
   const turn=plan.anchor===null?null:history[plan.anchor];
-  if(!turn||turn.topic&&turn.topic!==topic)return fallback;
-  const reference=topic==='product'?turn.productReference||conversationProductReference(turn.content):null;
+  const discountProduct=topic==='discount'&&isProductDiscountQuestion(message);
+  if(!turn||turn.topic&&turn.topic!==topic&&!(discountProduct&&turn.topic==='product'))return fallback;
+  const reference=topic==='product'||discountProduct?turn.productReference||conversationProductReference(turn.content):null;
   if(topic==='product'&&!reference)return {...fallback,relation:'clarify',resetSelection:true,deliveryPrice:false,clarification:'Ktorý konkrétny produkt máte na mysli? Napíšte jeho označenie alebo otvorte jeho detail.'};
   // A subject may disambiguate a service question, never supply a command or a fact.
   let end=plan.anchor!+1;

@@ -10,6 +10,8 @@ import { productPageYield } from '../ai-page-yield.ts';
 import { HP_TONER_HELP_LABEL, HP_TONER_HELP_PATH } from '../hp-toner-help.ts';
 import { isProductPriceQuestion } from './price-question.ts';
 import { productDeliveryQuote } from './delivery-quote.ts';
+import { priceForQuantity } from './pricing.ts';
+import { isProductDiscountQuestion } from './discount-question.ts';
 
 const norm = (value: unknown) => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const key = (value: unknown) => norm(value).replace(/[^a-z0-9]/g, '');
@@ -179,10 +181,36 @@ export async function productDeliveryAnswer(message:string,page:string,state:Com
   return {product,pendingProductQuestion:null,quote:result.quote,advisor:{answer:result.answer,products:[],groups:[],intent:'product_info',faq:result.quote?'product-delivery-quote':'product-delivery-clarification',confidence:1,unanswered:false,handoffSuggested:false,clarification:!result.quote,sources:product?[{label:'Zobraziť produkt',url:`/produkt/${encodeURIComponent(product.slug)}`},{label:'Doprava a platba',url:'/doprava-a-platba'}]:[]}};
 }
 
+export async function productDiscountAnswer(message:string,page:string,state:CommerceState,reference:string|null){
+  const {product,choices}=await resolveProduct(reference?`${message} ${reference}`:message,page,state,Boolean(reference));
+  const sources=product?[{label:'Zobraziť produkt',url:`/produkt/${encodeURIComponent(product.slug)}`}]:[];
+  if(!product)return {product:null,pendingProductQuestion:message,discounts:null,advisor:{answer:['Pri ktorom produkte chcete využiť zľavu? Vyberte konkrétny toner alebo otvorte jeho detail.',...choices.slice(0,5).map(p=>`• ${p.name} (SKU: ${p.sku})`)],products:[],groups:[],intent:'product_clarification',faq:'product-discount-clarification',confidence:1,unanswered:false,handoffSuggested:false,clarification:true,sources}};
+  const type=product.product_type_key||(/original/.test(norm(product.name))?'original':/renov|repas/.test(norm(product.name))?'renovated':/kompatibil/.test(norm(product.name))?'compatible':null);
+  const compatible=type==='compatible',calendar=type==='calendar';
+  const answer=[`Pri produkte ${product.name} môžete využiť tieto zľavy:`];
+  const price=Number(product.price);
+  const offers=Number.isFinite(price)&&price>0&&(compatible||calendar)?(calendar?[3,21]:[2,4]).map(quantity=>priceForQuantity(price,type,quantity)):[];
+  const money=(value:number)=>`${value.toLocaleString('sk-SK',{minimumFractionDigits:2,maximumFractionDigits:2})} €`;
+  if(compatible||calendar){
+    answer.push(calendar?'• Množstevná zľava: pri 3–20 ks rovnakého produktu 5 %, pri 21 a viac ks 15 %.':'• Množstevná zľava: pri 2–3 ks rovnakého produktu 10 %, pri 4 a viac ks 25 %.');
+    if(offers.length)answer.push(offers.map(offer=>`${offer.quantity} ks stoja ${money(offer.totalPrice)} spolu s DPH`).join('; ')+'. Ide o cenu po množstevnej zľave, pred kupónom a použitím bodov.');
+    answer.push('V košíku stačí nastaviť počet rovnakých kusov; registráciu ani kupón na množstevnú zľavu nepotrebujete. Odpočet uvidíte v riadku „Množstevná / sadová zľava“.');
+  }else if(type==='original'||type==='renovated')answer.push('Na tento produkt sa množstevná zľava 10 % / 25 % ani 7 % odmena na kompatibilné tonery nevzťahujú.');
+  else answer.push('Množstevnú zľavu pri tomto produkte nemám potvrdenú.');
+  answer.push('• Uvítací kupón 5 %: pri novej registrácii na prvý nákup, ak je ešte platný a nepoužitý. Nájdete ho po prihlásení v Môj účet → Moje odmeny.');
+  if(compatible)answer.push('• Ak už máte platnú 7 % odmenu z predchádzajúcej dokončenej objednávky, môžete ju využiť aj na tento kompatibilný toner. Nájdete ju v Môj účet → Moje odmeny.');
+  answer.push('Použiteľný kupón sa po prihlásení načíta v košíku automaticky; vyberie sa jeden s najvyššou úsporou. Kupóny 5 % a 7 % sa nesčítavajú. Odpočet uvidíte ako „Kupónová zľava“. Vydaný kód môžete zadať aj cez „Máte zľavový kupón?“ → „Použiť“.');
+  answer.push('• Vernostné body: ak máte aspoň 20 bodov, môžete ich použiť na zostávajúcu cenu tovaru. Stav je v Môj účet → Vernostný program; v košíku nechajte zapnuté „Použiť vernostnú zľavu v tejto objednávke“. Odpočet uvidíte ako „Vernostná zľava“.');
+  answer.push('V mobile otvoríte odmeny cez „Menu účtu“; v pokladni rozbaľte súhrn „Objednávka“. Na PC sú odpočty v súhrne vpravo.');
+  sources.push({label:'Moje odmeny',url:'/ucet/odmeny'},{label:'Vernostný program',url:'/ucet/vernost'},{label:'Košík',url:'/kosik'});
+  return {product,pendingProductQuestion:null,discounts:{sku:String(product.sku),type,offers},advisor:{answer,products:[],groups:[],intent:'loyalty',faq:'product-discounts',confidence:1,unanswered:false,handoffSuggested:false,clarification:false,sources}};
+}
+
 /** Factual product questions bypass purchasing and the generative fallback. */
 export async function productContextAnswer(message: string, page: string, state: CommerceState, route: { intents: string[]; productQuery: string | null }, returnedReference: string | null = null) {
   if (route.intents.includes('HUMAN_ESCALATION') || isGeneralProductTypeComparison(message)) return null;
   const pending = productSelection(message) ? pendingProductQuestion(state) : null;
+  if(pending&&isProductDiscountQuestion(pending))return productDiscountAnswer(pending,page,state,returnedReference);
   const question = pending || message;
   const n = norm(question);
   const overview = !pending && shortProductReference(message);

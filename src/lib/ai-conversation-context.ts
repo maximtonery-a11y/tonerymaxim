@@ -3,6 +3,7 @@
 // to purchase. Only the current customer message can authorize an action.
 import { hasExplicitCartAddCommand } from './ai-cart-safety.ts';
 import { isProductPriceQuestion, isProductDeliveryPriceQuestion } from './ai-commerce/price-question.ts';
+import { isProductDiscountQuestion } from './ai-commerce/discount-question.ts';
 export type ConversationTopic = 'product' | 'calendar' | 'discount' | 'shipping' | 'payment' | 'account' | 'claim' | 'diagnostic' | 'order' | 'contact' | 'legal';
 export type ConversationTurn = { role: string; content: string; topic?: ConversationTopic | 'other'; relation?: string; productPage?: string; productReference?: string; productQuantity?: number };
 export function conversationTopicTag(value: unknown): ConversationTopic | 'other' | undefined {
@@ -45,8 +46,8 @@ export function conversationArchive(value:unknown):ConversationTurn[]{
   }
   return result.reverse();
 }
-const norm = (value: unknown) => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-const referenceWords = /\b(?:ten|tento|ta|tato|tieto|tuto|to|toho|tohto|tom|ho|ju|jej|ich|tam|takto|teda|potom|to iste)\b/;
+const norm = (value: unknown) => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\bzliav/g, 'zlav').trim();
+const referenceWords = /\b(?:ten|tento|tomto|ta|tato|tejto|tieto|tychto|tuto|to|toho|tohto|tom|ho|ju|jej|ich|tam|takto|teda|potom|to iste)\b/;
 const explicitReturn = /\b(?:vratme|vrat|vratit|spat|naspat|povodn\w*|predchadzajuc\w*|predtym|este\s+k)\b/;
 const acknowledgement = /^(?:(?:dobre|ok|okay|dakujem|vdaka|super|rozumiem|jasne|ano|nie|v poriadku|dakujem pekne)[,.! ]*)+$/;
 const quantity = /^(?:(?:a|tak|prosim)\s+)?-?\d+(?:[.,]\d+)?\s*(?:ks|kus\w*)?[?.! ]*$/;
@@ -115,7 +116,7 @@ function framesFromHistory(history: ConversationTurn[]) {
       continue;
     }
     const topic = turn.topic || conversationTopic(turn.content);
-    const reference = topic === 'product' ? turn.productReference||conversationProductReference(turn.content) : null;
+    const reference = topic === 'product' ? turn.productReference||conversationProductReference(turn.content) : topic === 'discount' ? turn.productReference || null : null;
     if (topic) {
       const changedProduct = reference && active?.reference && norm(reference) !== norm(active.reference);
       const changedPage = topic==='product'&&turn.productPage&&active?.page&&turn.productPage!==active.page;
@@ -166,10 +167,17 @@ export function resolveConversationContext(message: string, history: Conversatio
   const result: ConversationContext = { relation: 'new', topic: explicit, question, contextHistory: [], productQuery: null, orderNumber:null, explicitProductReturn: false, resetSelection: false, clarification: null };
   if (!question) return result;
   const productPage=conversationProductPage(page);
+  if(isProductDiscountQuestion(question)){
+    const named=conversationProductReference(question);
+    const product=frames.findLast(frame=>frame.topic==='product'||frame.topic==='discount'&&Boolean(frame.reference));
+    const currentDetail=productPage&&/\b(?:tento|tomto|tohto|tato|tejto|tieto|tychto|uveden\w*)\b/.test(n)&&productPage!==product?.page;
+    return {...result,topic:'discount',relation:named||currentDetail?'new':product?active===product?'follow_up':'resume':'new',productQuery:named||(currentDetail?null:product?.reference)||null,contextHistory:!named&&!currentDetail&&product?turns.slice(product.start,product.end+1):[]};
+  }
   const deliveryContext=frames.some(frame=>frame.topic==='shipping'||frame.topic==='payment')||turns.some(turn=>turn.role==='user'&&isProductDeliveryPriceQuestion(turn.content));
   if(isProductDeliveryPriceQuestion(question,deliveryContext)&&!hasExplicitCartAddCommand(question)){
     const named=conversationProductReference(question);
-    const product=returns&&/povodn/.test(n)?frames.find(frame=>frame.topic==='product'):frames.findLast(frame=>frame.topic==='product');
+    const productFrame=(frame:Frame)=>frame.topic==='product'||frame.topic==='discount'&&Boolean(frame.reference);
+    const product=returns&&/povodn/.test(n)?frames.find(productFrame):frames.findLast(productFrame);
     const currentDetail=productPage&&/\b(?:tento|tato|tieto|uvedeny)\b/.test(n)&&productPage!==product?.page;
     return {...result,topic:'product',deliveryPrice:true,relation:named||currentDetail?'new':product?active===product?'follow_up':'resume':'new',productQuery:named||(currentDetail?null:product?.reference)||null,contextHistory:!named&&!currentDetail&&product?turns.slice(product.start,product.end+1):[]};
   }

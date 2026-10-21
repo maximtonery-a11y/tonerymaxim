@@ -2,6 +2,8 @@
 
 Dátum: 21. 10. 2026. Východiskový commit: `59f55d6`.
 
+Nadväzujúca oprava zliav ku konkrétnemu produktu a diagnostika zlyhaní OpenAI je opísaná v [AI Tomáš: produktové zľavy](ai-tomas-product-discounts.md).
+
 ## Výsledok živého testu
 
 Na verejnom webe bolo vykonaných 14 anonymných poradenských požiadaviek v piatich rozhovoroch. Nový štýl odpovedí je nasadený. Obnova hesla s nadväzujúcou otázkou na spam a návrat k registračnej zľave po otázke na dopravu fungovali.
@@ -34,7 +36,7 @@ Použité rozhranie a schéma vychádzajú z oficiálnej dokumentácie [Conversa
 
 Nové kontroly pokrývajú živý scenár, prirodzené formulácie bez OEM, množstvo, zľavu, dobierku, box, Česko, aktuálnu cenu po obnove dát, zmenu produktu, nejednoznačnosť a ochranu košíka. Modelová integrácia má samostatné kontroly s testovou odpoveďou API: odkaz na produkt mimo krátkej histórie, nová servisná téma, chybné modelové výstupy, redakcia údajov, výpadok a neprenášanie starých nákupných príkazov.
 
-`scripts/verify-ai-tomas-delivery.mjs` vykoná osem poradenských požiadaviek cez skutočné HTTP na zostavený server s izolovanými produktmi. Pre verejné nasadenie použite `--base-url https://www.tonerymaxim.sk --output /tmp/tm-delivery-live.json`. Skript používa aktuálnu vrátenú cenu produktu a nevytvára objednávky. Rešpektujte limit 30 požiadaviek za 10 minút; pri neúspešnej odpovedi sa skript zastaví.
+`scripts/verify-ai-tomas-delivery.mjs` teraz vykoná 16 poradenských požiadaviek cez skutočné HTTP na zostavený server s izolovanými produktmi, vrátane nadväzujúcich zliav a prípadu CF259X. Pre verejné nasadenie použite `--base-url https://www.tonerymaxim.sk --output /tmp/tm-delivery-live.json`; voľba `--require-model` navyše vyžaduje úspešné volanie a použitie modelového plánu. Skript používa aktuálnu vrátenú cenu produktu a nevytvára objednávky. Rešpektujte limit 30 požiadaviek za 10 minút; pri neúspešnej odpovedi sa skript zastaví.
 
 Jazykový model vyžaduje serverové premenné v Coolify:
 

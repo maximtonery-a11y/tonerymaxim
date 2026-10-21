@@ -19,7 +19,7 @@ test('model dostane starší predmet mimo krátkej histórie a server sám vypo�
  state.conversationHistory=[...initial,...Array.from({length:30},(_,i)=>({role:i%2?'assistant':'user',content:i%2?'Možnosti platby.':'Ako môžem zaplatiť?',topic:'payment' as const})),...state.history] as any;
  const response=await POST({request:new Request('http://localhost/api/ai-tomas',{method:'POST',body:JSON.stringify({message:'A koľko zaplatím nakoniec dokopy?',state})})} as any);const data=await response.json();
  assert.equal(response.status,200);assert.equal(requests.length,1);const input=JSON.parse(requests[0].input[0].content);assert.ok(input.history.length>20);assert.equal(input.history[0].productReference,'SKU: HP-C');
- assert.equal(data.conversation.engine,'model');assert.equal(data.quote.sku,'HP-C');assert.equal(data.quote.quantity,2);assert.equal(data.quote.goodsTotal,32.83);assert.ok(data.quote.options.every((x:any)=>x.total===32.83));assert.equal(data.action,null);assert.deepEqual(data.state.cart,[]);assert.equal(data.state.conversationHistory[0].productReference,'SKU: HP-C');assert.equal(requests[0].store,false);
+ assert.equal(data.conversation.engine,'model');assert.equal(data.conversation.modelStatus,'ok');assert.equal(data.quote.sku,'HP-C');assert.equal(data.quote.quantity,2);assert.equal(data.quote.goodsTotal,32.83);assert.ok(data.quote.options.every((x:any)=>x.total===32.83));assert.equal(data.action,null);assert.deepEqual(data.state.cart,[]);assert.equal(data.state.conversationHistory[0].productReference,'SKU: HP-C');assert.equal(requests[0].store,false);
 });
 test('osobné a platobné údaje histórie sa neposielajú do modelu',async()=>{
  await interpretConversation('Koľko to bude spolu?','/',[{role:'user',content:'test.customer@example.org +421 905 123 456 4111 1111 1111 1111'}]);
@@ -57,4 +57,30 @@ test('model nepreberie odpoveď na množstvo v už autorizovanom nákupnom toku'
  const send=async(message:string,state:any)=>{const response=await POST({request:new Request('http://localhost/api/ai-tomas',{method:'POST',body:JSON.stringify({message,state})})} as any);assert.equal(response.status,200);return response.json();};
  const first=await send('Pridaj 0 ks kompatibilného HP W1420A.',emptyCommerceState());assert.equal(first.state.pendingQuestion,'quantity');
  const second=await send('2',first.state);assert.equal(second.action.kind,'ADD_TO_CART');assert.equal(second.state.cart[0].quantity,2);assert.equal(requests.length,0);
+});
+
+test('API rozlíši chybu prihlásenia, kvótu a výpadok bez úniku textu chyby alebo kľúča',async()=>{
+ for(const [httpStatus,code,expected]of [[401,'invalid_api_key','authentication_failed'],[403,'permission_denied','permission_denied'],[404,'model_not_found','model_unavailable'],[429,'insufficient_quota','quota_exceeded'],[429,'rate_limit_exceeded','rate_limited'],[400,'invalid_request_error','request_rejected'],[503,'server_error','provider_unavailable']] as const){
+  globalThis.fetch=async()=>Response.json({error:{code,message:'SECRET-PROVIDER-MESSAGE customer@example.org sk-test-secret'}},{status:httpStatus});
+  const state={...emptyCommerceState(),history:initial,conversationHistory:initial};
+  const response=await POST({request:new Request('http://localhost/api/ai-tomas',{method:'POST',body:JSON.stringify({message:'Koľko bude stáť toner aj s dopravou?',state})})} as any);const body=await response.json();
+  assert.equal(body.conversation.modelStatus,expected);assert.equal(body.conversation.engine,'rules');assert.equal(body.quote.sku,'HP-C');assert.deepEqual(body.state.cart,[]);
+  assert.doesNotMatch(JSON.stringify(body),/SECRET-PROVIDER|customer@example|sk-test-secret|test-only-placeholder/);
+ }
+});
+test('časový limit, neúplná odpoveď a chybný odkaz sa odlíšia od úspešného modelu',async()=>{
+ const cases=[
+  {fetch:async()=>{throw new DOMException('private error','TimeoutError')},status:'timeout'},
+  {fetch:async()=>{throw new TypeError('private error')},status:'network_error'},
+  {fetch:async()=>Response.json({status:'incomplete',output:[]}),status:'incomplete_response'},
+  {fetch:async()=>Response.json({output_text:'invalid json'}),status:'invalid_response'},
+  {fetch:async()=>Response.json({output_text:JSON.stringify({...plan,confidence:0.5})}),status:'low_confidence'},
+  {fetch:async()=>Response.json({output_text:JSON.stringify({...plan,anchor:1})}),status:'invalid_reference'},
+ ];
+ for(const spec of cases){globalThis.fetch=spec.fetch;let status='';assert.equal(await interpretConversation('Koľko spolu?','/',initial,value=>{status=value}),null);assert.equal(status,spec.status);}
+});
+test('model môže naviazať zľavu na produkt z histórie aj keď sa zmenila téma',()=>{
+ const question='Aké možnosti zliav mám pri tomto toneri?';const fallback=resolveConversationContext(question,initial);
+ const applied=applyConversationPlan(question,initial,fallback,{...plan,topic:'discount',deliveryPrice:false,quantity:null});
+ assert.equal(applied.topic,'discount');assert.equal(applied.productQuery,'SKU: HP-C');
 });
