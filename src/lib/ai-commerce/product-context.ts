@@ -8,6 +8,7 @@ import type { CommerceState } from './domain.ts';
 import { isGeneralProductTypeComparison } from '../ai-product-type-question.ts';
 import { productPageYield } from '../ai-page-yield.ts';
 import { HP_TONER_HELP_LABEL, HP_TONER_HELP_PATH } from '../hp-toner-help.ts';
+import { isProductPriceQuestion } from './price-question.ts';
 
 const norm = (value: unknown) => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const key = (value: unknown) => norm(value).replace(/[^a-z0-9]/g, '');
@@ -91,7 +92,7 @@ function narrowProducts(products: any[], message: string) {
   return result;
 }
 
-const shortProductReference = (message: string) => /^(?:(?:myslim|ano)[, ]+)?(?:tento|tato|tieto|tuto|toto|ten|ta|to)(?:\s+(?:produkt|toner|napln|sada|sadu|kompatibilny|originalny|renovovany)){0,3}[.!?]*$/.test(norm(message).trim());
+const shortProductReference = (message: string) => /^(?:(?:myslim|ano|a)[, ]+)?(?:tento|tato|tieto|tuto|toto|ten|ta|to)(?:\s+(?:produkt|toner|napln|sada|sadu|kompatibilny|originalny|renovovany)){0,3}[.!?]*$/.test(norm(message).trim());
 
 // Old saved conversations have no pendingProductQuestion. Recover only from
 // the immediately preceding product clarification, never from an older topic.
@@ -133,9 +134,9 @@ async function resolveProduct(message: string, page: string, state: CommerceStat
   let identityQuestion = message;
   for (const printer of printerMentions(message)) identityQuestion = identityQuestion.replace(printer, ' ');
   const analysis = analyzeCatalogQuery(identityQuestion);
-  if (explicitSearch && analysis.hasReference) {
+  const sku = identityQuestion.match(/\bsku\s*[:#-]?\s*([a-z0-9][a-z0-9_-]*)/i)?.[1];
+  if (explicitSearch && (analysis.hasReference||sku)) {
     const cache = await getProductsCache();
-    const sku = identityQuestion.match(/\bsku\s*[:#-]?\s*([a-z0-9][a-z0-9_-]*)/i)?.[1];
     const exactSku = sku ? cache.products.filter(product => key(product.sku) === key(sku)) : [];
     const matches = narrowProducts(exactSku.length ? exactSku : findExactProductIdentityMatches(cache.products, identityQuestion).map(match => match.product), identityQuestion);
     if (pageProduct && matches.some(product => String(product.id) === String(pageProduct.id))) return { product: pageProduct, choices: [] };
@@ -166,7 +167,7 @@ async function resolveProduct(message: string, page: string, state: CommerceStat
 }
 
 /** Factual product questions bypass purchasing and the generative fallback. */
-export async function productContextAnswer(message: string, page: string, state: CommerceState, route: { intents: string[]; productQuery: string | null }) {
+export async function productContextAnswer(message: string, page: string, state: CommerceState, route: { intents: string[]; productQuery: string | null }, returnedReference: string | null = null) {
   if (route.intents.includes('HUMAN_ESCALATION') || isGeneralProductTypeComparison(message)) return null;
   const pending = productSelection(message) ? pendingProductQuestion(state) : null;
   const question = pending || message;
@@ -181,18 +182,19 @@ export async function productContextAnswer(message: string, page: string, state:
   const firmware = /firmware|firmver|hp\s*\+|cartridge\s+(?:protection|policy)|authorized\s+hp|nerozpozna|\bcip\w*\b/.test(n)
     && /potvrd|over|fung|pasuj|kompatibil/.test(n);
   const stock = /\b(?:skladom|dostupnost|dostupny|dostupna|dostupne)\b/.test(n);
+  const price = !route.intents.includes('POLICY')&&!isProductPriceQuestion(question)&&/\b(?:cena|cenu|ceny|stoji|stoja)\b/.test(n);
   // Do not turn service questions, general explanations or purchase commands
   // into a page lookup just because a product detail happens to be open.
-  if (!compatibility && !firmware && !stock && !explanation && !overview && !capacity) return null;
+  if (!compatibility && !firmware && !stock && !explanation && !overview && !capacity && !price) return null;
   const refersToProduct = /\b(?:tento|tato|tieto|tuto|ten|ta|ho|uvedeny|uvedena|uvedene)\b/.test(n);
   const printerToTonerSearch = /\b(?:aky|ktory|najdi|najdite|hladam|potrebujem)\b.*\b(?:toner|napln|atrament)\w*\b/.test(n);
   const generalExplanation = /\b(?:ako\s+funguj\w*|preco|rozdiel)\b/.test(n);
   if (!list && !refersToProduct && !firmware && !pending && !overview && (printerToTonerSearch || generalExplanation)) return null;
-  if (!compatibility && !firmware && !explanation && !overview && !capacity && route.intents.some(intent => ['POLICY', 'BUY_INTENT', 'ADVICE', 'PRODUCT_COMPARE'].includes(intent))) return null;
+  if (!compatibility && !firmware && !explanation && !overview && !capacity && !price && route.intents.some(intent => ['POLICY', 'BUY_INTENT', 'ADVICE', 'PRODUCT_COMPARE'].includes(intent))) return null;
   const hasContext = Boolean(productSlug(page) || catalogueSearch(page) || state.currentProductId || state.selectedProductId || state.lastProductQuery || route.productQuery);
   if (!list && !hasContext && !refersToProduct && !overview) return null;
 
-  const { product, choices } = await resolveProduct(message, page, state, route.intents.includes('PRODUCT_SEARCH'));
+  const { product, choices } = await resolveProduct(returnedReference?`${message} ${returnedReference}`:message, page, state, route.intents.includes('PRODUCT_SEARCH')||Boolean(returnedReference));
   if (!product) return {
     product: null,
     pendingProductQuestion: question,
@@ -211,6 +213,7 @@ export async function productContextAnswer(message: string, page: string, state:
   };
   const printers = productPrinters(product);
   const toner = isTonerProduct(product);
+  if(price)answer.push(Number(product.price)>0?`Cena za 1 ks je ${Number(product.price).toLocaleString('sk-SK',{minimumFractionDigits:2,maximumFractionDigits:2})} € s DPH, bez dopravy a ďalších zliav.`:'Pri tomto produkte nemám overenú aktuálnu cenu; pred objednaním ju overte na jeho detaile.');
   if (explanation || overview) {
     if (toner) answer.push('Ide o tonerovú kazetu s práškom pre laserovú tlačiareň. Pri tlači sa prášok prenesie na papier a zafixuje teplom.');
     const type = product.product_type_key || (/original/.test(norm(product.name)) ? 'original' : /renov|repas/.test(norm(product.name)) ? 'renovated' : /kompatibil/.test(norm(product.name)) ? 'compatible' : null);

@@ -6,6 +6,7 @@ import { POST } from '../src/pages/api/ai-tomas.ts';
 import { emptyCommerceState } from '../src/lib/ai-commerce/domain.ts';
 import { forbidsCartMutation, isCartChangingAction } from '../src/lib/ai-cart-safety.ts';
 import { isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder } from '../src/lib/ai-order-question.ts';
+import { resolveConversationContext } from '../src/lib/ai-conversation-context.ts';
 
 // Executes the real browser dispatcher with fake DOM/network boundaries.
 // This covers branches before the API call; it does not replace visual QA.
@@ -24,7 +25,7 @@ async function browserFlow(pathname = '/', savedSession: any = null) {
   let verifications = 0;
   const noop = () => {};
   const scope: any = {
-    state, isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder, forbidsCartMutation, isCartChangingAction,
+    state, isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder, forbidsCartMutation, isCartChangingAction, resolveConversationContext,
     beginSession: noop, looksLikeShopping: () => false, escapeHtml: (v: unknown) => String(v),
     addMessage: (role: string, html: string) => { const node = { role, innerHTML: html, textContent: 'response', scrollIntoView: noop }; messages.push(node); return node; },
     renderGuestOrderVerification: () => { verifications++; },
@@ -98,6 +99,21 @@ test('prehliadač zobrazí žiadané TM číslo a pri chýbajúcom ponúkne over
   await flow.ask('Kde je objednávka 300001?');
   assert.equal(flow.verifications(), 1);
   assert.deepEqual(flow.errors, []);
+});
+
+test('nadväzujúca otázka na stav ostáva pri rovnakej objednávke a nová téma prejde do poradne', async () => {
+  const flow=await browserFlow('/ucet');
+  await flow.ask('Kde je objednávka 300945?');
+  await flow.ask('a kde ju nájdem?');
+  assert.match(flow.messages.at(-1).innerHTML,/300945/);
+  assert.doesNotMatch(flow.messages.at(-1).innerHTML,/300950/);
+  await flow.ask('Kde je objednávka 300950?');
+  await flow.ask('a kde ju nájdem?');
+  assert.match(flow.messages.at(-1).innerHTML,/300950/);
+  await flow.ask('A ako uplatním zľavu za registráciu?');
+  assert.equal(flow.calls.at(-1),'/api/ai-tomas');
+  assert.match(flow.messages.at(-1).innerHTML,/Moje odmeny/);
+  assert.deepEqual(flow.errors,[]);
 });
 
 test('celý dispatcher prejde PFI → diagnostika → neprevzatá zásielka → doprava a platba', async () => {

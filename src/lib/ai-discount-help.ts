@@ -1,6 +1,7 @@
 import { aiKnowledge } from '../data/ai-knowledge.ts';
 import { isProductPriceQuestion } from './ai-commerce/price-question.ts';
 import { hasExplicitCartAddCommand } from './ai-cart-safety.ts';
+import { resolveConversationContext } from './ai-conversation-context.ts';
 
 type Turn = { role: string; content: string };
 const norm = (value: string) => String(value || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -69,6 +70,10 @@ function recentDiscountFaq(history: Turn[]): string | null {
 }
 
 export function discountFaqForMessage(message: string, history: Turn[] = []): string | null {
+  const conversation=resolveConversationContext(message,history);
+  if(conversation.relation==='clarify'||conversation.relation==='acknowledge')return null;
+  history=conversation.contextHistory;
+  message=conversation.question;
   const n = norm(message);
   if (/clovek|operator|predajca|zavolajte|kontaktujte ma/.test(n)) return null;
   // The shipping threshold is checked after discounts and has its own facts.

@@ -14,6 +14,7 @@ import { answerWithOpenAi } from '../../lib/openai-sales-assistant.ts';
 import { customerProductLabel } from '../../lib/ai-product-label.ts';
 import { productContextAnswer } from '../../lib/ai-commerce/product-context.ts';
 import { discountHelpAnswer } from '../../lib/ai-discount-help.ts';
+import { resolveConversationContext, conversationProductPage } from '../../lib/ai-conversation-context.ts';
 
 export const prerender = false;
 const clean = (v: unknown, max=500) => String(v || '').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);
@@ -133,27 +134,59 @@ function ambiguousNumericReference(message:string, state:any){
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json().catch(() => ({}));
-    const message = clean(body?.message,4000); if (!message) return Response.json({ok:false,error:'Napíšte otázku alebo produkt.'},{status:400});
+    const rawMessage = clean(body?.message,4000); if (!rawMessage) return Response.json({ok:false,error:'Napíšte otázku alebo produkt.'},{status:400});
     const state = normalizeCommerceState(body?.state); if (!state.sessionId) state.sessionId=randomUUID();
-    const explicitCartBan=forbidsCartMutation(message);
-    const cartMutationForbidden=explicitCartBan||isNonExecutingShoppingRequest(message);
-    const cartBeforeRequest=state.cart.map((item:any)=>({...item}));
-    const route = routeCommerceMessage(message,state);
     const page = clean(body?.page,300) || '/';
-    const discountHelp = discountHelpAnswer(message,state.history);
+    const conversation=resolveConversationContext(rawMessage,state.history,state,page);
+    const message=conversation.question;
+    let identifiedProductSku:string|null=null;
+    const respond=(data:any,init?:ResponseInit)=>{
+      const topic=data.advisor?.intent==='loyalty'?'discount':conversation.topic;
+      // Persist the actual resolved topic with both turns. Subsequent messages
+      // must not reclassify an elliptical return-postage question as shopping.
+      const sku=data.action?.product?.sku||identifiedProductSku||(data.commerce?.products?.length===1?data.commerce.products[0].sku:null);
+      for(const turn of (data.state?.history||[]).slice(-2)){
+        turn.topic=topic||'other';turn.relation=conversation.relation;
+        if(topic==='product'&&sku&&/^[a-z0-9][a-z0-9_. -]*$/i.test(sku))turn.productReference=`SKU: ${sku}`.slice(0,160);
+        const productPage=conversationProductPage(page);if(topic==='product'&&productPage&&sku)turn.productPage=productPage;
+      }
+      return Response.json({...data,conversation:{relation:conversation.relation,topic}},init);
+    };
+    if(conversation.resetSelection){
+      state.pendingQuestion=null;state.pendingProductQuestion=null;state.selectedProductId=null;
+      state.currentColor=null;state.currentType=null;
+      state.checkoutDraft={...state.checkoutDraft,guidedQuantity:null,guidedSet:null,printerConflict:null};
+      if(conversation.topic==='product'||conversation.topic==='calendar'||!conversation.topic){state.currentProductId=null;state.lastProductQuery=null;state.currentPrinter=null;}
+    }
+    if(conversation.productQuery){
+      if(conversation.explicitProductReturn){state.currentProductId=null;state.selectedProductId=null;state.currentType=null;state.currentColor=null;state.pendingQuestion=null;state.pendingProductQuestion=null;}
+      state.lastProductQuery=conversation.productQuery;
+    }
+    if(conversation.relation==='clarify'||conversation.relation==='acknowledge'){
+      const answer=conversation.clarification||'Rado sa stalo. Ak máte ďalšiu otázku, napíšte mi ju.';
+      state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
+      return respond({ok:true,route:{intents:['ADVICE'],productQuery:null,needsProducts:false},conversation:{relation:conversation.relation,topic:conversation.topic},advisor:{answer:[answer],products:[],groups:[],intent:'support',faq:conversation.relation==='clarify'?'conversation-clarification':'conversation-acknowledgement',confidence:1,unanswered:false,clarification:conversation.relation==='clarify',sources:[]},commerce:null,state,action:null},{headers:{'Cache-Control':'no-store'}});
+    }
+    const explicitCartBan=forbidsCartMutation(rawMessage);
+    const cartMutationForbidden=explicitCartBan||isNonExecutingShoppingRequest(rawMessage);
+    const cartBeforeRequest=state.cart.map((item:any)=>({...item}));
+    const route = routeCommerceMessage(rawMessage,state,conversation);
+    const discountHelp = discountHelpAnswer(message,conversation.contextHistory);
     if(discountHelp){
       // Discount instructions are factual service answers even on a toner
       // detail, with an old quantity selection or with a coupon resembling SKU.
       state.pendingQuestion=null;state.pendingProductQuestion=null;state.selectedProductId=null;
       state.checkoutDraft={...state.checkoutDraft,guidedQuantity:null,guidedSet:null};
       state.lastIntent='POLICY';
-      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:discountHelp.answer.join(' ')}].slice(-20);
+      state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:discountHelp.answer.join(' ')}].slice(-20);
       const advisor={...discountHelp,sources:advisorLinks(discountHelp)};
-      return Response.json({ok:true,route,advisor,commerce:null,state,action:null},{headers:{'Cache-Control':'no-store'}});
+      return respond({ok:true,route,advisor,commerce:null,state,action:null},{headers:{'Cache-Control':'no-store'}});
     }
-    const contextAnswer = await productContextAnswer(message,page,state,route);
+    const conversationalReference=conversation.explicitProductReturn||conversation.topic==='product'&&conversation.relation!=='new'&&!/\b(?:tento|tato|tieto|tuto|uvedeny|uvedena)\b/.test(normalized(message))?conversation.productQuery:null;
+    const contextAnswer = await productContextAnswer(message,page,state,route,conversationalReference);
     if(contextAnswer){
       const {product,advisor}=contextAnswer;
+      identifiedProductSku=product?.sku||null;
       state.currentProductId=product?String(product.id):null;
       state.selectedProductId=product?String(product.id):null;
       state.lastProductQuery=product?String(product.sku||product.name):null;
@@ -161,9 +194,9 @@ export const POST: APIRoute = async ({ request }) => {
       state.pendingProductQuestion=contextAnswer.pendingProductQuestion;
       state.checkoutDraft={...state.checkoutDraft,guidedQuantity:null,guidedSet:null};
       state.lastIntent='ADVICE';
-      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:advisor.answer.join(' ')}].slice(-20);
+      state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:advisor.answer.join(' ')}].slice(-20);
       const action=advisor.handoffSuggested?{kind:'OPEN_HANDOFF',reason:'unanswered'}:product?null:{kind:'CLARIFY_PRODUCT'};
-      return Response.json({ok:true,route,advisor,commerce:null,state,action},{headers:{'Cache-Control':'no-store'}});
+      return respond({ok:true,route,advisor,commerce:null,state,action},{headers:{'Cache-Control':'no-store'}});
     }
     // A new subject or purchase ends an informational product clarification.
     state.pendingProductQuestion=null;
@@ -172,8 +205,8 @@ export const POST: APIRoute = async ({ request }) => {
       state.lastProductQuery=route.productQuery||state.lastProductQuery;
       const types=requestedTypes(message);if(types.length===1)state.currentType=types[0];
       state.pendingQuestion='quantity';
-      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
-      return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'quantity_clarification',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_QUANTITY'}},{headers:{'Cache-Control':'no-store'}});
+      state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
+      return respond({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'quantity_clarification',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_QUANTITY'}},{headers:{'Cache-Control':'no-store'}});
     }
     if(!route.needsProducts&&route.intents.some(intent=>intent==='POLICY'||intent==='HUMAN_ESCALATION')){
       state.pendingQuestion=null;state.selectedProductId=null;
@@ -183,8 +216,8 @@ export const POST: APIRoute = async ({ request }) => {
     if(ambiguousCode){
       const answer=`Označenie ${ambiguousCode} nie je bez značky alebo modelu tlačiarne jednoznačné. Napíšte, prosím, výrobcu a model tlačiarne zo štítku alebo značku a celý OEM kód náplne. Podľa neúplného čísla hádať nebudem.`;
       state.lastIntent='ADVICE';state.lastProductQuery=null;state.currentType=null;state.currentColor=null;state.currentPrinter=null;state.currentProductId=null;state.selectedProductId=null;state.pendingQuestion=null;
-      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
-      return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRODUCT'}},{headers:{'Cache-Control':'no-store'}});
+      state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
+      return respond({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRODUCT'}},{headers:{'Cache-Control':'no-store'}});
     }
     const shortHpCode=normalized(message).match(/\b(\d{2,3}[ax])\b/)?.[1];
     const unknownPrinter=/\b(?:neviem|nepoznam)\b(?:\s+\w+){0,3}\s+\bmodel\w*\b|\bmodel\w*\b(?:\s+\w+){0,3}\s+\b(?:neviem|nepoznam)\b/.test(normalized(message));
@@ -192,8 +225,8 @@ export const POST: APIRoute = async ({ request }) => {
       && !/\b(?:cf|ce|q|w)[- ]?\d{3,}[a-z0-9]*\b/.test(normalized(message))){
       const answer=`Pri skrátenom označení ${shortHpCode.toUpperCase()} potrebujem potvrdiť presný model tlačiarne HP alebo celý OEM kód z kazety. Pozrite, prosím, výrobný štítok tlačiarne alebo označenie kazety; podľa neúplného údaja kompatibilitu nepotvrdím.`;
       state.lastProductQuery=null;state.currentProductId=null;state.selectedProductId=null;state.pendingQuestion=null;state.currentPrinter=null;state.currentType=null;state.currentColor=null;
-      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
-      return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
+      state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
+      return respond({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'product_search',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
     }
     if (isGeneralDiaryQuestion(message)) {
       const answer = [
@@ -218,8 +251,8 @@ export const POST: APIRoute = async ({ request }) => {
       state.currentProductId = null;
       state.selectedProductId = null;
       state.pendingQuestion = null;
-      state.history = [...state.history, { role: 'user' as const, content: message }, { role: 'assistant' as const, content: answer.join(' ') }].slice(-20);
-      return Response.json({ ok: true, route, advisor: { ...advisor, sources: advisorLinks(advisor) }, commerce: null, state, action: null }, { headers: { 'Cache-Control': 'no-store' } });
+      state.history = [...state.history, { role: 'user' as const, content: rawMessage }, { role: 'assistant' as const, content: answer.join(' ') }].slice(-20);
+      return respond({ ok: true, route, advisor: { ...advisor, sources: advisorLinks(advisor) }, commerce: null, state, action: null }, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (isGeneralCalendarQuestion(message)) {
       const live = await answerWithOpenAi(message, page, calendarOverviewFacts, state.history);
@@ -245,26 +278,26 @@ export const POST: APIRoute = async ({ request }) => {
       state.currentProductId = null;
       state.selectedProductId = null;
       state.pendingQuestion = null;
-      state.history = [...state.history, { role: 'user' as const, content: message }, { role: 'assistant' as const, content: answer.join(' ') }].slice(-20);
-      return Response.json({ ok: true, route, advisor: { ...advisor, sources: advisorLinks(advisor) }, commerce: null, state, action: null }, { headers: { 'Cache-Control': 'no-store' } });
+      state.history = [...state.history, { role: 'user' as const, content: rawMessage }, { role: 'assistant' as const, content: answer.join(' ') }].slice(-20);
+      return respond({ ok: true, route, advisor: { ...advisor, sources: advisorLinks(advisor) }, commerce: null, state, action: null }, { headers: { 'Cache-Control': 'no-store' } });
     }
     const calendarRoute = Boolean(route.productQuery && isCalendarQuery(route.productQuery));
     const correction=/\b(nie|pise|model|oprava|spravne)\b/.test(normalized(message));
     if (correction && state.currentPrinter && route.intents.includes('PRINTER_SEARCH') && route.productQuery && normalized(route.productQuery)!==normalized(state.currentPrinter) && !samePrinterModel(route.productQuery,state.currentPrinter)) {
       state.checkoutDraft={...(state.checkoutDraft||{}),printerConflict:{previous:state.currentPrinter,candidate:route.productQuery}};
       const answer=`Vidím rozpor v modeli: predtým ${state.currentPrinter}, teraz ${route.productQuery}. Toner zatiaľ nepridám. Prosím odpíšte presný celý model z výrobného štítku tlačiarne.`;
-      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
-      return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'printer_conflict',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
+      state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
+      return respond({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'printer_conflict',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
     }
     if ((state.checkoutDraft as any)?.printerConflict && route.intents.some(x=>['PRODUCT_SEARCH','COMPATIBILITY','BUY_INTENT'].includes(x))) {
       const conflict=(state.checkoutDraft as any).printerConflict;const answer=`Najprv potrebujem potvrdiť presný model tlačiarne (${conflict.previous} alebo ${conflict.candidate}). Bez toho toner nepridám, aby sme neposlali nekompatibilný produkt.`;
-      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
-      return Response.json({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'printer_conflict',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
+      state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
+      return respond({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'printer_conflict',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
     }
     const needsAdvisor = !(route.needsProducts && isProductPriceQuestion(message)) && !calendarRoute && route.intents.some(x => ['ADVICE','POLICY','HUMAN_ESCALATION','UNKNOWN'].includes(x));
     // Poradenska znalostna vrstva a produktovy nakupca sa nacitavaju oddelene.
     // Bezna produktova otazka tak nedrzi v RAM aj cely poradensky modul.
-    const advisorPromise = needsAdvisor ? import('../../lib/aiSalesAssistant.ts').then(({buildAssistantAnswer})=>buildAssistantAnswer(message,page,state.history)) : Promise.resolve({
+    const advisorPromise = needsAdvisor ? import('../../lib/aiSalesAssistant.ts').then(({buildAssistantAnswer})=>buildAssistantAnswer(message,page,conversation.contextHistory as any)) : Promise.resolve({
       answer: route.needsProducts ? ['Overil som aktuálny katalóg. Máme v ponuke tieto vhodné produkty:'] : ['Rozumiem.'],
       products: [], groups: [], intent: 'commerce', confidence: 1, unanswered: false,
     });
@@ -350,9 +383,9 @@ export const POST: APIRoute = async ({ request }) => {
       const options=['compatible','original','renovated'].filter(productType=>availableTypes.includes(productType));
       const productLabel=customerProductLabel(route.productQuery,message,commerce?.source);
       const answer=`Pre ${productLabel} máme v ponuke ${slovakJoin(options.map(typePlural))} ${productMaterial(candidates)}. Ktorý typ si chcete zobraziť?`;
-      state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
+      state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
       const counts=Object.fromEntries(options.map(productType=>[productType,candidates.filter((p:any)=>p.type===productType).length]));
-      return Response.json({ok:true,route,advisor:{...advisor,answer:[answer]},commerce:null,state,action:{kind:'ASK_PRODUCT_TYPE',options,counts,material:productMaterial(candidates)}},{headers:{'Cache-Control':'no-store'}});
+      return respond({ok:true,route,advisor:{...advisor,answer:[answer]},commerce:null,state,action:{kind:'ASK_PRODUCT_TYPE',options,counts,material:productMaterial(candidates)}},{headers:{'Cache-Control':'no-store'}});
     }
     const candidatesBeforeTypeFilter=[...candidates];
     let requestedTypeUnavailable=false;
@@ -382,8 +415,8 @@ export const POST: APIRoute = async ({ request }) => {
         const labels:Record<string,string>={black:'čiernej',cyan:'azúrovej',magenta:'purpurovej',yellow:'žltej'};
         const answer=`Pre zadané označenie nemám potvrdený produkt v požadovanej ${labels[state.currentColor]||state.currentColor} farbe. Inú farbu som nepridal do košíka. Overte, prosím, celý OEM kód a farbu alebo uveďte presný model tlačiarne.`;
         state.pendingQuestion=null;
-        state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:answer}].slice(-20);
-        return Response.json({ok:true,route,advisor:{...advisor,answer:[answer],products:[],groups:[],unanswered:false},commerce,state,action:{kind:'CLARIFY_PRODUCT'}},{headers:{'Cache-Control':'no-store'}});
+        state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
+        return respond({ok:true,route,advisor:{...advisor,answer:[answer],products:[],groups:[],unanswered:false},commerce,state,action:{kind:'CLARIFY_PRODUCT'}},{headers:{'Cache-Control':'no-store'}});
       }
     }
     // Slovo „chcem“ ešte neznamená, že zákazník vybral konkrétny kalendár.
@@ -484,9 +517,9 @@ export const POST: APIRoute = async ({ request }) => {
       const names=missingCompatibility.slice(0,3).map((p:any)=>p.name).join('; ');
       advisor={...advisor,answer:[...(advisor.answer||[]),`Pri produkte ${names} chýba v katalógu zoznam kompatibilných tlačiarní. Kompatibilitu s vaším modelom nemám potvrdenú; pred objednaním ju overte s nami podľa presného modelu tlačiarne.`]};
     }
-    if(advisor?.unanswered===true||advisor?.intent==='fallback'||Number(advisor?.confidence||0)<0.35){void saveAiUnanswered({message,page,intent:String(advisor?.intent||'fallback'),confidence:Number(advisor?.confidence||0),kind:advisor?.unanswered===true||advisor?.intent==='fallback'?'unknown_question':'low_confidence'}).catch(()=>undefined);}
-    state.history=[...state.history,{role:'user' as const,content:message},{role:'assistant' as const,content:(advisor.answer||[]).join(' ')}].slice(-20);
-    return Response.json({ok:true,route,advisor,commerce,state,action},{headers:{'Cache-Control':'no-store'}});
+    if(advisor?.unanswered===true||advisor?.intent==='fallback'||Number(advisor?.confidence||0)<0.35){void saveAiUnanswered({message:rawMessage,page,intent:String(advisor?.intent||'fallback'),confidence:Number(advisor?.confidence||0),kind:advisor?.unanswered===true||advisor?.intent==='fallback'?'unknown_question':'low_confidence'}).catch(()=>undefined);}
+    state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:(advisor.answer||[]).join(' ')}].slice(-20);
+    return respond({ok:true,route,advisor,commerce,state,action},{headers:{'Cache-Control':'no-store'}});
   } catch (error) {
     console.error('[AI Tomas unified]', error);
     return Response.json({ok:false,error:'AI Tomáš teraz nedokáže bezpečne dokončiť požiadavku. Skúste akciu zopakovať.'},{status:500,headers:{'Cache-Control':'no-store'}});

@@ -6,6 +6,7 @@ import { aiKnowledge, type AiKnowledgeItem } from '../data/ai-knowledge.ts';
 import { findExactPrinterModelMatches, findExactProductIdentityMatches } from './catalog-query.ts';
 import { answerWithOpenAi } from './openai-sales-assistant.ts';
 import { discountHelpAnswer } from './ai-discount-help.ts';
+import { resolveConversationContext } from './ai-conversation-context.ts';
 
 export type AiIntent = 'product_search' | 'shipping' | 'payment' | 'claim' | 'order' | 'diagnostic' | 'compatibility' | 'support' | 'account' | 'loyalty' | 'legal' | 'contact' | 'fallback' | 'empty';
 
@@ -516,9 +517,13 @@ function contextualizeFollowUp(message: string, history: AiConversationTurn[] = 
 
 export async function buildAssistantAnswer(message: string, page = '', history: AiConversationTurn[] = []) {
   const rawMessage = String(message || '').trim();
-  const discountHelp = discountHelpAnswer(rawMessage, history);
+  const conversation=resolveConversationContext(rawMessage,history,{},page);
+  if(conversation.relation==='clarify')return {answer:[conversation.clarification!],products:[],groups:[],intent:'support',faq:'conversation-clarification',confidence:1,unanswered:false,clarification:true};
+  if(conversation.relation==='acknowledge')return {answer:['Rado sa stalo. Ak máte ďalšiu otázku, napíšte mi ju.'],products:[],groups:[],intent:'support',faq:'conversation-acknowledgement',confidence:1,unanswered:false};
+  history=conversation.contextHistory as AiConversationTurn[];
+  const discountHelp = discountHelpAnswer(conversation.question, history);
   if (discountHelp) return discountHelp;
-  const originalMessage = contextualizeFollowUp(rawMessage, history);
+  const originalMessage = conversation.topic==='product' ? contextualizeFollowUp(conversation.question, history) : conversation.question;
   const isContextualProductFollowUp = originalMessage !== rawMessage && hasProductCodeOrModel(originalMessage);
   if (!rawMessage) return { answer: ['Napíšte model tlačiarne, označenie toneru alebo otázku.'], products: [], groups: [], intent: 'empty' };
 

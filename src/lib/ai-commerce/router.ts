@@ -6,12 +6,17 @@ import { isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../calendar-a
 import { forbidsCartMutation, hasExplicitCartAddCommand, isNonExecutingShoppingRequest } from '../ai-cart-safety.ts';
 import { isGeneralProductTypeComparison } from '../ai-product-type-question.ts';
 import { discountFaqForMessage } from '../ai-discount-help.ts';
+import { resolveConversationContext, type ConversationContext } from '../ai-conversation-context.ts';
 
 const norm = (v: unknown) => String(v || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const productCode = /\b(?:(?:cf|ce|crg|tn|dr|wt|mc|q|clt|mlt|tk|pgi|pfi|cli|lc)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*|\d{2,}[a-z]{1,5}\d{2,}[a-z0-9-]*)\b/i;
 const printer = /\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|utax|ibm|panasonic|philips|konica(?:\s+minolta)?|minolta|minoltu)(?:\s+[a-z][a-z-]*){0,5}\s+[a-z-]*\d{1,}[a-z0-9-]*\b/i;
 
-export function routeCommerceMessage(message: string, state: CommerceState) {
+export function routeCommerceMessage(message: string, state: CommerceState, context?: ConversationContext) {
+  const conversation = context || resolveConversationContext(message,state.history,state);
+  if(conversation.relation==='clarify'||conversation.relation==='acknowledge') return {intents:['ADVICE'] as AiIntent[],productQuery:null,needsProducts:false};
+  message=conversation.question;
+  state={...state,history:conversation.contextHistory.map(turn=>({...turn,role:turn.role==='assistant'?'assistant' as const:'user' as const})),lastProductQuery:conversation.productQuery||state.lastProductQuery};
   if (discountFaqForMessage(message, state.history)) return { intents: ['POLICY'] as AiIntent[], productQuery: null, needsProducts: false };
   const n = norm(message); const intents: AiIntent[] = [];
   const catalogQuery = analyzeCatalogQuery(message);
@@ -81,6 +86,7 @@ export function routeCommerceMessage(message: string, state: CommerceState) {
   // COLOR_TYPE_FILTER s prázdnou odpoveďou ani náhodný výpis katalógu.
   if (genericConsumableQuestion) add('ADVICE');
   if (generalTypeComparison) add('ADVICE');
+  if (conversation.topic==='product'&&conversation.productQuery&&['follow_up','resume'].includes(conversation.relation)&&!blocksCatalogQuery&&!generalTypeComparison) add('FOLLOW_UP');
   if (serviceQuestion) add('POLICY');
   if (/\b(porad\w*|alternativ\w*|lacnejs\w*)\b/.test(n)) add('ADVICE');
   if (explicitConsumableSearch&&sharedCatalogReference) add('PRODUCT_SEARCH');

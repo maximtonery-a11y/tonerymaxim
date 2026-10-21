@@ -1,6 +1,7 @@
 import { productPageYield } from '../lib/ai-page-yield.ts';
 import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-cart.js";
 import { isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder } from "../lib/ai-order-question.ts";
+import { resolveConversationContext } from "../lib/ai-conversation-context.ts";
 import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety.ts";
 
 (function () {
@@ -703,14 +704,17 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
   async function unifiedAsk(question,options={}){
     if(state.mode==='auto')state.mode=looksLikeShopping(question)?'shop':'advice';
     beginSession(); if(!question||state.busy)return;
-    if(options.forceOrderStatus===true||isOrderStatusQuestion(question)){
+    const conversation=resolveConversationContext(question,state.commerceState?.history||[],state.commerceState||{},location.pathname);
+    const rememberExternal=(answer)=>{state.commerceState={...state.commerceState,pendingQuestion:null,pendingProductQuestion:null,selectedProductId:null,history:[...(state.commerceState?.history||[]),{role:'user',content:String(question).slice(0,4000),topic:'order'},{role:'assistant',content:answer,topic:'order'}].slice(-20)};saveCommerceSession();};
+    const contextualOrder=conversation.topic==='order'&&['follow_up','resume'].includes(conversation.relation)&&/kde|stav|track|sled|kedy/.test(String(question).toLowerCase());
+    if(options.forceOrderStatus===true||isOrderStatusQuestion(question)||contextualOrder){
       state.busy=true;state.lastQuestion=question;addMessage('user',`<p>${escapeHtml(question)}</p>`);const loading=addMessage('bot','<p>Bezpečne overujem stav objednávky…</p>');
       try{const r=await fetch('/api/ai-order-status',{method:'GET',cache:'no-store'});const d=await r.json();
         if(r.status===401){renderGuestOrderVerification(loading);return;}
         if(!r.ok||!d.ok)throw new Error('Stav objednávky sa nepodarilo načítať.');
         if(!d.orders?.length){loading.innerHTML='<p>Vo vašom účte som nenašiel žiadnu objednávku.</p>';return;}
-        const order=selectRequestedOrder(d.orders,question);if(!order){renderGuestOrderVerification(loading);return;}loading.innerHTML=`<p><b>Objednávka ${escapeHtml(order.number)}</b></p><p>Stav: <b>${escapeHtml(order.statusLabel)}</b>${order.date?` · ${escapeHtml(new Date(order.date).toLocaleDateString('sk-SK'))}`:''}</p>${order.shipping?`<p>Doprava: ${escapeHtml(order.shipping)}</p>`:''}${order.tracking?`<p>Sledovanie zásielky: ${escapeHtml(order.tracking)}</p>`:''}`;
-      }catch(err){loading.innerHTML=`<p>${escapeHtml(err?.message||'Stav objednávky sa nepodarilo načítať.')}</p>`;}finally{state.busy=false;}return;
+        const order=selectRequestedOrder(d.orders,`${question} ${conversation.orderNumber||''}`);if(!order){renderGuestOrderVerification(loading);return;}loading.innerHTML=`<p><b>Objednávka ${escapeHtml(order.number)}</b></p><p>Stav: <b>${escapeHtml(order.statusLabel)}</b>${order.date?` · ${escapeHtml(new Date(order.date).toLocaleDateString('sk-SK'))}`:''}</p>${order.shipping?`<p>Doprava: ${escapeHtml(order.shipping)}</p>`:''}${order.tracking?`<p>Sledovanie zásielky: ${escapeHtml(order.tracking)}</p>`:''}`;
+      }catch(err){loading.innerHTML=`<p>${escapeHtml(err?.message||'Stav objednávky sa nepodarilo načítať.')}</p>`;}finally{state.busy=false;rememberExternal('Stav objednávky: zobrazený prehľad alebo bezpečné overenie objednávky.');}return;
     }
     if(isOrderRepeatCommand(question)){
       addMessage('user',`<p>${escapeHtml(question)}</p>`);const ps=state.profile?.lastOrder?.products||[];
@@ -718,7 +722,7 @@ import { forbidsCartMutation, isCartChangingAction } from "../lib/ai-cart-safety
       if(!selectRequestedOrder(state.profile.lastOrder?[state.profile.lastOrder]:[],question)){addMessage('bot','<p>Objednávku so zadaným číslom nemám načítanú. Nič som nepridal ani ju nenahradil poslednou objednávkou. Otvorte požadovanú objednávku vo svojom účte.</p>');return;}
       if(!ps.length){addMessage('bot','<p>V poslednej objednávke nie je produkt, ktorý je teraz bezpečne dostupný. Nič som automaticky nenahradil.</p>');return;}
       ps.forEach(p=>addCommerceItem(p,Math.max(1,Number(p.historical_quantity||1))));const unavailable=state.profile.lastOrder?.unavailableProducts?.length||0;
-      addMessage('bot',`<p>Pripravil som dostupné produkty z poslednej objednávky.${unavailable?` ${unavailable} nedostupných položiek som nepridal ani automaticky nenahradil.`:''}</p>`,{scroll:false});askNextStep();return;
+      addMessage('bot',`<p>Pripravil som dostupné produkty z poslednej objednávky.${unavailable?` ${unavailable} nedostupných položiek som nepridal ani automaticky nenahradil.`:''}</p>`,{scroll:false});rememberExternal('Objednávka: zopakovaný nákup dostupných položiek.');askNextStep();return;
     }
     const cartMutationForbidden=forbidsCartMutation(question);
     const commerceCartBefore=(state.commerceState?.cart||[]).map(item=>({...item}));

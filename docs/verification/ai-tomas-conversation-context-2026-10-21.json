@@ -1,0 +1,2588 @@
+{
+  "generatedAt": "2026-10-21T05:40:29.940Z",
+  "base": "http://127.0.0.1:43821",
+  "scope": "local production build, real HTTP and middleware",
+  "cases": [
+    {
+      "question": "Ako uplatním zľavu za registráciu?",
+      "expectedFaq": "registracia-zlava",
+      "expectedRelation": "new",
+      "expectedTopic": "discount",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 18,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Registrácia a uvítacia zľava:",
+            "Nakúpiť môžete aj bez registrácie.",
+            "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+            "Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti.",
+            "Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách.",
+            "Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní.",
+            "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "registracia-zlava",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny – registračná zľava",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Vytvoriť účet",
+              "url": "/registracia"
+            },
+            {
+              "label": "Výhody registrácie",
+              "url": "/vyhody-registracie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "113f7a04-3f00-4f9a-b8cb-aec4b43b07f1",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním zľavu za registráciu?",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu.",
+              "topic": "discount",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "discount"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "a kde ju nájdem?",
+      "expectedFaq": "registracia-zlava",
+      "expectedRelation": "follow_up",
+      "expectedTopic": "discount",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 6,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Registrácia a uvítacia zľava:",
+            "Nakúpiť môžete aj bez registrácie.",
+            "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+            "Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti.",
+            "Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách.",
+            "Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní.",
+            "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "registracia-zlava",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny – registračná zľava",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Vytvoriť účet",
+              "url": "/registracia"
+            },
+            {
+              "label": "Výhody registrácie",
+              "url": "/vyhody-registracie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "113f7a04-3f00-4f9a-b8cb-aec4b43b07f1",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním zľavu za registráciu?",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu.",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a kde ju nájdem?",
+              "topic": "discount",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu.",
+              "topic": "discount",
+              "relation": "follow_up"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "follow_up",
+          "topic": "discount"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "A koľko stojí doprava?",
+      "expectedFaq": "doprava-ceny",
+      "expectedRelation": "new",
+      "expectedTopic": "shipping",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 32,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "shipping",
+          "faq": "doprava-ceny",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Doprava a platba",
+              "url": "/doprava-a-platba"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "113f7a04-3f00-4f9a-b8cb-aec4b43b07f1",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním zľavu za registráciu?",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu.",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a kde ju nájdem?",
+              "topic": "discount",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu.",
+              "topic": "discount",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "A koľko stojí doprava?",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Cena dopravy: Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH. GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH. Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta. Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+              "topic": "shipping",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "shipping"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "Vráťme sa k tej zľave.",
+      "expectedFaq": "registracia-zlava",
+      "expectedRelation": "resume",
+      "expectedTopic": "discount",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 4,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Registrácia a uvítacia zľava:",
+            "Nakúpiť môžete aj bez registrácie.",
+            "Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie.",
+            "Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti.",
+            "Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách.",
+            "Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo.",
+            "Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní.",
+            "Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "registracia-zlava",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny – registračná zľava",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            },
+            {
+              "label": "Vytvoriť účet",
+              "url": "/registracia"
+            },
+            {
+              "label": "Výhody registrácie",
+              "url": "/vyhody-registracie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "113f7a04-3f00-4f9a-b8cb-aec4b43b07f1",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako uplatním zľavu za registráciu?",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu.",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a kde ju nájdem?",
+              "topic": "discount",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu.",
+              "topic": "discount",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "A koľko stojí doprava?",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Cena dopravy: Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH. GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH. Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta. Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "Vráťme sa k tej zľave.",
+              "topic": "discount",
+              "relation": "resume"
+            },
+            {
+              "role": "assistant",
+              "content": "Registrácia a uvítacia zľava: Nakúpiť môžete aj bez registrácie. Po vytvorení nového zákazníckeho účtu získate uvítaciu zľavu 5 % na prvý nákup. Zľava platí 1 mesiac od registrácie. Nájdete ju po prihlásení v Môj účet → Moje odmeny, v časti „Zľava 5 % po registrácii“. V mobile najprv otvorte „Menu účtu“ a potom „Moje odmeny“. Tlačidlo „Zotrieť odmenu“ odhalí kód a dátum platnosti. Na doručenie kupónu e-mailom nemusíte čakať. Prihláste sa do účtu vytvoreného pri registrácii a pridajte tovar do košíka: platný kupón sa načíta automaticky, aj bez zotretia odmeny. Ak máte viac použiteľných kupónov, vyberie sa jeden s najvyššou úsporou v eurách. Odpočet skontrolujte v košíku aj pokladni v riadku „Kupónová zľava“. Ručne môžete kód z odmeny vložiť cez „Máte zľavový kupón?“ → „Zadajte kód kupónu“ → „Použiť“. V mobile je pole v košíku pod položkami; v pokladni rozbaľte súhrn „Objednávka“. Na PC je v súhrne vpravo. Zľava je jednorazová na celý sortiment tovaru. Ak ju nevidíte, skontrolujte prihlásenie do správneho účtu, neprázdny košík, dátum platnosti a či už nebola použitá. Dátum v Moje odmeny je rozhodujúci; po registrácii je platnosť 30 dní. Registrovaný zákazník má navyše prístup k vernostným bodom, odmenám a histórii účtu.",
+              "topic": "discount",
+              "relation": "resume"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "resume",
+          "topic": "discount"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "Zabudol som heslo.",
+      "expectedFaq": "ucet-heslo",
+      "expectedRelation": "new",
+      "expectedTopic": "account",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 13,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Účet a zabudnuté heslo:",
+            "Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo.",
+            "Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu.",
+            "Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "account",
+          "faq": "ucet-heslo",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Obnoviť heslo",
+              "url": "/zabudnute-heslo"
+            },
+            {
+              "label": "Prejsť na prihlásenie",
+              "url": "/prihlasenie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "a199de9d-9501-434a-8867-2e2891a9b33c",
+          "history": [
+            {
+              "role": "user",
+              "content": "Zabudol som heslo.",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "account"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "E-mail mi neprišiel.",
+      "expectedFaq": "ucet-heslo",
+      "expectedRelation": "follow_up",
+      "expectedTopic": "account",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 13,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Účet a zabudnuté heslo:",
+            "Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo.",
+            "Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu.",
+            "Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "account",
+          "faq": "ucet-heslo",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Obnoviť heslo",
+              "url": "/zabudnute-heslo"
+            },
+            {
+              "label": "Prejsť na prihlásenie",
+              "url": "/prihlasenie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "a199de9d-9501-434a-8867-2e2891a9b33c",
+          "history": [
+            {
+              "role": "user",
+              "content": "Zabudol som heslo.",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "E-mail mi neprišiel.",
+              "topic": "account",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "follow_up"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "follow_up",
+          "topic": "account"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "ani v spame ho nemám",
+      "expectedFaq": "ucet-heslo",
+      "expectedRelation": "follow_up",
+      "expectedTopic": "account",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 6,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "UNKNOWN"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Účet a zabudnuté heslo:",
+            "Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo.",
+            "Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu.",
+            "Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "account",
+          "faq": "ucet-heslo",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Obnoviť heslo",
+              "url": "/zabudnute-heslo"
+            },
+            {
+              "label": "Prejsť na prihlásenie",
+              "url": "/prihlasenie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "a199de9d-9501-434a-8867-2e2891a9b33c",
+          "history": [
+            {
+              "role": "user",
+              "content": "Zabudol som heslo.",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "E-mail mi neprišiel.",
+              "topic": "account",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "ani v spame ho nemám",
+              "topic": "account",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "follow_up"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "UNKNOWN",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "follow_up",
+          "topic": "account"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "A ako môžem zaplatiť?",
+      "expectedFaq": "platba-moznosti",
+      "expectedRelation": "new",
+      "expectedTopic": "payment",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 6,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY",
+            "ADVICE"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Možnosti platby:",
+            "Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni.",
+            "Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH.",
+            "Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "payment",
+          "faq": "platba-moznosti",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Doprava a platba",
+              "url": "/doprava-a-platba"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "a199de9d-9501-434a-8867-2e2891a9b33c",
+          "history": [
+            {
+              "role": "user",
+              "content": "Zabudol som heslo.",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "E-mail mi neprišiel.",
+              "topic": "account",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "ani v spame ho nemám",
+              "topic": "account",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "A ako môžem zaplatiť?",
+              "topic": "payment",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Možnosti platby: Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni. Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH. Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom.",
+              "topic": "payment",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "payment"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "Ako môžem platiť na dobierku?",
+      "expectedFaq": "platba-moznosti",
+      "expectedRelation": "new",
+      "expectedTopic": "payment",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 6,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY",
+            "ADVICE"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Možnosti platby:",
+            "Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni.",
+            "Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH.",
+            "Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "payment",
+          "faq": "platba-moznosti",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Doprava a platba",
+              "url": "/doprava-a-platba"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "931dcb28-9215-47e9-b2b8-38f1d2c69e57",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako môžem platiť na dobierku?",
+              "topic": "payment",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Možnosti platby: Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni. Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH. Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom.",
+              "topic": "payment",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "payment"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "je za to príplatok?",
+      "expectedFaq": "platba-moznosti",
+      "expectedRelation": "follow_up",
+      "expectedTopic": "payment",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 5,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Možnosti platby:",
+            "Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni.",
+            "Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH.",
+            "Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "payment",
+          "faq": "platba-moznosti",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Doprava a platba",
+              "url": "/doprava-a-platba"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "931dcb28-9215-47e9-b2b8-38f1d2c69e57",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako môžem platiť na dobierku?",
+              "topic": "payment",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Možnosti platby: Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni. Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH. Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom.",
+              "topic": "payment",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "je za to príplatok?",
+              "topic": "payment",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Možnosti platby: Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni. Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH. Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom.",
+              "topic": "payment",
+              "relation": "follow_up"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "follow_up",
+          "topic": "payment"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "A koľko stojí doprava?",
+      "expectedFaq": "doprava-ceny",
+      "expectedRelation": "new",
+      "expectedTopic": "shipping",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 3,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "shipping",
+          "faq": "doprava-ceny",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Doprava a platba",
+              "url": "/doprava-a-platba"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "931dcb28-9215-47e9-b2b8-38f1d2c69e57",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako môžem platiť na dobierku?",
+              "topic": "payment",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Možnosti platby: Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni. Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH. Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom.",
+              "topic": "payment",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "je za to príplatok?",
+              "topic": "payment",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Možnosti platby: Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni. Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH. Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom.",
+              "topic": "payment",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "A koľko stojí doprava?",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Cena dopravy: Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH. GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH. Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta. Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+              "topic": "shipping",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "shipping"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "Ako obnovím heslo?",
+      "expectedFaq": "ucet-heslo",
+      "expectedRelation": "new",
+      "expectedTopic": "account",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 3,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY",
+            "ADVICE"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Účet a zabudnuté heslo:",
+            "Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo.",
+            "Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu.",
+            "Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "account",
+          "faq": "ucet-heslo",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Obnoviť heslo",
+              "url": "/zabudnute-heslo"
+            },
+            {
+              "label": "Prejsť na prihlásenie",
+              "url": "/prihlasenie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "931dcb28-9215-47e9-b2b8-38f1d2c69e57",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako môžem platiť na dobierku?",
+              "topic": "payment",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Možnosti platby: Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni. Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH. Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom.",
+              "topic": "payment",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "je za to príplatok?",
+              "topic": "payment",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Možnosti platby: Objednávku môžete zaplatiť online cez GoPay, dobierkou alebo bankovým prevodom podľa možností v pokladni. Platba online GoPay je bez poplatku. Bankový prevod vopred je bez poplatku. Dobierka je 1,20 € s DPH. Pre školy, obce, mestá, štátne organizácie a firmy môže byť dostupná aj platba prevodom.",
+              "topic": "payment",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "A koľko stojí doprava?",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Cena dopravy: Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH. GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH. Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta. Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "Ako obnovím heslo?",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "account"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "Chcem vrátiť nesprávny toner.",
+      "expectedFaq": "vratenie-tovaru",
+      "expectedRelation": "new",
+      "expectedTopic": "claim",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 3,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "ADVICE",
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Vrátenie alebo výmena tovaru:",
+            "Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk.",
+            "Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup.",
+            "Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak.",
+            "Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila.",
+            "Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "claim",
+          "faq": "vratenie-tovaru",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Odstúpenie od zmluvy",
+              "url": "/odstupenie-od-zmluvy"
+            },
+            {
+              "label": "Reklamácie a vrátenie",
+              "url": "/reklamacie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "e8f93ed7-bb74-4f8b-80ee-dc79af107543",
+          "history": [
+            {
+              "role": "user",
+              "content": "Chcem vrátiť nesprávny toner.",
+              "topic": "claim",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Vrátenie alebo výmena tovaru: Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk. Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup. Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak. Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila. Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy.",
+              "topic": "claim",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "ADVICE",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "claim"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "a kto platí poštovné?",
+      "expectedFaq": "vratenie-tovaru",
+      "expectedRelation": "follow_up",
+      "expectedTopic": "claim",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 3,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Vrátenie alebo výmena tovaru:",
+            "Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk.",
+            "Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup.",
+            "Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak.",
+            "Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila.",
+            "Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "claim",
+          "faq": "vratenie-tovaru",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Odstúpenie od zmluvy",
+              "url": "/odstupenie-od-zmluvy"
+            },
+            {
+              "label": "Reklamácie a vrátenie",
+              "url": "/reklamacie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "e8f93ed7-bb74-4f8b-80ee-dc79af107543",
+          "history": [
+            {
+              "role": "user",
+              "content": "Chcem vrátiť nesprávny toner.",
+              "topic": "claim",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Vrátenie alebo výmena tovaru: Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk. Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup. Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak. Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila. Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy.",
+              "topic": "claim",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a kto platí poštovné?",
+              "topic": "claim",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Vrátenie alebo výmena tovaru: Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk. Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup. Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak. Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila. Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy.",
+              "topic": "claim",
+              "relation": "follow_up"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "follow_up",
+          "topic": "claim"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "a môžem to poslať na dobierku?",
+      "expectedFaq": "vratenie-tovaru",
+      "expectedRelation": "follow_up",
+      "expectedTopic": "claim",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 3,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Vrátenie alebo výmena tovaru:",
+            "Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk.",
+            "Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup.",
+            "Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak.",
+            "Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila.",
+            "Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "claim",
+          "faq": "vratenie-tovaru",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Odstúpenie od zmluvy",
+              "url": "/odstupenie-od-zmluvy"
+            },
+            {
+              "label": "Reklamácie a vrátenie",
+              "url": "/reklamacie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "e8f93ed7-bb74-4f8b-80ee-dc79af107543",
+          "history": [
+            {
+              "role": "user",
+              "content": "Chcem vrátiť nesprávny toner.",
+              "topic": "claim",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Vrátenie alebo výmena tovaru: Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk. Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup. Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak. Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila. Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy.",
+              "topic": "claim",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a kto platí poštovné?",
+              "topic": "claim",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Vrátenie alebo výmena tovaru: Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk. Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup. Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak. Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila. Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy.",
+              "topic": "claim",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "a môžem to poslať na dobierku?",
+              "topic": "claim",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Vrátenie alebo výmena tovaru: Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk. Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup. Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak. Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila. Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy.",
+              "topic": "claim",
+              "relation": "follow_up"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "follow_up",
+          "topic": "claim"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "Koľko stojí doprava pri novom nákupe?",
+      "expectedFaq": "doprava-ceny",
+      "expectedRelation": "new",
+      "expectedTopic": "shipping",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 3,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "shipping",
+          "faq": "doprava-ceny",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Doprava a platba",
+              "url": "/doprava-a-platba"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "e8f93ed7-bb74-4f8b-80ee-dc79af107543",
+          "history": [
+            {
+              "role": "user",
+              "content": "Chcem vrátiť nesprávny toner.",
+              "topic": "claim",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Vrátenie alebo výmena tovaru: Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk. Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup. Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak. Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila. Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy.",
+              "topic": "claim",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a kto platí poštovné?",
+              "topic": "claim",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Vrátenie alebo výmena tovaru: Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk. Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup. Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak. Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila. Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy.",
+              "topic": "claim",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "a môžem to poslať na dobierku?",
+              "topic": "claim",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Vrátenie alebo výmena tovaru: Ak ste objednali nesprávny toner alebo náplň, najskôr nás kontaktujte na info@tonerymaxim.sk. Do správy uveďte číslo objednávky, model tlačiarne a produkt, ktorý ste objednali. Pomôžeme overiť správnu náhradu alebo ďalší postup. Spotrebiteľ môže pri nákupe na diaľku bez uvedenia dôvodu odstúpiť do 14 dní od prevzatia tovaru; tovar potom odošle najneskôr do 14 dní od odstúpenia. Priamy náklad na vrátenie znáša spotrebiteľ, ak sme sa nedohodli inak. Tovar pošlite na adresu: Roman Babčan INkarus, Tajov 265, 976 34 Tajov. Zásielku neposielajte na dobierku a dobre ju zabaľte, aby sa pri preprave nepoškodila. Formulár a podrobnosti nájdete na /odstupenie-od-zmluvy.",
+              "topic": "claim",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "Koľko stojí doprava pri novom nákupe?",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Cena dopravy: Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH. GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH. Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta. Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+              "topic": "shipping",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "shipping"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "Ako použijem 7 % odmenu?",
+      "expectedFaq": "odmena-7-percent",
+      "expectedRelation": "new",
+      "expectedTopic": "discount",
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "7 % odmena na ďalší nákup:",
+            "Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov.",
+            "Táto odmena sa eviduje samostatne od vernostných bodov.",
+            "Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách.",
+            "Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím.",
+            "Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo.",
+            "Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "odmena-7-percent",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "f8d5c5eb-9c5c-4fd8-8512-4b1e3e48c3a2",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako použijem 7 % odmenu?",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou.",
+              "topic": "discount",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "discount"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "a kde sa mi zobrazí?",
+      "expectedFaq": "odmena-7-percent",
+      "expectedRelation": "follow_up",
+      "expectedTopic": "discount",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "7 % odmena na ďalší nákup:",
+            "Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov.",
+            "Táto odmena sa eviduje samostatne od vernostných bodov.",
+            "Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách.",
+            "Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím.",
+            "Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo.",
+            "Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "odmena-7-percent",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "f8d5c5eb-9c5c-4fd8-8512-4b1e3e48c3a2",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako použijem 7 % odmenu?",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou.",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a kde sa mi zobrazí?",
+              "topic": "discount",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou.",
+              "topic": "discount",
+              "relation": "follow_up"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "follow_up",
+          "topic": "discount"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "Zabudol som heslo.",
+      "expectedFaq": "ucet-heslo",
+      "expectedRelation": "new",
+      "expectedTopic": "account",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 4,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Účet a zabudnuté heslo:",
+            "Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo.",
+            "Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu.",
+            "Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "account",
+          "faq": "ucet-heslo",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Obnoviť heslo",
+              "url": "/zabudnute-heslo"
+            },
+            {
+              "label": "Prejsť na prihlásenie",
+              "url": "/prihlasenie"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "f8d5c5eb-9c5c-4fd8-8512-4b1e3e48c3a2",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako použijem 7 % odmenu?",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou.",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a kde sa mi zobrazí?",
+              "topic": "discount",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou.",
+              "topic": "discount",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "Zabudol som heslo.",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "account"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "Vráťme sa k tej zľave.",
+      "expectedFaq": "odmena-7-percent",
+      "expectedRelation": "resume",
+      "expectedTopic": "discount",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "7 % odmena na ďalší nákup:",
+            "Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov.",
+            "Táto odmena sa eviduje samostatne od vernostných bodov.",
+            "Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách.",
+            "Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím.",
+            "Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo.",
+            "Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "loyalty",
+          "faq": "odmena-7-percent",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": [
+            {
+              "label": "Moje odmeny",
+              "url": "/ucet/odmeny"
+            },
+            {
+              "label": "Otvoriť košík",
+              "url": "/kosik"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "f8d5c5eb-9c5c-4fd8-8512-4b1e3e48c3a2",
+          "history": [
+            {
+              "role": "user",
+              "content": "Ako použijem 7 % odmenu?",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou.",
+              "topic": "discount",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a kde sa mi zobrazí?",
+              "topic": "discount",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou.",
+              "topic": "discount",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "Zabudol som heslo.",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Účet a zabudnuté heslo: Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo. Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu. Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk.",
+              "topic": "account",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "Vráťme sa k tej zľave.",
+              "topic": "discount",
+              "relation": "resume"
+            },
+            {
+              "role": "assistant",
+              "content": "7 % odmena na ďalší nákup: Za každú dokončenú objednávku získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Táto odmena sa eviduje samostatne od vernostných bodov. Pri registrovanom zákazníkovi je dostupná v Môj účet → Moje odmeny → Aktívne kupóny. V mobile otvorte „Menu účtu“ → „Moje odmeny“. Pri ďalšom nákupe sa po prihlásení automaticky vyberie jeden použiteľný kupón s najvyššou úsporou v eurách. Neregistrovanému zákazníkovi sa kód zobrazí na stránke po úspešnom dokončení objednávky v bloku „Odmena na ďalší nákup“. Tento vydaný kód si skopírujte; v košíku alebo pokladni otvorte „Máte zľavový kupón?“, vložte ho do „Zadajte kód kupónu“ a kliknite „Použiť“. Kód vám v chate nevytvorím. Odpočet uvidíte v riadku „Kupónová zľava“ v košíku aj pokladni. V mobile je kupónové pole v košíku pod položkami a v pokladni v rozbalenom súhrne „Objednávka“; na PC v súhrne vpravo. Kupón je jednorazový na ďalší nákup, platí iba na kompatibilné tonery a nesčíta sa s 5 % kupónom. Ak sa neuplatní, skontrolujte správny účet, aktívny a ešte nepoužitý kupón, jeho podmienky a kompatibilné produkty v košíku. Nemusíte čakať na samostatný e-mail so zľavou.",
+              "topic": "discount",
+              "relation": "resume"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "resume",
+          "topic": "discount"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "a kde to nájdem?",
+      "expectedFaq": "conversation-clarification",
+      "expectedRelation": "clarify",
+      "expectedTopic": null,
+      "followUp": false,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "ADVICE"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "conversation": {
+          "relation": "clarify",
+          "topic": null
+        },
+        "advisor": {
+          "answer": [
+            "Na čo nadväzujete — na produkt, dopravu, platbu, zľavu alebo inú predchádzajúcu otázku? Napíšte, prosím, čo konkrétne máte na mysli."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "support",
+          "faq": "conversation-clarification",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": true,
+          "sources": []
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "adb83d81-740f-4749-96e1-425643e61287",
+          "history": [
+            {
+              "role": "user",
+              "content": "a kde to nájdem?",
+              "topic": "other",
+              "relation": "clarify"
+            },
+            {
+              "role": "assistant",
+              "content": "Na čo nadväzujete — na produkt, dopravu, platbu, zľavu alebo inú predchádzajúcu otázku? Napíšte, prosím, čo konkrétne máte na mysli.",
+              "topic": "other",
+              "relation": "clarify"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null,
+            "printerConflict": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": null,
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    },
+    {
+      "question": "Koľko stojí doprava?",
+      "expectedFaq": "doprava-ceny",
+      "expectedRelation": "new",
+      "expectedTopic": "shipping",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 3,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "shipping",
+          "faq": "doprava-ceny",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Doprava a platba",
+              "url": "/doprava-a-platba"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "adb83d81-740f-4749-96e1-425643e61287",
+          "history": [
+            {
+              "role": "user",
+              "content": "a kde to nájdem?",
+              "topic": "other",
+              "relation": "clarify"
+            },
+            {
+              "role": "assistant",
+              "content": "Na čo nadväzujete — na produkt, dopravu, platbu, zľavu alebo inú predchádzajúcu otázku? Napíšte, prosím, čo konkrétne máte na mysli.",
+              "topic": "other",
+              "relation": "clarify"
+            },
+            {
+              "role": "user",
+              "content": "Koľko stojí doprava?",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Cena dopravy: Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH. GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH. Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta. Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+              "topic": "shipping",
+              "relation": "new"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null,
+            "printerConflict": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "new",
+          "topic": "shipping"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "a koľko to stojí?",
+      "expectedFaq": "doprava-ceny",
+      "expectedRelation": "follow_up",
+      "expectedTopic": "shipping",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 3,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "POLICY"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "advisor": {
+          "answer": [
+            "Cena dopravy:",
+            "Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH.",
+            "GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH.",
+            "Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta.",
+            "Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "shipping",
+          "faq": "doprava-ceny",
+          "confidence": 0.99,
+          "sources": [
+            {
+              "label": "Doprava a platba",
+              "url": "/doprava-a-platba"
+            }
+          ]
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "adb83d81-740f-4749-96e1-425643e61287",
+          "history": [
+            {
+              "role": "user",
+              "content": "a kde to nájdem?",
+              "topic": "other",
+              "relation": "clarify"
+            },
+            {
+              "role": "assistant",
+              "content": "Na čo nadväzujete — na produkt, dopravu, platbu, zľavu alebo inú predchádzajúcu otázku? Napíšte, prosím, čo konkrétne máte na mysli.",
+              "topic": "other",
+              "relation": "clarify"
+            },
+            {
+              "role": "user",
+              "content": "Koľko stojí doprava?",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Cena dopravy: Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH. GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH. Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta. Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a koľko to stojí?",
+              "topic": "shipping",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Cena dopravy: Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH. GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH. Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta. Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+              "topic": "shipping",
+              "relation": "follow_up"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null,
+            "printerConflict": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null,
+        "conversation": {
+          "relation": "follow_up",
+          "topic": "shipping"
+        }
+      },
+      "passed": true
+    },
+    {
+      "question": "ďakujem",
+      "expectedFaq": "conversation-acknowledgement",
+      "expectedRelation": "acknowledge",
+      "expectedTopic": "shipping",
+      "followUp": true,
+      "httpStatus": 200,
+      "ms": 2,
+      "response": {
+        "ok": true,
+        "route": {
+          "intents": [
+            "ADVICE"
+          ],
+          "productQuery": null,
+          "needsProducts": false
+        },
+        "conversation": {
+          "relation": "acknowledge",
+          "topic": "shipping"
+        },
+        "advisor": {
+          "answer": [
+            "Rado sa stalo. Ak máte ďalšiu otázku, napíšte mi ju."
+          ],
+          "products": [],
+          "groups": [],
+          "intent": "support",
+          "faq": "conversation-acknowledgement",
+          "confidence": 1,
+          "unanswered": false,
+          "clarification": false,
+          "sources": []
+        },
+        "commerce": null,
+        "state": {
+          "version": 1,
+          "sessionId": "adb83d81-740f-4749-96e1-425643e61287",
+          "history": [
+            {
+              "role": "user",
+              "content": "a kde to nájdem?",
+              "topic": "other",
+              "relation": "clarify"
+            },
+            {
+              "role": "assistant",
+              "content": "Na čo nadväzujete — na produkt, dopravu, platbu, zľavu alebo inú predchádzajúcu otázku? Napíšte, prosím, čo konkrétne máte na mysli.",
+              "topic": "other",
+              "relation": "clarify"
+            },
+            {
+              "role": "user",
+              "content": "Koľko stojí doprava?",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "assistant",
+              "content": "Cena dopravy: Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH. GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH. Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta. Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+              "topic": "shipping",
+              "relation": "new"
+            },
+            {
+              "role": "user",
+              "content": "a koľko to stojí?",
+              "topic": "shipping",
+              "relation": "follow_up"
+            },
+            {
+              "role": "assistant",
+              "content": "Cena dopravy: Doprava kuriérom GLS alebo DPD stojí 3,90 € s DPH. GLS Balíkomat / ParcelShop stojí 2,90 € s DPH. DPD Pickup alebo DPD Pickup Box stojí 2,90 € s DPH. Doprava je zdarma, ak hodnota tovaru s DPH po všetkých zľavách dosiahne aspoň 29 €. Doplatok za dobierku sa do tejto hranice nepočíta. Ak pri prevzatí zvolíte dobierku, poplatok je 1,20 € s DPH.",
+              "topic": "shipping",
+              "relation": "follow_up"
+            },
+            {
+              "role": "user",
+              "content": "ďakujem",
+              "topic": "shipping",
+              "relation": "acknowledge"
+            },
+            {
+              "role": "assistant",
+              "content": "Rado sa stalo. Ak máte ďalšiu otázku, napíšte mi ju.",
+              "topic": "shipping",
+              "relation": "acknowledge"
+            }
+          ],
+          "currentPrinter": null,
+          "currentProductId": null,
+          "selectedProductId": null,
+          "currentColor": null,
+          "currentType": null,
+          "cart": [],
+          "checkoutDraft": {
+            "guidedQuantity": null,
+            "guidedSet": null,
+            "printerConflict": null
+          },
+          "lastProductQuery": null,
+          "lastIntent": "POLICY",
+          "pendingQuestion": null,
+          "pendingProductQuestion": null
+        },
+        "action": null
+      },
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "liveBeforeFix": {
+    "base": "https://www.tonerymaxim.sk",
+    "page": "/ucet",
+    "scope": "Two anonymous advisory requests; no password reset or order submitted",
+    "cases": [
+      {
+        "question": "Zabudol som heslo.",
+        "httpStatus": 200,
+        "faq": "ucet-heslo",
+        "answer": [
+          "Účet a zabudnuté heslo:",
+          "Prihlasuje sa e-mailovou adresou použitou pri registrácii, nie používateľským menom. Skontrolujte preklep v e-maile a pomocou tlačidla Zobraziť si overte zadané heslo.",
+          "Ak sa stále zobrazuje nesprávne heslo, použite stránku Zabudnuté heslo. Ak vám web oznámi, že účet na novom webe ešte neexistuje, vytvorte si novú registráciu.",
+          "Ak e-mail na obnovu nepríde, skontrolujte spam alebo nás kontaktujte na info@tonerymaxim.sk."
+        ]
+      },
+      {
+        "question": "ani v spame ho nemám",
+        "httpStatus": 200,
+        "faq": "zasielka-oznacena-dorucena",
+        "answer": [
+          "Zásielka je označená ako doručená, ale nemáte ju:",
+          "Najskôr skontrolujte detail sledovania zásielky, miesto odovzdania, schránku alebo bezpečné miesto a overte prevzatie u členov domácnosti či susedov.",
+          "Potom čo najskôr kontaktujte dopravcu uvedeného v sledovaní a požiadajte o preverenie GPS alebo záznamu o odovzdaní. Číslo zásielky posielajte dopravcovi, nie do voľnej správy AI.",
+          "Ak zásielku nenájdete, kontaktujte ToneryMAXIM na info@tonerymaxim.sk alebo +421 917 859 206 a uveďte číslo objednávky. Pomôžeme prípad riešiť s dopravcom."
+        ]
+      }
+    ]
+  },
+  "discountRegression": {
+    "generatedAt": "2026-10-21T05:40:30.420Z",
+    "scope": "local production build, real HTTP and middleware",
+    "passed": true,
+    "cases": [
+      {
+        "question": "Ako uplatním zľavu za registráciu?",
+        "faq": "registracia-zlava",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "kde mi ta zľava príde zatiaľ neprišla",
+        "faq": "registracia-zlava",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "a kde to najdem na mobile?",
+        "faq": "registracia-zlava",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "musim ju zotriet?",
+        "faq": "registracia-zlava",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "ani v e-maile ju nemam",
+        "faq": "registracia-zlava",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Kde nájdem 7 % zľavu?",
+        "faq": "odmena-7-percent",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "a ako ju zadam bez registracie?",
+        "faq": "odmena-7-percent",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Kde vidím svoje body a ako ich použijem?",
+        "faq": "vernost-body",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "a kde to mam zapnut na mobile?",
+        "faq": "vernost-body",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Kam zadám kupón?",
+        "faq": "kupony-uplatnenie",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Ako použiť zľavový kód MAXIM123456?",
+        "faq": "kupony-uplatnenie",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Dostal som marketingový kupón na 20 %, kde ho zadám?",
+        "faq": "kupony-uplatnenie",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Ako uplatním 10 % zľavu na kompatibilné tonery?",
+        "faq": "mnozstevne-zlavy-tonery",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Kde sa zobrazuje 25 % zľava?",
+        "faq": "mnozstevne-zlavy-tonery",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Je množstevná zľava aj na originály?",
+        "faq": "mnozstevne-zlavy-tonery",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Ako sa ráta množstevná zľava pri sade tonerov?",
+        "faq": "mnozstevne-zlavy-tonery",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Ako uplatním 5 % zľavu pri 3 kalendároch?",
+        "faq": "kalendare-mnozstvo-zlavy",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Kde uvidím 15 % zľavu?",
+        "faq": "kalendare-mnozstvo-zlavy",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Môžem kombinovať 5 a 7 percent?",
+        "faq": "zlavy-kombinovanie",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Môžem použiť množstevnú zľavu, kupón a body súčasne?",
+        "faq": "zlavy-kombinovanie",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Kde sa uplatní papierová vernostná odmena?",
+        "faq": "vernost-papier",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Kde je zľava za newsletter?",
+        "faq": "newsletter-zlava",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "Ako sa zobrazí akciová cena v košíku?",
+        "faq": "akciove-ceny",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "question": "kde mi ta zľava príde zatiaľ neprišla",
+        "faq": "zlava-upresnenie",
+        "httpStatus": 200,
+        "passed": true
+      }
+    ]
+  }
+}

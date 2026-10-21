@@ -1,9 +1,11 @@
+import { conversationTopicTag, conversationProductPage, type ConversationTopic } from '../ai-conversation-context.ts';
+
 export type AiIntent =
   | 'PRODUCT_SEARCH' | 'PRINTER_SEARCH' | 'COMPATIBILITY' | 'PRODUCT_COMPARE'
   | 'COLOR_TYPE_FILTER' | 'BUY_INTENT' | 'CART' | 'CHECKOUT' | 'ORDER_REPEAT'
   | 'ADVICE' | 'POLICY' | 'HUMAN_ESCALATION' | 'FOLLOW_UP' | 'UNKNOWN';
 
-export type ConversationTurn = { role: 'user' | 'assistant'; content: string };
+export type ConversationTurn = { role: 'user' | 'assistant'; content: string; topic?: ConversationTopic | 'other'; relation?: string; productPage?: string; productReference?: string };
 export type CartInput = { id?: string | number; sku?: string; quantity?: number; qty?: number };
 
 export type CommerceState = {
@@ -34,6 +36,10 @@ export function normalizeCommerceState(raw: any): CommerceState {
   const base = emptyCommerceState(clean(raw?.sessionId, 80));
   const history = Array.isArray(raw?.history) ? raw.history.slice(-20).map((x: any) => ({
     role: x?.role === 'assistant' ? 'assistant' as const : 'user' as const, content: clean(x?.content, 4000),
+    ...(conversationTopicTag(x?.topic)?{topic:conversationTopicTag(x.topic)}:{}),
+    ...(['new','follow_up','resume','clarify','acknowledge'].includes(x?.relation)?{relation:x.relation}:{}),
+    ...(conversationProductPage(x?.productPage)?{productPage:conversationProductPage(x.productPage)}:{}),
+    ...(/^SKU:\s*[a-z0-9][a-z0-9_. -]*$/i.test(clean(x?.productReference,160))?{productReference:clean(x.productReference,160)}:{}),
   })).filter((x: ConversationTurn) => x.content) : [];
   const cart = Array.isArray(raw?.cart) ? raw.cart.slice(0, 30).map((x: any) => ({
     id: clean(x?.id, 40), sku: clean(x?.sku, 100), quantity: Math.min(99, Math.max(1, Math.floor(Number(x?.quantity ?? x?.qty) || 1))),
