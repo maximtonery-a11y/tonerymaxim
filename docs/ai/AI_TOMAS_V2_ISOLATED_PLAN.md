@@ -30,3 +30,14 @@ Táto vetva je iba vývojová; bez nasadenia a bez produkčných zmien. Dokument
 - Na ostré nasadenie je ďalej potrebný end-to-end test cez izolovaný server, funkčná modelová odpoveď s `modelStatus:ok`, porovnanie Woo čítaní a overenie plnej nákupnej cesty vrátane rýchleho nákupu, sád a košíka.
 
 Táto vetva zostáva draft PR, nedotýka sa produkčného main.
+
+## Priame porovnanie s main – 22. 10. 2026
+
+Zdroj: GitHub Actions run 39760825859; identický testovací príkaz, checkout oddelene main a ai-tomas-v2-isolated, bez Woo poverení.
+
+| Sada | main | isolated |
+| --- | --- | --- |
+| production | 219/239 pass, 20 fail | 220/239 pass, 19 fail |
+| AI regression | 416/563 pass, 147 fail | 416/563 pass, 147 fail |
+
+Pozor: počet prechodov sám nedokazuje, že ide o presne tie isté zlyhania. Ďalším kritériom je porovnať konkrétne zlyhané scenáre a zaviesť fixtures pre všetky obchodné toky. Zlyhávajúce široké suite nemožno vypustiť z release gate.
