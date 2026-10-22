@@ -18,3 +18,15 @@ Ostrá vetva `main` zostáva bez zmeny. Všetky úpravy sa pripravujú na `ai-to
 
 ## Stav
 Táto vetva je iba vývojová; bez nasadenia a bez produkčných zmien. Dokument definuje kritériá prijatia, nie dôkaz, že oprava je hotová.
+
+## Regresný audit 22. 10. 2026 – prekážky ostrého nasadenia
+
+- Nové konverzačné testy 3/3 a cielené nákupné testy 85/85 prešli.
+- Produkčná sada 220/239 (19 zlyhaní) a AI sada 416/563 (147 zlyhaní).
+- V logoch časti zlyhaní je explicitné `Chýba WOO_URL, WOO_CONSUMER_KEY alebo WOO_CONSUMER_SECRET v .env`; príklady: ai-search-parity a ai-tomas-v14-deep-integration. Tieto testy sa nesmú označiť za úspešné ani automaticky za chybu obchodnej logiky.
+- Rozšírené suite vyžadujú deterministický katalóg alebo bezpečný read-only testovací zdroj a porovnanie oproti vetve main.
+- Testy cielených košíkových ciest nepoužívajú reálny nákup a neoverujú skutočné Woo objednávky.
+- CI release check je znova fail-closed: ak produkčné alebo AI regresné testy zlyhajú, kontrola vydania musí byť červená, hoci Astro build môže byť úspešný.
+- Na ostré nasadenie je ďalej potrebný end-to-end test cez izolovaný server, funkčná modelová odpoveď s `modelStatus:ok`, porovnanie Woo čítaní a overenie plnej nákupnej cesty vrátane rýchleho nákupu, sád a košíka.
+
+Táto vetva zostáva draft PR, nedotýka sa produkčného main.
