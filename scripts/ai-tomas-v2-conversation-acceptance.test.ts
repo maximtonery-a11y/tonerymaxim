@@ -1,40 +1,46 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveConversationContext } from '../src/lib/ai-conversation-context.ts';
+import { printerSelectionAdvice, POST } from '../src/pages/api/ai-tomas.ts';
 
-// Acceptance criteria from real customer dialogue. These tests intentionally
-// specify desired behavior on the isolated branch; they are not proof of
-// implementation and can fail until the new orchestrator is implemented.
 const page='/produkt/brother-tn-2421-cierny-kompatibilny-toner';
-const previous=[
-  {role:'user',content:'Koľko zaplatím za 2 tonery s DPD a dobierkou?',topic:'product' as const,productReference:'SKU: TN2421'},
-  {role:'assistant',content:'Za dva tonery zaplatíte 28,59 €.',topic:'product' as const,productReference:'SKU: TN2421'},
-];
+async function ask(message:string,state:any={}){
+  const response=await POST({request:new Request('http://localhost/api/ai-tomas',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message,page,state})
+  })} as any);
+  assert.equal(response.status,200);
+  return response.json() as Promise<any>;
+}
 
-test('New printer recommendation never inherits the opened toner as product query',()=>{
-  const question='Vieš mi odporučiť tlačiareň kde je najlacnejšia cena za vytlačenú stranu?';
-  const result=resolveConversationContext(question,previous,{lastProductQuery:'TN2421'},page);
-  assert.equal(result.relation,'new');
-  assert.equal(result.productQuery,null);
-  assert.notEqual(result.relation,'clarify');
+test('Recommended printer is NOT a toner price question',async()=>{
+  const response=await ask('Vieš mi odporučiť tlačiareň kde je najlacnejšia cena za vytlačenú stranu?',{
+    lastProductQuery:'TN2421',history:[
+      {role:'user',content:'Koľko zaplatím za 2 tonery s DPD a dobierkou?',topic:'product',productReference:'SKU: TN2421'},
+      {role:'assistant',content:'28,59 €',topic:'product',productReference:'SKU: TN2421'}
+    ],cart:[]
+  });
+  assert.equal(response.advisor.intent,'printer_selection');
+  assert.equal(response.route.productQuery,null);
+  assert.equal(response.commerce,null);
+  assert.match(response.advisor.answer.join(' '),/čiernobielu alebo farebnú/);
+  assert.equal(response.state.cart.length,0);
 });
 
-test('Explicit user correction must replace previous toner intent rather than request clarification',()=>{
-  const history=[
-    ...previous,
-    {role:'user',content:'Vieš mi odporučiť tlačiareň kde je najlacnejšia cena za vytlačenú stranu?',topic:'product' as const,productReference:'SKU: TN2421'},
-    {role:'assistant',content:'Myslíte produkt TN2421?',topic:'product' as const,productReference:'SKU: TN2421'},
-  ];
-  const question='Nie, myslím či mi vieš odporučiť tlačiareň, nie toner';
-  const result=resolveConversationContext(question,history,{lastProductQuery:'TN2421'},page);
-  assert.equal(result.relation,'new');
-  assert.equal(result.productQuery,null);
-  assert.equal(result.clarification,null);
+test('Explicit correction is not interpreted as return to toner',async()=>{
+  const response=await ask('Nie, myslím či mi vieš odporučiť tlačiareň, nie toner',{
+    lastProductQuery:'TN2421',history:[
+      {role:'user',content:'Vieš mi odporučiť tlačiareň kde je najlacnejšia cena za vytlačenú stranu?',topic:'product'},
+      {role:'assistant',content:'Myslíte produkt TN2421?',topic:'product'}
+    ],cart:[]
+  });
+  assert.equal(response.advisor.intent,'printer_selection');
+  assert.equal(response.route.productQuery,null);
+  assert.match(response.advisor.answer.join(' '),/tlačiareň/);
+  assert.doesNotMatch(response.advisor.answer.join(' '),/ku ktorému produktu/);
 });
 
-test('Unrelated printer shopping question must not alter existing cart',()=>{
-  const question='Aká tlačiareň má najnižšie náklady na tlač?';
-  const result=resolveConversationContext(question,previous,{lastProductQuery:'TN2421'},page);
-  assert.equal(result.productQuery,null);
-  assert.notEqual(result.relation,'clarify');
+test('Ordinary toner request remains unchanged',()=>{
+  assert.equal(printerSelectionAdvice('Koľko zaplatím za 4 kusy TN2421?'),null);
+  assert.equal(printerSelectionAdvice('Do akej tlačiarne pasuje tento toner?'),null);
+  assert.equal(printerSelectionAdvice('Akú tlačiareň odporúčaš na lacnú tlač?')!==null,true);
 });
