@@ -41,3 +41,9 @@ Zdroj: GitHub Actions run 39760825859; identický testovací príkaz, checkout o
 | AI regression | 416/563 pass, 147 fail | 416/563 pass, 147 fail |
 
 Pozor: počet prechodov sám nedokazuje, že ide o presne tie isté zlyhania. Ďalším kritériom je porovnať konkrétne zlyhané scenáre a zaviesť fixtures pre všetky obchodné toky. Zlyhávajúce široké suite nemožno vypustiť z release gate.
+
+## Kritérium kvality odpovedí – 99 % (22. 10. 2026)
+
+**Nenasadzovať na základe vyššieho počtu technických testov.** Akceptácia vyžaduje nezávislé hodnotenie aspoň 1 000 reálnych a reprezentatívnych zákazníckych otázok/konverzačných pokračovaní, minimálne 990 správnych odpovedí (>=99 %). Nesprávna či zavádzajúca odpoveď sa ráta za zlyhanie. Chýbajúca odpoveď sa tiež ráta za zlyhanie, nie za vynechaný test.
+
+Scenáre: výber tonera, poradenské otázky, kompatibilita, odporúčanie tlačiarne, ceny a cena za stranu, množstevné zľavy, sady, sklad, doprava, platby, nadväznosť, oprava úmyslu, zmena témy, bezpečnosť košíka. Reportovať osobitne úspešnosť po kategóriách a celý súbor. Testovať s dostupným živým OpenAI modelom a deterministickými pravdivými katalógovými údajmi; fallback sa počíta do celkového výsledku. Každý nákupný akt musí byť overený proti skutočnému katalógu, 100 % bezpečnostných testov bez neoprávnených mutácií košíka/objednávky. Uchovať vstupy, očakávané a skutočné odpovede, vysvetlenie hodnotenia a opakovateľné spustenie. Bez týchto dôkazov neoznačovať 99 % za dosiahnutých.
