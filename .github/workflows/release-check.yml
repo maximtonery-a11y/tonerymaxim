@@ -29,9 +29,7 @@ jobs:
       - run: node --experimental-strip-types --test scripts/ai-tomas-v2-conversation-acceptance.test.ts
       - run: node --experimental-strip-types --test scripts/ai-tomas-product-discounts.test.ts scripts/ai-tomas-discounts.test.ts scripts/ai-tomas-delivery-quote.test.ts scripts/ai-tomas-product-context.test.ts scripts/cart-current-product-regression.test.ts
       - run: npm run test:production
-        continue-on-error: true
       - run: npm run test:ai:regression
-        continue-on-error: true
       - run: npm run check
       # npm prebuild runs the isolated release guard and blocks Astro on failure.
       - run: npm run build
