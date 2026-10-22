@@ -28,7 +28,6 @@ jobs:
       - run: npm ci
       - run: node --experimental-strip-types --test scripts/ai-tomas-v2-conversation-acceptance.test.ts
       - run: node --experimental-strip-types --test scripts/ai-tomas-product-discounts.test.ts scripts/ai-tomas-discounts.test.ts scripts/ai-tomas-delivery-quote.test.ts scripts/ai-tomas-product-context.test.ts scripts/cart-current-product-regression.test.ts
-        continue-on-error: true
       - run: npm run test:production
         continue-on-error: true
       - run: npm run test:ai:regression
