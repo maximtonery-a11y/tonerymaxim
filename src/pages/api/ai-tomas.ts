@@ -168,7 +168,7 @@ export const POST: APIRoute = async ({ request }) => {
       state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
       state.conversationHistory=conversationArchive([...state.conversationHistory,
         {role:'user',content:rawMessage,topic:'other',relation:'new'},
-        {role:'assistant',content:answer,topic:'other',relation:'new'}]);
+        {role:'assistant',content:answer,topic:'other',relation:'new'}]).map(turn=>({...turn,role:turn.role==='assistant'?'assistant' as const:'user' as const}));
       return Response.json({ok:true,route:{intents:['ADVICE'],productQuery:null,needsProducts:false},
         advisor:{answer:[answer],products:[],groups:[],intent:'printer_selection',confidence:1,unanswered:false,sources:[]},
         commerce:null,state,action:null,conversation:{relation:'new',topic:null,engine:'rules',aiEnabled:isConversationAiEnabled(),modelStatus:'skipped'}},
