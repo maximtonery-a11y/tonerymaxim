@@ -26,6 +26,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: node --experimental-strip-types --test scripts/ai-tomas-v2-conversation-acceptance.test.ts
       - run: npm run check
       # npm prebuild runs the isolated release guard and blocks Astro on failure.
       - run: npm run build
