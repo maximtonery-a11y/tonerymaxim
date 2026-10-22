@@ -1,0 +1,60 @@
+name: AI v2 baseline comparison (read-only)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/ai-v2-baseline.yml'
+      - 'src/pages/api/ai-tomas.ts'
+      - 'scripts/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [main, ai-tomas-v2-isolated]
+    env:
+      TM_DISABLE_BACKGROUND_WORKERS: '1'
+      TM_DISABLE_INDEXNOW: '1'
+      OPENAI_ASSISTANT_ENABLED: '0'
+    steps:
+      - name: Read-only checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ matrix.source }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Capture production-regression baseline
+        shell: bash
+        run: |
+          set +e
+          npm run test:production > /tmp/production.log 2>&1
+          status=$?
+          echo "### ${{ matrix.source }} – production regressions" >> "$GITHUB_STEP_SUMMARY"
+          echo "Exit code: $status" >> "$GITHUB_STEP_SUMMARY"
+          grep -E '(ℹ tests |ℹ pass |ℹ fail |^# (tests|pass|fail))' /tmp/production.log | tail -n 4 >> "$GITHUB_STEP_SUMMARY" || true
+          echo "Production regression exit: $status"
+      - name: Capture AI-regression baseline
+        shell: bash
+        run: |
+          set +e
+          npm run test:ai:regression > /tmp/ai.log 2>&1
+          status=$?
+          echo "### ${{ matrix.source }} – AI regressions" >> "$GITHUB_STEP_SUMMARY"
+          echo "Exit code: $status" >> "$GITHUB_STEP_SUMMARY"
+          grep -E '(ℹ tests |ℹ pass |ℹ fail |^# (tests|pass|fail))' /tmp/ai.log | tail -n 4 >> "$GITHUB_STEP_SUMMARY" || true
+          echo "AI regression exit: $status"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: regression-logs-${{ matrix.source }}
+          path: |
+            /tmp/production.log
+            /tmp/ai.log
+          retention-days: 7
