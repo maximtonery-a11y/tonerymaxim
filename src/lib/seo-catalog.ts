@@ -1,7 +1,7 @@
 import { BoundedMissCache } from "./bounded-miss-cache.ts";
 import { observePrinterCache } from "./storefront-memory-diagnostics.ts";
 import { normalize, sortProducts, stripHtml, type TmProduct } from "./tm-products-cache.ts";
-import { sameConsumablePrinterFamily } from "./printer-model-family.ts";
+import { hpLaserJetPrinterIdentityKey, sameConsumablePrinterFamily } from "./printer-model-family.ts";
 import { publicationEligibleProduct } from "./product-publication-policy.ts";
 
 export type { TmProduct } from "./tm-products-cache.ts";
@@ -246,8 +246,22 @@ export function printerEntities(products: TmProduct[]): PrinterEntity[] {
     });
   });
 
+  // Preserve existing URLs while sharing the complete offer between HP name aliases.
+  const hpGroups = new Map<string, Map<string, TmProduct>>();
+  for (const entity of entities.values()) {
+    const identity = hpLaserJetPrinterIdentityKey(entity.name);
+    if (!identity) continue;
+    const group = hpGroups.get(identity) || new Map<string, TmProduct>();
+    for (const product of entity.products) {
+      const id = String(product.id || product.slug || product.sku || "");
+      if (id) group.set(id, product);
+    }
+    hpGroups.set(identity, group);
+  }
+  const hpOffers = new Map([...hpGroups].map(([identity, group]) =>
+    [identity, sortProducts([...group.values()])]));
   const result = [...entities.values()]
-    .map((entity) => ({ ...entity, products: sortProducts(entity.products) }))
+    .map((entity) => ({ ...entity, products: hpOffers.get(hpLaserJetPrinterIdentityKey(entity.name)) || sortProducts(entity.products) }))
     .sort((left, right) => left.name.localeCompare(right.name, "sk"));
   printerEntitiesCache.set(products, result);
   const lookup = printerEntityLookupCache.get(products) || new Map<string, PrinterEntity>();
@@ -276,6 +290,7 @@ export function findPrinterEntity(products: TmProduct[], brandSlug: unknown, mod
   if (misses.has(lookupKey)) return null;
   let exactName = "";
   const exactProducts = new Map<string, TmProduct>();
+  const hpIdentity = brand.slug === "hp" ? hpLaserJetPrinterIdentityKey(wantedModel) : "";
 
   // Detail jedného modelu nesmie kvôli jednej zhode zostavovať a triediť
   // globálny index všetkých tisícov tlačiarní. Priamo prejdeme kompaktné
@@ -287,8 +302,11 @@ export function findPrinterEntity(products: TmProduct[], brandSlug: unknown, mod
       : Array.isArray(product.printers) ? product.printers : [];
     for (const rawName of names) {
       const name = String(rawName || "").replace(/\s+/g, " ").trim();
-      if (entitySlug(name) !== wantedModel || printerBrandForName(name)?.slug !== brand.slug) continue;
-      exactName ||= name;
+      if (printerBrandForName(name)?.slug !== brand.slug) continue;
+      const exactSlug = entitySlug(name) === wantedModel;
+      if (!exactSlug && !(hpIdentity && hpLaserJetPrinterIdentityKey(name) === hpIdentity)) continue;
+      if (exactSlug) exactName = name;
+      else exactName ||= name;
       const key = String(product.id || product.slug || product.sku || "");
       if (key) exactProducts.set(key, product);
       break;

@@ -590,7 +590,8 @@ export function exactPrinterModelMatch(value: unknown, analysis: CatalogQueryAna
 
   // Pri Xeroxe koncovky B/BI/N/DN/DNI/V označujú výbavu rovnakého modelu,
   // nie inú tonerovú rodinu. Dotaz „Xerox Phaser 3020“ preto musí zahrnúť
-  // aj 3020B a 3020BI. Toto pravidlo sa zámerne nevzťahuje na HP/HP+.
+  // aj 3020B a 3020BI. HP zjednocuje iba zápisy Pro/MFP; celé koncovky
+  // vrátane HP+ e zostávajú súčasťou identity tlačiarne.
   const queryFamily = consumablePrinterFamilyKey(analysis.raw);
   if (queryFamily && queryFamily === printer.family) return true;
 

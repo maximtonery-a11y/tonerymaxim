@@ -10,10 +10,21 @@ function compact(value: unknown) {
 const XEROX_VARIANT_SUFFIX = /(?:series|vdni|vdn|dni|dnm|dnw|dnf|bi|ni|dn|nw|n|b|v|z)$/;
 const SAMSUNG_VARIANT_SUFFIX = /(?:series|fdw|ndw|fnw|dn|dw|fd|fw|fn|nd|nw|w|n|f|d)$/;
 
+/** HP LaserJet labels may omit Pro/MFP; the complete model suffix is identity. */
+export function hpLaserJetPrinterIdentityKey(value: unknown) {
+  const key = compact(value);
+  if (!/^hp(?:color)?laserjet/.test(key)) return "";
+  const model = key.replace(/^hp(?:color)?laserjet/, "")
+    .replace(/^(?:pro|enterprise|managed|flow|mfp)+/, "")
+    .replace(/(?:mfp|printer)$/, "");
+  // Never strip equipment or HP+ suffixes: M110w != M110we, M1132 != M1132s.
+  return /^[a-z]{0,3}\d{2,5}[a-z]{0,7}$/.test(model) ? model : "";
+}
+
 /**
  * Xerox používa za základným číslom modelu koncovky výbavy (B, BI, N, DN,
- * DNI, V...). Tie nemenia rodinu spotrebného materiálu. HP sa tu zámerne
- * nespracúva, pretože varianty programu HP+ musia zostať oddelené.
+ * DNI, V...). Tie nemenia rodinu spotrebného materiálu. HP koncovky
+ * sa naopak zachovávajú celé vrátane označenia programu HP+.
  */
 export function xeroxPrinterFamilyKey(value: unknown) {
   const key = compact(value);
@@ -40,6 +51,8 @@ export function samsungPrinterFamilyKey(value: unknown) {
 }
 
 export function consumablePrinterFamilyKey(value: unknown) {
+  const hp = hpLaserJetPrinterIdentityKey(value);
+  if (hp) return `hp:laserjet:${hp}`;
   const xerox = xeroxPrinterFamilyKey(value);
   if (xerox) return `xerox:${xerox}`;
   const samsung = samsungPrinterFamilyKey(value);
