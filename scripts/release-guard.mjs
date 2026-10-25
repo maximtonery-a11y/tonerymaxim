@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 const temp = await mkdtemp(join(tmpdir(), 'tm-release-guard-'));
 const preload = join(temp, 'offline.mjs');
 await writeFile(preload, "globalThis.fetch=async()=>{throw new Error('Release guard prohibits external HTTP');};\n");
-const tests = ['printer-api-cache', 'printer-alias-regression', 'search-prefix-regression', 'product-cache-streaming', 'product-cache-generation-race',
+const tests = ['printer-api-cache', 'printer-alias-regression', 'hp-printer-name-aliases', 'search-prefix-regression', 'product-cache-streaming', 'product-cache-generation-race',
   'memory-v1-regression', 'memory-v1-sync', 'morning-audit-regression', 'checkout-empty-cart',
   'checkout-hard-regression', 'gopay-recovery-regression', 'ai-price-question-v21', 'ai-tomas-product-context', 'ai-tomas-browser-flow', 'ai-tomas-ui-presentation', 'ai-tomas-discounts', 'ai-tomas-product-discounts', 'ai-tomas-context-switching', 'ai-tomas-delivery-quote', 'openai-conversation', 'hp-toner-help', 'order-workflow'];
 const args = ['--import', preload, '--experimental-strip-types', '--test', '--test-concurrency=2', ...tests.map(name => `scripts/${name}.test.ts`), 'scripts/live-stability-check.test.mjs', 'scripts/search-client-resilience.test.mjs'];
