@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { getProductsCache, stripHtml, type TmProduct } from "./tm-products-cache.ts";
 import { publicationEligibleProduct, resolvedPublicationBrand } from "./product-publication-policy.ts";
+import { isAvailableNow } from "./product-availability.ts";
 
 const ORIGIN = "https://www.tonerymaxim.sk";
 
@@ -22,9 +23,7 @@ function productUrl(product: TmProduct): string {
 }
 
 function availability(product: TmProduct): string {
-  const status = String(product.stock_status || "").toLowerCase();
-  const quantity = Number(product.stock_quantity);
-  return status === "instock" && (!Number.isFinite(quantity) || quantity > 0) ? "in_stock" : "out_of_stock";
+  return isAvailableNow(product) ? "in_stock" : "out_of_stock";
 }
 
 function text(value: unknown, max = 5000): string {
@@ -43,8 +42,10 @@ export function buildAiProductFeed(products: TmProduct[], generatedAt: string): 
     const url = productUrl(product);
     const image = absoluteImage(product);
     const price = Number(product.price || 0);
-    const stockQuantity = Number(product.stock_quantity);
-    const quantity = Number.isFinite(stockQuantity) ? Math.max(0, Math.trunc(stockQuantity)) : "";
+    const rawQuantity = product.stock_quantity;
+    const hasQuantity = rawQuantity != null && String(rawQuantity).trim() !== "";
+    const stockQuantity = Number(rawQuantity);
+    const quantity = hasQuantity && Number.isFinite(stockQuantity) ? Math.max(0, Math.trunc(stockQuantity)) : "";
     const description = text(product.description || product.short_description_html || product.description_html || name, 10000);
     const compatible = printers(product);
     return [

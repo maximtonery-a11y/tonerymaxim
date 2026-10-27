@@ -67,7 +67,14 @@ function changedUrls(previous: Product[], current: Product[]): string[] {
 
   for (const [key, product] of after) {
     const old = before.get(key);
-    if (!old || productSignature(old) !== productSignature(product)) changed.push(product);
+    if (!old || productSignature(old) !== productSignature(product)) {
+      changed.push(product);
+      // Search engines must also revisit the old URL to discover its redirect.
+      if (old && productUrl(old) !== productUrl(product)) {
+        const oldUrl = productUrl(old);
+        if (oldUrl) urls.add(oldUrl);
+      }
+    }
   }
   for (const [key, product] of before) {
     if (!after.has(key)) {

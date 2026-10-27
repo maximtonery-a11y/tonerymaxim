@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { cleanGtin, cleanProductBrand } from "./product-identifiers.ts";
 import { getProductsCache, stripHtml, type TmProduct } from "./tm-products-cache.ts";
 import { publicationEligibleProduct, resolvedPublicationBrand } from "./product-publication-policy.ts";
+import { isAvailableNow } from "./product-availability.ts";
 
 const ORIGIN = "https://www.tonerymaxim.sk";
 const PLACEHOLDER_IMAGE = /placeholder|no-image|image-coming-soon|tm-product-placeholder|tm-ink-placeholder/i;
@@ -55,12 +56,6 @@ function imageUrl(product: TmProduct) {
   }
 }
 
-function inStock(product: TmProduct) {
-  if (String(product.stock_status || "").toLowerCase() !== "instock") return false;
-  const quantity = Number(product.stock_quantity);
-  return !Number.isFinite(quantity) || quantity > 0;
-}
-
 function materialType(product: TmProduct) {
   const haystack = `${product.name || ""} ${product.slug || ""} ${product.description || ""}`.toLowerCase();
   return /atrament|ink|náplň|napln|cartridge/.test(haystack) ? "Atramentová náplň" : "Toner";
@@ -94,7 +89,7 @@ export function buildHeurekaFeed(products: TmProduct[]) {
     const id = itemId(product);
     const price = Number(product.price || 0);
     const url = productUrl(product);
-    if (!id || seen.has(id) || !Number.isFinite(price) || price <= 0 || !url || !inStock(product)) return false;
+    if (!id || seen.has(id) || !Number.isFinite(price) || price <= 0 || !url || !isAvailableNow(product)) return false;
     seen.add(id);
     return true;
   });
