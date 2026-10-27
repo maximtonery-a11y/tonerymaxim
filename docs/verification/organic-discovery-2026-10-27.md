@@ -13,8 +13,12 @@ nepovažoval.
 
 Všetky tri exporty teraz používajú existujúce `isAvailableNow`, teda rovnaké
 pravidlá ako web. AI export pri neznámom počte kusov ponechá hodnotu prázdnu.
-Počet takýchto produktov v aktuálnom Woo katalógu nebol vyčíslený; chyba bola
-preukázaná reprodukčnými testami.
+V dodanom reálnom exporte má tento stav 279 produktov, z toho 277 má platnú
+publikovateľnú URL. Lokálny opravený Merchant export zahŕňa 275 z nich;
+ďalšie dve sú sady bez čipu a ostávajú vylúčené existujúcim pravidlom.
+Heureka správne zahŕňa 277 položiek a AI feed pri 277 uvádza `in_stock`
+bez vymyslenej nulovej zásoby. V celom načítanom živom AI feede sa potvrdilo,
+že pôvodný kód týchto 277 položiek označuje ako `out_of_stock`.
 
 Pri zmene slugu toho istého produktu IndexNow oznamoval iba novú URL.
 Teraz oznámi aj pôvodnú URL, aby ju vyhľadávač mohol znova navštíviť a nájsť
@@ -25,8 +29,8 @@ HTTP 200 od IndexNow negarantujú indexáciu.
 
 - 16 nových regresných testov: 6 reprodukovaných zlyhaní pred opravou,
   po oprave 16/16 úspešných.
-- 68 cielených kontrol spolu: nová sada, SEO foundation, index cache,
-  publication policy a conversion system; 68/68 úspešných.
+- Úplné `npm run test:seo` s katalógom z dodaného Woo exportu:
+  **87/87 úspešných**, bez preskočených testov či oslabenia tvrdení.
 - `npm run check`: 532 súborov, 0 chýb, 0 warnings, 25 existujúcich hints.
 - `npm run build`: 242/242 prednasadzovacích testov a úspešný Astro build.
 - IndexNow sa v testoch zachytáva lokálnym mockom. Build prebehol s vypnutým
@@ -34,11 +38,62 @@ HTTP 200 od IndexNow negarantujú indexáciu.
   indexačné požiadavky ani objednávky.
 - `git diff --check`: bez chýb.
 
-Úplné `npm run test:seo` malo už na východiskovom stave tri zlyhania
-spôsobené chýbajúcou `.tm-cache/products.json`: jedna sada sa nedokázala
-načítať a dva testy potrebovali reálny katalóg. Táto kontrola preto nie je
-označená ako kompletná ani ako úspešná. Katalóg nebol nahradený vymyslenými
-dátami.
+## Podklad a príprava reálneho katalógu
+
+Použitý export `wc-product-export-27-10-2026-1793084437966.csv` má
+7 976 jedinečných ID a 131 stĺpcov; obsahuje 7 923 publikovaných produktov
+a 53 konceptov. SHA-256 zdroja:
+`1e29eeffda9ebd6fe77c13581b3932403e1e4ca442a5860605af9dae5c6207c3`.
+
+CSV neobsahuje slug. Existujúce adresy 7 757 publikovateľných produktov
+boli priradené podľa stabilného Woo ID z úplne načítaného živého AI feedu.
+Adresy zvyšných nepublikovateľných záznamov sa nevymýšľali. Kontrola potvrdila,
+že žiadny publikovateľný produkt s kladnou cenou nezostal bez overenej URL.
+
+CSV stĺpce boli prevedené do tvaru Woo produktov a spracované nezmenenou
+produkčnou funkciou `syncProductsCache`, vrátane `mapProduct`, dopĺňania
+súvisiacich údajov a rozdelenia popisov do NDJSON. Vstupné Woo stránky
+dodával výhradne lokálny mock z CSV: 80 strán, 7 923 produktov.
+Živé Woo API ani produkčná synchronizácia sa pri tomto kroku nevolali.
+Verejný katalóg následne obsahuje 7 905 položiek po rovnakom vylúčení 18
+renovačných služieb ako na webe; 7 757 spĺňa publikačné pravidlá.
+
+Pri príprave sa zachoval rozdiel medzi `null` a nulovou zásobou,
+slovenské desatinné čiarky, platnosť akciových cien, vlastnosti a metadáta.
+Všetkých desať porovnávaných polí troch vzoriek z lokálneho katalógu sa
+zhodovalo so živým `/api/product`: HP W1420XL, Canon PG-545 XL + CL-546 XL
+a Brother LC-1240 sada s neznámym počtom kusov.
+Export a testovací katalóg nie sú súčasťou commitu.
+
+## Integračná kontrola zostaveného webu
+
+Zostavený Astro server bol spustený s lokálnym katalógom, vypnutými
+background workers, IndexNow a živou AI. Všetky odchádzajúce požiadavky
+servera boli blokované; testovací HTTP klient a server bežali v tom istom
+procese na náhodnom loopback porte. V tomto prostredí bolo vypnuté iba
+logovanie adries adaptéra, pretože enumerácia sieťových rozhraní nie je
+dostupná. Produkčný kód sa kvôli tomu nemenil.
+
+**17/17 endpointov vrátilo HTTP 200:** 8 HTML stránok, index a päť hlavných
+sitemap a tri kompletné produktové feedy. Všetky kontrolované HTML stránky
+mali jednu H1, presný produkčný canonical, indexovateľné meta a syntakticky
+platné JSON-LD. XML sa kontrolovalo v celom rozsahu, vrátane unikátnosti ID
+a URL; nejde iba o začiatok odpovede.
+
+| Lokálny výstup | Počet položiek / URL | Neznámy počet kusov správne spracovaný |
+| --- | ---: | ---: |
+| Merchant XML | 2 649 | 275 |
+| Heureka XML | 2 965 | 277 |
+| AI XML | 7 757 | 277 |
+| Produktová sitemap | 7 757 | - |
+| Sitemap tlačiarní | 7 539 | - |
+| Sitemap OEM | 2 480 | - |
+| Sitemap značiek | 38 | - |
+| Sitemap statických stránok | 61 | - |
+
+Platná syntax nie je zárukou prijatia do vyhľadávača ani potvrdením každej
+produktovej informácie vo Woo. Údaje Search Console a účtov Merchant/Bing
+neboli súčasťou tejto kontroly.
 
 ## Verejná kontrola webu
 
@@ -84,8 +139,8 @@ Oficiálne podklady:
 
 ## Nasadenie
 
-Táto vetva je návrh na kontrolu; nebola zlúčená do main ani nasadená.
-Pred zlúčením doplniť reálny lokálny katalóg a dokončiť `npm run test:seo`.
+Kontrola s reálnym katalógom je dokončená a tento návrh je pripravený
+na kontrolu a zlúčenie. Vetva zatiaľ nebola zlúčená do main ani nasadená.
 Po nasadení znovu skontrolovať tri exporty a bežný produktový detail.
 Výsledok IndexNow skontrolovať po najbližšom riadnom produktovom synchrone;
 nie je potrebné kvôli overeniu vyvolávať kompletný import.
