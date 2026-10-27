@@ -3,6 +3,7 @@ import { compactKey, stripHtml } from "./tm-products-cache.ts";
 import { cleanGtin, cleanMpn, cleanProductBrand } from "./product-identifiers.ts";
 import { publicationEligibleProduct } from "./product-publication-policy.ts";
 import { buildProductSeo } from "./catalog-seo-text.ts";
+import { isAvailableNow } from "./product-availability.ts";
 
 export type MerchantProductType = "compatible" | "original" | "renovated" | "product";
 export type MerchantMaterialType = "toner" | "ink" | "drum" | "component";
@@ -247,8 +248,7 @@ export function toMerchantProduct(product: TmProduct, origin: string, allProduct
   if (!material) return null;
 
   const price = Number(product.price || 0);
-  const stockQuantity = Number(product.stock_quantity);
-  const inStock = product.stock_status === "instock" && (!Number.isFinite(stockQuantity) || stockQuantity > 0);
+  const inStock = isAvailableNow(product);
   const images = productImages(origin, product);
   const ids = identifiers(product, productType);
   const exactOemCodes = oemCodes(product);
