@@ -29,5 +29,6 @@ jobs:
       - run: npm run check
       - run: npm run test:order-emails
       - run: php -l wordpress-plugin/tonerymaxim-customer-administration/tonerymaxim-customer-administration.php
+      - run: php scripts/tm-email-template-options.test.php
       # npm prebuild runs the isolated release guard and blocks Astro on failure.
       - run: npm run build
