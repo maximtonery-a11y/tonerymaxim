@@ -161,7 +161,7 @@ test('template requests reject malformed and incomplete data', () => {
   assert.deepEqual(readOrderTemplateEmailRequest(JSON.stringify(request)), request);
 });
 
-async function queueFixture(options: { fail?: boolean; coloriq?: boolean; loseClaim?: boolean } = {}) {
+async function queueFixture(options: { fail?: boolean; coloriq?: boolean; loseClaim?: boolean; status?: string } = {}) {
   const meta = new Map<string, string>([
     ['source', options.coloriq ? 'coloriq' : 'tonerymaxim'], ['tm_order_number', '301102'],
     ['_tm_email_queue_observed_status', 'processing'], ['_tm_email_queue_last_sent_status', 'processing'],
@@ -169,7 +169,7 @@ async function queueFixture(options: { fail?: boolean; coloriq?: boolean; loseCl
   ]);
   const sent: any[] = [];
   let fail = options.fail;
-  const order = () => ({ id: 100, status: 'processing', date_modified: at, billing: { email: 'customer@example.invalid' }, line_items: [], meta_data: Array.from(meta, ([key, value]) => ({ key, value })) });
+  const order = () => ({ id: 100, status: options.status || 'processing', date_modified: at, billing: { email: 'customer@example.invalid' }, line_items: [], meta_data: Array.from(meta, ([key, value]) => ({ key, value })) });
   const queue = await loadServer('src/lib/email-queue.ts', {
     './mail': { sendWooOrderStatusEmail: async (payload: any) => { if (fail) throw new Error('SMTP unavailable'); sent.push(payload); } },
     './woo-client': { wooRequest: async (path: string, input?: any) => {
@@ -207,6 +207,18 @@ test('SMTP failure leaves the request pending and retry succeeds without a secon
   await queue.runEmailQueueOnce();
   assert.equal(sent.length, 1);
   assert.equal(meta.get('_tm_email_template_last_error'), '');
+});
+
+test('a registered custom order status sends its matching template once with the deployed queue', async () => {
+  const { queue, meta, sent } = await queueFixture({ status: request.template_slug });
+  await queue.runEmailQueueOnce();
+  await queue.runEmailQueueOnce();
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].to_status, request.template_slug);
+  assert.equal(sent[0].title_override, request.label);
+  assert.equal(sent[0].subject_override, request.subject);
+  assert.equal(meta.get('_tm_email_queue_observed_status'), request.template_slug);
+  assert.equal(meta.get('_tm_email_template_sent_id'), request.id);
 });
 
 test('ColorIQ orders and requests claimed by another worker are not sent', async () => {

@@ -1,13 +1,21 @@
 # Dostupnosť v potvrdení a vlastné TM e-mailové šablóny
 
-Verzia Woo pluginu 6.1.1 pridáva vlastné šablóny aj priamo do pôvodného výberu
-„Stav a e-mail“ v detaile a zozname TM objednávok. Sú v skupine „Vlastné e-mailové
-šablóny – bez zmeny stavu“ a ich výber zaradí správu do už existujúcej Astro fronty.
-Skutočný stav objednávky zostáva zachovaný. Pre tento doplnok stačí aktualizovať
-Woo plugin; Astro 6.1.0 integrácia z commitu `d9523b2` už poskytuje potrebnú frontu.
+Verzia Woo pluginu 6.1.2 prepája každú vlastnú šablónu so skutočným stavom
+objednávky s rovnakým názvom. Prepnutie do stavu uloží tento stav do Woo a zaradí
+príslušný e-mail do existujúcej Astro fronty. Všetky už vytvorené šablóny sa
+automaticky sprístupnia ako stavy; identifikátory ani texty sa nemenia.
+Samostatný formulár na odoslanie šablóny bez zmeny stavu bol odstránený.
 
-Správanie výberu, zachovanie stavu, blokovanie druhej čakajúcej správy a oprávnenia
-overuje aj `php scripts/tm-email-template-options.test.php`.
+Stavy sú registrované cez WordPress a `wc_order_statuses`, teda sú dostupné aj
+vo Woo editore, filtroch, plnom TM editore a REST API. Odoslanie nadväzuje na
+`woocommerce_order_status_changed`, nie len na jedno tlačidlo v TM administrácii.
+Rýchle zmeny stavov sa uchovajú vo fronte a neprepíšu predchádzajúcu čakajúcu
+správu. Po potvrdení odoslania cez Woo REST sa uvoľní ďalšia správa.
+
+Stačí aktualizovať Woo plugin. Astro integrácia z commitu `d9523b2` už vie
+odosielať požiadavky týchto stavov; nový Astro redeploy nie je potrebný.
+Registráciu, skutočnú zmenu stavu, tvorbu a úpravu šablón, nadväzujúce e-maily,
+frontu a oprávnenia overuje `php scripts/tm-email-template-options.test.php`.
 
 Potvrdenie novej objednávky vytvára Astro v `src/lib/mail.ts`. Woo plugin
 Customer Administration spravuje texty správ pri zmene stavu objednávky.
@@ -25,13 +33,12 @@ Odosielanie zostáva v Astro cez existujúce SMTP nastavenie ToneryMAXIM.sk.
 
 ## Vlastné šablóny
 
-Woo plugin `ToneryMaxim – Customer Administration` 6.1.0 pridáva:
+Woo plugin `ToneryMaxim – Customer Administration` 6.1.2 poskytuje:
 
 - TM zákazníci → E-mailové šablóny → Pridať novú šablónu: názov, predmet a text.
-- Úpravu vlastných aj pôvodných šablón, zachovanie uložených textov.
-- TM zákazníci → TM objednávky → Detail → Odoslať správu zo šablóny.
-- Samostatnú požiadavku na e-mail bez zmeny stavu objednávky. Kým čaká na odoslanie,
-  tlačidlo neumožňuje zaradiť druhú správu do rovnakého miesta.
+- Úpravu vlastných aj pôvodných šablón a názvov vlastných stavov pri zachovaní ID.
+- TM zákazníci → TM objednávky → Detail → Stav a e-mail.
+- Skutočný stav objednávky podľa vybranej šablóny, vrátane následného e-mailu.
 - Zobrazenie čakajúcej/odoslanej správy a prípadnej chyby.
 
 Astro fronta sleduje objednávky podľa poslednej úpravy, aby zachytila požiadavku aj
@@ -48,7 +55,7 @@ zvýraznenie**`; vložené HTML sa escapuje.
 2. Aktualizovať existujúci Woo plugin súborom z
    `wordpress-plugin/tonerymaxim-customer-administration/tonerymaxim-customer-administration.php`.
    Nainštalované nastavenia a šablóny sa nevymazávajú.
-3. Vytvoriť šablónu vo Woo a overiť, že je vo výbere v detaile TM objednávky.
+3. Vytvoriť šablónu vo Woo a overiť nový stav v detaile, zozname a Woo editore.
 
 Cielené offline testy (Node.js 24):
 

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ToneryMaxim – Customer Administration
  * Description: Produkčná administrácia zákazníkov a TM objednávok: úplná editácia položiek, dopravy, platby, adries, výdajných miest, stavov, vernostných bodov, kupónov a reklamácií.
- * Version: 6.1.1
+ * Version: 6.1.2
  * Author: ToneryMaxim.sk
  * Requires Plugins: woocommerce
  * Requires PHP: 8.0
@@ -11,7 +11,7 @@
 if (!defined('ABSPATH')) exit;
 
 final class TM_Customer_Administration_V1 {
-    const VERSION = '6.1.1';
+    const VERSION = '6.1.2';
     const MENU_SLUG = 'tm-customers';
     const NONCE = 'tm_customer_admin_nonce';
 
@@ -41,7 +41,8 @@ final class TM_Customer_Administration_V1 {
         add_filter('wc_order_statuses', [__CLASS__, 'add_tm_order_statuses']);
         add_action('admin_post_tm_save_email_templates', [__CLASS__, 'save_email_templates']);
         add_action('admin_post_tm_add_email_template', [__CLASS__, 'add_email_template']);
-        add_action('admin_post_tm_send_order_template', [__CLASS__, 'send_order_template']);
+        add_action('woocommerce_order_status_changed', [__CLASS__, 'order_status_changed'], 20, 4);
+        add_action('woocommerce_after_order_object_save', [__CLASS__, 'advance_status_email_queue'], 20, 2);
 
         // ToneryMaxim zákaznícke e-maily odosiela Astro cez info@tonerymaxim.sk.
         // Woo/WordPress e-maily pre TM účty a TM objednávky sa vypnú, aby nevznikali duplicity z coloriq.store.
@@ -144,7 +145,7 @@ CSS;
                         <td>
                             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="tm-actions">
                                 <input type="hidden" name="action" value="tm_order_update_status"><input type="hidden" name="order_id" value="<?php echo (int)$order->get_id(); ?>"><?php wp_nonce_field(self::NONCE); ?>
-                                <select name="order_status" aria-label="Stav objednávky alebo e-mailová šablóna"><?php self::render_status_email_options($order->get_status()); ?></select>
+                                <select name="order_status" aria-label="Stav objednávky"><?php self::render_status_email_options($order->get_status()); ?></select>
                                 <button class="button">Uložiť</button>
                             </form>
                         </td>
@@ -162,11 +163,6 @@ CSS;
         $order_id = absint($_POST['order_id'] ?? 0);
         $status = sanitize_key(wp_unslash($_POST['order_status'] ?? ''));
         $order = wc_get_order($order_id);
-        // Vlastná šablóna vo výbere "Stav a e-mail" používa existujúcu
-        // Astro frontu samostatných správ a nemení obchodný stav objednávky.
-        if ($order && self::is_tm_order($order) && preg_match('/^tm-mail-[a-f0-9]{8}$/', $status) && isset(self::email_template_labels()[$status])) {
-            self::queue_order_template($order_id, $status);
-        }
         if (!$order || !self::is_tm_order($order) || !array_key_exists('wc-' . $status, wc_get_order_statuses())) {
             wp_safe_redirect(add_query_arg(['page'=>self::MENU_SLUG.'-orders','tm_error'=>'Objednávku alebo stav sa nepodarilo overiť.'], admin_url('admin.php'))); exit;
         }
@@ -174,7 +170,6 @@ CSS;
         $template = $templates[$status] ?? ['subject'=>'','message'=>''];
         $order->update_meta_data('_tm_email_subject', (string)($template['subject'] ?? ''));
         $order->update_meta_data('_tm_email_message', (string)($template['message'] ?? ''));
-        $order->save();
         $order->update_status($status, 'Stav zmenený v TM Customer Administration.', true);
         wp_safe_redirect(add_query_arg(['page'=>self::MENU_SLUG.'-orders','order_id'=>$order_id,'tm_notice'=>'Stav objednávky bol zmenený. Astro e-mailová fronta odošle zákazníkovi správu z ToneryMaxim.sk.'], admin_url('admin.php'))); exit;
     }
@@ -274,17 +269,27 @@ CSS;
                 foreach (self::tm_status_labels() as $slug => $tm_label) $result['wc-'.$slug] = $tm_label;
             }
         }
+        // Zachová vlastné stavy aj v prípade, že iný plugin odstráni on-hold.
+        foreach (self::tm_status_labels() as $slug => $label) $result['wc-'.$slug] = $label;
         return $result;
     }
 
     private static function tm_status_labels(): array {
-        return [
+        $labels = [
             'tm-await-pay' => 'Čaká na úhradu',
             'tm-paid' => 'Platba prijatá',
             'tm-processing' => 'Objednávka sa vybavuje',
             'tm-shipped' => 'Expedovaná',
             'tm-returned' => 'Vrátená',
         ];
+        // Stabilný identifikátor šablóny je zároveň skutočným Woo stavom.
+        // S prefixom wc- má 19 znakov, takže sa zmestí aj do post_status.
+        foreach (self::email_templates() as $slug => $template) {
+            if (preg_match('/^tm-mail-[a-f0-9]{8}$/', (string)$slug) && is_array($template) && is_string($template['label'] ?? null) && trim($template['label']) !== '') {
+                $labels[$slug] = $template['label'];
+            }
+        }
+        return $labels;
     }
 
     private static function default_email_templates(): array {
@@ -303,13 +308,7 @@ CSS;
     }
 
     private static function email_template_labels(): array {
-        $labels = self::tm_status_labels();
-        foreach (self::email_templates() as $slug => $template) {
-            if (preg_match('/^tm-mail-[a-f0-9]{8}$/', (string)$slug) && is_array($template) && !empty($template['label']) && is_string($template['label'])) {
-                $labels[$slug] = $template['label'];
-            }
-        }
-        return $labels;
+        return self::tm_status_labels();
     }
 
     public static function render_email_templates(): void {
@@ -317,19 +316,19 @@ CSS;
         $templates = self::email_templates();
         $labels = self::email_template_labels(); ?>
         <div class="wrap tm-wrap">
-        <div class="tm-head"><div><h1>E-mailové šablóny</h1><p class="tm-muted">Existujúce šablóny sa používajú pri zmene stavu objednávky. Vlastné šablóny môžete odoslať z detailu TM objednávky cez „Odoslať správu zo šablóny“.</p><p class="tm-muted">Premenná <code>{order_number}</code> sa nahradí číslom objednávky. Text môže obsahovať nové riadky a <code>**tučné zvýraznenie**</code>.</p></div><a class="button button-primary" href="#tm-new-email-template">Pridať novú šablónu</a></div>
+        <div class="tm-head"><div><h1>E-mailové šablóny</h1><p class="tm-muted">Každá vlastná šablóna má vlastný stav objednávky s rovnakým názvom. Výberom tohto stavu objednávku skutočne prepnete do nového stavu a zákazníkovi sa odošle príslušný e-mail.</p><p class="tm-muted">Premenná <code>{order_number}</code> sa nahradí číslom objednávky. Text môže obsahovať nové riadky a <code>**tučné zvýraznenie**</code>.</p></div><a class="button button-primary" href="#tm-new-email-template">Pridať novú šablónu</a></div>
         <?php self::notice(); ?>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
         <input type="hidden" name="action" value="tm_save_email_templates"><?php wp_nonce_field(self::NONCE); ?>
-        <div class="tm-grid"><?php foreach ($labels as $slug => $label): $t = $templates[$slug] ?? []; $custom = !isset(self::tm_status_labels()[$slug]); ?>
+        <div class="tm-grid"><?php foreach ($labels as $slug => $label): $t = $templates[$slug] ?? []; $custom = (bool)preg_match('/^tm-mail-[a-f0-9]{8}$/', $slug); ?>
         <div class="tm-card tm-span-6"><h2><?php echo esc_html($label); ?></h2>
-        <?php if ($custom): ?><div class="tm-field" style="margin-bottom:12px"><label for="<?php echo esc_attr($slug.'-label'); ?>">Názov šablóny</label><input id="<?php echo esc_attr($slug.'-label'); ?>" name="templates[<?php echo esc_attr($slug); ?>][label]" maxlength="120" required value="<?php echo esc_attr($label); ?>"></div><?php endif; ?>
-        <div class="tm-field"><label for="<?php echo esc_attr($slug.'-subject'); ?>">Predmet</label><input id="<?php echo esc_attr($slug.'-subject'); ?>" name="templates[<?php echo esc_attr($slug); ?>][subject]" maxlength="250" value="<?php echo esc_attr($t['subject'] ?? ''); ?>"></div>
-        <div class="tm-field" style="margin-top:12px"><label for="<?php echo esc_attr($slug.'-message'); ?>">Text správy</label><textarea id="<?php echo esc_attr($slug.'-message'); ?>" rows="6" maxlength="20000" name="templates[<?php echo esc_attr($slug); ?>][message]"><?php echo esc_textarea($t['message'] ?? ''); ?></textarea></div></div>
+        <?php if ($custom): ?><div class="tm-field" style="margin-bottom:12px"><label for="<?php echo esc_attr($slug.'-label'); ?>">Názov stavu a šablóny</label><input id="<?php echo esc_attr($slug.'-label'); ?>" name="templates[<?php echo esc_attr($slug); ?>][label]" maxlength="120" required value="<?php echo esc_attr($label); ?>"></div><?php endif; ?>
+        <div class="tm-field"><label for="<?php echo esc_attr($slug.'-subject'); ?>">Predmet</label><input id="<?php echo esc_attr($slug.'-subject'); ?>" name="templates[<?php echo esc_attr($slug); ?>][subject]" maxlength="250" <?php if ($custom) echo 'required'; ?> value="<?php echo esc_attr($t['subject'] ?? ''); ?>"></div>
+        <div class="tm-field" style="margin-top:12px"><label for="<?php echo esc_attr($slug.'-message'); ?>">Text správy</label><textarea id="<?php echo esc_attr($slug.'-message'); ?>" rows="6" maxlength="20000" <?php if ($custom) echo 'required'; ?> name="templates[<?php echo esc_attr($slug); ?>][message]"><?php echo esc_textarea($t['message'] ?? ''); ?></textarea></div></div>
         <?php endforeach; ?></div><p><button class="button button-primary button-large">Uložiť šablóny</button></p></form>
-        <div class="tm-card" id="tm-new-email-template" style="margin-top:28px;max-width:760px"><h2>Pridať novú e-mailovú šablónu</h2><p class="tm-muted">Šablónu môžete opakovane použiť pri ľubovoľnej TM objednávke. Vytvorenie šablóny zákazníkom nič neodosiela.</p>
+        <div class="tm-card" id="tm-new-email-template" style="margin-top:28px;max-width:760px"><h2>Pridať novú e-mailovú šablónu</h2><p class="tm-muted">Vytvorením šablóny pridáte aj nový stav objednávky. E-mail sa odošle až pri prepnutí objednávky do tohto stavu.</p>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"><input type="hidden" name="action" value="tm_add_email_template"><?php wp_nonce_field(self::NONCE); ?>
-        <div class="tm-field"><label for="tm-template-name">Názov novej šablóny</label><input id="tm-template-name" name="template_label" maxlength="120" required placeholder="Napr. Čakáme na naskladnenie"></div>
+        <div class="tm-field"><label for="tm-template-name">Názov nového stavu a šablóny</label><input id="tm-template-name" name="template_label" maxlength="120" required placeholder="Napr. Čakáme na naskladnenie"></div>
         <div class="tm-field" style="margin-top:12px"><label for="tm-template-subject">Predmet novej šablóny</label><input id="tm-template-subject" name="template_subject" maxlength="250" required placeholder="Informácia k objednávke č. {order_number} | ToneryMAXIM.sk"></div>
         <div class="tm-field" style="margin-top:12px"><label for="tm-template-message">Text novej šablóny</label><textarea id="tm-template-message" name="template_message" rows="7" maxlength="20000" required></textarea></div>
         <p><button class="button button-primary button-large">Vytvoriť šablónu</button></p></form></div></div><?php
@@ -345,7 +344,8 @@ CSS;
             if (!is_string($row['subject'] ?? null) || !is_string($row['message'] ?? null)) continue;
             $clean[$slug]['subject'] = mb_substr(sanitize_text_field($row['subject']), 0, 250);
             $clean[$slug]['message'] = mb_substr(sanitize_textarea_field($row['message']), 0, 20000);
-            if (!isset(self::tm_status_labels()[$slug]) && is_string($row['label'] ?? null)) {
+            if (preg_match('/^tm-mail-[a-f0-9]{8}$/', $slug) && ($clean[$slug]['subject'] === '' || $clean[$slug]['message'] === '')) self::redirect_templates('Vlastný stav musí mať vyplnený predmet aj text e-mailu.', true);
+            if (preg_match('/^tm-mail-[a-f0-9]{8}$/', $slug) && is_string($row['label'] ?? null)) {
                 $new_label = mb_substr(sanitize_text_field($row['label']), 0, 120);
                 if ($new_label !== '') $clean[$slug]['label'] = $new_label;
             }
@@ -372,36 +372,58 @@ CSS;
         do { $slug = 'tm-mail-' . substr(str_replace('-', '', wp_generate_uuid4()), 0, 8); } while (isset($templates[$slug]));
         $templates[$slug] = ['label'=>$label, 'subject'=>$subject, 'message'=>$message];
         update_option('tm_customer_admin_email_templates', $templates, false);
-        self::redirect_templates('Nová e-mailová šablóna bola vytvorená. Je dostupná aj v detaile TM objednávky.');
+        self::redirect_templates('Nový stav objednávky a e-mailová šablóna boli vytvorené. Stav je dostupný pri úprave aj filtrovaní objednávok.');
     }
 
-    public static function send_order_template(): void {
-        self::verify();
-        $order_id = absint($_POST['order_id'] ?? 0);
-        $slug = is_string($_POST['template_slug'] ?? null) ? sanitize_key(wp_unslash($_POST['template_slug'])) : '';
-        self::queue_order_template($order_id, $slug);
-    }
-
-    private static function queue_order_template(int $order_id, string $slug): void {
-        $order = wc_get_order($order_id);
-        if (!$order || !self::is_tm_order($order)) wp_die('TM objednávka nebola nájdená.');
-        $templates = self::email_templates();
-        $labels = self::email_template_labels();
-        $template = $templates[$slug] ?? [];
-        $error = '';
-        if (!isset($labels[$slug]) || empty($template['subject']) || empty($template['message'])) $error = 'Vyberte šablónu s vyplneným predmetom a textom správy.';
-        elseif (!is_email($order->get_billing_email())) $error = 'Objednávka nemá platný zákaznícky e-mail.';
-        $pending = json_decode((string)$order->get_meta('_tm_email_template_request', true), true);
-        if (is_array($pending) && !empty($pending['id']) && $pending['id'] !== (string)$order->get_meta('_tm_email_template_sent_id', true)) $error = 'Predchádzajúca správa ešte čaká na odoslanie. Obnovte detail objednávky po jej odoslaní.';
-        if ($error !== '') {
-            wp_safe_redirect(add_query_arg(['page'=>self::MENU_SLUG.'-orders','order_id'=>$order_id,'tm_error'=>$error], admin_url('admin.php'))); exit;
+    public static function order_status_changed(int $order_id, string $from, string $to, $order = null): void {
+        $order = $order ?: wc_get_order($order_id);
+        if ($from === $to || !$order || !self::is_tm_order($order)) return;
+        $template = self::email_templates()[$to] ?? [];
+        // Platí aj pri zmene cez štandardný Woo editor, hromadnú akciu či REST.
+        // Vymaže tiež starý text pri prechode na iný bežný stav.
+        $order->update_meta_data('_tm_email_subject', (string)($template['subject'] ?? ''));
+        $order->update_meta_data('_tm_email_message', (string)($template['message'] ?? ''));
+        if (preg_match('/^tm-mail-[a-f0-9]{8}$/', $to) && isset(self::tm_status_labels()[$to])) {
+            if (empty($template['subject']) || empty($template['message'])) {
+                $order->update_meta_data('_tm_email_template_last_error', 'Doplňte predmet a text e-mailovej šablóny pre tento stav.');
+            } else {
+                $request = ['id'=>wp_generate_uuid4(), 'template_slug'=>$to, 'label'=>self::tm_status_labels()[$to], 'subject'=>$template['subject'], 'message'=>$template['message'], 'created_at'=>gmdate('c')];
+                $pending = json_decode((string)$order->get_meta('_tm_email_template_request', true), true);
+                if (is_array($pending) && !empty($pending['id']) && $pending['id'] !== (string)$order->get_meta('_tm_email_template_sent_id', true)) {
+                    $backlog = json_decode((string)$order->get_meta('_tm_email_template_backlog', true), true);
+                    $backlog = is_array($backlog) ? $backlog : [];
+                    $backlog[] = $request;
+                    $order->update_meta_data('_tm_email_template_backlog', wp_json_encode($backlog, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+                } else {
+                    $order->update_meta_data('_tm_email_template_request', wp_json_encode($request, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+                    $order->delete_meta_data('_tm_email_template_last_error');
+                }
+            }
         }
-        $request = ['id'=>wp_generate_uuid4(), 'template_slug'=>$slug, 'label'=>$labels[$slug], 'subject'=>$template['subject'], 'message'=>$template['message'], 'created_at'=>gmdate('c')];
-        $order->update_meta_data('_tm_email_template_request', wp_json_encode($request, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-        $order->delete_meta_data('_tm_email_template_last_error');
-        $order->set_date_modified(time());
         $order->save();
-        wp_safe_redirect(add_query_arg(['page'=>self::MENU_SLUG.'-orders','order_id'=>$order_id,'tm_notice'=>'Správa zo šablóny bola zaradená na odoslanie z ToneryMAXIM.sk. Stav objednávky zostal zachovaný.'], admin_url('admin.php'))); exit;
+    }
+
+    public static function advance_status_email_queue($order, $data_store = null): void {
+        static $advancing = false;
+        if ($advancing || !$order || !self::is_tm_order($order)) return;
+        $backlog = json_decode((string)$order->get_meta('_tm_email_template_backlog', true), true);
+        if (!is_array($backlog) || !$backlog) return;
+        $pending = json_decode((string)$order->get_meta('_tm_email_template_request', true), true);
+        if (is_array($pending) && !empty($pending['id']) && $pending['id'] !== (string)$order->get_meta('_tm_email_template_sent_id', true)) return;
+        // Astro zapíše potvrdenie odoslania cez Woo REST. Tento save uvoľní
+        // ďalšiu správu; rýchle zmeny stavov tak neprepisujú čakajúce e-maily.
+        $advancing = true;
+        try {
+            $next = array_shift($backlog);
+            $order->update_meta_data('_tm_email_template_request', wp_json_encode($next, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+            if ($backlog) $order->update_meta_data('_tm_email_template_backlog', wp_json_encode(array_values($backlog), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+            else $order->delete_meta_data('_tm_email_template_backlog');
+            $order->delete_meta_data('_tm_email_template_last_error');
+            $order->set_date_modified(time());
+            $order->save();
+        } finally {
+            $advancing = false;
+        }
     }
 
     private static function render_status_email_options(string $current_status): void {
@@ -409,29 +431,17 @@ CSS;
             $value = preg_replace('/^wc-/', '', $key);
             echo '<option value="'.esc_attr($value).'" '.selected($current_status, $value, false).'>'.esc_html($label).'</option>';
         }
-        $templates = self::email_templates();
-        $custom = [];
-        foreach (self::email_template_labels() as $slug => $label) {
-            if (preg_match('/^tm-mail-[a-f0-9]{8}$/', $slug) && !empty($templates[$slug]['subject']) && !empty($templates[$slug]['message'])) $custom[$slug] = $label;
-        }
-        if (!$custom) return;
-        echo '<optgroup label="Vlastné e-mailové šablóny – bez zmeny stavu">';
-        foreach ($custom as $slug => $label) echo '<option value="'.esc_attr($slug).'">'.esc_html('E-mail: '.$label).'</option>';
-        echo '</optgroup>';
     }
 
-    private static function render_order_email_form($order): void {
-        $templates = self::email_templates();
-        $labels = self::email_template_labels();
+    private static function render_order_status_email_notice($order): void {
         $request = json_decode((string)$order->get_meta('_tm_email_template_request', true), true);
         $pending = is_array($request) && !empty($request['id']) && $request['id'] !== (string)$order->get_meta('_tm_email_template_sent_id', true);
-        $last_error = (string)$order->get_meta('_tm_email_template_last_error', true); ?>
-        <div class="tm-card tm-span-12"><h2>Odoslať správu zo šablóny</h2><p class="tm-muted">Vybraná správa sa odošle zákazníkovi z ToneryMAXIM.sk. Stav objednávky sa nemení.</p>
-        <?php if ($pending): ?><p><strong>Správa „<?php echo esc_html($request['label'] ?? ''); ?>“ čaká na odoslanie.</strong> Obnovte stránku po jej odoslaní.</p><?php if ($last_error !== ''): ?><p class="tm-danger">Odosielanie sa opakuje po chybe: <?php echo esc_html($last_error); ?></p><?php endif; ?>
-        <?php else: ?><form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="tm-actions"><input type="hidden" name="action" value="tm_send_order_template"><input type="hidden" name="order_id" value="<?php echo (int)$order->get_id(); ?>"><?php wp_nonce_field(self::NONCE); ?>
-        <label for="tm-order-email-template"><strong>E-mailová šablóna</strong></label><select id="tm-order-email-template" name="template_slug" required><option value="">Vyberte šablónu</option><?php foreach ($labels as $slug=>$label): if (empty($templates[$slug]['subject']) || empty($templates[$slug]['message'])) continue; ?><option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($label); ?></option><?php endforeach; ?></select><button class="button button-primary">Odoslať e-mail zo šablóny</button></form><?php endif; ?>
-        <?php if (!$pending && is_array($request) && !empty($request['id'])): ?><p class="tm-muted">Posledná správa „<?php echo esc_html($request['label'] ?? ''); ?>“ bola odoslaná: <?php echo esc_html((string)$order->get_meta('_tm_email_template_sent_at', true)); ?></p><?php endif; ?>
-        <p><a href="<?php echo esc_url(admin_url('admin.php?page='.self::MENU_SLUG.'-emails')); ?>">Spravovať a pridávať e-mailové šablóny</a></p></div><?php
+        $backlog = json_decode((string)$order->get_meta('_tm_email_template_backlog', true), true);
+        $last_error = (string)$order->get_meta('_tm_email_template_last_error', true);
+        if ($pending) echo '<p class="tm-muted">E-mail „'.esc_html($request['label'] ?? '').'“ čaká na odoslanie.</p>';
+        elseif (is_array($request) && !empty($request['id'])) echo '<p class="tm-muted">E-mail „'.esc_html($request['label'] ?? '').'“ bol odoslaný: '.esc_html((string)$order->get_meta('_tm_email_template_sent_at', true)).'</p>';
+        if (is_array($backlog) && $backlog) echo '<p class="tm-muted">Ďalšie e-maily pri zmene stavu čakajú vo fronte: '.count($backlog).'.</p>';
+        if ($last_error !== '') echo '<p class="tm-danger">'.esc_html($last_error).'</p>';
     }
 
     private static function money_gross($value): string { return wc_price((float)$value, ['currency'=>'EUR']); }
@@ -846,7 +856,15 @@ CSS;
         <div class="tm-card tm-span-6"><h2>Doprava a výdajné miesto</h2><p><strong><?php echo esc_html($order->get_shipping_method()?:'Neuvedené'); ?></strong></p><?php if($pickup['text']||$pickup['id']): ?><div class="tm-note"><strong><?php echo esc_html($pickup['name']?:'Výdajné miesto'); ?></strong><br><?php echo esc_html($pickup['address']?:'Adresa nebola uložená'); ?><br><span class="tm-muted"><?php echo esc_html(trim(($pickup['carrier']??'').' '.($pickup['type']??''))); ?><?php if($pickup['id'])echo' · ID '.esc_html($pickup['id']); ?></span></div><?php elseif(str_contains(strtolower($order->get_shipping_method()),'pickup')||str_contains(strtolower($order->get_shipping_method()),'parcel')||str_contains(strtolower($order->get_shipping_method()),'balík')): ?><p class="tm-danger"><strong>Adresa výdajného miesta nebola v tejto starej objednávke uložená.</strong></p><?php endif; ?></div>
         <div class="tm-card tm-span-6"><h2>Platba</h2><p><strong><?php echo esc_html($order->get_payment_method_title()?:'Neuvedené'); ?></strong></p><?php if($payment_id||in_array($order->get_payment_method(),['gopay','applepay','googlepay'],true)): ?><p><span class="tm-badge <?php echo esc_attr($gc); ?>">GoPay <?php echo esc_html($gl); ?></span></p><p><?php echo esc_html($gd); ?></p><p class="tm-muted">ID platby: <?php echo esc_html($payment_id?:'neuvedené'); ?><br>Stav brány: <?php echo esc_html($gstate?:'NEOVERENÉ'); ?></p><?php endif; ?></div>
         <div class="tm-card tm-span-6"><h2>Zákazník</h2><p><strong><?php echo esc_html($order->get_formatted_billing_full_name()); ?></strong><br><?php echo esc_html($order->get_billing_email()); ?><br><?php echo esc_html($order->get_billing_phone()); ?></p><p><?php echo wp_kses_post($order->get_formatted_billing_address()); ?></p></div>
-        <div class="tm-card tm-span-6"><h2>Stav a e-mail</h2><form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="tm-actions"><input type="hidden" name="action" value="tm_order_update_status"><input type="hidden" name="order_id" value="<?php echo $order_id; ?>"><?php wp_nonce_field(self::NONCE); ?><select name="order_status" aria-label="Stav objednávky alebo e-mailová šablóna"><?php self::render_status_email_options($order->get_status()); ?></select><button class="button button-primary">Uložiť stav a odoslať e-mail</button></form><p class="tm-muted">Posledné potvrdenie: <?php echo esc_html((string)$order->get_meta('tm_confirmation_email_sent_at') ?: 'bez potvrdenia'); ?></p></div><?php self::render_order_email_form($order); ?></div></div><?php
+        <div class="tm-card tm-span-6"><h2>Stav a e-mail</h2>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="tm-actions">
+                <input type="hidden" name="action" value="tm_order_update_status"><input type="hidden" name="order_id" value="<?php echo $order_id; ?>"><?php wp_nonce_field(self::NONCE); ?>
+                <select name="order_status" aria-label="Stav objednávky"><?php self::render_status_email_options($order->get_status()); ?></select><button class="button button-primary">Uložiť stav a odoslať e-mail</button>
+            </form>
+            <p class="tm-muted">Výber zmení stav objednávky a odošle príslušný e-mail.</p>
+            <?php self::render_order_status_email_notice($order); ?>
+            <p class="tm-muted">Posledné potvrdenie: <?php echo esc_html((string)$order->get_meta('tm_confirmation_email_sent_at') ?: 'bez potvrdenia'); ?></p>
+        </div></div></div><?php
     }
 
     public static function render_loyalty_page(): void {
