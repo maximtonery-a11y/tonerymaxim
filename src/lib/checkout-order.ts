@@ -15,6 +15,7 @@ import { CALENDAR_SOURCE, calendarDiscountRate, calendarDiscountedUnitPrice } fr
 import { customerProfileUpdateFromOrder } from "./checkout-customer-rules";
 import { calendarWooLineReference } from "./calendar-woo-line";
 import { normalizeDpdPickup } from "./dpd-pickup.ts";
+import { orderAvailabilityText, type OrderItemAvailability } from "./order-availability";
 
 export type NormalizedCartItem = {
   id: string;
@@ -28,6 +29,7 @@ export type NormalizedCartItem = {
   product_type_label?: string;
   loyalty_reward?: boolean;
   source?: string;
+  availability?: OrderItemAvailability;
 };
 
 export type CheckoutOrderSource = {
@@ -252,6 +254,8 @@ async function lineItems(source: CheckoutOrderSource, taxRateId: number) {
         { key: "tm_gross_line_discount", value: lineDiscountGross.toFixed(2) },
         { key: "tm_quantity_discount_rate", value: String(discountRate(item)) },
         { key: "tm_loyalty_reward", value: item.loyalty_reward === true ? "yes" : "no" },
+        { key: "tm_availability", value: JSON.stringify(item.availability || null) },
+        { key: "tm_availability_text", value: orderAvailabilityText(item) },
       ],
     };
 
@@ -387,6 +391,7 @@ function orderSnapshot(source: CheckoutOrderSource, paymentTitle: string) {
       sku: item.sku,
       qty: item.qty,
       unitGross: money(item.price),
+      availability: item.availability,
       originalGross: money(item.price * item.qty),
       discountRate: discountRate(item),
       discountGross: money(item.price * item.qty - discountedLineTotal(item)),
@@ -1104,3 +1109,4 @@ export async function syncWooGoPayPaymentState(source: CheckoutOrderSource, paym
   await savePendingGoPayOrder(updatedSource);
   return { created: false, orderId, orderNumber, state };
 }
+

@@ -4,6 +4,7 @@ import { wooRequest } from './woo-client';
 import { readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
 import { syncCustomerLoyaltyPoints } from './loyalty';
 import { isLoyaltyCreditStatus, normalizeOrderStatus } from './order-statuses';
+import { readOrderTemplateEmailRequest } from './order-email-template';
 
 const STATE_PATH = join(TM_DATA_ROOT, 'email-queue', 'state.json');
 // Pri štarte má prednosť prvé kompletné načítanie produktového katalógu.
@@ -200,9 +201,49 @@ async function updateOrderMarkers(orderId: number, values: Array<{ key: string; 
   });
 }
 
+async function processTemplateEmail(order: WooOrder): Promise<void> {
+  const request = readOrderTemplateEmailRequest(metaValue(order, '_tm_email_template_request'));
+  if (!request || metaValue(order, '_tm_email_template_sent_id') === request.id) return;
+
+  const claim = `${request.id}|${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  await updateOrderMarkers(order.id, [{ key: '_tm_email_template_claim', value: claim }]);
+  const claimed = await wooRequest<WooOrder>(`/orders/${order.id}`);
+  if (metaValue(claimed, '_tm_email_template_claim') !== claim
+    || metaValue(claimed, '_tm_email_template_sent_id') === request.id
+    || readOrderTemplateEmailRequest(metaValue(claimed, '_tm_email_template_request'))?.id !== request.id) return;
+
+  const status = normalizeOrderStatus(claimed.status);
+  const payload = toPayload(claimed, status, status);
+  try {
+    await sendWooOrderStatusEmail({
+      ...payload,
+      event_id: `template-${order.id}-${request.id}`,
+      title_override: request.label,
+      subject_override: request.subject,
+      message_override: request.message,
+    });
+  } catch (error: any) {
+    await updateOrderMarkers(order.id, [
+      { key: '_tm_email_template_claim', value: '' },
+      { key: '_tm_email_template_last_error', value: String(error?.message || 'Odoslanie zlyhalo.').slice(0, 250) },
+    ]).catch(() => undefined);
+    throw error;
+  }
+  await updateOrderMarkers(order.id, [
+    { key: '_tm_email_template_sent_id', value: request.id },
+    { key: '_tm_email_template_sent_at', value: new Date().toISOString() },
+    { key: '_tm_email_template_claim', value: '' },
+    { key: '_tm_email_template_last_error', value: '' },
+  ]);
+  state.sentEmails += 1;
+  state.lastSuccessAt = new Date().toISOString();
+}
+
 async function processOrder(order: WooOrder): Promise<void> {
   if (!order?.id || !isToneryMaximOrder(order)) return;
   state.tonerymaximOrders += 1;
+  // Samostatná správa zo šablóny nemení stav ani jeho e-mailové markery.
+  await processTemplateEmail(order);
 
   const currentStatus = normalizeOrderStatus(order.status);
   if (!currentStatus) return;
@@ -281,7 +322,8 @@ export async function runEmailQueueOnce(): Promise<EmailQueueState> {
     const orders = await wooRequest<WooOrder[]>('/orders', {
       query: {
         per_page: ORDERS_PER_SCAN,
-        orderby: 'date',
+        // Zachytí aj samostatnú správu vyžiadanú pri staršej objednávke.
+        orderby: 'modified',
         order: 'desc',
       },
     });
@@ -331,3 +373,4 @@ export async function readEmailQueueState(): Promise<EmailQueueState> {
   const parsed = await readSignedJson<EmailQueueState>(STATE_PATH);
   return { ...state, ...(parsed || {}), running };
 }
+

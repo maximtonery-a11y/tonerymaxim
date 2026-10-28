@@ -4,6 +4,7 @@ import nodemailer from "nodemailer";
 import { BANK_TRANSFER_DETAILS, bankTransferVariableSymbol, isBankPrepaidPayment } from "./bank-details";
 import { isAwaitingBankPaymentStatus } from "./order-statuses";
 import { STOREFRONT_ORIGIN } from "./storefront-url";
+import { itemOrderAvailability, orderAvailabilityText, orderAvailabilityNotice } from "./order-availability";
 
 function env(name: string): string {
   const runtimeValue = typeof process !== "undefined" ? process.env?.[name] : undefined;
@@ -271,6 +272,7 @@ function buildOrderConfirmationContent(input: {
   const orderNumber = normalizeCustomerOrderNumber(input.orderNumber || source.orderNumber);
   const firstName = String(billing.firstName || contact.name || "").trim().split(/\s+/)[0] || "zákazník";
   const items = Array.isArray(source.cart) ? source.cart : [];
+  const availabilityNotice = orderAvailabilityNotice(items);
 
   const originalSubtotalGross = toNumber(source.originalSubtotal || source.subtotal);
   const quantityDiscountGross = toNumber(source.quantityDiscount);
@@ -293,7 +295,7 @@ function buildOrderConfirmationContent(input: {
     const original = toNumber(Number(item.price || 0) * Number(item.qty || 1));
     const rate = Number(item.qty || 0) >= 4 ? 0.25 : Number(item.qty || 0) >= 2 ? 0.10 : 0;
     const gross = /kompatibil/i.test(String(item.product_type_label || item.product_type_key || item.name || "")) ? toNumber(original * (1-rate)) : original;
-    return `- ${item.name} ×${item.qty}: ${formatMoney(gross)} s DPH / ${formatMoney(netFromGross(gross))} bez DPH`;
+    return `- ${item.name} ×${item.qty}: ${formatMoney(gross)} s DPH / ${formatMoney(netFromGross(gross))} bez DPH\n  Dostupnosť pri objednaní: ${orderAvailabilityText(item)}`;
   }).join("\n");
   const rowsHtml = items.map((item: any) => {
     const original = toNumber(Number(item.price || 0) * Number(item.qty || 1));
@@ -301,13 +303,13 @@ function buildOrderConfirmationContent(input: {
     const gross = /kompatibil/i.test(String(item.product_type_label || item.product_type_key || item.name || "")) ? toNumber(original * (1-rate)) : original;
     return `
     <tr>
-      <td style="padding:10px 0;border-bottom:1px solid #e6edf5"><strong>${escapeHtml(String(item.name || "Produkt"))}</strong><br><span style="color:#64748b">SKU: ${escapeHtml(String(item.sku || ""))}</span></td>
+      <td style="padding:10px 0;border-bottom:1px solid #e6edf5"><strong>${escapeHtml(String(item.name || "Produkt"))}</strong><br><span style="color:#64748b">SKU: ${escapeHtml(String(item.sku || ""))}</span><br><span style="display:block;margin-top:5px;font-size:13px;font-weight:700;color:${itemOrderAvailability(item)?.status === "instock" ? "#087f42" : "#9a5b00"}">Dostupnosť pri objednaní: ${escapeHtml(orderAvailabilityText(item))}</span></td>
       <td style="padding:10px 0;border-bottom:1px solid #e6edf5;text-align:center">×${escapeHtml(String(item.qty || 1))}</td>
       <td style="padding:10px 0;border-bottom:1px solid #e6edf5;text-align:right"><strong>${formatMoney(gross)}</strong><br><span style="color:#64748b;font-size:12px">${formatMoney(netFromGross(gross))} bez DPH</span></td>
     </tr>`;
   }).join("");
 
-  const text = `Dobrý deň, ${firstName},\n\nďakujeme za objednávku č. ${orderNumber}.\n\nObjednávku sme prijali a spracujeme ju čo najskôr.\n\nProdukty:\n${rowsText}\n\nMedzisúčet tovaru s DPH: ${formatMoney(originalSubtotalGross)}\n${quantityDiscountGross > 0 ? `Množstevná / sadová zľava: -${formatMoney(quantityDiscountGross)}\nCena po množstevnej zľave: ${formatMoney(subtotalGross)}\n` : ""}${couponGross > 0 ? `${source.coupon?.label || "Kupónová zľava"}: -${formatMoney(couponGross)}\n` : ""}${loyaltyGross > 0 ? `Vernostná zľava: -${formatMoney(loyaltyGross)}\n` : ""}Doprava: ${input.shippingTitle} · ${formatMoney(shippingGross)}\nSpôsob platby: ${input.paymentTitle} · ${formatMoney(paymentGross)}\nCena spolu s DPH: ${formatMoney(totalGross)}\nZáklad bez DPH: ${formatMoney(totalNet)}\nDPH 23 %: ${formatMoney(totalVat)}${bankText}\n\nFakturačná adresa:\n${addressBlock(billing, contact)}\n\nDodacia adresa:\n${addressBlock(delivery?.differentAddress ? delivery : billing, contact)}${noteText}\n\nPrávne informácie:\n${siteUrl()}/obchodne-podmienky\n${siteUrl()}/reklamacie\n${siteUrl()}/reklamacia-online\n${siteUrl()}/odstupenie-od-zmluvy\n${siteUrl()}/ochrana-osobnych-udajov\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk\n+421917859206`;
+  const text = `Dobrý deň, ${firstName},\n\nďakujeme za objednávku č. ${orderNumber}.\n\nObjednávku sme prijali a spracujeme ju čo najskôr.\n\nProdukty:\n${rowsText}${availabilityNotice ? `\n\n${availabilityNotice}` : ""}\n\nMedzisúčet tovaru s DPH: ${formatMoney(originalSubtotalGross)}\n${quantityDiscountGross > 0 ? `Množstevná / sadová zľava: -${formatMoney(quantityDiscountGross)}\nCena po množstevnej zľave: ${formatMoney(subtotalGross)}\n` : ""}${couponGross > 0 ? `${source.coupon?.label || "Kupónová zľava"}: -${formatMoney(couponGross)}\n` : ""}${loyaltyGross > 0 ? `Vernostná zľava: -${formatMoney(loyaltyGross)}\n` : ""}Doprava: ${input.shippingTitle} · ${formatMoney(shippingGross)}\nSpôsob platby: ${input.paymentTitle} · ${formatMoney(paymentGross)}\nCena spolu s DPH: ${formatMoney(totalGross)}\nZáklad bez DPH: ${formatMoney(totalNet)}\nDPH 23 %: ${formatMoney(totalVat)}${bankText}\n\nFakturačná adresa:\n${addressBlock(billing, contact)}\n\nDodacia adresa:\n${addressBlock(delivery?.differentAddress ? delivery : billing, contact)}${noteText}\n\nPrávne informácie:\n${siteUrl()}/obchodne-podmienky\n${siteUrl()}/reklamacie\n${siteUrl()}/reklamacia-online\n${siteUrl()}/odstupenie-od-zmluvy\n${siteUrl()}/ochrana-osobnych-udajov\n\nToneryMAXIM.sk\ninfo@tonerymaxim.sk\n+421917859206`;
 
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.55;color:#061735;max-width:680px;margin:0 auto;padding:24px">
@@ -315,6 +317,7 @@ function buildOrderConfirmationContent(input: {
       <h1 style="font-size:28px;margin:0 0 14px">Ďakujeme za objednávku</h1>
       <p>Dobrý deň, ${escapeHtml(firstName)},</p>
       <p>ďakujeme za objednávku <strong>č. ${escapeHtml(orderNumber)}</strong>. Objednávku sme prijali a spracujeme ju čo najskôr.</p>
+      ${availabilityNotice ? `<div style="margin:18px 0;padding:14px 16px;background:#fff8e6;border:1px solid #ebce87;border-radius:12px"><strong>Dostupnosť a odoslanie objednávky</strong><p style="margin:6px 0 0">${escapeHtml(availabilityNotice)}</p></div>` : ""}
       <table style="width:100%;border-collapse:collapse;margin:22px 0">
         <thead><tr><th style="text-align:left;border-bottom:2px solid #dbe7f4;padding-bottom:8px">Produkt</th><th style="text-align:center;border-bottom:2px solid #dbe7f4;padding-bottom:8px">Počet</th><th style="text-align:right;border-bottom:2px solid #dbe7f4;padding-bottom:8px">Cena</th></tr></thead>
         <tbody>${rowsHtml}</tbody>
@@ -416,6 +419,7 @@ export type WooOrderStatusEmailPayload = {
   tracking_url?: string;
   subject_override?: string;
   message_override?: string;
+  title_override?: string;
   line_items?: Array<{
     name?: string;
     sku?: string;
@@ -548,6 +552,7 @@ export async function sendWooOrderStatusEmail(payload: WooOrderStatusEmailPayloa
   const customMessage = String(payload.message_override || "").trim().replaceAll("{order_number}", orderNumber);
   const presentation = {
     ...basePresentation,
+    title: String(payload.title_override || "").trim() || basePresentation.title,
     subject: customSubject || basePresentation.subject,
     message: customMessage || basePresentation.message,
   };
@@ -592,7 +597,7 @@ export async function sendWooOrderStatusEmail(payload: WooOrderStatusEmailPayloa
         <div style="color:#64748b">Objednávka č. ${escapeHtml(orderNumber)}</div>
       </div>
       <p>Dobrý deň, ${escapeHtml(firstName)},</p>
-      <p>${presentation.message}</p>
+      <p>${customMessage ? escapeHtml(customMessage).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\r?\n/g, "<br>") : presentation.message}</p>
       ${trackingHtml}
       ${items.length ? `<table style="width:100%;border-collapse:collapse;margin:22px 0">
         <thead><tr>
@@ -665,3 +670,4 @@ export async function sendNewsletterUnsubscribeConfirmationEmail(input: { email:
   const html = `<div style="font-family:Arial,sans-serif;line-height:1.55;color:#061735;max-width:640px;margin:0 auto;padding:24px"><h1 style="font-size:24px">Potvrďte odhlásenie z newslettera</h1><p>Kliknutím na tlačidlo bezpečne zrušíte odber marketingových noviniek ToneryMaxim.sk.</p><p><a href="${input.confirmUrl}" style="display:inline-block;background:#061735;color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:700">Odhlásiť z newslettera</a></p><p style="color:#60708c">Ak ste o odhlásenie nežiadali, tento e-mail ignorujte a nič sa nezmení.</p></div>`;
   return sendMail({to:input.email,subject:'Potvrďte odhlásenie z newslettera | ToneryMaxim.sk',text,html});
 }
+

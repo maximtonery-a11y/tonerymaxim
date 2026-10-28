@@ -18,6 +18,7 @@
     "test:search": "node --experimental-strip-types --test scripts/search-quality.test.ts scripts/search-prefix-regression.test.ts scripts/search-pack-order.test.ts scripts/search-client-resilience.test.mjs scripts/hp-pack-oem-regression.test.ts",
     "test:performance": "node --experimental-strip-types --test scripts/printer-api-cache.test.ts scripts/printer-alias-regression.test.ts scripts/hp-printer-name-aliases.test.ts scripts/live-stability-check.test.mjs scripts/product-cache-streaming.test.ts scripts/product-cache-generation-race.test.ts scripts/memory-v1-regression.test.ts scripts/memory-v1-sync.test.ts",
     "test:release": "node scripts/release-guard.mjs",
+    "test:order-emails": "node --experimental-vm-modules --experimental-strip-types --test scripts/order-email-availability.test.ts",
     "test:live": "node scripts/verify-live-stability.mjs",
     "test:woo": "node --experimental-strip-types --test scripts/woocommerce-catalog.test.ts",
     "test:dpd": "node --experimental-strip-types --test scripts/dpd-pickup-regression.test.ts scripts/dpd-pickup-order-integration.test.ts",
@@ -51,3 +52,4 @@
     "typescript": "6.0.3"
   }
 }
+

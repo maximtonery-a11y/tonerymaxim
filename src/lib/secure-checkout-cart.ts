@@ -1,6 +1,7 @@
 import type { NormalizedCartItem } from "./checkout-order";
 import { getProductsCache, compactKey, type TmProduct } from "./tm-products-cache";
 import { wooRequest } from "./woo-client";
+import { captureOrderAvailability } from "./order-availability";
 import {
   LOYALTY_PAPER_PRICE,
   LOYALTY_PAPER_PRODUCT_SKU,
@@ -189,7 +190,7 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
         include: ids.join(","),
         per_page: Math.min(100, ids.length),
         status: "publish",
-        _fields: "id,sku,name,price,status",
+        _fields: "id,sku,name,price,status,stock_status,stock_quantity",
       },
     })
     : [];
@@ -213,6 +214,7 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
       product_type_key: "calendar",
       product_type_label: product.category || "Kalendár 2027",
       source: CALENDAR_SOURCE,
+      availability: captureOrderAvailability({ stock_status: "instock", stock_quantity: null }, qty, product.availability.checkedAt || new Date().toISOString()),
     });
   }
 
@@ -236,8 +238,10 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
       product_type_key: String(product.product_type_key || ""),
       product_type_label: String(product.product_type_label || ""),
       loyalty_reward: isReward,
+      availability: captureOrderAvailability(live, qty),
     });
   }
 
   return result;
 }
+
