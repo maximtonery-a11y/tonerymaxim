@@ -1,5 +1,14 @@
 # Dostupnosť v potvrdení a vlastné TM e-mailové šablóny
 
+Verzia Woo pluginu 6.1.1 pridáva vlastné šablóny aj priamo do pôvodného výberu
+„Stav a e-mail“ v detaile a zozname TM objednávok. Sú v skupine „Vlastné e-mailové
+šablóny – bez zmeny stavu“ a ich výber zaradí správu do už existujúcej Astro fronty.
+Skutočný stav objednávky zostáva zachovaný. Pre tento doplnok stačí aktualizovať
+Woo plugin; Astro 6.1.0 integrácia z commitu `d9523b2` už poskytuje potrebnú frontu.
+
+Správanie výberu, zachovanie stavu, blokovanie druhej čakajúcej správy a oprávnenia
+overuje aj `php scripts/tm-email-template-options.test.php`.
+
 Potvrdenie novej objednávky vytvára Astro v `src/lib/mail.ts`. Woo plugin
 Customer Administration spravuje texty správ pri zmene stavu objednávky.
 Odosielanie zostáva v Astro cez existujúce SMTP nastavenie ToneryMAXIM.sk.
