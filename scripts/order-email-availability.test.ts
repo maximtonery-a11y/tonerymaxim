@@ -24,7 +24,7 @@ async function loadServer(path: string, mocks: Record<string, Record<string, any
     if (modules.has(filename)) return modules.get(filename);
     const original = await readFile(filename, 'utf8');
     const source = stripTypeScriptTypes(original, { mode: 'strip' }) + (filename === resolve(root, path) ? extraExports : '');
-    const mod = new vm.SourceTextModule(source, { context, identifier: filename, initializeImportMeta(meta) { meta.env = {}; meta.url = pathToFileURL(filename).href; } });
+    const mod = new vm.SourceTextModule(source, { context, identifier: filename, initializeImportMeta(meta) { Object.assign(meta, { env: {}, url: pathToFileURL(filename).href }); } });
     modules.set(filename, mod);
     await mod.link(async (specifier: string, parent: any) => {
       if (mocks[specifier]) {
