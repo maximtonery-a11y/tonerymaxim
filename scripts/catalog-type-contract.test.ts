@@ -50,3 +50,14 @@ test('Regional imageCLASS models remain present in a combined metadata list', ()
   raw.meta_data=[{key:'_ciq_printer_models',value:models.join(', ')},{key:'_ciq_printer_series',value:'Canon i-SENSYS LBP610, Canon i-SENSYS MF630'}];
   assert.deepEqual(mapProduct(raw).compatible_printers,models);
 });
+
+test('Canon generation II models remain distinct from the original generation', () => {
+  const models=['Canon i-SENSYS LBP122dw','Canon i-SENSYS LBP122dw II','Canon i-SENSYS MF272dw','Canon i-SENSYS MF272dw II','Canon i-SENSYS MF275dw','Canon i-SENSYS MF275dw II'];
+  for(const fromMetadata of [false,true]) {
+    const raw:any=fixture('Canon 071 originálny toner','originalne');
+    raw.attributes=raw.attributes.slice(0,2);
+    if(fromMetadata) raw.meta_data=[{key:'_ciq_printer_models',value:models.join(', ')}];
+    else raw.attributes.push({name:'Model tlačiarne',options:models});
+    assert.deepEqual(mapProduct(raw).compatible_printers,models);
+  }
+});

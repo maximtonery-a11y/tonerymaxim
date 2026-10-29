@@ -472,7 +472,7 @@ function extractKnownPrinterModels(value: unknown) {
   const patterns = [
     /\bHP\s+(?:Color\s+LaserJet|LaserJet|OfficeJet|DeskJet|PageWide|Photosmart|ENVY|Neverstop|MFP|Pro)\s+[A-Z0-9][A-Z0-9\s\-]*\d[A-Z0-9\s\-]*/gi,
     /\bBrother\s+(?:DCP|MFC|HL|FAX|PT)[\s\-]?[A-Z0-9][A-Z0-9\-]*\d[A-Z0-9\-]*/gi,
-    /\bCanon\s+(?:PIXMA|i-SENSYS|imageCLASS|MAXIFY|LBP|MF|MG|TS|TR|IP|MP)\s*[A-Z0-9][A-Z0-9\s\-]*\d[A-Z0-9\-]*/gi,
+    /\bCanon\s+(?:PIXMA|i-SENSYS|imageCLASS|MAXIFY|LBP|MF|MG|TS|TR|IP|MP)\s*[A-Z0-9][A-Z0-9\s\-]*\d[A-Z0-9\-]*(?:\s+II\b)?/gi,
     /\bEpson\s+(?:EcoTank|WorkForce|Expression|Stylus|SureColor|XP|WF|ET|L)\s*[A-Z0-9][A-Z0-9\s\-]*\d[A-Z0-9\-]*/gi,
     /\b(?:Xerox|Samsung|Lexmark|Dell|Kyocera|OKI|Ricoh|Utax|Toshiba|Panasonic)\s+[A-Z0-9][A-Z0-9\s\-]*\d[A-Z0-9\-]*/gi,
   ];
