@@ -20,7 +20,7 @@
     "test:release": "node scripts/release-guard.mjs",
     "test:order-emails": "node --experimental-vm-modules --experimental-strip-types --test scripts/order-email-availability.test.ts",
     "test:live": "node scripts/verify-live-stability.mjs",
-    "test:woo": "node --experimental-strip-types --test scripts/woocommerce-catalog.test.ts",
+    "test:woo": "node --experimental-strip-types --test scripts/woocommerce-catalog.test.ts scripts/catalog-type-contract.test.ts",
     "test:dpd": "node --experimental-strip-types --test scripts/dpd-pickup-regression.test.ts scripts/dpd-pickup-order-integration.test.ts",
     "test:seo": "node --experimental-strip-types --test scripts/seo-foundation.test.ts scripts/seo-index-cache.test.ts scripts/seo-snippet.test.ts scripts/product-publication-policy.test.ts scripts/seo-content-quality.test.ts scripts/conversion-system.test.ts scripts/seo-discovery-regression.test.ts",
     "test:migration": "node --experimental-strip-types --test scripts/legacy-migration.test.ts && node scripts/migration-gate.test.mjs",

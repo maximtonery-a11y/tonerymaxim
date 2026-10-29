@@ -472,7 +472,7 @@ function extractKnownPrinterModels(value: unknown) {
   const patterns = [
     /\bHP\s+(?:Color\s+LaserJet|LaserJet|OfficeJet|DeskJet|PageWide|Photosmart|ENVY|Neverstop|MFP|Pro)\s+[A-Z0-9][A-Z0-9\s\-]*\d[A-Z0-9\s\-]*/gi,
     /\bBrother\s+(?:DCP|MFC|HL|FAX|PT)[\s\-]?[A-Z0-9][A-Z0-9\-]*\d[A-Z0-9\-]*/gi,
-    /\bCanon\s+(?:PIXMA|i-SENSYS|MAXIFY|LBP|MF|MG|TS|TR|IP|MP)\s*[A-Z0-9][A-Z0-9\s\-]*\d[A-Z0-9\-]*/gi,
+    /\bCanon\s+(?:PIXMA|i-SENSYS|imageCLASS|MAXIFY|LBP|MF|MG|TS|TR|IP|MP)\s*[A-Z0-9][A-Z0-9\s\-]*\d[A-Z0-9\-]*/gi,
     /\bEpson\s+(?:EcoTank|WorkForce|Expression|Stylus|SureColor|XP|WF|ET|L)\s*[A-Z0-9][A-Z0-9\s\-]*\d[A-Z0-9\-]*/gi,
     /\b(?:Xerox|Samsung|Lexmark|Dell|Kyocera|OKI|Ricoh|Utax|Toshiba|Panasonic)\s+[A-Z0-9][A-Z0-9\s\-]*\d[A-Z0-9\-]*/gi,
   ];
@@ -492,9 +492,11 @@ function extractKnownPrinterModels(value: unknown) {
 function extractPrinters(product: any) {
   const values: string[] = [];
   const pushFrom = (value: unknown) => values.push(...extractKnownPrinterModels(value));
+  const isSeriesField = (name: string) => /(?:^|[\s_-])(?:seria|serie|series|rada)(?:$|[\s_-])|printer_?series|seriatlaciarne/.test(name);
   const attributes = Array.isArray(product.attributes) ? product.attributes : [];
   attributes.forEach((attribute: any) => {
     const name = normalize(attribute?.name);
+    if (isSeriesField(name)) return;
     if (!/kompat|compat|tla\w*iar|tlaciar|printer|model|zariaden/.test(name)) return;
     if (Array.isArray(attribute?.options)) attribute.options.forEach(pushFrom);
     else if (attribute?.option) pushFrom(attribute.option);
@@ -502,6 +504,7 @@ function extractPrinters(product: any) {
   const meta = Array.isArray(product.meta_data) ? product.meta_data : [];
   meta.forEach((item: any) => {
     const key = normalize(item?.key);
+    if (isSeriesField(key)) return;
     if (!/kompat|compat|tla\w*iar|tlaciar|printer|model|zariaden/.test(key)) return;
     if (Array.isArray(item?.value)) {
       item.value.forEach((entry: unknown) => {
@@ -514,12 +517,47 @@ function extractPrinters(product: any) {
 }
 
 function detectType(product: any) {
-  const categoryText = Array.isArray(product.categories) ? product.categories.map((cat: any) => cat.name || cat.slug || "").join(" ") : "";
-  const tagText = Array.isArray(product.tags) ? product.tags.map((tag: any) => tag.name || tag.slug || "").join(" ") : "";
-  const text = normalize(`${product.name || ""} ${product.sku || ""} ${categoryText} ${tagText} ${stripHtml(product.short_description || product.description || "")}`);
-  if (text.includes("kompatibil") || text.includes("alternat")) return { key: "compatible", label: "KOMPATIBILNÝ", detailLabel: "Kompatibilný spotrebný materiál", note: "Overená alternatíva", icon: "puzzle" };
-  if (text.includes("original") || text.includes("originalny") || text.includes("originalna") || text.includes("originalne") || text.includes("originál")) return { key: "original", label: "ORIGINÁL", detailLabel: "Originálny spotrebný materiál", note: "Originálny produkt výrobcu", icon: "shield" };
-  if (text.includes("renovovan") || text.includes("repasovan")) return { key: "renovated", label: "RENOVOVANÝ", detailLabel: "Renovovaný spotrebný materiál", note: "Ekologicky renovovaný produkt", icon: "recycle" };
+  const types = {
+    compatible: { key: "compatible", label: "KOMPATIBILNÝ", detailLabel: "Kompatibilný spotrebný materiál", note: "Overená alternatíva", icon: "puzzle" },
+    original: { key: "original", label: "ORIGINÁL", detailLabel: "Originálny spotrebný materiál", note: "Originálny produkt výrobcu", icon: "shield" },
+    renovated: { key: "renovated", label: "RENOVOVANÝ", detailLabel: "Renovovaný spotrebný materiál", note: "Ekologicky renovovaný produkt", icon: "recycle" },
+  } as const;
+  type Kind = keyof typeof types;
+  const knownType = (value: unknown): Kind | "" => {
+    const text = normalize(value).replace(/[^a-z]/g, "");
+    if (["compatible", "kompatibilne", "kompatibilny", "kompatibilna", "alternativne", "alternativny"].includes(text)) return "compatible";
+    if (["original", "originalne", "originalny", "originalna", "originaly", "genuine"].includes(text)) return "original";
+    if (["renovated", "renovovane", "renovovany", "renovovana", "repasovane", "repasovany", "remanufactured", "refurbished"].includes(text)) return "renovated";
+    return "";
+  };
+  const attributes = extractWooAttributes(product);
+  for (const field of ["Typ spotrebného materiálu", "Typ spotrebneho materialu", "Consumable type", "Typ produktu", "Product type"]) {
+    const kind = knownType(getExactWooAttributeValue(attributes, [field]));
+    if (kind) return types[kind];
+  }
+  for (const field of ["_ciq_consumable_type", "_ciq_product_type", "_ciq_custom_label_2"]) {
+    const kind = knownType(getWooMetaValue(product, [field]));
+    if (kind) return types[kind];
+  }
+  const namedType = (value: unknown): Kind | "" => {
+    const text = normalize(value);
+    if (/\b(?:renovovan\w*|repasovan\w*|remanufactured|refurbished)\b/.test(text)) return "renovated";
+    if (/\b(?:kompatibiln\w*|alternativn\w*|compatible)\b/.test(text)) return "compatible";
+    if (/\b(?:original\w*|genuine)\b/.test(text)) return "original";
+    return "";
+  };
+  const nameKind = namedType(product.name);
+  if (nameKind) return types[nameKind];
+  for (const taxonomy of [product.categories, product.tags]) {
+    const kinds = new Set<Kind>();
+    if (Array.isArray(taxonomy)) taxonomy.forEach((item: any) => {
+      const kind = namedType(item?.name || item?.slug || "");
+      if (kind) kinds.add(kind);
+    });
+    if (kinds.size === 1) return types[[...kinds][0]];
+  }
+  // Text typu „Kompatibilné tlačiarne“ je bežný aj pri origináloch a renováciách.
+  // Popis ani zoznam tlačiarní preto nikdy neurčujú obchodný typ produktu.
   return { key: "product", label: "PRODUKT", detailLabel: "Spotrebný materiál", note: "Spotrebný materiál", icon: "dot" };
 }
 
