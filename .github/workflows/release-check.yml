@@ -26,6 +26,10 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: node --experimental-strip-types --test scripts/ai-tomas-v2-conversation-acceptance.test.ts
+      - run: node --experimental-strip-types --test scripts/ai-tomas-product-discounts.test.ts scripts/ai-tomas-discounts.test.ts scripts/ai-tomas-delivery-quote.test.ts scripts/ai-tomas-product-context.test.ts scripts/cart-current-product-regression.test.ts
+      - run: npm run test:production
+      - run: npm run test:ai:regression
       - run: npm run check
       - run: npm run test:order-emails
       - run: php -l wordpress-plugin/tonerymaxim-customer-administration/tonerymaxim-customer-administration.php
