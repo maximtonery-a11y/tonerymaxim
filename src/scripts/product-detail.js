@@ -820,6 +820,12 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     return printerProductsUrl(value);
   }
 
+  function compatibilitySeriesLink(value) {
+    const url = new URL("/produkty", window.location.origin);
+    url.searchParams.set("printer", String(value || "").trim());
+    return `${url.pathname}?${url.searchParams.toString()}`;
+  }
+
   function compatibilityNavigationHtml(product) {
     const manufacturer = printerManufacturer(product);
     const series = printerSeries(product);
@@ -836,7 +842,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
         <div class="compat-nav-group">
           <span class="compat-nav-label">Séria tlačiarne</span>
           <div class="series-links">
-            ${series.length ? series.map((item) => `<a href="${compatibilityLink(item)}">${esc(item)}<span aria-hidden="true">→</span></a>`).join("") : `<span class="compat-empty">Séria nie je uvedená.</span>`}
+            ${series.length ? series.map((item) => `<a href="${compatibilitySeriesLink(item)}">${esc(item)}<span aria-hidden="true">→</span></a>`).join("") : `<span class="compat-empty">Séria nie je uvedená.</span>`}
           </div>
         </div>
 
