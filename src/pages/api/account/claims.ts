@@ -103,12 +103,12 @@ function orderToPublic(order: any) {
   };
 }
 
-async function readData(customerId: number, customerEmail: string) {
+async function readData(customerId: number) {
   const customer = await getWooCustomerById(customerId);
   if (!customer) throw new Error("Zákazník neexistuje.");
   const [orders, claimsResponse, pendingClaims] = await Promise.all([
     getWooCustomerOrders(customerId, 50),
-    claimsRequest("/reklamacie", { query: { customer_id: customerId, customer_email: customer.email || customerEmail } }),
+    claimsRequest("/reklamacie", { query: { customer_id: customerId } }),
     pendingCustomerClaims(customerId),
   ]);
 
@@ -126,7 +126,7 @@ export const GET: APIRoute = async ({ cookies }) => {
   if (!session) return json({ ok: false, error: "Neprihlásený zákazník." }, 401);
 
   try {
-    const data = await readData(session.id, session.email);
+    const data = await readData(session.id);
     return json({
       ok: true,
       orders: data.orders,

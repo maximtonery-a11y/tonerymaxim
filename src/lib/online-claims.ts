@@ -51,6 +51,7 @@ function verifiedClaim(value: any, payload: ClaimPayload): StoredClaim {
   if (!positiveId(value?.wp_id) || id !== payload.claim_number
     || Number(value?.customer_id) !== payload.customer_id || Number(value?.order_id) !== payload.order_id
     || Number(value?.product_id) !== payload.product_id || text(value?.order_number) !== payload.order_number
+    || text(value?.product_sku) !== payload.product_sku
     || text(value?.product_name) !== payload.product_name || text(value?.reason) !== payload.reason
     || text(value?.message) !== payload.message) throw new Error('Uloženie reklamácie nebolo overené.');
   // Older plugin responses do not expose the email. If present, it must match.
@@ -60,7 +61,7 @@ function verifiedClaim(value: any, payload: ClaimPayload): StoredClaim {
 
 async function synchronize(record: ClaimRecord): Promise<void> {
   if (record.wooClaim) return;
-  const query: Record<string, string | number> = { customer_email: record.payload.customer_email };
+  const query: Record<string, string | number> = { customer_email: record.payload.customer_email, claim_number: record.caseNumber };
   if (record.payload.customer_id) query.customer_id = record.payload.customer_id;
   // Reconcile by the stable case number before POST, including a lost POST response.
   const list = await claimsRequest('/reklamacie', { query });
