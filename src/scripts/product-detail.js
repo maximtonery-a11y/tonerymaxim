@@ -1056,9 +1056,9 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     const root = document.querySelector("[data-accessories]");
     if (!root) return;
     const accessories = await findAccessories(currentProduct).catch(() => []);
-    root.innerHTML = accessories.length
-      ? accessories.map(accessoryCardHtml).join("")
-      : '<p class="related-empty">Doplnkové produkty sa nepodarilo načítať.</p>';
+    if (!accessories.length) return;
+    root.innerHTML = accessories.map(accessoryCardHtml).join("");
+    root.closest("[data-accessories-section]").hidden = false;
     const byId = new Map(accessories.map(item => [String(item.id || item.sku || item.slug), item]));
     root.querySelectorAll("[data-related-add]").forEach(button => {
       const product = byId.get(button.closest("[data-related-id]")?.dataset.relatedId);

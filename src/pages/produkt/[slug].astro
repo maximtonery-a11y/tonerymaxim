@@ -203,9 +203,9 @@ const initialProductJson = JSON.stringify(product)
           </section>
           <section class="related-section related-section-stacked" aria-label="Súvisiace produkty">
             {cache && <ProductAlternatives product={product} catalog={cache.products} printerLinks={printerLinks} />}
-            <div class="related-column related-column-accessories">
+            <div class="related-column related-column-accessories" data-accessories-section hidden>
               <div class="related-title-row"><h2>Často kupované spolu</h2><span>Praktické doplnky k objednávke</span></div>
-              <div class="accessory-grid" data-accessories><p class="related-loading">Načítavam doplnkové produkty…</p></div>
+              <div class="accessory-grid" data-accessories></div>
             </div>
           </section>
           {(oemLinks.length > 0 || printerLinks.length > 0 || brandLinks.length > 0) && (

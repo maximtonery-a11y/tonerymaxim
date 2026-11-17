@@ -60,7 +60,12 @@ async function checkLayout(page, origin, [width, height, touch]) {
     await columns(page, 1);
   }
   await page.locator('.jump-to-alternatives').click();
-  await page.waitForFunction(() => location.hash === '#alternativy' && !document.querySelector('[data-mobile-sticky-cart]').classList.contains('is-visible'));
+  await page.waitForFunction(() => {
+    const top = document.querySelector('#alternativy h2').getBoundingClientRect().top;
+    const headerBottom = document.querySelector('.tm-trust-bar').getBoundingClientRect().bottom;
+    return location.hash === '#alternativy' && top >= headerBottom - 1 && top < innerHeight
+      && !document.querySelector('[data-mobile-sticky-cart]').classList.contains('is-visible');
+  });
   const card = page.locator('[data-alternative-id="11"]');
   assert.match(await card.innerText(), /91,61/);
   assert.match(await page.locator('[data-alternative-id="14"]').innerText(), /Nižšia výťažnosť/);
