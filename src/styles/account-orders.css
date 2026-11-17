@@ -1,4 +1,5 @@
 .account-order-history-note,.account-order-count{color:#526172;line-height:1.6}
+.account-section-grid.account-orders-list{grid-template-columns:minmax(0,1fr)}
 .account-orders-error{padding:16px;border:1px solid #f0d3a1;border-radius:14px;background:#fff9ed;color:#67480b}
 .account-orders-pagination{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .account-reorder-status:not(:empty){padding:10px 0;color:#315071;line-height:1.5}

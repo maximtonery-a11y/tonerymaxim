@@ -34,7 +34,7 @@ const orders = result?.orders || [];
     <AccountShell user={customer} active="objednavky" title="Objednávky" subtitle="História nákupov, stav objednávok a opakované objednanie.">
       <p class="account-order-history-note">Pri opakovanom nákupe najprv zobrazíme aktuálne ceny a dostupnosť. Pôvodná objednávka sa nemení.</p>
       {error ? <section class="account-panel account-orders-error" role="alert"><h2>Objednávky sa nepodarilo načítať</h2><p>{error}</p><a class="tm-btn" href="/ucet/objednavky">Skúsiť znova</a></section> : orders.length ? (
-        <div class="account-section-grid">
+        <div class="account-section-grid account-orders-list">
           <p class="account-order-count">Celkom objednávok: <strong>{result!.total}</strong> · Stránka {result!.page} z {result!.totalPages}</p>
           {orders.map((order) => (
             <section class="account-list-card" data-account-order={order.id}>
