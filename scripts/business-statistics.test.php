@@ -88,6 +88,7 @@ check($s['refunds']===12300&&$s['pending_total']===8000&&$s['cancelled']===1,'Re
 check($s['unclassified']===1&&$s['unknown_tax']===1,'Unmapped email statuses and incomplete tax reconciliation are visible data-quality signals');
 $reg_guest=clone $oct;$reg_guest->customer=0;check(TM_Business_Statistics::facts($reg_guest,$settings)[0]['customer_key']===TM_Business_Statistics::facts($nov,$settings)[0]['customer_key'],'Email joins anonymous/account purchase history only in anonymous statistical keys');
 check(TM_Business_Statistics::change(1,0)==='Bez porovnateľného základu','Zero baseline does not produce fake growth percentages');
+check(str_contains(TM_Business_Statistics::styles(),'.tm-stats-kpis{display:grid;') && str_contains(TM_Business_Statistics::styles(),'.tm-donut{'), 'Dashboard grid and donut styles are registered through the WordPress stylesheet pipeline');
 $a=TM_Business_Statistics::refresh();check(!$a['done']&&!get_option(TM_Business_Statistics::ACTIVE),'Incomplete history never appears as a complete dashboard');
 $b=TM_Business_Statistics::refresh();check($b['done']&&$b['orders']===8,'Both order history and registrations complete before atomic publication');
 $active=get_option(TM_Business_Statistics::ACTIVE);$r=TM_Business_Statistics::report($range);check($r['current']['gross']===$s['gross'],'The indexed report matches the independently normalized expected sum');
