@@ -213,6 +213,8 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
 .add-cart-actions .btn-primary { background: #071d41; color: #fff; border: 1px solid #071d41; }
 .add-cart-actions .btn-secondary { background: #f3f7fc; color: #071d41; border: 1px solid #dce8f6; }
 /* The same product facts and actions appear in the side panel and the mobile bottom sheet. */
+.add-cart-panel { box-sizing: border-box; }
+@media (prefers-reduced-motion: reduce) { .add-cart-panel { animation: none; } }
 .add-cart-status { max-width: calc(100% - 48px); }
 .add-cart-close { width: 44px; height: 44px; }
 .add-cart-product-info { min-width: 0; overflow-wrap: anywhere; }

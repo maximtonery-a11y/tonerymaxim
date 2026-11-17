@@ -16,7 +16,9 @@ async function fits(locator) {
   const bad = await locator.evaluateAll(elements => elements.filter(el => {
     const rect = el.getBoundingClientRect();
     return rect.width && (rect.left < -1 || rect.right > innerWidth + 1 || el.scrollWidth > el.clientWidth + 1);
-  }).map(el => el.className || el.tagName));
+  }).map(el => ({ element: el.className || el.tagName, viewport: innerWidth,
+    left: Math.round(el.getBoundingClientRect().left), right: Math.round(el.getBoundingClientRect().right),
+    content: el.scrollWidth, box: el.clientWidth })) );
   assert.deepEqual(bad, [], 'Elements must fit the viewport');
 }
 async function columns(page, count) {
@@ -60,6 +62,7 @@ async function checkLayout(page, origin, [width, height, touch]) {
   assert.match(await drawer.locator('h2').innerText(), /TN-2421 čierny kompatibilný toner/);
   assert.match(await drawer.locator('[data-add-cart-summary]').innerText(), /15,95/);
   await amount(page, '.add-cart-pricebox strong', 1305);
+  await drawer.locator('.add-cart-panel').evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished)));
   await fits(drawer.locator('.add-cart-panel,.add-cart-meta,.add-cart-actions a'));
   await drawer.getByRole('link', { name: 'Do košíka', exact: true }).click();
   const qty = page.locator('[data-cart-action="input"][data-sku="SKU-11"]');
