@@ -5,6 +5,7 @@ import { enqueueAsyncWooOrder, scheduleAsyncOrderQueue } from "../../lib/async-o
 import { getCustomerLoyalty } from "../../lib/loyalty";
 import { validateCheckoutCoupon } from "../../lib/coupons";
 import { cartRequestsPaperReward, normalizeSecureCheckoutCart, discountRate, discountedLine } from "../../lib/secure-checkout-cart";
+import { getWooPricingContext } from '../../lib/woo-pricing-contract';
 import { CheckoutProfiler } from "../../lib/checkout-profiler";
 import { nextTmOrderNumber } from "../../lib/order-number";
 import { getOrCreateOrderNumber } from "../../lib/order-idempotency";
@@ -86,6 +87,7 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
     }
 
     const { shippingCode, paymentCode } = checkout;
+    await profiler.measure('pricing-context', () => getWooPricingContext());
     const shipping = SHIPPING[shippingCode];
     const payment = PAYMENT[paymentCode];
 

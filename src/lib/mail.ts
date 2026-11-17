@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { checkoutGrossLines, discountedGrossLine, grossVatTotals } from './checkout-vat';
 import { join } from "node:path";
 import nodemailer from "nodemailer";
 import { BANK_TRANSFER_DETAILS, bankTransferVariableSymbol, isBankPrepaidPayment } from "./bank-details";
@@ -180,11 +181,6 @@ function netFromGross(value: unknown): number {
   return Math.round((toNumber(value) / (1 + VAT_RATE)) * 100) / 100;
 }
 
-function vatFromGross(value: unknown): number {
-  const gross = toNumber(value);
-  return Math.round((gross - netFromGross(gross)) * 100) / 100;
-}
-
 function formatMoney(value: unknown): string {
   return new Intl.NumberFormat("sk-SK", { style: "currency", currency: "EUR" }).format(toNumber(value));
 }
@@ -259,7 +255,7 @@ function normalizeCustomerOrderNumber(value: unknown): string {
   return digits || raw || "—";
 }
 
-function buildOrderConfirmationContent(input: {
+export function buildOrderConfirmationContent(input: {
   orderNumber: string;
   source: any;
   paymentTitle: string;
@@ -282,8 +278,9 @@ function buildOrderConfirmationContent(input: {
   const couponGross = toNumber(source.coupon?.discount);
   const loyaltyGross = toNumber(source.loyaltyDiscount);
   const totalGross = toNumber(source.total);
-  const totalNet = netFromGross(totalGross);
-  const totalVat = vatFromGross(totalGross);
+  const taxTotals = grossVatTotals(checkoutGrossLines(source), totalGross);
+  const totalNet = taxTotals.net;
+  const totalVat = taxTotals.tax;
   const includeBankPayment = isBankPrepaidPayment(source.paymentCode, input.paymentTitle);
   const bankText = includeBankPayment ? `\n\n${bankPaymentText(orderNumber, totalGross)}` : "";
   const bankHtml = includeBankPayment ? bankPaymentHtml(orderNumber, totalGross) : "";
@@ -292,15 +289,11 @@ function buildOrderConfirmationContent(input: {
   const noteHtml = orderNote ? `<div style="background:#fffaf0;border:1px solid #f1dfb4;border-radius:16px;padding:16px;margin:18px 0"><strong>Poznámka k objednávke</strong><p style="white-space:pre-wrap;margin:8px 0 0">${escapeHtml(orderNote)}</p></div>` : "";
 
   const rowsText = items.map((item: any) => {
-    const original = toNumber(Number(item.price || 0) * Number(item.qty || 1));
-    const rate = Number(item.qty || 0) >= 4 ? 0.25 : Number(item.qty || 0) >= 2 ? 0.10 : 0;
-    const gross = /kompatibil/i.test(String(item.product_type_label || item.product_type_key || item.name || "")) ? toNumber(original * (1-rate)) : original;
+    const gross = discountedGrossLine(item);
     return `- ${item.name} ×${item.qty}: ${formatMoney(gross)} s DPH / ${formatMoney(netFromGross(gross))} bez DPH\n  Dostupnosť pri objednaní: ${orderAvailabilityText(item)}`;
   }).join("\n");
   const rowsHtml = items.map((item: any) => {
-    const original = toNumber(Number(item.price || 0) * Number(item.qty || 1));
-    const rate = Number(item.qty || 0) >= 4 ? 0.25 : Number(item.qty || 0) >= 2 ? 0.10 : 0;
-    const gross = /kompatibil/i.test(String(item.product_type_label || item.product_type_key || item.name || "")) ? toNumber(original * (1-rate)) : original;
+    const gross = discountedGrossLine(item);
     return `
     <tr>
       <td style="padding:10px 0;border-bottom:1px solid #e6edf5"><strong>${escapeHtml(String(item.name || "Produkt"))}</strong><br><span style="color:#64748b">SKU: ${escapeHtml(String(item.sku || ""))}</span><br><span style="display:block;margin-top:5px;font-size:13px;font-weight:700;color:${itemOrderAvailability(item)?.status === "instock" ? "#087f42" : "#9a5b00"}">Dostupnosť pri objednaní: ${escapeHtml(orderAvailabilityText(item))}</span></td>

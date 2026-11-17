@@ -1,6 +1,6 @@
 # Cenový a DPH audit – 17. 11. 2026
 
-**Výsledok: kontrola odhalila chyby; cenový tok neprešiel kontrolou.** Táto vetva obsahuje reprodukčné testy a zistenia, žiadnu zmenu produkčného výpočtu alebo cien.
+**Historický výsledok pred opravou (`729325b2`): kontrola odhalila štyri chyby.** Nižšie sú pôvodné dôkazy a výsledky auditu k verzii `f9c9fd45`. Oprava a aktuálne overenie sú v [nadväzujúcom protokole](vat-price-fix-2026-11-17.md); počty testov a otvorené chyby v tomto historickom zázname neopisujú opravenú verziu.
 
 ## Rozsah a ochrana produkcie
 
@@ -70,4 +70,4 @@ node --experimental-strip-types --test scripts/vat-price-integrity.test.ts
 
 ## Podmienky ďalšieho vydania
 
-Oprava musí zjednotiť zobrazenie so skutočným výsledkom Woo, odstrániť zľavu, ktorú server neposkytuje, a zachovať dohodnutú sumu s DPH aj pri polovici centa a väčšom počte riadkov. Potom musia prejsť tieto reprodukčné testy, bežné regresie a kontrola na izolovanom WordPress/Woo prostredí s rovnakou konfiguráciou. Cenníkové ceny a sadzby DPH sa nesmú hromadne prepisovať. Táto vetva sa nemá zlúčiť ako oprava – obsahuje dôkaz a otvorené chyby.
+Oprava musí zjednotiť zobrazenie so skutočným výsledkom Woo, odstrániť zľavu, ktorú server neposkytuje, a zachovať dohodnutú sumu s DPH aj pri polovici centa a väčšom počte riadkov. Potom musia prejsť tieto reprodukčné testy, bežné regresie a kontrola na izolovanom WordPress/Woo prostredí s rovnakou konfiguráciou. Cenníkové ceny a sadzby DPH sa nesmú hromadne prepisovať. Pôvodná auditná revízia sa nemala zlúčiť samostatne ako oprava. Nadväzujúca implementácia už obsahuje opravu a rozšírené testy; tento dokument zostáva záznamom pôvodného stavu.

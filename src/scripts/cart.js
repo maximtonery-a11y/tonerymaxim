@@ -2,6 +2,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } from "./paper-reward-cart.js";
 import { cartProductUnavailable, markMissingCartProduct, mergeCurrentCartProduct } from "../lib/cart-product-refresh.ts";
 import { isAvailableNow, orderFulfilmentText, ORDER_DELIVERY_LABEL } from "../lib/product-availability.ts";
+import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
 
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
@@ -535,18 +536,6 @@ import { isAvailableNow, orderFulfilmentText, ORDER_DELIVERY_LABEL } from "../li
     `;
   }
 
-  const VAT_RATE = 0.23;
-
-function netFromGross(value) {
-  const number = Number(value || 0);
-  return Math.round((number / (1 + VAT_RATE)) * 100) / 100;
-}
-
-function vatFromGross(value) {
-  const number = Number(value || 0);
-  return Math.round((number - netFromGross(number)) * 100) / 100;
-}
-
 function formatMoney(value) {
     return new Intl.NumberFormat("sk-SK", {
       style: "currency",
@@ -592,96 +581,6 @@ function formatMoney(value) {
     return Math.round(original * rate * 100) / 100;
   }
 
-  function normalizeSeriesText(value) {
-    return String(value || "")
-      .toUpperCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^A-Z0-9]/g, "");
-  }
-
-  function seriesText(item) {
-    return `${item?.sku || ""} ${item?.name || ""} ${item?.series_pack_key || ""} ${item?.series_pack_label || ""}`;
-  }
-
-  function seriesColorKey(item) {
-    const compact = normalizeSeriesText(seriesText(item));
-    const readable = String(seriesText(item) || "")
-      .toUpperCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, " ");
-
-    let match = compact.match(/W\d{3}([0-3])A?/);
-    if (match) return { "0": "black", "1": "cyan", "2": "yellow", "3": "magenta" }[match[1]] || "";
-
-    match = compact.match(/(?:CF|CE|CB)\d{2}([0-3])(?:A|X|XC|YC|AC)?/);
-    if (match) return { "0": "black", "1": "cyan", "2": "yellow", "3": "magenta" }[match[1]] || "";
-
-    match = compact.match(/(?:TN|LC|BU|WT|CRG|CLI|PGI|PG|CL|T)\d{2,5}(BK|BLACK|C|CYAN|M|MAGENTA|Y|YELLOW|K)/);
-    if (match) {
-      const suffix = match[1];
-      if (suffix === "BK" || suffix === "BLACK" || suffix === "K") return "black";
-      if (suffix === "C" || suffix === "CYAN") return "cyan";
-      if (suffix === "M" || suffix === "MAGENTA") return "magenta";
-      if (suffix === "Y" || suffix === "YELLOW") return "yellow";
-    }
-
-    if (/(BK|BLACK|CIERNA|K)$/.test(compact) || /\b(BK|BLACK|CIERNA|CIERNA)\b/.test(readable)) return "black";
-    if (/(C|CYAN)$/.test(compact) || /\b(C|CYAN|AZUROVA|AZUROVA|MODRA)\b/.test(readable)) return "cyan";
-    if (/(M|MAGENTA)$/.test(compact) || /\b(M|MAGENTA|PURPUROVA|PURPUROVA)\b/.test(readable)) return "magenta";
-    if (/(Y|YELLOW)$/.test(compact) || /\b(Y|YELLOW|ZLTA|ZLTA)\b/.test(readable)) return "yellow";
-    return "";
-  }
-
-  function seriesBaseKey(item) {
-    if (item?.series_pack_key) return normalizeSeriesText(item.series_pack_key);
-    const compact = normalizeSeriesText(seriesText(item));
-
-    let match = compact.match(/(W\d{3})[0-3]A?/);
-    if (match) return match[1];
-
-    match = compact.match(/((?:CF|CE|CB)\d{2})[0-3](?:A|X|XC|YC|AC)?/);
-    if (match) return match[1];
-
-    match = compact.match(/((?:TN|LC|BU|WT|CRG|CLI|PGI|PG|CL|T)\d{2,5})(?:BK|BLACK|C|CYAN|M|MAGENTA|Y|YELLOW|K)/);
-    if (match) return match[1];
-
-    return "";
-  }
-
-  function seriesPackDiscount(cart) {
-    const groups = new Map();
-    (cart || []).forEach((item) => {
-      const base = seriesBaseKey(item);
-      const color = seriesColorKey(item);
-      if (!base || !color) return;
-      if (!groups.has(base)) groups.set(base, new Map());
-      const byColor = groups.get(base);
-      if (!byColor.has(color)) byColor.set(color, []);
-      byColor.get(color).push(item);
-    });
-
-    let discount = 0;
-    groups.forEach((byColor) => {
-      const required = ["black", "cyan", "magenta", "yellow"];
-      if (!required.every((color) => byColor.has(color))) return;
-
-      const colorLines = required.map((color) => {
-        const items = byColor.get(color) || [];
-        const qty = items.reduce((sum, item) => sum + cleanQty(item.qty), 0);
-        const total = items.reduce((sum, item) => sum + Number(item.price || 0) * cleanQty(item.qty), 0);
-        return { qty, unit: total / Math.max(1, qty) };
-      });
-
-      const setQty = Math.min(...colorLines.map((line) => line.qty));
-      if (setQty < 1) return;
-      const oneSetTotal = colorLines.reduce((sum, line) => sum + Number(line.unit || 0), 0);
-      discount += Math.round(oneSetTotal * setQty * 0.05 * 100) / 100;
-    });
-
-    return Math.round(discount * 100) / 100;
-  }
-
   function cartPricing(cart = readCart()) {
     const totals = (cart || []).reduce((acc, item) => {
       const qty = cleanQty(item.qty);
@@ -692,7 +591,7 @@ function formatMoney(value) {
       return acc;
     }, { subtotal: 0, discount: 0 });
 
-    totals.discount = Math.round((totals.discount + seriesPackDiscount(cart || [])) * 100) / 100;
+    totals.discount = Math.round(totals.discount * 100) / 100;
     return totals;
   }
 
@@ -1151,8 +1050,9 @@ function formatMoney(value) {
     if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);
     const discountValueEl = document.querySelector("[data-cart-discount]");
     if (discountValueEl) discountValueEl.textContent = discount > 0 ? `-${formatMoney(discount)}` : "";
-    if (netEl) netEl.textContent = formatMoney(netFromGross(total));
-    if (vatEl) vatEl.textContent = formatMoney(vatFromGross(total));
+    const vatTotals = grossVatTotals([...cart.map(discountedGrossLine), -couponDiscount, -loyaltyDiscount], total);
+    if (netEl) netEl.textContent = formatMoney(vatTotals.net);
+    if (vatEl) vatEl.textContent = formatMoney(vatTotals.tax);
     if (totalEl) totalEl.textContent = formatMoney(total);
     if (mobileTotalEl) mobileTotalEl.textContent = formatMoney(total);
 

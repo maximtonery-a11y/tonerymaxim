@@ -190,7 +190,7 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
         include: ids.join(","),
         per_page: Math.min(100, ids.length),
         status: "publish",
-        _fields: "id,sku,name,price,status,stock_status,stock_quantity",
+        _fields: "id,sku,name,price,status,stock_status,stock_quantity,tax_status,tax_class",
       },
     })
     : [];
@@ -221,6 +221,9 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
   for (const { item, cached, requested } of resolved) {
     const live = liveById.get(String(cached.id));
     if (!live) throw new CheckoutCartError(`Produkt už nie je publikovaný alebo dostupný: ${cached.name || requested}`);
+    if (live.tax_status !== 'taxable' || live.tax_class !== '') {
+      throw new CheckoutCartError(`Pri produkte potrebujeme overiť cenu. Kontaktujte nás: ${cached.name || requested}`);
+    }
     const product = { ...cached, ...live };
     const isReward = item.loyalty_reward === true && String(product.sku || "").trim() === LOYALTY_PAPER_PRODUCT_SKU;
     if (!isPurchasable(product)) {
