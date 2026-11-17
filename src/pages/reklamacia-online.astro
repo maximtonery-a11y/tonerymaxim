@@ -77,6 +77,8 @@ const jsonLd = [
       <FloatingAdvisor />
     </div>
     <script>
+      import { claimConfirmation, claimSubmissionId, clearClaimSubmission } from '../scripts/claim-submission';
+      const submissionKey = 'tm_public_claim_submission_v1';
       const form = document.querySelector<HTMLFormElement>('[data-care-form="claim"]')!;
       const result = form.querySelector<HTMLElement>('.care-result')!;
       form.addEventListener('submit', async (event) => {
@@ -86,14 +88,17 @@ const jsonLd = [
         result.textContent = 'Odosielam reklamáciu...';
         result.className = 'care-result';
         try {
+          const payload = Object.fromEntries(new FormData(form).entries());
+          const submissionId = await claimSubmissionId(submissionKey, payload);
           const response = await fetch('/api/customer-care/reklamacia', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(Object.fromEntries(new FormData(form).entries())),
+            body: JSON.stringify({ ...payload, submissionId }),
           });
           const data = await response.json().catch(() => ({}));
           if (!response.ok || !data.ok) throw new Error(data.error || 'Reklamáciu sa nepodarilo odoslať.');
-          result.textContent = data.emailPending ? `Podanie bolo bezpečne uložené. Číslo: ${data.caseNumber}. Potvrdzovací e-mail sa nepodarilo odoslať, systém to automaticky zopakuje.` : `Reklamácia bola prijatá. Číslo: ${data.caseNumber}`;
+          result.textContent = claimConfirmation(data);
+          clearClaimSubmission(submissionKey);
           result.classList.add('is-ok');
           form.reset();
         } catch (error) {

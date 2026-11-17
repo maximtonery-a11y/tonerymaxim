@@ -160,6 +160,11 @@ export function ensureCustomerCareDeliveryWorkerStarted(): void {
   if (careWorkerStarted) return;
   careWorkerStarted = true;
   const scan = async () => {
+    // Claims have their own outbox. A failure cannot stop legacy withdrawals.
+    if (process.env.TM_DISABLE_BACKGROUND_WORKERS !== '1') {
+      void import('./online-claims').then(({ retryOnlineClaims }) => retryOnlineClaims())
+        .catch(() => console.error('[TM claims] outbox scan pending'));
+    }
     let names: string[] = [];
     try { names = await readdir(STORE_DIR); } catch (e: any) { if (e?.code !== "ENOENT") console.error("[TM care] scan failed", e); return; }
     for (const name of names.filter(n => /^[RO][0-9A-Z-]+\.json$/.test(n)).slice(-1000)) {
