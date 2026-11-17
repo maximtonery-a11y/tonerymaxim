@@ -25,7 +25,9 @@ const products = [product, variant(12, 'original', 104.66), variant(13, 'renovat
   variant(14, 'renovated', 58.71, 'TN-2411', 1200),
   variant(21, 'compatible', 10, 'TN-1030'), { ...variant(22, 'original', 27, 'TN-1030'), compatible_printers: ['Brother DCP-L2512D'] },
   variant(31, 'compatible', 10, 'TN-3430'), variant(32, 'original', 32, 'TN-3430'), variant(33, 'renovated', 23, 'TN-3430'),
-  variant(41, 'original', 42, 'TN-2010')];
+  variant(41, 'original', 42, 'TN-2010'),
+  { id: 91, sku: 'PAPER', slug: 'kancelarsky-papier-a4-80g-500-harkov', name: 'Kancelársky papier A4', price: 6,
+    product_type_key: 'product', stock_status: 'instock', stock_quantity: 30, compatible_printers: [] }];
 const orders = Array.from({ length: 61 }, (_, index) => ({ id: 701 - index, number: String(300000 + index), customer_id: 7, status: index === 1 ? 'cancelled' : 'completed',
   date_created: new Date(Date.UTC(2026, 10, 17 - index)).toISOString(), currency: 'EUR', total: '180.00', total_tax: '30.00', refunds: index === 0 ? [{ id: 900, total: '-12.00' }] : [],
   line_items: [{ id: 1, product_id: 11, sku: 'SKU-11', name: product.name, quantity: 4, total: '100.00', total_tax: '20.00' },

@@ -1027,7 +1027,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
 
   async function findAccessories(currentProduct) {
     const queries = [
-      { slug: "kancelarsky-papier-a4-80g-500-harkov", title: "Kancelársky papier", match: /kancel[aá]rsky\s+papier|papier\s+a4/i },
+      { slug: "kancelarsky-papier-a4-80g-500-harkov", search: "kancelársky papier", title: "Kancelársky papier", match: /kancel[aá]rsky\s+papier|papier\s+a4/i },
       { search: "pákový šanón", title: "Pákový šanón", match: /p[aá]kov[yý]\s+[sš]an[oó]n/i },
       { search: "roller", title: "Roller", match: /\broller\b|frixion/i },
     ];

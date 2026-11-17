@@ -33,6 +33,7 @@ async function checkLayout(page, origin, [width, height, touch]) {
     await page.goto(origin + productPath + id, { waitUntil: 'domcontentloaded' });
     await page.locator('[data-add-main]').waitFor();
     if (id === 41) await page.locator('#tm-cookie-reject').click();
+    await page.locator('[data-accessories-section] [data-related-id="91"]').waitFor();
     assert.equal(await page.locator('.comparison-card').count(), count);
     assert.equal(await page.locator('.jump-to-alternatives').count(), Number(count > 0));
     if (!count) continue;
@@ -49,6 +50,7 @@ async function checkLayout(page, origin, [width, height, touch]) {
         return top >= 0 && top < innerHeight;
       });
       assert.match(await page.locator('#compatible-printers').innerText(), /Brother DCP-L2512D/);
+      await page.locator('[data-accessories-section] [data-related-id="91"]').waitFor();
     }
   }
   if (width === 390) {
@@ -148,14 +150,11 @@ async function verifyEngine(origin, engine, configurations, options) {
       page.setDefaultTimeout(8000);
       const unexpected = [];
       page.on('pageerror', err => unexpected.push(err.message));
-      await context.route('**/*', route => {
+      const purchaseRoutes = ['/api/order-create', '/api/gopay-create'];
+      await context.route(url => url.origin !== origin || purchaseRoutes.includes(url.pathname), route => {
         const url = new URL(route.request().url());
-        if (url.origin !== origin) return route.abort();
-        if (['/api/order-create', '/api/gopay-create'].includes(url.pathname)) {
-          unexpected.push(url.pathname);
-          return route.abort();
-        }
-        return route.continue();
+        if (url.origin === origin) unexpected.push(url.pathname);
+        return route.abort();
       });
       try {
         await checkLayout(page, origin, layout);
