@@ -34,6 +34,12 @@ class FixtureDatabase {
         throw new Exception('Claims must not issue arbitrary database statements');
     }
 }
+class FixtureQuery {
+    public function __construct(public array $params, public bool $main = true) {}
+    public function is_main_query() { return $this->main; }
+    public function get($key) { return $this->params[$key] ?? null; }
+    public function set($key, $value) { $this->params[$key] = $value; }
+}
 class FixtureItem {
     public function get_product_id() { return 201; }
     public function get_variation_id() { return 0; }
@@ -56,6 +62,8 @@ function add_filter(...$args) { $GLOBALS['hooks'][] = $args; }
 function register_rest_route($namespace, $route, $options) { $GLOBALS['routes'][$route] = $options; }
 function register_post_type($name, $options) { $GLOBALS['post_type_options'] = $options; }
 function current_user_can($cap, ...$args) { return $cap === 'edit_posts' || $GLOBALS['manager']; }
+function is_admin() { return $GLOBALS['fixture_admin'] ?? true; }
+function esc_html($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); }
 function get_current_user_id() { return $GLOBALS['current_id']; }
 function rest_url($path = '') { throw new Exception('URL filters must not run while resolving REST authentication'); }
 function wp_parse_url($url, $component = -1) { return parse_url($url, $component); }
@@ -175,4 +183,28 @@ $lock_available = true; $insert_failure = true;
 $failed = Tonerymaxim_Reklamacie_Plugin::rest_create(new WP_REST_Request(body(['claim_number' => 'RFAILURE', 'customer_id' => 7])));
 check($failed->status === 500 && str_contains(end($wpdb->queries), 'RELEASE_LOCK'), 'Database insertion failure releases the advisory lock');
 check(!$sent, 'All backend tests send zero external emails');
+$insert_failure = false;
+$internal_id = 'R25636E868D4AB3DF0C64B56E';
+$short = Tonerymaxim_Reklamacie_Plugin::rest_create(new WP_REST_Request(body(['claim_number' => $internal_id, 'customer_id' => 7])));
+$short_id = $short->data['claim']['wp_id'];
+check($short->data['claim']['id'] === $internal_id && $short->data['claim']['public_number'] === 'R-' . $short_id, 'Short public references preserve the stable REST reconciliation ID');
+check(Tonerymaxim_Reklamacie_Plugin::display_claim_title($posts[$short_id]->post_title, $short_id) === 'R-' . $short_id . ' – ' . body()['product_name'], 'The Woo claim title shows the same readable number');
+check(Tonerymaxim_Reklamacie_Plugin::display_claim_title('Unrelated title', $short_id) === 'Unrelated title', 'Unrelated titles are not rewritten');
+check($first->data['claim']['public_number'] === 'RFIXTURE0001', 'Existing non-hash numbers retain their original reference');
+ob_start(); Tonerymaxim_Reklamacie_Plugin::column_content('tm_claim_number', $short_id); $column = ob_get_clean();
+check($column === 'R-' . $short_id, 'The Woo number column matches the customer-facing reference');
+$look_up = new FixtureQuery(['post_type' => 'tm_reclamation', 's' => 'R-' . $short_id]);
+Tonerymaxim_Reklamacie_Plugin::search_claim_number($look_up);
+check($look_up->get('p') === $short_id && $look_up->get('s') === '', 'Woo administrators can search the short number');
+foreach ([new FixtureQuery(['post_type' => 'product', 's' => 'R-' . $short_id]), new FixtureQuery(['post_type' => 'tm_reclamation', 's' => 'R-' . $short_id], false)] as $other_query) {
+    Tonerymaxim_Reklamacie_Plugin::search_claim_number($other_query);
+    check($other_query->get('p') === null, 'Product and secondary queries are unchanged');
+}
+$fixture_admin = false;
+$front_query = new FixtureQuery(['post_type' => 'tm_reclamation', 's' => 'R-' . $short_id]);
+Tonerymaxim_Reklamacie_Plugin::search_claim_number($front_query);
+check($front_query->get('p') === null, 'Public website queries are unchanged');
+$fixture_admin = true;
+Tonerymaxim_Reklamacie_Plugin::rest_update(new WP_REST_Request(['id' => $short_id, 'status' => 'checking']));
+check(count($sent) === 1 && str_contains($sent[0][1], 'R-' . $short_id) && !str_contains($sent[0][1], $internal_id), 'Status notification subjects use the same short number without altering delivery flow');
 echo "Claims plugin checks: {$checks}; failures: 0\n";

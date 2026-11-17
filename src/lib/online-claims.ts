@@ -27,6 +27,14 @@ const email = (value: unknown) => text(value).toLowerCase();
 const positiveId = (value: unknown) => Number.isSafeInteger(Number(value)) && Number(value) > 0;
 const fileFor = (id: string) => join(DIRECTORY, `${id}.json`);
 
+// WordPress IDs are already unique. Keep the submission hash for reconciliation
+// and disk filenames; show a short reference only after Woo has assigned an ID.
+export function displayClaimNumber(claim: any): string {
+  const id = text(claim?.id || claim?.claim_number);
+  if (!CASE_PATTERN.test(id)) return id;
+  return positiveId(claim?.wp_id) ? `R-${Number(claim.wp_id)}` : '';
+}
+
 export class ClaimInputError extends Error {
   constructor(message: string, public status = 400) { super(message); }
 }
@@ -80,16 +88,17 @@ async function synchronize(record: ClaimRecord): Promise<void> {
 async function processRecord(record: ClaimRecord): Promise<ClaimRecord> {
   try { await synchronize(record); }
   catch { console.error('[TM claims] Woo confirmation pending', record.caseNumber); return record; }
+  const caseNumber = displayClaimNumber(record.wooClaim);
   const submitted = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'medium', timeStyle: 'medium', timeZone: 'Europe/Bratislava' }).format(new Date(record.createdAt));
-  const content = buildCustomerCareText('reklamacia', record.caseNumber, record.contact);
+  const content = buildCustomerCareText('reklamacia', caseNumber, record.contact);
   const plain = `${content}\nDátum a čas prijatia podania: ${submitted}\n`;
-  const html = buildCustomerCareHtml('reklamacia', record.caseNumber, record.contact);
+  const html = buildCustomerCareHtml('reklamacia', caseNumber, record.contact);
   for (const recipient of ['customer', 'admin'] as const) {
     if (record.delivery[recipient]) continue;
     try {
       const result = await sendMail({
         to: recipient === 'customer' ? record.contact.email : customerCareAdminEmail(),
-        subject: recipient === 'customer' ? `Reklamáciu ${record.caseNumber} sme prijali | ToneryMAXIM.sk` : `Nová reklamácia ${record.caseNumber} | ToneryMAXIM.sk`,
+        subject: recipient === 'customer' ? `Reklamáciu ${caseNumber} sme prijali | ToneryMAXIM.sk` : `Nová reklamácia ${caseNumber} | ToneryMAXIM.sk`,
         text: plain, html: `${html}<pre style="white-space:pre-wrap">${escapeHtml(plain)}</pre>`,
         replyTo: recipient === 'admin' ? record.contact.email : customerCareAdminEmail(),
       });
@@ -136,7 +145,7 @@ async function locked(id: string, work: () => Promise<ClaimRecord>): Promise<Cla
 export function claimResult(record: ClaimRecord) {
   const wooSaved = Boolean(record.wooClaim);
   return {
-    ok: true, caseNumber: record.caseNumber, wooSaved,
+    ok: true, caseNumber: record.wooClaim ? displayClaimNumber(record.wooClaim) : null, wooSaved,
     emailSent: record.delivery.customer, emailPending: !record.delivery.customer,
     adminEmailPending: !record.delivery.admin,
     claim: record.wooClaim || { ...record.payload, id: record.caseNumber, wp_id: null, created_at: record.createdAt, status_label: 'Prijatá – spracováva sa' },

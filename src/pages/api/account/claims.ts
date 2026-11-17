@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { readCustomerSession } from "../../../lib/auth-session";
 import { getWooCustomerById, getWooCustomerOrders, wooRequest } from "../../../lib/woo-client";
 import { sanitizeCustomerCarePayload } from "../../../lib/customer-care";
-import { ClaimInputError, claimMessageWithContact, claimsRequest, displayClaimOrderNumber, pendingCustomerClaims, submitOnlineClaim } from "../../../lib/online-claims";
+import { ClaimInputError, claimMessageWithContact, claimsRequest, displayClaimNumber, displayClaimOrderNumber, pendingCustomerClaims, submitOnlineClaim } from "../../../lib/online-claims";
 
 export const prerender = false;
 
@@ -63,7 +63,7 @@ function normalizeDecision(value: unknown, status: ClaimStatus): ClaimDecision {
 function claimToPublic(claim: any): Claim {
   const status = normalizeStatus(claim?.status);
   return {
-    id: clean(claim?.id || claim?.claim_number),
+    id: displayClaimNumber(claim) || clean(claim?.id || claim?.claim_number),
     wp_id: Number(claim?.wp_id || 0) || null,
     customer_id: Number(claim?.customer_id || 0),
     order_id: Number(claim?.order_id || 0),

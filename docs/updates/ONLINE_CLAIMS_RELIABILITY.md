@@ -29,6 +29,14 @@ Poradie nasadenia: najskôr overený plugin 1.1.5 do Woo, potom zmena Astro z `m
 
 Overenie na skutočnej službe musí používať určené testovacie podanie a schránky. Izolované testy nepreukazujú skutočné doručenie e-mailov. Aktuálna zmena neposiela živé správy ani nevytvára produkčné reklamácie.
 
+## Krátke čísla reklamácií (plugin 1.1.6)
+
+Zákaznícke číslo pre automatické online podania má tvar `R-54566`, odvodený od jedinečného WordPress ID reklamácie. Zobrazuje sa rovnako v zákazníckom účte, potvrdeniach, upozorneniach správcovi, stavových e-mailoch a administrácii Woo. V zozname TM Reklamácie sa dá podľa krátkeho čísla aj vyhľadať. Staršie čitateľné čísla, ktoré nie sú technickým hashom, sa nemenia.
+
+Dlhý identifikátor zostáva pôvodným interným `id` reklamačného REST API, hodnotou `claim_number` pri synchronizácii a názvom šifrovaného súboru. Nemení sa jeho párovanie, obsah podania ani príznaky už prijatých e-mailov; netreba presúvať existujúcu frontu. API pluginu pridáva `public_number` bez zmeny pôvodného kontraktu. Astro odvodí krátke číslo aj z odpovedí pluginu 1.1.5, takže poradie aktualizácií nespôsobí odmietnutie uloženého prípadu.
+
+Podanie čakajúce na Woo ešte nemá krátke číslo (`caseNumber: null`). Zákazník uvidí informáciu, že číslo a potvrdenie dostane po dokončení spracovania; technický hash sa nezobrazí. Už doručené správy sa spätne neupravujú ani neposielajú znova. Zmena vyžaduje aktualizovať plugin na 1.1.6 a redeploy Astro.
+
 ## Nasadenie a návrat
 
 Pred nasadením musí byť existujúce `TM_PERSISTENT_DATA_DIR` na trvalom zväzku a dostupný existujúci `TM_PERSISTENCE_SECRET`/`AUTH_SECRET`. Nepridávajú sa závislosti, nové prístupy ani tajné premenné. Služba musí používať existujúci samostatný Node server a mať zapnuté bežné časovače podpory.

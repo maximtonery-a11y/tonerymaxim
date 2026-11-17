@@ -118,8 +118,45 @@ test('guest claim is written and read back in Woo before both complete confirmat
   for (const outgoing of f.outgoing) { assert.match(outgoing.text, /čierne pásy/); assert.match(outgoing.subject, new RegExp(r.data.caseNumber)); }
   assert.deepEqual(f.order, f.originalOrder);
   const [record] = await f.diskRecords(); assert.equal(record.wooClaim.wp_id, f.claims[0].wp_id);
-  const encrypted = await readFile(join(f.directory, 'online-claims', `${r.data.caseNumber}.json`), 'utf8');
+  const encrypted = await readFile(join(f.directory, 'online-claims', `${record.caseNumber}.json`), 'utf8');
   assert.ok(!encrypted.includes(publicPayload.email)); assert.ok(!encrypted.includes(publicPayload.iban));
+});
+
+test('Woo, account and both emails use a short number while retries retain the original internal hash', async () => {
+  const f = await fixture(); const r = await f.submit('account');
+  assert.equal(r.data.caseNumber, 'R-1001'); assert.equal(r.data.claim.id, 'R-1001');
+  const [record] = await f.diskRecords();
+  assert.match(record.caseNumber, /^R[A-F0-9]{24}$/);
+  assert.equal(f.claims[0].id, record.caseNumber);
+  assert.equal(record.payload.claim_number, record.caseNumber);
+  assert.ok(f.requests.filter(request => request.method === 'GET' && request.url.includes('/tonerymaxim/')).every(request => new URL(request.url).searchParams.get('claim_number') === record.caseNumber));
+  for (const mail of f.outgoing) {
+    for (const field of ['subject', 'text', 'html']) {
+      assert.match(mail[field], /R-1001/); assert.ok(!mail[field].includes(record.caseNumber));
+    }
+  }
+  const data = await (await f.server.accountGET({ cookies: f.cookies })).json();
+  assert.equal(data.claims[0].id, 'R-1001');
+  await f.submit('account'); assert.equal(f.claims.length, 1); assert.equal(f.outgoing.length, 2);
+});
+
+test('a pending case gets its short number after Woo recovery without renaming the outbox record', async () => {
+  const f = await fixture({ guest: true, pluginOffline: true }); const r = await f.submit();
+  assert.equal(r.data.caseNumber, null);
+  assert.doesNotMatch(claimConfirmation(r.data), /null|R[A-F0-9]{24}/);
+  const [before] = await f.diskRecords();
+  f.options.pluginOffline = false; await f.server.retryOnlineClaims();
+  const [after] = await f.diskRecords(); assert.equal(after.caseNumber, before.caseNumber);
+  assert.equal(f.claims.length, 1); assert.equal(f.outgoing.length, 2);
+  assert.match(f.outgoing[0].subject, /R-1001/);
+  assert.equal((await f.submit()).data.caseNumber, 'R-1001');
+});
+
+test('historical readable claim numbers are preserved', async () => {
+  const f = await fixture();
+  f.claims.push({ id: 'R20261019-1234', wp_id: 2002, customer_id: 7, customer_email: publicPayload.email, created_at: new Date().toISOString() });
+  const data = await (await f.server.accountGET({ cookies: f.cookies })).json();
+  assert.equal(data.claims[0].id, 'R20261019-1234');
 });
 
 test('account claim uses authenticated customer and server-side product, without modifying order', async () => {
@@ -174,7 +211,9 @@ test('failure to read the new case back leaves email pending until verification 
 test('lost create response is reconciled by case number without a second POST or duplicate email', async () => {
   const f = await fixture({ loseCreateResponse: true }); const a = await f.submit();
   assert.equal(a.data.wooSaved, false); assert.equal(f.claims.length, 1); assert.equal(f.outgoing.length, 0);
-  const b = await f.submit(); assert.equal(b.data.caseNumber, a.data.caseNumber); assert.equal(b.data.wooSaved, true);
+  const [before] = await f.diskRecords();
+  const b = await f.submit(); assert.equal(b.data.caseNumber, 'R-1001'); assert.equal(b.data.wooSaved, true);
+  assert.equal((await f.diskRecords())[0].caseNumber, before.caseNumber);
   assert.equal(f.requests.filter(r => r.method === 'POST').length, 1); assert.equal(f.outgoing.length, 2);
 });
 
@@ -236,7 +275,8 @@ test('an old form without a retry identity is asked to refresh before any claim 
 test('pending account claims are visible only in their customer account', async () => {
   const f = await fixture({ badSuccess: true }); const r = await f.submit('account');
   const response = await f.server.accountGET({ cookies: f.cookies }); const data = await response.json();
-  assert.equal(response.status, 200); assert.equal(data.claims[0].id, r.data.caseNumber); assert.equal(data.claims[0].wp_id, null);
+  assert.equal(response.status, 200); assert.equal(r.data.caseNumber, null);
+  assert.equal(data.claims[0].id, (await f.diskRecords())[0].caseNumber); assert.equal(data.claims[0].wp_id, null);
 });
 
 test('malformed list response does not trigger a blind create', async () => {
@@ -259,6 +299,8 @@ test('both form scripts use truthful confirmation and isolated retry keys', asyn
     assert.match(page, /claimConfirmation\(data\)/); assert.match(page, /claimSubmissionId\(submissionKey, payload\)/);
     assert.doesNotMatch(page, /tm_checkout|tm_submitted_gopay/);
   }
+  const accountPage = await readFile(join(root, 'src/pages/ucet/reklamacie.astro'), 'utf8');
+  assert.match(accountPage, /claim\.wp_id \?/); assert.match(accountPage, /Číslo pridelíme po spracovaní/);
 });
 
 test('browser retry identity survives retries, changes for new content and never touches checkout keys', async () => {
