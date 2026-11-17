@@ -140,6 +140,29 @@ function temporaryUnavailable(): Response {
   });
 }
 
+// Bounded and privacy-preserving security telemetry for Coolify/Node stdout.
+// Events contain no IP, cookies, query parameters, tokens, request bodies or customer data.
+const blockedAuditWindow = new Map<string, { count: number; start: number }>();
+function auditBlockedRequest(reason: string, request: Request, url: URL): void {
+  const now = Date.now();
+  const entry = blockedAuditWindow.get(reason);
+  if (!entry || now - entry.start >= 60_000) {
+    blockedAuditWindow.set(reason, { count: 1, start: now });
+    // One record per reason per minute; avoids attacker-controlled log floods.
+    // Counts represent only this Node process and are not total attack counts.
+    console.warn('[TM security-audit]', JSON.stringify({
+      ts: new Date(now).toISOString(),
+      reason,
+      method: request.method,
+      scope: url.pathname.startsWith('/api/auth/') ? 'auth' : url.pathname.startsWith('/api/') ? 'api' : 'other',
+      previousWindowBlocked: entry?.count ?? 0,
+      source: 'astro-middleware',
+    }));
+  } else {
+    entry.count += 1;
+  }
+}
+
 function apiError(message: string, status: number, extra: Record<string, string> = {}): Response {
   return Response.json({ ok: false, error: message }, {
     status,
@@ -213,13 +236,23 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
   }
 
   if (TEST_ROUTES.has(url.pathname) && !['localhost', '127.0.0.1', '::1'].includes(url.hostname)) {
+    auditBlockedRequest('test-route', request, url);
     return apiError('Endpoint nie je v produkcii dostupny.', 404);
   }
   const length = Number(request.headers.get('content-length') || 0);
-  if (Number.isFinite(length) && length > 1_000_000) return apiError('Poziadavka je prilis velka.', 413);
-  if (!originAllowed(request, url)) return apiError('Neplatny povod poziadavky.', 403);
+  if (Number.isFinite(length) && length > 1_000_000) {
+    auditBlockedRequest('oversize', request, url);
+    return apiError('Poziadavka je prilis velka.', 413);
+  }
+  if (!originAllowed(request, url)) {
+    auditBlockedRequest('origin', request, url);
+    return apiError('Neplatny povod poziadavky.', 403);
+  }
   const rate = rateAllowed(request, url);
-  if (!rate.ok) return apiError('Prilis vela poziadaviek.', 429, { 'Retry-After': String(rate.retryAfter) });
+  if (!rate.ok) {
+    auditBlockedRequest('rate-limit', request, url);
+    return apiError('Prilis vela poziadaviek.', 429, { 'Retry-After': String(rate.retryAfter) });
+  }
   try {
     return finish(await next(), url, request, startedAt);
   } catch (error) {
