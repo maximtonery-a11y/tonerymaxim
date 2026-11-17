@@ -1400,6 +1400,9 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
 
 
     applyMobileParameterVisibility(root);
+    if (window.location.hash === "#compatible-printers") {
+      window.requestAnimationFrame(() => root.querySelector("#compatible-printers")?.scrollIntoView({ block: "start" }));
+    }
 
     const mobileParameterMedia = window.matchMedia("(max-width: 820px)");
     const refreshMobileParameterVisibility = () => applyMobileParameterVisibility(root);

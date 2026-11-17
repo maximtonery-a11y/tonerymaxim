@@ -18,7 +18,7 @@ async function fits(locator) {
     return rect.width && (rect.left < -1 || rect.right > innerWidth + 1 || el.scrollWidth > el.clientWidth + 1);
   }).map(el => ({ element: el.className || el.tagName, viewport: innerWidth,
     left: Math.round(el.getBoundingClientRect().left), right: Math.round(el.getBoundingClientRect().right),
-    content: el.scrollWidth, box: el.clientWidth })) );
+    content: el.scrollWidth, box: el.clientWidth })));
   assert.deepEqual(bad, [], 'Elements must fit the viewport');
 }
 async function columns(page, count) {
@@ -41,6 +41,14 @@ async function checkLayout(page, origin, [width, height, touch]) {
     if (id === 21) {
       assert.equal(await page.locator('a.comparison-button').getAttribute('href'), productPath + '22#compatible-printers');
       assert.equal(await page.locator('[data-alternative-cart]').count(), 0);
+      await page.getByRole('link', { name: 'Overiť tlačiareň' }).click();
+      await page.waitForFunction(() => {
+        const target = document.querySelector('#compatible-printers h2');
+        if (!target || location.hash !== '#compatible-printers') return false;
+        const top = target.getBoundingClientRect().top;
+        return top >= 0 && top < innerHeight;
+      });
+      assert.match(await page.locator('#compatible-printers').innerText(), /Brother DCP-L2512D/);
     }
   }
   if (width === 390) {
@@ -125,11 +133,10 @@ async function checkLayout(page, origin, [width, height, touch]) {
   }
   await fits(page.locator('.checkout-summary .summary-line'));
 }
-export async function verifyResponsivePurchase(origin) {
-  const { chromium } = await import(process.env.TM_PLAYWRIGHT_MODULE || 'playwright');
-  const browser = await chromium.launch({ ...(process.env.TM_CHROMIUM_PATH ? { executablePath: process.env.TM_CHROMIUM_PATH } : {}) });
+async function verifyEngine(origin, engine, configurations, options) {
+  const browser = await engine.launch(options);
   try {
-    for (const layout of layouts) {
+    for (const layout of configurations) {
       const [width, height, touch] = layout;
       const context = await browser.newContext({ viewport: { width, height }, isMobile: touch, hasTouch: touch, reducedMotion: 'reduce' });
       const page = await context.newPage();
@@ -148,10 +155,16 @@ export async function verifyResponsivePurchase(origin) {
       try {
         await checkLayout(page, origin, layout);
         assert.deepEqual(unexpected, []);
-        console.log(`${width}×${height} OK: alternatives, cart, reorder, VAT and checkout`);
+        console.log(`${engine.name()} ${width}×${height} OK: alternatives, cart, reorder, VAT and checkout`);
       } catch (error) {
         throw new Error(`${width}×${height}, ${page.url()}: ${error.message}`, { cause: error });
       } finally { await context.close(); }
     }
   } finally { await browser.close(); }
+}
+
+export async function verifyResponsivePurchase(origin) {
+  const { chromium, webkit } = await import(process.env.TM_PLAYWRIGHT_MODULE || 'playwright');
+  await verifyEngine(origin, chromium, layouts, process.env.TM_CHROMIUM_PATH ? { executablePath: process.env.TM_CHROMIUM_PATH } : {});
+  await verifyEngine(origin, webkit, layouts.filter(([width]) => [390, 844, 1280].includes(width)), {});
 }

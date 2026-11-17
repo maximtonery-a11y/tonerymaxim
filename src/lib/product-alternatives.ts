@@ -37,13 +37,14 @@ function capacityFamily(code: string, brand: string) {
   return code.replace(/x{1,2}l$/, '');
 }
 
+const extraCartridge = /\+\s*[a-z]{1,5}[- ]?\d[a-z\d-]*/g;
 const packWords = /\b(?:sada|sady|set|suprava|multipack|multi[ -]pack|dual[ -]?pack|duopack|twin(?:pack)?|troj[ -]?pack|cmyk|cmy)\b/;
 function packSize(product: TmProduct) {
   const name = fold(product.name);
   const count = name.match(/\b(\d+)\s*(?:ks|kus(?:y|ov)?)\b/);
   if (count) return Number(count[1]);
   if (/\b(?:duopack|dual[ -]?pack|twin(?:pack)?)\b/.test(name)) return 2;
-  if (packWords.test(name + ' ' + fold(product.color)) || /\d\s*[x×*]\s*\d/.test(fold(product.capacity)) || /\b(?:ce|cf|cb|w|q)\d{3,4}(?:ad|xd)\b/.test(name)) return 0;
+  if (name.match(extraCartridge) || packWords.test(name + ' ' + fold(product.color)) || /\d\s*[x×*]\s*\d/.test(fold(product.capacity || product.page_yield)) || /\b(?:ce|cf|cb|w|q)\d{3,4}(?:ad|xd)\b/.test(name)) return 0;
   return 1;
 }
 
@@ -52,7 +53,9 @@ function profile(product: TmProduct) {
   const code = cartridgeCode(product, brand);
   const name = fold(product.name);
   const capacity = String(product.capacity || product.kapacita || product.page_yield || product.yield || '').trim();
-  const volume = capacity.match(/^(\d+(?:[.,]\d+)?)\s*ml$/i);
+  const volumes = [...capacity.matchAll(/(?:^|[^\d.,])(\d+(?:[.,]\d+)?)\s*ml\b/gi)];
+  const hasVolume = /\bml\b|\dml\b/i.test(capacity);
+  const ml = volumes.length === 1 && !/\d\s*[-–—+]\s*\d/.test(capacity) ? Number(volumes[0][1].replace(',', '.')) : null;
   const size = packSize(product);
   // Mixed and unverified packs may have separate yields per colour. Never turn
   // these into a single page cost or use them to advertise a price difference.
@@ -62,7 +65,7 @@ function profile(product: TmProduct) {
   const printers = product.compatible_printers || product.printers;
   return { product, brand, code, family: capacityFamily(code, brand), kind: material(product), size,
     color: /^(?:neuveden[eay]|n\/a|[-–])$/.test(color) ? '' : color, slot,
-    capacity, pages, ml: volume ? Number(volume[1].replace(',', '.')) : null,
+    capacity, pages, ml, hasVolume, extras: (name.match(extraCartridge) || []).join('/').replace(/[ -]/g, ''),
     models: new Set<string>((Array.isArray(printers) ? printers : []).map((name: string) => fold(name).replace(/[^a-z0-9]/g, '')).filter((name: string) => /\d/.test(name))),
   };
 }
@@ -70,14 +73,14 @@ function profile(product: TmProduct) {
 type Profile = ReturnType<typeof profile>;
 function match(current: Profile, candidate: Profile) {
   if (!current.code || !candidate.code || !current.kind || current.brand !== candidate.brand || current.kind !== candidate.kind
-    || current.family !== candidate.family || !current.size || current.size !== candidate.size || current.slot !== candidate.slot) return null;
+    || current.family !== candidate.family || !current.size || current.size !== candidate.size || current.slot !== candidate.slot || current.extras !== candidate.extras) return null;
   if (current.color !== candidate.color || (!current.color && ['toner', 'ink'].includes(current.kind))) return null;
   const exact = current.code === candidate.code;
   if (current.size !== 1 && !exact) return null;
   const shared = [...candidate.models].filter(model => current.models.has(model)).length;
   if (!shared) return null;
   const partial = shared < current.models.size;
-  const sameVolume = current.ml === candidate.ml;
+  const sameVolume = !current.hasVolume && !candidate.hasVolume || current.ml !== null && current.ml > 0 && current.ml === candidate.ml;
   const sameYield = current.pages !== null && current.pages === candidate.pages;
   const comparable = exact && current.size === 1 && !partial && shared === candidate.models.size && sameVolume && (sameYield || (current.ml !== null && !current.pages && !candidate.pages));
   const basis = current.pages && candidate.pages ? 'pages' : current.ml && candidate.ml ? 'ml' : null;

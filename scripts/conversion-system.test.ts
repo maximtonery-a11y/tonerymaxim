@@ -94,6 +94,12 @@ test("úspora používa aktuálnu cenu rovnocenného originálu", () => {
   assert.equal(selectProductAlternatives(ml, [mlOriginal]).alternatives[0].variant.pages, null);
   assert.equal(savingsAgainstOriginal(ml, mlOriginal), 7);
   assert.equal(savingsAgainstOriginal(ml, { ...mlOriginal, capacity: "25 ml" }), 0);
+  const mixed = { ...ml, capacity: "11,2 ml; 600 strán" };
+  assert.equal(savingsAgainstOriginal(mixed, { ...mlOriginal, capacity: "22 ml; 600 strán" }), 0);
+  assert.equal(savingsAgainstOriginal(mixed, { ...mlOriginal, capacity: "11,2 ml; 600 strán" }), 7);
+  assert.equal(savingsAgainstOriginal(mixed, { ...mlOriginal, capacity: "9–11,2 ml; 600 strán" }), 0);
+  const paperBundle = { ...ml, name: ml.name + " (2 ks) + GP-501" };
+  assert.equal(selectProductAlternatives(paperBundle, [{ ...mlOriginal, name: ml.name + " (2 ks)" }]).alternatives.length, 0);
   assert.equal(savingsAgainstOriginal({ ...current, name: current.name + " (2 ks)" }, { ...original, name: original.name + " (2 ks)" }), 0);
 });
 

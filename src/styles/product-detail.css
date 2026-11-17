@@ -2767,6 +2767,7 @@ body.product-detail-body .description-card {
 }
 
 body.product-detail-body .compat-section-modern {
+  scroll-margin-top: 7.5rem;
   padding: 28px;
   overflow: hidden;
   border-color: #d8e4f1;
