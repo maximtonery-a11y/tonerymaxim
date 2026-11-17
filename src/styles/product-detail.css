@@ -312,6 +312,74 @@
   cursor: pointer;
 }
 
+.printer-check { min-width: 0; }
+.printer-check-actions, .printer-check-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 16px;
+}
+.printer-check-actions button, .printer-check-jump {
+  min-height: 44px;
+  text-underline-offset: 3px;
+}
+.printer-check-actions [data-check-toggle]::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 2px 3px 8px;
+  border: solid currentColor;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+.printer-check-actions [aria-expanded="true"]::after { transform: rotate(225deg); margin-bottom: 0; }
+.printer-check-actions [data-show-compatible] { color: #40546c; font-weight: 650; }
+.printer-check [hidden] { display: none !important; }
+.printer-check [data-check-panel] { border-top: 1px solid var(--type-line); padding: 12px 0 4px; }
+.printer-check label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 750; }
+.printer-check-input { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+.printer-check-input input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #879bb2;
+  border-radius: 8px;
+  background: #fff;
+  color: #112743;
+  font: inherit;
+  font-size: 16px;
+}
+.printer-check-input button {
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #112743;
+  color: #fff;
+}
+.printer-check [role="status"] { margin: 8px 0 0; font-size: 14px; line-height: 1.45; color: #40546c; }
+.printer-check [data-state="listed"] { color: #175b38; font-weight: 750; }
+.printer-check-options { gap: 2px 12px; }
+.printer-check-options button, .printer-check [data-check-catalog], .printer-check-jump {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14px;
+  color: #12589c;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.printer-check-jump { margin-top: 8px; }
+.printer-check :is(input, button, a):focus-visible, .printer-check-jump:focus-visible {
+  outline: 2px solid #12589c;
+  outline-offset: 2px;
+}
+@media (max-width: 480px) {
+  .printer-check-input { grid-template-columns: minmax(0, 1fr); }
+  .printer-check-input button { width: 100%; text-align: center; }
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;
