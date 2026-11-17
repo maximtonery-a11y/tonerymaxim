@@ -16,15 +16,16 @@ API rozlišuje `wooSaved`, `emailSent`, `emailPending` a `adminEmailPending`. Fo
 
 `npm run test:claims` vykonáva integračné testy skutočných serverových modulov so skutočným šifrovaným diskovým úložiskom. Woo a SMTP nahrádzajú izolované testovacie adaptéry, ktoré zakazujú kontaktovanie živých hostiteľov a zápis do objednávok. Pokrýva výpadky a chybné odpovede, spätné načítanie, stratenú odpoveď po zápise, súbežné a opakované podania, vlastníctvo, stav každého e-mailu, nezmenené údaje objednávok, odstúpenie a oddelenie od platobných kľúčov v prehliadači. Kontrola je zaradená do existujúceho predzostavovacieho guardu, ktorý spúšťa aj GitHub workflow.
 
-Zdroj nasadeného pluginu 1.1.3 bol načítaný priamo z prihlásenej administrácie Woo a pred zmenou zálohovaný. Potvrdilo sa odmietanie `customer_id: 0` a verejný prístup k REST zoznamu/zápisu. Nová verzia **1.1.4** je súčasťou repozitára:
+Zdroj nasadeného pluginu 1.1.3 bol načítaný priamo z prihlásenej administrácie Woo a pred zmenou zálohovaný. Potvrdilo sa odmietanie `customer_id: 0` a verejný prístup k REST zoznamu/zápisu. Nová verzia **1.1.5** je súčasťou repozitára:
 
 - REST aj administrácia reklamácií vyžadujú `manage_woocommerce`. Existujúce overovanie Woo API kľúčov sa rozšíri iba na presné reklamačné trasy; ostatné WordPress, dopravné a platobné trasy sa nemenia.
+- Overovanie používa výhradne trasu, ktorú WordPress už rozpoznal pri REST požiadavke. Nevolá URL filtre počas určovania používateľa, aby sa v nasadenom prostredí nemohlo rekurzívne vrátiť do autentifikácie.
 - Hosť je evidovaný ako `customer_id: 0`, overuje sa skutočný vlastník objednávky, fakturačný/aktuálny zákaznícky e-mail, číslo objednávky a produkt/SKU.
 - Stabilné číslo prípadu je idempotentné aj vo WordPresse. Krátka MySQL poradná zámka chráni iba vytvorenie daného prípadu a uvoľní sa aj pri ukončení PHP spojenia; nezamyká objednávky ani sklad.
 - Presné vyhľadanie podľa čísla prípadu nie je obmedzené prvými 100 reklamáciami. Pôvodný text zákazníka sa zachová ako textové meta, pri HTML zobrazení sa escapuje; apostrofy a spätné lomky sa nestrácajú.
 - `php scripts/online-claims-plugin.test.php` vykoná samostatné testy skutočného PHP pluginu s izolovanými WordPress/Woo adaptérmi. Kontrola syntaxe a PHP testy sú zaradené aj do CI.
 
-Poradie nasadenia: najskôr overený plugin 1.1.4 do Woo, potom zmena Astro z `main` a redeploy. Plugin 1.1.4 podporuje aj existujúce registrované podania staršej verzie Astro. Administrátorské stavové e-maily pluginu zostávajú pôvodným postupom.
+Poradie nasadenia: najskôr overený plugin 1.1.5 do Woo, potom zmena Astro z `main` a redeploy. Plugin 1.1.5 podporuje aj existujúce registrované podania staršej verzie Astro. Administrátorské stavové e-maily pluginu zostávajú pôvodným postupom.
 
 Overenie na skutočnej službe musí používať určené testovacie podanie a schránky. Izolované testy nepreukazujú skutočné doručenie e-mailov. Aktuálna zmena neposiela živé správy ani nevytvára produkčné reklamácie.
 

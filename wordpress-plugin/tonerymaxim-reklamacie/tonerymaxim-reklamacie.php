@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ToneryMAXIM Reklamácie
  * Description: Vlastný reklamačný systém pre ToneryMAXIM.sk s REST API pre Astro e-shop.
- * Version: 1.1.4
+ * Version: 1.1.5
  * Author: ToneryMAXIM
  */
 
@@ -112,10 +112,13 @@ final class Tonerymaxim_Reklamacie_Plugin {
     // WordPress route or Woo shipping/payment authentication is changed.
     public static function include_claims_in_wc_auth($is_wc): bool {
         if ($is_wc) return true;
-        $path = wp_parse_url(wp_unslash((string) ($_SERVER['REQUEST_URI'] ?? '')), PHP_URL_PATH);
-        $base = wp_parse_url(rest_url(self::REST_NS . '/reklamacie'), PHP_URL_PATH);
-        return is_string($path) && is_string($base)
-            && (bool) preg_match('#^' . preg_quote(rtrim($base, '/'), '#') . '(?:/[0-9]+)?/?$#D', $path);
+        // Authentication can run before a user is resolved. URL filters may ask
+        // for that same user, so never call rest_url/home_url here. Authenticate
+        // only the exact route WordPress has already resolved for REST dispatch.
+        global $wp;
+        $route = isset($wp->query_vars['rest_route']) ? $wp->query_vars['rest_route'] : null;
+        return defined('REST_REQUEST') && REST_REQUEST && is_string($route)
+            && (bool) preg_match('#^/?' . preg_quote(self::REST_NS . '/reklamacie', '#') . '(?:/[0-9]+)?/?$#D', $route);
     }
 
     public static function rest_permissions() {

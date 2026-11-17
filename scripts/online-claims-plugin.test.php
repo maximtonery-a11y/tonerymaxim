@@ -57,7 +57,7 @@ function register_rest_route($namespace, $route, $options) { $GLOBALS['routes'][
 function register_post_type($name, $options) { $GLOBALS['post_type_options'] = $options; }
 function current_user_can($cap, ...$args) { return $cap === 'edit_posts' || $GLOBALS['manager']; }
 function get_current_user_id() { return $GLOBALS['current_id']; }
-function rest_url($path = '') { return 'https://woo.example.invalid/wp-json/' . $path; }
+function rest_url($path = '') { throw new Exception('URL filters must not run while resolving REST authentication'); }
 function wp_parse_url($url, $component = -1) { return parse_url($url, $component); }
 function wp_unslash($value) { return stripslashes($value); }
 function wp_slash($value) { return addslashes($value); }
@@ -130,12 +130,16 @@ $manager = true; $current_id = 7;
 check(Tonerymaxim_Reklamacie_Plugin::rest_permissions() === true, 'Shop manager access is preserved');
 Tonerymaxim_Reklamacie_Plugin::register_post_type();
 check(count(array_unique($post_type_options['capabilities'])) === 1 && $post_type_options['capabilities']['read_post'] === 'manage_woocommerce', 'Claim administration is restricted to shop managers');
-foreach (['/wp-json/tonerymaxim/v1/reklamacie', '/wp-json/tonerymaxim/v1/reklamacie/123'] as $path) {
-    $_SERVER['REQUEST_URI'] = $path;
+$wp = (object) ['query_vars' => ['rest_route' => '/tonerymaxim/v1/reklamacie']];
+check(!Tonerymaxim_Reklamacie_Plugin::include_claims_in_wc_auth(false), 'Authentication cannot run before real REST dispatch');
+define('REST_REQUEST', true);
+foreach (['/tonerymaxim/v1/reklamacie', '/tonerymaxim/v1/reklamacie/123'] as $path) {
+    $wp->query_vars['rest_route'] = $path;
     check(Tonerymaxim_Reklamacie_Plugin::include_claims_in_wc_auth(false), 'Woo authentication is enabled for the exact claims route');
 }
-foreach (['/wp-json/wp/v2/users', '/wp-json/tonerymaxim/v1/customers', '/wp-admin/plugins.php', '/wp-json/tonerymaxim/v1/reklamacie-other', '/wp-json/tonerymaxim/v1/reklamacie/1/other'] as $path) {
-    $_SERVER['REQUEST_URI'] = $path;
+foreach (['/wp/v2/users', '/tonerymaxim/v1/customers', '/wp-admin/plugins.php', '/tonerymaxim/v1/reklamacie-other', '/tonerymaxim/v1/reklamacie/1/other', ['tonerymaxim/v1/reklamacie']] as $path) {
+    $wp->query_vars['rest_route'] = $path;
+    $_SERVER['REQUEST_URI'] = '/wp-json/tonerymaxim/v1/reklamacie';
     check(!Tonerymaxim_Reklamacie_Plugin::include_claims_in_wc_auth(false), 'Unrelated routes do not gain Woo key access');
     check(Tonerymaxim_Reklamacie_Plugin::include_claims_in_wc_auth(true), 'Existing Woo authentication decisions are preserved');
 }
