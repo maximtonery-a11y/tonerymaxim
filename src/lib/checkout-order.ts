@@ -16,6 +16,8 @@ import { customerProfileUpdateFromOrder } from "./checkout-customer-rules";
 import { calendarWooLineReference } from "./calendar-woo-line";
 import { normalizeDpdPickup } from "./dpd-pickup.ts";
 import { orderAvailabilityText, type OrderItemAvailability } from "./order-availability";
+import { getWooPricingContext, WOO_GROSS_PRICE_CONTRACT } from './woo-pricing-contract';
+import { checkoutGrossLines, grossVatTotals } from './checkout-vat';
 
 export type NormalizedCartItem = {
   id: string;
@@ -523,23 +525,12 @@ function feeLines(source: CheckoutOrderSource, taxRateId = 0) {
   return fees;
 }
 
-
-function predictedWooGross(grossValue: number) {
-  const gross = money(grossValue);
-  const sign = gross < 0 ? -1 : 1;
-  const net = money(Math.abs(gross) / (1 + VAT_RATE));
-  const tax = money(net * VAT_RATE);
-  return money((net + tax) * sign);
-}
-
-function roundingAdjustment(source: CheckoutOrderSource) {
-  let predicted = 0;
-  for (const item of source.cart) predicted += predictedWooGross(discountedLineTotal(item));
-  predicted += predictedWooGross(source.shippingPrice);
-  predicted += predictedWooGross(source.paymentPrice);
-  predicted += predictedWooGross(-money(source.coupon?.discount));
-  predicted += predictedWooGross(-money(source.loyaltyDiscount));
-  return money(source.total - predicted);
+function verifyNativePricing(order: any, source: CheckoutOrderSource) {
+  const expected = grossVatTotals(checkoutGrossLines(source));
+  if (money(source.total) !== expected.gross || !/^\d+(?:\.\d+)?$/.test(String(order?.total)) || !/^\d+(?:\.\d+)?$/.test(String(order?.total_tax))
+    || money(order.total) !== expected.gross || money(order.total_tax) !== expected.tax) {
+    throw new Error(`Objednávka ${source.orderNumber}: nesúhlasí overená suma alebo DPH. Kontaktujte nás, prosím.`);
+  }
 }
 
 
@@ -687,20 +678,13 @@ async function createWooOrderFromCheckoutInternal(source: CheckoutOrderSource, o
     email: customerEmail || billing.email || "",
   };
 
-  const taxRateId = await profiler.measure("woo-tax-rate-resolve", () => resolveStandardTaxRateId());
+  const expectedPricing = grossVatTotals(checkoutGrossLines(source));
+  if (expectedPricing.gross !== money(source.total)) throw new Error('Nesúhlasí celková suma objednávky.');
+  const pricing = await profiler.measure("woo-tax-rate-resolve", () => getWooPricingContext());
+  const taxRateId = pricing.rate_id;
   const lineItemsPayload = await profiler.measure("woo-line-items-resolve", () => lineItems(source, taxRateId));
   const shippingPayload = shippingLine(source, taxRateId);
   const feePayload = feeLines(source, taxRateId);
-  const adjustment = roundingAdjustment(source);
-  if (Math.abs(adjustment) >= 0.01) {
-    feePayload.push({
-      name: "Zaokrúhlenie",
-      total: adjustment.toFixed(2),
-      total_tax: "0.00",
-      tax_status: "none",
-      meta_data: [{ key: "tm_rounding_adjustment", value: adjustment.toFixed(2) }],
-    } as any);
-  }
 
   const order = await profiler.measure("woo-post-order", () => wooRequest<any>("/orders", {
     method: "POST",
@@ -718,9 +702,12 @@ async function createWooOrderFromCheckoutInternal(source: CheckoutOrderSource, o
       line_items: lineItemsPayload,
       shipping_lines: [shippingPayload],
       fee_lines: feePayload,
-      meta_data: orderMeta({ ...source, paymentState: String(options.gopayPayment?.state || source.paymentState || "") }, paymentId, isCompany, payment),
+      meta_data: [...orderMeta({ ...source, paymentState: String(options.gopayPayment?.state || source.paymentState || "") }, paymentId, isCompany, payment),
+        { key: 'tm_price_contract', value: WOO_GROSS_PRICE_CONTRACT }],
     },
   }));
+
+  verifyNativePricing(order, source);
 
   if (customerId > 0) {
     await profiler.measure("woo-update-customer-address", () =>
@@ -804,6 +791,7 @@ export async function createWooOrderFromCheckout(source: CheckoutOrderSource, op
   const result = await withOrderIdempotency(key, async () => {
     const existing = await findExistingWooOrder(source);
     if (existing?.id) {
+      if (wooMetaValue(existing, 'tm_price_contract') === WOO_GROSS_PRICE_CONTRACT) verifyNativePricing(existing, source);
       await ensurePaperRewardClaim(source, existing.id);
       return {
         ok: true,
@@ -867,8 +855,10 @@ export async function readPendingGoPayOrder(paymentId: string): Promise<Checkout
 
 export async function updateWooOrderPayment(source: CheckoutOrderSource, orderId: number) {
   if (!Number.isInteger(orderId) || orderId <= 0) throw new Error("Chýba WooCommerce objednávka pre zmenu platby.");
+  const current = await wooRequest<any>(`/orders/${orderId}`);
+  const grossContract = wooMetaValue(current, 'tm_price_contract') === WOO_GROSS_PRICE_CONTRACT;
   const payment = wooPaymentMethod(source);
-  const taxRateId = source.paymentPrice > 0 ? await resolveStandardTaxRateId() : 0;
+  const taxRateId = source.paymentPrice > 0 ? (grossContract ? (await getWooPricingContext()).rate_id : await resolveStandardTaxRateId()) : 0;
   const paymentFee = source.paymentPrice > 0
     ? feeLines({ ...source, coupon: null, loyaltyDiscount: 0 }, taxRateId).find((line) => line.name === source.paymentLabel)
     : null;
@@ -887,6 +877,7 @@ export async function updateWooOrderPayment(source: CheckoutOrderSource, orderId
       transaction_id: "",
       ...(paymentFee ? { fee_lines: [paymentFee] } : {}),
       meta_data: [
+        ...(grossContract ? [{ key: 'tm_price_contract', value: WOO_GROSS_PRICE_CONTRACT }] : []),
         { key: "tm_payment_code", value: source.paymentCode },
         { key: "tm_payment_title", value: payment.title },
         { key: "tm_payment_amount_cents", value: String(source.amountCents || "") },
@@ -900,6 +891,8 @@ export async function updateWooOrderPayment(source: CheckoutOrderSource, orderId
       ],
     },
   });
+
+  if (grossContract) verifyNativePricing(updated, source);
 
   return {
     orderId: Number(updated?.id || orderId),
@@ -919,8 +912,13 @@ async function markWooGoPayOrderPaid(source: CheckoutOrderSource, payment: GoPay
 
   const paymentId = String(payment?.id || source.paymentId || "");
   const convertedFromOffline = String(source.paymentState || "").toUpperCase() === "CONVERTED_TO_OFFLINE";
+  const current = convertedFromOffline ? await wooRequest<any>(`/orders/${orderId}`) : null;
+  const grossContract = wooMetaValue(current, 'tm_price_contract') === WOO_GROSS_PRICE_CONTRACT;
+  const pricingSource: CheckoutOrderSource = convertedFromOffline ? { ...source, paymentCode: 'gopay', paymentLabel: 'GoPay', paymentPrice: 0,
+    total: Number(source.originalGoPayTotal || source.total || 0), amountCents: Number(source.originalGoPayAmountCents || source.amountCents || 0) } : source;
   const convertedFeeLines = convertedFromOffline && Array.isArray(source.convertedPaymentFeeLineIds)
-    ? source.convertedPaymentFeeLineIds.map((id) => ({ id, total: "0.00", total_tax: "0.00" }))
+    ? source.convertedPaymentFeeLineIds.map((id) => ({ id, total: "0.00", total_tax: "0.00",
+      ...(grossContract ? { meta_data: [{ key: 'tm_gross_fee_total', value: '0.00' }] } : {}) }))
     : [];
   const updated = await wooRequest<any>(`/orders/${orderId}`, {
     method: "PUT",
@@ -934,6 +932,13 @@ async function markWooGoPayOrderPaid(source: CheckoutOrderSource, payment: GoPay
         ...(convertedFeeLines.length ? { fee_lines: convertedFeeLines } : {}),
       } : {}),
       meta_data: [
+        ...(grossContract ? [
+          { key: 'tm_price_contract', value: WOO_GROSS_PRICE_CONTRACT },
+          { key: 'tm_order_total_gross', value: money(pricingSource.total).toFixed(2) },
+          { key: 'tm_payment_title', value: 'GoPay' },
+          { key: 'tm_payment_amount_cents', value: String(pricingSource.amountCents || '') },
+          { key: 'tm_order_snapshot', value: JSON.stringify(orderSnapshot(pricingSource, 'GoPay')) },
+        ] : []),
         { key: "gopay_payment_id", value: paymentId },
         { key: "gopay_state", value: String(payment?.state || "PAID") },
         { key: "tm_payment_paid_at", value: new Date().toISOString() },
@@ -944,6 +949,8 @@ async function markWooGoPayOrderPaid(source: CheckoutOrderSource, payment: GoPay
       ],
     },
   });
+
+  if (wooMetaValue(updated, 'tm_price_contract') === WOO_GROSS_PRICE_CONTRACT) verifyNativePricing(updated, pricingSource);
 
   return {
     created: false,

@@ -4,13 +4,14 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import ts from 'typescript';
 import postcss from 'postcss';
+import { discountedGrossLine, grossVatTotals } from '../src/lib/checkout-vat.ts';
 
 const source = await readFile(new URL('../src/scripts/checkout.js', import.meta.url), 'utf8');
 const ast = ts.createSourceFile('checkout.js', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
-const names = new Set(['renderCheckoutSummary', 'cartPricing', 'cleanQty', 'esc', 'stockText', 'money', 'netFromGross', 'vatFromGross',
+const names = new Set(['renderCheckoutSummary', 'cartPricing', 'cleanQty', 'esc', 'stockText', 'money',
   'getSelected', 'isOnlinePayment', 'isCalendarCartItem', 'isCompatibleDiscountItem', 'quantityDiscountRate', 'quantityLineDiscount',
-  'seriesPackDiscount', 'seriesBaseKey', 'seriesColorKey', 'normalizeSeriesText', 'seriesText', 'updateShippingOptionPrices']);
-const constants = new Set(['SHIPPING', 'PAYMENT', 'VAT_RATE']);
+  'updateShippingOptionPrices']);
+const constants = new Set(['SHIPPING', 'PAYMENT']);
 const extracted: string[] = [];
 function visit(node: ts.Node) {
   if (ts.isFunctionDeclaration(node) && node.name && names.has(node.name.text)) extracted.push(node.getText(ast));
@@ -36,7 +37,7 @@ function harness() {
   const noop = () => {};
   const scope = { document: { querySelector: node, querySelectorAll: () => [], createElement: () => new Node() },
     readCart: () => cart, window: { location: { origin: 'https://www.tonerymaxim.sk' } }, URL,
-    tmLoyalty: { ok: false, discountValue: 0 }, tmLoyaltyApply: false,
+    tmLoyalty: { ok: false, discountValue: 0 }, tmLoyaltyApply: false, discountedGrossLine, grossVatTotals,
     couponDiscountForTotal: () => 0, loyaltyDiscountForTotal: () => 0, syncCouponBoxes: noop,
   };
   const render = vm.runInNewContext(`${extracted.join('\n')};renderCheckoutSummary`, scope);

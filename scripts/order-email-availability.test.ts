@@ -76,7 +76,7 @@ test('checkout uses live Woo stock and ignores browser and stale cache stock', a
     './tm-products-cache': { getProductsCache: async () => ({ products: [cache] }), compactKey: (s: string) => s.toLowerCase() },
     './woo-client': { wooRequest: async (_path: string, options: any) => {
       assert.match(options.query._fields, /stock_status,stock_quantity/);
-      return [{ id: 11, sku: 'SKU11', name: 'Toner', price: '10', status: 'publish', stock_status: stock > 0 ? 'instock' : 'outofstock', stock_quantity: stock }];
+      return [{ id: 11, sku: 'SKU11', name: 'Toner', price: '10', status: 'publish', stock_status: stock > 0 ? 'instock' : 'outofstock', stock_quantity: stock, tax_status: 'taxable', tax_class: '' }];
     } },
     './loyalty': { LOYALTY_PAPER_PRICE: 0.01, LOYALTY_PAPER_PRODUCT_SKU: 'PAPER', LOYALTY_PAPER_REWARD_SKU: 'REWARD' },
     './calendar-catalog': { CALENDAR_SOURCE: 'calendar', calendarDiscountRate: () => 0, calendarDiscountedUnitPrice: (v: number) => v, getCalendarProducts: async () => [], isBundledCalendarSku: () => false },

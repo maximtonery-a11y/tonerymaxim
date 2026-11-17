@@ -145,10 +145,15 @@ async function captureOrder(label: string, shippingCode: string, paymentCode: st
     if (url.pathname === "/wp-json/wc/v3/orders" && options?.method === "POST") {
       payload = JSON.parse(String(options.body));
       assert.equal(new Headers(options.headers).get("x-tonerymaxim-suppress-emails"), "1");
-      return Response.json({ ...payload, id: 70001, number: "300001" });
+      const rows = [...payload.line_items, ...payload.shipping_lines, ...payload.fee_lines];
+      const total = rows.reduce((sum: number, line: any) => sum + Math.round(Number(line.total) * 100) + Math.round(Number(line.total_tax) * 100), 0) / 100;
+      const totalTax = rows.reduce((sum: number, line: any) => sum + Math.round(Number(line.total_tax) * 100), 0) / 100;
+      return Response.json({ ...payload, id: 70001, number: "300001", total: total.toFixed(2), total_tax: totalTax.toFixed(2) });
     }
     if (url.pathname === "/wp-json/wc/v3/orders" && options?.method === "GET") return Response.json([]);
     if (url.pathname === "/wp-json/wc/v3/taxes") return Response.json([{ id: 1, rate: "23", country: "SK", class: "" }]);
+    if (url.pathname === '/wp-json/wc/v3/tm-pricing-context') return Response.json({ contract: 'gross-v1', rate_id: 1, rate_percent: 23,
+      prices_include_tax: true, tax_enabled: true, currency: 'EUR', decimals: 2, country: 'SK', round_at_subtotal: false, compound: false, shipping_taxable: true });
     throw new Error(`Unexpected mock request: ${options?.method} ${url.pathname}`);
   };
   const paymentPrice = paymentCode === "cod" ? 1.2 : 0;

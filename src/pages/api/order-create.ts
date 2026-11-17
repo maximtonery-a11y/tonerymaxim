@@ -10,6 +10,7 @@ import { nextTmOrderNumber } from "../../lib/order-number";
 import { getOrCreateOrderNumber } from "../../lib/order-idempotency";
 import { validateCheckoutRequest } from "../../lib/checkout-validation";
 import { markCheckoutUnsubmitted, withCheckoutSubmission } from "../../lib/checkout-submission";
+import { getWooPricingContext } from '../../lib/woo-pricing-contract';
 
 const SHIPPING: Record<string, { label: string; price: number }> = {
   dpd_courier: { label: "DPD kuriér na adresu", price: 3.9 },
@@ -49,6 +50,7 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
     }
 
     const { shippingCode, paymentCode } = checkout;
+    await profiler.measure('pricing-context', () => getWooPricingContext());
     const shipping = SHIPPING[shippingCode];
     const payment = PAYMENT[paymentCode];
     const originalSubtotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
