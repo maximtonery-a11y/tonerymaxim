@@ -23,6 +23,7 @@ function get_option($key, $default = false) { global $saved_templates; return $k
 function update_option($key, $value, $autoload = null) { global $saved_templates; check($key === 'tm_customer_admin_email_templates', 'Unexpected option write'); $saved_templates = $value; }
 function wc_get_order_statuses() { return apply_filters('wc_order_statuses', ['wc-pending'=>'Čaká na platbu', 'wc-processing'=>'Spracováva sa', 'wc-on-hold'=>'Čaká na úhradu']); }
 function register_post_status($slug, $options) { global $registered_statuses; $registered_statuses[$slug] = $options; }
+function register_post_type($slug, $options) { check($slug === 'tm_invoice_document' && $options['public'] === false, 'Invoice archive registration is private and does not register order statuses'); }
 function _n_noop($singular, $plural) { return ['singular'=>$singular, 'plural'=>$plural]; }
 function esc_attr($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
 function esc_html($value) { return esc_attr($value); }

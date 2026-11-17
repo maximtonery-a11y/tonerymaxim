@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ToneryMaxim – Customer Administration
  * Description: Produkčná administrácia zákazníkov a TM objednávok: úplná editácia položiek, dopravy, platby, adries, výdajných miest, stavov, vernostných bodov, kupónov a reklamácií.
- * Version: 6.1.2
+ * Version: 6.2.0
  * Author: ToneryMaxim.sk
  * Requires Plugins: woocommerce
  * Requires PHP: 8.0
@@ -11,7 +11,7 @@
 if (!defined('ABSPATH')) exit;
 
 final class TM_Customer_Administration_V1 {
-    const VERSION = '6.1.2';
+    const VERSION = '6.2.0';
     const MENU_SLUG = 'tm-customers';
     const NONCE = 'tm_customer_admin_nonce';
 
@@ -864,7 +864,7 @@ CSS;
             <p class="tm-muted">Výber zmení stav objednávky a odošle príslušný e-mail.</p>
             <?php self::render_order_status_email_notice($order); ?>
             <p class="tm-muted">Posledné potvrdenie: <?php echo esc_html((string)$order->get_meta('tm_confirmation_email_sent_at') ?: 'bez potvrdenia'); ?></p>
-        </div></div></div><?php
+        </div><?php do_action('tm_customer_admin_order_documents', $order); ?></div></div><?php
     }
 
     public static function render_loyalty_page(): void {
@@ -1139,3 +1139,4 @@ CSS;
 }
 
 add_action('plugins_loaded', ['TM_Customer_Administration_V1', 'init']);
+require_once __DIR__ . '/manual-invoices.php';
