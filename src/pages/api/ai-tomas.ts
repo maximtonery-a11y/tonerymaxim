@@ -18,6 +18,23 @@ import { discountHelpAnswer } from '../../lib/ai-discount-help.ts';
 import { resolveConversationContext, conversationProductPage, conversationArchive } from '../../lib/ai-conversation-context.ts';
 import { interpretConversation, applyConversationPlan, isConversationAiEnabled, type ConversationAiStatus } from '../../lib/openai-conversation.ts';
 
+
+// Only disambiguate the *type* of printer. Do not invent prices, yields or
+// pretend that a toner price is a printer cost-per-page comparison.
+export function printerSelectionAdvice(message:string):string|null {
+  const n=normalized(message);
+  const printer=/\b(?:tlaciaren|tlaciarne|tlaciarni|tlaciarnoch|tlaciarnou)\b/.test(n);
+  const selection=/\b(?:odporuc\w*|vyber\w*|porad\w*|najlacnejs\w*|najvyhodnejs\w*|najmens\w*\s+naklad\w*)\b/.test(n);
+  const printCost=/\b(?:vytlacen\w*\s+stran\w*|stran\w*|naklad\w*\s+na\s+tlac|cena\s+za\s+tlac|lacn\w*\s+tlac)\b/.test(n);
+  const correction=/\b(?:nie\s+toner|nie\s+na\s+toner|myslim\s+(?:ci\s+mi\s+)?(?:vies\s+)?odporuc\w*\s+tlaciaren)\b/.test(n);
+  if(!printer || !(selection||printCost||correction))return null;
+  if(/\b(?:ciernobiel\w*|monochrom\w*)\b/.test(n))
+    return 'Rozumiem, hľadáte čiernobielu tlačiareň s nízkymi nákladmi na stranu, nie toner. Koľko strán približne vytlačíte za mesiac? Podľa toho porovnám vhodné modely a cenu na stranu.';
+  if(/\b(?:farebn\w*)\b/.test(n))
+    return 'Rozumiem, hľadáte farebnú tlačiareň s nízkymi nákladmi na stranu, nie toner. Koľko strán približne vytlačíte za mesiac? Podľa toho porovnám vhodné modely a cenu na stranu.';
+  return 'Rozumiem, chcete odporučiť tlačiareň s čo najnižšou cenou za vytlačenú stranu, nie kúpiť toner. Potrebujete čiernobielu alebo farebnú tlačiareň?';
+}
+
 export const prerender = false;
 const clean = (v: unknown, max=500) => String(v || '').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);
 const normalized = (v: unknown) => clean(v).toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
@@ -139,6 +156,24 @@ export const POST: APIRoute = async ({ request }) => {
     const rawMessage = clean(body?.message,4000); if (!rawMessage) return Response.json({ok:false,error:'Napíšte otázku alebo produkt.'},{status:400});
     const state = normalizeCommerceState(body?.state); if (!state.sessionId) state.sessionId=randomUUID();
     const page = clean(body?.page,300) || '/';
+    // V2 isolated: a question about choosing a PRINTER is never a request to
+    // price the toner on the currently opened product detail. This narrow,
+    // read-only guard runs before the legacy product-context resolver.
+    const printerAdvice = printerSelectionAdvice(rawMessage);
+    if (printerAdvice) {
+      state.pendingQuestion=null;state.pendingProductQuestion=null;
+      state.currentProductId=null;state.selectedProductId=null;
+      state.lastProductQuery=null;state.currentType=null;state.currentColor=null;
+      const answer=printerAdvice;
+      state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
+      state.conversationHistory=conversationArchive([...state.conversationHistory,
+        {role:'user',content:rawMessage,topic:'other',relation:'new'},
+        {role:'assistant',content:answer,topic:'other',relation:'new'}]).map(turn=>({...turn,role:turn.role==='assistant'?'assistant' as const:'user' as const}));
+      return Response.json({ok:true,route:{intents:['ADVICE'],productQuery:null,needsProducts:false},
+        advisor:{answer:[answer],products:[],groups:[],intent:'printer_selection',confidence:1,unanswered:false,sources:[]},
+        commerce:null,state,action:null,conversation:{relation:'new',topic:null,engine:'rules',aiEnabled:isConversationAiEnabled(),modelStatus:'skipped'}},
+        {headers:{'Cache-Control':'no-store'}});
+    }
     const fallbackContext=resolveConversationContext(rawMessage,state.history,state,page);
     const guidedQuantity=state.pendingQuestion==='quantity'&&/^\s*(?:-?\d+(?:[.,]\d+)?|jeden|jednu|jedno|dva|dve|tri|styri|pat)\s*(?:ks|kus\w*)?[.! ]*$/.test(normalized(rawMessage));
     const guidedType=state.pendingQuestion==='product_type'&&/^\s*(?:(?:a|ten|chcem|prosim)\s+)*(?:original\w*|kompatibil\w*|renov\w*|repas\w*)(?:\s+(?:toner\w*|napln\w*|sadu|sada|produkt\w*))*[?.! ]*$/.test(normalized(rawMessage));
