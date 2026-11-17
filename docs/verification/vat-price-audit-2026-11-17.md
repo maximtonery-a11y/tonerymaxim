@@ -23,6 +23,8 @@ Tri porovnané produkty sú zdaniteľné v štandardnej triede; cena Woo sa rovn
 
 Základná sadzba 23 % je potvrdená [Finančnou správou](https://www.financnasprava.sk/sk/podnikatelia/dane/dan-z-pridanej-hodnoty/sadzby-dane). Nejde o účtovné ani právne potvrdenie každej produktovej kategórie alebo každej faktúry.
 
+Pokus o čítací export daňových tried celého katalógu sa nedokončil (rozhranie zostalo na 94 %). Z tohto auditu preto nevyplýva potvrdenie daňovej triedy každého produktu; živé porovnanie vyššie je vzorka troch SKU. Produkty sa neupravovali.
+
 ## Objednávky overené vo Woo
 
 | Woo ID | Bez DPH vrátane poplatkov a zaokrúhlenia | DPH | Celkom |
