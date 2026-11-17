@@ -375,6 +375,10 @@
   outline: 2px solid #12589c;
   outline-offset: 2px;
 }
+@media (max-width: 480px) {
+  .printer-check-input { grid-template-columns: minmax(0, 1fr); }
+  .printer-check-input button { width: 100%; text-align: center; }
+}
 
 .chips {
   display: flex;

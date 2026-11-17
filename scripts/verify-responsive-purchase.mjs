@@ -56,7 +56,12 @@ async function checkPrinterFit(page, origin) {
     assert.equal(await status.getAttribute('data-state'), 'unknown');
     assert.equal(new URL(await catalog.getAttribute('href'), origin).searchParams.get('s'), model + 'W');
     assert.doesNotMatch(await page.locator('[data-check-heading]').innerText(), /Vybraná/);
-    await fits(panel.locator('form, input, button, a, [role="status"]'));
+    await fits(panel.locator('form, .printer-check-input, button, a, [role="status"]'));
+    // An editable field scrolls its own long values, but its border must fit the form.
+    assert.ok(await field.evaluate(el => {
+      const rect = el.getBoundingClientRect(), form = el.form.getBoundingClientRect();
+      return rect.left >= form.left - 1 && rect.right <= form.right + 1 && rect.height >= 44;
+    }));
     await status.press('Escape');
     assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
     assert.ok(await toggle.evaluate(el => el === document.activeElement));

@@ -109,9 +109,7 @@ export function bindPrinterCheck(root, getNames, product, chip, modelUrl) {
     setOpen(true);
     box.scrollIntoView({ block: "center" });
   });
-  field.addEventListener("input", () => {
-    if (showResult() === "listed") track("listed");
-  });
+  field.addEventListener("input", showResult);
   form.addEventListener("submit", event => {
     event.preventDefault();
     const state = showResult();
