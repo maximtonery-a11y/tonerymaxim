@@ -2,16 +2,17 @@
 /**
  * Plugin Name: ToneryMaxim – Customer Administration
  * Description: Produkčná administrácia zákazníkov a TM objednávok: úplná editácia položiek, dopravy, platby, adries, výdajných miest, stavov, vernostných bodov, kupónov a reklamácií.
- * Version: 6.2.0
+ * Version: 6.3.0
  * Author: ToneryMaxim.sk
  * Requires Plugins: woocommerce
  * Requires PHP: 8.0
  */
 
 if (!defined('ABSPATH')) exit;
+require_once __DIR__ . '/customer-accounts.php';
 
 final class TM_Customer_Administration_V1 {
-    const VERSION = '6.2.0';
+    const VERSION = '6.3.0';
     const MENU_SLUG = 'tm-customers';
     const NONCE = 'tm_customer_admin_nonce';
 
@@ -106,10 +107,13 @@ CSS;
         if ($detail_id) { self::render_tm_order_detail($detail_id); return; }
         $status = sanitize_key(wp_unslash($_GET['status'] ?? ''));
         $search = sanitize_text_field(wp_unslash($_GET['s'] ?? ''));
+        $account = sanitize_key(wp_unslash($_GET['account'] ?? ''));
+        if (!in_array($account, ['registered', 'guest'], true)) $account = '';
         $page = max(1, absint($_GET['paged'] ?? 1));
         $per_page = 30;
 
         $orders = self::tm_orders(500);
+        if ($account !== '') $orders = array_values(array_filter($orders, fn($order) => TM_Customer_Accounts::registered($order) === ($account === 'registered')));
         if ($status !== '') $orders = array_values(array_filter($orders, fn($order) => $order->get_status() === $status));
         if ($search !== '') {
             $needle = mb_strtolower($search);
@@ -128,17 +132,17 @@ CSS;
         <div class="wrap tm-wrap">
             <div class="tm-head">
                 <div><h1>TM objednávky</h1><p class="tm-muted">Iba objednávky vytvorené cez ToneryMaxim.sk / tonerymaxim.info.</p></div>
-                <form class="tm-search" method="get"><input type="hidden" name="page" value="<?php echo esc_attr(self::MENU_SLUG . '-orders'); ?>"><input type="search" name="s" value="<?php echo esc_attr($search); ?>" placeholder="Číslo, meno, e-mail…"><button class="button button-primary">Hľadať</button></form>
+                <form class="tm-search" method="get"><input type="hidden" name="page" value="<?php echo esc_attr(self::MENU_SLUG . '-orders'); ?>"><input type="hidden" name="account" value="<?php echo esc_attr($account); ?>"><input type="hidden" name="status" value="<?php echo esc_attr($status); ?>"><input type="search" name="s" value="<?php echo esc_attr($search); ?>" placeholder="Číslo, meno, e-mail…"><button class="button button-primary">Hľadať</button></form>
             </div>
             <?php self::notice(); ?>
             <div class="tm-card">
-                <form method="get" class="tm-actions" style="margin-bottom:14px"><input type="hidden" name="page" value="<?php echo esc_attr(self::MENU_SLUG . '-orders'); ?>"><select name="status"><option value="">Všetky stavy</option><?php foreach (wc_get_order_statuses() as $key => $label): $value = str_replace('wc-', '', $key); ?><option value="<?php echo esc_attr($value); ?>" <?php selected($status, $value); ?>><?php echo esc_html($label); ?></option><?php endforeach; ?></select><button class="button">Filtrovať</button></form>
+                <form method="get" class="tm-actions" style="margin-bottom:14px"><input type="hidden" name="page" value="<?php echo esc_attr(self::MENU_SLUG . '-orders'); ?>"><input type="hidden" name="s" value="<?php echo esc_attr($search); ?>"><select name="account" aria-label="Registrácia zákazníka"><option value="">Všetci zákazníci</option><option value="registered" <?php selected($account, 'registered'); ?>>Registrovaní – faktúra do účtu</option><option value="guest" <?php selected($account, 'guest'); ?>>Neregistrovaní – hostia</option></select><select name="status"><option value="">Všetky stavy</option><?php foreach (wc_get_order_statuses() as $key => $label): $value = str_replace('wc-', '', $key); ?><option value="<?php echo esc_attr($value); ?>" <?php selected($status, $value); ?>><?php echo esc_html($label); ?></option><?php endforeach; ?></select><button class="button">Filtrovať</button><a class="button" href="<?php echo esc_url(admin_url('admin.php?page=tm-customers-statistics')); ?>">Štatistiky a grafy</a></form>
                 <table class="tm-table"><thead><tr><th>Objednávka</th><th>Zákazník</th><th>Dátum</th><th>Platba / doprava</th><th>Celkom</th><th>Stav</th><th></th></tr></thead><tbody>
                 <?php if (!$orders): ?><tr><td colspan="7" class="tm-empty">Nenašli sa žiadne TM objednávky.</td></tr><?php endif; ?>
                 <?php foreach ($orders as $order): $edit = add_query_arg(['page'=>self::MENU_SLUG.'-orders','order_id'=>$order->get_id()], admin_url('admin.php')); ?>
                     <tr>
                         <td><a class="tm-order-link" href="<?php echo esc_url($edit); ?>">#<?php echo esc_html($order->get_order_number()); ?></a><br><span class="tm-muted"><?php echo esc_html((string)$order->get_meta('tm_order_number')); ?></span></td>
-                        <td><strong><?php echo esc_html(trim($order->get_formatted_billing_full_name()) ?: 'Neregistrovaný'); ?></strong><br><a href="mailto:<?php echo esc_attr($order->get_billing_email()); ?>"><?php echo esc_html($order->get_billing_email()); ?></a></td>
+                        <td><strong><?php echo esc_html(trim($order->get_formatted_billing_full_name()) ?: 'Zákazník'); ?></strong><br><a href="mailto:<?php echo esc_attr($order->get_billing_email()); ?>"><?php echo esc_html($order->get_billing_email()); ?></a><p style="margin:7px 0 0"><?php echo TM_Customer_Accounts::badge($order); ?></p></td>
                         <td><?php echo esc_html($order->get_date_created() ? wc_format_datetime($order->get_date_created()) : '—'); ?></td>
                         <td><?php echo esc_html($order->get_payment_method_title() ?: '—'); ?><br><span class="tm-muted"><?php echo esc_html($order->get_shipping_method() ?: '—'); ?></span></td>
                         <td><?php echo wp_kses_post(self::formatted_gross_order_total($order)); ?></td>
@@ -149,7 +153,7 @@ CSS;
                                 <button class="button">Uložiť</button>
                             </form>
                         </td>
-                        <td><a class="button" href="<?php echo esc_url($edit); ?>">Detail</a></td>
+                        <td><div class="tm-actions"><a class="button" href="<?php echo esc_url($edit); ?>">Detail</a><?php if (TM_Customer_Accounts::registered($order)): ?><a class="button" href="<?php echo esc_url(add_query_arg(['page'=>'tm-customers-invoices','order_id'=>$order->get_id()], admin_url('admin.php'))); ?>">Faktúry</a><?php else: ?><span class="tm-muted">Faktúra do účtu nie je dostupná</span><?php endif; ?></div></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody></table>
@@ -1140,3 +1144,4 @@ CSS;
 
 add_action('plugins_loaded', ['TM_Customer_Administration_V1', 'init']);
 require_once __DIR__ . '/manual-invoices.php';
+require_once __DIR__ . '/business-statistics.php';

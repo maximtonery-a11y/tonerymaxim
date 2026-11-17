@@ -1,6 +1,7 @@
 <?php
 // Manual document archive. Never saves a Woo order or sends customer emails.
 if (!defined('ABSPATH')) exit;
+require_once __DIR__ . '/customer-accounts.php';
 
 final class TM_Manual_Invoices {
     const POST_TYPE = 'tm_invoice_document';
@@ -166,6 +167,7 @@ final class TM_Manual_Invoices {
         if (!current_user_can('manage_woocommerce')) throw new RuntimeException('Prístup nie je povolený.');
         $order = wc_get_order($order_id);
         if (!self::tm_order($order)) throw new RuntimeException('TM objednávka nebola nájdená.');
+        if (!TM_Customer_Accounts::registered($order)) throw new RuntimeException('Faktúru do účtu možno priložiť iba k objednávke registrovaného zákazníka.');
         if (!is_string($fields['number'] ?? null) || !is_string($fields['date'] ?? null)
             || (isset($fields['type']) && !is_string($fields['type']))) throw new RuntimeException('Vyplňte číslo, správny dátum a typ dokladu.');
         $number = sanitize_text_field($fields['number']);
@@ -220,7 +222,7 @@ final class TM_Manual_Invoices {
     private static function customer_owns(array $record, int $customer_id): bool {
         $order = wc_get_order((int) $record['order_id']);
         return $record['active'] && $customer_id > 0 && (int) $record['customer_id'] === $customer_id
-            && self::tm_order($order) && (int) $order->get_customer_id() === $customer_id;
+            && self::tm_order($order) && TM_Customer_Accounts::registered($order) && (int) $order->get_customer_id() === $customer_id;
     }
 
     private static function summary(array $record): array {
@@ -291,6 +293,10 @@ final class TM_Manual_Invoices {
 
     public static function order_card($order): void {
         if (!current_user_can('manage_woocommerce') || !self::tm_order($order)) return;
+        if (!TM_Customer_Accounts::registered($order)) {
+            echo '<div class="tm-card tm-span-12"><h2>Faktúry do zákazníckeho účtu</h2>' . TM_Customer_Accounts::badge($order) . '<p>Zákazník nakúpil bez priradeného účtu. Nahrávanie faktúr do účtu nie je dostupné.</p></div>';
+            return;
+        }
         echo '<div class="tm-card tm-span-12"><h2>Faktúry a dokumenty</h2><p>Priložte PDF faktúru a voliteľne XML e-faktúru k tejto objednávke.</p><a class="button button-primary" href="' . esc_url(self::page_url($order->get_id())) . '">Spravovať faktúry</a></div>';
     }
 
@@ -390,7 +396,7 @@ final class TM_Manual_Invoices {
         if (!empty($_GET['invoice_error'])) echo '<div class="notice notice-error"><p>' . esc_html(sanitize_text_field(wp_unslash($_GET['invoice_error']))) . '</p></div>';
         if (!$order) {
             $search = sanitize_text_field(wp_unslash($_GET['invoice_search'] ?? ''));
-            echo '<p>Vyberte objednávku, ku ktorej chcete pridať faktúru.</p><form method="get" class="tm-search"><input type="hidden" name="page" value="' . self::PAGE . '"><input name="invoice_search" type="search" value="' . esc_attr($search) . '" placeholder="TM číslo objednávky, Woo ID alebo e-mail" aria-label="Vyhľadať objednávku"><button class="button">Hľadať objednávku</button></form>';
+            echo '<p>Faktúry do účtu prikladáte iba registrovaným zákazníkom. Vyberte objednávku s priradeným účtom.</p><form method="get" class="tm-search"><input type="hidden" name="page" value="' . self::PAGE . '"><input name="invoice_search" type="search" value="' . esc_attr($search) . '" placeholder="TM číslo objednávky, Woo ID alebo e-mail" aria-label="Vyhľadať objednávku"><button class="button">Hľadať objednávku</button></form>';
             $args = ['limit' => 30, 'orderby' => 'date', 'order' => 'DESC'];
             $orders = [];
             if ($search === '') $orders = wc_get_orders($args);
@@ -405,14 +411,20 @@ final class TM_Manual_Invoices {
             echo '<table class="widefat striped" style="margin-top:20px"><thead><tr><th>Objednávka</th><th>Zákazník</th><th>Faktúry</th></tr></thead><tbody>';
             foreach ($orders as $item) {
                 if (!self::tm_order($item) || isset($seen[$item->get_id()])) continue;
+                if ($search === '' && !TM_Customer_Accounts::registered($item)) continue;
                 $seen[$item->get_id()] = true;
-                echo '<tr><td>' . esc_html(self::order_number($item)) . '<br><small>Woo ID ' . (int) $item->get_id() . '</small></td><td>' . esc_html($item->get_formatted_billing_full_name()) . '<br>' . esc_html($item->get_billing_email()) . '</td><td><a class="button" href="' . esc_url(self::page_url($item->get_id())) . '">Spravovať faktúry</a></td></tr>';
+                echo '<tr><td>' . esc_html(self::order_number($item)) . '<br><small>Woo ID ' . (int) $item->get_id() . '</small></td><td>' . esc_html($item->get_formatted_billing_full_name()) . '<br>' . esc_html($item->get_billing_email()) . '<p>' . TM_Customer_Accounts::badge($item) . '</p></td><td>' . (TM_Customer_Accounts::registered($item) ? '<a class="button" href="' . esc_url(self::page_url($item->get_id())) . '">Spravovať faktúry</a>' : 'Bez zákazníckeho účtu – nahrávanie nie je dostupné') . '</td></tr>';
             }
             if (!$seen) echo '<tr><td colspan="3">Objednávka nebola nájdená. Skúste celé číslo objednávky alebo e-mail.</td></tr>';
             echo '</tbody></table></div>'; return;
         }
         echo '<p><a href="' . esc_url(self::page_url()) . '">← Vybrať inú objednávku</a></p><div class="tm-card"><h2>Objednávka ' . esc_html(self::order_number($order)) . '</h2><p>' . esc_html($order->get_formatted_billing_full_name()) . ' — ' . esc_html($order->get_billing_email()) . '</p>';
-        echo (int) $order->get_customer_id() > 0 ? '<p>Doklad bude prístupný registrovanému zákazníkovi tejto objednávky.</p>' : '<p>Objednávka nemá priradený zákaznícky účet. Doklad zostane uložený pri objednávke pre administrátora.</p>';
+        echo TM_Customer_Accounts::badge($order);
+        if (!TM_Customer_Accounts::registered($order)) {
+            echo '<p>Táto objednávka nemá priradený existujúci zákaznícky účet. Faktúru sem nenahrávajte. Samotná zhoda e-mailu s registráciou nestačí.</p></div></div>';
+            return;
+        }
+        echo '<p>Doklad bude prístupný registrovanému zákazníkovi tejto objednávky.</p>';
         echo '<form method="post" enctype="multipart/form-data" action="' . esc_url(admin_url('admin-post.php')) . '"><input type="hidden" name="action" value="tm_invoice_upload"><input type="hidden" name="order_id" value="' . (int) $order_id . '">';
         wp_nonce_field('tm_invoice_upload_' . $order_id);
         echo '<p><label>Číslo faktúry <input name="number" type="text" required maxlength="100"></label></p><p><label>Dátum vystavenia <input name="date" type="date" value="' . esc_attr(current_time('Y-m-d')) . '" required></label></p><p><label>Typ dokladu <select name="type"><option value="invoice">Faktúra</option><option value="credit_note">Dobropis</option></select></label></p><p><label>PDF faktúra (povinné, najviac 8 MB) <input name="pdf" type="file" accept=".pdf,application/pdf" required></label></p><p><label>XML e-faktúra (voliteľné, najviac 2 MB) <input name="xml" type="file" accept=".xml,application/xml,text/xml"></label></p><p class="description">XML môže byť doklad UBL alebo CII. Uloženie do účtu neodosiela e-faktúru cez Peppol.</p><p><button class="button button-primary">Uložiť faktúru k objednávke</button></p></form></div>';

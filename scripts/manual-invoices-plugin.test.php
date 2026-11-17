@@ -52,6 +52,7 @@ function register_rest_route($ns, $route, $options) { $GLOBALS['routes'][$route]
 function register_post_type($type, $options) { $GLOBALS['post_type'] = $options; }
 function current_user_can($cap) { return $GLOBALS['allowed']; }
 function get_current_user_id() { return $GLOBALS['user_id']; }
+function get_user_by($field, $id) { return in_array((int)$id, [1,7,8], true) ? (object)['ID'=>(int)$id] : false; }
 function get_option($key, $default = false) { return $GLOBALS['options'][$key] ?? $default; }
 function add_option($key, $value, $deprecated = '', $autoload = false) { if (isset($GLOBALS['options'][$key])) return false; check($autoload === false, 'The archive encryption key is not autoloaded'); $GLOBALS['options'][$key] = $value; return true; }
 function wp_upload_dir(...$args) { return ['basedir'=>$GLOBALS['temporary'], 'error'=>false]; }
@@ -172,8 +173,13 @@ try {
     $insert_failure = false; $lock_available = false;
     expect_error(fn()=>TM_Manual_Invoices::create_document(101, array_merge($fields, ['number'=>'BUSY']), ['pdf'=>$pdf]), '/práve spracováva/');
     $lock_available = true;
-    $guest = TM_Manual_Invoices::create_document(102, array_merge($fields, ['number'=>'GUEST']), ['pdf'=>$pdf]);
-    check(TM_Manual_Invoices::rest_file(file_request($guest['id'], 7))->status === 404, 'Matching email addresses do not grant access to guest order documents');
+    expect_error(fn()=>TM_Manual_Invoices::create_document(102, array_merge($fields, ['number'=>'GUEST']), ['pdf'=>$pdf]), '/iba k objednávke registrovaného/');
+    $_GET=['order_id'=>102]; ob_start(); TM_Manual_Invoices::admin_page(); $guest_html=ob_get_clean();
+    check(!str_contains($guest_html, 'name="pdf"') && str_contains($guest_html, 'nenahrávajte'), 'Guest order UI has no upload form, even through a direct URL');
+    $orders[101]->customer_id=999;
+    check(!TM_Customer_Accounts::registered($orders[101]), 'A missing/deleted Woo user is not a registered customer');
+    expect_error(fn()=>TM_Manual_Invoices::create_document(101, array_merge($fields, ['number'=>'DELETED']), ['pdf'=>$pdf]), '/registrovaného/');
+    $orders[101]->customer_id=7;
     TM_Manual_Invoices::set_visibility($record['id'], false);
     $revision = TM_Manual_Invoices::create_document(101, $fields, ['pdf'=>str_replace('1 0', '2 0', $pdf)]);
     expect_error(fn()=>TM_Manual_Invoices::set_visibility($record['id'], true), '/inú verziu/');

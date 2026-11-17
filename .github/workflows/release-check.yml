@@ -32,6 +32,9 @@ jobs:
       - run: php scripts/tm-email-template-options.test.php
       - run: php -l wordpress-plugin/tonerymaxim-customer-administration/manual-invoices.php
       - run: php scripts/manual-invoices-plugin.test.php
+      - run: php -l wordpress-plugin/tonerymaxim-customer-administration/customer-accounts.php
+      - run: php -l wordpress-plugin/tonerymaxim-customer-administration/business-statistics.php
+      - run: php scripts/business-statistics.test.php
       - run: php -l wordpress-plugin/tonerymaxim-reklamacie/tonerymaxim-reklamacie.php
       - run: php scripts/online-claims-plugin.test.php
       # npm prebuild runs the isolated release guard and blocks Astro on failure.
