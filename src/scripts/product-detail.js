@@ -1342,7 +1342,9 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     const stickyCart = root.querySelector("[data-mobile-sticky-cart]");
     const mainAddButton = root.querySelector("[data-add-main]");
     if (stickyCart && mainAddButton) {
-      const setStickyVisible = (visible) => {
+      const setStickyVisible = (mainOffscreen, comparisonVisible) => {
+        document.body.classList.toggle("viewing-product-alternatives", comparisonVisible);
+        const visible = mainOffscreen && !comparisonVisible;
         stickyCart.inert = !visible;
         stickyCart.classList.toggle("is-visible", Boolean(visible));
         stickyCart.setAttribute("aria-hidden", String(!visible));
@@ -1358,14 +1360,14 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
             if (entry.target === mainAddButton) mainVisible = entry.isIntersecting;
             if (entry.target === comparison) comparisonVisible = entry.isIntersecting;
           }
-          setStickyVisible(!mainVisible && !comparisonVisible);
+          setStickyVisible(!mainVisible, comparisonVisible);
         });
         observer.observe(mainAddButton);
         if (comparison) observer.observe(comparison);
       } else {
         const onScroll = () => {
           const comparison = document.querySelector("[data-alternatives-section]")?.getBoundingClientRect();
-          setStickyVisible(window.scrollY > 520 && !(comparison && comparison.bottom > 0 && comparison.top < window.innerHeight));
+          setStickyVisible(window.scrollY > 520, Boolean(comparison && comparison.bottom > 0 && comparison.top < window.innerHeight));
         };
         window.addEventListener("scroll", onScroll, { passive: true });
         onScroll();

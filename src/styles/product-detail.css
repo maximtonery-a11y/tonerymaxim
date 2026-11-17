@@ -2962,6 +2962,7 @@ body.product-detail-body .related-section-stacked .related-column {
 
 @media (hover: none) and (pointer: coarse), (max-width: 760px) {
   .product-detail-page { --product-anchor-offset: 7rem; }
+  .product-detail-body.viewing-product-alternatives [data-ai-nudge] { display: none; }
 }
 [data-accessories-section][hidden],
 .related-section-stacked:not(:has([data-alternatives-section])):has([data-accessories-section][hidden]) {

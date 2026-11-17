@@ -68,6 +68,7 @@ async function checkLayout(page, origin, [width, height, touch]) {
     return location.hash === '#alternativy' && top >= headerBottom - 1 && top < innerHeight
       && !document.querySelector('[data-mobile-sticky-cart]').classList.contains('is-visible');
   });
+  if (phone) assert.equal(await page.locator('[data-ai-nudge]').isVisible(), false);
   const card = page.locator('[data-alternative-id="11"]');
   assert.match(await card.innerText(), /91,61/);
   assert.match(await page.locator('[data-alternative-id="14"]').innerText(), /Nižšia výťažnosť/);
