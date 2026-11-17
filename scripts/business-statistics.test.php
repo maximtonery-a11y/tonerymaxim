@@ -23,6 +23,19 @@ function check_ajax_referer($action){if(!$GLOBALS['nonce_ok'])throw new RuntimeE
 function wp_mail(...$args){throw new RuntimeException('Statistics must never send mail');}
 function esc_html($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
 function esc_attr($v){return esc_html($v);}
+function esc_url($v){return esc_html($v);}
+function esc_textarea($v){return esc_html($v);}
+function nocache_headers(){}
+function current_time($format){return '2026-11-17';}
+function wp_date($format,$timestamp,$timezone=null){return (new DateTimeImmutable('@'.$timestamp))->setTimezone($timezone??new DateTimeZone('UTC'))->format($format);}
+function selected($a,$b){if($a===$b)echo ' selected="selected"';}
+function checked($v){if($v)echo ' checked="checked"';}
+function admin_url($path){return 'https://woo.example.invalid/wp-admin/'.$path;}
+function add_query_arg($args,$url){return $url.'?'.http_build_query($args);}
+function wp_nonce_url($url,$action){return $url.'&_wpnonce=fixture';}
+function wp_nonce_field($action){echo '<input name="_wpnonce" value="fixture">';}
+function wp_create_nonce($action){return 'fixture';}
+function wp_json_encode($value,$flags=0){return json_encode($value,$flags);}
 if(!function_exists('mb_substr')){function mb_substr($v,$start,$length){return substr($v,$start,$length);}}
 class WC_Order {
     public function __construct(public int $id,public string $at,public string $status='processing',public int $customer=7,public string $email='same@example.invalid',public float $total=123.0){}
@@ -105,4 +118,24 @@ while(!$done&&$passes++<15){$step=TM_Business_Statistics::refresh();$done=$step[
 check($done&&$passes===10&&get_option(TM_Business_Statistics::ACTIVE)['tm_orders']===620,'Backfill includes orders beyond 500 and completes all pages plus registrations');
 $large=TM_Business_Statistics::report($range);check($large['current']['orders']===620&&$large['current']['gross']===7626000,'Streamed report crosses multiple 500-row reads without lost or doubled totals');
 $main=file_get_contents(__DIR__.'/../wordpress-plugin/tonerymaxim-customer-administration/tonerymaxim-customer-administration.php');check(str_contains($main,'Registrácia zákazníka')&&str_contains($main,"TM_Customer_Accounts::badge(\$order)")&&str_contains($main,'name="account"'),'Order summary renders registration badges and preserves a dedicated filter');
+// Exercise the entire real page, including sections below the charts and payment bars.
+// A successful KPI/chart fragment alone must never count as a successful dashboard render.
+$_GET=['period'=>'day','date'=>'2001-01-01'];
+$render_base=TM_Business_Statistics::facts($nov,$settings)[0];
+$render_base['generation']='page-fixture';$render_base['occurred']='2001-01-01 12:00:00';
+$options[TM_Business_Statistics::ACTIVE]=['generation'=>'page-fixture','updated'=>time(),'tm_orders'=>0,'settings'=>$settings];
+foreach(['empty'=>[], 'empty-month'=>[], 'empty-year'=>[], 'pending-only'=>[array_merge($render_base,['eligible'=>0,'status'=>'pending'])],
+    'cancelled-only'=>[array_merge($render_base,['eligible'=>0,'status'=>'cancelled'])],
+    'refund-only'=>[array_merge($render_base,['kind'=>'refund','event_key'=>'r:fixture','total'=>-12300,'tax'=>-2300])],
+    'one-payment'=>[$render_base], 'multiple-payments'=>[$render_base,array_merge($render_base,['event_key'=>'o:extra','method'=>'Dobierka','total'=>5000])]] as $name=>$fixture_rows) {
+    $_GET['period']=$name==='empty-month'?'month':($name==='empty-year'?'year':'day');
+    $wpdb->rows=$fixture_rows;
+    ob_start();
+    try { TM_Business_Statistics::page(); $html=ob_get_contents(); }
+    finally { ob_end_clean(); }
+    check(str_contains($html,'Predaj podľa platby')&&str_contains($html,'Najpredávanejšie SKU')
+        &&str_contains($html,'name="action" value="tm_business_stats_settings"')&&str_contains($html,"button.addEventListener('click',update)"),
+        'Complete dashboard renders through its final settings and script: '.$name);
+    if(in_array($name,['empty','empty-month','empty-year','pending-only','cancelled-only','refund-only'],true))check(str_contains($html,'V období nie sú započítané predaje.'),'No-sales payment section is explicit: '.$name);
+}
 echo 'Business statistics checks: '.$checks."; failures: 0\n";
