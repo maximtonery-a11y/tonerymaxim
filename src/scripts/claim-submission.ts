@@ -23,7 +23,8 @@ export function clearClaimSubmission(key: string): void {
   try { sessionStorage.removeItem(key); } catch { /* Optional browser persistence. */ }
 }
 
-export function claimConfirmation(data: { caseNumber: string; emailPending?: boolean; wooSaved?: boolean }): string {
+export function claimConfirmation(data: { caseNumber?: string | null; emailPending?: boolean; wooSaved?: boolean }): string {
+  if (!data.caseNumber) return 'Reklamáciu evidujeme. Číslo reklamácie a potvrdenie vám pošleme e-mailom po dokončení spracovania podania.';
   return data.emailPending || data.wooSaved === false
     ? `Reklamáciu evidujeme pod číslom ${data.caseNumber}. Potvrdenie vám odošleme po dokončení spracovania podania.`
     : `Reklamáciu ${data.caseNumber} sme prijali. Potvrdenie sme poslali na e-mail.`;

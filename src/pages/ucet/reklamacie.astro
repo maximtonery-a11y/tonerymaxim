@@ -87,6 +87,7 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
       };
       type AccountClaim = {
         id: string;
+        wp_id?: number | null;
         product_name: string;
         order_number: string;
         created_at?: string;
@@ -185,7 +186,7 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
             <article class="claim-card account-panel">
               <div class="claim-head">
                 <div>
-                  <span class="claim-id">#${escapeHtml(claim.id)}</span>
+                  <span class="claim-id">${claim.wp_id ? `#${escapeHtml(claim.id)}` : 'Číslo pridelíme po spracovaní'}</span>
                   <h2>${escapeHtml(claim.product_name)}</h2>
                   <p>Objednávka <strong>${escapeHtml(claim.order_number)}</strong> · odoslané ${formatDate(claim.created_at)}</p>
                 </div>

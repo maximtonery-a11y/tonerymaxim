@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ToneryMAXIM Reklamácie
  * Description: Vlastný reklamačný systém pre ToneryMAXIM.sk s REST API pre Astro e-shop.
- * Version: 1.1.5
+ * Version: 1.1.6
  * Author: ToneryMAXIM
  */
 
@@ -24,6 +24,8 @@ final class Tonerymaxim_Reklamacie_Plugin {
         add_action('save_post_' . self::POST_TYPE, [__CLASS__, 'save_meta_box'], 10, 2);
         add_filter('manage_' . self::POST_TYPE . '_posts_columns', [__CLASS__, 'columns']);
         add_action('manage_' . self::POST_TYPE . '_posts_custom_column', [__CLASS__, 'column_content'], 10, 2);
+        add_filter('the_title', [__CLASS__, 'display_claim_title'], 10, 2);
+        add_action('pre_get_posts', [__CLASS__, 'search_claim_number']);
     }
 
 
@@ -164,11 +166,35 @@ final class Tonerymaxim_Reklamacie_Plugin {
         return 'R' . wp_date('Ymd') . '-' . wp_rand(1000, 9999);
     }
 
+    private static function display_claim_number(int $post_id): string {
+        $id = (string) get_post_meta($post_id, 'tm_claim_number', true);
+        return preg_match('/^R[A-F0-9]{24}$/D', $id) ? 'R-' . $post_id : $id;
+    }
+
+    public static function display_claim_title($title, $post_id): string {
+        $title = (string) $title;
+        if (!preg_match('/^R[A-F0-9]{24}(?=\s|$)/', $title)) return $title;
+        $post = get_post((int) $post_id);
+        if (!$post || $post->post_type !== self::POST_TYPE) return $title;
+        $id = (string) get_post_meta($post->ID, 'tm_claim_number', true);
+        if (substr($title, 0, strlen($id)) !== $id) return $title;
+        return self::display_claim_number($post->ID) . substr($title, strlen($id));
+    }
+
+    public static function search_claim_number($query): void {
+        if (!is_admin() || !$query->is_main_query() || $query->get('post_type') !== self::POST_TYPE) return;
+        if (preg_match('/^R-([1-9][0-9]*)$/D', trim((string) $query->get('s')), $match)) {
+            $query->set('p', (int) $match[1]);
+            $query->set('s', '');
+        }
+    }
+
     private static function post_to_claim(WP_Post $post): array {
         $status = self::normalize_status(get_post_meta($post->ID, 'tm_claim_status', true));
         return [
             'wp_id' => $post->ID,
             'id' => (string) get_post_meta($post->ID, 'tm_claim_number', true),
+            'public_number' => self::display_claim_number($post->ID),
             'customer_id' => (int) get_post_meta($post->ID, 'tm_customer_id', true),
             'customer_email' => (string) get_post_meta($post->ID, 'tm_customer_email', true),
             'order_id' => (int) get_post_meta($post->ID, 'tm_order_id', true),
@@ -235,7 +261,7 @@ final class Tonerymaxim_Reklamacie_Plugin {
         $email = sanitize_email((string) get_post_meta($post_id, 'tm_customer_email', true));
         if (!$email) return;
         if ($old_status === $new_status && trim($note) === '') return;
-        $claim_number = (string) get_post_meta($post_id, 'tm_claim_number', true);
+        $claim_number = self::display_claim_number($post_id);
         $order_number = (string) get_post_meta($post_id, 'tm_order_number', true);
         $product_name = (string) get_post_meta($post_id, 'tm_product_name', true);
         $subject = sprintf('Aktualizácia reklamácie %s | ToneryMAXIM.sk', $claim_number);
@@ -466,7 +492,8 @@ final class Tonerymaxim_Reklamacie_Plugin {
         echo '<h3>Údaje reklamácie</h3>';
         echo '<table class="widefat striped tm-detail-table"><tbody>';
         foreach ($fields as $key => $label) {
-            printf('<tr><th>%s</th><td>%s</td></tr>', esc_html($label), esc_html((string) get_post_meta($post->ID, $key, true)));
+            $value = $key === 'tm_claim_number' ? self::display_claim_number($post->ID) : (string) get_post_meta($post->ID, $key, true);
+            printf('<tr><th>%s</th><td>%s</td></tr>', esc_html($label), esc_html($value));
         }
         echo '</tbody></table>';
         echo '</div>';
@@ -538,7 +565,7 @@ final class Tonerymaxim_Reklamacie_Plugin {
     }
 
     public static function column_content(string $column, int $post_id): void {
-        if ($column === 'tm_claim_number') echo esc_html((string) get_post_meta($post_id, 'tm_claim_number', true));
+        if ($column === 'tm_claim_number') echo esc_html(self::display_claim_number($post_id));
         if ($column === 'tm_customer') echo esc_html((string) get_post_meta($post_id, 'tm_customer_email', true));
         if ($column === 'tm_order') echo esc_html((string) get_post_meta($post_id, 'tm_order_number', true));
         if ($column === 'tm_product') echo esc_html((string) get_post_meta($post_id, 'tm_product_name', true));
