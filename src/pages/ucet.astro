@@ -2,8 +2,11 @@
 import "../styles/global.css";
 import "../styles/footer.css";
 import "../styles/account.css";
+import "../styles/account-orders.css";
 import { readCustomerSession, setCustomerCookie, customerDisplayName } from "../lib/auth-session";
-import { getWooCustomerById, getWooCustomerOrders } from "../lib/woo-client";
+import { getWooCustomerById } from "../lib/woo-client";
+import { getAccountOverview } from "../lib/account-orders";
+import { orderLineGrossTotal } from "../lib/order-display";
 import { customerToSession, formatDate, formatMoney, orderNumber, orderStatusLabel, safeText } from "../lib/account-data";
 import AccountShell from "../components/AccountShell.astro";
 
@@ -15,9 +18,9 @@ if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 const customerName = customerDisplayName(customer);
-const orders = await getWooCustomerOrders(customer.id, 10);
-const lastOrder = orders[0] || null;
-const totalSpent = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+let overview: Awaited<ReturnType<typeof getAccountOverview>> | null = null;
+try { overview = await getAccountOverview(customer.id); } catch { /* Keep the rest of the account usable when Woo is unavailable. */ }
+const lastOrder = overview?.latestOrder || null;
 const billing = wooCustomer.billing || {};
 ---
 
@@ -31,11 +34,12 @@ const billing = wooCustomer.billing || {};
   <body>
     <AccountShell user={customer} active="prehlad" title={`Dobrý deň, ${customerName}! 👋`} subtitle="Prehľad účtu, objednávok a uložených údajov.">
       <div class="account-stats">
-        <a class="account-stat" href="/ucet/objednavky"><span class="account-stat-icon">▣</span><small>Objednávky</small><strong>{orders.length}</strong><span class="account-link">Zobraziť všetky</span></a>
+        <a class="account-stat" href="/ucet/objednavky"><span class="account-stat-icon">▣</span><small>Objednávky</small><strong>{overview ? overview.count : '—'}</strong><span class="account-link">Zobraziť všetky</span></a>
         <a class="account-stat" href="/ucet/adresy"><span class="account-stat-icon">⌖</span><small>Adresa</small><strong>{billing.city ? "OK" : "Chýba"}</strong><span>{billing.city || "Doplniť adresu"}</span></a>
         <a class="account-stat" href="/ucet/profil"><span class="account-stat-icon">◎</span><small>Profil</small><strong>{customer.email ? "OK" : "—"}</strong><span class="account-link">Upraviť</span></a>
-        <a class="account-stat" href="/ucet/objednavky"><span class="account-stat-icon">€</span><small>Celkový nákup</small><strong>{formatMoney(totalSpent)}</strong><span>spolu za objednávky</span></a>
+        <a class="account-stat" href="/ucet/objednavky" title="Objednávky v spracovaní, uhradené, expedované alebo dokončené; po odpočítaní refundácií."><span class="account-stat-icon">€</span><small>Celkový nákup</small><strong>{overview ? (overview.spending.length ? overview.spending.map(entry => formatMoney(entry.total, entry.currency)).join(' / ') : formatMoney(0)) : '—'}</strong><span>po odpočítaní refundácií</span></a>
       </div>
+      {!overview && <p class="account-orders-error" role="status">Súhrn objednávok momentálne nie je dostupný. <a href="/ucet">Skúsiť znova</a></p>}
 
       <div class="account-grid-2">
         <section class="account-panel">
@@ -45,7 +49,7 @@ const billing = wooCustomer.billing || {};
               <div class="order-head"><strong>{orderNumber(lastOrder)}</strong><span class="status-pill">{orderStatusLabel(lastOrder.status)}</span></div>
               <div class="account-list-row"><span>Dátum</span><strong>{formatDate(lastOrder.date_created)}</strong></div>
               {(lastOrder.line_items || []).slice(0, 5).map((item) => (
-                <div class="order-item"><span>{safeText(item.name)} × {item.quantity || 1}</span><strong>{formatMoney(item.total, lastOrder.currency || "EUR")}</strong></div>
+                <div class="order-item"><span>{safeText(item.name)} × {item.quantity || 1}</span><strong>{formatMoney(orderLineGrossTotal(item), lastOrder.currency || "EUR")} s DPH</strong></div>
               ))}
               <div class="order-total"><span>Spolu</span><strong>{formatMoney(lastOrder.total, lastOrder.currency || "EUR")}</strong></div>
               <div class="account-order-actions">
@@ -54,9 +58,9 @@ const billing = wooCustomer.billing || {};
             </div>
           ) : (
             <div class="account-empty-soft">
-              <strong>Zatiaľ bez objednávky</strong>
-              <p>Po prvej objednávke sa tu zobrazí jej stav a možnosť opakovaného nákupu.</p>
-              <a class="tm-btn" href="/produkty">Prejsť na produkty</a>
+              <strong>{overview ? 'Zatiaľ bez objednávky' : 'Objednávky momentálne nie sú dostupné'}</strong>
+              <p>{overview ? 'Po prvej objednávke sa tu zobrazí jej stav a možnosť opakovaného nákupu.' : 'Skúste prehľad objednávok načítať znova.'}</p>
+              <a class="tm-btn" href={overview ? '/produkty' : '/ucet/objednavky'}>{overview ? 'Prejsť na produkty' : 'Zobraziť objednávky'}</a>
             </div>
           )}
         </section>

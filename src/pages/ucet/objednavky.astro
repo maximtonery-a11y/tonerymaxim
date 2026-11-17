@@ -2,27 +2,29 @@
 import "../../styles/global.css";
 import "../../styles/footer.css";
 import "../../styles/account.css";
+import "../../styles/account-orders.css";
 import { readCustomerSession, setCustomerCookie } from "../../lib/auth-session";
-import { getWooCustomerById, getWooCustomerOrders } from "../../lib/woo-client";
+import { getWooCustomerById } from "../../lib/woo-client";
+import { AccountOrderError, accountOrderPage, accountOrderTotals, getAccountOrdersPage } from "../../lib/account-orders";
 import { customerToSession, formatDate, formatMoney, orderNumber, orderStatusLabel, safeText } from "../../lib/account-data";
 import { orderLineGrossTotal } from "../../lib/order-display";
 import AccountShell from "../../components/AccountShell.astro";
 
 const session = readCustomerSession(Astro.cookies);
-if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`);
 
 const wooCustomer = await getWooCustomerById(session.id);
 if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
-const orders = await getWooCustomerOrders(customer.id, 50);
-const VAT_RATE = 0.23;
-function moneyNumber(value: unknown) {
-  const number = Number(String(value ?? "0").replace(",", "."));
-  return Number.isFinite(number) ? Math.round(number * 100) / 100 : 0;
+let result: Awaited<ReturnType<typeof getAccountOrdersPage>> | null = null;
+let error = '';
+try { result = await getAccountOrdersPage(customer.id, accountOrderPage(Astro.url.searchParams.get('page'))); }
+catch (caught) {
+  error = caught instanceof AccountOrderError ? caught.message : 'Objednávky momentálne nie sú dostupné. Skúste to o chvíľu.';
+  Astro.response.status = caught instanceof AccountOrderError ? caught.status : 503;
 }
-function netFromGross(value: unknown) { return Math.round((moneyNumber(value) / (1 + VAT_RATE)) * 100) / 100; }
-function vatFromGross(value: unknown) { const gross = moneyNumber(value); return Math.round((gross - netFromGross(gross)) * 100) / 100; }
+const orders = result?.orders || [];
 ---
 
 <!doctype html>
@@ -30,18 +32,21 @@ function vatFromGross(value: unknown) { const gross = moneyNumber(value); return
   <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Objednávky | ToneryMaxim.sk</title></head>
   <body>
     <AccountShell user={customer} active="objednavky" title="Objednávky" subtitle="História nákupov, stav objednávok a opakované objednanie.">
-      {orders.length ? (
-        <div class="account-section-grid">
+      <p class="account-order-history-note">Pri opakovanom nákupe najprv zobrazíme aktuálne ceny a dostupnosť. Pôvodná objednávka sa nemení.</p>
+      {error ? <section class="account-panel account-orders-error" role="alert"><h2>Objednávky sa nepodarilo načítať</h2><p>{error}</p><a class="tm-btn" href="/ucet/objednavky">Skúsiť znova</a></section> : orders.length ? (
+        <div class="account-section-grid account-orders-list">
+          <p class="account-order-count">Celkom objednávok: <strong>{result!.total}</strong> · Stránka {result!.page} z {result!.totalPages}</p>
           {orders.map((order) => (
-            <section class="account-list-card">
+            <section class="account-list-card" data-account-order={order.id}>
               <div class="order-head">
                 <h3>{orderNumber(order)}</h3>
                 <span class="status-pill">{orderStatusLabel(order.status)}</span>
               </div>
               <div class="account-list-row"><span>Dátum</span><strong>{formatDate(order.date_created)}</strong></div>
               <div class="account-list-row"><span>Spolu s DPH</span><strong>{formatMoney(order.total, order.currency || "EUR")}</strong></div>
-              <div class="account-list-row"><span>Základ bez DPH</span><strong>{formatMoney(netFromGross(order.total), order.currency || "EUR")}</strong></div>
-              <div class="account-list-row"><span>DPH 23 %</span><strong>{formatMoney(vatFromGross(order.total), order.currency || "EUR")}</strong></div>
+              {accountOrderTotals(order).net !== null && <><div class="account-list-row"><span>Základ bez DPH</span><strong>{formatMoney(accountOrderTotals(order).net, order.currency || "EUR")}</strong></div>
+              <div class="account-list-row"><span>DPH</span><strong>{formatMoney(accountOrderTotals(order).tax, order.currency || "EUR")}</strong></div></>}
+              {accountOrderTotals(order).refunded > 0 && <><div class="account-list-row"><span>Vrátené platby</span><strong>{formatMoney(accountOrderTotals(order).refunded, order.currency || "EUR")}</strong></div><div class="account-list-row"><span>Po odpočítaní vrátených platieb</span><strong>{formatMoney(accountOrderTotals(order).afterRefund, order.currency || "EUR")}</strong></div></>}
               <div class="order-preview">
                 {(order.line_items || []).slice(0, 6).map((item) => (
                   <div class="order-item">
@@ -49,10 +54,14 @@ function vatFromGross(value: unknown) { const gross = moneyNumber(value); return
                     <strong>{formatMoney(orderLineGrossTotal(item), order.currency || "EUR")} s DPH</strong>
                   </div>
                 ))}
+                {(order.line_items || []).length > 6 && <details class="account-order-more"><summary>Zobraziť ďalších {(order.line_items || []).length - 6} položiek</summary>{(order.line_items || []).slice(6).map(item => <div class="order-item"><span>{safeText(item.name)} × {item.quantity || 1}</span><strong>{formatMoney(orderLineGrossTotal(item), order.currency || 'EUR')} s DPH</strong></div>)}</details>}
               </div>
-              <p><a class="tm-btn" href={"/ucet/faktury?order=" + order.id}>Faktúry k objednávke</a></p>
+              <div class="account-order-actions"><button class="tm-btn is-dark" type="button" data-reorder-start>Objednať znova</button><a class="tm-btn is-outline" href={"/ucet/faktury?order=" + order.id}>Faktúry k objednávke</a></div>
+              <p class="account-reorder-status" data-reorder-status role="status" aria-live="polite"></p>
+              <section class="account-reorder-preview" data-reorder-preview hidden aria-label="Kontrola opakovanej objednávky"></section>
             </section>
           ))}
+          {result!.totalPages > 1 && <nav class="account-orders-pagination" aria-label="Stránkovanie objednávok">{result!.page > 1 && <a class="tm-btn is-outline" href={'/ucet/objednavky?page=' + (result!.page - 1)} rel="prev">← Novšie objednávky</a>}{result!.hasMore && <a class="tm-btn is-outline" href={'/ucet/objednavky?page=' + (result!.page + 1)} rel="next">Staršie objednávky →</a>}</nav>}
         </div>
       ) : (
         <section class="account-panel">
@@ -62,5 +71,6 @@ function vatFromGross(value: unknown) { const gross = moneyNumber(value); return
         </section>
       )}
     </AccountShell>
+    <script>import "../../scripts/account-reorder";</script>
   </body>
 </html>
