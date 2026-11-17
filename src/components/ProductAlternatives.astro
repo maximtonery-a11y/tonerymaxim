@@ -1,0 +1,101 @@
+---
+import { selectProductAlternatives, savingsAgainstOriginal } from '../lib/product-alternatives';
+import { chipVariant } from '../lib/product-chip';
+import { storefrontStockText, isAvailableNow } from '../lib/product-availability';
+import { findPrinterEntity, printerBrandForName, type EntityLink, type TmProduct } from '../lib/seo-catalog';
+
+interface Props { product: TmProduct; catalog: TmProduct[]; printerLinks: EntityLink[] }
+const { product, catalog, printerLinks } = Astro.props;
+// These printer links have already been resolved against this catalogue generation.
+const candidates = new Set<TmProduct>();
+for (const link of printerLinks) {
+  const brand = printerBrandForName(link.label);
+  if (brand) for (const item of findPrinterEntity(catalog, brand.slug, link.label)?.products || []) candidates.add(item);
+}
+const { baseline, alternatives } = selectProductAlternatives(product, candidates);
+const euro = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' });
+const perPage = new Intl.NumberFormat('sk-SK', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const number = new Intl.NumberFormat('sk-SK');
+const pricePerPage = (price: number, pages: number) => price / pages < 0.001 ? '< 0,001 €' : perPage.format(price / pages) + ' €';
+const typeNames: Record<string, string> = { original: 'Originál', compatible: 'Kompatibilný', renovated: 'Renovovaný' };
+const reference = product.product_type_key === 'original' ? product : alternatives.find(item => item.variant.product.product_type_key === 'original' && item.comparable)?.variant.product;
+const saving = reference ? savingsAgainstOriginal(product, reference) : 0;
+const detailUrl = (p: TmProduct) => '/produkt/' + encodeURIComponent(p.slug);
+function cartData(p: TmProduct) {
+  const { id, sku, name, slug, price, image, color, capacity, page_yield, stock_quantity, stock_status, product_type_key, product_type_label, warranty } = p;
+  return JSON.stringify({ id, sku, name, slug, price, image, color, capacity, page_yield, stock_quantity, stock_status, product_type_key, product_type_label, warranty, url: detailUrl(p) });
+}
+---
+{alternatives.length > 0 && <section id="alternativy" class="related-column related-column-alternatives" data-alternatives-section aria-labelledby="alternativy-title">
+  <h2 id="alternativy-title">Alternatívy k produktu</h2>
+  <p class="comparison-current">Prezeráte si <strong>{product.name}</strong> · {euro.format(product.price)} s DPH{baseline.pages ? ' · ' + number.format(baseline.pages) + ' strán' : baseline.capacity ? ' · ' + baseline.capacity : ''}</p>
+  {saving > 0 && reference && <p class="comparison-saving">{baseline.pages ? 'Pri rovnakej výťažnosti' : 'Pri rovnakom objeme'} ušetríte <strong>{euro.format(saving)}</strong> oproti <a href={detailUrl(reference)}>originálu za {euro.format(reference.price)}</a>.</p>}
+  <div class="comparison-grid" data-count={alternatives.length}>
+    {alternatives.map(({ variant, basis, difference, partial, exact }) => {
+      const item = variant.product;
+      const url = detailUrl(item);
+      const cartridge = ['toner', 'ink'].includes(variant.kind) && variant.size === 1 && !/fľaš|bottle|ecotank|\bgi[- ]?\d/i.test(item.name);
+      const chip = cartridge ? chipVariant(item) : null;
+      const delta = reference && reference !== item ? savingsAgainstOriginal(item, reference) : 0;
+      const change = basis === 'pages' ? (difference > 0 ? 'Vyššia výťažnosť' : 'Nižšia výťažnosť') : (difference > 0 ? 'Väčší objem' : 'Menší objem');
+      return <article class={'comparison-card ' + item.product_type_key} data-alternative-id={item.id}>
+        <div class="comparison-head">
+          {item.image && <img src={item.image} width="56" height="56" alt="" loading="lazy" decoding="async" />}
+          <div><span class="comparison-type">{typeNames[item.product_type_key]}</span><h3><a href={url}>{item.name}</a></h3></div>
+        </div>
+        <dl class="comparison-facts">
+          {variant.pages && <div><dt>Výťažnosť</dt><dd>{number.format(variant.pages)} strán</dd></div>}
+          {variant.capacity && (!variant.pages || variant.ml) && <div><dt>Kapacita</dt><dd>{variant.capacity}</dd></div>}
+          {variant.pages && <div><dt>Cena za stranu</dt><dd>{pricePerPage(Number(item.price), variant.pages)}</dd></div>}
+          {chip && <div><dt>Čip</dt><dd>{chip.label}</dd></div>}
+        </dl>
+        {difference !== 0 && <p class="comparison-note">{change} oproti prezeranému produktu.</p>}
+        {!exact && !difference && <p class="comparison-note">Iné označenie kazety pre spoločné modely.</p>}
+        {delta > 0 && <p class="comparison-note saving">O {euro.format(delta)} menej než porovnateľný originál.</p>}
+        <div class="comparison-buy">
+          <span class:list={['comparison-stock', {available: isAvailableNow(item)}]}>{storefrontStockText(item)}{!isAvailableNow(item) && ' · 3–10 pracovných dní'}</span>
+          <div class="comparison-action"><span><strong>{euro.format(item.price)}</strong> s DPH</span>
+            {partial ? <a class="comparison-button secondary" href={url + '#compatible-printers'}>Overiť tlačiareň</a>
+              : <button class="comparison-button" type="button" data-alternative-cart={cartData(item)} aria-label={'Do košíka – ' + item.name}>Do košíka</button>}
+          </div>
+        </div>
+      </article>;
+    })}
+  </div>
+</section>}
+<style>
+  #alternativy { scroll-margin-top: 7rem; min-width: 0; color: #102642; }
+  #alternativy h2 { margin: 0; }
+  .comparison-current { margin: 7px 0 0; color: #47576b; line-height: 1.5; overflow-wrap: anywhere; }
+  .comparison-saving { margin: 6px 0 0; color: #12623c; line-height: 1.5; }
+  .comparison-saving a { color: inherit; text-underline-offset: .15em; }
+  .comparison-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin-top: 18px; }
+  .comparison-grid[data-count="1"] { max-width: 38rem; grid-template-columns: minmax(0,1fr); }
+  @media (min-width: 821px) { .comparison-grid[data-count="2"] { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+  .comparison-card { --accent: #08703d; display: flex; min-width: 0; flex-direction: column; padding: 16px; gap: 10px; border: 1px solid #d8e5ef; border-top: 3px solid var(--accent); border-radius: 14px; background: #fff; overflow-wrap: anywhere; }
+  .comparison-card.original { --accent: #2058ac; }
+  .comparison-card.renovated { --accent: #9b5015; }
+  .comparison-head { display: flex; align-items: center; gap: 12px; }
+  .comparison-head img { flex: 0 0 56px; object-fit: contain; }
+  .comparison-head h3 { margin: 3px 0 0; font-size: 1rem; line-height: 1.35; }
+  .comparison-head a { color: inherit; text-decoration: none; }
+  .comparison-head a:hover { text-decoration: underline; }
+  .comparison-type { font-size: .8rem; font-weight: 700; color: var(--accent); }
+  .comparison-facts { display: grid; gap: 5px; margin: 0; font-size: .875rem; line-height: 1.4; }
+  .comparison-facts > div { display: grid; grid-template-columns: minmax(5.5rem, .9fr) minmax(0,1.1fr); gap: 8px; }
+  .comparison-facts dt, .comparison-action > span { color: #485a70; }
+  .comparison-facts dd { margin: 0; font-weight: 650; }
+  .comparison-note { margin: 0; font-size: .875rem; line-height: 1.4; }
+  .saving, .available { color: #08703d; }
+  .comparison-buy { display: grid; gap: 6px; margin-top: auto; padding-top: 10px; border-top: 1px solid #e0e8f1; }
+  .comparison-stock { font-size: .82rem; font-weight: 650; }
+  .comparison-action { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; }
+  .comparison-action > span { font-size: .8rem; }
+  .comparison-action strong { font-size: 1.3rem; color: #102642; white-space: nowrap; }
+  .comparison-button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 14px; border-radius: 10px; border: 1px solid #0b7040; background: #0b7040; color: #fff; font: inherit; font-size: .9rem; font-weight: 700; text-decoration: none; cursor: pointer; }
+  .comparison-button.secondary { background: #fff; color: #164e88; border-color: #adc9e1; }
+  #alternativy :is(a,button):focus-visible { outline: 3px solid #235fcc; outline-offset: 3px; }
+  @media (min-width: 821px) and (max-width: 1100px) { .comparison-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+  @media (max-width: 820px) { .comparison-grid { grid-template-columns: minmax(0,1fr); gap: 10px; } .comparison-card { padding: 12px; } }
+  :global(.tm-device-mobile) .comparison-grid[data-count] { grid-template-columns: minmax(0,1fr); }
+</style>

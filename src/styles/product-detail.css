@@ -2958,8 +2958,13 @@ body.product-detail-body .related-section-stacked .related-column {
   width: 100%;
 }
 
-body.product-detail-body [data-alternatives-section][hidden] {
-  display: none !important;
+.jump-to-alternatives {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #174e85;
+  font-weight: 700;
+  text-underline-offset: .18em;
 }
 
 body.product-detail-body .related-title-row {

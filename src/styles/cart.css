@@ -1308,3 +1308,13 @@ body.has-add-cart-drawer { overflow: hidden; }
 .cart-item.is-unavailable{border-color:#efb7b7;background:#fffafa}
 .cart-unavailable-notice{border:1px solid #efb7b7;background:#fff2f2;color:#b42318;font-weight:800}
 .checkout-button[aria-disabled="true"],.cart-mobile-sticky-checkout[aria-disabled="true"]{opacity:.55;cursor:not-allowed;pointer-events:auto}
+
+.cart-mobile-breakdown { display: none; }
+@media (max-width: 767px) {
+  .cart-mobile-breakdown:not([hidden]) { display: block; margin-top: 12px; padding: 0 14px; border: 1px solid #dbe6f0; border-radius: 14px; background: #fff; }
+  .cart-mobile-breakdown summary { min-height: 48px; padding-block: 14px; color: #173a60; cursor: pointer; }
+  .cart-mobile-breakdown summary strong { float: right; white-space: nowrap; }
+  .cart-mobile-breakdown dl { display: grid; gap: 8px; margin: 0 0 14px; }
+  .cart-mobile-breakdown dl div { display: flex; justify-content: space-between; gap: 10px; }
+  .cart-mobile-breakdown dd { margin: 0; font-weight: 700; white-space: nowrap; }
+}
