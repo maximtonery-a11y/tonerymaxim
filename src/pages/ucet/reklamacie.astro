@@ -69,6 +69,8 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
     </AccountShell>
 
     <script>
+      import { claimConfirmation, claimSubmissionId, clearClaimSubmission } from '../../scripts/claim-submission';
+      const submissionKey = 'tm_account_claim_submission_v1';
       type AccountOrderItem = {
         product_id?: number;
         variation_id?: number;
@@ -223,7 +225,7 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
           return;
         }
         productSelect.innerHTML = `<option value="">Vyberte produkt</option>` + order.items.map((item) => {
-          const id = item.product_id || item.variation_id;
+          const id = item.variation_id || item.product_id;
           const sku = item.sku ? ` · SKU: ${item.sku}` : "";
           return `<option value="${id}">${escapeHtml(item.name)} × ${item.quantity}${escapeHtml(sku)}</option>`;
         }).join("");
@@ -271,15 +273,16 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
           const res = await fetch("/api/account/claims", {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({ ...payload, submissionId: await claimSubmissionId(submissionKey, payload) }),
           });
           const data = await res.json();
           if (!res.ok || !data.ok) throw new Error(data.error || "Reklamáciu sa nepodarilo odoslať.");
-          claims = [data.claim, ...claims];
+          claims = [data.claim, ...claims.filter(claim => claim.id !== data.claim.id)];
           form.reset();
           renderProducts();
           renderClaims();
-          setMessage("Reklamáciu sme prijali. Potvrdenie sme poslali na e-mail.", "is-success");
+          clearClaimSubmission(submissionKey);
+          setMessage(claimConfirmation(data), "is-success");
         } catch (error) {
           setMessage(error instanceof Error ? error.message : "Reklamáciu sa nepodarilo odoslať.", "is-error");
         } finally {

@@ -1,29 +1,27 @@
 import type { APIRoute } from "astro";
-import { deliverCustomerCareCase, sanitizeCustomerCarePayload, saveCustomerCareCase, validateCustomerCarePayload } from "../../../lib/customer-care";
+import { sanitizeCustomerCarePayload, validateCustomerCarePayload } from "../../../lib/customer-care";
+import { ClaimInputError, resolvePublicClaim, submitOnlineClaim } from "../../../lib/online-claims";
+
+export const prerender = false;
+const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), {
+  status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+});
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const input = await request.json().catch(() => ({}));
-    const payload = sanitizeCustomerCarePayload(input);
-    const error = validateCustomerCarePayload("reklamacia", payload);
-    if (error) return new Response(JSON.stringify({ ok: false, error }), { status: 400 });
-
-    const record = await saveCustomerCareCase("reklamacia", payload, {
-      userAgent: request.headers.get("user-agent") || "",
-      referer: request.headers.get("referer") || "",
-    });
-
-    const delivery = await deliverCustomerCareCase(record);
-    return new Response(JSON.stringify({
-      ok: true, caseNumber: record.caseNumber,
-      emailSent: delivery.customer,
-      emailPending: !delivery.customer,
-      message: delivery.customer
-        ? "Podanie bolo uložené a potvrdenie odoslané."
-        : "Podanie bolo bezpečne uložené. Potvrdzovací e-mail sa nepodarilo odoslať a systém ho zopakuje automaticky.",
-    }), { status: 200 });
-  } catch (error: any) {
-    console.error("Customer care claim error:", error?.message || error);
-    return new Response(JSON.stringify({ ok: false, error: "Reklamáciu sa nepodarilo odoslať." }), { status: 500 });
+    const input = await request.json().catch(() => null);
+    if (!input || typeof input !== 'object' || Array.isArray(input)) return json({ ok: false, error: "Neplatné dáta reklamácie." }, 400);
+    const contact = sanitizeCustomerCarePayload(input);
+    const error = validateCustomerCarePayload("reklamacia", contact);
+    if (error) return json({ ok: false, error }, 400);
+    const payload = await resolvePublicClaim(contact);
+    contact.product = payload.product_name;
+    contact.orderNumber = payload.order_number;
+    const result = await submitOnlineClaim(`public:${contact.email}`, input.submissionId, contact, payload);
+    // Public callers receive only their receipt, never WordPress/internal notes.
+    return json({ ok: result.ok, caseNumber: result.caseNumber, wooSaved: result.wooSaved, emailSent: result.emailSent, emailPending: result.emailPending });
+  } catch (error) {
+    const known = error instanceof ClaimInputError;
+    return json({ ok: false, error: known ? error.message : "Reklamáciu sa nepodarilo odoslať. Skúste rovnaké podanie zopakovať." }, known ? error.status : 500);
   }
 };

@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
 import { readCustomerSession } from "../../../lib/auth-session";
-import { getWooCustomerById, getWooCustomerOrders, getWooAuthHeader, getToneryMaximWordPressHeaders } from "../../../lib/woo-client";
-import { sendMail } from "../../../lib/mail";
+import { getWooCustomerById, getWooCustomerOrders, wooRequest } from "../../../lib/woo-client";
+import { sanitizeCustomerCarePayload } from "../../../lib/customer-care";
+import { ClaimInputError, claimMessageWithContact, claimsRequest, displayClaimOrderNumber, pendingCustomerClaims, submitOnlineClaim } from "../../../lib/online-claims";
 
 export const prerender = false;
 
@@ -47,56 +48,6 @@ function clean(value: unknown): string {
   return String(value ?? "").trim();
 }
 
-function wooBaseUrl(): string {
-  const raw = clean(
-    process.env.WOO_URL || process.env.WP_URL || process.env.WORDPRESS_URL
-      || import.meta.env.WOO_URL || import.meta.env.WP_URL || import.meta.env.WORDPRESS_URL,
-  );
-  if (!raw) throw new Error("Chýba WOO_URL v .env");
-  return raw.replace(/\/$/, "");
-}
-
-async function tmClaimsRequest<T = any>(endpoint: string, options: { method?: string; body?: any; query?: Record<string, any> } = {}): Promise<T> {
-  const url = new URL(`${wooBaseUrl()}/wp-json/tonerymaxim/v1${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`);
-  for (const [key, value] of Object.entries(options.query || {})) {
-    if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
-  }
-
-  const method = String(options.method || "GET").toUpperCase();
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: getWooAuthHeader(),
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      ...getToneryMaximWordPressHeaders(method),
-    },
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
-
-  const text = await response.text();
-  let data: any = null;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = text;
-  }
-
-  if (!response.ok || data?.ok === false) {
-    throw new Error(data?.error || data?.message || `WordPress reklamácie API chyba (${response.status})`);
-  }
-  return data as T;
-}
-
-function makeClaimId(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  const r = Math.floor(1000 + Math.random() * 9000);
-  return `R${y}${m}${d}-${r}`;
-}
-
 function normalizeStatus(value: unknown): ClaimStatus {
   const status = clean(value);
   return (["received", "checking", "approved", "rejected", "resolved"].includes(status) ? status : "received") as ClaimStatus;
@@ -135,7 +86,7 @@ function claimToPublic(claim: any): Claim {
 function orderToPublic(order: any) {
   return {
     id: Number(order.id || 0),
-    number: clean(order.number || order.id),
+    number: displayClaimOrderNumber(order),
     date_created: clean(order.date_created),
     status: clean(order.status),
     total: clean(order.total),
@@ -152,19 +103,19 @@ function orderToPublic(order: any) {
   };
 }
 
-async function readData(customerId: number, customerEmail: string) {
-  const [customer, orders, claimsResponse] = await Promise.all([
-    getWooCustomerById(customerId),
-    getWooCustomerOrders(customerId, 50),
-    tmClaimsRequest<{ ok: boolean; claims: any[] }>("/reklamacie", { query: { customer_id: customerId, customer_email: customerEmail } }),
-  ]);
-
+async function readData(customerId: number) {
+  const customer = await getWooCustomerById(customerId);
   if (!customer) throw new Error("Zákazník neexistuje.");
+  const [orders, claimsResponse, pendingClaims] = await Promise.all([
+    getWooCustomerOrders(customerId, 50),
+    claimsRequest("/reklamacie", { query: { customer_id: customerId } }),
+    pendingCustomerClaims(customerId),
+  ]);
 
   return {
     customer,
     orders: (orders || []).map(orderToPublic).filter((order: any) => order.items.length),
-    claims: (Array.isArray(claimsResponse?.claims) ? claimsResponse.claims : [])
+    claims: [...claimsResponse.claims, ...pendingClaims.filter((pending: any) => !claimsResponse.claims.some((claim: any) => (claim.id || claim.claim_number) === pending.id))]
       .map(claimToPublic)
       .sort((a: Claim, b: Claim) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
   };
@@ -175,7 +126,7 @@ export const GET: APIRoute = async ({ cookies }) => {
   if (!session) return json({ ok: false, error: "Neprihlásený zákazník." }, 401);
 
   try {
-    const data = await readData(session.id, session.email);
+    const data = await readData(session.id);
     return json({
       ok: true,
       orders: data.orders,
@@ -189,70 +140,38 @@ export const GET: APIRoute = async ({ cookies }) => {
 export const POST: APIRoute = async ({ cookies, request }) => {
   const session = readCustomerSession(cookies);
   if (!session) return json({ ok: false, error: "Neprihlásený zákazník." }, 401);
-
-  let body: any = null;
-  try {
-    body = await request.json();
-  } catch {
-    return json({ ok: false, error: "Neplatné dáta reklamácie." }, 400);
-  }
-
+  let body: any;
+  try { body = await request.json(); }
+  catch { return json({ ok: false, error: "Neplatné dáta reklamácie." }, 400); }
   const orderId = Number(body?.order_id || 0);
   const productId = Number(body?.product_id || 0);
-  const reason = clean(body?.reason);
-  const message = clean(body?.message);
-
-  if (!orderId) return json({ ok: false, error: "Vyberte objednávku." }, 400);
-  if (!productId) return json({ ok: false, error: "Vyberte produkt." }, 400);
+  const reason = clean(body?.reason).slice(0, 300);
+  const message = clean(body?.message).slice(0, 3000);
+  if (!Number.isSafeInteger(orderId) || orderId <= 0) return json({ ok: false, error: "Vyberte objednávku." }, 400);
+  if (!Number.isSafeInteger(productId) || productId <= 0) return json({ ok: false, error: "Vyberte produkt." }, 400);
   if (!reason) return json({ ok: false, error: "Vyberte dôvod reklamácie." }, 400);
   if (message.length < 8) return json({ ok: false, error: "Popíšte problém aspoň jednou vetou." }, 400);
-
   try {
-    const data = await readData(session.id, session.email);
-    const order = data.orders.find((item: any) => Number(item.id) === orderId);
-    if (!order) return json({ ok: false, error: "Objednávka nepatrí k vášmu účtu." }, 403);
-
-    const product = order.items.find((item: any) => Number(item.product_id) === productId || Number(item.variation_id) === productId);
-    if (!product) return json({ ok: false, error: "Produkt nepatrí k vybranej objednávke." }, 400);
-
-    const claimPayload = {
-      claim_number: makeClaimId(),
-      customer_id: session.id,
-      customer_email: session.email,
-      order_id: order.id,
-      order_number: order.number,
-      product_id: product.product_id || product.variation_id,
-      product_name: product.name,
-      product_sku: product.sku,
-      reason,
-      message,
-      status: "received",
-    };
-
-    const created = await tmClaimsRequest<{ ok: boolean; claim: any }>("/reklamacie", {
-      method: "POST",
-      body: claimPayload,
-    });
-    const claim = claimToPublic(created?.claim || claimPayload);
-
-    const subject = `Nová reklamácia ${claim.id} | ToneryMAXIM.sk`;
-    const adminEmail = clean(
-      process.env.MAIL_TO || process.env.MAIL_FROM || process.env.SMTP_USER
-        || import.meta.env.MAIL_TO || import.meta.env.MAIL_FROM || import.meta.env.SMTP_USER,
-    );
-    const text = `Nová reklamácia\n\nČíslo: ${claim.id}\nZákazník: ${session.email}\nObjednávka: ${claim.order_number}\nProdukt: ${claim.product_name}\nSKU: ${claim.product_sku || "-"}\nDôvod: ${claim.reason}\n\nPopis:\n${claim.message}`;
-
-    await Promise.allSettled([
-      adminEmail ? sendMail({ to: adminEmail, subject, text, replyTo: session.email }) : Promise.resolve(),
-      sendMail({
-        to: session.email,
-        subject: `Reklamáciu ${claim.id} sme prijali | ToneryMAXIM.sk`,
-        text: `Dobrý deň,\n\nreklamáciu ${claim.id} k objednávke ${claim.order_number} sme prijali.\n\nProdukt: ${claim.product_name}\nDôvod: ${claim.reason}\n\nPo kontrole vás budeme kontaktovať e-mailom.\n\nToneryMAXIM.sk`,
-      }),
+    // Fetch this order directly: ownership does not depend on the first 50 orders.
+    const [customer, order] = await Promise.all([
+      getWooCustomerById(session.id), wooRequest<any>(`/orders/${orderId}`),
     ]);
-
-    return json({ ok: true, claim });
-  } catch (error: any) {
-    return json({ ok: false, error: error?.message || "Reklamáciu sa nepodarilo odoslať." }, 500);
+    if (!customer || Number(order?.customer_id) !== session.id) return json({ ok: false, error: "Objednávka nepatrí k vášmu účtu." }, 403);
+    const product = order.line_items?.find((item: any) => Number(item.product_id) === productId || Number(item.variation_id) === productId);
+    if (!product) return json({ ok: false, error: "Produkt nepatrí k vybranej objednávke." }, 400);
+    const contact = sanitizeCustomerCarePayload({
+      orderNumber: displayClaimOrderNumber(order), email: customer.email,
+      name: [customer.first_name || customer.billing?.first_name, customer.last_name || customer.billing?.last_name].filter(Boolean).join(' ') || customer.email,
+      phone: customer.billing?.phone, product: product.name, reason, message,
+    });
+    const result = await submitOnlineClaim(`account:${session.id}`, body?.submissionId, contact, {
+      customer_id: session.id, customer_email: contact.email, order_id: orderId, order_number: contact.orderNumber,
+      product_id: Number(product.product_id || product.variation_id), product_name: clean(product.name),
+      product_sku: clean(product.sku), reason: contact.reason, message: claimMessageWithContact(contact), status: 'received',
+    });
+    return json({ ...result, claim: claimToPublic(result.claim) });
+  } catch (error) {
+    const known = error instanceof ClaimInputError;
+    return json({ ok: false, error: known ? error.message : "Reklamáciu sa nepodarilo odoslať. Skúste rovnaké podanie zopakovať." }, known ? error.status : 500);
   }
 };
