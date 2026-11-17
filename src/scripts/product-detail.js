@@ -1,4 +1,5 @@
 import { chipVariant } from "../lib/product-chip.ts";
+import { bindPrinterCheck } from "./product-printer-check.js";
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../lib/product-availability.ts";
 
@@ -1116,9 +1117,26 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
           <p class="summary-subtitle">${esc(product.product_type_detail_label || product.description || "Spotrebný materiál pre vašu tlačiareň.")}</p>
 
           ${printerRelated ? `<div class="compat-preview">
-            <span>Kompatibilné s</span>
-            <strong>${esc(compatibilitySummary(product))}</strong>
-            ${printers.length ? `<button type="button" data-show-compatible>Zobraziť všetky kompatibilné modely ›</button>` : ""}
+            <span data-check-heading>Kompatibilné s</span>
+            <strong data-check-summary>${esc(compatibilitySummary(product))}</strong>
+            <div class="printer-check" id="overenie-tlaciarne" data-printer-check>
+              <div class="printer-check-actions">
+                <button type="button" data-check-toggle aria-expanded="false" aria-controls="printer-check-panel">Overiť moju tlačiareň</button>
+                ${printers.length ? `<button type="button" data-show-compatible>Všetky modely (${printers.length})</button>` : ""}
+              </div>
+              <div id="printer-check-panel" data-check-panel hidden>
+                <form>
+                  <label for="printer-check-model">Model tlačiarne</label>
+                  <div class="printer-check-input">
+                    <input id="printer-check-model" name="model" type="search" maxlength="90" autocomplete="off" spellcheck="false" placeholder="Označenie zo štítku tlačiarne">
+                    <button type="submit">Overiť</button>
+                  </div>
+                </form>
+                <p role="status" tabindex="-1"></p>
+                <div class="printer-check-options" data-check-options></div>
+                <a data-check-catalog hidden>Vyhľadať tento model v katalógu →</a>
+              </div>
+            </div>
           </div>` : ""}
 
           <div class="chips chips-inline">
@@ -1225,6 +1243,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
           <p>${printers.length ? `Produkt je vhodný pre ${printers.length} modelov tlačiarní.` : "Kompatibilita bude doplnená."}</p>
         </div>
         ${compatibilityNavigationHtml(product)}
+        <a class="printer-check-jump" data-check-from-models href="#overenie-tlaciarne">Overiť moju tlačiareň</a>
       </section>` : ""}
 
       ${printerRelated ? `<div class="compat-modal" data-compat-modal hidden>
@@ -1412,6 +1431,11 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
 
     hydrateSeriesColors(product);
     hydrateExtraProducts(product);
+
+    bindPrinterCheck(root, () => {
+      const labels = product.compatible_printers?.length ? product.compatible_printers : product.printers;
+      return getPrinters({ compatible_printers: labels });
+    }, product, chip, printerProductsUrl);
 
     root.querySelectorAll("[data-show-compatible]").forEach((button) => {
       button.addEventListener("click", () => {

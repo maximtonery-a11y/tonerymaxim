@@ -27,12 +27,94 @@ async function columns(page, count) {
     return grid && getComputedStyle(grid).gridTemplateColumns.split(' ').length === expected;
   }, count);
 }
+
+async function checkPrinterFit(page, origin) {
+  const toggle = page.getByRole('button', { name: 'Overiť moju tlačiareň' });
+  const panel = page.locator('[data-check-panel]');
+  const field = panel.getByRole('searchbox', { name: 'Model tlačiarne' });
+  const status = panel.getByRole('status');
+  const catalog = panel.locator('[data-check-catalog]');
+  const model = 'Brother DCP-L2512D';
+  const lookups = [];
+  const listen = request => {
+    if (/^\/api\/(?:product|products|printers|search|suggest)(?:[/?]|$)/.test(new URL(request.url()).pathname)) lookups.push(request.url());
+  };
+  // The existing page may finish its accessory request just after first paint.
+  await page.locator('[data-accessories-section] [data-related-id="91"]').waitFor();
+  page.on('request', listen);
+  try {
+    assert.equal(await panel.isVisible(), false);
+    await toggle.click();
+    await field.fill('L2512');
+    assert.equal(await status.getAttribute('data-state'), 'choose');
+    await panel.getByRole('button', { name: model, exact: true }).click();
+    assert.equal(await status.getAttribute('data-state'), 'listed');
+    assert.equal(await page.locator('[data-check-summary]').innerText(), model);
+    assert.equal(await catalog.isVisible(), false);
+    await field.fill(model + 'W');
+    await field.press('Enter');
+    assert.equal(await status.getAttribute('data-state'), 'unknown');
+    assert.equal(new URL(await catalog.getAttribute('href'), origin).searchParams.get('s'), model + 'W');
+    assert.doesNotMatch(await page.locator('[data-check-heading]').innerText(), /Vybraná/);
+    await fits(panel.locator('form, input, button, a, [role="status"]'));
+    await status.press('Escape');
+    assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
+    assert.ok(await toggle.evaluate(el => el === document.activeElement));
+    await page.locator('[data-check-from-models]').click();
+    assert.ok(await field.evaluate(el => el === document.activeElement));
+    await field.fill('');
+    await field.press('Escape');
+    await page.locator('.compat-preview [data-show-compatible]').click();
+    await page.locator('[data-compat-modal]').getByRole('link', { name: model }).waitFor();
+    await page.locator('[data-close-compatible]').click();
+    assert.deepEqual(lookups, [], 'Product compatibility uses only this page’s data');
+  } finally { page.off('request', listen); }
+}
+
+async function checkPrinterJourney(page, origin) {
+  const model = 'Brother DCP-L2512D';
+  await page.goto(origin + '/tlaciarne/brother/brother-dcp-l2512d');
+  await page.locator('a[href="' + productPath + '22"]').first().click();
+  await page.waitForFunction(() => document.querySelector('[data-check-heading]')?.textContent.includes('Vybraná'));
+  assert.equal(await page.locator('[data-check-summary]').innerText(), model);
+  await page.goto(origin + productPath + '22', { referer: 'https://other.example/tlaciarne/brother/brother-dcp-l2512d' });
+  await page.locator('[data-check-toggle]').waitFor();
+  assert.equal(await page.locator('[data-check-heading]').textContent(), 'Kompatibilné s');
+
+  // Observe the existing analytics bridge without making any external requests.
+  await page.evaluate(() => {
+    window.fitTestEvents = [];
+    window.tmTrackEcommerce = (event, data) => window.fitTestEvents.push({ event, ...data });
+  });
+  await page.locator('[data-check-toggle]').click();
+  const field = page.getByRole('searchbox', { name: 'Model tlačiarne' });
+  await field.fill(model);
+  await field.press('Enter');
+  assert.deepEqual(await page.evaluate(() => window.fitTestEvents), []);
+  await page.evaluate(() => { window.ToneryMaximCookies.get = () => ({ analytics: true }); });
+  await field.press('Enter');
+  await field.press('Enter');
+  await field.fill('Brother HL-L2352DW');
+  await field.press('Enter');
+  assert.deepEqual(await page.evaluate(() => window.fitTestEvents), ['listed', 'unknown'].map(fit_result => ({
+    event: 'printer_fit_check', fit_result, item_id: 'SKU-22',
+  })));
+  await page.locator('[data-check-catalog]').click();
+  await page.waitForURL(url => url.pathname === '/tlaciarne/brother/brother-hl-l2352dw' || url.pathname === '/produkty');
+  assert.match(await page.locator('h1').first().innerText(), /HL-L2352DW/i);
+  await page.goto(origin + productPath + '41');
+}
+
 async function checkLayout(page, origin, [width, height, touch]) {
   const phone = touch && Math.min(width, height) <= 600;
   for (const [id, count] of [[41, 0], [21, 1], [31, 2], [12, 3]]) {
     await page.goto(origin + productPath + id, { waitUntil: 'domcontentloaded' });
     await page.locator('[data-add-main]').waitFor();
-    if (id === 41) await page.locator('#tm-cookie-reject').click();
+    if (id === 41) {
+      await page.locator('#tm-cookie-reject').click();
+      await checkPrinterFit(page, origin);
+      if (width === 390) await checkPrinterJourney(page, origin);
+    }
     await page.locator('[data-accessories-section] [data-related-id="91"]').waitFor();
     assert.equal(await page.locator('.comparison-card').count(), count);
     assert.equal(await page.locator('.jump-to-alternatives').count(), Number(count > 0));
