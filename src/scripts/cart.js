@@ -842,6 +842,8 @@ function formatMoney(value) {
     if (!list) return;
 
     const cart = readCart();
+    const mobileBreakdown = document.querySelector("[data-cart-mobile-breakdown]");
+    if (mobileBreakdown) mobileBreakdown.hidden = !cart.length;
     const hasUnavailable = cart.some((item) => !isPaperRewardCartItem(item) && cartProductUnavailable(item));
     list.innerHTML = "";
 
@@ -1051,6 +1053,11 @@ function formatMoney(value) {
     const discountValueEl = document.querySelector("[data-cart-discount]");
     if (discountValueEl) discountValueEl.textContent = discount > 0 ? `-${formatMoney(discount)}` : "";
     const vatTotals = grossVatTotals([...cart.map(discountedGrossLine), -couponDiscount, -loyaltyDiscount], total);
+    if (mobileBreakdown) {
+      mobileBreakdown.querySelector("[data-cart-breakdown-net]").textContent = formatMoney(vatTotals.net);
+      mobileBreakdown.querySelector("[data-cart-breakdown-vat]").textContent = formatMoney(vatTotals.tax);
+      mobileBreakdown.querySelector("[data-cart-breakdown-total]").textContent = formatMoney(total);
+    }
     if (netEl) netEl.textContent = formatMoney(vatTotals.net);
     if (vatEl) vatEl.textContent = formatMoney(vatTotals.tax);
     if (totalEl) totalEl.textContent = formatMoney(total);

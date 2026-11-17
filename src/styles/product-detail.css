@@ -1,6 +1,7 @@
 /* ToneryMaxim product detail – desktop clean layout, unified product type colors */
 
 .product-detail-page {
+  --product-anchor-offset: 11rem;
   min-height: 100vh;
   background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
   padding: 26px 0 64px;
@@ -2767,6 +2768,7 @@ body.product-detail-body .description-card {
 }
 
 body.product-detail-body .compat-section-modern {
+  scroll-margin-top: var(--product-anchor-offset);
   padding: 28px;
   overflow: hidden;
   border-color: #d8e4f1;
@@ -2958,8 +2960,22 @@ body.product-detail-body .related-section-stacked .related-column {
   width: 100%;
 }
 
-body.product-detail-body [data-alternatives-section][hidden] {
+@media (hover: none) and (pointer: coarse), (max-width: 760px) {
+  .product-detail-page { --product-anchor-offset: 7rem; }
+  .product-detail-body.viewing-product-alternatives [data-ai-nudge] { display: none; }
+}
+[data-accessories-section][hidden],
+.related-section-stacked:not(:has([data-alternatives-section])):has([data-accessories-section][hidden]) {
   display: none !important;
+}
+
+.jump-to-alternatives {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #174e85;
+  font-weight: 700;
+  text-underline-offset: .18em;
 }
 
 body.product-detail-body .related-title-row {

@@ -1,3 +1,4 @@
+import { chipVariant } from "../lib/product-chip.ts";
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../lib/product-availability.ts";
 
@@ -631,16 +632,6 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     if (modal instanceof HTMLDialogElement) modal.showModal();
   }
 
-  function chipVariant(product) {
-    const key = String(product?.product_type_key || "");
-    if (key !== "compatible" && key !== "renovated") return null;
-    const text = `${product?.name || ""} ${product?.slug || ""} ${product?.description || ""}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (/bez[ -]?cip|no[ -]?chip/.test(text)) return { key: "no-chip", label: "BEZ ČIPU", note: "Vyžaduje pôvodný čip" };
-    if (/hatona/.test(text)) return { key: "hatona", label: "HATONA", note: "Renovovaný variant Hatona" };
-    if (/oem[ -]?cip/.test(text)) return { key: "oem-chip", label: "S OEM ČIPOM", note: "Originálny čip" };
-    return { key: "ready-chip", label: "S ČIPOM", note: "Pripravený na použitie" };
-  }
-
   function productTheme(product) {
     const key = product.product_type_key || "product";
     if (key === "original") {
@@ -986,30 +977,6 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     return slug ? `/produkt/${encodeURIComponent(slug)}` : "#";
   }
 
-  function productTypeLabel(typeKey) {
-    if (typeKey === "original") return "ORIGINÁL";
-    if (typeKey === "renovated") return "RENOVOVANÝ";
-    if (typeKey === "compatible") return "KOMPATIBILNÝ";
-    return "PRODUKT";
-  }
-
-  function realProductCardHtml(product, className = "mini-product") {
-    const typeKey = product.product_type_key || "product";
-    const image = productImageSrc(product.image || product.images?.[0] || "", product);
-    return `
-      <article class="${className} ${esc(typeKey)}" data-related-id="${esc(product.id || product.sku || product.slug)}">
-        <a class="mini-img" href="${esc(getProductUrl(product))}">${image ? `<img src="${esc(image)}" alt="${esc(product.name)}" class="tm-product-fit-image">` : `<img src="${TM_PRODUCT_PLACEHOLDER_IMAGE}" alt="${esc(product.name)}">`}</a>
-        <div>
-          <span class="mini-badge">${esc(productTypeLabel(typeKey))}</span>
-          <a class="mini-title" href="${esc(getProductUrl(product))}">${esc(product.name)}</a>
-          <small>${isProductInStock(product) ? "Skladom" : "Na objednávku · 3–10 pracovných dní"}</small>
-          <strong>${money(product.price)}</strong>
-        </div>
-        <button type="button" data-related-add aria-label="Pridať do košíka">🛒</button>
-      </article>
-    `;
-  }
-
   function accessoryDisplayTitle(product) {
     if (product.tm_accessory_title) return product.tm_accessory_title;
     const text = String(product.name || "").toLowerCase();
@@ -1040,63 +1007,6 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     `;
   }
 
-  function extractSearchCodes(product) {
-    const text = `${product.sku || ""} ${product.name || ""}`;
-    const codes = [];
-    const patterns = [
-      /\b(?:TN|DR|LC|DK|BU|WT|CF|CE|CB|Q|W|CRG|PGI|CLI|PG|CL|T)\s*[-]?\s*[A-Z0-9]{2,10}\b/gi,
-      /\b[A-Z]{2,5}\s*[-]?\s*\d{2,5}[A-Z0-9]*\b/g,
-    ];
-    patterns.forEach((pattern) => {
-      for (const match of text.matchAll(pattern)) {
-        const clean = match[0].replace(/\s+/g, "").replace(/([A-Z]+)(\d)/i, "$1-$2").toUpperCase();
-        if (!codes.includes(clean)) codes.push(clean);
-      }
-    });
-    if (product.sku && !codes.includes(String(product.sku).toUpperCase())) codes.push(String(product.sku).toUpperCase());
-    return codes.slice(0, 4);
-  }
-
-  function comparableKind(product) {
-    const categories = Array.isArray(product?.categories) ? product.categories.map((item) => `${item?.name || ""} ${item?.slug || ""}`).join(" ") : "";
-    const text = `${product?.name || ""} ${product?.slug || ""} ${product?.product_type_detail_label || ""} ${categories}`.toLowerCase();
-    if (/odpadov|waste\s*toner|n[aá]dobk.*toner|\bwt[-\s]?\d/.test(text)) return "waste-toner";
-    if (/prenosov|transfer\s*belt|belt\s*unit|\bbu[-\s]?\d/.test(text)) return "transfer-belt";
-    if (/zapekac|zapek[aá]c|fuser/.test(text)) return "fuser";
-    if (/optick|fotovalec|drum|zobrazovac/.test(text)) return "drum";
-    if (/atrament|inkjet|ink\b|náplň|napln/.test(text)) return "ink";
-    if (/toner/.test(text)) return "toner";
-    return "other";
-  }
-
-  function comparableColor(product) {
-    return String(product?.color || product?.farba || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
-  }
-
-  function printerModelKeys(product) {
-    return new Set(getPrinters(product).map((value) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "")));
-  }
-
-  function alternativeScore(current, candidate) {
-    const currentKind = comparableKind(current);
-    if (currentKind !== comparableKind(candidate)) return -1;
-    const currentColor = comparableColor(current);
-    const candidateColor = comparableColor(candidate);
-    if (["toner", "ink"].includes(currentKind) && (!currentColor || !candidateColor || currentColor !== candidateColor)) return -1;
-    if (!["toner", "ink"].includes(currentKind) && currentColor && candidateColor && currentColor !== candidateColor) return -1;
-    const currentPrinters = printerModelKeys(current);
-    const candidatePrinters = printerModelKeys(candidate);
-    if (!currentPrinters.size || !candidatePrinters.size) return -1;
-    let overlap = 0;
-    currentPrinters.forEach((model) => { if (candidatePrinters.has(model)) overlap += 1; });
-    if (!overlap) return -1;
-    const overlapRatio = overlap / Math.min(currentPrinters.size, candidatePrinters.size);
-    const currentFamily = seriesSearchKey(current);
-    const candidateFamily = seriesSearchKey(candidate);
-    const sameFamily = currentFamily && candidateFamily && currentFamily === candidateFamily;
-    return overlapRatio * 1000 + overlap * 10 + (sameFamily ? 500 : 0);
-  }
-
   async function fetchProductsBySearch(search, perPage = 24) {
     const url = new URL("/api/products", window.location.origin);
     url.searchParams.set("s", search);
@@ -1115,80 +1025,9 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     return response.ok && data.ok && data.product ? data.product : null;
   }
 
-  function uniquePushProduct(list, item, currentId = "") {
-    const itemId = String(item?.id || item?.sku || item?.slug || "");
-    if (!item || !itemId || itemId === currentId) return;
-    if (list.some((existing) => String(existing.id || existing.sku || existing.slug) === itemId)) return;
-    list.push(item);
-  }
-
-  function pickAlternativesByType(products, limit = 3) {
-    const result = [];
-    const groups = {
-      compatible: products.filter((item) => item.product_type_key === "compatible"),
-      original: products.filter((item) => item.product_type_key === "original"),
-      renovated: products.filter((item) => item.product_type_key === "renovated"),
-      other: products.filter((item) => !["compatible", "original", "renovated"].includes(item.product_type_key)),
-    };
-
-    ["compatible", "original", "renovated"].forEach((type) => {
-      if (groups[type][0]) uniquePushProduct(result, groups[type][0]);
-    });
-
-    ["compatible", "original", "renovated", "other"].forEach((type) => {
-      groups[type].forEach((item) => {
-        if (result.length < limit) uniquePushProduct(result, item);
-      });
-    });
-
-    return result.slice(0, limit);
-  }
-
-  async function findAlternatives(product) {
-    const codes = extractSearchCodes(product);
-    const currentId = String(product.id || product.sku || product.slug || "");
-    const all = [];
-    const verifiedCandidates = () => all
-      .map((item) => ({ item, score: alternativeScore(product, item) }))
-      .filter(({ score }) => score >= 0)
-      .sort((a, b) => b.score - a.score)
-      .map(({ item }) => item);
-
-    for (const code of codes) {
-      const products = await fetchProductsBySearch(code, 96);
-      products.forEach((item) => uniquePushProduct(all, item, currentId));
-    }
-
-    if (verifiedCandidates().length < 3) {
-      const printers = getPrinters(product).slice(0, 2);
-      for (const printer of printers) {
-        const products = await fetchProductsBySearch(printer, 36);
-        products.forEach((item) => uniquePushProduct(all, item, currentId));
-        if (verifiedCandidates().length >= 3) break;
-      }
-    }
-
-    if (verifiedCandidates().length < 3) {
-      const fallbackTerms = String(product.name || "")
-        .replace(/kompatibiln[ýáéy]|origináln[ýáéy]|renovovan[ýáéy]|toner|kazeta|náplň|optický|valec/gi, " ")
-        .split(/\s+/)
-        .filter((word) => word.length >= 4)
-        .slice(0, 3)
-        .join(" ");
-      if (fallbackTerms) {
-        const products = await fetchProductsBySearch(fallbackTerms, 36);
-        products.forEach((item) => uniquePushProduct(all, item, currentId));
-      }
-    }
-
-    const verified = verifiedCandidates();
-    const picked = pickAlternativesByType(verified, 3);
-    return picked.length === 3 ? picked : [];
-  }
-
   async function findAccessories(currentProduct) {
     const queries = [
-      { slug: "kancelarsky-papier-a4-80g-500-harkov", title: "Kancelársky papier", match: /kancel[aá]rsky\s+papier|papier\s+a4/i },
+      { slug: "kancelarsky-papier-a4-80g-500-harkov", search: "kancelársky papier", title: "Kancelársky papier", match: /kancel[aá]rsky\s+papier|papier\s+a4/i },
       { search: "pákový šanón", title: "Pákový šanón", match: /p[aá]kov[yý]\s+[sš]an[oó]n/i },
       { search: "roller", title: "Roller", match: /\broller\b|frixion/i },
     ];
@@ -1208,49 +1047,23 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     return out;
   }
 
-  function bindRelatedAddButtons(root, products) {
-    const byId = new Map(products.map((item) => [String(item.id || item.sku || item.slug), item]));
-    root.querySelectorAll("[data-related-add]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        const card = event.currentTarget.closest("[data-related-id]");
-        const product = byId.get(String(card?.dataset.relatedId || ""));
-        if (!product) return;
-        addToCart(product, 1);
-        const original = event.currentTarget.textContent;
-        event.currentTarget.textContent = "✓";
-        setTimeout(() => { event.currentTarget.textContent = original || "🛒"; }, 900);
-      });
-    });
-  }
-
   async function hydrateExtraProducts(currentProduct) {
-    const root = document.querySelector("[data-product-root]");
+    const section = document.querySelector("[data-alternatives-section]");
+    section?.querySelectorAll("[data-alternative-cart]").forEach((button) => {
+      const product = JSON.parse(button.dataset.alternativeCart);
+      button.addEventListener("click", () => addToCart(product, 1));
+    });
+    const root = document.querySelector("[data-accessories]");
     if (!root) return;
-
-    const printerRelated = isPrinterRelatedProduct(currentProduct);
-    const [accessories, alternatives] = await Promise.all([
-      findAccessories(currentProduct),
-      printerRelated ? findAlternatives(currentProduct) : Promise.resolve([]),
-    ]);
-
-    const accessoriesRoot = root.querySelector("[data-accessories]");
-    if (accessoriesRoot) {
-      accessoriesRoot.innerHTML = accessories.length
-        ? accessories.map(accessoryCardHtml).join("")
-        : `<p class="related-empty">Doplnkové produkty sa nepodarilo načítať.</p>`;
-      bindRelatedAddButtons(root, accessories);
-    }
-
-    const alternativesRoot = root.querySelector("[data-alternatives]");
-    if (alternativesRoot) {
-      const alternativesSection = alternativesRoot.closest("[data-alternatives-section]");
-      const showAlternatives = alternatives.length === 3;
-      if (alternativesSection) alternativesSection.hidden = !showAlternatives;
-      alternativesRoot.innerHTML = showAlternatives
-        ? alternatives.map((item) => realProductCardHtml(item)).join("")
-        : "";
-      if (showAlternatives) bindRelatedAddButtons(root, alternatives);
-    }
+    const accessories = await findAccessories(currentProduct).catch(() => []);
+    if (!accessories.length) return;
+    root.innerHTML = accessories.map(accessoryCardHtml).join("");
+    root.closest("[data-accessories-section]").hidden = false;
+    const byId = new Map(accessories.map(item => [String(item.id || item.sku || item.slug), item]));
+    root.querySelectorAll("[data-related-add]").forEach(button => {
+      const product = byId.get(button.closest("[data-related-id]")?.dataset.relatedId);
+      if (product) button.addEventListener("click", () => addToCart(product, 1));
+    });
   }
 
   function render(product) {
@@ -1320,6 +1133,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
           </div>
 
           ${bulkDiscountNoticeHtml(product)}
+          ${document.querySelector("[data-alternatives-section]") ? '<a class="jump-to-alternatives" href="#alternativy">Porovnať alternatívy ↓</a>' : ""}
           ${purchaseDecisionHtml(product)}
         </div>
 
@@ -1413,22 +1227,6 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
         ${compatibilityNavigationHtml(product)}
       </section>` : ""}
 
-      <section class="related-section related-section-stacked">
-        ${printerRelated ? `<div class="related-column related-column-alternatives" data-alternatives-section hidden>
-          <div class="related-title-row"><h2>Alternatívy k produktu</h2><span>Porovnajte dostupné varianty</span></div>
-          <div class="alternative-grid" data-alternatives>
-            <p class="related-loading">Načítavam skutočné alternatívy…</p>
-          </div>
-        </div>` : ""}
-
-        <div class="related-column related-column-accessories">
-          <div class="related-title-row"><h2>Často kupované spolu</h2><span>Praktické doplnky k objednávke</span></div>
-          <div class="accessory-grid" data-accessories>
-            <p class="related-loading">Načítavam doplnkové produkty…</p>
-          </div>
-        </div>
-      </section>
-
       ${printerRelated ? `<div class="compat-modal" data-compat-modal hidden>
         <div class="compat-modal-card">
           <div class="compat-modal-head">
@@ -1456,7 +1254,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
         </div>
       </div>
 
-      <div class="product-mobile-sticky-cart" data-mobile-sticky-cart aria-hidden="true">
+      <div class="product-mobile-sticky-cart" data-mobile-sticky-cart inert aria-hidden="true">
         <div>
           <span>${esc(stockText(product))}</span>
           <strong>${money(product.price)}</strong>
@@ -1544,19 +1342,33 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     const stickyCart = root.querySelector("[data-mobile-sticky-cart]");
     const mainAddButton = root.querySelector("[data-add-main]");
     if (stickyCart && mainAddButton) {
-      const setStickyVisible = (visible) => {
+      const setStickyVisible = (mainOffscreen, comparisonVisible) => {
+        document.body.classList.toggle("viewing-product-alternatives", comparisonVisible);
+        const visible = mainOffscreen && !comparisonVisible;
+        stickyCart.inert = !visible;
         stickyCart.classList.toggle("is-visible", Boolean(visible));
         stickyCart.setAttribute("aria-hidden", String(!visible));
       };
 
       if ("IntersectionObserver" in window) {
-        const observer = new IntersectionObserver((entries) => {
-          const entry = entries[0];
-          setStickyVisible(!entry.isIntersecting);
-        }, { threshold: 0.15 });
+        // The floating action buys the main product. Hide it while comparing other cartridges.
+        const comparison = document.querySelector("[data-alternatives-section]");
+        let mainVisible = true;
+        let comparisonVisible = false;
+        const observer = new IntersectionObserver(entries => {
+          for (const entry of entries) {
+            if (entry.target === mainAddButton) mainVisible = entry.isIntersecting;
+            if (entry.target === comparison) comparisonVisible = entry.isIntersecting;
+          }
+          setStickyVisible(!mainVisible, comparisonVisible);
+        });
         observer.observe(mainAddButton);
+        if (comparison) observer.observe(comparison);
       } else {
-        const onScroll = () => setStickyVisible(window.scrollY > 520);
+        const onScroll = () => {
+          const comparison = document.querySelector("[data-alternatives-section]")?.getBoundingClientRect();
+          setStickyVisible(window.scrollY > 520, Boolean(comparison && comparison.bottom > 0 && comparison.top < window.innerHeight));
+        };
         window.addEventListener("scroll", onScroll, { passive: true });
         onScroll();
       }
@@ -1590,10 +1402,13 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
 
 
     applyMobileParameterVisibility(root);
+    if (window.location.hash === "#compatible-printers") {
+      window.requestAnimationFrame(() => root.querySelector("#compatible-printers")?.scrollIntoView({ block: "start" }));
+    }
 
     const mobileParameterMedia = window.matchMedia("(max-width: 820px)");
     const refreshMobileParameterVisibility = () => applyMobileParameterVisibility(root);
-    mobileParameterMedia.addEventListener("change", refreshMobileParameterVisibility, { once: true });
+    mobileParameterMedia.addEventListener("change", refreshMobileParameterVisibility);
 
     hydrateSeriesColors(product);
     hydrateExtraProducts(product);

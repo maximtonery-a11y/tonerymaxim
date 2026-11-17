@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { selectProductAlternatives, savingsAgainstOriginal } from "../src/lib/product-alternatives.ts";
 const read = (path: string) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 function extractFunction(source: string, signature: string) {
@@ -46,40 +47,60 @@ test("cena za stranu sa zobrazí len pri kladnej cene a výťažnosti", async ()
   assert.match(detail, /minimumFractionDigits: 3, maximumFractionDigits: 3/);
 });
 
-test("alternatívy vyžadujú rovnaký druh, farbu a spoločný model tlačiarne", async () => {
-  const detail = await read("src/scripts/product-detail.js");
-  assert.match(detail, /currentKind !== comparableKind\(candidate\)/);
-  assert.match(detail, /currentColor !== candidateColor/);
-  assert.match(detail, /if \(!overlap\) return -1/);
-  assert.match(detail, /picked\.length === 3 \? picked : \[\]/);
-  assert.match(detail, /alternatives\.length === 3/);
-  assert.match(detail, /data-alternatives-section hidden/);
-  assert.match(detail, /verifiedCandidates\(\)\.length < 3/);
+const current = { id: 1, sku: "C1", slug: "brother-tn-2421", name: "Brother TN-2421 čierny kompatibilný toner",
+  product_type_key: "compatible", color: "Čierna", price: 13.05, page_yield: "3 000 strán",
+  compatible_printers: ["Brother DCP-L2512D", "Brother HL-L2352DW"] };
+const original = { ...current, id: 2, sku: "O2", name: "Brother TN2421 čierny originálny toner", product_type_key: "original", price: 104.66 };
+const renovated = { ...current, id: 3, sku: "R3", name: "Brother TN 2421 čierny renovovaný toner", product_type_key: "renovated", price: 41.27 };
+const smaller = { ...original, id: 4, sku: "O4", name: "Brother TN-2411 čierny originálny toner", page_yield: "1 200 strán", price: 58.71 };
 
-  const source = extractFunction(detail, "function comparableKind(product)");
-  const comparableKind = new Function(`${source}; return comparableKind;`)() as (product: Record<string, unknown>) => string;
-  assert.equal(comparableKind({ name: "Brother TN-241BK toner" }), "toner");
-  assert.equal(comparableKind({ name: "Brother WT-220CL originálna nádobka na odpadový toner" }), "waste-toner");
-  assert.equal(comparableKind({ name: "Brother DR-241BK optický valec" }), "drum");
+test("zobrazí nula až tri jedinečné alternatívy a zachová rozličné vyhotovenia", () => {
+  for (const rows of [[], [original], [original, renovated], [original, renovated, smaller]]) {
+    const found = selectProductAlternatives(current, [current, ...rows, ...rows]).alternatives;
+    assert.equal(found.length, rows.length);
+    assert.deepEqual(new Set(found.map(a => a.variant.product.id)), new Set(rows.map(p => p.id)));
+  }
+  assert.equal(selectProductAlternatives(current, [smaller, renovated, original, { ...original, id: 6 }]).alternatives.length, 3);
+  const [small] = selectProductAlternatives(current, [smaller]).alternatives;
+  assert.equal(small.difference, -1800);
+  assert.equal(small.comparable, false);
+  const [some] = selectProductAlternatives(current, [{ ...original, compatible_printers: ["Brother HL-L2352DW"] }]).alternatives;
+  assert.equal(some.partial, true);
+});
 
-  const colorSource = extractFunction(detail, "function comparableColor(product)");
-  const comparableColor = new Function(`${colorSource}; return comparableColor;`)() as (product: Record<string, unknown>) => string;
-  const printerSource = extractFunction(detail, "function printerModelKeys(product)");
-  const printerModelKeys = new Function("getPrinters", `${printerSource}; return printerModelKeys;`)((product: Record<string, unknown>) => product.compatible_printers || []);
-  const scoreSource = extractFunction(detail, "function alternativeScore(current, candidate)");
-  const alternativeScore = new Function("comparableKind", "comparableColor", "printerModelKeys", "seriesSearchKey", `${scoreSource}; return alternativeScore;`)(
-    comparableKind,
-    comparableColor,
-    printerModelKeys,
-    (product: Record<string, unknown>) => product.family || "",
-  );
-  const current = { name: "Brother TN-241BK toner", color: "Čierna", family: "TN241", compatible_printers: ["Brother DCP-9020CDW"] };
-  assert.ok(alternativeScore(current, { name: "Brother TN-291K renovovaný toner", color: "Čierna", family: "TN291", compatible_printers: ["Brother DCP-9020CDW"] }) >= 0);
-  assert.equal(alternativeScore(current, { name: "Brother WT-220CL nádobka na odpadový toner", color: "", compatible_printers: ["Brother DCP-9020CDW"] }), -1);
-  assert.equal(alternativeScore(current, { name: "Brother DR-241BK optický valec", color: "Čierna", compatible_printers: ["Brother DCP-9020CDW"] }), -1);
-  assert.equal(alternativeScore(current, { name: "Brother TN-241C toner", color: "Azúrová", compatible_printers: ["Brother DCP-9020CDW"] }), -1);
-  assert.equal(alternativeScore(current, { name: "Brother TN-241BK toner", color: "", compatible_printers: ["Brother DCP-9020CDW"] }), -1);
-  assert.equal(alternativeScore(current, { name: "Brother TN-241BK toner", color: "Čierna", compatible_printers: ["Brother HL-9999"] }), -1);
+test("rovnaká tlačiareň nestačí pri inom druhu, odtieni, OEM, sade alebo značke", () => {
+  for (const fields of [
+    { name: "Brother WT-220CL nádobka na odpadový toner" }, { name: "Brother DR-241 optický valec" },
+    { name: "Canon TN-2421 čierny toner" }, { name: "Brother TN-291K čierny toner" }, { color: "Azúrová" }, { color: "" },
+    { name: "Brother TN-2421 čierny toner (2 ks)" }, { name: "Brother TN-2421 čierny toner Dualpack" },
+    { compatible_printers: ["Brother HL-9999"] }, { compatible_printers: [] }, { price: 0 }, { price: Infinity },
+    { sku: "" }, { product_type_key: "compatible", name: "Brother TN-2421 čierny toner bez čipu" },
+  ]) assert.equal(selectProductAlternatives(current, [{ ...original, ...fields }]).alternatives.length, 0, JSON.stringify(fields));
+  const ink = { ...current, name: "Canon CLI-8C azúrová atramentová náplň", color: "Azúrová", compatible_printers: ["Canon PIXMA Pro9000"] };
+  assert.equal(selectProductAlternatives(ink, [{ ...ink, id: 2, name: "Canon CLI-8PC foto azúrová atramentová náplň" }]).alternatives.length, 0);
+  assert.equal(selectProductAlternatives({ ...ink, color: "Čierna", name: "Canon PGI-580PGBK atrament" },
+    [{ ...ink, id: 2, color: "Čierna", name: "Canon CLI-581BK atrament" }]).alternatives.length, 0);
+});
+
+test("úspora používa aktuálnu cenu rovnocenného originálu", () => {
+  assert.equal(savingsAgainstOriginal(current, original), 91.61);
+  assert.equal(savingsAgainstOriginal(renovated, original), 63.39);
+  for (const item of [smaller, renovated, { ...original, page_yield: "" }, { ...original, color: "Azúrová" },
+    { ...original, name: "Brother TN2421 Multipack" }, { ...original, price: 12.99 }, { ...original, price: Infinity }]) {
+    assert.equal(savingsAgainstOriginal(current, item), 0);
+  }
+  const ml = { ...current, name: "Canon PGI-580PGBK čierna atramentová náplň", page_yield: "", capacity: "11,2 ml" };
+  const mlOriginal = { ...ml, id: 2, product_type_key: "original", price: 20.05 };
+  assert.equal(selectProductAlternatives(ml, [mlOriginal]).alternatives[0].variant.pages, null);
+  assert.equal(savingsAgainstOriginal(ml, mlOriginal), 7);
+  assert.equal(savingsAgainstOriginal(ml, { ...mlOriginal, capacity: "25 ml" }), 0);
+  const mixed = { ...ml, capacity: "11,2 ml; 600 strán" };
+  assert.equal(savingsAgainstOriginal(mixed, { ...mlOriginal, capacity: "22 ml; 600 strán" }), 0);
+  assert.equal(savingsAgainstOriginal(mixed, { ...mlOriginal, capacity: "11,2 ml; 600 strán" }), 7);
+  assert.equal(savingsAgainstOriginal(mixed, { ...mlOriginal, capacity: "9–11,2 ml; 600 strán" }), 0);
+  const paperBundle = { ...ml, name: ml.name + " (2 ks) + GP-501" };
+  assert.equal(selectProductAlternatives(paperBundle, [{ ...mlOriginal, name: ml.name + " (2 ks)" }]).alternatives.length, 0);
+  assert.equal(savingsAgainstOriginal({ ...current, name: current.name + " (2 ks)" }, { ...original, name: original.name + " (2 ks)" }), 0);
 });
 
 test("výťažnosť správne počíta rovnakofarebný dualpack a odmieta ml aj CMYK súčet", async () => {

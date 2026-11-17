@@ -40,6 +40,11 @@ jobs:
       - run: php -l wordpress-plugin/tonerymaxim-customer-administration/checkout-pricing.php
       # npm prebuild runs the isolated release guard and blocks Astro on failure.
       - run: npm run build
+      - name: Check the mobile, tablet and desktop shopping journey
+        run: |
+          npm install --prefix "$RUNNER_TEMP/tm-browser" --no-save --no-audit --no-fund playwright@1.62.1
+          "$RUNNER_TEMP/tm-browser/node_modules/.bin/playwright" install --with-deps chromium webkit
+          TM_PLAYWRIGHT_MODULE="$RUNNER_TEMP/tm-browser/node_modules/playwright/index.mjs" node scripts/account-orders-render-smoke.mjs --responsive
   native-woo-vat:
     runs-on: ubuntu-latest
     timeout-minutes: 15

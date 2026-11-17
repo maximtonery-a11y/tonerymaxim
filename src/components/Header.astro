@@ -212,6 +212,27 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
 .add-cart-actions a, .add-cart-actions button { text-align: center; text-decoration: none; border-radius: 14px; padding: 14px 16px; font-weight: 900; cursor: pointer; font-family: inherit; }
 .add-cart-actions .btn-primary { background: #071d41; color: #fff; border: 1px solid #071d41; }
 .add-cart-actions .btn-secondary { background: #f3f7fc; color: #071d41; border: 1px solid #dce8f6; }
+/* The same product facts and actions appear in the side panel and the mobile bottom sheet. */
+.add-cart-panel { box-sizing: border-box; }
+@media (prefers-reduced-motion: reduce) { .add-cart-panel { animation: none; } }
+.add-cart-status { max-width: calc(100% - 48px); }
+.add-cart-close { width: 44px; height: 44px; }
+.add-cart-product-info { min-width: 0; overflow-wrap: anywhere; }
+.add-cart-meta { display: grid; gap: 3px; margin: 5px 0 9px; color: #45576e; font-size: .875rem; line-height: 1.4; }
+.add-cart-meta strong { font-size: inherit; }
+.add-cart-actions .btn-link { border: 1px solid #dce8f6; background: #fff; color: #163453; }
+.tm-drawer-benefits { display: grid; gap: 10px; margin-top: 22px; padding-top: 16px; border-top: 1px solid #e2eaf4; }
+.tm-drawer-benefits h3 { margin: 0; font-size: 1rem; }
+.tm-drawer-benefits > div { display: grid; grid-template-columns: 2.7rem 1fr; gap: 8px; align-items: start; }
+.tm-drawer-benefits b { padding: 3px; border-radius: 6px; background: #edf5fc; text-align: center; }
+.tm-drawer-benefits small { display: block; margin-top: 2px; color: #465870; line-height: 1.4; }
+.tm-drawer-benefits a { width: fit-content; padding-block: 6px; color: #174e85; }
+@media (max-width: 400px) {
+  .add-cart-panel { padding: 16px; }
+  .add-cart-product { grid-template-columns: 56px minmax(0,1fr); gap: 10px; }
+  .add-cart-thumb { width: 56px; height: 56px; }
+  .add-cart-thumb img { max-width: 52px; max-height: 52px; }
+}
 body.has-add-cart-drawer { overflow: hidden; }
 @media (max-width: 640px) { .add-cart-panel { top: auto; bottom: 0; width: 100%; height: auto; max-height: 88vh; border-left: 0; border-radius: 26px 26px 0 0; } }
 </style>
