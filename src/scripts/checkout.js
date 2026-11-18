@@ -1815,7 +1815,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
       status.className = "order-status is-success";
       setSubmitProgress(true, "Objednávka bola úspešne uložená. Otvárame potvrdenie objednávky.");
       try { sessionStorage.removeItem("tm_checkout_request_id"); } catch {}
-      window.location.href = `/platba-dokoncena?order=${encodeURIComponent(data.orderNumber || data.orderId)}&method=${encodeURIComponent(orderPreview.payment)}`;
+      window.location.href = `/platba-dokoncena?order=${encodeURIComponent(data.orderNumber || "—")}&method=${encodeURIComponent(orderPreview.payment)}`;
     } catch (error) {
       status.textContent = error.message || "Nepodarilo sa dokončiť objednávku.";
       status.className = "order-status is-error";

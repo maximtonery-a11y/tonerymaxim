@@ -1,6 +1,7 @@
 import { getCustomerMeta, getWooCustomerById, getWooCustomerOrders, parseJsonMeta, updateWooCustomer } from "./woo-client";
 import { isLoyaltyCreditStatus } from "./order-statuses";
 import { earnedPaperPacks } from "./loyalty-rules";
+import { tmOrderNumber } from './order-display';
 import { getAccountOrderNumbers } from "./account-orders";
 import type { WooOrder } from "./woo-client";
 export { earnedPaperPacks } from "./loyalty-rules";
@@ -81,9 +82,10 @@ export async function syncCustomerLoyaltyPoints(customerId: number, showAccountH
     points += add;
     lifetimePoints += add;
     creditedSet.add(id);
+    const number = tmOrderNumber(order);
     history.unshift({
       date: todaySk(),
-      title: `Objednávka #${order.number || order.id}`,
+      title: number ? `Objednávka #${number}` : "Objednávka",
       points: add,
       orderId: Number(order.id),
     });

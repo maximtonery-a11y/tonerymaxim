@@ -1,6 +1,11 @@
 type OrderMeta = { key?: string; value?: unknown };
 export const TM_ORDER_NUMBER_META = ['tm_order_number', 'gopay_order_number', 'tm_order_snapshot'] as const;
 
+export function validTmOrderNumber(value: unknown): string {
+  const number = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+  return number.length <= 80 && /^(?:TM[-/]?)?\d+(?:[./-]\d+)*$/i.test(number) ? number : '';
+}
+
 /** These are the checkout's own references. Woo's number and ID identify its record. */
 export function tmOrderNumber(order?: { meta_data?: OrderMeta[] } | null): string {
   const meta = Array.isArray(order?.meta_data) ? order.meta_data : [];
@@ -14,8 +19,8 @@ export function tmOrderNumber(order?: { meta_data?: OrderMeta[] } | null): strin
           value = snapshot?.orderNumber;
         } catch { continue; }
       }
-      const number = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
-      if (/^(?:TM[-/]?)?\d+(?:[./-]\d+)*$/i.test(number) && number.length <= 80) return number;
+      const number = validTmOrderNumber(value);
+      if (number) return number;
     }
   }
   return '';

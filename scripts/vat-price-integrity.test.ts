@@ -436,6 +436,45 @@ test('an unexpected Woo total stops creation benefits and a retry never creates 
   assert.equal(transport.requests.filter(r => r.method === 'PUT').length, 0);
 });
 
+test('recovery finds the same TM order between hundreds of other Woo orders', async () => {
+  const source = paymentSource('901701');
+  const orders = Array.from({ length: 260 }, (_, index) => ({ id: 1000 + index, number: String(1000 + index),
+    total: '6.98', total_tax: '1.31', transaction_id: '', meta_data: index === 145 ? [
+      { key: 'tm_order_number', value: source.orderNumber }, { key: 'tm_price_contract', value: 'gross-v1' },
+    ] : [] }));
+  const offsets: number[] = [];
+  const savedFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async (input, init) => {
+      const url = new URL(String(input));
+      assert.equal(url.pathname, '/wp-json/wc/v3/orders');
+      assert.equal(init?.method, 'GET');
+      assert.equal(url.searchParams.get('orderby'), 'id');
+      assert.equal(url.searchParams.get('order'), 'asc');
+      const offset = Number(url.searchParams.get('offset'));
+      offsets.push(offset);
+      return Response.json(orders.slice(offset, offset + Number(url.searchParams.get('per_page'))));
+    };
+    const result = await server.createWooOrderFromCheckout(source, { sendConfirmationEmail: false });
+    assert.equal(result.orderId, orders[145].id);
+    assert.deepEqual(offsets, [0, 99]);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
+test('an inconsistent Woo page stops a retry before any write, including for a legacy checkout without a timestamp', async () => {
+  const source = { ...paymentSource('901702'), createdAt: '' };
+  const rows = Array.from({ length: 100 }, (_, index) => ({ id: index + 1 }));
+  const savedFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async (input, init) => {
+      assert.equal(init?.method, 'GET');
+      assert.equal(new URL(String(input)).searchParams.has('after'), false);
+      return Response.json(rows); // Simulates a Woo integration ignoring the offset.
+    };
+    await assert.rejects(server.createWooOrderFromCheckout(source), /spoľahlivo overiť/);
+  } finally { globalThis.fetch = savedFetch; }
+});
+
 test('pricing readiness deduplicates reads and refuses missing tax, net-entered prices or another currency', async () => {
   const now = Date.now; let epoch = now(), reads = 0;
   const good = { contract: 'gross-v1', rate_id: 1, rate_percent: 23, prices_include_tax: true, tax_enabled: true,

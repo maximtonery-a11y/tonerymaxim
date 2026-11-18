@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ToneryMAXIM Reklamácie
  * Description: Vlastný reklamačný systém pre ToneryMAXIM.sk s REST API pre Astro e-shop.
- * Version: 1.1.6
+ * Version: 1.1.7
  * Author: ToneryMAXIM
  */
 
@@ -257,12 +257,29 @@ final class Tonerymaxim_Reklamacie_Plugin {
         ];
     }
 
+    private static function display_order_number(int $post_id): string {
+        $order_id = (int) get_post_meta($post_id, 'tm_order_id', true);
+        $order = $order_id && function_exists('wc_get_order') ? wc_get_order($order_id) : null;
+        if (!$order) return '';
+        if (class_exists('TM_Order_Numbers')) return TM_Order_Numbers::number($order);
+        // Standalone installations can still verify the reference directly against the order.
+        $snapshot = $order->get_meta('tm_order_snapshot');
+        if (is_string($snapshot)) $snapshot = json_decode($snapshot, true);
+        if (!is_array($snapshot)) $snapshot = [];
+        foreach ([$order->get_meta('tm_order_number'), $order->get_meta('gopay_order_number'), $snapshot['orderNumber'] ?? null] as $value) {
+            if (!is_string($value) && !is_int($value) && !is_float($value)) continue;
+            $number = trim((string) $value);
+            if (strlen($number) <= 80 && preg_match('~^(?:TM[-/]?)?[0-9]+(?:[./-][0-9]+)*$~iD', $number)) return $number;
+        }
+        return '';
+    }
+
     private static function maybe_notify_customer(int $post_id, string $old_status, string $new_status, string $note): void {
         $email = sanitize_email((string) get_post_meta($post_id, 'tm_customer_email', true));
         if (!$email) return;
         if ($old_status === $new_status && trim($note) === '') return;
         $claim_number = self::display_claim_number($post_id);
-        $order_number = (string) get_post_meta($post_id, 'tm_order_number', true);
+        $order_number = self::display_order_number($post_id) ?: '—';
         $product_name = (string) get_post_meta($post_id, 'tm_product_name', true);
         $subject = sprintf('Aktualizácia reklamácie %s | ToneryMAXIM.sk', $claim_number);
         $body = "Dobrý deň,\n\nstav vašej reklamácie bol aktualizovaný.\n\n";
@@ -493,6 +510,7 @@ final class Tonerymaxim_Reklamacie_Plugin {
         echo '<table class="widefat striped tm-detail-table"><tbody>';
         foreach ($fields as $key => $label) {
             $value = $key === 'tm_claim_number' ? self::display_claim_number($post->ID) : (string) get_post_meta($post->ID, $key, true);
+            if ($key === 'tm_order_number') $value = self::display_order_number($post->ID) ?: '—';
             printf('<tr><th>%s</th><td>%s</td></tr>', esc_html($label), esc_html($value));
         }
         echo '</tbody></table>';
@@ -567,7 +585,7 @@ final class Tonerymaxim_Reklamacie_Plugin {
     public static function column_content(string $column, int $post_id): void {
         if ($column === 'tm_claim_number') echo esc_html(self::display_claim_number($post_id));
         if ($column === 'tm_customer') echo esc_html((string) get_post_meta($post_id, 'tm_customer_email', true));
-        if ($column === 'tm_order') echo esc_html((string) get_post_meta($post_id, 'tm_order_number', true));
+        if ($column === 'tm_order') echo esc_html(self::display_order_number($post_id) ?: '—');
         if ($column === 'tm_product') echo esc_html((string) get_post_meta($post_id, 'tm_product_name', true));
         if ($column === 'tm_status') echo esc_html(self::status_label(self::normalize_status(get_post_meta($post_id, 'tm_claim_status', true))));
     }

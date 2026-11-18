@@ -1,3 +1,4 @@
+import { tmOrderNumber } from './order-display';
 import { join } from 'node:path';
 import { sendWooOrderStatusEmail, type WooOrderStatusEmailPayload } from './mail';
 import { wooRequest } from './woo-client';
@@ -139,12 +140,10 @@ function toPayload(order: WooOrder, fromStatus: string, toStatus: string): WooOr
     ? order.shipping_lines.map((line) => line?.method_title || line?.method_id || '').filter(Boolean).join(', ')
     : '');
 
-  const tmOrderNumber = metaValue(order, "tm_order_number") || metaValue(order, "gopay_order_number") || String(order.number || order.id);
-
   return {
     event_id: `queue-${order.id}-${toStatus}-${order.date_modified || Date.now()}`,
     order_id: order.id,
-    order_number: tmOrderNumber,
+    order_number: tmOrderNumber(order),
     from_status: fromStatus,
     to_status: toStatus,
     changed_at: order.date_modified || new Date().toISOString(),
@@ -306,7 +305,7 @@ async function processOrder(order: WooOrder): Promise<void> {
   state.lastSuccessAt = new Date().toISOString();
   console.log('[TM Email Queue] status e-mail sent', {
     orderId: order.id,
-    orderNumber: metaValue(order, "tm_order_number") || order.number,
+    orderNumber: payload.order_number,
     from: observedStatus,
     to: currentStatus,
   });

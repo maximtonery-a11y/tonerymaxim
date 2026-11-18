@@ -26,9 +26,15 @@ const mock = createServer(async (request, response) => {
   const url = new URL(request.url, 'http://localhost'); let body = '';
   for await (const chunk of request) body += chunk;
   transports.push({ method: request.method, path: url.pathname });
+  if (url.pathname === '/wp-json/wc/v3/tm-pricing-context' && request.method === 'GET') {
+    const pricing = { contract: 'gross-v1', rate_id: 1, rate_percent: 23, prices_include_tax: true, tax_enabled: true,
+      country: 'SK', currency: 'EUR', decimals: 2, round_at_subtotal: false, compound: false, shipping_taxable: true };
+    response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(pricing)); return;
+  }
   if (url.pathname === '/wp-json/wc/v3/products' && request.method === 'GET') {
     const ids = String(url.searchParams.get('include') || '').split(',').map(Number);
-    const rows = removed ? [] : ids.map(id => byId.get(id)).filter(Boolean).map(p => ({ id: p.id, sku: p.sku, name: p.name, price: livePrice ?? p.price, status: 'publish' }));
+    const rows = removed ? [] : ids.map(id => byId.get(id)).filter(Boolean).map(p => ({ id: p.id, sku: p.sku, name: p.name,
+      price: livePrice ?? p.price, status: 'publish', stock_status: p.stock_status, stock_quantity: p.stock_quantity, tax_status: 'taxable', tax_class: '' }));
     response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(rows)); return;
   }
   if (url.pathname === '/gopay/api/oauth2/token') { response.writeHead(200, { 'Content-Type': 'application/json' }).end('{"access_token":"local-test-token","expires_in":3600}'); return; }
