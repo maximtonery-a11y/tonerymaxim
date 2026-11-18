@@ -27,8 +27,20 @@ import SeoHead from '../components/SeoHead.astro';
         <div class="matches" data-matches></div>
         <button type="button" class="secondary crop-toggle" data-crop-toggle aria-expanded="false" aria-controls="crop-photo" hidden>Vybrať riadok z fotky</button>
         <div id="crop-photo" hidden>
-          <p>Ťuknite priamo na kód kazety alebo názov modelu. Prečítame detail okolo tohto miesta.</p>
-          <button type="button" class="crop-image" aria-label="Prečítať vybrané miesto na fotke"><img alt="Vaša fotka štítku" data-crop-image /></button>
+          <p id="crop-hint" aria-live="polite">Ťuknite na začiatok a potom na koniec názvu modelu alebo kódu kazety.</p>
+          <span id="crop-keys" class="sr-only">Šípkami posuňte bod na fotke a klávesom Enter ho vyberte.</span>
+          <div class="crop-viewport" data-crop-viewport>
+            <button type="button" class="crop-image" aria-label="Označiť bod na fotke" aria-describedby="crop-hint crop-keys">
+              <img alt="Vaša fotka štítku" data-crop-image />
+              <span class="crop-mark" data-crop-mark hidden></span>
+              <span class="crop-mark cursor" data-crop-cursor hidden></span>
+            </button>
+          </div>
+          <div class="crop-actions">
+            <button type="button" class="secondary" data-crop-zoom aria-pressed="false">Zväčšiť fotku</button>
+            <button type="button" class="secondary" data-read-around hidden>Prečítať okolie bodu</button>
+            <button type="button" class="secondary" data-crop-restart hidden>Označiť znova</button>
+          </div>
         </div>
 
         <form class="manual" method="get" action="/produkty">
@@ -61,7 +73,14 @@ import SeoHead from '../components/SeoHead.astro';
   .matches :global(small) { white-space:nowrap; }
   .crop-toggle { margin-top:.7rem; }
   #crop-photo p { margin:.7rem 0; }
-  .crop-image { display:block; width:fit-content; max-width:100%; margin:auto; border:0; padding:0; background:none; cursor:crosshair; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+  .crop-viewport { max-height:45vh; overflow:auto; border-radius:8px; }
+  .crop-actions { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.6rem; }
+  .crop-actions button { font-size:.875rem; }
+  .crop-mark { position:absolute; pointer-events:none; width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow:0 0 0 2px #155eac; transform:translate(-50%,-50%); }
+  .crop-mark.cursor { border-style:dashed; box-shadow:0 0 0 2px #182c43; }
+  .crop-viewport.zoom .crop-image,.crop-viewport.zoom img { max-width:none; max-height:none; }
+  .crop-image { position:relative; display:block; width:fit-content; max-width:100%; margin:auto; border:0; padding:0; background:none; cursor:crosshair; }
   .crop-image img { display:block; max-width:100%; max-height:40vh; width:auto; height:auto; }
   .manual { margin-top:1.25rem; padding-top:1rem; border-top:1px solid #d9e4ee; }
   .manual label { display:block; margin-bottom:.5rem; }

@@ -1,5 +1,6 @@
-import type { LabelPoint } from './label-reader';
-import { exactLabelOffers, hpOrderCode, labelBrands, labelCandidates, type LabelCandidate, type LabelOffers } from '../lib/label-search';
+import type { LabelSelection } from '../lib/label-image';
+import { setupLabelLinePicker } from './label-line-picker';
+import { exactLabelOffers, hpOrderCode, labelBrands, labelCandidates, selectedLabelCandidates, type LabelCandidate, type LabelOffers } from '../lib/label-search';
 
 function setup(root: HTMLElement) {
   const controls = root.querySelector<HTMLElement>('[data-photo-controls]')!;
@@ -12,37 +13,25 @@ function setup(root: HTMLElement) {
   const price = new Intl.NumberFormat('sk-SK', { style: 'currency', currency: 'EUR' });
   const cropToggle = root.querySelector<HTMLButtonElement>('[data-crop-toggle]')!;
   const cropPanel = root.querySelector<HTMLElement>('#crop-photo')!;
-  const cropImage = root.querySelector<HTMLImageElement>('[data-crop-image]')!;
   let lastFile: File | undefined;
   const privateCodes = new Set<string>();
   let previousBrands: string[] = [];
-  let previewUrl = '';
+  const picker = setupLabelLinePicker(cropPanel, area => { if (lastFile) void scan(lastFile, area); });
   let active: AbortController | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
   function hideCrop() {
     cropToggle.hidden = cropPanel.hidden = true;
     cropToggle.setAttribute('aria-expanded', 'false');
-    cropImage.removeAttribute('src');
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    previewUrl = '';
+    picker.clear();
   }
 
   cropToggle.addEventListener('click', () => {
     if (!lastFile) return;
     cropPanel.hidden = !cropPanel.hidden;
     cropToggle.setAttribute('aria-expanded', String(!cropPanel.hidden));
-    if (!cropPanel.hidden && !previewUrl) {
-      previewUrl = URL.createObjectURL(lastFile);
-      cropImage.src = previewUrl;
-    }
-  });
-  cropPanel.querySelector('button')!.addEventListener('click', event => {
-    if (!lastFile) return;
-    const bounds = cropImage.getBoundingClientRect();
-    if (!bounds.width || !bounds.height) return;
-    const point = event.detail ? { x: (event.clientX - bounds.left) / bounds.width, y: (event.clientY - bounds.top) / bounds.height } : { x: .5, y: .5 };
-    void scan(lastFile, point);
+    if (cropPanel.hidden) picker.clear();
+    else picker.open(lastFile);
   });
 
   function reset() {
@@ -142,8 +131,8 @@ function setup(root: HTMLElement) {
     }
   }
 
-  async function scan(file: File, point?: LabelPoint) {
-    if (!point) { privateCodes.clear(); previousBrands = []; }
+  async function scan(file: File, area?: LabelSelection) {
+    if (!area) { privateCodes.clear(); previousBrands = []; }
     lastFile = file;
     const task = begin('Otváram fotku…', 65_000);
     stop.textContent = 'Zrušiť čítanie';
@@ -151,15 +140,19 @@ function setup(root: HTMLElement) {
     try {
       const { readLabel } = await import('./label-reader');
       if (task.signal.aborted) return;
-      const lines = await readLabel(file, task.signal, message => {
+      const passes = await readLabel(file, task.signal, message => {
         if (!task.signal.aborted) status.textContent = message;
-      }, point);
+      }, area);
       if (task.signal.aborted) return;
       reset();
-      if (!point) previousBrands = labelBrands(lines);
-      choose(labelCandidates(lines, privateCodes, previousBrands));
+      const lines = passes[0] || [];
+      if (!area) previousBrands = labelBrands(lines);
+      choose(area && 'start' in area
+        ? selectedLabelCandidates(passes, privateCodes, previousBrands)
+        : labelCandidates(lines, privateCodes, previousBrands));
     } catch (error) {
       if (!task.signal.aborted) {
+        cropToggle.hidden = !lastFile;
         status.textContent = error instanceof Error && /^(Vyberte fotku|Túto fotku)/.test(error.message)
           ? error.message : 'Fotku sa nepodarilo prečítať. Skúste bližší záber alebo zadajte označenie ručne.';
       }

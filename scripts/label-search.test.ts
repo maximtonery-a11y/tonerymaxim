@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { exactLabelOffers, hpOrderCode, labelCandidates } from '../src/lib/label-search.ts';
+import { exactLabelOffers, hpOrderCode, labelCandidates, selectedLabelCandidates } from '../src/lib/label-search.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
 test('retains complete manufacturer references and distinguishes supplies from printers', () => {
@@ -69,5 +69,33 @@ test('a tap on a short label keeps the manufacturer seen on the original box', (
   assert.deepEqual(read('545'), []);
   for (const label of ['Canon\n570\nPGBK', 'Canon 570 PGBK']) {
     assert.deepEqual(read(label).map(row => [row.code, row.certain]), [['570PGBK', false]]);
+  }
+});
+
+test('HP printer product numbers map only from an explicit product field', () => {
+  for (const [part, model] of [['4ZB77A', '107A'], ['4ZB78A', '107W'], ['7MD66F', 'M110W'], ['7MD66E', 'M110WE'], ['W1A53A', 'M404DN'], ['W1A56A', 'M404DW']]) {
+    assert.deepEqual(read('Product No. ' + part + '#B19'), [{ brand: 'HP', code: model, kind: 'printer', certain: false }]);
+    assert.deepEqual(read('S/N: ' + part), []);
+    assert.deepEqual(read(part), []);
+  }
+  assert.deepEqual(read('Product No, _ 4ZB78A').map(row => row.code), ['107W']);
+  assert.deepEqual(read('Brother Product No. 4ZB78A'), []);
+  assert.deepEqual(read('Product No. 4ZB78A9'), []);
+  assert.deepEqual(read('HP Laser 107a').map(candidate => candidate.code), ['107A']);
+});
+
+test('a precise selection asks for confirmation and retains private fields across both readings', () => {
+  const line = (text: string) => [{ text, confidence: 99 }];
+  const selected = (a: string, b: string) => selectedLabelCandidates([line(a), line(b)], new Set(), []);
+  assert.deepEqual(selected('HP M110w', 'HP M110we').map(x => [x.code, x.certain]), [['M110W', false], ['M110WE', false]]);
+  assert.deepEqual(selected('HP M110we', 'HP M110we').map(x => [x.code, x.certain]), [['M110WE', false]]);
+  assert.deepEqual(selected('CE285A', 'S/N: CE285A'), []);
+  assert.deepEqual(selected('P/N: 4ZB78A', 'Serial number: 4ZB78A'), []);
+  assert.deepEqual(selected('Laser 107w', 'MP Laser 107w').map(x => [x.code, x.certain]), [['107W', false]]);
+  assert.deepEqual(read('HP Laserlet 1020').map(x => [x.code, x.certain]), [['1020', false]]);
+  const models = ['1020', '1020 Plus', '1020W'].map((name, index) => ({ title: 'HP LaserJet ' + name, url: '/tlaciarne/hp/p' + index }));
+  for (const name of ['1020', '1020 Plus']) {
+    const candidate = read('HP LaserJet ' + name)[0];
+    assert.deepEqual(exactLabelOffers(candidate, { printers: models }).map(x => x.title), ['HP LaserJet ' + name]);
   }
 });
