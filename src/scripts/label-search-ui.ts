@@ -1,12 +1,16 @@
 import type { LabelSelection } from '../lib/label-image';
 import { scanLiveCamera } from './label-live-camera';
 import { setupLabelLinePicker } from './label-line-picker';
-import { barcodeGuidance, exactLabelOffers, hpOrderCode, labelBrands, labelCandidates, matchesPrintedToner, printedTonerCodes, selectedLabelCandidates, type LabelCandidate, type LabelOffers } from '../lib/label-search';
+import { barcodeGuidance, drumNeedsSuffix, exactLabelOffers, hpOrderCode, labelBrands, labelCandidates, matchesPrintedToner, printedTonerCodes, selectedLabelCandidates, type CatalogLink, type LabelCandidate, type LabelOffers } from '../lib/label-search';
 
 function setup(root: HTMLElement) {
   const controls = root.querySelector<HTMLElement>('[data-photo-controls]')!;
   const liveStart = root.querySelector<HTMLButtonElement>('[data-live-start]')!;
-  const livePanel = root.querySelector<HTMLElement>('#live-camera')!;
+  const livePanel = root.querySelector<HTMLDialogElement>('#live-camera')!;
+  const pageFeedback = root.querySelector<HTMLElement>('[data-page-feedback]')!;
+  const cameraFeedback = livePanel.querySelector<HTMLElement>('[data-live-feedback]')!;
+  const cameraActions = livePanel.querySelector<HTMLElement>('[data-live-actions]')!;
+  const cameraZoom = livePanel.querySelector<HTMLButtonElement>('[data-live-zoom]')!;
   let preview = livePanel.querySelector('video')!;
   const guide = livePanel.querySelector<HTMLElement>('[data-live-guide]')!;
   const status = root.querySelector<HTMLElement>('[role=status]')!;
@@ -25,6 +29,13 @@ function setup(root: HTMLElement) {
   let active: AbortController | undefined;
   let scanningLive = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
+
+  function setCameraZoom(zoom: boolean) {
+    livePanel.style.setProperty('--label-zoom', zoom ? '2' : '1');
+    cameraZoom.setAttribute('aria-pressed', String(zoom));
+  }
+  cameraZoom.addEventListener('click', () => setCameraZoom(cameraZoom.getAttribute('aria-pressed') !== 'true'));
+  livePanel.addEventListener('cancel', event => { event.preventDefault(); stop.click(); });
 
   function hideCrop() {
     cropToggle.hidden = cropPanel.hidden = true;
@@ -45,8 +56,11 @@ function setup(root: HTMLElement) {
     active = undefined;
     clearTimeout(timer);
     stop.hidden = true;
-    livePanel.hidden = true;
-    if (scanningLive) controls.hidden = false;
+    if (scanningLive) {
+      controls.hidden = false;
+      if (livePanel.open) livePanel.close();
+      pageFeedback.append(status, stop);
+    }
     scanningLive = false;
     for (const input of inputs) input.disabled = false;
   }
@@ -75,8 +89,9 @@ function setup(root: HTMLElement) {
     return data;
   }
 
-  async function findOffers(candidate: LabelCandidate, signal: AbortSignal) {
+  async function findOffers(candidate: LabelCandidate, signal: AbortSignal, automatic: boolean): Promise<CatalogLink[] | 'suffix'> {
     const data = await catalogOffers(candidate, signal);
+    if (automatic && drumNeedsSuffix(candidate, data)) return 'suffix';
     const items = exactLabelOffers(candidate, data);
     const fullCode = hpOrderCode(candidate, items);
     if (candidate.requiresPairing && (!fullCode || exactLabelOffers({ ...candidate, kind: 'printer' }, data).length)) return [];
@@ -86,7 +101,7 @@ function setup(root: HTMLElement) {
     return [...new Map([...full, ...items].map(item => [item.url, item])).values()];
   }
 
-  function showOffers(candidate: LabelCandidate, items: Awaited<ReturnType<typeof findOffers>>) {
+  function showOffers(candidate: LabelCandidate, items: CatalogLink[]) {
     const listed = printedTonerCodes(candidate.code).filter(ref => items.some(item => matchesPrintedToner([ref], item.title, item.oem || '')));
     const query = candidate.brand + ' ' + (listed.length ? listed.join(' / ') : candidate.code);
     lastFile = undefined;
@@ -112,15 +127,18 @@ function setup(root: HTMLElement) {
     }
   }
 
-  async function lookup(candidate: LabelCandidate) {
+  async function lookup(candidate: LabelCandidate, automatic = false) {
     const query = candidate.brand + ' ' + candidate.code;
     const task = begin('Hľadám ' + query + ' v katalógu…', 18_000);
     stop.textContent = 'Zrušiť hľadanie';
     field.value = query;
     try {
-      const items = await findOffers(candidate, task.signal);
+      const items = await findOffers(candidate, task.signal, automatic);
       if (task.signal.aborted) return;
-      if (items.length) showOffers(candidate, items);
+      if (items === 'suffix') {
+        cropToggle.hidden = !lastFile;
+        status.textContent = 'Vidím ' + query + '. Pri tomto valci rozhodujú aj posledné písmená. Zachyťte celý riadok s označením.';
+      } else if (items.length) showOffers(candidate, items);
       else {
         cropToggle.hidden = !lastFile;
         status.textContent = 'Presnú zhodu pre ' + query + ' sme nenašli. Porovnajte označenie so štítkom alebo skúste bližšiu fotku.';
@@ -132,7 +150,7 @@ function setup(root: HTMLElement) {
 
   async function startCamera(resumed = false) {
     if (scanningLive) return;
-    if (!navigator.mediaDevices?.getUserMedia) {
+    if (!navigator.mediaDevices?.getUserMedia || typeof livePanel.showModal !== 'function') {
       status.textContent = 'Tento prehliadač nesprístupnil fotoaparát. Otvorte stránku v Safari alebo Chrome, prípadne vyberte fotku z galérie.';
       return;
     }
@@ -146,15 +164,17 @@ function setup(root: HTMLElement) {
     const video = preview.cloneNode(false) as HTMLVideoElement;
     preview.replaceWith(video);
     preview = video;
-    livePanel.hidden = false;
-    const bounds = livePanel.getBoundingClientRect();
-    if (bounds.top < 0 || bounds.bottom > window.innerHeight) livePanel.scrollIntoView({ block: 'center', behavior: 'instant' });
     stop.textContent = 'Zastaviť skenovanie';
+    setCameraZoom(false);
+    cameraFeedback.append(status);
+    cameraActions.append(stop);
+    livePanel.showModal();
     const display = (message: string) => { if (!task.signal.aborted) status.textContent = message; };
     try {
       await scanLiveCamera(video, guide, task, display, async candidate => {
         display('Hľadám ' + candidate.brand + ' ' + candidate.code + '…');
-        const items = await findOffers(candidate, task.signal).catch(() => { throw new Error('catalog'); });
+        const items = await findOffers(candidate, task.signal, true).catch(() => { throw new Error('catalog'); });
+        if (items === 'suffix') return 'suffix';
         if (task.signal.aborted || !items.length) return false;
         reset(); // Switch off the camera before displaying prices or navigating.
         showOffers(candidate, items);
@@ -193,7 +213,7 @@ function setup(root: HTMLElement) {
     }
     if (candidates.length === 1) field.value = candidates[0].brand + ' ' + candidates[0].code;
     if (candidates.length === 1 && candidates[0].certain) {
-      void lookup(candidates[0]);
+      void lookup(candidates[0], true);
       return;
     }
     status.textContent = 'Skontrolujte označenie na štítku a vyberte zhodu.';

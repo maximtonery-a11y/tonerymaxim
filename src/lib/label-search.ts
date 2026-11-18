@@ -1,5 +1,5 @@
 // Only manufacturer references leave the device. Keep the entire suffix throughout matching.
-export type LabelLine = { text: string; confidence: number; confirmedList?: boolean; words?: { text: string; confidence: number; verifiedDigits?: boolean }[] };
+export type LabelLine = { text: string; confidence: number; confirmedList?: boolean; words?: { text: string; confidence: number; verifiedDigits?: boolean; legibleList?: boolean }[] };
 export type LabelCandidate = { brand: string; code: string; kind: 'printer' | 'supply'; certain: boolean; requiresPairing?: boolean };
 type Rule = { kind: LabelCandidate['kind']; brand: string; pattern: RegExp };
 
@@ -108,11 +108,13 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
   for (const [index, line] of useful.entries()) {
     let text = line.text;
     const listed = printedTonerCodes(text);
-    if (listed.length > 1 && (!brands.size || brands.has('BROTHER')) && line.confidence >= 60) {
+    const printedWord = listed.length > 1 && line.words?.find(word => printedTonerCodes(word.text).join('/') === listed.join('/'));
+    const listConfidence = printedWord ? Math.max(printedWord.confidence,line.confidence) : line.confidence;
+    if (listed.length > 1 && (!brands.size || brands.has('BROTHER')) && (listConfidence >= 60 || printedWord && printedWord.legibleList)) {
       const code = listed[0].slice(0,3) + listed.map(ref => ref.slice(3).match(/^\d+/)![0]).join('/') + listed[0].match(/[A-Z]+$/)![0];
       if (!listed.some(ref => privateCodes.has(codeKey(ref))) && !privateCodes.has(codeKey(code))) {
         const key = 'supply:Brother:' + code;
-        const certain = line.confidence >= 80 || line.confirmedList === true;
+        const certain = listConfidence >= 80 || line.confirmedList === true;
         if (!found.has(key) || certain) found.set(key, { brand:'Brother', code, kind:'supply', certain });
       }
       continue;
@@ -164,13 +166,18 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
   const items = [...found.values()];
   // The large DR family name and the precise colour suffix can occupy two lines.
   const preciseDrums = items.filter(item => item.brand === 'Brother' && /^DR-?\d+CL-(?:CMYK|CMY|BK|[CMY])$/.test(item.code));
-  return items.filter(item => !preciseDrums.some(drum => {
-    if (item === drum || item.brand !== drum.brand) return false;
-    const stem = codeKey(drum.code.split('CL-')[0]);
+  const stems = new Set(preciseDrums.map(item => codeKey(item.code.split('CL-')[0])));
+  // An uncertain suffix is evidence that the clearer prefix on the other line
+  // is incomplete. It is never used to invent a colour or an article number.
+  for (const line of useful) {
+    const detail = clean(line.text).match(/\b(DR-?\d{2,5})\s*CL\s*[- ]\s*[A-Z]{1,5}\b/);
+    if (detail) stems.add(codeKey(detail[1]));
+  }
+  return items.filter(item => {
+    if (item.brand !== 'Brother' || preciseDrums.includes(item)) return true;
     const code = codeKey(item.code);
-    // A large CL can look like C, 0L or C1 above the complete article number.
-    return code.startsWith(stem) && /^(?:[C06][L1I]?|L)?$/.test(code.slice(stem.length));
-  }));
+    return ![...stems].some(stem => code.startsWith(stem) && /^(?:[C06][L1I]?|L)?$/.test(code.slice(stem.length)));
+  });
 }
 
 // Live scans have no confirmation step. A complete, legible reference must be read
@@ -206,8 +213,10 @@ export function liveLabelCandidate(lines: LabelLine[], privateCodes: Set<string>
     }
     const target = codeKey(item.code);
     const distinctivePrinter = item.kind === 'printer' && /^(?:DCP|MFC|HL|MF|LBP|ET|XP|WF)-?[A-Z]?\d/.test(item.code);
-    return (explicitBrand || distinctivePrinter) && tokens(line.text).some(token => codeKey(token) === target)
-      && (line.words?.find(word => codeKey(word.text) === target)?.confidence ?? line.confidence) >= 85;
+    const distinctiveSupply = item.kind === 'supply' && /^(?:TN|DR|LC|GI|PGI|CLI|CRG|PFI|TK|C13[TS])[-A-Z]*\d{2,}/.test(item.code);
+    const confidence = line.words?.find(word => codeKey(word.text) === target)?.confidence ?? line.confidence;
+    return (explicitBrand || distinctivePrinter || distinctiveSupply) && tokens(line.text).some(token => codeKey(token) === target)
+      && confidence >= (distinctivePrinter || distinctiveSupply ? 76 : 85);
   });
   return hasClearCode ? item : undefined;
 }
@@ -229,6 +238,19 @@ export type CatalogLink = { title: string; url: string; price?: number; brand?: 
 export type LabelOffers = { printers?: CatalogLink[]; products?: CatalogLink[]; warning?: string };
 
 // Search suggestions can include related families. The scan accepts only complete references.
+// A correctly read family may still have several incompatible colour variants.
+export function drumNeedsSuffix(candidate: LabelCandidate, response: LabelOffers) {
+  if (candidate.brand !== 'Brother' || !/^DR-?\d{2,5}(?:CL)?$/.test(candidate.code)) return false;
+  const family = codeKey(candidate.code);
+  return (response.products || []).some(item => {
+    if (!/\bBrother\b/i.test(item.title)) return false;
+    return tokens(item.title + ' ' + (item.oem || '')).some(token => {
+      const article = codeKey(token);
+      return article.startsWith(family) && /^(?:CL)?(?:CMYK?|BK|[CMY])$/.test(article.slice(family.length));
+    });
+  });
+}
+
 export function exactLabelOffers(candidate: LabelCandidate, response: LabelOffers): CatalogLink[] {
   const printer = candidate.kind === 'printer';
   const allowedPath = printer ? /^\/tlaciarne\/[a-z0-9-]+\/[a-z0-9-]+\/?$/i : /^\/produkt\/[a-z0-9-]+\/?$/i;

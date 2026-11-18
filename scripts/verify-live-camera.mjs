@@ -48,13 +48,13 @@ function installVideoFixture() {
       await image.decode();
     }
     const canvas = document.createElement('canvas');
-    canvas.width = 960; canvas.height = 540;
+    canvas.width = image?.naturalWidth || 960; canvas.height = image?.naturalHeight || 540;
     // Keep this video source rendered throughout each WebKit capture session.
     canvas.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;pointer-events:none';
     document.body.append(canvas);
     const ctx = canvas.getContext('2d');
     function draw() {
-      if (image) { ctx.drawImage(image, 0, 0, 960, 540); return; }
+      if (image) { ctx.drawImage(image, 0, 0); return; }
       ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 960, 540);
       ctx.fillStyle = 'black'; ctx.font = 'bold 42px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(fixture.text, 480, 286);
@@ -72,6 +72,9 @@ function installVideoFixture() {
     if (fixture.mode === 'defer') await new Promise(resolve => { fixture.allow = resolve; });
     source ||= makeCameraSource();
     const session = (await source).clone();
+    const [track] = session.getVideoTracks();
+    Object.defineProperty(track,'getCapabilities',{value:()=>({focusMode:['continuous']})});
+    Object.defineProperty(track,'applyConstraints',{value:async options => { fixture.focus = options.advanced[0].focusMode; }});
     fixture.tracks.push(...session.getVideoTracks());
     return session;
   } } });
@@ -111,7 +114,18 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     await page.evaluate(() => { window.labelCameraTest.mode = 'defer'; });
     await start.tap();
     await page.waitForFunction(() => typeof window.labelCameraTest.allow === 'function');
-    await stop.tap(); // The OS permission sheet can resolve after this.
+    const dimensions = await page.locator('#live-camera').evaluate(dialog => {
+      const preview = dialog.querySelector('.viewfinder').getBoundingClientRect();
+      return { modal:dialog.matches(':modal'), width:dialog.getBoundingClientRect().width/innerWidth,
+        height:dialog.getBoundingClientRect().height/innerHeight, video:preview.height/innerHeight };
+    });
+    assert.ok(dimensions.modal && dimensions.width >= .98 && dimensions.height >= .98 && dimensions.video > .75, JSON.stringify(dimensions));
+    const zoom=page.getByRole('button',{name:'Priblížiť obraz 2×'});
+    await zoom.tap();
+    assert.equal(await zoom.getAttribute('aria-pressed'),'true');
+    await zoom.tap();
+    await page.keyboard.press('Escape'); // The OS permission sheet can resolve after this.
+    await stop.waitFor({state:'hidden'});
     await page.evaluate(() => window.labelCameraTest.allow());
     await page.waitForFunction(() => window.labelCameraTest.tracks[0]?.readyState === 'ended');
     assert.equal(await page.locator('video').evaluate(el => el.srcObject), null);
@@ -127,6 +141,8 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     assert.deepEqual(searches, ['Brother TN-2421']);
     assert.equal(await page.evaluate(() => window.labelCameraTest.tracks[0].readyState), 'ended');
     const constraints = await page.evaluate(() => window.labelCameraTest.calls[0]);
+    assert.equal(await page.evaluate(() => window.labelCameraTest.focus), 'continuous');
+    assert.equal(Math.max(constraints.video.width.ideal,constraints.video.height.ideal),1920);
     assert.equal(constraints.audio, false);
     assert.equal(constraints.video.facingMode.ideal, 'environment');
 
