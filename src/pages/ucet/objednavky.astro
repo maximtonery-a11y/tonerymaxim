@@ -8,6 +8,7 @@ import { getWooCustomerById } from "../../lib/woo-client";
 import { AccountOrderError, accountOrderPage, accountOrderTotals, getAccountOrdersPage } from "../../lib/account-orders";
 import { customerToSession, formatDate, formatMoney, orderNumber, orderStatusLabel, safeText } from "../../lib/account-data";
 import { orderLineGrossTotal } from "../../lib/order-display";
+import { invoiceOrderReference } from "../../lib/account-invoices";
 import AccountShell from "../../components/AccountShell.astro";
 
 const session = readCustomerSession(Astro.cookies);
@@ -56,10 +57,10 @@ const orders = result?.orders || [];
                 ))}
                 {(order.line_items || []).length > 6 && <details class="account-order-more"><summary>Zobraziť ďalších {(order.line_items || []).length - 6} položiek</summary>{(order.line_items || []).slice(6).map(item => <div class="order-item"><span>{safeText(item.name)} × {item.quantity || 1}</span><strong>{formatMoney(orderLineGrossTotal(item), order.currency || 'EUR')} s DPH</strong></div>)}</details>}
               </div>
-              <form class="account-order-actions" method="post" action="/ucet/faktury">
+              <div class="account-order-actions">
                 <button class="tm-btn is-dark" type="button" data-reorder-start>Objednať znova</button>
-                <button class="tm-btn is-outline" type="submit" name="order" value={order.id}>Faktúry k objednávke</button>
-              </form>
+                <a class="tm-btn is-outline" href={'/ucet/faktury?ref=' + invoiceOrderReference(customer.id, order.id)}>Faktúry k objednávke</a>
+              </div>
               <p class="account-reorder-status" data-reorder-status role="status" aria-live="polite"></p>
               <section class="account-reorder-preview" data-reorder-preview hidden aria-label="Kontrola opakovanej objednávky"></section>
             </section>

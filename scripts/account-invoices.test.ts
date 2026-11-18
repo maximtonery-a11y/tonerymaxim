@@ -26,6 +26,7 @@ await build({
   stdin: { resolveDir: root, loader: 'ts', contents:
     "export { GET as listGET } from './src/pages/api/account/invoices.ts';" +
     "export { GET as fileGET } from './src/pages/api/account/invoices/[documentId]/[format].ts';" +
+    "export { invoiceOrderReference, readInvoiceOrderReference } from './src/lib/account-invoices.ts';" +
     "export { makeCustomerSession } from './src/lib/auth-session.ts';" },
   bundle: true, platform: 'node', format: 'esm', packages: 'external', target: 'node22',
   outfile, define: { 'import.meta.env': '{}' }, logLevel: 'silent',
@@ -34,6 +35,23 @@ const server = await import(pathToFileURL(outfile).href);
 const id = 'b871932e-5bb4-4d77-a0f6-000000000001';
 const pdf = Buffer.from('%PDF-1.4\n1 0 obj <<>> endobj\ntrailer <<>>\n%%EOF\n');
 const xml = Buffer.from('<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"/>');
+
+test('invoice links resolve only for their signed-in customer and survive a reload', () => {
+  for (const orderId of [1, 51649, Number.MAX_SAFE_INTEGER]) {
+    const ref = server.invoiceOrderReference(7, orderId);
+    assert.equal(server.readInvoiceOrderReference(7, ref), orderId);
+    assert.equal(server.invoiceOrderReference(7, orderId), ref);
+    assert.throws(() => server.readInvoiceOrderReference(8, ref), { status: 400 });
+    const changed = ref.endsWith('A') ? 'B' : 'A';
+    assert.throws(() => server.readInvoiceOrderReference(7, ref.slice(0, -1) + changed), { status: 400 });
+  }
+  for (const value of [null, '', '51649', 'a.b', 'a'.repeat(1000)]) {
+    assert.throws(() => server.readInvoiceOrderReference(7, value), { status: 400 });
+  }
+  for (const id of [0, -1, NaN, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
+    assert.throws(() => server.invoiceOrderReference(7, id), { status: 400 });
+  }
+});
 
 function fixture(options: any = {}) {
   const requests: any[] = [];
