@@ -55,3 +55,11 @@ test('commercial aliases need a catalogue pairing and a cropped serial cannot be
   labelCandidates([{ text: 'S/N: CE285A', confidence: 97 }], privateCodes);
   assert.deepEqual(labelCandidates([{ text: 'CE285A', confidence: 99 }], privateCodes), []);
 });
+
+test('a tap on a short label keeps the manufacturer seen on the original box', () => {
+  assert.deepEqual(labelCandidates([{ text: '545', confidence: 92 }], new Set(), ['CANON']), [
+    { brand: 'Canon', code: '545', kind: 'supply', certain: false }]);
+  assert.equal(read('Epson\n101')[0].certain, false);
+  assert.equal(read('85A')[0].certain, false);
+  assert.deepEqual(read('545'), []);
+});

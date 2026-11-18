@@ -1,5 +1,5 @@
 import type { LabelPoint } from './label-reader';
-import { exactLabelOffers, hpOrderCode, labelCandidates, type LabelCandidate, type LabelOffers } from '../lib/label-search';
+import { exactLabelOffers, hpOrderCode, labelBrands, labelCandidates, type LabelCandidate, type LabelOffers } from '../lib/label-search';
 
 function setup(root: HTMLElement) {
   const controls = root.querySelector<HTMLElement>('[data-photo-controls]')!;
@@ -15,6 +15,7 @@ function setup(root: HTMLElement) {
   const cropImage = root.querySelector<HTMLImageElement>('[data-crop-image]')!;
   let lastFile: File | undefined;
   const privateCodes = new Set<string>();
+  let previousBrands: string[] = [];
   let previewUrl = '';
   let active: AbortController | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -142,7 +143,7 @@ function setup(root: HTMLElement) {
   }
 
   async function scan(file: File, point?: LabelPoint) {
-    if (!point) privateCodes.clear();
+    if (!point) { privateCodes.clear(); previousBrands = []; }
     lastFile = file;
     const task = begin('Otváram fotku…', 65_000);
     stop.textContent = 'Zrušiť čítanie';
@@ -155,7 +156,8 @@ function setup(root: HTMLElement) {
       }, point);
       if (task.signal.aborted) return;
       reset();
-      choose(labelCandidates(lines, privateCodes));
+      if (!point) previousBrands = labelBrands(lines);
+      choose(labelCandidates(lines, privateCodes, previousBrands));
     } catch (error) {
       if (!task.signal.aborted) {
         status.textContent = error instanceof Error && /^(Vyberte fotku|Túto fotku)/.test(error.message)

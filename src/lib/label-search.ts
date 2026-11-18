@@ -28,14 +28,20 @@ function tokens(text: string): string[] {
     .match(/[A-Z0-9]+(?:-[A-Z0-9]+)*/g) || [];
 }
 
-// The full-frame pass also protects references seen beside serial numbers during a later crop.
-export function labelCandidates(lines: LabelLine[], privateCodes = new Set<string>()): LabelCandidate[] {
-  const found = new Map<string, LabelCandidate>();
+export function labelBrands(lines: LabelLine[]): string[] {
   const brands = new Set(lines.flatMap(line => clean(line.text).match(brandPattern) || []));
   const context = lines.map(line => line.text).join(' ');
   if (/\b(?:LASERJET|DESKJET|OFFICEJET|JETINTELLIGENCE)\b/i.test(context)) brands.add('HP');
   if (/\b(?:PIXMA|MAXIFY)\b/i.test(context)) brands.add('CANON');
   if (/\bECOTANK\b/i.test(context)) brands.add('EPSON');
+  return [...brands];
+}
+
+// The full-frame pass also protects references seen beside serial numbers during a later crop.
+export function labelCandidates(lines: LabelLine[], privateCodes = new Set<string>(), previousBrands: string[] = []): LabelCandidate[] {
+  const found = new Map<string, LabelCandidate>();
+  const brands = new Set([...labelBrands(lines), ...previousBrands]);
+  const context = lines.map(line => line.text).join(' ');
   const hpPrinterFamily = /\b(?:LASERJET|DESKJET|OFFICEJET|DESIGNJET|ENVY|SMART TANK)\b/i.test(context);
   const packageLabel = /\b(?:TONER|CARTRIDGES?|CARTOUCHES?|DUAL PACK|DRUM UNIT|PRINT CARTRIDGE|FOR USE WITH)\b/i.test(context);
   let privateValueOnNextLine = false;
@@ -62,12 +68,13 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
     for (const token of tokens(text)) {
       if (privateCodes.has(codeKey(token))) continue;
       const rule = rules.find(rule => rule.pattern.test(token));
-      const shortHP = brands.has('HP') && (/^\d{2,3}(?:[AX]|XL)$/.test(token)
+      const shortHP = (!brands.size || brands.has('HP')) && (/^\d{2,3}(?:[AX]|XL)$/.test(token)
         || (/^\d{2,3}$/.test(token) && new RegExp('\\bHP\\s+' + token + '\\b', 'i').test(text)));
       const shortCanon = brands.has('CANON') && /^\d{3}(?:XXL|XL|PGBK|BK|[HCMY])?$/.test(token);
+      const shortEpson = brands.has('EPSON') && /^\d{3}(?:XL)?$/.test(token);
       const numberedPrinter = hpPrinterFamily && /^\d{4}(?:[A-Z]{1,4})$/.test(token);
-      if (!rule && !shortHP && !shortCanon && !numberedPrinter) continue;
-      const brand = rule?.brand || (shortCanon ? 'Canon' : 'HP');
+      if (!rule && !shortHP && !shortCanon && !shortEpson && !numberedPrinter) continue;
+      const brand = rule?.brand || (shortCanon ? 'Canon' : shortEpson ? 'Epson' : 'HP');
       const kind = rule?.kind || (numberedPrinter ? 'printer' : 'supply');
       if (kind === 'printer' && packageLabel) continue;
       const word = line.words?.find(word => codeKey(word.text) === codeKey(token));
@@ -75,7 +82,7 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
       const brandAgrees = brands.size === 1 ? brands.has(brand.toUpperCase()) : !brands.size && kind === 'supply';
       if (brands.size && !brands.has(brand.toUpperCase())) continue;
       const key = kind + ':' + brand + ':' + codeKey(token);
-      const candidate = { brand, code: token, kind, certain: !shortHP && !shortCanon && brandAgrees && confidence >= 85 };
+      const candidate = { brand, code: token, kind, certain: !shortHP && !shortCanon && !shortEpson && brandAgrees && confidence >= 85 };
       if (!found.has(key) || candidate.certain) found.set(key, candidate);
     }
   }
