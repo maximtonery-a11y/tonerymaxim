@@ -32,6 +32,9 @@ function installVideoFixture() {
     if (fixture.mode === 'defer') await new Promise(resolve => { fixture.allow = resolve; });
     const canvas = document.createElement('canvas');
     canvas.width = 960; canvas.height = 540;
+    // Keep this video source rendered throughout each WebKit capture session.
+    canvas.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;pointer-events:none';
+    document.body.append(canvas);
     const ctx = canvas.getContext('2d');
     function draw() {
       ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 960, 540);
@@ -41,7 +44,10 @@ function installVideoFixture() {
     draw();
     const stream = canvas.captureStream(8), track = stream.getVideoTracks()[0];
     fixture.tracks.push(track);
-    const timer = setInterval(() => { if (track.readyState === 'ended') clearInterval(timer); else draw(); }, 120);
+    const timer = setInterval(() => {
+      if (track.readyState === 'ended') { clearInterval(timer); canvas.remove(); return; }
+      draw(); track.requestFrame?.();
+    }, 120);
     return stream;
   } } });
 }
@@ -116,7 +122,8 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
   } catch (error) {
     const diagnostic = await page.evaluate(() => ({
       status: document.querySelector('#label-status')?.textContent,
-      mode: window.labelCameraTest?.mode, calls: window.labelCameraTest?.calls.length, tracks: window.labelCameraTest?.tracks.map(t => t.readyState), video: document.querySelector('video')?.readyState,
+      mode: window.labelCameraTest?.mode, calls: window.labelCameraTest?.calls.length, tracks: window.labelCameraTest?.tracks.map(t => t.readyState),
+      video: document.querySelector('video')?.readyState, viewport: document.querySelector('video')?.getBoundingClientRect().toJSON(),
     })).catch(() => ({}));
     throw new Error('Camera test ' + JSON.stringify({ diagnostic, searches, workers: workers.length }) + ': ' + error.message, { cause: error });
   } finally { page.context().off('request', request); page.off('worker', worker); }

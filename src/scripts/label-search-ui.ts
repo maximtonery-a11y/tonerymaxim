@@ -7,7 +7,7 @@ function setup(root: HTMLElement) {
   const controls = root.querySelector<HTMLElement>('[data-photo-controls]')!;
   const liveStart = root.querySelector<HTMLButtonElement>('[data-live-start]')!;
   const livePanel = root.querySelector<HTMLElement>('#live-camera')!;
-  const video = livePanel.querySelector('video')!;
+  let preview = livePanel.querySelector('video')!;
   const guide = livePanel.querySelector<HTMLElement>('[data-live-guide]')!;
   const status = root.querySelector<HTMLElement>('[role=status]')!;
   const results = root.querySelector<HTMLElement>('[data-matches]')!;
@@ -139,8 +139,13 @@ function setup(root: HTMLElement) {
       'Skenovanie sa skončilo. Priblížte fotoaparát k označeniu a skúste znova.');
     scanningLive = true;
     controls.hidden = true;
+    // A stopped WebKit player can retain its old capture pipeline on the next scan.
+    const video = preview.cloneNode(false) as HTMLVideoElement;
+    preview.replaceWith(video);
+    preview = video;
     livePanel.hidden = false;
-    if (livePanel.getBoundingClientRect().bottom > window.innerHeight) livePanel.scrollIntoView({ block: 'start' });
+    const bounds = livePanel.getBoundingClientRect();
+    if (bounds.top < 0 || bounds.bottom > window.innerHeight) livePanel.scrollIntoView({ block: 'center', behavior: 'instant' });
     stop.textContent = 'Zastaviť skenovanie';
     const display = (message: string) => { if (!task.signal.aborted) status.textContent = message; };
     try {

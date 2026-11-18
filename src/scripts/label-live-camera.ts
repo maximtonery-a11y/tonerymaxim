@@ -10,6 +10,18 @@ function pause(signal: AbortSignal, delay: number) {
   });
 }
 
+async function playPreview(video: HTMLVideoElement, signal: AbortSignal) {
+  const waiting = new AbortController();
+  const cancel = () => waiting.abort();
+  signal.addEventListener('abort', cancel, { once: true });
+  try {
+    await Promise.race([
+      video.play(),
+      pause(waiting.signal, 8500).then(() => { throw new DOMException('Kamera neposkytla obraz', 'NotReadableError'); }),
+    ]);
+  } finally { cancel(); signal.removeEventListener('abort', cancel); }
+}
+
 // Match the guide to the visible part of an object-fit: cover preview, even when
 // the portrait phone displays a landscape sensor or rotates during a scan.
 async function captureGuide(video: HTMLVideoElement, guide: HTMLElement, canvas: HTMLCanvasElement, angle?: number) {
@@ -68,9 +80,11 @@ export async function scanLiveCamera(video: HTMLVideoElement, guide: HTMLElement
     const track = stream.getVideoTracks()[0];
     if (!track || track.readyState === 'ended') throw new DOMException('Kamera', 'NotReadableError');
     track.addEventListener('ended', interrupted, { once: true, signal });
+    report('Fotoaparát je povolený. Spúšťam živý obraz…');
     video.muted = true;
+    video.playsInline = true;
     video.srcObject = stream;
-    await video.play();
+    await playPreview(video, signal);
     signal.throwIfAborted();
     report('Pripravujem čítanie. Namierte na kód kazety alebo názov tlačiarne.');
     const { createLabelReader } = await import('./label-reader');
