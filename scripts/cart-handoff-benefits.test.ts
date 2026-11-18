@@ -4,8 +4,8 @@ import { mkdtemp, rm, mkdir } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
-import { remainingCart, acceptSubmittedOrder, readSubmittedOrder, consumeLegacySubmittedCart, cartSignature } from '../src/scripts/submitted-order.js';
-import { getCartBenefits, readCartBenefits, invalidateCartBenefits } from '../src/scripts/cart-benefits.js';
+import { remainingCart, acceptSubmittedOrder, readSubmittedOrder, consumeLegacySubmittedCart, cartSignature, resetCheckoutAttempt, saveShoppingCart } from '../src/scripts/submitted-order.js';
+import { getCartBenefits, readCartBenefits, invalidateCartBenefits, couponDisabled, setCouponDisabled } from '../src/scripts/cart-benefits.js';
 
 class Storage {
   values = new Map<string, string>();
@@ -43,6 +43,38 @@ test('new items, extra units, calendar items and reward identity survive a submi
   const paidPaper = { ...paper, loyalty_reward: false };
   assert.deepEqual(remainingCart([paper, paidPaper], [paper]), [paidPaper]);
   assert.deepEqual(remainingCart([{ ...a, source: 'kalendare-2027' }, a], [a]), [{ ...a, source: 'kalendare-2027' }]);
+});
+
+test('a deliberate new cart clears legacy submitted signatures, request IDs, automatic-coupon choices and aliases', () => {
+  local.setItem('tm_submitted_gopay_v1', JSON.stringify({ ...receipt, submittedAt: Date.now(), cartSignature: cartSignature([a]) }));
+  local.setItem('tm_checkout_intent_v2', JSON.stringify({ requestId: receipt.requestId, cartSignature: cartSignature([a]) }));
+  session.setItem('tm_checkout_request_id', receipt.requestId);
+  local.setItem('cart', JSON.stringify([a])); setCouponDisabled(true);
+  resetCheckoutAttempt(); local.setItem('tm_cart_v1', JSON.stringify([a]));
+  assert.equal(consumeLegacySubmittedCart(), null); assert.deepEqual(currentCart(), [a]);
+  assert.equal(local.getItem('tm_checkout_intent_v2'), null); assert.equal(session.getItem('tm_checkout_request_id'), null);
+  assert.equal(local.getItem('cart'), null); assert.equal(couponDisabled(), false);
+});
+
+test('background sync of an empty cart preserves the accepted order; the first genuinely new product detaches it', () => {
+  local.setItem('tm_cart_v1', JSON.stringify([a])); acceptSubmittedOrder([a], receipt);
+  saveShoppingCart([]); saveShoppingCart([]);
+  assert.equal(readSubmittedOrder().paymentId, receipt.paymentId);
+  saveShoppingCart([a]); assert.equal(readSubmittedOrder(), null);
+  assert.deepEqual(currentCart(), [a]);
+});
+
+test('removing a coupon survives refresh/navigation and identity changes release the choice', async () => {
+  identity(); let calls = 0;
+  globalThis.fetch = async (_input, init) => {
+    calls++; const body = JSON.parse(String(init?.body));
+    return Response.json({ ...benefits, coupon: body.couponDisabled ? null : benefits.coupon });
+  };
+  await getCartBenefits([a]); setCouponDisabled(true);
+  assert.equal(readCartBenefits([a]), null);
+  assert.equal((await getCartBenefits([a])).coupon, null);
+  await getCartBenefits([a]); assert.equal(calls, 2); assert.equal(couponDisabled(), true);
+  invalidateCartBenefits(true); assert.equal(couponDisabled(), false);
 });
 
 test('legacy abandoned gateway consumes only the exact old cart, once, and never a different cart', () => {

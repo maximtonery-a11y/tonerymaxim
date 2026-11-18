@@ -101,7 +101,13 @@ export async function getBestAutoCoupon(customerId: number | undefined, cart: No
   }
 
   candidates.sort((a, b) => Number(b.discount || 0) - Number(a.discount || 0));
-  return candidates[0] || null;
+  const usage = couponUsageCheck();
+  // Display and checkout must agree, including stale customer-wallet entries.
+  for (const candidate of candidates) {
+    const validated = await validateCheckoutCoupon(customerId, candidate.code, cart, usage);
+    if (validated.ok) return validated;
+  }
+  return null;
 }
 
 export async function getCustomerStoredCoupons(customerId: number): Promise<StoredCoupon[]> {
@@ -183,18 +189,37 @@ function guestThankYouCouponResult(code: string, cart: NormalizedCartItem[]): Co
 }
 
 
-async function couponUsedInWooOrders(codeValue: unknown): Promise<boolean> {
-  const code = normalizeCouponCode(codeValue);
-  if (!code) return false;
-  try {
-    const orders = await wooRequest<any[]>("/orders", { query: { per_page: 100, orderby: "date", order: "desc" } });
-    return Array.isArray(orders) && orders.some((order) => Array.isArray(order?.meta_data) && order.meta_data.some((meta: any) => meta?.key === "tm_coupon_code" && normalizeCouponCode(meta?.value) === code));
-  } catch (error: any) {
-    console.error("Coupon usage history check failed:", error?.message || error);
-    return false;
-  }
+function orderMeta(order: any, key: string) {
+  return order?.meta_data?.find((meta: any) => meta?.key === key)?.value;
 }
-export async function validateCheckoutCoupon(customerId: number | undefined, rawCode: unknown, cart: NormalizedCartItem[]): Promise<CouponResult> {
+
+export function couponRedemptionCommitted(order: any): boolean {
+  const status = String(order?.status || '').replace(/^wc-/, '').toLowerCase();
+  const state = String(orderMeta(order, 'gopay_state') || '').toUpperCase();
+  if (order?.date_paid || order?.date_paid_gmt || ['PAID', 'AUTHORIZED'].includes(state)
+    || ['processing', 'completed', 'refunded'].includes(status)) return true;
+  const payment = String(orderMeta(order, 'tm_payment_code') || order?.payment_method || '').toLowerCase();
+  const online = state !== 'CONVERTED_TO_OFFLINE'
+    && (/gopay|applepay|googlepay/.test(payment) || Boolean(orderMeta(order, 'gopay_payment_id')));
+  // An unfinished gateway payment has not redeemed a coupon. Accepted offline
+  // orders still redeem it, even while waiting for their bank transfer/COD.
+  return !online && !['cancelled', 'canceled', 'failed', 'trash'].includes(status);
+}
+
+function couponUsageCheck() {
+  let pending: Promise<any[]> | undefined;
+  return async (code: string) => {
+    pending ??= wooRequest<any[]>('/orders', { query: { per_page: 100, orderby: 'date', order: 'desc' } });
+    const orders = await pending;
+    if (!Array.isArray(orders)) throw new Error('Históriu použitia kupónu sa nepodarilo overiť.');
+    const matching = orders.filter(order => normalizeCouponCode(orderMeta(order, 'tm_coupon_code')) === code);
+    return { used: matching.some(couponRedemptionCommitted),
+      unpaidGateway: matching.some(order => !couponRedemptionCommitted(order) &&
+        (/gopay|applepay|googlepay/.test(String(orderMeta(order, 'tm_payment_code') || order?.payment_method || '')) || Boolean(orderMeta(order, 'gopay_payment_id')))) };
+  };
+}
+
+export async function validateCheckoutCoupon(customerId: number | undefined, rawCode: unknown, cart: NormalizedCartItem[], usage = couponUsageCheck()): Promise<CouponResult> {
   const code = normalizeCouponCode(rawCode);
   if (!code) return { ok: false, code: "", reason: "Zadajte kód kupónu." };
 
@@ -219,8 +244,8 @@ export async function validateCheckoutCoupon(customerId: number | undefined, raw
     const stored = coupons.find((item) => normalizeCouponCode(item.code) === code);
     if (stored) {
       if (stored.status === "used") return { ok: false, code, reason: "Kupón už bol použitý." };
-      if (await couponUsedInWooOrders(code)) {
-        await markIssuedCouponUsed(code).catch(() => undefined);
+      const issued = await getIssuedCoupon(code);
+      if ((issued?.usedAt && issued.usedOrderId) || (await usage(code)).used) {
         return { ok: false, code, reason: "Kupón už bol použitý." };
       }
       if (!activeStoredCoupon(stored)) return { ok: false, code, reason: "Kupón už expiroval." };
@@ -233,11 +258,13 @@ export async function validateCheckoutCoupon(customerId: number | undefined, raw
   if (isGuestThankYouCouponCode(code)) {
     const issued = await getIssuedCoupon(code);
     if (!issued) {
-      if (await couponUsedInWooOrders(code)) return { ok: false, code, reason: "Kupón už bol použitý." };
+      if ((await usage(code)).used) return { ok: false, code, reason: "Kupón už bol použitý." };
       return { ok: false, code, reason: "Neplatný alebo neznámy kupón." };
     }
-    if (issued.usedAt || await couponUsedInWooOrders(code)) {
-      await markIssuedCouponUsed(code).catch(() => undefined);
+    const history = await usage(code);
+    // Older validation poisoned the registry with usedAt, without an order ID,
+    // merely after finding an unpaid GoPay order. Recover only with that evidence.
+    if (history.used || (issued.usedAt && (issued.usedOrderId || !history.unpaidGateway))) {
       return { ok: false, code, reason: "Kupón už bol použitý." };
     }
     return guestThankYouCouponResult(code, cart);

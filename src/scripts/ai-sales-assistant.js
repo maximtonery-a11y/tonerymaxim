@@ -1,4 +1,5 @@
 import { productPageYield } from '../lib/ai-page-yield.ts';
+import { saveShoppingCart } from './submitted-order.js';
 import { collapsePaperRewardCart, isPaperRewardCartItem } from "./paper-reward-cart.js";
 import { isOrderStatusQuestion, isOrderRepeatCommand, selectRequestedOrder } from "../lib/ai-order-question.ts";
 import { resolveConversationContext, conversationArchive } from "../lib/ai-conversation-context.ts";
@@ -395,7 +396,7 @@ import { readAiJson, aiRequestErrorMessage } from '../lib/ai-http-response.ts';
     const cart=collapsePaperRewardCart(state.cart.map(({product,qty})=>webCartProduct(product,qty)));
     try{
       if(window.ToneryMaximCart&&typeof window.ToneryMaximCart.saveCart==='function')window.ToneryMaximCart.saveCart(cart);
-      else localStorage.setItem(WEB_CART_KEY,JSON.stringify(cart));
+      else saveShoppingCart(cart);
       const count=cart.reduce((sum,item)=>sum+cleanCartQty(item.qty),0);
       document.querySelectorAll('[data-cart-count]').forEach(el=>{el.textContent=String(count);});
       window.dispatchEvent(new CustomEvent('tm:cart-synced',{detail:{cart,count,source:'ai-tomas'}}));

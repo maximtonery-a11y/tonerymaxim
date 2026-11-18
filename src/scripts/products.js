@@ -1,3 +1,4 @@
+import { saveShoppingCart } from './submitted-order.js';
 (() => {
   const TM_PRODUCT_PLACEHOLDER_IMAGE = "/images/tm-product-placeholder-box.jpg";
 
@@ -29,7 +30,7 @@
   }
 
   function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    saveShoppingCart(cart);
     window.dispatchEvent(new CustomEvent("tm-cart-updated"));
     updateCartBadge();
   }

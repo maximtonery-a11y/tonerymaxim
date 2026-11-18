@@ -1,5 +1,5 @@
 import { acceptSubmittedOrder, consumeLegacySubmittedCart, readSubmittedOrder, submittedOrderUrl } from './submitted-order.js';
-import { getCartBenefits, readCartBenefits } from "./cart-benefits.js";
+import { getCartBenefits, readCartBenefits, couponDisabled, setCouponDisabled, invalidateCartBenefits } from "./cart-benefits.js";
 import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-cart.js";
 import { orderFulfilmentText } from "../lib/product-availability.ts";
 import { normalizeDpdPickup as normalizeDpdPoint } from "../lib/dpd-pickup.ts";
@@ -112,10 +112,10 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     return Math.min(Math.max(0, Number.isFinite(discount) ? discount : 0), Math.max(0, total));
   }
 
-  async function refreshCheckoutCoupon(enteredCode) {
+  async function refreshCheckoutCoupon(enteredCode, force = false) {
     const revision = ++couponRevision;
     try {
-      const data = await getCartBenefits(readCart(), { enteredCode });
+      const data = await getCartBenefits(readCart(), { enteredCode, force });
       if (revision !== couponRevision) return;
       applyCheckoutBenefits(data);
       if (enteredCode !== undefined) setCouponBoxesExpanded(Boolean(tmCoupon && !tmCoupon.ok));
@@ -145,6 +145,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
         </div>
         <small data-coupon-message></small>
       </div>
+      <button type="button" class="coupon-toggle" data-coupon-choice hidden>Nepoužiť kupón</button>
     `;
   }
 
@@ -197,6 +198,12 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
           message.textContent = tmCoupon?.reason || "";
         }
         message.className = couponApplied ? "is-success" : (couponError ? "is-error" : "");
+      }
+
+      const choice = box.querySelector("[data-coupon-choice]");
+      if (choice) {
+        choice.hidden = !tmCoupon && !couponDisabled();
+        choice.textContent = couponDisabled() ? "Použiť automatickú zľavu" : "Nepoužiť kupón";
       }
 
       const expanded = box.dataset.couponExpanded === "true" || couponError;
@@ -1600,8 +1607,12 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     const cartSignature = checkoutCartSignature(cart);
     try {
       const stored = readJsonStorage(CHECKOUT_INTENT_KEY);
+      const acceptedRequestId = readSubmittedOrder()?.requestId;
       let value = stored?.cartSignature === cartSignature ? String(stored.requestId || "") : "";
       if (!value && !stored) value = sessionStorage.getItem("tm_checkout_request_id") || "";
+      // Keep retries of uncertain submissions stable, but never reuse a known
+      // accepted order's ID for a new shopping cart.
+      if (value === acceptedRequestId) value = "";
       if (!value) {
         value = `checkout-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
       }
@@ -1769,6 +1780,12 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
       const response = await fetch(endpoint, requestOptions);
 
       const data = await response.json();
+      if (!response.ok && data.code === "COUPON_UNAVAILABLE" && data.orderCreated === false) {
+        localStorage.removeItem("tm_coupon_v1");
+        invalidateCartBenefits();
+        await refreshCheckoutCoupon(undefined, true);
+        throw new Error("Kupón už nie je dostupný. Zľavy a celkovú sumu sme aktualizovali. Skontrolujte sumu a odošlite objednávku znova, prípadne zvoľte Nepoužiť kupón.");
+      }
 
       if (onlinePaymentSelected) {
         if (!response.ok || !data.ok || !data.gwUrl) {
@@ -1796,7 +1813,10 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
         throw new Error(data.error || "Nepodarilo sa uložiť objednávku.");
       }
 
-      localStorage.removeItem("tm_cart_v1");
+      localStorage.setItem("tm_cart_v1", "[]");
+      for (const alias of ["tonerymaxim_cart", "cart", "tm_cart"]) localStorage.removeItem(alias);
+      localStorage.removeItem("tm_coupon_disabled_v1");
+      invalidateCartBenefits();
       localStorage.removeItem("tm_coupon_v1");
       localStorage.removeItem("tm_loyalty_apply");
       localStorage.removeItem(CHECKOUT_INTENT_KEY);
@@ -1996,10 +2016,19 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     const form = event.target.closest("[data-summary-coupon-box]");
     if (!form) return;
     event.preventDefault();
+    if (couponDisabled()) setCouponDisabled(false);
     couponLoadPromise = refreshCheckoutCoupon((form.querySelector("[data-coupon-input]")?.value || "").trim());
   });
 
+  window.addEventListener("tm:coupon-choice", () => {
+    tmCoupon = null; tmBenefitsReady = false;
+    couponLoadPromise = refreshCheckoutCoupon(); tmLoyaltyLoadPromise = couponLoadPromise;
+  });
+
   document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-summary-coupon-box] [data-coupon-choice]")) {
+      event.preventDefault(); setCouponDisabled(!couponDisabled()); return;
+    }
     const couponToggle = event.target.closest("[data-coupon-toggle]");
     if (!couponToggle) return;
     const box = couponToggle.closest("[data-summary-coupon-box]");

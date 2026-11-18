@@ -2,14 +2,23 @@ import { isPaperRewardCartItem } from './paper-reward-cart.js';
 
 const CACHE = 'tm_cart_benefits_v1';
 const EPOCH = 'tm_cart_benefits_epoch';
+const COUPON_DISABLED = 'tm_coupon_disabled_v1';
 const pending = new Map();
 let newestKey;
 const json = (storage, key) => { try { return JSON.parse(storage.getItem(key) || 'null'); } catch { return null; } };
 const epoch = () => { try { return localStorage.getItem(EPOCH) || ''; } catch { return ''; } };
+export const couponDisabled = () => localStorage.getItem(COUPON_DISABLED) === '1';
+export function setCouponDisabled(disabled) {
+  if (disabled) localStorage.setItem(COUPON_DISABLED, '1');
+  else localStorage.removeItem(COUPON_DISABLED);
+  localStorage.removeItem('tm_coupon_v1');
+  invalidateCartBenefits();
+  window.dispatchEvent(new CustomEvent('tm:coupon-choice'));
+}
 export function benefitsKey(cart, enteredCode) {
   const saved = json(localStorage, 'tm_coupon_v1');
   const manual = enteredCode !== undefined ? String(enteredCode).trim() : saved?.manual ? saved.code : null;
-  return JSON.stringify([epoch(), manual, cart.filter(item => !isPaperRewardCartItem(item)).map(item =>
+  return JSON.stringify([epoch(), couponDisabled(), manual, cart.filter(item => !isPaperRewardCartItem(item)).map(item =>
     [item.sku, Number(item.price), Number(item.qty || item.quantity || 1), item.product_type_key || item.productTypeKey || '', item.product_type_label || item.productTypeLabel || '', item.name, item.source || ''])]);
 }
 export function readCartBenefits(cart, enteredCode) {
@@ -23,7 +32,7 @@ export function invalidateCartBenefits(identityChanged = false) {
   try { sessionStorage.removeItem(CACHE); } catch {}
   try {
     localStorage.setItem(EPOCH, Date.now() + '-' + Math.random());
-    if (identityChanged) localStorage.removeItem('tm_coupon_v1');
+    if (identityChanged) { localStorage.removeItem('tm_coupon_v1'); localStorage.removeItem(COUPON_DISABLED); }
   } catch {}
 }
 /** @param {any[]} cart @param {{enteredCode?: string, force?: boolean}} [options] */
@@ -37,7 +46,7 @@ export async function getCartBenefits(cart, { enteredCode, force = false } = {})
     const response = await fetch('/api/cart-benefits', {
       method: 'POST', credentials: 'same-origin', cache: 'no-store',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cart, enteredCode, savedCoupon: json(localStorage, 'tm_coupon_v1') }),
+      body: JSON.stringify({ cart, enteredCode, couponDisabled: couponDisabled(), savedCoupon: json(localStorage, 'tm_coupon_v1') }),
       signal: globalThis.AbortSignal?.timeout?.(8000),
     });
     const data = await response.json();

@@ -1,3 +1,4 @@
+import { saveShoppingCart } from './submitted-order.js';
 import { chipVariant } from "../lib/product-chip.ts";
 import { bindPrinterCheck } from "./product-printer-check.js";
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
@@ -145,7 +146,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
   }
 
   function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    saveShoppingCart(cart);
     window.dispatchEvent(new CustomEvent("tm-cart-updated"));
     updateCartBadge();
   }

@@ -1,9 +1,24 @@
-import { invalidateCartBenefits } from './cart-benefits.js';
+import { invalidateCartBenefits, setCouponDisabled } from './cart-benefits.js';
 // An accepted order has its own durable server record. The shopping cart is
 // consumed once, before leaving for the gateway, rather than when payment ends.
 export const SUBMITTED_ORDER_KEY = 'tm_submitted_gopay_v1';
 const CART_KEY = 'tm_cart_v1';
 const MAX_AGE = 24 * 60 * 60 * 1000;
+// Called only for a deliberate empty/new cart, never to retry an uncertain POST.
+export function resetCheckoutAttempt() {
+  for (const key of ['tm_checkout_intent_v2', SUBMITTED_ORDER_KEY, 'tm_coupon_v1', 'tm_loyalty_apply',
+    'tonerymaxim_cart', 'cart', 'tm_cart']) localStorage.removeItem(key);
+  try { sessionStorage.removeItem('tm_checkout_request_id'); } catch {}
+  setCouponDisabled(false);
+}
+export function saveShoppingCart(cart) {
+  let previous = [];
+  try { previous = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch {}
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  // Background synchronisation of an already empty cart is not a new purchase.
+  // In particular, it must not erase the receipt when returning from GoPay.
+  if (Boolean(previous?.length) !== Boolean(cart.length)) resetCheckoutAttempt();
+}
 export function cartSignature(cart) {
   return JSON.stringify((Array.isArray(cart) ? cart : []).map(item => ({
     id: String(item?.id ?? item?.productId ?? item?.product_id ?? ''), sku: String(item?.sku || ''),
@@ -43,6 +58,7 @@ export function acceptSubmittedOrder(cart, receipt) {
   localStorage.setItem(SUBMITTED_ORDER_KEY, JSON.stringify(saved));
   localStorage.removeItem('tm_checkout_intent_v2');
   localStorage.removeItem('tm_coupon_v1');
+  localStorage.removeItem('tm_coupon_disabled_v1');
   try { sessionStorage.removeItem('tm_checkout_request_id'); sessionStorage.removeItem('tm_cart_benefits_v1'); } catch {}
   invalidateCartBenefits();
   window.dispatchEvent(new CustomEvent('tm:order-accepted'));
