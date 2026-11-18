@@ -44,6 +44,10 @@ const title = "Košík | ToneryMaxim.sk";
           </div>
 
           <div class="cart-list" data-cart-list></div>
+          <div class="summary-note" data-cart-benefits-status role="status" hidden>
+            <span></span>
+            <button type="button" class="coupon-toggle" data-cart-retry-discounts hidden>Skúsiť znova</button>
+          </div>
 
           <form class="cart-mobile-coupon summary-note coupon-note" data-cart-coupon-box hidden>
             <button class="coupon-toggle" type="button" data-coupon-toggle aria-expanded="false">
@@ -63,6 +67,7 @@ const title = "Košík | ToneryMaxim.sk";
 
           <details class="cart-mobile-breakdown" data-cart-mobile-breakdown hidden>
             <summary>Rozpis ceny s DPH <strong data-cart-breakdown-total></strong></summary>
+            <dl data-cart-breakdown-discounts hidden></dl>
             <dl><div><dt>Základ bez DPH</dt><dd data-cart-breakdown-net></dd></div>
               <div><dt>DPH 23 %</dt><dd data-cart-breakdown-vat></dd></div></dl>
           </details>

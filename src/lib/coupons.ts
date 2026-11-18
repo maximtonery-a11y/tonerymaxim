@@ -1,7 +1,7 @@
 import { getCustomerMeta, getWooCustomerById, updateWooCustomer, welcomeCouponCode, wooRequest } from "./woo-client";
 import type { NormalizedCartItem } from "./checkout-order";
 import { getIssuedCoupon, markIssuedCouponUsed, registerIssuedCoupon } from "./coupon-registry";
-import { CALENDAR_SOURCE, calendarDiscountRate } from "./calendar-catalog";
+import { percentageCouponDiscount } from "./checkout-vat";
 
 export type CouponType = "welcome5" | "thankyou7" | "marketing";
 export type CouponScope = "all" | "compatible";
@@ -36,42 +36,10 @@ export type CouponResult = {
 
 export const CUSTOMER_COUPONS_META = "tm_coupon_wallet";
 
-function money(value: unknown) {
-  const number = Number(String(value ?? "0").replace(/\s/g, "").replace("€", "").replace(",", "."));
-  return Number.isFinite(number) ? Math.round(number * 100) / 100 : 0;
-}
-
 function isExpired(expiresAt: unknown) {
   if (!expiresAt) return false;
   const time = new Date(String(expiresAt || "")).getTime();
   return !Number.isFinite(time) || time <= Date.now();
-}
-
-function compatibleItem(item: NormalizedCartItem) {
-  const type = String(item.product_type_key || "").toLowerCase();
-  const label = String(item.product_type_label || item.name || "").toLowerCase();
-  return type === "compatible" || label.includes("kompatibil");
-}
-
-function lineDiscountRate(item: NormalizedCartItem) {
-  if (String(item.source || "") === CALENDAR_SOURCE) return calendarDiscountRate(item.qty);
-  if (!compatibleItem(item)) return 0;
-  if (item.qty >= 4) return 0.25;
-  if (item.qty >= 2) return 0.1;
-  return 0;
-}
-
-function lineAfterQuantityDiscount(item: NormalizedCartItem) {
-  const gross = money(item.price * item.qty);
-  return money(gross - gross * lineDiscountRate(item));
-}
-
-function subtotalAfterQuantityDiscount(cart: NormalizedCartItem[]) {
-  return money(cart.reduce((sum, item) => sum + lineAfterQuantityDiscount(item), 0));
-}
-
-function compatibleSubtotalAfterQuantityDiscount(cart: NormalizedCartItem[]) {
-  return money(cart.filter(compatibleItem).reduce((sum, item) => sum + lineAfterQuantityDiscount(item), 0));
 }
 
 function safeParseCoupons(value: unknown): StoredCoupon[] {
@@ -189,12 +157,8 @@ export async function grantThankYouCoupon(customerId: number | undefined, orderI
   return coupon;
 }
 
-function discountBaseForCoupon(coupon: Pick<StoredCoupon, "scope">, cart: NormalizedCartItem[]) {
-  return coupon.scope === "compatible" ? compatibleSubtotalAfterQuantityDiscount(cart) : subtotalAfterQuantityDiscount(cart);
-}
-
 function couponDiscount(coupon: Pick<StoredCoupon, "percent" | "scope">, cart: NormalizedCartItem[]) {
-  return money(discountBaseForCoupon(coupon, cart) * (Number(coupon.percent || 0) / 100));
+  return percentageCouponDiscount(cart, coupon.percent, coupon.scope);
 }
 
 function isGuestThankYouCouponCode(code: string) {

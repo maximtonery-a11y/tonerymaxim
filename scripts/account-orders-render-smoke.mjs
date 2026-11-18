@@ -27,6 +27,7 @@ const products = [product, variant(12, 'original', 104.66), variant(13, 'renovat
   variant(31, 'compatible', 10, 'TN-3430'), variant(32, 'original', 32, 'TN-3430'), variant(33, 'renovated', 23, 'TN-3430'),
   { ...variant(41, 'original', 42, 'TN-2010'),
     description_html: '<h2>TN-2010</h2><p>Originálny toner pre testovanú tlačiareň.</p><h3>Obsah balenia</h3><ul><li>Jedna kazeta</li></ul><h3>Pokyny</h3><p>Posledný odsek pôvodného popisu.</p>' },
+  { ...variant(51, 'compatible', 10.17, 'CE285A', 2000), product_brand: 'HP', name: 'HP CE285A čierny kompatibilný toner', compatible_printers: ['HP LaserJet P1102'] },
   { id: 91, sku: 'PAPER', slug: 'kancelarsky-papier-a4-80g-500-harkov', name: 'Kancelársky papier A4', price: 6,
     product_type_key: 'product', stock_status: 'instock', stock_quantity: 30, compatible_printers: [] }];
 const orders = Array.from({ length: 61 }, (_, index) => ({ id: 701 - index, number: String(300000 + index), customer_id: 7, status: index === 1 ? 'cancelled' : 'completed',
@@ -40,7 +41,7 @@ os.networkInterfaces=()=>({lo:[{address:'127.0.0.1',netmask:'255.0.0.0',family:'
 const orders=${JSON.stringify(orders)}, product=${JSON.stringify(product)};
 const emit=Server.prototype.emit;Server.prototype.emit=function(name,...args){if(name==='request'&&args[0].url==='/__account_fixture_session'){args[1].writeHead(302,{'Set-Cookie':${JSON.stringify(cookie + '; Path=/; HttpOnly; SameSite=Lax')},Location:'/ucet/objednavky'});args[1].end();return true}return emit.call(this,name,...args)};
 globalThis.fetch=async(input,options={})=>{const url=new URL(String(input));if(url.hostname!=='woo.example.invalid'||(options.method||'GET')!=='GET')throw new Error('Fixture blocks external requests and Woo writes');
-if(url.pathname.endsWith('/customers/7'))return Response.json({id:7,email:'test@example.invalid',first_name:'Test',last_name:'Zákazník',billing:{city:'Testovacie mesto'},meta_data:[]});
+if(url.pathname.endsWith('/customers/7'))return Response.json({id:7,email:'test@example.invalid',first_name:'Test',last_name:'Zákazník',billing:{city:'Testovacie mesto'},meta_data:[{key:'tm_loyalty_credited_orders',value:orders.map(order=>String(order.id))}]});
 if(url.pathname.endsWith('/orders')){const page=Number(url.searchParams.get('page')||1),size=Number(url.searchParams.get('per_page')||20);if(page>Math.ceil(orders.length/size))return Response.json({}, {status:400});return Response.json(orders.slice((page-1)*size,page*size),{headers:{'X-WP-Total':String(orders.length),'X-WP-TotalPages':String(Math.ceil(orders.length/size))}})}
 if(url.pathname.endsWith('/orders/701'))return Response.json(orders[0]);if(url.pathname.endsWith('/orders/999'))return Response.json({...orders[0],id:999,customer_id:8});
 if(url.pathname.endsWith('/products'))return Response.json([{...product,status:'publish',price:'13.05'}]);return Response.json({}, {status:404})};

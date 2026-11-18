@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 import { runInNewContext } from 'node:vm';
 import { build } from 'esbuild';
 import ts from 'typescript';
-import { checkoutGrossLines, discountedGrossLine, grossVatParts, grossVatTotals } from '../src/lib/checkout-vat.ts';
+import { cartGoodsTotals, checkoutGrossLines, discountedGrossLine, grossVatParts, grossVatTotals, percentageCouponDiscount, redeemableLoyaltyDiscount } from '../src/lib/checkout-vat.ts';
 
 await mkdir('.tm-cache', { recursive: true });
 const temporary = await mkdtemp(resolve('.tm-cache/vat-integrity-'));
@@ -61,7 +61,7 @@ function checkoutHarness() {
   let cart: any[] = [];
   node('input[name="shipping"]:checked').value = 'dpd_courier'; node('input[name="payment"]:checked').value = 'cod';
   const scope: any = { document: { querySelector: node, querySelectorAll: () => [], createElement: () => new Element() },
-    readCart: () => cart, URL, window: { location: { origin: 'https://shop.example.invalid' } }, discountedGrossLine, grossVatTotals,
+    readCart: () => cart, URL, window: { location: { origin: 'https://shop.example.invalid' } }, cartGoodsTotals, discountedGrossLine, grossVatTotals,
     tmLoyalty: { ok: false, discountValue: 0 }, tmLoyaltyApply: false, couponDiscountForTotal: () => 0, loyaltyDiscountForTotal: () => 0,
     syncCouponBoxes() {}, orderFulfilmentText: () => 'Skladom' };
   const render = runInNewContext(clientFunctions(clientSource, ['renderCheckoutSummary', 'esc', 'stockText', 'money', 'getSelected', 'isOnlinePayment', 'updateShippingOptionPrices']) + ';renderCheckoutSummary', scope);
@@ -96,6 +96,36 @@ test('new checkout keeps the agreed COD gross and sums VAT from the new gross-pr
   assert.equal(centsOfText(h.node('[data-summary-total]').textContent), 396);
   assert.equal(centsOfText(h.node('[data-summary-vat]').textContent), 75, 'two rounded item taxes plus shipping, not VAT guessed from the grand total');
   assert.equal(centsOfText(h.node('[data-summary-net]').textContent), 321);
+});
+
+test('goods, coupons, points and the 29 EUR delivery threshold agree at cent precision', () => {
+  const hp = { price: 10.17, qty: 4, product_type_key: 'compatible' };
+  const original = { price: 4.01, qty: 1, product_type_key: 'original' };
+  for (const source of [cartSource, clientSource]) {
+    const scope: any = { tmCoupon: { ok: true, percent: 7, scope: 'compatible' },
+      tmLoyalty: { ok: true, discountValue: .24 }, tmLoyaltyApply: false,
+      percentageCouponDiscount, redeemableLoyaltyDiscount, cartGoodsTotals, URL, window: { location: { origin: 'https://shop.invalid' } } };
+    const totals = runInNewContext(clientFunctions(source, ['couponDiscountForTotal', 'loyaltyDiscountForTotal']) +
+      '; cart => cartGoodsTotals(cart, cartPricing(cart), couponDiscountForTotal, loyaltyDiscountForTotal)', scope);
+    const first = totals([hp]);
+    assert.deepEqual([first.subtotal, first.discount, first.couponDiscount, first.total, first.missingForFreeShipping].map(c), [4068, 1017, 214, 2837, 63]);
+    assert.equal(c(totals([hp, original]).couponDiscount), 214);
+    scope.tmLoyaltyApply = true;
+    assert.equal(c(totals([hp]).total), 2813);
+    scope.tmCoupon = { ok: true, percent: 5, scope: 'all' };
+    assert.equal(c(totals([hp, original]).couponDiscount), 173);
+    scope.tmCoupon = null;
+    for (const [price, balance, total, missing] of [[29.23, .24, 28.99, .01], [29.24, .24, 29, 0], [29.25, .24, 29.01, 0],
+      [.17, 10, .17, 28.83], [29, .19, 29, 0], [.24, 10, 0, 29]]) {
+      scope.tmLoyalty.discountValue = balance;
+      const result = totals([{ ...original, price }]);
+      assert.deepEqual([result.total, result.missingForFreeShipping].map(c), [c(total), c(missing)]);
+    }
+  }
+  assert.equal(redeemableLoyaltyDiscount(.24, .24, 30), .24);
+  assert.equal(redeemableLoyaltyDiscount(99, .24, .21), .21);
+  assert.equal(redeemableLoyaltyDiscount('bad', 5, 30), 0);
+  assert.equal(percentageCouponDiscount([hp], NaN, 'compatible'), 0);
 });
 
 test('four separate CMYK products have exactly the same discount before submission and on the server', () => {

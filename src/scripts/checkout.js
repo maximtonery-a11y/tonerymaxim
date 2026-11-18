@@ -1,7 +1,8 @@
+import { resolveCartCoupon } from "./cart-coupon.js";
 import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-cart.js";
 import { orderFulfilmentText } from "../lib/product-availability.ts";
 import { normalizeDpdPickup as normalizeDpdPoint } from "../lib/dpd-pickup.ts";
-import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
+import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponDiscount, redeemableLoyaltyDiscount } from '../lib/checkout-vat.ts';
 
 (() => {
   if (window.__TM_CHECKOUT_INIT__) return;
@@ -59,6 +60,8 @@ import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
   // Vernostná zľava je pre prihláseného zákazníka predvolene zapnutá.
   // Hodnota "0" vznikne iba po jeho vedomom odškrtnutí voľby.
   let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") !== "0";
+  let couponRevision = 0;
+  let couponLoadPromise;
   let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
 
   function syncPaperReward(reward) {
@@ -117,8 +120,7 @@ import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
 
   function loyaltyDiscountForTotal(total) {
     if (!tmLoyaltyApply || !tmLoyalty.ok) return 0;
-    const discount = Math.round(Math.min(Number(tmLoyalty.discountValue || 0), Math.max(0, Number(total || 0))) * 100) / 100;
-    return discount >= TM_LOYALTY_MIN_DISCOUNT ? discount : 0;
+    return redeemableLoyaltyDiscount(tmLoyalty.discountValue, tmLoyalty.discountValue, total);
   }
 
 
@@ -126,53 +128,31 @@ import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
     if (!tmCoupon || !tmCoupon.ok) return 0;
 
     const percent = Number(tmCoupon.percent || 0);
-    const scope = String(tmCoupon.scope || "all");
-    if (Number.isFinite(percent) && percent > 0) {
-      let base = Math.max(0, Number(total || 0));
-      if (scope === "compatible") {
-        base = (cart || []).reduce((sum, item) => {
-          if (!isCompatibleDiscountItem(item)) return sum;
-          const qty = cleanQty(item.qty);
-          const original = Number(item.price || 0) * qty;
-          const rate = qty >= 4 ? 0.25 : qty >= 2 ? 0.10 : 0;
-          const lineDiscount = Math.round(original * rate * 100) / 100;
-          return sum + Math.max(0, original - lineDiscount);
-        }, 0);
-      }
-      return Math.min(Math.round(base * (percent / 100) * 100) / 100, Math.max(0, Number(total || 0)));
-    }
-
-    const discount = Number(tmCoupon.discount || 0);
-    return Math.min(Number.isFinite(discount) ? discount : 0, Math.max(0, Number(total || 0)));
+    const discount = Number.isFinite(percent) && percent > 0
+      ? percentageCouponDiscount(cart, percent, tmCoupon.scope)
+      : Number(tmCoupon.discount || 0);
+    return Math.min(Math.max(0, Number.isFinite(discount) ? discount : 0), Math.max(0, total));
   }
 
-  async function validateCouponCode(code) {
-    const clean = String(code || "").trim();
-    if (!clean) {
-      tmCoupon = null;
-      localStorage.removeItem("tm_coupon_v1");
-      setCouponBoxesExpanded(false);
-      renderCheckoutSummary();
-      return;
-    }
+  async function refreshCheckoutCoupon(enteredCode) {
+    const revision = ++couponRevision;
     try {
-      const response = await fetch("/api/coupon-validate", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: clean, cart: readCart() }),
-      });
-      const data = await response.json().catch(() => ({}));
-      tmCoupon = data;
-      localStorage.setItem("tm_coupon_v1", JSON.stringify(data));
-      setCouponBoxesExpanded(!data?.ok);
-      renderCheckoutSummary();
+      const cart = readCart();
+      const coupon = cart.length ? await resolveCartCoupon(cart, tmCoupon, { enteredCode }) : null;
+      if (revision !== couponRevision) return;
+      tmCoupon = coupon;
+      if (coupon) localStorage.setItem("tm_coupon_v1", JSON.stringify(coupon));
+      else localStorage.removeItem("tm_coupon_v1");
+      if (enteredCode !== undefined) setCouponBoxesExpanded(Boolean(coupon && !coupon.ok));
     } catch {
-      tmCoupon = { ok: false, code: clean, reason: "Kupón sa nepodarilo overiť." };
-      localStorage.setItem("tm_coupon_v1", JSON.stringify(tmCoupon));
-      setCouponBoxesExpanded(true);
-      renderCheckoutSummary();
+      if (revision !== couponRevision) return;
+      if (enteredCode) {
+        tmCoupon = { ok: false, code: enteredCode, reason: "Kupón sa nepodarilo overiť." };
+        localStorage.setItem("tm_coupon_v1", JSON.stringify(tmCoupon));
+        setCouponBoxesExpanded(true);
+      }
     }
+    renderCheckoutSummary();
   }
 
   function couponFormMarkup() {
@@ -837,10 +817,8 @@ import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
       list.appendChild(row);
     });
 
-    const pricing = cartPricing(cart);
-    const subtotal = pricing.subtotal;
-    const discount = pricing.discount;
-    const discountedSubtotal = Math.max(0, subtotal - discount);
+    const { subtotal, discount, couponDiscount, loyaltyDiscount, total: goodsAfterDiscounts, missingForFreeShipping } =
+      cartGoodsTotals(cart, cartPricing(cart), couponDiscountForTotal, loyaltyDiscountForTotal);
     const shipping = SHIPPING[getSelected("shipping") || "dpd_courier"] || SHIPPING.dpd_courier;
     const payment = PAYMENT[getSelected("payment") || "gopay"] || PAYMENT.gopay;
 
@@ -852,11 +830,7 @@ import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
     }
 
     const paymentPrice = payment.price;
-    const couponDiscount = couponDiscountForTotal(discountedSubtotal, cart);
-    const goodsAfterCoupon = Math.max(0, discountedSubtotal - couponDiscount);
-    const loyaltyDiscount = loyaltyDiscountForTotal(goodsAfterCoupon);
-    const goodsAfterDiscounts = Math.max(0, goodsAfterCoupon - loyaltyDiscount);
-    const shippingPrice = goodsAfterDiscounts >= 29 ? 0 : shipping.price;
+    const shippingPrice = missingForFreeShipping === 0 ? 0 : shipping.price;
     const total = Math.max(0, goodsAfterDiscounts + shippingPrice + paymentPrice);
 
     updateShippingOptionPrices(goodsAfterDiscounts);
@@ -937,12 +911,12 @@ import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
 
     const freeBox = document.querySelector("[data-free-shipping]");
     if (freeBox) {
-      if (goodsAfterDiscounts >= 29) {
+      if (missingForFreeShipping === 0) {
         freeBox.className = "free-shipping-box is-free";
         freeBox.textContent = "🎉 Dopravu máte zdarma";
       } else {
         freeBox.className = "free-shipping-box";
-        freeBox.textContent = `Do dopravy zdarma vám chýba ${money(29 - goodsAfterDiscounts)}`;
+        freeBox.textContent = `Do dopravy zdarma vám chýba ${money(missingForFreeShipping)}`;
       }
     }
   }
@@ -1682,6 +1656,7 @@ import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
     // Rýchle kliknutie po otvorení pokladne nesmie predbehnúť načítanie
     // automatickej vernostnej odmeny.
     if (tmLoyaltyLoadPromise) await tmLoyaltyLoadPromise.catch(() => {});
+    if (couponLoadPromise) await couponLoadPromise;
     // Kým prvý handler čakal na vernostné údaje, druhý klik mohol vstúpiť
     // do rovnakej vetvy. Zámku preto kontrolujeme znova po await.
     if (tmOrderSubmitting) return;
@@ -2027,48 +2002,11 @@ import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
     return valid;
   }
 
-  async function autoLoadBestCoupon() {
-    try {
-      const cart = readCart();
-      if (!Array.isArray(cart) || cart.length === 0) {
-        tmCoupon = null;
-        localStorage.removeItem("tm_coupon_v1");
-        renderCheckoutSummary();
-        return;
-      }
-
-      const response = await fetch("/api/coupon-active", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ cart }),
-      });
-
-      const data = await response.json().catch(() => null);
-      if (response.ok && data?.ok) {
-        tmCoupon = data;
-        localStorage.setItem("tm_coupon_v1", JSON.stringify(data));
-      } else {
-        const savedCode = tmCoupon?.code || "";
-        if (!savedCode) {
-          tmCoupon = null;
-          localStorage.removeItem("tm_coupon_v1");
-        }
-      }
-    } catch {
-      // Ak automatické načítanie kupónu zlyhá, pokladňa musí zostať funkčná.
-    } finally {
-      renderCheckoutSummary();
-    }
-  }
-
-
   document.addEventListener("submit", (event) => {
     const form = event.target.closest("[data-summary-coupon-box]");
     if (!form) return;
     event.preventDefault();
-    validateCouponCode(form.querySelector("[data-coupon-input]")?.value || "");
+    couponLoadPromise = refreshCheckoutCoupon((form.querySelector("[data-coupon-input]")?.value || "").trim());
   });
 
   document.addEventListener("click", (event) => {
@@ -2136,7 +2074,7 @@ import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat.ts';
     if (["gopay", "applepay", "googlepay"].includes(getSelected("payment"))) warmGoPay();
     renderCheckoutSummary();
     tmLoyaltyLoadPromise = loadLoyalty();
-    autoLoadBestCoupon();
+    couponLoadPromise = refreshCheckoutCoupon();
     updateVisibility();
     setupPickupWidgets();
     setupMobileCheckoutSteps();

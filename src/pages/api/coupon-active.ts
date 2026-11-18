@@ -21,6 +21,7 @@ function normalizeCart(cart: any[]) {
     name: String(item.name || item.sku || item.id || `Produkt ${index + 1}`).slice(0, 128),
     price: normalizePrice(item.price),
     qty: normalizeQty(item.qty ?? item.quantity ?? 1),
+    source: String(item.source || ""),
     product_type_key: String(item.product_type_key || item.productTypeKey || ""),
     product_type_label: String(item.product_type_label || item.productTypeLabel || ""),
   })).filter((item) => item.name && item.price > 0 && item.qty > 0);
