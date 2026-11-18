@@ -22,9 +22,11 @@ export async function chromiumLabelCamera() {
 }
 
 function installVideoFixture() {
-  if (location.pathname !== '/hladat-fotkou') return;
+  if (location.pathname !== '/hladat-fotkou' || window.labelCameraTest) return;
   const fixture = window.labelCameraTest = { mode: 'feed', text: 'Brother TN-2421', calls: [], tracks: [] };
-  Object.defineProperty(navigator.mediaDevices, 'getUserMedia', { configurable: true, value: async constraints => {
+  // Keep the simulated device on the navigator itself. WebKit can discard and
+  // recreate a native MediaDevices wrapper, along with overrides placed on it.
+  Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { async getUserMedia(constraints) {
     fixture.calls.push(constraints);
     if (fixture.mode === 'deny') throw new DOMException('test', 'NotAllowedError');
     if (fixture.mode === 'defer') await new Promise(resolve => { fixture.allow = resolve; });
@@ -41,7 +43,7 @@ function installVideoFixture() {
     fixture.tracks.push(track);
     const timer = setInterval(() => { if (track.readyState === 'ended') clearInterval(timer); else draw(); }, 120);
     return stream;
-  } });
+  } } });
 }
 
 export async function verifyLiveCamera(page, origin, nativeCamera) {
@@ -74,9 +76,11 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     await start.click();
     await status.filter({ hasText: 'Prístup ku kamere je vypnutý' }).waitFor();
     assert.ok(await page.locator('[data-gallery]').isVisible());
+    assert.equal(await page.evaluate(() => window.labelCameraTest.calls.length), 1, 'permission request reached the simulated camera');
     await page.evaluate(() => { window.labelCameraTest.mode = 'defer'; });
-    await start.click();
-    await stop.click(); // The OS permission sheet can resolve after this.
+    await start.tap();
+    await page.waitForFunction(() => typeof window.labelCameraTest.allow === 'function');
+    await stop.tap(); // The OS permission sheet can resolve after this.
     await page.evaluate(() => window.labelCameraTest.allow());
     await page.waitForFunction(() => window.labelCameraTest.tracks[0]?.readyState === 'ended');
     assert.equal(await page.locator('video').evaluate(el => el.srcObject), null);
@@ -112,7 +116,7 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
   } catch (error) {
     const diagnostic = await page.evaluate(() => ({
       status: document.querySelector('#label-status')?.textContent,
-      tracks: window.labelCameraTest?.tracks.map(t => t.readyState), video: document.querySelector('video')?.readyState,
+      mode: window.labelCameraTest?.mode, calls: window.labelCameraTest?.calls.length, tracks: window.labelCameraTest?.tracks.map(t => t.readyState), video: document.querySelector('video')?.readyState,
     })).catch(() => ({}));
     throw new Error('Camera test ' + JSON.stringify({ diagnostic, searches, workers: workers.length }) + ': ' + error.message, { cause: error });
   } finally { page.context().off('request', request); page.off('worker', worker); }

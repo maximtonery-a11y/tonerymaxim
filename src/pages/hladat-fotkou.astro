@@ -65,7 +65,7 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
   h1 { font-size:clamp(1.6rem,4vw,2.15rem); line-height:1.15; margin:0 0 .65rem; }
   p { line-height:1.5; margin:0 0 1rem; }
   .capture { display:flex; flex-wrap:wrap; gap:.6rem; }
-  .capture label,.capture button,.secondary,.matches :global(button),.matches :global(a) { font:inherit; font-weight:600; min-height:46px; border:1px solid #bdd0e3; border-radius:10px; background:white; color:#163b5b; padding:.65rem .9rem; cursor:pointer; }
+  .capture label,.capture button,.secondary,.matches :global(button),.matches :global(a) { font:inherit; font-weight:600; min-height:46px; border:1px solid #bdd0e3; border-radius:10px; background:white; color:#163b5b; padding:.65rem .9rem; cursor:pointer; touch-action:manipulation; }
   .capture label,.capture button { position:relative; display:inline-flex; gap:.5rem; align-items:center; justify-content:center; overflow:hidden; }
   .capture .primary { background:#0b3154; color:white; border-color:#0b3154; }
   .capture svg { width:21px; height:21px; }
