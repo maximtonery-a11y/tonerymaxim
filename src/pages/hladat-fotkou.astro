@@ -8,7 +8,7 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
 <!doctype html>
 <html lang="sk">
   <head>
-    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <SeoHead title="Nájsť náplň fotoaparátom | ToneryMaxim.sk" description="Namierte fotoaparát na označenie kazety alebo model tlačiarne a zobrazte vhodné náplne." noindex />
   </head>
   <body><div class="page"><Header />
@@ -23,13 +23,20 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
           </button>
           <label>Vybrať fotku z galérie<input type="file" accept="image/*" data-gallery /></label>
         </div>
-        <div class="live-camera" id="live-camera" hidden>
-          <video muted playsinline autoplay aria-label="Živý obraz zo zadného fotoaparátu"></video>
-          <div class="live-guide" data-live-guide aria-hidden="true"></div>
-        </div>
+        <dialog class="live-camera" id="live-camera" aria-labelledby="camera-heading">
+          <div class="live-header"><h2 id="camera-heading">Skenovanie štítku</h2><div data-live-actions></div></div>
+          <div class="viewfinder">
+            <video muted playsinline autoplay aria-label="Živý obraz zo zadného fotoaparátu"></video>
+            <div class="live-guide" data-live-guide aria-hidden="true"></div>
+            <button type="button" class="live-zoom" data-live-zoom aria-label="Priblížiť obraz 2×" aria-pressed="false">2×</button>
+          </div>
+          <div class="live-feedback" data-live-feedback></div>
+        </dialog>
         <p class="privacy">Obraz zostáva vo vašom zariadení. V katalógu hľadáme iba prečítané označenie.</p>
-        <p id="label-status" tabindex="-1" role="status" aria-live="polite"></p>
-        <button class="secondary" type="button" data-stop hidden>Zrušiť čítanie</button>
+        <div data-page-feedback>
+          <p id="label-status" tabindex="-1" role="status" aria-live="polite"></p>
+          <button class="secondary" type="button" data-stop hidden>Zrušiť čítanie</button>
+        </div>
         <div class="matches" data-matches></div>
         <button type="button" class="secondary crop-toggle" data-crop-toggle aria-expanded="false" aria-controls="crop-photo" hidden>Vybrať riadok z fotky</button>
         <div id="crop-photo" hidden>
@@ -71,11 +78,25 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
   .capture svg { width:21px; height:21px; }
   .capture input { position:absolute; inset:0; height:100%; width:100%; opacity:0; cursor:pointer; }
   .capture label:focus-within,button:focus-visible,input:focus-visible,.matches :global(a:focus-visible) { outline:3px solid #1970af; outline-offset:2px; }
-  .live-camera { position:relative; isolation:isolate; aspect-ratio:4/3; width:100%; max-height:45svh; overflow:hidden; border-radius:12px; background:#112235; scroll-margin-block:8rem; }
-  .live-camera video { display:block; width:100%; height:100%; object-fit:cover; }
-  .live-guide { position:absolute; inset:31% 7%; border:2px solid white; border-radius:8px; box-shadow:0 0 0 100vmax #07162365, inset 0 0 0 1px #10263c99; pointer-events:none; }
-  .live-guide::before,.live-guide::after { content:""; position:absolute; top:50%; width:.7rem; height:2px; background:white; }
-  .live-guide::before { left:0; } .live-guide::after { right:0; }
+  .live-camera { box-sizing:border-box; position:fixed; inset:0; margin:auto; padding:0; border:0; border-radius:16px; width:min(56rem,94vw); height:min(48rem,92dvh); max-width:none; max-height:none; overflow:hidden; color:#fff; background:#102337; }
+  .live-camera[open] { display:grid; grid-template-rows:auto minmax(0,1fr) auto; }
+  .live-camera::backdrop { background:#081626c9; }
+  html:has(.live-camera[open]),body:has(.live-camera[open]) { overflow:hidden; }
+  .live-header { display:flex; align-items:center; justify-content:space-between; gap:.6rem; padding:.55rem 1rem; }
+  .live-header h2 { margin:0; font-size:1.125rem; color:#fff; }
+  .live-header .secondary { background:#213b52; color:white; border-color:#6b8192; padding:.45rem .75rem; min-height:44px; font-size:.875rem; }
+  .viewfinder { position:relative; min-height:0; overflow:hidden; background:#08131b; isolation:isolate; }
+  .viewfinder video { display:block; width:100%; height:100%; object-fit:cover; transform:scale(var(--label-zoom,1)); }
+  .live-guide { position:absolute; inset:27% 4%; border:2px solid #fff; border-radius:12px; box-shadow:0 0 0 100vmax #06101c26, inset 0 0 0 1px #10263c66; pointer-events:none; }
+  .live-zoom { position:absolute; bottom:12px; right:max(12px,env(safe-area-inset-right)); border:1px solid #ffffff94; border-radius:24px; background:#122435dd; color:white; min-width:48px; height:44px; font:inherit; font-weight:600; cursor:pointer; }
+  .live-zoom[aria-pressed="true"] { background:white; color:#102337; }
+  .live-feedback { padding:.8rem 1rem; min-height:3.5rem; align-content:center; }
+  .live-feedback #label-status { margin:0; font-size:1rem; color:#fff; }
+  @media(max-width:767px), (max-height:540px) and (pointer:coarse) {
+    .live-camera { margin:0; border-radius:0; width:100vw; height:100%; height:100dvh; }
+    .live-header { padding:calc(.4rem + env(safe-area-inset-top)) max(.75rem,env(safe-area-inset-right)) .4rem max(.75rem,env(safe-area-inset-left)); }
+    .live-feedback { padding:.65rem max(.85rem,env(safe-area-inset-right)) calc(.65rem + env(safe-area-inset-bottom)) max(.85rem,env(safe-area-inset-left)); }
+  }
   .privacy { margin:.75rem 0; color:#476078; font-size:.875rem; }
   #label-status:empty { margin:0; }
   #label-status { font-weight:600; scroll-margin-top:clamp(5rem,18vh,10rem); }

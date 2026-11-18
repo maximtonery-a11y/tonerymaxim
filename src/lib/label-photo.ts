@@ -2,14 +2,14 @@ export type PixelBox = { x0: number; y0: number; x1: number; y1: number };
 
 // Locate a printed row by the vertical strokes shared by adjacent scanlines.
 // Work on a small copy irrespective of the phone's camera resolution.
-export function locateLabelRow(source: HTMLCanvasElement): { box: PixelBox; barcode: boolean } | undefined {
+export function locateLabelRows(source: HTMLCanvasElement): { box: PixelBox; barcode: boolean }[] {
   const sample = document.createElement('canvas');
   const scale = Math.min(1, 540 / source.width, 600 / source.height);
   const w = (sample.width = Math.max(1, Math.round(source.width * scale)));
   const h = (sample.height = Math.max(1, Math.round(source.height * scale)));
-  if (w < 35 || h < 14) return;
+  if (w < 35 || h < 14) return [];
   const ctx = sample.getContext('2d', { willReadFrequently: true });
-  if (!ctx) return;
+  if (!ctx) return [];
   ctx.drawImage(source, 0, 0, w, h);
   const rgba = ctx.getImageData(0, 0, w, h).data;
   sample.width = sample.height = 1;
@@ -29,8 +29,7 @@ export function locateLabelRow(source: HTMLCanvasElement): { box: PixelBox; barc
     edges[offset + w] = edges[offset + w - 1];
   }
   const maxGap = Math.max(9, w * 0.036);
-  let best: PixelBox | undefined,
-    bestScore = 0;
+  const proposals: { box: PixelBox; score: number }[] = [];
   for (let y = 3; y < h - 3; y += 2) {
     let left = 0,
       right = 0,
@@ -58,10 +57,7 @@ export function locateLabelRow(source: HTMLCanvasElement): { box: PixelBox; barc
           if (height >= 5 && width > 3.3 * height) {
             const center = 1 - 0.95 * Math.abs((top + bottom) / (2 * h) - 0.5);
             const score = width ** 0.4 * Math.min(count, 65) ** 0.65 * Math.min(height, 38) ** 0.7 * center ** 3;
-            if (score > bestScore) {
-              bestScore = score;
-              best = { x0: left, x1: right + 1, y0: top, y1: bottom + 1 };
-            }
+            proposals.push({ score, box: { x0:left, x1:right+1, y0:top, y1:bottom+1 } });
           }
         }
         count = 0;
@@ -73,8 +69,25 @@ export function locateLabelRow(source: HTMLCanvasElement): { box: PixelBox; barc
       }
     }
   }
-  if (!best) return;
-  const { x0, x1, y0, y1 } = best;
+  // Keep separate lines. A large family code or nearby paperwork can outrank
+  // the smaller orderable reference printed immediately above or below it.
+  const rows: { box: PixelBox; barcode: boolean }[] = [];
+  const selected: PixelBox[] = [];
+  for (const { box } of proposals.sort((a,b) => b.score-a.score)) {
+    const overlaps = selected.some(row => {
+      const y = Math.min(row.y1,box.y1)-Math.max(row.y0,box.y0);
+      const x = Math.min(row.x1,box.x1)-Math.max(row.x0,box.x0);
+      return y > .47*Math.min(box.y1-box.y0,row.y1-row.y0) && x > .35*Math.min(box.x1-box.x0,row.x1-row.x0);
+    });
+    if (overlaps) continue;
+    selected.push(box);
+    rows.push({ box: { x0:box.x0*source.width/w, x1:box.x1*source.width/w, y0:box.y0*source.height/h, y1:box.y1*source.height/h },
+      barcode: isBarcode(gray,w,box) });
+    if (rows.length >= 4) break;
+  }
+  return rows;
+}
+function isBarcode(gray:Uint8Array, w:number, {x0,x1,y0,y1}:PixelBox) {
   const row = (fraction: number) => (y0 + Math.floor((y1 - y0 - 1) * fraction)) * w;
   const top = row(0.19),
     middle = row(0.5),
@@ -102,16 +115,7 @@ export function locateLabelRow(source: HTMLCanvasElement): { box: PixelBox; barc
     }
     return best;
   }
-  const barcode = hi - lo >= 55 && transitions >= 36 && Math.min(alignment(top), alignment(bottom)) >= 0.87;
-  return {
-    box: {
-      x0: (x0 * source.width) / w,
-      x1: (x1 * source.width) / w,
-      y0: (y0 * source.height) / h,
-      y1: (y1 * source.height) / h,
-    },
-    barcode,
-  };
+  return hi-lo>=55 && transitions>=30 && Math.min(alignment(top),alignment(bottom))>=.87;
 }
 
 export function printStrip(

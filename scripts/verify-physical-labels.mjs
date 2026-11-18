@@ -58,9 +58,14 @@ export async function verifyPhysicalLabels(page, origin, camera) {
     page.on('request', record);
     try {
       if (camera) {
+        // A hand-held target can sit near either edge of a portrait frame.
+        const inset = await sharp(image).resize({ width:720 }).png().toBuffer();
+        const top = { printer:60, drum:720, toner:405, barcode:75 }[name];
+        const portrait = await sharp({create:{width:900, height:1200, channels:3, background:'#504b46'}})
+          .composite([{input:inset, left:90, top}]).png().toBuffer();
         await page.evaluate(
           url => sessionStorage.setItem('testCameraImage', url),
-          'data:image/png;base64,' + image.toString('base64')
+          'data:image/png;base64,' + portrait.toString('base64')
         );
         await page.getByRole('button', { name: 'Spustiť fotoaparát' }).click();
       } else {

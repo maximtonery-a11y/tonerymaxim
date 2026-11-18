@@ -1,8 +1,56 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { exactLabelOffers, hpOrderCode, labelCandidates, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
+import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, labelCandidates, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
+import { createLiveConsensus, focusScore } from '../src/lib/label-camera-frame.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
+
+test('frame selection favours sharply focused lettering over a softened view of the same lines', () => {
+  const width = 96, height = 40;
+  function score(blurred: boolean) {
+    const pixels = new Uint8ClampedArray(width * height * 4);
+    function ink(x: number): number { return Math.abs(x % 12) < 6 ? 28 : 226; }
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const neighbours = [-2, -1, 0, 1, 2].map(offset => ink(x + 12 + offset));
+        pixels[4 * (y * width + x) + 1] = blurred ? neighbours.reduce((a, b) => a + b) / neighbours.length : ink(x);
+      }
+    }
+    const frame = { width, height } as HTMLCanvasElement;
+    const sample = { getContext: () => ({ drawImage() {}, getImageData: () => ({ data: pixels }) }) } as unknown as HTMLCanvasElement;
+    return focusScore(frame, sample);
+  }
+  assert.ok(score(false) > score(true));
+});
+
+test('moving camera confirms complete readings over brief gaps and drops stale or conflicting observations', () => {
+  const votes = createLiveConsensus();
+  const [printer] = read('Brother DCP-9020CDW');
+  const [other] = read('Brother DCP-9022CDW');
+  assert.equal(votes.observe(printer,0), undefined);
+  assert.equal(votes.observe(undefined,400), undefined);
+  assert.equal(votes.observe(printer,800)?.code, printer.code);
+  assert.equal(votes.observe(other,1000), undefined);
+  assert.equal(votes.observe(printer,1400), undefined);
+  assert.equal(votes.observe(undefined,1700), undefined);
+  assert.equal(votes.observe(undefined,2100), undefined);
+  assert.equal(votes.observe(printer,2500), undefined);
+  assert.equal(votes.observe(printer,12000), undefined);
+  const supply = liveLabelCandidate([{text:'TN-2421', confidence:79}],new Set());
+  assert.equal(supply?.certain,false);
+  assert.equal(votes.observe(supply,12400),undefined);
+  assert.equal(votes.observe(supply,12800),undefined);
+  assert.equal(votes.observe(supply,13200)?.code,'TN-2421');
+  assert.equal(liveLabelCandidate([{text:'S/N: TN-2421', confidence:99}],new Set()),undefined);
+});
+
+test('partial optical drum references cannot automatically select a black drum when the label may be CMY', () => {
+  const products=['Brother DR-241 čierny valec','Brother DR-241CL BK čierny valec','Brother DR-241CL CMY optický valec'].map((title,i)=>({title,url:'/produkt/valec-'+i}));
+  for (const code of ['DR-241','DR-241CL']) assert.equal(drumNeedsSuffix(read(code)[0],{products}),true);
+  assert.equal(drumNeedsSuffix(read('DR-241CL-CMY')[0],{products}),false);
+  assert.equal(drumNeedsSuffix(read('DR-2401')[0],{products}),false);
+  assert.deepEqual(read('DR-2410\nDR-241CL-CCMY'),[]);
+});
 
 test('full drum marking overrides the family and preserves the single colour-drum designation', () => {
   const result = read('DR-2410L\nDR-241 CL\nDR-241CL-CMY');
