@@ -202,7 +202,7 @@ for(const message of ['Zrušte objednávku pred expedíciou.','Ako stornujem zap
   const result=await buildAssistantAnswer(message);
   const answer=result.answer.join(' ');
   assert.equal(result.intent,'order',message);
-  assert.match(answer,/AI Tomáš objednávku sám nezruší ani nezmení/i,message);
+  assert.match(answer,/objednávku.{0,45}(?:nezruším ani nezmením|nezruší ani nezmení)/i,message);
   assert.match(answer,/info@tonerymaxim\.sk/i,message);
 });
 

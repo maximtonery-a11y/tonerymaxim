@@ -37,7 +37,7 @@ test('Google tag keeps consent defaults and waits for interaction or a bounded f
   assert.doesNotMatch(googleTagSource, /\n\s*load\(\);\s*\n\}\)\(\);\s*$/);
 });
 
-function executeGoogleTag() {
+function executeGoogleTag(savedConsent = null) {
   const handlers = new Map();
   const timers = [];
   const idleCallbacks = [];
@@ -51,7 +51,7 @@ function executeGoogleTag() {
     setTimeout(callback, delay) { timers.push({ callback, delay }); return timers.length; },
     clearTimeout() {},
     requestIdleCallback(callback, options) { idleCallbacks.push({ callback, options }); },
-    localStorage: { getItem() { return null; } },
+    localStorage: { getItem() { return JSON.stringify(savedConsent); } },
   };
   const document = {
     currentScript: { dataset: { googleTagId: 'G-TEST123' } },
@@ -63,9 +63,10 @@ function executeGoogleTag() {
   return { handlers, timers, idleCallbacks, appended };
 }
 
-test('Google tag loads once after the first customer interaction', () => {
-  const runtime = executeGoogleTag();
+test('Google tag loads once after the first customer interaction with saved consent', () => {
+  const runtime = executeGoogleTag({analytics: true});
   assert.equal(runtime.appended.length, 0);
+  assert.equal(runtime.idleCallbacks.length, 0);
   assert.equal(typeof runtime.handlers.get('pointerdown'), 'function');
 
   runtime.handlers.get('pointerdown')();
@@ -78,8 +79,8 @@ test('Google tag loads once after the first customer interaction', () => {
   assert.equal(runtime.appended.length, 1);
 });
 
-test('Google tag retains an eight-second fallback for passive visitors', () => {
-  const runtime = executeGoogleTag();
+test('Google tag retains an eight-second fallback for passive visitors with saved consent', () => {
+  const runtime = executeGoogleTag({marketing: true});
   runtime.handlers.get('load')();
   assert.equal(runtime.timers.length, 1);
   assert.equal(runtime.timers[0].delay, 8000);
@@ -87,5 +88,22 @@ test('Google tag retains an eight-second fallback for passive visitors', () => {
 
   runtime.timers[0].callback();
   runtime.idleCallbacks[0].callback();
+  assert.equal(runtime.appended.length, 1);
+});
+
+test('without optional consent neither interaction nor the timer loads Google; revocation cancels an idle load', () => {
+  const runtime = executeGoogleTag();
+  runtime.handlers.get('pointerdown')();
+  runtime.handlers.get('load')();
+  runtime.timers[0].callback();
+  assert.equal(runtime.idleCallbacks.length, 0);
+  const change = runtime.handlers.get('tm:cookies');
+  change({detail: {analytics: true}});
+  assert.equal(runtime.idleCallbacks.length, 1);
+  change({detail: {analytics: false, marketing: false}});
+  runtime.idleCallbacks[0].callback();
+  assert.equal(runtime.appended.length, 0);
+  change({detail: {marketing: true}});
+  runtime.idleCallbacks[1].callback();
   assert.equal(runtime.appended.length, 1);
 });

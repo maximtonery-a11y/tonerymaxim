@@ -6,7 +6,7 @@ import { aiKnowledge, type AiKnowledgeItem } from '../data/ai-knowledge.ts';
 import { findExactPrinterModelMatches, findExactProductIdentityMatches } from './catalog-query.ts';
 import { answerWithOpenAi } from './openai-sales-assistant.ts';
 import { discountHelpAnswer } from './ai-discount-help.ts';
-import { resolveConversationContext } from './ai-conversation-context.ts';
+import { isDiscountedCartTotal, resolveConversationContext } from './ai-conversation-context.ts';
 
 export type AiIntent = 'product_search' | 'shipping' | 'payment' | 'claim' | 'order' | 'diagnostic' | 'compatibility' | 'support' | 'account' | 'loyalty' | 'legal' | 'contact' | 'fallback' | 'empty';
 
@@ -459,7 +459,7 @@ function enrichProductAnswer(message: string, answer: string[], products: Produc
     const inStock = products.filter((p) => String(p.stock_status || 'instock') === 'instock').length;
     extra.push(inStock ? `Skladom máme ${formatCount(inStock, 'produkt', 'produkty', 'produktov')}.` : 'Aktuálnu dostupnosť nájdete pri jednotlivých produktoch.');
   }
-  if (/cesk|cesko|\bcr\b|\bcz\b|brno|praha/.test(text)) {
+  if (/cesk|cesko|\bcr\b|\bcz\b|brn[oa]|prah[ay]/.test(text)) {
     extra.push('Do Českej republiky posielame iba klasickým kuriérom na adresu. Cena GLS alebo DPD kuriéra je 3,90 € s DPH, rovnako ako na Slovensku; doprava je zdarma od 29 € hodnoty tovaru po zľavách. GLS ParcelShop/Balíkomat ani DPD Pickup/Pickup Box máme nastavené iba pre Slovensko.');
   } else if (/doprava|kurier|doruc|poslat|poslete/.test(text)) {
     extra.push('Na Slovensku stojí kuriér GLS alebo DPD 3,90 € s DPH; GLS ParcelShop/Balíkomat a DPD Pickup/Pickup Box 2,90 €. Doprava je zdarma od 29 € hodnoty tovaru po zľavách.');
@@ -501,7 +501,7 @@ function contextualizeFollowUp(message: string, history: AiConversationTurn[] = 
 
   const followUp = current.length <= 90 && (
     /^(a |ale |tak |dobre |ok |ano |nie )/.test(n)
-    || /\b(lacnejs|drahsi|original|kompatibil|renov|sklad|skladom|kolko stoji|cena|do ceska|do cr|brno|brna|praha|kurier|doprava|poslete|poslat|objednat|ten|tento|tohto|zoberiem|chcem ho|chcem ju|mozem|tam|pasuje)\b/.test(n)
+    || /\b(najlacnej\w*|lacnejs\w*|drahs\w*|original\w*|kompatibiln\w*|renovovan\w*|sklad\w*|kolko stoji|cena|do ceska|do cr|brno|brna|praha|kurier|doprava|poslete|poslat|objednat|ten|tento|tohto|zoberiem|chcem ho|chcem ju|mozem|tam|pasuje)\b/.test(n)
     || /kedy.*pride/.test(n)
   );
   if (!followUp) return current;
@@ -813,7 +813,7 @@ export async function buildAssistantAnswer(message: string, page = '', history: 
   }
 
   // Otázky okolo hranice dopravy zdarma majú prednosť pred platbou/dobierkou.
-  if (/\b(29|28[,.]?\d*)\b/.test(normalizedMessage) && /doprava|dobierka|kosik|nakup|objednavk/.test(normalizedMessage)) {
+  if (isDiscountedCartTotal(rawMessage) || /\b(29|28[,.]?\d*)\b/.test(normalizedMessage) && /doprava|dobierka|kosik|nakup|objednavk/.test(normalizedMessage)) {
     const shipping = aiKnowledge.find((item) => item.id === 'doprava-ceny');
     if (shipping) return { answer: [`${shipping.title}:`, ...shipping.answer], products: [], groups: [], intent: 'shipping', faq: shipping.id, confidence: 0.98 };
   }

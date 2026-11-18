@@ -1,7 +1,7 @@
 import { aiKnowledge } from '../data/ai-knowledge.ts';
 import { isProductPriceQuestion } from './ai-commerce/price-question.ts';
 import { hasExplicitCartAddCommand } from './ai-cart-safety.ts';
-import { resolveConversationContext } from './ai-conversation-context.ts';
+import { isDiscountedCartTotal, resolveConversationContext } from './ai-conversation-context.ts';
 
 type Turn = { role: string; content: string };
 const norm = (value: string) => String(value || '').toLocaleLowerCase('sk-SK').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\bzliav/g, 'zlav');
@@ -78,7 +78,7 @@ export function discountFaqForMessage(message: string, history: Turn[] = []): st
   if (/clovek|operator|predajca|zavolajte|kontaktujte ma/.test(n)) return null;
   // The shipping threshold is checked after discounts and has its own facts.
   if (/\b(?:doprav\w*|postovn\w*)\b/.test(n) && !/\b(?:kombin\w*|scita\w*|sucasne|poradie|poradi)\b/.test(n)) return null;
-  if (isProductPriceQuestion(message) || hasExplicitCartAddCommand(message)) return null;
+  if (isDiscountedCartTotal(message) || isProductPriceQuestion(message) || hasExplicitCartAddCommand(message)) return null;
   if (unknownPercent(norm(message)) && !issuedCouponQuestion(norm(message))) return null;
   const direct = directFaq(message);
   if (direct && direct !== 'zlava-upresnenie') return direct;

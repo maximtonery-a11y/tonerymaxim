@@ -23,7 +23,8 @@
   });
 
   function load() {
-    if (loaded) return;
+    scheduled = false;
+    if (loaded || !allowed) return;
     loaded = true;
     var tag = document.createElement('script');
     tag.async = true;
@@ -38,20 +39,20 @@
     document.head.appendChild(tag);
   }
 
-  function update(value) {
+  function update(value, consentChanged) {
     value = value || {};
     allowed = value.analytics === true || value.marketing === true;
-    if (allowed && !loaded) start();
     gtag('consent', 'update', {
       analytics_storage: value.analytics ? 'granted' : 'denied',
       ad_storage: value.marketing ? 'granted' : 'denied',
       ad_user_data: value.marketing ? 'granted' : 'denied',
       ad_personalization: value.marketing ? 'granted' : 'denied'
     });
+    if (consentChanged && allowed) start();
   }
 
-  window.addEventListener('tm:cookies', function (event) { update(event.detail); });
-  try { update(JSON.parse(localStorage.getItem('tm_cookie_consent_v10') || 'null')); } catch (_) {}
+  window.addEventListener('tm:cookies', function (event) { update(event.detail, true); });
+  try { update(JSON.parse(window.localStorage.getItem('tm_cookie_consent_v10') || 'null'), false); } catch (_) {}
 
   // Do not let Google Tag extend the first-render/interactive window. Start it
   // on the customer's first interaction, or use a bounded fallback for a

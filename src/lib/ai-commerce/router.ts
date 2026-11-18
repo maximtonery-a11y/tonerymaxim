@@ -1,7 +1,7 @@
 import { isProductPriceQuestion } from './price-question.ts';
 import type { AiIntent, CommerceState } from './domain.ts';
 import { isOrderRepeatCommand } from '../ai-order-question.ts';
-import { analyzeCatalogQuery } from '../catalog-query.ts';
+import { analyzeCatalogQuery, explicitSkuFromMessage } from '../catalog-query.ts';
 import { isGeneralCalendarQuestion, isGeneralDiaryQuestion } from '../calendar-ai-catalog.ts';
 import { forbidsCartMutation, hasExplicitCartAddCommand, isNonExecutingShoppingRequest } from '../ai-cart-safety.ts';
 import { isGeneralProductTypeComparison } from '../ai-product-type-question.ts';
@@ -21,7 +21,7 @@ export function routeCommerceMessage(message: string, state: CommerceState, cont
   const n = norm(message); const intents: AiIntent[] = [];
   const catalogQuery = analyzeCatalogQuery(message);
   const generalTypeComparison = isGeneralProductTypeComparison(message);
-  const explicitSkuMention = message.match(/\bsku\s*[:#-]?\s*([a-z0-9][a-z0-9_-]{1,99})\b/i)?.[1] || null;
+  const explicitSkuMention = explicitSkuFromMessage(message);
   const explicitReference = message.match(/\b(?=[A-Z0-9_-]{4,}\b)(?=[A-Z0-9_-]*[A-Z])(?=[A-Z0-9_-]*\d)[A-Z0-9]+(?:[-_][A-Z0-9]+)*\b/i)?.[0] || null;
   // Číselné rodiny atramentov sa často píšu ako značka + číslo (Epson 104,
   // HP 711). Zachytíme iba bezprostrednú dvojicu, takže model Epson L3250 ani

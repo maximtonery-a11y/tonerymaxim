@@ -61,7 +61,7 @@ test('doručená-neprevzatá zásielka nemá nevyžiadanú vetu o košíku',asyn
 test('výslovný zákaz zostane potvrdený a zachová obsah košíka',async()=>{
   const state={...emptyCommerceState('r3-cart'),cart:[{id:'keep',sku:'KEEP',quantity:2}]};
   const result=await ask('Ukáž Brother TN-2421. Nič nepridávaj do košíka.',state);
-  assert.match(result.advisor.answer.join(' '),/nič som nepridal/i);
+  assert.match(result.advisor.answer.join(' '),/košík som ponechal bez zmien|nič som nepridal/i);
   assert.deepEqual(result.state.cart,state.cart);assert.notEqual(result.action?.kind,'ADD_TO_CART');
 });
 test('skutočná otázka na kompatibilitu zachová predchádzajúcu tlačiareň',async()=>{

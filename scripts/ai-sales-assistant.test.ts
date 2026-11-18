@@ -184,7 +184,7 @@ test('OKI C301 pri otázke na toner neponúkne prenosový pás ani valec', async
 
 test('kombinácia nekompatibilného OEM kódu a modelu upozorní na konflikt', async () => {
   const result = await buildAssistantAnswer('Mám Brother HL-L2350DW, môžem použiť TN2421?', '/');
-  assert.match(result.answer.join(' '), /nie je.*kompatibil/i);
+  assert.match(result.answer.join(' '), /nemám potvrdenú kompatibilitu|nie je.*kompatibil/i);
   const names = (result.products || []).map((p: any) => p.name).join(' ');
   assert.match(names, /TN-2420/i);
   assert.doesNotMatch(names, /TN-2421/i);

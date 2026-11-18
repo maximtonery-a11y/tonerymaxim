@@ -52,13 +52,28 @@ test('missing requested type is never replaced by a different type',async()=>{
  assert.notEqual(a.action?.kind,'ADD_TO_CART');assert.equal(a.state.cart.length,0);
 });
 test('short unbranded codes clarify; explicit SKU and quantity remain allowed',async()=>{
- install([product(1,'Samsung MLT-R116 kompatibilný valec','116','black')]);
+ install([product(1,'Samsung MLT-R116 kompatibilný valec','116','black'),
+  product(2,'HP 711 čierna atramentová náplň','CZ133A','black')]);
  for(const text of ['116','Hľadám toner 116','711']){
   const a=await ask(text);assert.equal(a.action?.kind,'CLARIFY_PRODUCT',text);assert.equal(a.commerce,null);assert.match(a.advisor.answer.join(' '),/značku.*OEM/);
  }
- const explicit=await ask('SKU 116');assert.notEqual(explicit.commerce,null);assert.ok(explicit.commerce.products.length);
+ const explicit=await ask('SKU 116');assert.notEqual(explicit.commerce,null);assert.deepEqual(explicit.commerce.products.map((p:any)=>p.sku),['116']);
+ const absent=await ask('SKU 711');
+ assert.equal(absent.action?.kind,'CLARIFY_PRODUCT');assert.deepEqual(absent.commerce?.products,[]);
  const state=explicit.state;state.pendingQuestion='quantity';state.currentType='compatible';
  const b=await ask('2',state);assert.notEqual(b.advisor?.answer?.[0]?.includes('Označenie'),true);
+});
+test('a selected SKU survives a price follow-up and delivery to Czechia',async()=>{
+ install([product(3,'Brother TN-2421 čierny kompatibilný toner','15048','black')]);
+ const first=await ask('Ukáž SKU 15048');
+ assert.deepEqual(first.commerce.products.map((p:any)=>p.sku),['15048']);
+ const next=await ask('Ktorý je najlacnejší?',first.state);
+ assert.deepEqual(next.commerce.products.map((p:any)=>p.sku),['15048']);
+ const delivery=await ask('Pošlete mi ho do Brna?',next.state);
+ assert.deepEqual(delivery.commerce.products.map((p:any)=>p.sku),['15048']);
+ assert.equal(delivery.advisor.faq,'ceska-republika');
+ assert.match(delivery.advisor.answer.join(' '),/kuriérom na adresu/);
+ assert.deepEqual(delivery.state.cart,[]);
 });
 test('quantity totals follow checkout line rounding including half-cent cases',()=>{
  for(const price of [0.05,0.15,2.88,17.88,19.99,99.95])for(const type of ['compatible','original','renovated'])for(const q of [1,2,3,4,7,99]){

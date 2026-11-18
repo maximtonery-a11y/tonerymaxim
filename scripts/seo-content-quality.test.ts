@@ -27,9 +27,9 @@ test("HP W1420XL má presný názov a vecný popis pre Google", () => {
 });
 
 test("sada PG-545 XL + CL-546 XL nestratí druhú náplň", () => {
-  const product = productNamed(/PG-545 XL(?: čierna)? \+ CL-546 XL/i);
+  const product = productNamed(/PG-545\s*XL(?: čierna)?\s*[+/]\s*CL-546\s*XL\b/i);
   const title = buildProductSeo(product, products).title;
-  assert.match(title, /PG-545 XL \+ CL-546 XL/i);
+  assert.match(title, /PG-545\s*XL\s*[+/]\s*CL-546\s*XL\b/i);
   assert.match(title, /sada (?:atramentových )?náplní/i);
 });
 

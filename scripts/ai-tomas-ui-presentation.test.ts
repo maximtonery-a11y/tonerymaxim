@@ -6,7 +6,7 @@ import ts from 'typescript';
 import {customerProductLabel} from '../src/lib/ai-product-label.ts';
 
 function renderer(){
- const names=['renderCommerceResults','renderSafeProducts','productOfferCard','appendAiContent','attachFeedback'];
+ const names=['renderCommerceResults','renderSafeProducts','productOfferCard','appendAiContent','attachFeedback','webResultsUrl','isInkOffer'];
  const source=readFileSync(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
  const ast=ts.createSourceFile('assistant.js',source,ts.ScriptTarget.Latest,true),functions:string[]=[];
  const visit=(node:ts.Node)=>{if(ts.isFunctionDeclaration(node)&&node.name&&names.includes(node.name.text))functions.push(node.getText(ast));ts.forEachChild(node,visit);};visit(ast);assert.equal(functions.length,names.length);
@@ -24,8 +24,8 @@ function renderer(){
   addMessage,autoPanelSize:noop,trackEvent:noop,saveCommerceSession:noop,wireAvailability:noop,quantityChooser:noop,
   allowedAiProducts:(products:any[])=>products,isAiInStock:(p:any)=>p.stock_status!=='outofstock',isCalendarProduct:()=>false,
   aiColor:(p:any)=>p.color||'',aiType:(p:any)=>p.type||'compatible',aiTypeLabel:()=> 'Kompatibilný',aiColorLabel:(color:string)=>color,
-  aiText:(value:unknown)=>String(value||''),aiImage:()=>'',aiStockLabel:()=> 'Skladom',safeProductUrl:()=>'/produkt/hp-cf259x',webResultsUrl:()=>'/produkty?s=CF259X',
-  escapeHtml:(value:unknown)=>String(value||''),money:(value:number)=>`${value.toFixed(2)} €`,costPerPageText:()=>'',costPerPage:()=>0,parseCapacity:()=>0,isHighCapacity:()=>false,isInkOffer:()=>false};
+  aiText:(value:unknown)=>String(value||''),aiImage:()=>'',aiStockLabel:()=> 'Skladom',safeProductUrl:()=>'/produkt/hp-cf259x',
+  escapeHtml:(value:unknown)=>String(value||''),money:(value:number)=>`${value.toFixed(2)} €`,costPerPageText:()=>'',costPerPage:()=>0,parseCapacity:()=>0,isHighCapacity:()=>false};
  const code=ts.transpileModule(functions.join('\n'),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
  const api=vm.runInNewContext(code+';({renderCommerceResults,attachFeedback})',scope);
  return {api,messages,addMessage};
@@ -38,7 +38,7 @@ test('ponuka má jednu odpoveď, jeden úvod a hodnotenie až pod produktmi',()=
  assert.equal(messages.length,1);const html=target.innerHTML;
  assert.equal((html.match(/V našej ponuke máme tieto produkty:/g)||[]).length,1);
  assert.doesNotMatch(html,/Naša ponuka pre|Našiel som tieto možnosti|<b>13264<\/b>|<p><b><\/b><\/p>/);
- assert.match(html,/HP CF259X/);assert.match(html,/33\.72/);assert.equal((html.match(/Pomohla odpoveď/g)||[]).length,1);
+ assert.match(html,/href="\/produkty\?s=13264"/);assert.match(html,/HP CF259X/);assert.match(html,/33\.72/);assert.equal((html.match(/Pomohla odpoveď/g)||[]).length,1);
  assert.ok(html.indexOf('Pomohla odpoveď')>html.indexOf('Detail produktu'));
 });
 test('samostatné vyhľadávanie aj farebná sada zostávajú v jednom bloku',()=>{
@@ -50,4 +50,15 @@ test('samostatné vyhľadávanie aj farebná sada zostávajú v jednom bloku',()
 test('zákaznícky názov nepoužije uložené interné SKU namiesto názvu tonera',()=>{
  for(const query of ['13264','SKU: 13264'])assert.equal(customerProductLabel(query,'koľko to stojí?','sku',[product]),product.name);
  assert.equal(customerProductLabel('13264','Ukáž SKU: 13264.','sku',[product]),'13264');
+});
+
+test('farebná ponuka pomenuje náplne a uvedie, ktorý požadovaný typ chýba',()=>{
+ const {api,messages}=renderer();
+ const ink={...product,name:'HP 305XL originálna atramentová náplň',color:'cyan',type:'original'};
+ const pack={...ink,name:'HP 305XL originálna sada atramentových náplní',color:'cmyk',package_shape:'set'};
+ api.renderCommerceResults({products:[ink,pack],presentation:{isColorPrinter:true,setIntent:true,requestedTypes:['original','renovated'],missingRequestedTypes:['renovated'],sets:[{type:'original',packageKind:'catalog',products:[pack],totalPrice:40}]}});
+ const html=messages[0].innerHTML;
+ assert.match(html,/Renovovaný typ momentálne nemáme v ponuke/);
+ assert.match(html,/Zobraziť aj jednotlivé atramentové náplne/);
+ assert.match(html,/data-ai-singles-panel hidden/);
 });

@@ -29,7 +29,7 @@ test('return to product after standalone payment', async()=>{
  const r=await run(['Potrebujem TN2421','koľko stojí dobierka?','a ten toner máte skladom?']); assert.equal(r.intent,'product_search'); assert.ok((r.products||[]).some((p:any)=>/TN-?2421/i.test(p.name+p.sku)));
 });
 test('L2350 correction caution', async()=>{
- const r=await run(['Mám Brother HL-L2352DW','nie na počítači mi píše L2350','môžem tam TN2421?']); assert.match(text(r),/štít|stit|presn|kazet|toner/i);
+ const r=await run(['Mám Brother HL-L2352DW','nie na počítači mi píše L2350','môžem tam TN2421?']); assert.match(text(r),/štítku tlačiarne/i); assert.match(text(r),/L2350/i); assert.match(text(r),/L2352/i); assert.equal(r.clarification,true); assert.deepEqual(r.products,[]);
 });
 test('two products then the first should not hallucinate', async()=>{
  const r=await run(['Porovnaj mi TN2421 a CF283A','ten prvý chcem kompatibilný']); assert.ok(r.intent==='product_search'||r.intent==='fallback');
