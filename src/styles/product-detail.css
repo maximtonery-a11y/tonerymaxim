@@ -716,47 +716,6 @@
   border-color: var(--type-line);
 }
 
-.info-grid {
-  display: grid;
-  grid-template-columns: minmax(300px, 31%) minmax(0, 1fr);
-  gap: 22px;
-}
-
-.params-card,
-.description-card {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  padding: 26px;
-}
-
-.params-card h2,
-.description-card h2 { margin-bottom: 18px; }
-
-.params-card dl { margin: 0; }
-
-.params-card dl div {
-  display: grid;
-  grid-template-columns: 140px minmax(0, 1fr);
-  gap: 18px;
-  padding: 12px 0;
-  border-bottom: 1px solid #edf2f8;
-}
-
-.params-card dl div:last-child { border-bottom: 0; }
-
-.params-card dt {
-  color: #78869a;
-  font-weight: 850;
-}
-
-.params-card dd {
-  min-width: 0;
-  margin: 0;
-  color: #071b3a;
-  font-weight: 950;
-  text-align: right;
-}
-
 .product-safety-card {
   display: grid;
   grid-template-columns: minmax(230px, 32%) minmax(0, 1fr);
@@ -784,62 +743,6 @@
 @media (max-width: 760px) {
   .product-safety-card { grid-template-columns: 1fr; gap: 16px; padding: 20px; }
   .product-safety-card dl div { grid-template-columns: 1fr; gap: 5px; }
-}
-
-.product-description {
-  color: #4f5f75;
-  line-height: 1.65;
-  font-size: 15px;
-}
-
-.product-description p { margin: 0 0 15px; }
-
-.product-description ul,
-.product-description ol {
-  margin: 14px 0 0;
-  padding-left: 24px;
-}
-
-.product-description li {
-  margin: 8px 0;
-  padding-left: 4px;
-}
-
-.micro-benefits {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  margin-top: 22px;
-  border-top: 1px solid #edf2f8;
-  padding-top: 18px;
-}
-
-.micro-benefits div {
-  display: grid;
-  gap: 6px;
-  padding: 0 16px;
-  border-right: 1px solid #edf2f8;
-  text-align: center;
-}
-
-.micro-benefits div:first-child { padding-left: 0; }
-.micro-benefits div:last-child { border-right: 0; padding-right: 0; }
-
-.micro-benefits span {
-  font-size: 26px;
-}
-
-.micro-benefits strong {
-  color: #071b3a;
-  font-size: 13px;
-  font-weight: 950;
-}
-
-.micro-benefits small {
-  color: #64748b;
-  font-size: 12px;
-  line-height: 1.35;
-  font-weight: 750;
 }
 
 .related-section {
@@ -1096,9 +999,7 @@
   .thumbs { order: 2; display: flex; flex-wrap: wrap; }
   .main-image { min-height: 290px; }
   .purchase-panel { grid-column: auto; max-width: none; }
-  .accessory-grid, .alternative-grid, .micro-benefits, .compat-grid { grid-template-columns: 1fr; }
-  .micro-benefits div { border-right: 0; border-bottom: 1px solid #edf2f8; padding: 12px 0; }
-  .micro-benefits div:last-child { border-bottom: 0; }
+  .accessory-grid, .alternative-grid, .compat-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
@@ -1109,83 +1010,6 @@
   .params-card dd { text-align: left; }
   .accessory-card, .mini-product { grid-template-columns: 64px 1fr; }
   .accessory-card button, .mini-product button { grid-column: 1 / -1; width: 100%; }
-}
-
-/* Description preview + real related products */
-.product-description-preview {
-  position: relative;
-}
-
-.product-description-preview p {
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.desc-more {
-  margin-top: 12px;
-  height: 38px;
-  border: 1px solid var(--type-line);
-  border-radius: 12px;
-  background: var(--type-soft);
-  color: var(--type-dark);
-  padding: 0 14px;
-  font-size: 13px;
-  font-weight: 950;
-  cursor: pointer;
-}
-
-.description-modal[hidden] { display: none; }
-
-.description-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 95;
-  display: grid;
-  place-items: center;
-  padding: 28px;
-  background: rgba(7, 27, 58, .48);
-  backdrop-filter: blur(10px);
-}
-
-.description-modal-card {
-  position: relative;
-  width: min(920px, 100%);
-  max-height: min(780px, calc(100vh - 56px));
-  overflow: auto;
-  border-radius: 24px;
-  background: #fff;
-  padding: 32px;
-  box-shadow: 0 28px 70px rgba(7, 27, 58, .22);
-}
-
-.description-modal-card h2 {
-  margin: 0 0 18px;
-  color: #071b3a;
-  font-size: 30px;
-  line-height: 1.08;
-  letter-spacing: -.04em;
-  font-weight: 950;
-}
-
-.description-modal-content {
-  color: #334155;
-  font-size: 15px;
-  line-height: 1.7;
-}
-
-.description-modal-content p { margin: 0 0 16px; }
-.description-modal-content ul,
-.description-modal-content ol { margin: 14px 0 16px; padding-left: 24px; }
-.description-modal-content li { margin: 7px 0; }
-.description-modal-content h1,
-.description-modal-content h2,
-.description-modal-content h3 {
-  color: #071b3a;
-  line-height: 1.18;
-  letter-spacing: -.025em;
 }
 
 .related-subtitle {
@@ -1274,12 +1098,10 @@
 .alternative-grid .mini-product.renovated { order: 3; }
 
 @media (max-width: 880px) {
-  .description-modal { padding: 16px; }
   .compat-modal {
     place-items: center;
     padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
   }
-  .description-modal-card,
   .compat-modal-card { padding: 24px 18px; }
 
   .compat-modal-card {
@@ -3119,7 +2941,7 @@ body.product-detail-body .related-section-stacked .accessory-grid {
 .tm-product-hydrating {
   min-height: 560px;
 }
-.tm-product-hydrating > .tm-product-seo-fallback {
+.tm-product-hydrating [data-product-head] > .tm-product-seo-fallback {
   display: none !important;
 }
 .tm-product-loading {
@@ -3192,15 +3014,6 @@ body.product-detail-body .related-section-stacked .accessory-grid {
 .product-seo-relations a:hover { border-color: #75aef4; background: #edf5ff; }
 @media (max-width: 700px) {
   .product-seo-relations { margin: 16px 0 4px; padding: 16px; border-radius: 16px; }
-}
-
-/* Regression guard: product description dialog must always be closable and scrollable on mobile. */
-.description-modal{z-index:2147483000;overscroll-behavior:contain}
-.description-modal-card{max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-.description-modal .modal-close{position:sticky;top:0;z-index:4;display:block;margin:0 0 -38px auto;box-shadow:0 2px 10px rgba(7,27,58,.12)}
-@media(max-width:880px){
-  .description-modal{place-items:center;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
-  .description-modal-card{max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:20px 16px 24px}
 }
 
 /* Chip variant: clear secondary information without changing product logic. */

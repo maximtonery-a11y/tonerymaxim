@@ -110,6 +110,49 @@ async function checkPrinterJourney(page, origin) {
   await page.goto(origin + productPath + '41');
 }
 
+async function checkDescription(page) {
+  const details = page.locator('.pd-info-reading');
+  const summary = details.locator('summary');
+  const button = page.locator('.pd-info-pop');
+  const copy = page.locator('.pd-info-copy');
+  const dialog = page.getByRole('dialog', { name: 'Popis produktu' });
+  const reads = [];
+  const observe = request => {
+    if (/^\/api\/(?:product|products|order-create|gopay-create)(?:\?|$)/.test(new URL(request.url()).pathname)) reads.push(request.url());
+  };
+  page.on('request', observe);
+  try {
+    await fits(page.locator('.pd-info, .pd-info-facts dd, .pd-info-reading summary, .pd-info-pop'));
+    await summary.click();
+    assert.match(await details.innerText(), /Posledný odsek pôvodného popisu/);
+    await button.click();
+    assert.equal(await copy.count(), 1);
+    assert.equal(await dialog.locator('.pd-info-copy li').innerText(), 'Jedna kazeta');
+    await fits(dialog);
+    await dialog.getByRole('button', { name: 'Zavrieť popis' }).press('Escape');
+    await details.locator('.pd-info-copy').waitFor({ state: 'visible' });
+    await page.waitForFunction(() => document.activeElement === document.querySelector('.pd-info-pop'));
+    await summary.click();
+    await button.click();
+    await dialog.getByRole('button', { name: 'Zavrieť popis' }).click();
+    await details.locator('.pd-info-copy').waitFor({ state: 'attached' });
+    assert.equal(await details.evaluate(el => el.open), false);
+    assert.deepEqual(reads, []);
+  } finally { page.off('request', observe); }
+}
+
+async function checkDescriptionWithoutScript(browser, origin) {
+  const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+  try {
+    const page = await context.newPage();
+    await page.goto(origin + productPath + '41');
+    assert.equal(await page.locator('.tm-product-loading').isVisible(), false);
+    assert.equal(await page.locator('.pd-info-pop').isVisible(), false);
+    await page.locator('.pd-info-reading summary').click();
+    assert.equal(await page.getByText('Posledný odsek pôvodného popisu.', { exact: true }).isVisible(), true);
+  } finally { await context.close(); }
+}
+
 async function checkLayout(page, origin, [width, height, touch]) {
   const phone = touch && Math.min(width, height) <= 600;
   for (const [id, count] of [[41, 0], [21, 1], [31, 2], [12, 3]]) {
@@ -121,6 +164,7 @@ async function checkLayout(page, origin, [width, height, touch]) {
       if (width === 390) await checkPrinterJourney(page, origin);
     }
     await page.locator('[data-accessories-section] [data-related-id="91"]').waitFor();
+    if (id === 41) await checkDescription(page);
     assert.equal(await page.locator('.comparison-card').count(), count);
     assert.equal(await page.locator('.jump-to-alternatives').count(), Number(count > 0));
     if (!count) continue;
@@ -231,6 +275,7 @@ async function checkLayout(page, origin, [width, height, touch]) {
 async function verifyEngine(origin, engine, configurations, options) {
   const browser = await engine.launch(options);
   try {
+    await checkDescriptionWithoutScript(browser, origin);
     for (const layout of configurations) {
       const [width, height, touch] = layout;
       const context = await browser.newContext({ viewport: { width, height }, isMobile: touch, hasTouch: touch, reducedMotion: 'reduce' });
