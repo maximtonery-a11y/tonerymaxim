@@ -1,7 +1,7 @@
+import { ownsGoPayOrder, goPayOrderPreview } from "../../lib/gopay-access";
 import type { APIRoute } from "astro";
 import { processPaidGoPayOrder, readPendingGoPayOrder, syncWooGoPayPaymentState } from "../../lib/checkout-order";
 import { verifyGoPayPaymentAgainstOrder } from "../../lib/gopay-client";
-import { verifyPaymentAccessToken } from "../../lib/payment-access";
 
 export const prerender = false;
 
@@ -65,7 +65,7 @@ export const GET: APIRoute = async ({ url, cookies }) => {
     const pending = await readPendingGoPayOrder(paymentId);
     if (!pending) throw new Error(`Neznáma GoPay platba ${paymentId}.`);
     const access = url.searchParams.get('access') || cookies.get('tm_gopay_access')?.value;
-    if ((pending as any).paymentAccessRequired && !verifyPaymentAccessToken(access, pending.orderNumber)) {
+    if ((pending as any).paymentAccessRequired && !ownsGoPayOrder(pending, cookies, access)) {
       return new Response(JSON.stringify({ ok: false, error: 'Odkaz na stav platby nie je platný alebo expiroval.' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
@@ -106,6 +106,11 @@ export const GET: APIRoute = async ({ url, cookies }) => {
       ok: true,
       state,
       ui: getUiState(state),
+      preview: ownsGoPayOrder(pending, cookies, access) ? goPayOrderPreview(['PAID', 'AUTHORIZED'].includes(state) && pending.paymentState === 'CONVERTED_TO_OFFLINE'
+        ? { ...pending, paymentCode: 'gopay', paymentLabel: 'GoPay', paymentPrice: 0, total: Number(payment.amount) / 100 }
+        : pending) : undefined,
+      storedState: pending.paymentState,
+      nextPaymentId: (pending as any).retriedToPaymentId || null,
       order: orderResult ? {
         created: orderResult.created,
         id: orderResult.orderId,
@@ -119,7 +124,7 @@ export const GET: APIRoute = async ({ url, cookies }) => {
         currency: payment.currency,
         gw_url: payment.gw_url,
       },
-      pending: pending ? {
+      pending: pending && (!(pending as any).paymentAccessRequired || ownsGoPayOrder(pending, cookies, url.searchParams.get("access"))) ? {
         orderNumber: pending.orderNumber,
         total: pending.total,
         amountCents: pending.amountCents,
@@ -138,7 +143,7 @@ export const GET: APIRoute = async ({ url, cookies }) => {
     return new Response(JSON.stringify({
       ok: false,
       error: error?.message || "Nepodarilo sa overiť platbu.",
-      pending: pending ? {
+      pending: pending && (!(pending as any).paymentAccessRequired || ownsGoPayOrder(pending, cookies, url.searchParams.get("access"))) ? {
         orderNumber: pending.orderNumber,
         total: pending.total,
         amountCents: pending.amountCents,

@@ -99,6 +99,7 @@ const prefilledEmail = Astro.url.searchParams.get("email")?.trim().slice(0, 254)
             await fetch("/api/newsletter/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.email, source: "registration" }) }).catch(() => undefined);
           }
           showMessage("Registrácia prebehla úspešne. Presmerovávam do účtu...", "success");
+          try { sessionStorage.removeItem("tm_header_account_v1"); sessionStorage.removeItem("tm_cart_benefits_v1"); localStorage.setItem("tm_cart_benefits_epoch", Date.now() + "-" + Math.random()); localStorage.removeItem("tm_coupon_v1"); } catch {}
           window.location.href = result.redirect || "/ucet";
         } catch (error) {
           showMessage(error instanceof Error ? error.message : "Registrácia zlyhala.");

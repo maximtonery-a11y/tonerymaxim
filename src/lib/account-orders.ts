@@ -4,6 +4,7 @@ import { TM_ORDER_NUMBER_META, tmOrderNumber } from './order-display';
 
 export type AccountOrder = Omit<WooOrder, 'line_items'> & {
   customer_id: number;
+  payment_method?: string;
   total_tax?: string;
   date_paid?: string | null;
   refunds?: Array<{ id?: number; total?: string }>;
@@ -55,8 +56,8 @@ async function readPage(customerId: number, page: number, perPage: number, summa
   const url = new URL(getWooBaseUrl() + '/wp-json/wc/v3/orders');
   const fields = summaryOnly
     ? 'id,customer_id,status,date_paid,total,currency,refunds'
-    : 'id,customer_id,status,date_created,date_paid,total,total_tax,currency,refunds,tax_lines,line_items,meta_data';
-  if (!summaryOnly) url.searchParams.set('include_meta', TM_ORDER_NUMBER_META.join(','));
+    : 'id,customer_id,status,date_created,date_paid,total,total_tax,currency,refunds,tax_lines,line_items,meta_data,payment_method';
+  if (!summaryOnly) url.searchParams.set('include_meta', [...TM_ORDER_NUMBER_META, 'gopay_payment_id'].join(','));
   for (const [key, value] of Object.entries({ customer: customerId, page, per_page: perPage, orderby: 'date', order: 'desc', _fields: fields })) url.searchParams.set(key, String(value));
   let response: Response;
   try {
@@ -83,6 +84,10 @@ export async function getAccountOrdersPage(customerId: number, page = 1) {
   const result = await readPage(customerId, accountOrderPage(page), ACCOUNT_ORDERS_PER_PAGE);
   const orders = result.orders.map(({ meta_data, number: _wooNumber, ...order }) => ({
     ...order, tmNumber: tmOrderNumber({ meta_data }),
+    paymentRecoveryId: !order.date_paid && ['pending', 'on-hold', 'tm-await-pay', 'failed'].includes(normalizeOrderStatus(order.status))
+      && ['gopay', 'applepay', 'googlepay'].includes(String(order.payment_method || ''))
+      ? String(meta_data?.find(meta => meta.key === 'gopay_payment_id')?.value || '').replace(/[^0-9]/g, '') : '',
+
   }));
   return { ...result, orders };
 }

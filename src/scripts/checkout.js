@@ -1,4 +1,5 @@
-import { resolveCartCoupon } from "./cart-coupon.js";
+import { acceptSubmittedOrder, consumeLegacySubmittedCart, readSubmittedOrder, submittedOrderUrl } from './submitted-order.js';
+import { getCartBenefits, readCartBenefits } from "./cart-benefits.js";
 import { collapsePaperRewardCart, syncPaperRewardCart } from "./paper-reward-cart.js";
 import { orderFulfilmentText } from "../lib/product-availability.ts";
 import { normalizeDpdPickup as normalizeDpdPoint } from "../lib/dpd-pickup.ts";
@@ -34,7 +35,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
       localStorage.removeItem(SUBMITTED_GOPAY_KEY);
       return null;
     }
-    if (submitted.cartSignature !== checkoutCartSignature(cart)) return null;
+    if (submitted.cartCommitted || submitted.cartSignature !== checkoutCartSignature(cart)) return null;
     return submitted;
   }
 
@@ -62,7 +63,8 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
   let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") !== "0";
   let couponRevision = 0;
   let couponLoadPromise;
-  let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
+  let tmCoupon = null;
+  let tmBenefitsReady = false;
 
   function syncPaperReward(reward) {
     const cart = syncPaperRewardCart(readCart(), reward);
@@ -82,40 +84,16 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     }).catch(() => {});
   }
 
-  async function loadLoyalty() {
-    try {
-      const response = await fetch("/api/account/loyalty", {
-        credentials: "same-origin",
-        cache: "no-store",
-      });
-
-      if (response.status === 401) {
-        tmLoyalty = { ok: false, points: 0, discountValue: 0 };
-        tmLoyaltyApply = false;
-        syncPaperReward(null);
-        renderCheckoutSummary();
-        return;
-      }
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const data = await response.json();
-      tmLoyalty = {
-        ok: true,
-        points: Number(data.points || 0),
-        discountValue: Number(data.discountValue || 0),
-      };
-      syncPaperReward(data.paperReward);
-      if (tmLoyalty.discountValue < TM_LOYALTY_MIN_DISCOUNT) tmLoyaltyApply = false;
-      else if (localStorage.getItem("tm_loyalty_apply") === null) {
-        localStorage.setItem("tm_loyalty_apply", "1");
-      }
-      renderCheckoutSummary();
-    } catch {
-      tmLoyalty = { ok: false, points: 0, discountValue: 0 };
-      tmLoyaltyApply = false;
-      renderCheckoutSummary();
-    }
+  function applyCheckoutBenefits(data) {
+    tmBenefitsReady = true;
+    const note = document.querySelector("[data-checkout-benefits-status]");
+    if (note) note.hidden = true;
+    tmLoyalty = data.loyalty;
+    tmLoyaltyApply = data.loyalty.ok && data.loyalty.discountValue >= TM_LOYALTY_MIN_DISCOUNT && localStorage.getItem("tm_loyalty_apply") !== "0";
+    syncPaperReward(data.loyalty.paperReward);
+    tmCoupon = data.coupon;
+    if (tmCoupon) localStorage.setItem("tm_coupon_v1", JSON.stringify(tmCoupon));
+    else localStorage.removeItem("tm_coupon_v1");
   }
 
   function loyaltyDiscountForTotal(total) {
@@ -137,18 +115,17 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
   async function refreshCheckoutCoupon(enteredCode) {
     const revision = ++couponRevision;
     try {
-      const cart = readCart();
-      const coupon = cart.length ? await resolveCartCoupon(cart, tmCoupon, { enteredCode }) : null;
+      const data = await getCartBenefits(readCart(), { enteredCode });
       if (revision !== couponRevision) return;
-      tmCoupon = coupon;
-      if (coupon) localStorage.setItem("tm_coupon_v1", JSON.stringify(coupon));
-      else localStorage.removeItem("tm_coupon_v1");
-      if (enteredCode !== undefined) setCouponBoxesExpanded(Boolean(coupon && !coupon.ok));
+      applyCheckoutBenefits(data);
+      if (enteredCode !== undefined) setCouponBoxesExpanded(Boolean(tmCoupon && !tmCoupon.ok));
     } catch {
       if (revision !== couponRevision) return;
+      tmBenefitsReady = false;
+      const note = document.querySelector("[data-checkout-benefits-status]");
+      if (note) { note.hidden = false; note.textContent = "Osobné zľavy sa nepodarilo overiť. Skúste to o chvíľu znova."; }
       if (enteredCode) {
         tmCoupon = { ok: false, code: enteredCode, reason: "Kupón sa nepodarilo overiť." };
-        localStorage.setItem("tm_coupon_v1", JSON.stringify(tmCoupon));
         setCouponBoxesExpanded(true);
       }
     }
@@ -626,6 +603,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
           .map((item, index) => normalizeCartItem(item, index))
           .filter(Boolean));
 
+        if (key === "tm_cart_v1" && Array.isArray(parsed) && parsed.length === 0) return [];
         if (normalized.length > 0) {
           localStorage.setItem("tm_cart_v1", JSON.stringify(normalized));
           return normalized;
@@ -788,7 +766,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     if (mobileGuide) mobileGuide.hidden = cart.length === 0;
     if (mobileSticky && cart.length === 0) mobileSticky.hidden = true;
 
-    list.innerHTML = "";
+    if (!cart.length) { list.innerHTML = ""; list.__tmCartKey = ""; }
 
     if (cart.length === 0) {
       if (empty) empty.hidden = false;
@@ -799,6 +777,9 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     if (empty) empty.hidden = true;
     if (form) form.hidden = false;
 
+    const renderKey = JSON.stringify(cart);
+    if (list.__tmCartKey !== renderKey) {
+    list.innerHTML = "";
     cart.forEach((item) => {
       const qty = cleanQty(item.qty);
       const lineFinal = Number(item.price || 0) * qty;
@@ -816,6 +797,8 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
       `;
       list.appendChild(row);
     });
+    list.__tmCartKey = renderKey;
+    }
 
     const { subtotal, discount, couponDiscount, loyaltyDiscount, total: goodsAfterDiscounts, missingForFreeShipping } =
       cartGoodsTotals(cart, cartPricing(cart), couponDiscountForTotal, loyaltyDiscountForTotal);
@@ -1671,6 +1654,15 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
       return;
     }
 
+    if (!tmBenefitsReady) {
+      await refreshCheckoutCoupon();
+      if (!tmBenefitsReady) {
+        status.textContent = "Osobné zľavy sa nepodarilo overiť. Skúste odoslanie o chvíľu znova.";
+        status.className = "order-status is-error";
+        return;
+      }
+    }
+    if (tmOrderSubmitting) return;
     const selectedPayment = getSelected("payment") || "gopay";
     const alreadySubmitted = submittedGoPayForCart(cart);
     if (alreadySubmitted && isOnlinePayment(selectedPayment)) {
@@ -1789,14 +1781,12 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
         status.className = "order-status is-success";
         setSubmitProgress(true, "Objednávka je pripravená. Presmerujeme vás na bezpečnú platbu GoPay.");
         try {
-          localStorage.setItem(SUBMITTED_GOPAY_KEY, JSON.stringify({
+          acceptSubmittedOrder(cart, {
             requestId: orderPreview.requestId,
-            cartSignature: checkoutCartSignature(cart),
             paymentId: String(data.paymentId || ""),
             orderNumber: String(data.orderNumber || ""),
             gwUrl: String(data.gwUrl || ""),
-            submittedAt: Date.now(),
-          }));
+          });
         } catch {}
         window.location.href = data.gwUrl;
         return;
@@ -2025,7 +2015,29 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     }
   });
 
+  function resumeAcceptedOrder() {
+    const receipt = consumeLegacySubmittedCart() || readSubmittedOrder();
+    if (receipt?.cartCommitted && !readCart().length) {
+      window.location.replace(submittedOrderUrl(receipt));
+      return true;
+    }
+    return false;
+  }
+
+  window.addEventListener("storage", event => {
+    if (tmOrderSubmitting) return;
+    if (event.key === "tm_cart_v1" && !resumeAcceptedOrder()) renderCheckoutSummary();
+    if (event.key === "tm_cart_benefits_epoch") {
+      tmCoupon = null; tmLoyaltyApply = false; tmBenefitsReady = false;
+      couponLoadPromise = refreshCheckoutCoupon(); tmLoyaltyLoadPromise = couponLoadPromise;
+    }
+  });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted && !resumeAcceptedOrder()) renderCheckoutSummary();
+  });
+
   function initCheckoutPage() {
+    if (resumeAcceptedOrder()) return;
     if (document.documentElement.dataset.tmCheckoutReady === "1") return;
     document.documentElement.dataset.tmCheckoutReady = "1";
 
@@ -2072,9 +2084,12 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     }
     restorePickupState();
     if (["gopay", "applepay", "googlepay"].includes(getSelected("payment"))) warmGoPay();
+    const cachedBenefits = readCartBenefits(readCart());
+    if (cachedBenefits) applyCheckoutBenefits(cachedBenefits);
+    else { const note = document.querySelector("[data-checkout-benefits-status]"); if (note) note.hidden = false; }
     renderCheckoutSummary();
-    tmLoyaltyLoadPromise = loadLoyalty();
     couponLoadPromise = refreshCheckoutCoupon();
+    tmLoyaltyLoadPromise = couponLoadPromise;
     updateVisibility();
     setupPickupWidgets();
     setupMobileCheckoutSteps();

@@ -98,13 +98,15 @@ test("počas odosielania sú zamknuté tlačidlá, doprava aj platba", async () 
   assert.match(source, /control\.disabled = disabled/);
 });
 
-test("GoPay ochrana zostáva aktívna až do potvrdenej platby", async () => {
+test("Prijatá GoPay objednávka má samostatný kontext a nevymaže neskorší košík", async () => {
   const checkout = await readFile(new URL("../src/scripts/checkout.js", import.meta.url), "utf8");
   const confirmation = await readFile(new URL("../src/pages/platba-dokoncena.astro", import.meta.url), "utf8");
   assert.doesNotMatch(checkout, /sessionStorage\.removeItem\("tm_checkout_request_id"\)[\s\S]{0,120}window\.location\.href = data\.gwUrl/);
   assert.match(checkout, /tm_submitted_gopay_v1/);
   assert.match(checkout, /Táto objednávka už bola odoslaná/);
-  assert.match(confirmation, /clearCheckoutLock\(\)/);
+  assert.match(checkout, /acceptSubmittedOrder\(cart/);
+  assert.match(confirmation, /consumeLegacySubmittedCart/);
+  assert.doesNotMatch(confirmation, /localStorage\.removeItem\('tm_cart_v1'\)/);
 });
 
 test("čas vytvorenia nemení identitu opakovaného requestu", async () => {

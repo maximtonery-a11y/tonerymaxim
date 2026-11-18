@@ -209,8 +209,17 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
                   <a class="tm26-btn primary" href="/">Pokračovať v nákupe</a>
                   <a class="tm26-btn" href="/ucet/objednavky">Moje objednávky</a>
                 </div>
-                <a class="tm26-btn danger tm26-hidden" data-gopay-retry href="/pokladna">Zopakovať platbu GoPay</a>
-                <a class="tm26-btn tm26-hidden" data-gopay-change href="/pokladna">Zmeniť spôsob platby</a>
+                <button class="tm26-btn tm26-hidden" type="button" data-gopay-change aria-expanded="false" aria-controls="order-payment-form">Zmeniť spôsob platby</button>
+                <form id="order-payment-form" data-order-payment-form hidden>
+                  <label for="order-payment-method">Nový spôsob platby</label>
+                  <select id="order-payment-method" name="payment" style="width:100%;padding:12px;margin:8px 0 12px;border:1px solid #dce7f4;border-radius:10px;font:inherit">
+                    <option value="bank_prepaid">Bankový prevod vopred – bez poplatku</option>
+                    <option value="cod">Dobierka – poplatok 1,20 €</option>
+                    <option value="invoice_org" data-company-payment hidden disabled>Prevod pre firmy – bez poplatku</option>
+                  </select>
+                  <button class="tm26-btn primary" type="submit">Potvrdiť zmenu platby</button>
+                  <p role="status" data-payment-change-status></p>
+                </form>
               </article>
             </aside>
           </section>
@@ -237,7 +246,7 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
             <div class="tm26-copy"><button class="tm26-btn" data-copy-iban>Kopírovať IBAN</button><button class="tm26-btn" data-copy-vs>Kopírovať VS</button></div>
           </section>
 
-          <section class="tm26-reward" data-reward>
+          <section class="tm26-reward tm26-hidden" data-reward>
             <div><h2>🎁 Odmena na ďalší nákup</h2><p data-reward-text>Po dokončení objednávky získate 7 % zľavu na ďalší nákup kompatibilných tonerov.</p></div>
               <div class="tm26-coupon"><div><strong data-coupon-code>7 %</strong><span data-coupon-label>zľava pripravená</span><small>platí na kompatibilné tonery</small></div></div>
           </section>
@@ -258,12 +267,14 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
     </div>
 
     <script>
+      import { consumeLegacySubmittedCart, readSubmittedOrder } from '../scripts/submitted-order.js';
+      import { invalidateCartBenefits } from '../scripts/cart-benefits.js';
       import { discountedGrossLine, grossVatTotals } from '../lib/checkout-vat';
-      const $=(s:string):any=>document.querySelector(s);const p=new URLSearchParams(location.search);const paymentId=p.get("id");const directOrder=p.get("order");const directMethod=p.get("method");
+      const $=(s:string):any=>document.querySelector(s);const p=new URLSearchParams(location.search);const paymentId=p.get("id");const directOrder=p.get("order");const directMethod=p.get("method");const access=p.get("access")||"";let serverPreview:any=null;
       const e={pill:$('[data-status-pill]'),icon:$('[data-icon]'),status:$('[data-status]'),title:$('[data-title]'),lead:$('[data-lead]'),order:$('[data-order]'),order2:$('[data-order-2]'),dispatch:$('[data-dispatch]'),payment:$('[data-payment]'),payment2:$('[data-payment-2]'),state:$('[data-state]'),total:$('[data-total]'),sideCount:$('[data-side-count]'),sideShipping:$('[data-side-shipping]'),sidePayment:$('[data-side-payment]'),sideOrder:$('[data-side-order]'),count:$('[data-count]'),date:$('[data-date]'),items:$('[data-items]'),summary:$('[data-summary]'),shipping:$('[data-shipping]'),bank:$('[data-bank]'),vs:$('[data-vs]'),bankTotal:$('[data-bank-total]'),retry:$('[data-gopay-retry]'),change:$('[data-gopay-change]'),reward:$('[data-reward]'),rewardText:$('[data-reward-text]'),couponCode:$('[data-coupon-code]'),couponLabel:$('[data-coupon-label]'),addresses:$('[data-addresses]')};
       const fmtDate=new Intl.DateTimeFormat('sk-SK',{day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});if(e.date)e.date.textContent=fmtDate.format(new Date());
       const money=(v:unknown)=>new Intl.NumberFormat('sk-SK',{style:'currency',currency:'EUR'}).format(Number.isFinite(Number(v))?Number(v):0);const esc=(v:unknown)=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-      function preview():any{try{return JSON.parse(localStorage.getItem('tm_last_order_preview')||'null')}catch{return null}}function img(i:any){return i?.image||i?.images?.[0]?.src||i?.imageUrl||'/images/tm-product-placeholder-box.jpg'}
+      function preview():any{if(paymentId)return serverPreview;try{return JSON.parse(localStorage.getItem('tm_last_order_preview')||'null')}catch{return null}}function img(i:any){return i?.image||i?.images?.[0]?.src||i?.imageUrl||'/images/tm-product-placeholder-box.jpg'}
       function payText(m:unknown){return m==='cod'?'Dobierka':m==='bank_prepaid'?'Platba prevodným príkazom vopred':m==='invoice_org'?'Prevod pre firmy':m==='applepay'?'Apple Pay':m==='googlepay'?'Google Pay':'Online platba GoPay'}
       function calc(pr:any){const cart:any[]=Array.isArray(pr?.cart)?pr.cart:[];const pricing=pr?.pricing||{};const shipping=pr?.shipping||{};const method=String(pr?.payment||directMethod||'');const itemsTotal=cart.reduce((s:number,i:any)=>s+Number(i.price||0)*Number(i.qty||1),0);const qd=Number(pricing.discount||0);const cd=Number(pr?.coupon?.discount||0);const ld=Number(pr?.loyalty?.apply?pr?.loyalty?.discount||0:0);const discountedSubtotal=Math.max(0,itemsTotal-qd);const goodsAfterDiscounts=Math.max(0,discountedSubtotal-cd-ld);const ship=goodsAfterDiscounts>=29?0:Number(shipping?.price||0);const pp=method==='cod'?1.2:0;const total=Math.max(0,Math.round((goodsAfterDiscounts+ship+pp)*100)/100);const taxes=grossVatTotals([...cart.map(discountedGrossLine),ship,pp,-cd,-ld],total);return{cart,shipping,method,itemsTotal,qd,cd,ld,ship,pp,total,net:taxes.net,vat:taxes.tax}}
       async function registered(){try{const r=await fetch('/api/account/me',{headers:{Accept:'application/json'}});return r.ok}catch{return false}}
@@ -322,18 +333,82 @@ const title = "Ďakujeme za objednávku | ToneryMaxim.sk";
         const billing=normalizeAddress(pr?.billing||pr?.billingAddress||pr?.customer||pr?.customer_data,pr?.contact);
         const deliveryRaw=pr?.shipping_address||pr?.shippingAddress||pr?.delivery||pr?.shippingTo;
         const shipping=sameDelivery(deliveryRaw)?billing:normalizeAddress(deliveryRaw,pr?.contact);
-        if(e.addresses)e.addresses.innerHTML=addressCard('Fakturačná adresa',billing)+addressCard('Dodacia adresa',shipping);
+        const pickup=pr?.shipping?.pickup||pr?.delivery?.pickup;
+        if(e.addresses)e.addresses.innerHTML=addressCard('Fakturačná adresa',billing)+(pickup
+          ? addressCard('Výdajné miesto',{name:pickup.pickup_name,street:pickup.pickup_address,city:pickup.pickup_city,zip:pickup.pickup_zip})
+          : addressCard('Dodacia adresa',shipping));
         return d
       }
       function orderNo(v:unknown){return String(v||'—')}function setBase(no:unknown,method:string,state:string){e.order.textContent=orderNo(no);e.order2&&(e.order2.textContent=orderNo(no));e.sideOrder.textContent=orderNo(no);e.payment.textContent=payText(method);e.payment2&&(e.payment2.textContent=payText(method));e.sidePayment.textContent=payText(method);e.state&&(e.state.textContent=state||'Uložené');e.vs.textContent=String(no||'').replace(/\D/g,'')||'—'}
-      function clearCheckoutLock(){localStorage.removeItem('tm_submitted_gopay_v1');localStorage.removeItem('tm_checkout_intent_v2');try{sessionStorage.removeItem('tm_checkout_request_id')}catch{}}
-      function bank(show:boolean){e.bank.classList.toggle('hidden',!show)}function showRecoveryActions(){e.retry.href='#';e.retry.classList.remove('tm26-hidden');e.change?.classList.remove('tm26-hidden')}
-      async function retryGoPay(event:Event){event.preventDefault();if(!paymentId||e.retry.dataset.loading==='1')return;e.retry.dataset.loading='1';const original=e.retry.textContent;e.retry.textContent='Pripravujem novú platbu…';try{const r=await fetch('/api/gopay-retry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId})});const data=await r.json();if(!r.ok||!data?.ok||!data?.gwUrl)throw new Error(data?.error||'Novú platbu sa nepodarilo vytvoriť.');try{const saved=JSON.parse(localStorage.getItem('tm_submitted_gopay_v1')||'null')||{};localStorage.setItem('tm_submitted_gopay_v1',JSON.stringify({...saved,paymentId:String(data.paymentId||''),orderNumber:String(data.orderNumber||saved.orderNumber||''),gwUrl:String(data.gwUrl||''),submittedAt:Date.now()}))}catch{}location.href=data.gwUrl}catch(error:any){e.lead.textContent=error?.message||'Novú platbu sa nepodarilo vytvoriť. Skúste to znova alebo zvoľte inú platbu v pokladni.';e.retry.dataset.loading='0';e.retry.textContent=original}}
-      async function reward(no:unknown,success=true){if(!success){e.reward.classList.add('tm26-hidden');return}const isReg=await registered();if(isReg){e.rewardText.textContent='Po dokončení objednávky získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Pri ďalšej objednávke sa prihlásenému zákazníkovi použije automaticky.';e.couponCode.textContent='7 %';e.couponLabel.textContent='zľava na ďalší nákup'}else{const code=`MAXIM${String(no||Date.now()).replace(/\D/g,'')}`;e.rewardText.textContent='Po dokončení objednávky získate kupón so zľavou 7 % na ďalší nákup kompatibilných tonerov. Kupón potom zadáte v pokladni.';e.couponCode.textContent=code;e.couponLabel.textContent='zľava 7 % na ďalší nákup'}}
-      function success(no:unknown,method:string,msg?:string){const pr=preview();const totals=calc(pr);(window as any).tmTrackPurchase?.(no,pr,totals.total);e.pill.classList.remove('is-failed','is-pending');e.icon.textContent='✓';e.status.textContent='Objednávka prijatá';e.title.textContent='Ďakujeme. Objednávku máme.';e.lead.textContent=msg||'Potvrdenie sme poslali na e-mail uvedený v pokladni. Skladové produkty pripravíme čo najskôr.';setBase(no,method,method==='gopay'?'Zaplatené':'Uložené');bank(method==='bank_prepaid');reward(no,true);localStorage.removeItem('tm_cart_v1');localStorage.removeItem('tm_coupon_v1');localStorage.removeItem('tm_loyalty_apply');clearCheckoutLock()}
-      function fail(no:unknown,method:string,msg:string|undefined,_gw:string){e.pill.classList.add('is-failed');e.icon.textContent='!';e.status.textContent='Platba nedokončená';e.title.textContent='Platba nebola dokončená.';e.lead.textContent=msg||'Objednávka zatiaľ nie je zaplatená. Skúste platbu zopakovať cez GoPay alebo sa vráťte do pokladne a zvoľte inú platbu.';setBase(no,method,'Nezaplatené');bank(false);reward(no,false);showRecoveryActions()}
-      async function init(){const pr=preview();render(pr);if(directOrder){success(directOrder,directMethod||pr?.payment,'Objednávka bola úspešne uložená. Potvrdenie sme poslali na e-mail uvedený v pokladni.');return}if(!paymentId){e.pill.classList.add('is-pending');e.icon.textContent='?';e.status.textContent='Nevieme overiť';e.title.textContent='Objednávku nevieme overiť.';e.lead.textContent='V adrese chýba číslo objednávky alebo GoPay ID platby.';setBase('—',directMethod||pr?.payment,'Neoverené');return}try{const r=await fetch(`/api/gopay-status?id=${encodeURIComponent(paymentId)}`,{headers:{Accept:'application/json'}});const data=await r.json();const state=String(data?.state||'UNKNOWN');const no=data?.pending?.orderNumber||data?.payment?.order_number||'—';const gw=data?.payment?.gw_url||data?.pending?.gwUrl||'';if(!r.ok||!data.ok){fail(no,'gopay',data?.error||'Platbu sa nepodarilo overiť.',gw);return}if(['PAID','AUTHORIZED'].includes(state))success(no,'gopay','Online platba prebehla úspešne. Potvrdenie sme poslali na e-mail uvedený v pokladni.');else if(['CANCELED','TIMEOUTED','FAILED'].includes(state))fail(no,'gopay',data?.ui?.message,gw);else if(['CREATED','PAYMENT_METHOD_CHOSEN'].includes(state)){e.pill.classList.add('is-pending');e.icon.textContent='…';e.status.textContent='Platba nedokončená';e.title.textContent='Platba ešte nebola dokončená.';e.lead.textContent=data?.ui?.message||'Platbu môžete bezpečne zopakovať alebo v pokladni zvoliť inú metódu.';setBase(no,'gopay',state);showRecoveryActions()}else{e.pill.classList.add('is-pending');e.icon.textContent='…';e.status.textContent='Platbu overujeme';e.title.textContent='Platbu ešte overujeme.';e.lead.textContent=data?.ui?.message||'GoPay zatiaľ neposlal známy stav. Skúste stránku o chvíľu obnoviť.';setBase(no,'gopay',state)}}catch(err){fail('—','gopay','Platbu sa nepodarilo overiť. Skúste platbu zopakovať alebo nás kontaktujte.','')}}
-      e.retry?.addEventListener('click',retryGoPay);document.querySelector('[data-copy-iban]')?.addEventListener('click',()=>navigator.clipboard?.writeText(String(document.querySelector('[data-iban]')?.textContent||'').replace(/\s/g,'')));document.querySelector('[data-copy-vs]')?.addEventListener('click',()=>navigator.clipboard?.writeText(e.vs.textContent||''));init();
+      const paymentForm = $('[data-order-payment-form]') as HTMLFormElement;
+      function bank(show:boolean){e.bank.classList.toggle('hidden',!show)}
+      function showRecoveryActions(){
+        e.change.classList.remove('tm26-hidden');
+        const company = serverPreview?.billing;
+        const option = $('[data-company-payment]') as HTMLOptionElement;
+        const allowed = Boolean(company?.companyEnabled && company?.company && /^\d{8}$/.test(String(company?.ico || '')));
+        option.hidden = !allowed; option.disabled = !allowed;
+      }
+      function hideRecoveryActions(){e.change.classList.add('tm26-hidden');e.change.setAttribute('aria-expanded','false');paymentForm.hidden=true}
+      async function reward(no:unknown,success=true){if(!success){e.reward.classList.add('tm26-hidden');return}e.reward.classList.remove('tm26-hidden');const isReg=await registered();if(isReg){e.rewardText.textContent='Po dokončení objednávky získate 7 % zľavu na ďalší nákup kompatibilných tonerov. Pri ďalšej objednávke sa prihlásenému zákazníkovi použije automaticky.';e.couponCode.textContent='7 %';e.couponLabel.textContent='zľava na ďalší nákup'}else{const code=`MAXIM${String(no||Date.now()).replace(/\D/g,'')}`;e.rewardText.textContent='Po dokončení objednávky získate kupón so zľavou 7 % na ďalší nákup kompatibilných tonerov. Kupón potom zadáte v pokladni.';e.couponCode.textContent=code;e.couponLabel.textContent='zľava 7 % na ďalší nákup'}}
+      function success(no:unknown,method:string,msg?:string){
+        const pr=preview(); const totals=calc(pr);
+        (window as any).tmTrackPurchase?.(no,pr,totals.total);
+        e.pill.classList.remove('is-failed','is-pending');e.icon.textContent='✓';e.status.textContent='Objednávka prijatá';e.title.textContent='Ďakujeme. Objednávku máme.';
+        e.lead.textContent=msg||'Potvrdenie sme poslali na e-mail uvedený v pokladni.';
+        setBase(no,method,method==='gopay'?'Zaplatené':'Uložené');bank(method==='bank_prepaid');reward(no,true);hideRecoveryActions();
+        // The submitted items were already consumed once. A later purchase in
+        // another tab must survive this page, reloads and delayed callbacks.
+        invalidateCartBenefits();
+      }
+      function fail(no:unknown,_method:string,msg:string|undefined,_gw:string){
+        e.pill.classList.remove('is-failed');e.pill.classList.add('is-pending');e.icon.textContent='…';
+        e.status.textContent='Platba nedokončená';e.title.textContent='Objednávka prijatá – platba nedokončená';
+        e.lead.textContent=msg||'Objednávku už evidujeme. Tu môžete zmeniť spôsob jej platby.';
+        setBase(no,'gopay','Nezaplatené');bank(false);reward(no,false);showRecoveryActions();
+      }
+      function unverified(message:string){
+        e.pill.classList.add('is-pending');e.icon.textContent='…';e.status.textContent='Platbu overujeme';e.title.textContent='Stav platby sa nepodarilo overiť.';
+        e.lead.textContent=message;reward('',false);hideRecoveryActions();
+      }
+      async function init(){
+        const receipt = readSubmittedOrder();
+        if(paymentId && receipt?.paymentId===paymentId) consumeLegacySubmittedCart();
+        render(preview());hideRecoveryActions();
+        if(directOrder){success(directOrder,directMethod||preview()?.payment,'Objednávka bola úspešne uložená. Potvrdenie sme poslali na e-mail uvedený v pokladni.');return}
+        if(!paymentId){unverified('V adrese chýba GoPay ID platby. Objednávku nájdete vo svojom účte.');return}
+        try{
+          const query = new URLSearchParams({id:paymentId});if(access)query.set('access',access);
+          const r=await fetch('/api/gopay-status?'+query,{headers:{Accept:'application/json'},cache:'no-store'});
+          const data=await r.json();
+          if(!r.ok||!data.ok){unverified(data?.error||'Skúste stránku obnoviť alebo nás kontaktujte.');return}
+          if(data.storedState==='RETRIED' && data.nextPaymentId){
+            const next=new URLSearchParams({id:String(data.nextPaymentId)});if(access)next.set('access',access);
+            location.replace('/platba-dokoncena?'+next);return;
+          }
+          if(data.preview){serverPreview=data.preview;render(serverPreview)}
+          const state=String(data.state||'UNKNOWN');const no=data?.pending?.orderNumber||data?.payment?.order_number||'—';
+          if(['PAID','AUTHORIZED'].includes(state))success(no,'gopay','Online platba prebehla úspešne. Potvrdenie sme poslali na e-mail uvedený v pokladni.');
+          else if(data.storedState==='CONVERTED_TO_OFFLINE')success(no,data.pending?.paymentCode||serverPreview?.payment,'Spôsob platby bol zmenený pri pôvodnej objednávke.');
+          else if(['CANCELED','TIMEOUTED','FAILED','CREATED','PAYMENT_METHOD_CHOSEN'].includes(state))fail(no,'gopay',undefined,'');
+          else unverified('GoPay zatiaľ neposlal známy stav. Skúste stránku o chvíľu obnoviť.');
+        }catch{unverified('Skúste stránku obnoviť alebo nás kontaktujte. Novú objednávku nemusíte vytvárať.')}
+      }
+      e.change.addEventListener('click',()=>{paymentForm.hidden=!paymentForm.hidden;e.change.setAttribute('aria-expanded',String(!paymentForm.hidden));if(!paymentForm.hidden)$('[name="payment"]').focus()});
+      paymentForm.addEventListener('submit',async(event:Event)=>{
+        event.preventDefault();const button=paymentForm.querySelector('button')!;if(button.disabled||!paymentId)return;
+        button.disabled=true;const status=$('[data-payment-change-status]');status.textContent='Overujeme platbu a ukladáme zmenu…';
+        try{
+          const r=await fetch('/api/gopay-change-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({paymentId,access,payment:($('[name="payment"]') as HTMLSelectElement).value})});
+          const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.error||'Spôsob platby sa nepodarilo zmeniť.');
+          if(data.preview){serverPreview=data.preview;render(serverPreview);success(data.orderNumber,data.payment,'Spôsob platby bol zmenený pri pôvodnej objednávke.')}
+          else await init();
+          status.textContent='';
+        }catch(error:any){status.textContent=error?.message||'Skúste zmenu o chvíľu znova.'}finally{button.disabled=false}
+      });
+      document.querySelector('[data-copy-iban]')?.addEventListener('click',()=>navigator.clipboard?.writeText(String(document.querySelector('[data-iban]')?.textContent||'').replace(/\s/g,'')));
+      document.querySelector('[data-copy-vs]')?.addEventListener('click',()=>navigator.clipboard?.writeText(e.vs.textContent||''));
+      init();
     </script>
   </body>
 </html>

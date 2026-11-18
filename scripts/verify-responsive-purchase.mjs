@@ -319,9 +319,17 @@ async function checkDiscountJourney(page, origin, guest) {
     assert.equal(route.request().postDataJSON().code, coupon.code);
     return json(route, valid ? coupon : { ok: false, code: coupon.code, reason: "Kupón už bol použitý." }, valid ? 200 : 400);
   });
+  await page.context().route("**/api/cart-benefits", async route => {
+    lookups++; await firstLookup;
+    if (unavailable) return json(route, {}, 503);
+    const body = route.request().postDataJSON();
+    const code = body.enteredCode ?? (body.savedCoupon?.manual ? body.savedCoupon.code : undefined);
+    const chosen = code ? (valid ? { ...coupon, manual: true } : { ok: false, code, manual: true, reason: "Kupón už bol použitý." }) : guest ? null : coupon;
+    return json(route, { ok: true, customerId: guest ? 0 : 7, loyalty: { ok: !guest, points, discountValue: points / 100, paperReward: null }, coupon: chosen });
+  });
   if (guest) await page.context().clearCookies();
   await page.evaluate(() => {
-    sessionStorage.removeItem("tm_header_account_v1");
+    sessionStorage.removeItem("tm_header_account_v1"); sessionStorage.removeItem("tm_cart_benefits_v1");
     for (const key of ["tm_cart_v1", "tm_coupon_v1", "tm_loyalty_apply"]) localStorage.removeItem(key);
   });
   const product = origin + productPath + "51";
@@ -346,7 +354,7 @@ async function checkDiscountJourney(page, origin, guest) {
   if (await page.locator("#tm-cookie-reject").isVisible()) await page.locator("#tm-cookie-reject").click();
   assert.equal(lookups, 0, "Browsing a product must not load cart benefits");
   await buy(4);
-  await drawer.getByText("Overujeme zľavy…").waitFor();
+  await drawer.getByText("Osobné zľavy ešte overujeme…").waitFor();
   assert.equal(await drawer.locator("p.is-free").count(), 0);
   releaseBenefits();
   if (guest) {
@@ -384,6 +392,7 @@ async function checkDiscountJourney(page, origin, guest) {
     await otherProductTab.close();
   } else {
     points = 24;
+    await page.evaluate(() => sessionStorage.removeItem("tm_cart_benefits_v1"));
     await page.reload();
     await amount(page, total, 2813);
     await page.locator("[data-loyalty-toggle]:visible").uncheck();
@@ -409,9 +418,10 @@ async function checkDiscountJourney(page, origin, guest) {
   if (guest) {
     valid = false;
     unavailable = true;
+    await page.evaluate(() => sessionStorage.removeItem("tm_cart_benefits_v1"));
     await page.goto(origin + "/kosik");
     const status = page.locator("[data-cart-benefits-status]");
-    await status.getByText("Zľavy sa nepodarilo overiť.").waitFor();
+    await status.getByText(/Osobné zľavy sa nepodarilo overiť/).waitFor();
     assert.equal(await page.locator("[data-free-shipping-card].is-free").count(), 0);
     unavailable = false;
     await status.getByRole("button", { name: "Skúsiť znova" }).click();
