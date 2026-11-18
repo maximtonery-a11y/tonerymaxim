@@ -74,6 +74,8 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
   .live-camera { position:relative; isolation:isolate; aspect-ratio:4/3; width:100%; max-height:45svh; overflow:hidden; border-radius:12px; background:#112235; scroll-margin-block:8rem; }
   .live-camera video { display:block; width:100%; height:100%; object-fit:cover; }
   .live-guide { position:absolute; inset:31% 7%; border:2px solid white; border-radius:8px; box-shadow:0 0 0 100vmax #07162365, inset 0 0 0 1px #10263c99; pointer-events:none; }
+  .live-guide::before,.live-guide::after { content:""; position:absolute; top:50%; width:.7rem; height:2px; background:white; }
+  .live-guide::before { left:0; } .live-guide::after { right:0; }
   .privacy { margin:.75rem 0; color:#476078; font-size:.875rem; }
   #label-status:empty { margin:0; }
   #label-status { font-weight:600; }

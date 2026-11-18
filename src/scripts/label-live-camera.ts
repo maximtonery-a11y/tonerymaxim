@@ -1,3 +1,4 @@
+import { drawLabelLine } from '../lib/label-image';
 import { liveLabelCandidate, type LabelCandidate } from '../lib/label-search';
 
 function pause(signal: AbortSignal, delay: number) {
@@ -11,7 +12,7 @@ function pause(signal: AbortSignal, delay: number) {
 
 // Match the guide to the visible part of an object-fit: cover preview, even when
 // the portrait phone displays a landscape sensor or rotates during a scan.
-async function captureGuide(video: HTMLVideoElement, guide: HTMLElement, canvas: HTMLCanvasElement) {
+async function captureGuide(video: HTMLVideoElement, guide: HTMLElement, canvas: HTMLCanvasElement, angle?: number) {
   const view = video.getBoundingClientRect(), box = guide.getBoundingClientRect();
   if (!view.width || !view.height || !box.width || !box.height) return;
   const scale = Math.max(view.width / video.videoWidth, view.height / video.videoHeight);
@@ -21,12 +22,20 @@ async function captureGuide(video: HTMLVideoElement, guide: HTMLElement, canvas:
   const marginX = Math.min(box.width * .1, box.left - view.left) / scale;
   const marginY = Math.min(box.height * .4, box.top - view.top) / scale;
   const width = box.width / scale + 2 * marginX, height = box.height / scale + 2 * marginY;
-  const ratio = Math.min(1.6, 1080 / width, 470 / height);
-  canvas.width = Math.max(1, Math.round(width * ratio));
-  canvas.height = Math.max(1, Math.round(height * ratio));
-  const ctx = canvas.getContext('2d', { alpha: false });
-  if (!ctx) throw new Error('canvas');
-  ctx.drawImage(video, x - marginX, y - marginY, width, height, 0, 0, canvas.width, canvas.height);
+  if (angle === undefined) {
+    const ratio = Math.min(1.6, 1080 / width, 470 / height);
+    canvas.width = Math.max(1, Math.round(width * ratio));
+    canvas.height = Math.max(1, Math.round(height * ratio));
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if (!ctx) throw new Error('canvas');
+    ctx.drawImage(video, x - marginX, y - marginY, width, height, 0, 0, canvas.width, canvas.height);
+  } else {
+    const cx = x + box.width / (2 * scale), cy = y + box.height / (2 * scale);
+    const dx = box.width * .36 / scale, dy = dx * Math.tan(angle * Math.PI / 180);
+    drawLabelLine(canvas, video, video.videoWidth, video.videoHeight,
+      { x: (cx - dx) / video.videoWidth, y: (cy - dy) / video.videoHeight },
+      { x: (cx + dx) / video.videoWidth, y: (cy + dy) / video.videoHeight }, .18);
+  }
   const png = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
   if (png) return new Uint8Array(await png.arrayBuffer());
 }
@@ -67,23 +76,28 @@ export async function scanLiveCamera(video: HTMLVideoElement, guide: HTMLElement
     const { createLabelReader } = await import('./label-reader');
     const reader = await createLabelReader(signal);
     try {
-      report('Podržte označenie v rámčeku.');
+      report('Podržte celý názov v strede rámčeka.');
       const started = performance.now();
-      let previous = '', lastTime = -1, hinted = false;
+      // Revisit the wider view for brand and private-field context between tight readings.
+      const angles = [undefined, 0, undefined, -16, undefined, 16];
+      let previous = '', repeated = 0, pass = 0, lastTime = -1, hinted = false;
       while (!signal.aborted) {
         if (video.readyState >= 2 && video.videoWidth && video.videoHeight && video.currentTime !== lastTime) {
           lastTime = video.currentTime;
-          const frame = await captureGuide(video, guide, canvas);
+          const angle = angles[pass];
+          const frame = await captureGuide(video, guide, canvas, angle);
           signal.throwIfAborted();
-          const candidate = frame && liveLabelCandidate(await reader.recognize(frame), privateCodes);
+          const candidate = frame && liveLabelCandidate(await reader.recognize(frame, undefined, angle !== undefined), privateCodes);
           signal.throwIfAborted();
           const key = candidate ? candidate.kind + ':' + candidate.brand + ':' + candidate.code : '';
-          if (candidate && key === previous && !noOffers.has(key)) {
+          repeated = key && key === previous ? repeated + 1 : 1;
+          if (candidate && repeated >= (candidate.certain ? 2 : 3) && !noOffers.has(key)) {
             if (await match(candidate)) return;
             noOffers.add(key);
             report('Pre toto označenie nemáme presnú ponuku. Namierte na iný kód alebo názov.');
             hinted = true;
           }
+          if (!key || noOffers.has(key)) pass = (pass + 1) % angles.length;
           previous = key;
         }
         if (!hinted && performance.now() - started > 4500) {

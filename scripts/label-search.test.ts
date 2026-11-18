@@ -110,6 +110,10 @@ test('live camera offers require a legible, unambiguous manufacturer reference',
   assert.equal(live('Product No. 4ZB78A'), '107W');
   assert.equal(live('HP 85A'), '85A');
   assert.equal(live('85A'), undefined);
+  assert.equal(live('MF443dw'), 'MF443DW');
+  assert.equal(live('P1102W'), undefined);
+  assert.equal(live('SIN: TN-9900'), undefined);
+  assert.equal(live('TN-9900'), undefined);
   assert.equal(live('HP 85A CF259A'), undefined);
   assert.equal(live('Brother TN-2421 TN-2411'), undefined);
   assert.equal(live('Brother TN-2421', 60), undefined);

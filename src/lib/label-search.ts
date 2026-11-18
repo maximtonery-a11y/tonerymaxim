@@ -34,7 +34,7 @@ const rules: Rule[] = [
   { kind: 'printer', brand: 'Epson', pattern: /^(?:ET|XP|WF|L)-?\d{3,5}[A-Z]{0,3}$/ },
 ];
 const brandPattern = /\b(HP|BROTHER|CANON|EPSON|KYOCERA|XEROX|SAMSUNG)\b/gi;
-const privateLine = /\b(?:S\s*\/\s*N|SN|SERIAL|SERI[AO]V[EÉ]|IMEI|MAC|PASSWORD|HESLO|WIFI|WI-FI|REGULATORY|RMN|EAN|UPC|GTIN)\b/i;
+const privateLine = /\b(?:[S5]\s*[/|\\]\s*[I1]?N|S[1I]N(?=\s*[:#])|SN|SERIAL|SERI[AO]V[EÉ]|IMEI|MAC|PASSWORD|HESLO|WIFI|WI-FI|REGULATORY|RMN|EAN|UPC|GTIN)\b/i;
 const codeKey = (text: string) => text.toUpperCase().replace(/[^A-Z0-9]/g, '');
 const clean = (text: string) => text.toUpperCase().replace(/[‐‑‒–—−]/g, '-');
 const codePrefix = /\b(DCP|MFC|HL|TN|DR|LC|BT|WT|CLI|PGI|GI|CL|PG|CRG|PFI|TK|MLT|CLT|ET|XP|WF|LBP)\s*-?\s+([A-Z]?\d)/g;
@@ -153,10 +153,13 @@ export function liveLabelCandidate(lines: LabelLine[], privateCodes: Set<string>
     if (privateLine.test(line.text)) return false;
     const productNumber = clean(line.text).match(productNumberField)?.[1];
     if (productNumber && hpPrinterNumbers.get(productNumber) === item.code && item.kind === 'printer') {
-      return (line.words?.find(word => codeKey(word.text) === productNumber)?.confidence ?? line.confidence) >= 85;
+      // A known six-character HP number in its own named field is still
+      // verified on three separate frames, even on a faint regulatory plate.
+      return (line.words?.find(word => codeKey(word.text) === productNumber)?.confidence ?? line.confidence) >= 50;
     }
     const target = codeKey(item.code);
-    return explicitBrand && tokens(line.text).some(token => codeKey(token) === target)
+    const distinctivePrinter = item.kind === 'printer' && /^(?:DCP|MFC|HL|MF|LBP|ET|XP|WF)-?[A-Z]?\d/.test(item.code);
+    return (explicitBrand || distinctivePrinter) && tokens(line.text).some(token => codeKey(token) === target)
       && (line.words?.find(word => codeKey(word.text) === target)?.confidence ?? line.confidence) >= 85;
   });
   return hasClearCode ? item : undefined;

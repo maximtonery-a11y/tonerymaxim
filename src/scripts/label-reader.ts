@@ -109,8 +109,9 @@ export async function createLabelReader(signal: AbortSignal, singleLine = false)
     await job('setParameters', { params: { tessedit_pageseg_mode: singleLine ? '7' : '11', user_defined_dpi: '200' } });
     return {
       close,
-      async recognize(image: Uint8Array<ArrayBuffer>, progress?: (n: number) => void): Promise<LabelLine[]> {
-        const { blocks = [] } = await job('recognize', { image, options: {}, output: { blocks: true } }, [image.buffer], progress);
+      async recognize(image: Uint8Array<ArrayBuffer>, progress?: (n: number) => void, lineOnly = false): Promise<LabelLine[]> {
+        const options = lineOnly ? { tessedit_pageseg_mode: '7' } : {};
+        const { blocks = [] } = await job('recognize', { image, options, output: { blocks: true } }, [image.buffer], progress);
         return blocks.flatMap(block => block.paragraphs.flatMap(paragraph => paragraph.lines))
           .map(line => ({ text: line.text, confidence: line.confidence, words: line.words.map(word => ({ text: word.text, confidence: word.confidence })) }));
       },

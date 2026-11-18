@@ -109,5 +109,11 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     assert.equal(workers.length, 2, 'one OCR worker per camera session');
     assert.deepEqual(uploads, []);
     console.log('Live label video OK: single-tap start, toner prices, exact printer, private code, empty match, denial, cancel and device release');
+  } catch (error) {
+    const diagnostic = await page.evaluate(() => ({
+      status: document.querySelector('#label-status')?.textContent,
+      tracks: window.labelCameraTest?.tracks.map(t => t.readyState), video: document.querySelector('video')?.readyState,
+    })).catch(() => ({}));
+    throw new Error('Camera test ' + JSON.stringify({ diagnostic, searches, workers: workers.length }) + ': ' + error.message, { cause: error });
   } finally { page.context().off('request', request); page.off('worker', worker); }
 }
