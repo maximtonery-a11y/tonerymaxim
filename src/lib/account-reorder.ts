@@ -3,6 +3,7 @@ import { getProductsCache } from './tm-products-cache';
 import { CALENDAR_SOURCE, getCalendarProducts } from './calendar-catalog';
 import { isAvailableNow, orderFulfilmentText, storefrontStockText } from './product-availability';
 import { AccountOrderError, type AccountOrder } from './account-orders';
+import { tmOrderNumber } from './order-display';
 
 export type ReorderItem = {
   id: string; productId: string; product_id: string; sku: string; name: string; price: number; qty: number;
@@ -39,7 +40,7 @@ export async function prepareAccountReorder(customerId: number, orderId: number)
   // Never infer ownership from an email address, a submitted customer_id or an order key.
   if (order?.id !== orderId || Number(order.customer_id) !== customerId) throw new AccountOrderError('Objednávka nie je dostupná.', 404);
   if (!Array.isArray(order.line_items) || order.line_items.length > 200) throw new AccountOrderError('Túto objednávku momentálne nemožno zopakovať.', 422);
-  const plan: ReorderPlan = { orderId, orderNumber: text(order.number || order.id), checkedAt: Date.now(), items: [], skipped: [] };
+  const plan: ReorderPlan = { orderId, orderNumber: tmOrderNumber(order), checkedAt: Date.now(), items: [], skipped: [] };
   const lines = order.line_items;
   if (!lines.length) return plan;
   const ids = [...new Set(lines.filter(line => !line.variation_id && validId(line.product_id)).map(line => Number(line.product_id)))];

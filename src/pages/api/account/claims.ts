@@ -2,6 +2,8 @@ import type { APIRoute } from "astro";
 import { readCustomerSession } from "../../../lib/auth-session";
 import { getWooCustomerById, getWooCustomerOrders, wooRequest } from "../../../lib/woo-client";
 import { sanitizeCustomerCarePayload } from "../../../lib/customer-care";
+import { getAccountOrderNumbers } from "../../../lib/account-orders";
+import { tmOrderNumber } from "../../../lib/order-display";
 import { ClaimInputError, claimMessageWithContact, claimsRequest, displayClaimNumber, displayClaimOrderNumber, pendingCustomerClaims, submitOnlineClaim } from "../../../lib/online-claims";
 
 export const prerender = false;
@@ -60,14 +62,14 @@ function normalizeDecision(value: unknown, status: ClaimStatus): ClaimDecision {
   return "";
 }
 
-function claimToPublic(claim: any): Claim {
+function claimToPublic(claim: any, tmNumber: string): Claim {
   const status = normalizeStatus(claim?.status);
   return {
     id: displayClaimNumber(claim) || clean(claim?.id || claim?.claim_number),
     wp_id: Number(claim?.wp_id || 0) || null,
     customer_id: Number(claim?.customer_id || 0),
     order_id: Number(claim?.order_id || 0),
-    order_number: clean(claim?.order_number),
+    order_number: tmNumber,
     product_id: Number(claim?.product_id || 0),
     product_name: clean(claim?.product_name) || "Produkt",
     product_sku: clean(claim?.product_sku),
@@ -86,7 +88,7 @@ function claimToPublic(claim: any): Claim {
 function orderToPublic(order: any) {
   return {
     id: Number(order.id || 0),
-    number: displayClaimOrderNumber(order),
+    number: tmOrderNumber(order),
     date_created: clean(order.date_created),
     status: clean(order.status),
     total: clean(order.total),
@@ -112,11 +114,12 @@ async function readData(customerId: number) {
     pendingCustomerClaims(customerId),
   ]);
 
+  const claims = [...claimsResponse.claims, ...pendingClaims.filter((pending: any) => !claimsResponse.claims.some((claim: any) => (claim.id || claim.claim_number) === pending.id))];
+  const numbers = await getAccountOrderNumbers(customerId, claims.map(claim => Number(claim.order_id)), orders);
   return {
     customer,
-    orders: (orders || []).map(orderToPublic).filter((order: any) => order.items.length),
-    claims: [...claimsResponse.claims, ...pendingClaims.filter((pending: any) => !claimsResponse.claims.some((claim: any) => (claim.id || claim.claim_number) === pending.id))]
-      .map(claimToPublic)
+    orders: orders.filter(order => Number(order.customer_id) === customerId).map(orderToPublic).filter(order => order.items.length),
+    claims: claims.map(claim => claimToPublic(claim, numbers.get(Number(claim.order_id)) || ""))
       .sort((a: Claim, b: Claim) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
   };
 }
@@ -159,6 +162,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
     if (!customer || Number(order?.customer_id) !== session.id) return json({ ok: false, error: "Objednávka nepatrí k vášmu účtu." }, 403);
     const product = order.line_items?.find((item: any) => Number(item.product_id) === productId || Number(item.variation_id) === productId);
     if (!product) return json({ ok: false, error: "Produkt nepatrí k vybranej objednávke." }, 400);
+    const tmNumber = tmOrderNumber(order);
     const contact = sanitizeCustomerCarePayload({
       orderNumber: displayClaimOrderNumber(order), email: customer.email,
       name: [customer.first_name || customer.billing?.first_name, customer.last_name || customer.billing?.last_name].filter(Boolean).join(' ') || customer.email,
@@ -169,7 +173,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
       product_id: Number(product.product_id || product.variation_id), product_name: clean(product.name),
       product_sku: clean(product.sku), reason: contact.reason, message: claimMessageWithContact(contact), status: 'received',
     });
-    return json({ ...result, claim: claimToPublic(result.claim) });
+    return json({ ...result, claim: claimToPublic(result.claim, tmNumber) });
   } catch (error) {
     const known = error instanceof ClaimInputError;
     return json({ ok: false, error: known ? error.message : "Reklamáciu sa nepodarilo odoslať. Skúste rovnaké podanie zopakovať." }, known ? error.status : 500);

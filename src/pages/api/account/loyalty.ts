@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ cookies }) => {
     });
   }
 
-  const loyalty = await getCustomerLoyalty(session.id);
+  const loyalty = await getCustomerLoyalty(session.id, { showAccountHistory: true });
   return new Response(JSON.stringify({ ok: true, ...loyalty }), {
     headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
   });

@@ -65,14 +65,14 @@ test('objednávkový endpoint má limity tela, pokusov a bezpečné odpovede', a
 
 test('verejný stav čistí tracking a nikdy nevracia osobné údaje', () => {
   const result = publicOrderStatus({ number:'12345<script>', status:'processing', billing:{email:'a@b.sk',address_1:'Tajná 1'}, meta_data:[{key:'tracking_number',value:'<img src=x>DPD/123'}] });
-  assert.equal(result.number, '12345script');
+  assert.equal(result.number, '');
   assert.equal(result.tracking, 'imgsrcxDPD/123');
   assert.deepEqual(Object.keys(result).sort(), ['date','number','shipping','status','statusLabel','tracking'].sort());
 });
 
 test('stav objednávky zverejní iba potrebné read-only údaje', async () => {
   const publicOrder = publicOrderStatus({ id:51664, number:'51664', status:'processing', date_created:'2026-08-31T10:00:00', billing:{email:'tajne@example.sk',phone:'0900'}, line_items:[{name:'Toner'}], shipping_lines:[{method_title:'DPD kuriér'}], meta_data:[{key:'tracking_number',value:'DPD-123'}] });
-  assert.deepEqual(publicOrder, { number:'51664', status:'processing', statusLabel:'Spracováva sa', date:'2026-08-31T10:00:00', shipping:'DPD kuriér', tracking:'DPD-123' });
+  assert.deepEqual(publicOrder, { number:'', status:'processing', statusLabel:'Spracováva sa', date:'2026-08-31T10:00:00', shipping:'DPD kuriér', tracking:'DPD-123' });
   assert.equal('billing' in publicOrder, false);
   assert.equal('line_items' in publicOrder, false);
   for (const q of ['Kde je moja objednávka?', 'Stav objednávky 51664', 'Kde nájdem tracking zásielky?']) assert.equal(isOrderStatusQuestion(q), true, q);

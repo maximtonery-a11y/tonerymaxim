@@ -1,6 +1,9 @@
 import { getCustomerMeta, getWooCustomerById, getWooCustomerOrders, parseJsonMeta, updateWooCustomer } from "./woo-client";
 import { isLoyaltyCreditStatus } from "./order-statuses";
 import { earnedPaperPacks } from "./loyalty-rules";
+import { getAccountOrderNumbers } from "./account-orders";
+import { tmOrderNumber } from "./order-display";
+import type { WooOrder } from "./woo-client";
 export { earnedPaperPacks } from "./loyalty-rules";
 
 export const LOYALTY_META_POINTS = "tm_loyalty_points";
@@ -41,7 +44,20 @@ export function loyaltyDiscountFromPoints(points: number) {
   return Math.floor(value) / 100;
 }
 
-export async function syncCustomerLoyaltyPoints(customerId: number) {
+async function accountHistoryTitles(customerId: number, history: LoyaltyHistoryItem[], orders: WooOrder[]) {
+  const entries = history.map(item => {
+    const label = /^(Objednávka|Použitá zľava pri objednávke)(?:\s+#(\S+))?$/i.exec(item.title);
+    return { item, label: label?.[1], orderId: Number(item.orderId || label?.[2]) };
+  });
+  const numbers = await getAccountOrderNumbers(customerId, entries.filter(entry => entry.label).map(entry => entry.orderId), orders);
+  return entries.map(({ item, label, orderId }) => {
+    if (!label) return item;
+    const number = numbers.get(orderId);
+    return { ...item, title: number ? `${label} #${number}` : label };
+  });
+}
+
+export async function syncCustomerLoyaltyPoints(customerId: number, showAccountHistory = false) {
   const customer = await getWooCustomerById(customerId);
   if (!customer) return { points: 0, lifetimePoints: 0, claimedPacks: 0, history: [] as LoyaltyHistoryItem[], creditedOrders: [] as string[] };
 
@@ -66,9 +82,10 @@ export async function syncCustomerLoyaltyPoints(customerId: number) {
     points += add;
     lifetimePoints += add;
     creditedSet.add(id);
+    const number = tmOrderNumber(order);
     history.unshift({
       date: todaySk(),
-      title: `Objednávka #${order.number || order.id}`,
+      title: number ? `Objednávka #${number}` : "Objednávka",
       points: add,
       orderId: Number(order.id),
     });
@@ -86,11 +103,12 @@ export async function syncCustomerLoyaltyPoints(customerId: number) {
     });
   }
 
-  return { points, lifetimePoints, claimedPacks, history: history.slice(0, 100), creditedOrders: [...creditedSet] };
+  const recentHistory = history.slice(0, 100);
+  return { points, lifetimePoints, claimedPacks, history: showAccountHistory ? await accountHistoryTitles(customerId, recentHistory, orders) : recentHistory, creditedOrders: [...creditedSet] };
 }
 
-export async function getCustomerLoyalty(customerId: number) {
-  const synced = await syncCustomerLoyaltyPoints(customerId);
+export async function getCustomerLoyalty(customerId: number, { showAccountHistory = false } = {}) {
+  const synced = await syncCustomerLoyaltyPoints(customerId, showAccountHistory);
   const paper = earnedPaperPacks(synced.lifetimePoints);
   return {
     ...synced,
@@ -158,7 +176,7 @@ export async function reserveLoyaltyDiscount(customerId: number, orderId: number
   const history = [
     {
       date: todaySk(),
-      title: `Použitá zľava pri objednávke #${orderId}`,
+      title: "Použitá zľava pri objednávke",
       points: -pointsUsed,
       orderId: Number(orderId) || undefined,
     },

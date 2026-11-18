@@ -60,6 +60,7 @@ export type WooCustomer = {
 
 type WooRequestOptions = {
   method?: string;
+  cache?: RequestCache;
   body?: unknown;
   query?: Record<string, string | number | boolean | undefined | null>;
 };
@@ -110,6 +111,7 @@ export async function wooRequest<T = any>(endpoint: string, options: WooRequestO
   const method = String(options.method || "GET").toUpperCase();
   const response = await fetch(url, {
     method,
+    cache: options.cache,
     headers: {
       Authorization: getWooAuthHeader(),
       "Content-Type": "application/json",
@@ -229,6 +231,7 @@ export type WooOrderLineItem = {
 
 export type WooOrder = {
   id: number;
+  customer_id?: number;
   number?: string;
   status?: string;
   date_created?: string;
