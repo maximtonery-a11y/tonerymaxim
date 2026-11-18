@@ -4,11 +4,21 @@ export type LabelCandidate = { brand: string; code: string; kind: 'printer' | 's
 type Rule = { kind: LabelCandidate['kind']; brand: string; pattern: RegExp };
 
 const printerFamilies = [
-  { brand: 'HP', name: /\b(?:LASERJET|DESKJET|OFFICEJET|DESIGNJET|ENVY|SMART TANK|HP (?:COLOR )?LASER)\b/i, number: /^(?:\d{4}[A-Z]{0,4}|\d{3}(?:W|WE|NW|NWE|FNW|FDW))$/ },
+  { brand: 'HP', name: /\b(?:LASERJET|DESKJET|OFFICEJET|DESIGNJET|ENVY|SMART TANK|HP (?:COLOR )?LASER|LASER(?=\s+107[AW]\b))\b/i, number: /^(?:\d{4}[A-Z]{0,4}|107A|\d{3}(?:W|WE|NW|NWE|FNW|FDW))$/ },
   { brand: 'Xerox', name: /\b(?:WORKCENTRE|PHASER|VERSALINK|ALTALINK)\b/i, number: /^[BC]?\d{3,4}[A-Z]{0,3}$/ },
   { brand: 'Samsung', name: /\b(?:XPRESS|PROXPRESS|SAMSUNG)\b/i, number: /^(?:(?:SL-)?[CMX]|SCX-|ML-)\d{3,5}[A-Z]{0,4}$/ },
   { brand: 'Kyocera', name: /\b(?:ECOSYS|TASKALFA)\b/i, number: /^(?:[MP][A-Z]?-?)?\d{3,5}[A-Z]{0,4}$/ },
 ];
+// HP product-number fields on printer plates, checked against HP's model specifications.
+const hpPrinterNumbers = new Map([
+  // hp.com/sk-sk/products/printers/product-details/24494357 and /24494358
+  ['4ZB77A', '107A'], ['4ZB78A', '107W'],
+  // hp.com/sk-sk/products/printers/product-details/34443734 and /35334172
+  ['7MD66F', 'M110W'], ['7MD66E', 'M110WE'],
+  // h10032.www1.hp.com/ctg/Manual/c06183445.pdf, technical specifications by printer model
+  ['W1A53A', 'M404DN'], ['W1A56A', 'M404DW'],
+]);
+const productNumberField = /\b(?:PRODUCT\s*(?:NO\.?|NUMBER|ID)|PROD\.?\s*(?:NO\.?|ID)|P\/N|ČÍSLO\s+PRODUKTU)[\s:#.,_–-]{0,8}([A-Z0-9]{6})(?:#[A-Z0-9]{3})?(?![A-Z0-9#-])/i;
 const hpOem = /^(?:C[BEFH]\d{3}|[CQW]\d{4}|[A-Z]\d[A-Z]\d{2})[A-Z]{1,3}$/;
 const rules: Rule[] = [
   { kind: 'supply', brand: 'HP', pattern: hpOem },
@@ -44,14 +54,7 @@ export function labelBrands(lines: LabelLine[]): string[] {
   return [...brands];
 }
 
-// The full-frame pass also protects references seen beside serial numbers during a later crop.
-export function labelCandidates(lines: LabelLine[], privateCodes = new Set<string>(), previousBrands: string[] = []): LabelCandidate[] {
-  const found = new Map<string, LabelCandidate>();
-  const brands = new Set([...labelBrands(lines), ...previousBrands]);
-  const context = lines.map(line => line.text).join(' ');
-  const family = printerFamilies.find(family => brands.size === 1 && brands.has(family.brand.toUpperCase())
-    && (family.name.test(context) || previousBrands.includes(family.brand.toUpperCase())));
-  const packageLabel = /\b(?:TONER|CARTRIDGES?|CARTOUCHES?|DUAL PACK|DRUM UNIT|PRINT CARTRIDGE|FOR USE WITH)\b/i.test(context);
+function visibleLabelLines(lines: LabelLine[], privateCodes: Set<string>) {
   let privateValueOnNextLine = false;
   const useful: LabelLine[] = [];
   for (const line of lines.slice(0, 100)) {
@@ -71,6 +74,18 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
     }
     useful.push(line);
   }
+  return useful;
+}
+
+// The full-frame pass also protects references seen beside serial numbers during a later crop.
+export function labelCandidates(lines: LabelLine[], privateCodes = new Set<string>(), previousBrands: string[] = []): LabelCandidate[] {
+  const found = new Map<string, LabelCandidate>();
+  const brands = new Set([...labelBrands(lines), ...previousBrands]);
+  const context = lines.map(line => line.text).join(' ');
+  const family = printerFamilies.find(family => brands.size === 1 && brands.has(family.brand.toUpperCase())
+    && (family.name.test(context) || previousBrands.includes(family.brand.toUpperCase())));
+  const packageLabel = /\b(?:TONER|CARTRIDGES?|CARTOUCHES?|DUAL PACK|DRUM UNIT|PRINT CARTRIDGE|FOR USE WITH)\b/i.test(context);
+  const useful = visibleLabelLines(lines, privateCodes);
   for (const [index, line] of useful.entries()) {
     let text = line.text;
     // Canon sometimes prints the family number and its ink colour on separate lines.
@@ -78,31 +93,59 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
     if (brands.has('CANON') && /^\d{3}$/.test(text.trim()) && /^(?:PGBK|BK|[CMY]|XX?L)$/i.test(below)) {
       text = text.trim() + below;
     }
-    for (const token of tokens(text)) {
+    const words = tokens(text);
+    const printedNumber = clean(text).match(productNumberField)?.[1];
+    // A distorted HP wordmark may still be followed by a clear four-digit model.
+    // Only the family word may vary. The customer confirms the unchanged number.
+    const hpNumberOnLabel = /^\W*HP\s+(?:LASER|DESK|OFFICE|DESIGN)[A-Z]{0,4}(?:\s+PRO)?\s+(\d{4})(?:\s+PLUS)?\W*$/i.exec(text)?.[1];
+    for (const [position, token] of words.entries()) {
       if (privateCodes.has(codeKey(token))) continue;
+      const model = hpPrinterNumbers.get(token);
+      if (model) {
+        if (printedNumber === token && !packageLabel && (!brands.size || brands.has('HP'))) {
+          const key = 'printer:HP:' + model;
+          if (!found.has(key)) found.set(key, { brand: 'HP', code: model, kind: 'printer', certain: false });
+        }
+        continue;
+      }
       const rule = rules.find(rule => rule.pattern.test(token));
       const shortHP = (!brands.size || brands.has('HP')) && (/^\d{2,3}(?:[AX]|XL)$/.test(token)
         || (/^\d{2,3}$/.test(token) && new RegExp('\\bHP\\s+' + token + '\\b', 'i').test(text)));
       const shortCanon = brands.has('CANON') && /^\d{3}(?:XXL|XL|PGBK|BK|[HCMY])?$/.test(token);
       const shortEpson = brands.has('EPSON') && /^\d{3}(?:XL)?$/.test(token);
+      const explicitHpNumber = !packageLabel && token === hpNumberOnLabel && !/^(?:19|20)\d{2}$/.test(token);
       const numberedPrinter = !packageLabel && family && family.number.test(token)
         && !/^(?:19|20)\d{2}$/.test(token)
         && (!/^\d+$/.test(token) || family.name.test(text)
           || (text.trim() === token && family.name.test(useful[index - 1]?.text || '')));
-      if (!rule && !shortHP && !shortCanon && !shortEpson && !numberedPrinter) continue;
+      if (!rule && !shortHP && !shortCanon && !shortEpson && !numberedPrinter && !explicitHpNumber) continue;
       const brand = numberedPrinter ? family.brand : rule?.brand || (shortCanon ? 'Canon' : shortEpson ? 'Epson' : 'HP');
-      const kind = numberedPrinter ? 'printer' : rule?.kind || 'supply';
+      const kind = numberedPrinter || explicitHpNumber ? 'printer' : rule?.kind || 'supply';
       if (kind === 'printer' && packageLabel) continue;
       const word = line.words?.find(word => codeKey(word.text) === codeKey(token));
       const confidence = word?.confidence ?? line.confidence;
       const brandAgrees = brands.size === 1 ? brands.has(brand.toUpperCase()) : !brands.size && kind === 'supply';
       if (brands.size && !brands.has(brand.toUpperCase())) continue;
-      const key = kind + ':' + brand + ':' + codeKey(token);
-      const candidate = { brand, code: token, kind, certain: !shortHP && !shortCanon && !shortEpson && brandAgrees && confidence >= 85 };
+      const code = kind === 'printer' && words[position + 1] === 'PLUS' ? token + ' Plus' : token;
+      const key = kind + ':' + brand + ':' + codeKey(code);
+      const candidate = { brand, code, kind, certain: (!explicitHpNumber || Boolean(numberedPrinter)) && !shortHP && !shortCanon && !shortEpson && brandAgrees && confidence >= 85 };
       if (!found.has(key) || candidate.certain) found.set(key, candidate);
     }
   }
   return [...found.values()];
+}
+
+// Each reading is an independent interpretation of the same row. Present exact alternatives
+// for confirmation and honour a private field detected by either reading.
+export function selectedLabelCandidates(passes: LabelLine[][], privateCodes: Set<string>, previousBrands: string[]) {
+  for (const lines of passes) visibleLabelLines(lines, privateCodes);
+  const candidates = new Map<string, LabelCandidate>();
+  for (const lines of passes) {
+    for (const item of labelCandidates(lines, privateCodes, previousBrands)) {
+      candidates.set(item.kind + ':' + item.brand + ':' + codeKey(item.code), { ...item, certain: false });
+    }
+  }
+  return [...candidates.values()];
 }
 
 export type CatalogLink = { title: string; url: string; price?: number; brand?: string; oem?: string };
@@ -120,8 +163,8 @@ export function exactLabelOffers(candidate: LabelCandidate, response: LabelOffer
     const brands = clean(item.title).match(brandPattern) || [];
     if (![...brands, (item.brand || '').toUpperCase()].includes(candidate.brand.toUpperCase())) return false;
     const identities = tokens(item.title + (printer ? '' : ' ' + (item.oem || '')));
-    const matches = identities.some(code => {
-      const key = codeKey(code);
+    const matches = identities.some((code, position) => {
+      const key = codeKey(printer && identities[position + 1] === 'PLUS' ? code + 'PLUS' : code);
       if (key === target) return true;
       return !printer && candidate.brand === 'Canon' && /^\d{3}/.test(target)
         && key.replace(/^(?:CRG|PGI|CLI|PG|CL|GI|PFI)/, '') === target;

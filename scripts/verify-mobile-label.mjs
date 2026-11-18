@@ -7,6 +7,26 @@ async function labelFile(text) {
   return { name: 'sticker.png', mimeType: 'image/png', buffer: await sharp(Buffer.from(svg)).png().toBuffer() };
 }
 
+async function angledPrinterFile() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="480">
+    <rect width="1200" height="480" fill="white"/>
+    <g font-family="sans-serif" font-size="46">
+      <text x="24" y="62">Brother TN-2421</text><text x="24" y="446">Canon PG-545</text>
+      <g transform="translate(320 290) rotate(-15)">
+        <rect x="-18" y="-56" width="544" height="82" fill="#2b3034"/>
+        <text x="0" y="0" fill="white" textLength="500" lengthAdjust="spacingAndGlyphs">HP LaserJet P1102</text>
+      </g>
+    </g></svg>`;
+  return { name: 'control-panel.png', mimeType: 'image/png', buffer: await sharp(Buffer.from(svg)).png().toBuffer() };
+}
+
+async function tapPhoto(page, x, y) {
+  const photo = page.locator('[data-crop-image]');
+  await photo.waitFor({ state: 'visible' });
+  const bounds = await photo.boundingBox();
+  await photo.click({ position: { x: bounds.width * x, y: bounds.height * y } });
+}
+
 export async function verifyMobileLabel(page, origin) {
   const requests = [];
   const record = request => requests.push({ method: request.method(), url: new URL(request.url()) });
@@ -37,15 +57,40 @@ export async function verifyMobileLabel(page, origin) {
     assert.deepEqual(lookup(), ['Brother TN-2421'], 'serial must not become a lookup');
     await page.getByRole('button', { name: 'Vybrať riadok z fotky' }).click();
     await page.locator('[data-crop-image]').waitFor({ state: 'visible' });
-    await page.locator('.crop-image').click();
+    await tapPhoto(page, .23, .49);
+    await page.locator('[data-read-around]').click();
     await page.waitForFunction(() => document.querySelector('#label-status')?.textContent.includes('nepodarilo prečítať'));
     assert.deepEqual(lookup(), ['Brother TN-2421']);
+
+    await page.getByRole('button', { name: 'Vybrať riadok z fotky' }).click();
+    await tapPhoto(page, .208, .518);
+    await tapPhoto(page, .448, .518);
+    await page.waitForFunction(() => document.querySelector('#label-status')?.textContent.includes('nepodarilo prečítať'));
+    assert.deepEqual(lookup(), ['Brother TN-2421'], 'even a tight strip cannot resurrect a serial');
 
     await page.locator('#label-code').fill('Brother TN-24219');
     await page.locator('form.manual button').click();
     await page.waitForFunction(() => document.querySelector('#label-status')?.textContent.includes('Presnú zhodu'));
     assert.equal(await page.locator('[data-matches] a').count(), 0);
 
+    // A small bright name on a sloping dark control panel can be selected without a new photo.
+    await gallery.setInputFiles(await angledPrinterFile());
+    await page.getByRole('button', { name: 'Vybrať riadok z fotky' }).click();
+    const zoom = page.getByRole('button', { name: 'Zväčšiť fotku' });
+    await zoom.click();
+    assert.equal(await page.getByRole('button', { name: 'Zmenšiť fotku' }).getAttribute('aria-pressed'), 'true');
+    await page.getByRole('button', { name: 'Zmenšiť fotku' }).click();
+    await tapPhoto(page, .27, .56);
+    await page.getByRole('button', { name: 'Označiť znova' }).click();
+    await tapPhoto(page, .265, .565);
+    const beforeConfirm = lookup().length;
+    await tapPhoto(page, .665, .298);
+    const confirm = page.getByRole('button', { name: 'HP P1102', exact: true });
+    await confirm.waitFor({ state: 'visible', timeout: 60_000 });
+    assert.equal(lookup().length, beforeConfirm, 'a chosen row must stay local until confirmed');
+    await confirm.click();
+    await page.waitForURL('**/tlaciarne/hp/*p1102', { timeout: 60_000 });
+    await page.goto(origin + '/hladat-fotkou');
     await gallery.setInputFiles(await labelFile('HP LaserJet P1102'));
     await page.waitForURL('**/tlaciarne/hp/*p1102', { timeout: 60_000 });
     assert.match(await page.locator('h1').innerText(), /P1102/i);
