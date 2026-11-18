@@ -49,6 +49,14 @@ function fixture(options: any = {}) {
     if (options.networkFailure) throw new Error('Internal server/secret path that must not leak');
     if (options.html) return new Response('<html>Sign in</html>');
     if (options.oversize) return new Response('x'.repeat(options.oversize), { headers: { 'Content-Type': 'application/json' } });
+    if (url.pathname === '/wp-json/wc/v3/orders') {
+      assert.equal(url.searchParams.get('customer'), '7');
+      assert.equal(url.searchParams.get('include'), '101');
+      assert.equal(url.searchParams.get('per_page'), '1');
+      assert.equal(url.searchParams.get('_fields'), 'id,customer_id,meta_data');
+      if (options.numberLookupFailure) return Response.json({}, { status: 503 });
+      return Response.json([{ id: 101, customer_id: 7, number: '101', meta_data: [{ key: 'tm_order_number', value: '301092' }], ...options.order }]);
+    }
     const owner = Number(url.searchParams.get('customer_id'));
     if (url.pathname.endsWith('/file')) {
       if (options.missing || owner !== 7) return Response.json({ ok: false }, { status: 404 });
@@ -89,7 +97,22 @@ test('the customer identity always comes from the signed session, never query pa
   assert.equal(data.documents[0].number, '2026-001');
   assert.equal('customer_id' in data.documents[0], false);
   assert.equal(data.page, 2);
-  assert.ok(f.requests.every(request => !request.url.pathname.includes('/orders')));
+  assert.equal(data.documents[0].order_number, '301092');
+  assert.equal(f.requests.length, 2);
+});
+
+test('an invoice containing an old Woo reference uses only the verified TM number and stays downloadable without one', async () => {
+  for (const [options, expected] of [
+    [{}, '301092'], [{ order: { meta_data: [] } }, ''], [{ order: { customer_id: 8 } }, ''], [{ numberLookupFailure: true }, ''],
+  ] as const) {
+    const f = fixture({ document: { order_number: '101' }, ...options });
+    const response = await f.list();
+    assert.equal(response.status, 200);
+    const { documents } = await response.json();
+    assert.equal(documents[0].order_number, expected);
+    assert.equal(documents[0].number, '2026-001');
+    assert.equal((await f.file()).status, 200);
+  }
 });
 
 test('PDF download preserves the exact original bytes and sends private attachment headers', async () => {

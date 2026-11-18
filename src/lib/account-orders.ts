@@ -1,5 +1,6 @@
-import { getWooAuthHeader, getWooBaseUrl, type WooOrder } from './woo-client';
+import { getWooAuthHeader, getWooBaseUrl, wooRequest, type WooOrder } from './woo-client';
 import { isLoyaltyCreditStatus, normalizeOrderStatus } from './order-statuses';
+import { TM_ORDER_NUMBER_META, tmOrderNumber } from './order-display';
 
 export type AccountOrder = Omit<WooOrder, 'line_items'> & {
   customer_id: number;
@@ -54,7 +55,8 @@ async function readPage(customerId: number, page: number, perPage: number, summa
   const url = new URL(getWooBaseUrl() + '/wp-json/wc/v3/orders');
   const fields = summaryOnly
     ? 'id,customer_id,status,date_paid,total,currency,refunds'
-    : 'id,number,customer_id,status,date_created,date_paid,total,total_tax,currency,refunds,tax_lines,line_items';
+    : 'id,customer_id,status,date_created,date_paid,total,total_tax,currency,refunds,tax_lines,line_items,meta_data';
+  if (!summaryOnly) url.searchParams.set('include_meta', TM_ORDER_NUMBER_META.join(','));
   for (const [key, value] of Object.entries({ customer: customerId, page, per_page: perPage, orderby: 'date', order: 'desc', _fields: fields })) url.searchParams.set(key, String(value));
   let response: Response;
   try {
@@ -78,9 +80,38 @@ async function readPage(customerId: number, page: number, perPage: number, summa
   return { orders, page, total: count, totalPages: pages, hasMore: page < pages };
 }
 export async function getAccountOrdersPage(customerId: number, page = 1) {
-  return readPage(customerId, accountOrderPage(page), ACCOUNT_ORDERS_PER_PAGE);
+  const result = await readPage(customerId, accountOrderPage(page), ACCOUNT_ORDERS_PER_PAGE);
+  const orders = result.orders.map(({ meta_data, number: _wooNumber, ...order }) => ({
+    ...order, tmNumber: tmOrderNumber({ meta_data }),
+  }));
+  return { ...result, orders };
 }
-type Overview = { count: number; spending: Array<{ currency: string; total: number }>; latestOrder: AccountOrder | null };
+
+// Old invoices, claims and loyalty entries can contain a copied Woo number.
+// Resolve their labels from the customer's orders, including orders outside the current page.
+export async function getAccountOrderNumbers(customerId: number, ids: number[], knownOrders: WooOrder[] = []) {
+  const requested = new Set(ids.filter(id => Number.isSafeInteger(id) && id > 0));
+  const numbers = new Map<number, string>();
+  function collect(orders: WooOrder[]) {
+    for (const order of orders) {
+      if (Number(order?.customer_id) === customerId && requested.has(order.id)) numbers.set(order.id, tmOrderNumber(order));
+    }
+  }
+  collect(knownOrders);
+  const missing = [...requested].filter(id => !numbers.has(id));
+  for (let offset = 0; offset < missing.length; offset += 100) {
+    const batch = missing.slice(offset, offset + 100);
+    const orders = await wooRequest<WooOrder[]>('/orders', { cache: 'no-store', query: {
+      customer: customerId, include: batch.join(','), per_page: batch.length,
+      _fields: 'id,customer_id,meta_data', include_meta: TM_ORDER_NUMBER_META.join(','),
+    } }).catch(() => []);
+    // A missing label must not prevent access to the underlying document.
+    if (Array.isArray(orders)) collect(orders);
+  }
+  return numbers;
+}
+
+type Overview = { count: number; spending: Array<{ currency: string; total: number }>; latestOrder: (AccountOrder & { tmNumber: string }) | null };
 const overviews = new Map<number, { until: number; value: Overview }>();
 const pending = new Map<number, Promise<Overview>>();
 export async function getAccountOverview(customerId: number): Promise<Overview> {
@@ -117,7 +148,7 @@ export async function getAccountOverview(customerId: number): Promise<Overview> 
     if (seen.size !== first.total) throw new AccountOrderError();
     const latest = recent.orders[0];
     const value: Overview = { count: first.total, spending: [...spending].map(([currency, total]) => ({ currency, total: total / 100 })), latestOrder: latest ? {
-      id: latest.id, customer_id: latest.customer_id, number: latest.number, status: latest.status, date_created: latest.date_created, total: latest.total, currency: latest.currency,
+      id: latest.id, customer_id: latest.customer_id, tmNumber: tmOrderNumber(latest), status: latest.status, date_created: latest.date_created, total: latest.total, currency: latest.currency,
       line_items: latest.line_items?.slice(0, 5).map(item => ({ name: String(item.name || '').slice(0, 500), quantity: item.quantity, total: item.total, total_tax: item.total_tax })),
     } : null };
     while (overviews.size >= 200) overviews.delete(overviews.keys().next().value!);

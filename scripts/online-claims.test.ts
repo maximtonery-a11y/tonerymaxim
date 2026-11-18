@@ -159,6 +159,21 @@ test('historical readable claim numbers are preserved', async () => {
   assert.equal(data.claims[0].id, 'R20261019-1234');
 });
 
+test('account claim history and the order selector show only the linked order’s TM reference', async () => {
+  for (const hasNumber of [true, false]) {
+    const f = await fixture();
+    if (!hasNumber) f.order.meta_data = [];
+    const expected = hasNumber ? '301092' : '';
+    const submission = await f.submit('account');
+    assert.equal(submission.status, 200);
+    assert.equal(submission.data.claim.order_number, expected);
+    f.claims[0].order_number = '101';
+    const data = await (await f.server.accountGET({ cookies: f.cookies })).json();
+    assert.equal(data.claims[0].order_number, expected);
+    assert.equal(data.orders[0].number, expected);
+  }
+});
+
 test('account claim uses authenticated customer and server-side product, without modifying order', async () => {
   const f = await fixture(); const r = await f.submit('account', { customer_id: 999, product_name: 'Forged name' });
   assert.equal(r.status, 200); assert.equal(r.data.wooSaved, true); assert.equal(f.claims[0].customer_id, 7);

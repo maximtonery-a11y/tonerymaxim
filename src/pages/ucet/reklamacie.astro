@@ -188,7 +188,7 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
                 <div>
                   <span class="claim-id">${claim.wp_id ? `#${escapeHtml(claim.id)}` : 'Číslo pridelíme po spracovaní'}</span>
                   <h2>${escapeHtml(claim.product_name)}</h2>
-                  <p>Objednávka <strong>${escapeHtml(claim.order_number)}</strong> · odoslané ${formatDate(claim.created_at)}</p>
+                  <p>${claim.order_number ? `Objednávka <strong>${escapeHtml(claim.order_number)}</strong> · ` : ""}Odoslané ${formatDate(claim.created_at)}</p>
                 </div>
                 <span class="status-pill ${claim.status === "checking" ? "is-warning" : claim.status === "resolved" ? "is-done" : claim.status === "rejected" ? "is-error" : ""}">${escapeHtml(claim.status_label)}</span>
               </div>
@@ -212,7 +212,7 @@ if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Ast
         }
 
         orderSelect.innerHTML = `<option value="">Vyberte objednávku</option>` + orders.map((order) => {
-          const label = `#${order.number} · ${formatDate(order.date_created)} · ${order.total || ""} €`;
+          const label = `${order.number ? "#" + order.number : "Objednávka"} · ${formatDate(order.date_created)} · ${order.total || ""} €`;
           return `<option value="${order.id}">${escapeHtml(label)}</option>`;
         }).join("");
         submitBtn.disabled = false;

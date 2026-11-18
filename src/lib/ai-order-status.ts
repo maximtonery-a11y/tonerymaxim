@@ -1,4 +1,6 @@
 import { getOrderStatusLabel, normalizeOrderStatus } from './order-statuses.ts';
+import { tmOrderNumber as publicOrderNumber } from './order-display.ts';
+export { publicOrderNumber };
 
 export function publicOrderStatus(order: any) {
   const status = normalizeOrderStatus(order?.status);
@@ -11,17 +13,6 @@ export function publicOrderStatus(order: any) {
     shipping: String(order?.shipping_lines?.[0]?.method_title || '').slice(0, 100),
     tracking: extractTracking(order?.meta_data),
   };
-}
-
-function orderMetaValue(order: any, key: string) {
-  const rows = Array.isArray(order?.meta_data) ? order.meta_data : [];
-  return String(rows.find((row: any) => String(row?.key || '') === key)?.value || '').trim();
-}
-
-export function publicOrderNumber(order: any) {
-  return orderMetaValue(order, 'tm_order_number')
-    || orderMetaValue(order, 'gopay_order_number')
-    || String(order?.number || order?.id || '');
 }
 
 function extractTracking(meta: any) {

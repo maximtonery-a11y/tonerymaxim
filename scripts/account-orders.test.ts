@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import { runInNewContext } from 'node:vm';
+import { tmOrderNumber } from '../src/lib/order-display.ts';
 
 const directory = await mkdtemp(join(tmpdir(), 'tm-account-orders-'));
 const originalFetch = globalThis.fetch;
@@ -44,7 +45,9 @@ function fixture(options: any = {}) {
       if (options.failPage === page) return Response.json({ message: 'private detail' }, { status: 500 });
       const total = orders.length + (options.changingTotal && page > 1 ? 1 : 0);
       const headers: Record<string, string> = options.missingHeaders ? {} : { 'X-WP-Total': String(total), 'X-WP-TotalPages': String(Math.ceil(total / size)) };
-      return Response.json(orders.slice((page - 1) * size, page * size), { headers });
+      const fields = url.searchParams.get('_fields')?.split(',');
+      const selected = orders.slice((page - 1) * size, page * size);
+      return Response.json(fields ? selected.map((order: any) => Object.fromEntries(fields.map(key => [key, order[key]]))) : selected, { headers });
     }
     if (/\/orders\/\d+$/.test(url.pathname)) return Response.json(options.order || orders.find((order: any) => order.id === Number(url.pathname.split('/').pop())) || {}, { status: options.orderMissing ? 404 : 200 });
     assert.equal(url.pathname, '/wp-json/wc/v3/products');
@@ -71,6 +74,32 @@ test('lifetime count and spend include more than 100 orders, with complete pagin
   const second = await app.getAccountOrdersPage(f.customer, 2);
   assert.equal(second.orders.length, 20); assert.equal(second.orders[0].id, 1020); assert.equal(second.totalPages, 8);
   const last = await app.getAccountOrdersPage(f.customer, 8); assert.equal(last.orders.length, 11); assert.equal(last.hasMore, false);
+});
+
+test('history, the cached latest order and reorder use the TM number independently of the Woo number and ID', async () => {
+  const f = fixture({ orders: [
+    { id: 701, number: '700001', meta_data: [{ key: 'tm_order_number', value: '312345' }, { key: 'private_note', value: 'fixture-only' }], line_items: [] },
+    { id: 702, number: '312346', line_items: [] },
+  ] });
+  const page = await app.getAccountOrdersPage(f.customer);
+  assert.deepEqual(page.orders.map((order: any) => order.tmNumber), ['312345', '']);
+  assert.ok(!('meta_data' in page.orders[0]) && !('number' in page.orders[0]));
+  const overview = await app.getAccountOverview(f.customer);
+  assert.equal(overview.latestOrder.tmNumber, '312345');
+  assert.equal((await app.getAccountOverview(f.customer)).latestOrder.tmNumber, '312345');
+  assert.doesNotMatch(JSON.stringify(overview), /fixture-only|700001/);
+  assert.ok(!f.requests.find(url => url.searchParams.get('per_page') === '100')?.searchParams.get('_fields')?.includes('meta_data'));
+  assert.equal((await (await f.post()).json()).plan.orderNumber, '312345');
+  assert.equal((await (await f.post({ orderId: 702 })).json()).plan.orderNumber, '');
+});
+
+test('TM metadata has priority and older checkout references can be recovered without guessing', () => {
+  const read = (entries: Array<[string, unknown]>) => tmOrderNumber({ meta_data: entries.map(([key, value]) => ({ key, value })) });
+  assert.equal(read([['gopay_order_number', 312347], ['tm_order_number', ' 312345 ']]), '312345');
+  assert.equal(read([['tm_order_number', ''], ['gopay_order_number', 'TM-312347']]), 'TM-312347');
+  assert.equal(read([['tm_order_snapshot', JSON.stringify({ orderNumber: '312348' })]]), '312348');
+  assert.equal(read([['tm_order_snapshot', { orderNumber: 312348 }]]), '312348');
+  assert.equal(read([['gopay_payment_id', 312349], ['tm_order_number', { number: 312345 }], ['tm_order_snapshot', '{']]), '');
 });
 
 test('summary separates currencies and excludes failed, unpaid, cancelled and refunded orders', async () => {

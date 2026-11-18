@@ -8,7 +8,7 @@ import { getCustomerLoyalty } from "../../lib/loyalty";
 
 const customer = readCustomerSession(Astro.cookies);
 if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
-const loyalty = await getCustomerLoyalty(customer.id);
+const loyalty = await getCustomerLoyalty(customer.id, { showAccountHistory: true });
 const points = loyalty.points;
 const history = loyalty.history;
 const discountValue = loyalty.discountValue;

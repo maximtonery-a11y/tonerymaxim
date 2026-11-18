@@ -1,4 +1,4 @@
-import type { WooCustomer, WooOrder } from "./woo-client";
+import type { WooCustomer } from "./woo-client";
 import type { CustomerSession } from "./auth-session";
 import { getOrderStatusLabel } from "./order-statuses";
 
@@ -35,8 +35,8 @@ export function orderStatusLabel(status?: string): string {
   return getOrderStatusLabel(status);
 }
 
-export function orderNumber(order: WooOrder): string {
-  return order.number ? `#${order.number}` : `#${order.id}`;
+export function orderNumber(order: { tmNumber: string }): string {
+  return order.tmNumber ? `#${order.tmNumber}` : "Objednávka";
 }
 
 export function getBilling(customer: WooCustomer): Record<string, any> {

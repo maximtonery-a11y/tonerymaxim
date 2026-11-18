@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { getWooAuthHeader, getWooBaseUrl } from './woo-client';
+import { getAccountOrderNumbers } from './account-orders';
 
 export const INVOICE_ID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
 export type CustomerInvoice = {
@@ -67,17 +68,19 @@ export async function getCustomerInvoices(customerId: number, page = 1, orderId?
   if (orderId !== undefined) query.order_id = invoiceOrderFilter(orderId)!;
   const data = await request('', query, 131072);
   if (!Array.isArray(data.documents) || data.documents.length > 20 || Number(data.page) !== page || typeof data.has_more !== 'boolean') throw unavailable();
-  const documents = data.documents.map((item: any): CustomerInvoice => {
-    const number = plain(item?.number), date = plain(item?.date), orderNumber = plain(item?.order_number);
+  const documents: CustomerInvoice[] = data.documents.map((item: any): CustomerInvoice => {
+    const number = plain(item?.number), date = plain(item?.date);
     const timestamp = Date.parse(date + 'T12:00:00Z');
     if (!INVOICE_ID.test(plain(item?.id)) || Number(item?.customer_id) !== customerId || !positiveId(item?.order_id)
       || (orderId !== undefined && Number(item.order_id) !== orderId) || !number || number.length > 100
-      || !orderNumber || orderNumber.length > 100 || !/^\d{4}-\d{2}-\d{2}$/.test(date)
+      || !/^\d{4}-\d{2}-\d{2}$/.test(date)
       || !Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 10) !== date
       || !['invoice', 'credit_note'].includes(item?.type) || item?.pdf !== true || typeof item?.xml !== 'boolean') throw unavailable();
-    return { id: item.id, order_id: Number(item.order_id), order_number: orderNumber, number, date,
+    return { id: item.id, order_id: Number(item.order_id), order_number: '', number, date,
       type: item.type, pdf: true, xml: item.xml };
   });
+  const numbers = await getAccountOrderNumbers(customerId, documents.map(doc => doc.order_id));
+  for (const doc of documents) doc.order_number = numbers.get(doc.order_id) || '';
   return { documents, page, hasMore: data.has_more };
 }
 

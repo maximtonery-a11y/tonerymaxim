@@ -30,7 +30,8 @@ const products = [product, variant(12, 'original', 104.66), variant(13, 'renovat
   { ...variant(51, 'compatible', 10.17, 'CE285A', 2000), product_brand: 'HP', name: 'HP CE285A čierny kompatibilný toner', compatible_printers: ['HP LaserJet P1102'] },
   { id: 91, sku: 'PAPER', slug: 'kancelarsky-papier-a4-80g-500-harkov', name: 'Kancelársky papier A4', price: 6,
     product_type_key: 'product', stock_status: 'instock', stock_quantity: 30, compatible_printers: [] }];
-const orders = Array.from({ length: 61 }, (_, index) => ({ id: 701 - index, number: String(300000 + index), customer_id: 7, status: index === 1 ? 'cancelled' : 'completed',
+const orders = Array.from({ length: 61 }, (_, index) => ({ id: 701 - index, number: String(701 - index), customer_id: 7, status: index === 1 ? 'cancelled' : 'completed',
+  meta_data: index === 1 ? [] : [{ key: 'tm_order_number', value: String(312345 + index) }],
   date_created: new Date(Date.UTC(2026, 10, 17 - index)).toISOString(), currency: 'EUR', total: '180.00', total_tax: '30.00', refunds: index === 0 ? [{ id: 900, total: '-12.00' }] : [],
   line_items: [{ id: 1, product_id: 11, sku: 'SKU-11', name: product.name, quantity: 4, total: '100.00', total_tax: '20.00' },
     { id: 2, product_id: 99, sku: 'DELETED', name: 'Vyradený toner', quantity: 1, total: '50.00', total_tax: '10.00' }] }));
@@ -41,7 +42,15 @@ os.networkInterfaces=()=>({lo:[{address:'127.0.0.1',netmask:'255.0.0.0',family:'
 const orders=${JSON.stringify(orders)}, product=${JSON.stringify(product)};
 const emit=Server.prototype.emit;Server.prototype.emit=function(name,...args){if(name==='request'&&args[0].url==='/__account_fixture_session'){args[1].writeHead(302,{'Set-Cookie':${JSON.stringify(cookie + '; Path=/; HttpOnly; SameSite=Lax')},Location:'/ucet/objednavky'});args[1].end();return true}return emit.call(this,name,...args)};
 globalThis.fetch=async(input,options={})=>{const url=new URL(String(input));if(url.hostname!=='woo.example.invalid'||(options.method||'GET')!=='GET')throw new Error('Fixture blocks external requests and Woo writes');
-if(url.pathname.endsWith('/customers/7'))return Response.json({id:7,email:'test@example.invalid',first_name:'Test',last_name:'Zákazník',billing:{city:'Testovacie mesto'},meta_data:[{key:'tm_loyalty_credited_orders',value:orders.map(order=>String(order.id))}]});
+if(url.pathname.endsWith('/customers/7'))return Response.json({id:7,email:'test@example.invalid',first_name:'Test',last_name:'Zákazník',billing:{city:'Testovacie mesto'},meta_data:[
+  {key:'tm_loyalty_credited_orders',value:orders.map(order=>String(order.id))}, {key:'tm_loyalty_lifetime_points',value:10},
+  {key:'tm_loyalty_history',value:[{orderId:701,title:'Objednávka #701',points:10},{orderId:700,title:'Použitá zľava pri objednávke #700',points:-2}]}]});
+if(url.pathname.endsWith('/invoices')){
+  const orderId=Number(url.searchParams.get('order_id'));
+  if(orderId!==701||url.searchParams.get('customer_id')!=='7')return Response.json({ok:true,documents:[],page:1,has_more:false});
+  return Response.json({ok:true,page:Number(url.searchParams.get('page')),has_more:false,documents:[
+    {id:'b871932e-5bb4-4d77-a0f6-000000000001',customer_id:7,order_id:701,order_number:'701',number:'INV-100',date:'2026-11-16',type:'invoice',pdf:true,xml:false}]});
+}
 if(url.pathname.endsWith('/orders')){const page=Number(url.searchParams.get('page')||1),size=Number(url.searchParams.get('per_page')||20);if(page>Math.ceil(orders.length/size))return Response.json({}, {status:400});return Response.json(orders.slice((page-1)*size,page*size),{headers:{'X-WP-Total':String(orders.length),'X-WP-TotalPages':String(Math.ceil(orders.length/size))}})}
 if(url.pathname.endsWith('/orders/701'))return Response.json(orders[0]);if(url.pathname.endsWith('/orders/999'))return Response.json({...orders[0],id:999,customer_id:8});
 if(url.pathname.endsWith('/products'))return Response.json([{...product,status:'publish',price:'13.05'}]);return Response.json({}, {status:404})};
@@ -53,9 +62,10 @@ const env = { PATH: process.env.PATH, NODE_ENV: 'production', HOST: '127.0.0.1',
 const child = spawn(process.execPath, ['--import', preload, './dist/server/entry.mjs'], { cwd: process.cwd(), env, stdio: ['ignore', 'pipe', 'pipe'] });
 let logs = ''; child.stdout.on('data', data => logs += data); child.stderr.on('data', data => logs += data);
 function request(path, signedIn = true, body) { return new Promise((resolve, reject) => {
-  const data = body ? JSON.stringify(body) : '';
+  const form = body instanceof URLSearchParams;
+  const data = form ? body.toString() : body ? JSON.stringify(body) : '';
   const req = http.request({ hostname: '127.0.0.1', port, path, method: body ? 'POST' : 'GET', headers: { ...(signedIn ? { Cookie: cookie } : {}),
-    ...(body ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data), Origin: 'http://127.0.0.1:' + port } : {}) }, timeout: 10_000 }, res => {
+    ...(body ? { 'Content-Type': form ? 'application/x-www-form-urlencoded' : 'application/json', 'Content-Length': Buffer.byteLength(data), Origin: 'http://127.0.0.1:' + port } : {}) }, timeout: 10_000 }, res => {
     let text = ''; res.setEncoding('utf8'); res.on('data', chunk => text += chunk); res.on('end', () => resolve({ status: res.statusCode, text, headers: res.headers })); });
   req.on('timeout', () => req.destroy(new Error('Fixture request timed out'))); req.on('error', reject); if (data) req.write(data); req.end();
 }); }
@@ -64,6 +74,18 @@ try {
   assert.match(logs, /Server listening/);
   const home = await request('/ucet'); assert.equal(home.status, 200); assert.match(home.text, /10\s*788|10&nbsp;788|10&#160;788/); assert.match(home.text, />61</);
   const history = await request('/ucet/objednavky'); assert.equal(history.status, 200); assert.match(history.text, /Objednať znova/); assert.match(history.text, /Stránka 1 z 4/);
+  for (const page of [home, history]) {
+    assert.match(page.text, />#312345</);
+    assert.doesNotMatch(page.text, />#(?:701|700)</);
+  }
+  assert.doesNotMatch(history.text, /href="[^"]*faktury\?order=/);
+  assert.match(history.text, /method="post" action="\/ucet\/faktury"/);
+  const invoices = await request('/ucet/faktury', true, new URLSearchParams({ order: '701' }));
+  assert.equal(invoices.status, 200); assert.match(invoices.text, /INV-100/); assert.match(invoices.text, />312345</);
+  assert.doesNotMatch(invoices.text, />701</);
+  const loyalty = await request('/ucet/vernost');
+  assert.equal(loyalty.status, 200); assert.match(loyalty.text, /Objednávka #312345/);
+  assert.doesNotMatch(loyalty.text, /#(?:701|700)\b/);
   assert.match(history.text, /30,00/); assert.doesNotMatch(history.text, /DPH 23 %/);
   const oldest = await request('/ucet/objednavky?page=4'); assert.equal(oldest.status, 200); assert.match(oldest.text, /Stránka 4 z 4/);
   const missing = await request('/ucet/objednavky?page=5'); assert.equal(missing.status, 404); assert.match(missing.text, /neexistuje/);
