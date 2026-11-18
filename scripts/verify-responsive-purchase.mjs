@@ -416,17 +416,25 @@ async function checkSearchWarmup(page, origin, interruptFirst) {
   const warmUrl = origin + '/api/smart-search?q=__tm_warm__';
   if (interruptFirst) {
     // Hold the first warmup until the browser leaves the document, as on a slow connection.
-    let heldRoute;
-    await page.route(warmUrl, route => { heldRoute = route; });
+    await page.addInitScript(url => {
+      const original = window.fetch;
+      window.fetch = function (input, options) {
+        if (typeof input === 'string' && new URL(input, location.href).href === url) {
+          options?.signal?.addEventListener('abort', () => sessionStorage.setItem('testInterruptedWarmup', 'yes'), { once: true });
+        }
+        return original.call(this, input, options);
+      };
+    }, warmUrl);
+    await page.route(warmUrl, () => {});
     await Promise.all([page.waitForRequest(warmUrl, { timeout: 15000 }), page.goto(origin)]);
     await page.goto('about:blank');
     await page.unroute(warmUrl);
-    await heldRoute.abort('aborted');
   }
   const [response] = await Promise.all([
     page.waitForResponse(res => res.url() === warmUrl && res.request().method() === 'GET', { timeout: 15000 }),
     page.goto(origin),
   ]);
+  if (interruptFirst) assert.equal(await page.evaluate(() => sessionStorage.getItem('testInterruptedWarmup')), 'yes');
   assert.equal(response.status(), 200);
   assert.equal((await response.json()).warmed, true);
   await page.waitForFunction(() => Number(sessionStorage.getItem('tm_smart_search_warmed_at_v1')) > 0);
