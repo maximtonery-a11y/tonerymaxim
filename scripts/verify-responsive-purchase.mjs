@@ -10,6 +10,10 @@ const cents = text => Math.round(Number(text.replace(/[^0-9,.-]/g, '').replace('
 async function amount(page, selector, expected) {
   const node = page.locator(selector);
   await node.waitFor({ state: 'visible' });
+  await page.waitForFunction(([selector, expected]) => {
+    const text = document.querySelector(selector)?.textContent || "";
+    return /\d/.test(text) && Math.round(Number(text.replace(/[^0-9,.-]/g, "").replace(",", ".")) * 100) === expected;
+  }, [selector, expected]);
   assert.equal(cents(await node.textContent()), expected, selector);
 }
 async function fits(locator) {
@@ -82,6 +86,7 @@ async function checkPrinterJourney(page, origin) {
   await page.locator('a[href="' + productPath + '22"]').first().click();
   await page.waitForFunction(() => document.querySelector('[data-check-heading]')?.textContent.includes('Vybraná'));
   assert.equal(await page.locator('[data-check-summary]').innerText(), model);
+  await page.locator('[data-accessories-section] [data-related-id="91"]').waitFor();
   await page.goto(origin + productPath + '22', { referer: 'https://other.example/tlaciarne/brother/brother-dcp-l2512d' });
   await page.locator('[data-check-toggle]').waitFor();
   assert.equal(await page.locator('[data-check-heading]').textContent(), 'Kompatibilné s');
@@ -210,7 +215,7 @@ async function checkLayout(page, origin, [width, height, touch]) {
   const drawer = page.locator('[data-add-cart-drawer]');
   await drawer.waitFor();
   assert.match(await drawer.locator('h2').innerText(), /TN-2421 čierny kompatibilný toner/);
-  assert.match(await drawer.locator('[data-add-cart-summary]').innerText(), /15,95/);
+  await drawer.getByText(/Do dopravy zdarma chýba 15,95/).waitFor();
   await amount(page, '.add-cart-pricebox strong', 1305);
   await drawer.locator('.add-cart-panel').evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished)));
   await fits(drawer.locator('.add-cart-panel,.add-cart-meta,.add-cart-actions a'));
@@ -275,6 +280,102 @@ async function checkLayout(page, origin, [width, height, touch]) {
   }
   await fits(page.locator('.checkout-summary .summary-line'));
 }
+async function checkDiscountJourney(page, origin, guest) {
+  const coupon = { ok: true, code: "TEST7", percent: 7, scope: "compatible", discount: 2.14 };
+  let points = 0;
+  let lookups = 0;
+  let valid = true;
+  const json = (route, body, status = 200) => route.fulfill({ status, json: body });
+  await page.route("**/api/account/loyalty", route => {
+    lookups++;
+    return json(route, { ok: !guest, points, discountValue: points / 100 });
+  });
+  await page.route("**/api/coupon-active", route => { lookups++; return json(route, guest ? { ok: false } : coupon); });
+  await page.route("**/api/coupon-validate", route => {
+    assert.equal(route.request().postDataJSON().code, coupon.code);
+    return json(route, valid ? coupon : { ok: false, code: coupon.code, reason: "Kupón už bol použitý." }, valid ? 200 : 400);
+  });
+  await page.evaluate(() => {
+    for (const key of ["tm_cart_v1", "tm_coupon_v1", "tm_loyalty_apply"]) localStorage.removeItem(key);
+  });
+  const product = origin + productPath + "51";
+  const drawer = page.locator("[data-add-cart-summary]");
+  const buy = async qty => {
+    if (page.url() !== product) await page.goto(product);
+    await page.locator("[data-qty]").fill(String(qty));
+    await page.locator("[data-add-main]").click();
+    await drawer.waitFor();
+  };
+  const checkDrawer = async () => {
+    await drawer.getByText(/Do dopravy zdarma chýba 0,63/).waitFor();
+    for (const [label, price] of [["Tovar pred zľavami", 4068], ["Množstevná / sadová zľava", -1017], ["Kupónová zľava 7 %", -214], ["Spolu za tovar", 2837]]) {
+      assert.equal(cents(await drawer.locator("div").filter({ has: page.getByText(label, { exact: true }) }).locator("strong").textContent()), price);
+    }
+    assert.equal(await drawer.locator("p.is-free").count(), 0);
+    await fits(drawer.locator("div,p"));
+  };
+  await page.goto(product);
+  await page.locator("[data-add-main]").waitFor();
+  assert.equal(lookups, 0, "Browsing a product must not load cart benefits");
+  await buy(4);
+  if (guest) {
+    await drawer.getByText("Dopravu máte zdarma", { exact: true }).waitFor();
+    assert.match(await drawer.innerText(), /30,51/);
+  } else await checkDrawer();
+
+  await page.getByRole("link", { name: "Do košíka", exact: true }).click();
+  await page.locator('[data-cart-action="input"]').first().waitFor();
+  const compact = await page.locator("[data-cart-mobile-breakdown]").isVisible();
+  const total = compact ? "[data-cart-breakdown-total]" : "[data-cart-total]";
+  if (guest) {
+    await amount(page, total, 3051);
+    const form = page.locator("[data-cart-coupon-box]:visible");
+    await form.locator("[data-coupon-toggle]").click();
+    await form.locator("[data-coupon-input]").fill(coupon.code);
+    await form.locator("[data-coupon-apply]").click();
+  }
+  await amount(page, total, 2837);
+  if (compact) {
+    await page.locator("[data-cart-mobile-breakdown] summary").click();
+    const lines = page.locator("[data-cart-breakdown-discounts]");
+    assert.match(await lines.innerText(), /Kupónová zľava 7 %\s*-2,14/);
+    assert.match(await lines.innerText(), /sadová zľava\s*-10,17/);
+  }
+  if (guest) {
+    await page.locator('[data-cart-action="minus"]').first().click();
+    await amount(page, total, 2554);
+    await buy(1);
+    await checkDrawer();
+    await page.getByRole("link", { name: "Do košíka", exact: true }).click();
+  } else {
+    points = 24;
+    await page.reload();
+    await amount(page, total, 2813);
+    await page.locator("[data-loyalty-toggle]:visible").uncheck();
+  }
+  await amount(page, total, 2837);
+  await page.locator(compact ? ".cart-mobile-sticky-checkout" : ".checkout-button").click();
+  const next = page.locator('[data-checkout-next="delivery"]');
+  if (await next.isVisible()) {
+    await page.locator("#email").fill("test@example.invalid");
+    await page.locator("#phone").fill("0900123456");
+    await next.click();
+  }
+  const toggle = page.locator("[data-mobile-summary-toggle]");
+  if (await toggle.isVisible() && await toggle.getAttribute("aria-expanded") !== "true") await toggle.click();
+  await page.locator('label:has(input[name="shipping"][value="dpd_pickup"])').click();
+  await page.locator('label:has(input[name="payment"][value="gopay"])').click();
+  await amount(page, "[data-summary-coupon]", -214);
+  await amount(page, "[data-summary-shipping]", 290);
+  await amount(page, "[data-summary-total]", 3127);
+  if (guest) {
+    valid = false;
+    await page.goto(origin + "/kosik");
+    await amount(page, total, 3051);
+    assert.match(await page.locator("[data-coupon-message]:visible").innerText(), /použitý/);
+  }
+}
+
 async function verifyEngine(origin, engine, configurations, options) {
   const browser = await engine.launch(options);
   try {
@@ -294,6 +395,7 @@ async function verifyEngine(origin, engine, configurations, options) {
       });
       try {
         await checkLayout(page, origin, layout);
+        if (width === 390 || width === 1280) await checkDiscountJourney(page, origin, width === 390);
         assert.deepEqual(unexpected, []);
         console.log(`${engine.name()} ${width}×${height} OK: alternatives, cart, reorder, VAT and checkout`);
       } catch (error) {

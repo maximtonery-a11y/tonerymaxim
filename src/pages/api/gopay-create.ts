@@ -1,3 +1,4 @@
+import { redeemableLoyaltyDiscount } from "../../lib/checkout-vat";
 import type { APIRoute } from "astro";
 import { readCustomerSession } from "../../lib/auth-session";
 import { savePendingGoPayOrder } from "../../lib/checkout-order";
@@ -112,8 +113,7 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
     let loyaltyDiscount = 0;
     if (session?.id && body?.loyalty?.apply) {
       const currentLoyalty = loyalty || await profiler.measure("loyalty-load", () => getCustomerLoyalty(session.id));
-      const requested = Math.max(0, Math.round(Number(body?.loyalty?.discount || 0) * 10) / 10);
-      loyaltyDiscount = Math.min(requested, currentLoyalty.discountValue, Math.max(0, Math.round((subtotal - couponDiscount) * 100) / 100));
+      loyaltyDiscount = redeemableLoyaltyDiscount(body.loyalty.discount, currentLoyalty.discountValue, subtotal - couponDiscount);
     }
     const goodsAfterDiscounts = Math.max(0, Math.round((subtotal - couponDiscount - loyaltyDiscount) * 100) / 100);
     const shippingPrice = goodsAfterDiscounts >= 29 ? 0 : shipping.price;
@@ -266,7 +266,7 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
       paymentPrice,
       coupon,
       loyaltyDiscount,
-      loyaltyPointsUsed: loyaltyDiscount * 100,
+      loyaltyPointsUsed: Math.round(loyaltyDiscount * 100),
       loyaltyPaperPacks: cart.filter((item) => item.loyalty_reward).reduce((sum, item) => sum + Number(item.qty || 0), 0),
       originalSubtotal: Math.round(originalSubtotal * 100) / 100,
       quantityDiscount,

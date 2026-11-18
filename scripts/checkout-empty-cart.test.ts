@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import ts from 'typescript';
 import postcss from 'postcss';
-import { discountedGrossLine, grossVatTotals } from '../src/lib/checkout-vat.ts';
+import { cartGoodsTotals, discountedGrossLine, grossVatTotals } from '../src/lib/checkout-vat.ts';
 
 const source = await readFile(new URL('../src/scripts/checkout.js', import.meta.url), 'utf8');
 const ast = ts.createSourceFile('checkout.js', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
@@ -37,7 +37,7 @@ function harness() {
   const noop = () => {};
   const scope = { document: { querySelector: node, querySelectorAll: () => [], createElement: () => new Node() },
     readCart: () => cart, window: { location: { origin: 'https://www.tonerymaxim.sk' } }, URL,
-    tmLoyalty: { ok: false, discountValue: 0 }, tmLoyaltyApply: false, discountedGrossLine, grossVatTotals,
+    tmLoyalty: { ok: false, discountValue: 0 }, tmLoyaltyApply: false, cartGoodsTotals, discountedGrossLine, grossVatTotals,
     couponDiscountForTotal: () => 0, loyaltyDiscountForTotal: () => 0, syncCouponBoxes: noop,
   };
   const render = vm.runInNewContext(`${extracted.join('\n')};renderCheckoutSummary`, scope);
