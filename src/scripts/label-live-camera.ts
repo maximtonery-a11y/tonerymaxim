@@ -17,7 +17,7 @@ async function playPreview(video: HTMLVideoElement, signal: AbortSignal) {
   try {
     await Promise.race([
       video.play(),
-      pause(waiting.signal, 8500).then(() => { throw new DOMException('Kamera neposkytla obraz', 'NotReadableError'); }),
+      pause(waiting.signal, 6000).then(() => { throw new Error('camera-preview-timeout'); }),
     ]);
   } finally { cancel(); signal.removeEventListener('abort', cancel); }
 }

@@ -23,13 +23,21 @@ export async function chromiumLabelCamera() {
 
 function installVideoFixture() {
   if (location.pathname !== '/hladat-fotkou' || window.labelCameraTest) return;
-  const fixture = window.labelCameraTest = { mode: 'feed', text: 'Brother TN-2421', calls: [], tracks: [] };
-  // Keep the simulated device on the navigator itself. WebKit can discard and
-  // recreate a native MediaDevices wrapper, along with overrides placed on it.
-  Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { async getUserMedia(constraints) {
-    fixture.calls.push(constraints);
-    if (fixture.mode === 'deny') throw new DOMException('test', 'NotAllowedError');
-    if (fixture.mode === 'defer') await new Promise(resolve => { fixture.allow = resolve; });
+  const fixture = window.labelCameraTest = { mode: 'feed', calls: [], tracks: [],
+    get text() { return sessionStorage.getItem('testCameraLabel') || 'Brother TN-2421'; },
+    set text(value) { sessionStorage.setItem('testCameraLabel', value); },
+  };
+  const play = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function (...args) {
+    const remaining = Number(sessionStorage.getItem('testStalledPreviews'));
+    if (remaining > 0 && this.matches('#live-camera video')) {
+      sessionStorage.setItem('testStalledPreviews', String(remaining - 1));
+      return new Promise(() => {});
+    }
+    return play.apply(this, args);
+  };
+  let source;
+  function makeCameraSource() {
     const canvas = document.createElement('canvas');
     canvas.width = 960; canvas.height = 540;
     // Keep this video source rendered throughout each WebKit capture session.
@@ -43,12 +51,19 @@ function installVideoFixture() {
     }
     draw();
     const stream = canvas.captureStream(8), track = stream.getVideoTracks()[0];
-    fixture.tracks.push(track);
-    const timer = setInterval(() => {
-      if (track.readyState === 'ended') { clearInterval(timer); canvas.remove(); return; }
-      draw(); track.requestFrame?.();
-    }, 120);
+    const timer = setInterval(() => { draw(); track.requestFrame?.(); }, 120);
+    window.addEventListener('pagehide', () => { clearInterval(timer); track.stop(); canvas.remove(); }, { once: true });
     return stream;
+  }
+  // The virtual device stays available while individual camera sessions are released.
+  Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { async getUserMedia(constraints) {
+    fixture.calls.push(constraints);
+    if (fixture.mode === 'deny') throw new DOMException('test', 'NotAllowedError');
+    if (fixture.mode === 'defer') await new Promise(resolve => { fixture.allow = resolve; });
+    source ||= makeCameraSource();
+    const session = source.clone();
+    fixture.tracks.push(...session.getVideoTracks());
+    return session;
   } } });
 }
 
@@ -118,7 +133,16 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     assert.deepEqual(searches, ['Brother TN-2421', 'Brother TN-9999', 'HP P1102']);
     assert.equal(workers.length, 2, 'one OCR worker per camera session');
     assert.deepEqual(uploads, []);
-    console.log('Live label video OK: single-tap start, toner prices, exact printer, private code, empty match, denial, cancel and device release');
+
+    await page.goto(origin + '/hladat-fotkou');
+    await page.evaluate(() => sessionStorage.setItem('testStalledPreviews', '2'));
+    await start.click();
+    await status.filter({ hasText: 'Z fotoaparátu neprichádza obraz' }).waitFor({ timeout: 25_000 });
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('testStalledPreviews')), '0');
+    assert.equal(await page.evaluate(() => window.labelCameraTest.tracks[0].readyState), 'ended');
+    assert.equal(await start.isVisible(), true);
+    assert.equal(workers.length, 2, 'a stalled preview never loads OCR');
+    console.log('Live label video OK: single-tap start, toner prices, exact printer, private code, empty match, denial, cancel, bounded retry and device release');
   } catch (error) {
     const diagnostic = await page.evaluate(() => ({
       status: document.querySelector('#label-status')?.textContent,

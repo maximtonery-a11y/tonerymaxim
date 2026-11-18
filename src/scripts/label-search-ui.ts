@@ -127,7 +127,7 @@ function setup(root: HTMLElement) {
     } finally { if (active === task) reset(); }
   }
 
-  async function startCamera() {
+  async function startCamera(resumed = false) {
     if (scanningLive) return;
     if (!navigator.mediaDevices?.getUserMedia) {
       status.textContent = 'Tento prehliadač nesprístupnil fotoaparát. Otvorte stránku v Safari alebo Chrome, prípadne vyberte fotku z galérie.';
@@ -163,7 +163,15 @@ function setup(root: HTMLElement) {
       });
     } catch (error) {
       if (!task.signal.aborted) {
-        if (error instanceof DOMException && ['NotAllowedError', 'SecurityError'].includes(error.name)) {
+        if (error instanceof Error && error.message === 'camera-preview-timeout') {
+          // A browser can grant a live track yet keep its player stopped. Reopen
+          // the scanner once in a fresh document, remembering this gesture only.
+          if (!resumed && !document.hidden) {
+            display('Fotoaparát neposkytol obraz. Spúšťam ho ešte raz…');
+            history.replaceState({ ...history.state, tmResumeCamera: true }, '');
+            location.reload();
+          } else display('Z fotoaparátu neprichádza obraz. Skúste ho spustiť znova.');
+        } else if (error instanceof DOMException && ['NotAllowedError', 'SecurityError'].includes(error.name)) {
           display('Prístup ku kamere je vypnutý. Povoľte ho pre tento web v nastaveniach prehliadača alebo vyberte fotku z galérie.');
         } else if (error instanceof DOMException && ['NotFoundError', 'NotReadableError', 'OverconstrainedError'].includes(error.name)) {
           display('Fotoaparát je nedostupný. Zatvorte inú aplikáciu používajúcu kameru alebo vyberte fotku z galérie.');
@@ -249,9 +257,11 @@ function setup(root: HTMLElement) {
   window.addEventListener('pagehide', () => { reset(); hideCrop(); lastFile = undefined; privateCodes.clear(); });
   if ('Worker' in window && typeof WebAssembly === 'object' && 'decode' in HTMLImageElement.prototype) {
     controls.hidden = false;
-    if (location.hash === '#skenovat' && document.referrer && new URL(document.referrer).origin === location.origin) {
-      history.replaceState(history.state, '', location.pathname + location.search);
-      if (!document.hidden) void startCamera();
+    const { tmResumeCamera, ...state } = history.state || {};
+    const fromPilot = location.hash === '#skenovat' && document.referrer && new URL(document.referrer).origin === location.origin;
+    if (tmResumeCamera === true || fromPilot) {
+      history.replaceState(state, '', location.pathname + location.search);
+      if (!document.hidden) void startCamera(tmResumeCamera === true);
     }
   }
 }
