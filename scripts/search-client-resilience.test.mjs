@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 const source = readFileSync(new URL('../src/scripts/smart-search.js', import.meta.url), 'utf8');
-function harness() {
+function harness(storage = new Map()) {
   let now = 0, next = 0;
-  const timers = new Map(), requests = [], storage = new Map();
+  const timers = new Map(), requests = [];
+  const lifecycle = new EventTarget();
+  let idle;
   const element = () => ({ dataset: {}, handlers: {}, attrs: {}, innerHTML: '', hidden: true,
     addEventListener(k, fn) { this.handlers[k] = fn; }, setAttribute(k, v) { this.attrs[k] = v; } });
   const input = element(), panel = element(), form = element();
@@ -16,7 +18,13 @@ function harness() {
   form.matches = () => false;
   form.parentElement = wrapper;
   const timeout = (fn, delay) => { const id = ++next; timers.set(id, { fn, at: now + delay }); return id; };
-  const window = { requestIdleCallback() {}, location: {}, setTimeout: timeout };
+  const window = {
+    requestIdleCallback(callback) { idle = callback; },
+    location: {},
+    setTimeout: timeout,
+    addEventListener: lifecycle.addEventListener.bind(lifecycle),
+    removeEventListener: lifecycle.removeEventListener.bind(lifecycle),
+  };
   const document = { readyState: 'complete', querySelectorAll: () => [form], addEventListener() {} };
   vm.runInNewContext(source, { window, document, AbortController, Intl, Date, encodeURIComponent,
     setTimeout: timeout, clearTimeout: id => timers.delete(id),
@@ -40,7 +48,11 @@ function harness() {
     requests[index].resolve({ ok: true, headers: { get: () => 'application/json' }, json: async () => ({ ok: true, products: [{ title, url: '/produkt/test' }] }) });
     await flush();
   }
-  return { input, panel, form, window, requests, advance, query, answer, flush };
+  return {
+    input, panel, form, window, requests, advance, query, answer, flush,
+    startWarmup: () => idle?.(),
+    leavePage: () => lifecycle.dispatchEvent(new Event('pagehide')),
+  };
 }
 test('response after 4 seconds still renders; slow state has mobile navigation', async () => {
   const h = harness(); await h.query('CF53'); await h.advance(4100);
@@ -78,4 +90,43 @@ test('form submission navigates while request is pending', async () => {
   const h = harness(); await h.query('CF53'); let prevented = false;
   h.form.handlers.submit({ preventDefault() { prevented = true; } });
   assert.equal(prevented, true); assert.equal(h.window.location.href, "/produkty?s=CF53"); assert.equal(h.requests[0].signal.aborted, true); assert.equal(h.panel.hidden, true);
+});
+
+test('navigation cancels only the warmup and a request that never finished can be retried', async () => {
+  const tab = new Map();
+  const beforeStart = harness(tab);
+  beforeStart.leavePage();
+  await beforeStart.startWarmup();
+  assert.equal(beforeStart.requests.length, 0);
+
+  const during = harness(tab);
+  const pending = during.startWarmup();
+  assert.match(during.requests[0].url, /__tm_warm__/);
+  during.leavePage();
+  await pending;
+  assert.equal(during.requests[0].signal.aborted, true);
+  assert.equal(tab.size, 0);
+
+  const failed = harness(tab);
+  const attempt = failed.startWarmup();
+  failed.requests[0].resolve({ ok: false });
+  await attempt;
+  assert.equal(tab.size, 0);
+
+  const next = harness(tab);
+  const complete = next.startWarmup();
+  next.requests[0].resolve({ ok: true, json: async () => ({ warmed: true }) });
+  await complete;
+  const following = harness(tab);
+  await following.startWarmup();
+  assert.equal(following.requests.length, 0);
+  await following.query('TN2421');
+  assert.match(following.requests[0].url, /q=TN2421/);
+
+  tab.set('tm_smart_search_warmed_at_v1', String(Date.now() - 21 * 60 * 1000));
+  const expired = harness(tab);
+  const refresh = expired.startWarmup();
+  assert.match(expired.requests[0].url, /__tm_warm__/);
+  expired.requests[0].resolve({ ok: true, json: async () => ({ warmed: true }) });
+  await refresh;
 });
