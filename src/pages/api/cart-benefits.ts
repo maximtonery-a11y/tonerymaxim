@@ -21,13 +21,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const loyalty = session?.id ? await getCustomerLoyalty(session.id) : null;
     let coupon = null as Awaited<ReturnType<typeof validateCheckoutCoupon>> | null;
     const manual = body.enteredCode ?? (body.savedCoupon?.manual ? body.savedCoupon.code : undefined);
-    if (manual !== undefined && String(manual).trim()) {
-      coupon = { ...await validateCheckoutCoupon(session?.id, manual, cart), manual: true } as any;
-    }
-    if (manual === undefined || (body.enteredCode === undefined && coupon && !coupon.ok)) {
-      const automatic = await getBestAutoCoupon(session?.id, cart);
-      if (automatic) coupon = automatic;
-      else if (!coupon && body.savedCoupon?.code) coupon = await validateCheckoutCoupon(session?.id, body.savedCoupon.code, cart);
+    if (body.couponDisabled !== true) {
+      if (manual !== undefined && String(manual).trim()) {
+        coupon = { ...await validateCheckoutCoupon(session?.id, manual, cart), manual: true } as any;
+      }
+      if (manual === undefined || (body.enteredCode === undefined && coupon && !coupon.ok)) {
+        const automatic = await getBestAutoCoupon(session?.id, cart);
+        if (automatic) coupon = automatic;
+        // An obsolete automatically chosen code must never be restored from storage.
+      }
     }
     return Response.json({ ok: true, customerId: session?.id || 0,
       loyalty: { ok: Boolean(session?.id), points: loyalty?.points || 0, discountValue: loyalty?.discountValue || 0, paperReward: loyalty?.paperReward || null },

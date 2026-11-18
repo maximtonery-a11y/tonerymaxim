@@ -18,7 +18,7 @@ const money = text => Math.round(Number(text.replace(/[^0-9,.-]/g, '').replace('
 async function fixture(browser, width, options = {}) {
  const context = await browser.newContext({ viewport: { width, height: 900 }, serviceWorkers: 'block' });
  /** @type {Record<string, any>} */
- const state = { create: 0, change: 0, benefits: 0, status: 'CANCELED', last: null, preview: null, storedState: 'CREATED', errors: [], ...options };
+ const state = { create: 0, offline: 0, change: 0, benefits: 0, requests: [], status: 'CANCELED', last: null, preview: null, storedState: 'CREATED', errors: [], ...options };
  await context.addInitScript(({product,empty}) => {
    if(!localStorage.getItem('tm_fixture_seeded')){localStorage.clear();localStorage.setItem('tm_cart_v1',JSON.stringify(empty?[]:[product]));localStorage.setItem('tm_fixture_seeded','1');}
    sessionStorage.setItem('tm_header_account_v1', JSON.stringify({ customer: { id:7 }, expiresAt:Date.now()+300000 }));
@@ -31,10 +31,13 @@ async function fixture(browser, width, options = {}) {
    if(!url.pathname.startsWith('/api/')) return route.continue();
    if(url.pathname==='/api/cart-benefits'){
      state.benefits++;if(state.benefitsGate)await state.benefitsGate;
-     return json(route,{ok:true,customerId:7,loyalty:{ok:true,points:0,discountValue:0,paperReward:null},coupon:state.discount?{ok:true,code:'TEST5',percent:5,scope:'compatible'}:null});
+     const body=req.postDataJSON();
+     return json(route,{ok:true,customerId:7,loyalty:{ok:true,points:0,discountValue:0,paperReward:null},coupon:state.discount&&!body.couponDisabled?{ok:true,code:'TEST5',percent:5,scope:'compatible'}:null});
    }
    if(url.pathname==='/api/gopay-create'){
      state.create++;state.last=req.postDataJSON();
+     state.requests.push(state.last);
+     if(state.couponRace&&state.create===1){state.discount=false;return json(route,{ok:false,code:'COUPON_UNAVAILABLE',orderCreated:false,error:'Kupón už bol použitý.'},400);}
      if(state.failCreate)return json(route,{ok:false,error:'Testovacia chyba pred prijatím objednávky.'},503);
      state.preview={...state.last,orderNumber:String(301000+state.create),total:23.9};
      return json(route,{ok:true,paymentId:String(1000+state.create),orderNumber:String(301000+state.create),gwUrl:'https://gateway.example.invalid/pay'});
@@ -46,7 +49,11 @@ async function fixture(browser, width, options = {}) {
      state.preview={...state.preview,payment:body.payment,paymentPrice,total:23.9+paymentPrice};state.storedState='CONVERTED_TO_OFFLINE';
      return json(route,{ok:true,orderId:999,orderNumber:'301001',payment:body.payment,preview:state.preview});
    }
-   if(url.pathname==='/api/order-create')throw new Error('Changing an accepted order attempted a new order');
+   if(url.pathname==='/api/order-create'){
+     assert(state.allowNewOfflineOrder,'Changing an accepted order attempted a new order');
+     state.offline++;state.last=req.postDataJSON();state.requests.push(state.last);
+     return json(route,{ok:true,orderId:999,orderNumber:'301002'});
+   }
    if(url.pathname==='/api/products')return json(route,{ok:true,products:[product,extra]});
    if(url.pathname==='/api/auth/me'||url.pathname==='/api/account/me')return json(route,{ok:true,customer:{id:7,email:'test@example.invalid'}});
    return json(route,{ok:true});
@@ -101,6 +108,9 @@ try {
        await page.locator('[data-gopay-change]').waitFor();assert.equal(state.create,1);
        assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('tm_cart_v1'))),[]);
        reports.push(`${name}: browser Back returns to the saved order`);
+     }catch(error){
+       console.error('Back navigation fixture:',page.url(),await page.evaluate(()=>({cart:localStorage.getItem('tm_cart_v1'),receipt:localStorage.getItem('tm_submitted_gopay_v1'),errors:document.querySelector('[data-order-status]')?.textContent})),state.errors);
+       throw error;
      }finally{await context.close();}
    }
    {
@@ -120,6 +130,54 @@ try {
        assert.equal(state.create,2);assert.equal(await next.goto(origin+'/kosik').then(()=>next.evaluate(()=>JSON.parse(localStorage.getItem('tm_submitted_gopay_v1')).paymentId)),'1002');
        assert.equal(await next.evaluate(()=>JSON.parse(localStorage.getItem('tm_cart_v1')).length),0);
        reports.push(`${name}: a new identical purchase is independent of the previous unpaid order`);
+     }finally{await context.close();}
+   }
+   for(const payment of ['gopay','cod','bank_prepaid']) {
+     const {context,page,state}=await fixture(browser,390,{allowNewOfflineOrder:true});
+     try{
+       await openCheckout(page);
+       await page.evaluate(product=>{
+         const old='legacy-already-submitted';
+         const cartSignature=JSON.stringify([{id:String(product.id),sku:product.sku,qty:product.qty,price:product.price,source:product.source}]);
+         localStorage.setItem('tm_submitted_gopay_v1',JSON.stringify({requestId:old,paymentId:'old-payment',submittedAt:Date.now(),cartSignature}));
+         localStorage.setItem('tm_checkout_intent_v2',JSON.stringify({requestId:old,cartSignature}));sessionStorage.setItem('tm_checkout_request_id',old);
+         localStorage.setItem('cart',JSON.stringify([product]));
+         window.ToneryMaximCart.clearCart();window.ToneryMaximCart.addToCart(product);
+       },product);
+       await openCheckout(page);
+       await page.evaluate(payment=>document.querySelector(`[name="payment"][value="${payment}"]`).click(),payment);
+       await submit(page);await page.waitForURL(payment==='gopay'?'https://gateway.example.invalid/**':'**/platba-dokoncena?order=**');
+       assert.notEqual(state.last.requestId,'legacy-already-submitted');assert.equal(state.last.payment,payment);assert.equal(state.change,0);
+       assert.equal(state.create+state.offline,1);assert.deepEqual(state.errors,[]);
+       reports.push(`${name}: clearing/refilling an identical cart resets old order blockers for ${payment}`);
+     }finally{await context.close();}
+   }
+   {
+     const {context,page,state}=await fixture(browser,1280,{discount:true});
+     try{
+       await openCheckout(page);await page.locator('[data-summary-coupon-line]').waitFor({state:'visible'});
+       await page.getByRole('button',{name:'Nepoužiť kupón',exact:true}).click();
+       await page.locator('[data-summary-coupon-line]').waitFor({state:'hidden'});
+       assert.equal(await page.evaluate(()=>localStorage.getItem('tm_coupon_disabled_v1')),'1');
+       await page.reload();await page.getByRole('button',{name:'Použiť automatickú zľavu',exact:true}).waitFor();
+       await page.goto(origin+'/kosik');await page.getByRole('button',{name:'Použiť automatickú zľavu',exact:true}).waitFor();
+       await openCheckout(page);await submit(page);await page.waitForURL('https://gateway.example.invalid/**');
+       assert.equal(state.last.coupon,null);assert.deepEqual(state.errors,[]);
+       reports.push(`${name}: a customer can remove the automatic coupon through reload, cart and checkout`);
+     }finally{await context.close();}
+   }
+   {
+     const {context,page,state}=await fixture(browser,390,{discount:true,couponRace:true});
+     try{
+       await openCheckout(page);await submit(page);
+       await page.locator('[data-order-status]').getByText('Kupón už nie je dostupný.',{exact:false}).waitFor();
+       assert.equal(state.create,1);assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('tm_cart_v1')).length),1);
+       await page.waitForFunction(()=>!document.querySelector('[data-submit-order]').disabled);
+       await submit(page);await page.waitForURL('https://gateway.example.invalid/**');
+       assert.equal(state.create,2);assert.equal(state.last.coupon,null);
+       assert.equal(state.requests[0].requestId,state.requests[1].requestId,'Pre-creation coupon rejection can retry the same safe submission');
+       assert.deepEqual(state.errors,[]);
+       reports.push(`${name}: a coupon redeemed during checkout refreshes totals and allows a new confirmed submission`);
      }finally{await context.close();}
    }
    {

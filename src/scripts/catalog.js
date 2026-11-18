@@ -1,3 +1,4 @@
+import { saveShoppingCart } from './submitted-order.js';
 import { getDispatchParts } from "./dispatch-message.js";
 import { isAvailableNow, storefrontStockClass, storefrontStockText } from "../lib/product-availability.ts";
 
@@ -306,7 +307,7 @@ import { isAvailableNow, storefrontStockClass, storefrontStockText } from "../li
   }
 
   function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    saveShoppingCart(cart);
     window.dispatchEvent(new CustomEvent("tm-cart-updated"));
     updateCartBadge();
   }

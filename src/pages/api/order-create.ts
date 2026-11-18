@@ -64,7 +64,7 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
     if (couponCode) {
       coupon = await profiler.measure("coupon-validate", () => validateCheckoutCoupon(session?.id, couponCode, cart));
       if (!coupon.ok) {
-        return markCheckoutUnsubmitted(new Response(JSON.stringify({ ok: false, error: coupon.reason || "Kupón nie je platný." }), {
+        return markCheckoutUnsubmitted(new Response(JSON.stringify({ ok: false, code: "COUPON_UNAVAILABLE", orderCreated: false, error: coupon.reason || "Kupón nie je platný." }), {
           status: 400,
           headers: { "Content-Type": "application/json; charset=utf-8" },
         }));

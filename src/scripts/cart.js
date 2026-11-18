@@ -1,9 +1,9 @@
-import { consumeLegacySubmittedCart } from './submitted-order.js';
+import { consumeLegacySubmittedCart, resetCheckoutAttempt, saveShoppingCart } from './submitted-order.js';
 import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.js";
 import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } from "./paper-reward-cart.js";
 import { cartProductUnavailable, markMissingCartProduct, mergeCurrentCartProduct } from "../lib/cart-product-refresh.ts";
 import { isAvailableNow, orderFulfilmentText, ORDER_DELIVERY_LABEL } from "../lib/product-availability.ts";
-import { benefitsKey, getCartBenefits, readCartBenefits } from './cart-benefits.js';
+import { benefitsKey, getCartBenefits, readCartBenefits, couponDisabled, setCouponDisabled } from './cart-benefits.js';
 import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponDiscount, redeemableLoyaltyDiscount } from '../lib/checkout-vat.ts';
 
 (() => {
@@ -64,6 +64,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
   }
 
   function validateCouponCode(code) {
+    if (couponDisabled()) setCouponDisabled(false);
     enteredCartCoupon = String(code || "").trim();
     couponCartKey = undefined;
     renderCartPage();
@@ -82,6 +83,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
         </div>
         <small data-coupon-message></small>
       </div>
+      <button type="button" class="coupon-toggle" data-coupon-choice hidden>Nepoužiť kupón</button>
     `;
   }
 
@@ -128,6 +130,12 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
         if (couponApplied) message.textContent = `${tmCoupon.label || "Kupón"}: -${formatMoney(couponDiscount)}`;
         else message.textContent = tmCoupon?.reason || "";
         message.className = couponApplied ? "is-success" : (couponError ? "is-error" : "");
+      }
+
+      const choice = box.querySelector("[data-coupon-choice]");
+      if (choice) {
+        choice.hidden = !tmCoupon && !couponDisabled();
+        choice.textContent = couponDisabled() ? "Použiť automatickú zľavu" : "Nepoužiť kupón";
       }
 
       const expanded = box.dataset.couponExpanded === "true" || couponError;
@@ -209,7 +217,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
   }
 
   function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    saveShoppingCart(cart);
     refreshCartCounters();
     window.dispatchEvent(new CustomEvent("tm:cart-synced", {
       detail: { cart, count: cartCount(cart), source: "storefront" },
@@ -801,7 +809,9 @@ function formatMoney(value) {
   }
 
   function clearCart() {
+    const wasEmpty = !readCart().length;
     saveCart([]);
+    if (wasEmpty) resetCheckoutAttempt();
   }
 
   function refreshCartCounters() {
@@ -1108,7 +1118,15 @@ function formatMoney(value) {
     }
   });
 
+  window.addEventListener("tm:coupon-choice", () => {
+    enteredCartCoupon = undefined; couponCartKey = undefined; ++couponRevision;
+    renderCartViews();
+  });
+
   document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-cart-coupon-box] [data-coupon-choice]")) {
+      event.preventDefault(); setCouponDisabled(!couponDisabled()); return;
+    }
     if (event.target.closest("[data-cart-retry-discounts]")) {
       couponCartKey = undefined;
       renderCartViews();

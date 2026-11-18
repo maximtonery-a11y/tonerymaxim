@@ -9,7 +9,7 @@ const dataRoot = await mkdtemp(join(tmpdir(), "tm-checkout-hard-"));
 process.env.TM_PERSISTENT_DATA_DIR = dataRoot;
 process.env.TM_PERSISTENCE_SECRET = "hard-regression-secret-with-more-than-32-characters";
 
-const { withCheckoutSubmission } = await import("../src/lib/checkout-submission.ts");
+const { withCheckoutSubmission, markCheckoutUnsubmitted } = await import("../src/lib/checkout-submission.ts");
 
 function okResponse(orderNumber = "300999") {
   return Response.json({ ok: true, orderId: 999, orderNumber });
@@ -44,6 +44,19 @@ test("ten istý pokus nemôže prejsť raz cez GoPay a raz cez dobierku", async 
   assert.equal(gopay.status, 200);
   assert.equal(cod.status, 409);
   assert.equal(codRuns, 0);
+});
+
+test("zamietnutý kupón pred vytváraním nič nezamkne a po oprave sumy možno bezpečne odoslať znova", async () => {
+  const first = { requestId: 'coupon-rejected', payment: 'gopay', coupon: { code: 'USED7' }, total: 18.6 };
+  const rejected = await withCheckoutSubmission(first.requestId, 'gopay', first, async () => markCheckoutUnsubmitted(
+    Response.json({ ok: false, code: 'COUPON_UNAVAILABLE', orderCreated: false }, { status: 400 })));
+  assert.equal(rejected.status, 400);
+  const second = { ...first, coupon: null, total: 20 };
+  let effects = 0;
+  const work = async () => { effects++; return okResponse('301020'); };
+  assert.equal((await withCheckoutSubmission(second.requestId, 'gopay', second, work)).status, 200);
+  assert.equal((await withCheckoutSubmission(second.requestId, 'gopay', second, work)).status, 200);
+  assert.equal(effects, 1);
 });
 
 test("rovnaké requestId s pozmenenými údajmi sa odmietne", async () => {
