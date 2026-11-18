@@ -579,20 +579,36 @@ async function findExistingWooOrder(source: CheckoutOrderSource): Promise<any | 
 
   // Poistka pre prípad, že Woo objednávka vznikla, ale server sa reštartoval
   // skôr, než sa jej ID stihlo uložiť do lokálneho idempotentného záznamu.
-  const orders = await wooRequest<any[]>("/orders", {
-    query: { per_page: 100, orderby: "date", order: "desc" },
-  });
-
-  return (Array.isArray(orders) ? orders : []).find((order: any) => {
-    const storedOrderNumber = wooMetaValue(order, "tm_order_number")
-      || wooMetaValue(order, "gopay_order_number");
-    const storedPaymentId = String(order?.transaction_id || "")
-      || wooMetaValue(order, "gopay_payment_id");
-    return Boolean(
-      (tmOrderNumber && storedOrderNumber === tmOrderNumber)
-      || (paymentId && storedPaymentId === paymentId)
-    );
-  }) || null;
+  // Woo creates the record after checkout. Allow a day for clock differences;
+  // older queue entries without a timestamp can still be reconciled in full.
+  const submitted = Date.parse(source.createdAt);
+  const after = Number.isFinite(submitted) ? new Date(Math.min(submitted, Date.now()) - 86_400_000).toISOString() : undefined;
+  const pageSize = 100;
+  let previousId: number | undefined;
+  for (let offset = 0; ; offset += pageSize - 1) {
+    const orders = await wooRequest<any[]>("/orders", { cache: 'no-store', query: {
+      after, dates_are_gmt: 'true', orderby: 'id', order: 'asc', per_page: pageSize, offset,
+      _fields: 'id,number,total,total_tax,transaction_id,meta_data',
+      include_meta: 'tm_order_number,gopay_order_number,gopay_payment_id,tm_price_contract',
+    } });
+    // New IDs append at the end. The one overlapping ID detects an offset
+    // shift or ignored pagination before we can create a duplicate order.
+    if (!Array.isArray(orders) || (previousId !== undefined && Number(orders[0]?.id) !== previousId)) {
+      throw new Error('Zoznam Woo objednávok sa nepodarilo spoľahlivo overiť.');
+    }
+    const existing = orders.find(order => {
+      const storedNumber = wooMetaValue(order, 'tm_order_number') || wooMetaValue(order, 'gopay_order_number');
+      const storedPayment = String(order?.transaction_id || '') || wooMetaValue(order, 'gopay_payment_id');
+      return (tmOrderNumber && storedNumber === tmOrderNumber) || (paymentId && storedPayment === paymentId);
+    });
+    if (existing) return existing;
+    if (orders.length < pageSize) return null;
+    const lastId = Number(orders.at(-1)?.id);
+    if (!Number.isSafeInteger(lastId) || lastId <= (previousId ?? 0)) {
+      throw new Error('Poradie Woo objednávok sa nepodarilo spoľahlivo overiť.');
+    }
+    previousId = lastId;
+  }
 }
 
 async function ensurePaperRewardClaim(source: CheckoutOrderSource, orderId: number | string, profiler?: CheckoutProfiler) {
