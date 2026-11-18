@@ -172,7 +172,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
       customer_id: session.id, customer_email: contact.email, order_id: orderId, order_number: contact.orderNumber,
       product_id: Number(product.product_id || product.variation_id), product_name: clean(product.name),
       product_sku: clean(product.sku), reason: contact.reason, message: claimMessageWithContact(contact), status: 'received',
-    });
+    }, tmNumber);
     return json({ ...result, claim: claimToPublic(result.claim, tmNumber) });
   } catch (error) {
     const known = error instanceof ClaimInputError;

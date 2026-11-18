@@ -19,7 +19,10 @@ class WC_Order {
     public array $payment_shipping = ['payment_method'=>'gopay','state'=>'PAID','shipping'=>'dpd_box','total'=>'29.90'];
     public function get_id() { return $this->ID; }
     public function get_customer_id() { return $this->customer_id; }
-    public function get_meta($key) { return $key === 'source' ? $this->source : ($key === 'tm_order_number' ? '301092' : ''); }
+    public function get_meta($key, $single = true) {
+        $value = $key === 'source' ? $this->source : ($key === 'tm_order_number' ? '301092' : '');
+        return $single ? $value : ($value === '' ? [] : [(object)['value' => $value]]);
+    }
     public function get_created_via() { return $this->source; }
     public function get_order_number() { return (string) $this->ID; }
     public function get_formatted_billing_full_name() { return 'Fixture zákazník'; }

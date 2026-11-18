@@ -349,3 +349,26 @@ test('browser retries reuse identity even when browser storage is unavailable', 
     if (oldStorage) Object.defineProperty(globalThis, 'sessionStorage', oldStorage); else delete globals.sessionStorage;
   }
 });
+
+
+test('claim receipts separate the old plugin lookup key from the verified customer number', async () => {
+  for (const kind of ['account', 'public']) {
+    for (const number of ['TM-2025/003786', '']) {
+      const f = await fixture({ guest: kind === 'public' });
+      f.order.meta_data = number ? [{ key: 'tm_order_snapshot', value: { orderNumber: number } }] : [];
+      if (kind === 'public') {
+        assert.equal((await f.submit(kind, { orderNumber: '---' })).status, 400);
+        assert.equal(f.claims.length, 0);
+      }
+      const result = await f.submit(kind, kind === 'public' ? { orderNumber: number || '101' } : {});
+      assert.equal(result.data.wooSaved, true);
+      assert.equal(f.claims[0].order_number, '101');
+      if (kind === 'account') assert.equal(result.data.claim.order_number, number);
+      for (const message of f.outgoing) {
+        assert.ok(message.text.includes('Objednávka: ' + (number || '—')));
+        assert.doesNotMatch(message.text, /Objednávka: 101\b/);
+        assert.doesNotMatch(message.html, />101<|Objednávka: 101\b/);
+      }
+    }
+  }
+});

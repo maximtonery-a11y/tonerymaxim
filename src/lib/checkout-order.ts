@@ -765,13 +765,13 @@ async function createWooOrderFromCheckoutInternal(source: CheckoutOrderSource, o
   if (customerEmail && options.sendConfirmationEmail !== false) {
     const emailPromise = sendOrderConfirmationEmail({
       to: customerEmail,
-      orderNumber: String(source.orderNumber || order.number || order.id || ""),
+      orderNumber: source.orderNumber,
       source,
       paymentTitle: payment.title,
       shippingTitle: shippingPayload.method_title,
     });
     const adminCopyPromise = sendOrderAdminCopyEmail({
-      orderNumber: String(source.orderNumber || order.number || order.id || ""),
+      orderNumber: source.orderNumber,
       source,
       paymentTitle: payment.title,
       shippingTitle: shippingPayload.method_title,

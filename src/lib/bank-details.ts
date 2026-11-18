@@ -7,7 +7,8 @@ export const BANK_TRANSFER_DETAILS = Object.freeze({
 
 export function bankTransferVariableSymbol(orderNumber: unknown): string {
   const digits = String(orderNumber || "").replace(/\D/g, "");
-  return digits || "—";
+  // Keep the historical six-digit bank reference when the displayed order number includes a prefix or year.
+  return digits.slice(-6) || "—";
 }
 
 export function isBankPrepaidPayment(code: unknown, title: unknown = ""): boolean {
