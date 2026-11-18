@@ -34,12 +34,11 @@ export async function verifyMobileLabel(page, origin) {
   const lookup = () => requests.filter(({ url }) => url.pathname === '/api/smart-search').map(({ url }) => url.searchParams.get('q')).filter(q => q !== '__tm_warm__');
   try {
     await page.goto(origin + '/');
-    assert.equal(await page.locator('a[href="/hladat-fotkou"]').count(), 0);
-    await page.goto(origin + '/?foto=1');
-    await page.getByRole('link', { name: 'Odfotiť štítok' }).click();
+    assert.equal(await page.locator('a[href^="/hladat-fotkou"]').count(), 0);
+    await page.goto(origin + '/hladat-fotkou');
     const gallery = page.locator('[data-gallery]');
     await gallery.waitFor({ state: 'visible' });
-    assert.equal(await page.locator('[data-camera]').getAttribute('capture'), 'environment');
+    assert.equal(await page.getByRole('button', { name: 'Spustiť fotoaparát' }).count(), 1);
     assert.equal(await gallery.getAttribute('capture'), null);
     assert.ok(!requests.some(({ url }) => url.pathname.includes('/citanie-stitku/')), 'OCR was loaded before photo selection');
 

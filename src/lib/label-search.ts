@@ -135,6 +135,33 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
   return [...found.values()];
 }
 
+// Live scans have no confirmation step. A complete, legible reference must be read
+// on consecutive camera frames before the catalogue is asked for an exact match.
+export function liveLabelCandidate(lines: LabelLine[], privateCodes: Set<string>): LabelCandidate | undefined {
+  let candidates = labelCandidates(lines, privateCodes);
+  if (candidates.length > 1) {
+    // HP frequently prints both CE285A and 85A on the same box.
+    const long = candidates.filter(item => item.brand === 'HP' && item.kind === 'supply' && hpOem.test(item.code));
+    if (long.length !== 1 || !candidates.every(item => item === long[0] ||
+      (item.brand === 'HP' && item.kind === 'supply' && /^\d{2,3}[AX]$/.test(item.code) && long[0].code.endsWith(item.code)))) return;
+    candidates = long;
+  }
+  const item = candidates[0];
+  if (!item || item.certain) return item;
+  const explicitBrand = labelBrands(lines).includes(item.brand.toUpperCase());
+  const hasClearCode = lines.some(line => {
+    if (privateLine.test(line.text)) return false;
+    const productNumber = clean(line.text).match(productNumberField)?.[1];
+    if (productNumber && hpPrinterNumbers.get(productNumber) === item.code && item.kind === 'printer') {
+      return (line.words?.find(word => codeKey(word.text) === productNumber)?.confidence ?? line.confidence) >= 85;
+    }
+    const target = codeKey(item.code);
+    return explicitBrand && tokens(line.text).some(token => codeKey(token) === target)
+      && (line.words?.find(word => codeKey(word.text) === target)?.confidence ?? line.confidence) >= 85;
+  });
+  return hasClearCode ? item : undefined;
+}
+
 // Each reading is an independent interpretation of the same row. Present exact alternatives
 // for confirmation and honour a private field detected by either reading.
 export function selectedLabelCandidates(passes: LabelLine[][], privateCodes: Set<string>, previousBrands: string[]) {

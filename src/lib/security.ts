@@ -1,6 +1,7 @@
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
 import { persistenceSecret, readSignedJson, TM_DATA_ROOT, writeSignedJson } from './secure-persistence';
+import { permissionsPolicy } from './permissions-policy';
 import { isStrongSecret } from './secret-validation';
 
 export type SecurityEvent = {
@@ -244,7 +245,7 @@ export function securityHeaders(url: URL, requestIdValue: string): Record<string
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'SAMEORIGIN',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(self)',
+    'Permissions-Policy': permissionsPolicy(url.pathname),
     'Cross-Origin-Resource-Policy': 'same-site',
     'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     'Content-Security-Policy': csp,

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { exactLabelOffers, hpOrderCode, labelCandidates, selectedLabelCandidates } from '../src/lib/label-search.ts';
+import { exactLabelOffers, hpOrderCode, labelCandidates, liveLabelCandidate, selectedLabelCandidates } from '../src/lib/label-search.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
 test('retains complete manufacturer references and distinguishes supplies from printers', () => {
@@ -98,4 +98,23 @@ test('a precise selection asks for confirmation and retains private fields acros
     const candidate = read('HP LaserJet ' + name)[0];
     assert.deepEqual(exactLabelOffers(candidate, { printers: models }).map(x => x.title), ['HP LaserJet ' + name]);
   }
+});
+
+test('live camera offers require a legible, unambiguous manufacturer reference', () => {
+  const seen = new Set<string>();
+  const live = (text: string, confidence = 96) => liveLabelCandidate([{ text, confidence }], seen)?.code;
+  assert.equal(live('HP 85A / CE285A'), 'CE285A');
+  assert.equal(live('Brother TN-2421'), 'TN-2421');
+  assert.equal(live('HP LaserJet M110we'), 'M110WE');
+  assert.equal(live('Canon PIXMA TS8551'), 'TS8551');
+  assert.equal(live('Product No. 4ZB78A'), '107W');
+  assert.equal(live('HP 85A'), '85A');
+  assert.equal(live('85A'), undefined);
+  assert.equal(live('HP 85A CF259A'), undefined);
+  assert.equal(live('Brother TN-2421 TN-2411'), undefined);
+  assert.equal(live('Brother TN-2421', 60), undefined);
+  assert.equal(live('S/N: CE285A'), undefined);
+  assert.equal(live('HP CE285A'), undefined);
+  assert.equal(liveLabelCandidate([{ text: 'Brother TN-2421', confidence: 99,
+    words: [{ text: 'TN-2421', confidence: 50 }] }], seen), undefined);
 });
