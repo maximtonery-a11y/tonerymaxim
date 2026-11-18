@@ -28,7 +28,7 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
           <div class="live-guide" data-live-guide aria-hidden="true"></div>
         </div>
         <p class="privacy">Obraz zostáva vo vašom zariadení. V katalógu hľadáme iba prečítané označenie.</p>
-        <p id="label-status" role="status" aria-live="polite"></p>
+        <p id="label-status" tabindex="-1" role="status" aria-live="polite"></p>
         <button class="secondary" type="button" data-stop hidden>Zrušiť čítanie</button>
         <div class="matches" data-matches></div>
         <button type="button" class="secondary crop-toggle" data-crop-toggle aria-expanded="false" aria-controls="crop-photo" hidden>Vybrať riadok z fotky</button>
@@ -78,7 +78,7 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
   .live-guide::before { left:0; } .live-guide::after { right:0; }
   .privacy { margin:.75rem 0; color:#476078; font-size:.875rem; }
   #label-status:empty { margin:0; }
-  #label-status { font-weight:600; }
+  #label-status { font-weight:600; scroll-margin-top:clamp(5rem,18vh,10rem); }
   .matches { display:grid; gap:.55rem; }
   .matches :global(a) { text-decoration:none; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:.4rem; }
   .matches :global(small) { white-space:nowrap; }

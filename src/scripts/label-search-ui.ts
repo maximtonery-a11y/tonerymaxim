@@ -72,14 +72,17 @@ function setup(root: HTMLElement) {
     if (!response.ok) throw new Error('catalog');
     const data: LabelOffers = await response.json();
     if (data.warning) throw new Error('catalog');
-    return exactLabelOffers(candidate, data);
+    return data;
   }
 
   async function findOffers(candidate: LabelCandidate, signal: AbortSignal) {
-    const items = await catalogOffers(candidate, signal);
+    const data = await catalogOffers(candidate, signal);
+    const items = exactLabelOffers(candidate, data);
     const fullCode = hpOrderCode(candidate, items);
+    if (candidate.requiresPairing && (!fullCode || exactLabelOffers({ ...candidate, kind: 'printer' }, data).length)) return [];
     if (!fullCode || signal.aborted) return items;
-    const full = await catalogOffers({ ...candidate, code: fullCode }, signal).catch(() => []);
+    const fullCandidate = { ...candidate, code: fullCode };
+    const full = await catalogOffers(fullCandidate, signal).then(result => exactLabelOffers(fullCandidate, result)).catch(() => []);
     return [...new Map([...full, ...items].map(item => [item.url, item])).values()];
   }
 
@@ -137,6 +140,7 @@ function setup(root: HTMLElement) {
     scanningLive = true;
     controls.hidden = true;
     livePanel.hidden = false;
+    if (livePanel.getBoundingClientRect().bottom > window.innerHeight) livePanel.scrollIntoView({ block: 'start' });
     stop.textContent = 'Zastaviť skenovanie';
     const display = (message: string) => { if (!task.signal.aborted) status.textContent = message; };
     try {
@@ -146,6 +150,10 @@ function setup(root: HTMLElement) {
         if (task.signal.aborted || !items.length) return false;
         reset(); // Switch off the camera before displaying prices or navigating.
         showOffers(candidate, items);
+        if (results.childElementCount) {
+          status.focus({ preventScroll: true });
+          status.scrollIntoView({ block: 'start' });
+        }
         return true;
       });
     } catch (error) {

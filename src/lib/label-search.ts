@@ -1,6 +1,6 @@
 // Only manufacturer references leave the device. Keep the entire suffix throughout matching.
 export type LabelLine = { text: string; confidence: number; words?: { text: string; confidence: number }[] };
-export type LabelCandidate = { brand: string; code: string; kind: 'printer' | 'supply'; certain: boolean };
+export type LabelCandidate = { brand: string; code: string; kind: 'printer' | 'supply'; certain: boolean; requiresPairing?: boolean };
 type Rule = { kind: LabelCandidate['kind']; brand: string; pattern: RegExp };
 
 const printerFamilies = [
@@ -40,7 +40,7 @@ const clean = (text: string) => text.toUpperCase().replace(/[‐‑‒–—−]
 const codePrefix = /\b(DCP|MFC|HL|TN|DR|LC|BT|WT|CLI|PGI|GI|CL|PG|CRG|PFI|TK|MLT|CLT|ET|XP|WF|LBP)\s*-?\s+([A-Z]?\d)/g;
 const separateSuffix = /\b((?:(?:PGI|CLI|PG|CL|GI|LC|TN)-?\d{2,5}|\d{3}))\s+(XXL|XL|PGBK|BK|[CMY])\b/g;
 function tokens(text: string): string[] {
-  return clean(text).replace(codePrefix, '$1-$2').replace(separateSuffix, '$1$2')
+  return clean(text).replace(codePrefix, '$1-$2').replace(/\b((?:TN|DR|LC)-[A-Z]?\d)[ \t]+(\d{2,4}[A-Z]{0,3})\b/g, '$1$2').replace(separateSuffix, '$1$2')
     .match(/[A-Z0-9]+(?:-[A-Z0-9]+)*/g) || [];
 }
 
@@ -62,7 +62,7 @@ function visibleLabelLines(lines: LabelLine[], privateCodes: Set<string>) {
     if (!text) continue;
     if (privateLine.test(text)) {
       for (const token of tokens(text)) privateCodes.add(codeKey(token));
-      privateValueOnNextLine = /(?:S\s*\/\s*N|SN|SERIAL(?:\s+(?:NUMBER|NO\.?))?|PASSWORD|MAC|RMN|EAN|UPC|GTIN)\s*[:#-]?$/i.test(text);
+      privateValueOnNextLine = /(?:[S5]\s*[/|\\]\s*[I1]?N|S[1I]N|SN|SERIAL(?:\s+(?:NUMBER|NO\.?))?|PASSWORD|MAC|RMN|EAN|UPC|GTIN)\s*[:#-]?$/i.test(text);
       continue;
     }
     if (privateValueOnNextLine) {
@@ -149,6 +149,14 @@ export function liveLabelCandidate(lines: LabelLine[], privateCodes: Set<string>
   const item = candidates[0];
   if (!item || item.certain) return item;
   const explicitBrand = labelBrands(lines).includes(item.brand.toUpperCase());
+  // An HP box often shows just “106A” in large print. A bare short code needs
+  // three clear readings AND an unambiguous full manufacturer code in the shop.
+  const bareHP = !explicitBrand && item.brand === 'HP' && item.kind === 'supply' && /^\d{2,3}[AX]$/.test(item.code);
+  if (bareHP) {
+    const legible = lines.some(line => !privateLine.test(line.text) && tokens(line.text).includes(item.code)
+      && (line.words?.find(word => codeKey(word.text) === item.code)?.confidence ?? line.confidence) >= 90);
+    return legible ? { ...item, requiresPairing: true } : undefined;
+  }
   const hasClearCode = lines.some(line => {
     if (privateLine.test(line.text)) return false;
     const productNumber = clean(line.text).match(productNumberField)?.[1];

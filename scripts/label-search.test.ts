@@ -109,11 +109,15 @@ test('live camera offers require a legible, unambiguous manufacturer reference',
   assert.equal(live('Canon PIXMA TS8551'), 'TS8551');
   assert.equal(live('Product No. 4ZB78A'), '107W');
   assert.equal(live('HP 85A'), '85A');
-  assert.equal(live('85A'), undefined);
+  assert.equal(liveLabelCandidate([{ text: '106A', confidence: 97 }], seen)?.requiresPairing, true);
+  assert.equal(live('35A', 74), undefined);
+  assert.equal(live('TN-1 030'), 'TN-1030');
   assert.equal(live('MF443dw'), 'MF443DW');
   assert.equal(live('P1102W'), undefined);
   assert.equal(live('SIN: TN-9900'), undefined);
   assert.equal(live('TN-9900'), undefined);
+  assert.equal(liveLabelCandidate([{ text: 'SIN:', confidence: 90 }, { text: 'TN-9901', confidence: 99 }], seen), undefined);
+  assert.equal(live('TN-9901'), undefined);
   assert.equal(live('HP 85A CF259A'), undefined);
   assert.equal(live('Brother TN-2421 TN-2411'), undefined);
   assert.equal(live('Brother TN-2421', 60), undefined);
