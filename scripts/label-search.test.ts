@@ -9,7 +9,7 @@ test('frame selection favours sharply focused lettering over a softened view of 
   const width = 96, height = 40;
   function score(blurred: boolean) {
     const pixels = new Uint8ClampedArray(width * height * 4);
-    function ink(x: number) { return Math.abs(x % 12) < 6 ? 28 : 226; }
+    function ink(x: number): number { return Math.abs(x % 12) < 6 ? 28 : 226; }
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const neighbours = [-2, -1, 0, 1, 2].map(offset => ink(x + 12 + offset));
