@@ -289,14 +289,14 @@ async function checkDiscountJourney(page, origin, guest) {
   let releaseBenefits;
   const firstLookup = new Promise(resolve => { releaseBenefits = resolve; });
   const json = (route, body, status = 200) => route.fulfill({ status, json: body });
-  await page.route("**/api/account/loyalty", async route => {
+  await page.context().route("**/api/account/loyalty", async route => {
     lookups++;
     await firstLookup;
     if (unavailable) return json(route, {}, 503);
     return json(route, { ok: !guest, points, discountValue: points / 100 });
   });
-  await page.route("**/api/coupon-active", route => { lookups++; return json(route, guest ? { ok: false } : coupon); });
-  await page.route("**/api/coupon-validate", route => {
+  await page.context().route("**/api/coupon-active", route => { lookups++; return json(route, guest ? { ok: false } : coupon); });
+  await page.context().route("**/api/coupon-validate", route => {
     assert.equal(route.request().postDataJSON().code, coupon.code);
     return json(route, valid ? coupon : { ok: false, code: coupon.code, reason: "Kupón už bol použitý." }, valid ? 200 : 400);
   });
@@ -313,13 +313,14 @@ async function checkDiscountJourney(page, origin, guest) {
     await page.locator("[data-add-main]").click();
     await drawer.waitFor();
   };
-  const checkDrawer = async () => {
-    await drawer.getByText(/Do dopravy zdarma chýba 0,63/).waitFor();
+  const checkDrawer = async (tab = page) => {
+    const summary = tab.locator("[data-add-cart-summary]");
+    await summary.getByText(/Do dopravy zdarma chýba 0,63/).waitFor();
     for (const [label, price] of [["Tovar pred zľavami", 4068], ["Množstevná / sadová zľava", -1017], ["Kupónová zľava 7 %", -214], ["Spolu za tovar", 2837]]) {
-      assert.equal(cents(await drawer.locator("div").filter({ has: page.getByText(label, { exact: true }) }).locator("strong").textContent()), price);
+      assert.equal(cents(await summary.locator("div").filter({ has: tab.getByText(label, { exact: true }) }).locator("strong").textContent()), price);
     }
-    assert.equal(await drawer.locator("p.is-free").count(), 0);
-    await fits(drawer.locator("div,p"));
+    assert.equal(await summary.locator("p.is-free").count(), 0);
+    await fits(summary.locator("div,p"));
   };
   await page.goto(product);
   await page.locator("[data-add-main]").waitFor();
@@ -338,8 +339,12 @@ async function checkDiscountJourney(page, origin, guest) {
   await page.locator('[data-cart-action="input"]').first().waitFor();
   const compact = await page.locator("[data-cart-mobile-breakdown]").isVisible();
   const total = compact ? "[data-cart-breakdown-total]" : "[data-cart-total]";
+  let otherProductTab;
   if (guest) {
     await amount(page, total, 3051);
+    otherProductTab = await page.context().newPage();
+    await otherProductTab.goto(product);
+    await otherProductTab.locator("[data-add-main]").waitFor();
     const form = page.locator("[data-cart-coupon-box]:visible");
     await form.locator("[data-coupon-toggle]").click();
     await form.locator("[data-coupon-input]").fill(coupon.code);
@@ -355,9 +360,9 @@ async function checkDiscountJourney(page, origin, guest) {
   if (guest) {
     await page.locator('[data-cart-action="minus"]').first().click();
     await amount(page, total, 2554);
-    await buy(1);
-    await checkDrawer();
-    await page.getByRole("link", { name: "Do košíka", exact: true }).click();
+    await otherProductTab.locator("[data-add-main]").click();
+    await checkDrawer(otherProductTab);
+    await otherProductTab.close();
   } else {
     points = 24;
     await page.reload();
@@ -366,11 +371,14 @@ async function checkDiscountJourney(page, origin, guest) {
   }
   await amount(page, total, 2837);
   await page.locator(compact ? ".cart-mobile-sticky-checkout" : ".checkout-button").click();
+  await page.locator("[data-checkout-form]").waitFor();
   const next = page.locator('[data-checkout-next="delivery"]');
-  if (await next.isVisible()) {
+  if (compact) {
+    await next.waitFor();
     await page.locator("#email").fill("test@example.invalid");
     await page.locator("#phone").fill("0900123456");
     await next.click();
+    await page.locator('[data-checkout-step="delivery"].is-active').waitFor();
   }
   const toggle = page.locator("[data-mobile-summary-toggle]");
   if (await toggle.isVisible() && await toggle.getAttribute("aria-expanded") !== "true") await toggle.click();

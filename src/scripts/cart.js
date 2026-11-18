@@ -26,7 +26,10 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
   // Vernostná zľava je pre prihláseného zákazníka predvolene zapnutá.
   // Hodnota "0" vznikne iba po jeho vedomom odškrtnutí voľby.
   let tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") !== "0";
-  let tmCoupon = (() => { try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null") || null; } catch { return null; } })();
+  function readSavedCoupon() {
+    try { return JSON.parse(localStorage.getItem("tm_coupon_v1") || "null"); } catch { return null; }
+  }
+  let tmCoupon = readSavedCoupon();
 
   let loyaltyRequest;
   let customerSignedIn;
@@ -151,6 +154,13 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
   }
 
 
+  function renderCartViews() {
+    renderCartPage();
+    if (document.body.classList.contains("has-add-cart-drawer")) {
+      renderAddCartSummary(document.querySelector("[data-add-cart-drawer]"));
+    }
+  }
+
   // Only the cart page and an explicitly opened drawer request customer benefits.
   function ensureCartBenefits(cart) {
     const key = JSON.stringify(cart.filter(item => !isPaperRewardCartItem(item)).map(item =>
@@ -182,9 +192,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
         if (revision !== couponRevision) return;
         benefitStatus = "error";
       }
-      renderCartPage();
-      const drawer = document.querySelector("[data-add-cart-drawer]");
-      if (drawer && document.body.classList.contains("has-add-cart-drawer")) renderAddCartSummary(drawer);
+      renderCartViews();
     }, 100);
   }
 
@@ -1107,9 +1115,7 @@ function formatMoney(value) {
   document.addEventListener("click", (event) => {
     if (event.target.closest("[data-cart-retry-discounts]")) {
       couponCartKey = undefined;
-      renderCartPage();
-      const drawer = document.querySelector("[data-add-cart-drawer]");
-      if (drawer && document.body.classList.contains("has-add-cart-drawer")) renderAddCartSummary(drawer);
+      renderCartViews();
       return;
     }
     const blockedCheckout = event.target.closest('[aria-disabled="true"].checkout-button, [aria-disabled="true"].cart-mobile-sticky-checkout');
@@ -1198,6 +1204,19 @@ function formatMoney(value) {
 
     updateQty(input.dataset.sku, input.value, input.dataset.rewardItem === "true");
     renderCartPage();
+  });
+
+  window.addEventListener("storage", (event) => {
+    if (event.key !== null && ![CART_KEY, "tm_coupon_v1", "tm_loyalty_apply"].includes(event.key)) return;
+    if (!event.key || event.key === "tm_coupon_v1") {
+      tmCoupon = readSavedCoupon();
+      enteredCartCoupon = undefined;
+      couponCartKey = undefined;
+      ++couponRevision;
+    }
+    if (!event.key || event.key === "tm_loyalty_apply") tmLoyaltyApply = localStorage.getItem("tm_loyalty_apply") !== "0";
+    if (!event.key || event.key === CART_KEY) refreshCartCounters();
+    renderCartViews();
   });
 
   document.addEventListener("DOMContentLoaded", async () => {

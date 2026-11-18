@@ -16,14 +16,18 @@ async function requestCoupon(path, body) {
 
 export async function resolveCartCoupon(cart, savedCoupon, { automatic = true, enteredCode } = {}) {
   const manual = enteredCode ?? (savedCoupon?.manual ? savedCoupon.code : undefined);
+  let rejectedManual;
   if (manual !== undefined) {
     if (!manual) return null;
-    return { ...await requestCoupon("/api/coupon-validate", { code: manual, cart }), manual: true };
+    const chosen = { ...await requestCoupon("/api/coupon-validate", { code: manual, cart }), manual: true };
+    if (chosen.ok || enteredCode !== undefined || !automatic) return chosen;
+    rejectedManual = chosen;
   }
   if (automatic) {
     const best = await requestCoupon("/api/coupon-active", { cart });
     if (best.ok && best.code) return best;
   }
+  if (rejectedManual) return rejectedManual;
   // Guests can redeem an issued code even though they have no automatic account coupon.
   if (savedCoupon?.code) return requestCoupon("/api/coupon-validate", { code: savedCoupon.code, cart });
   return null;
