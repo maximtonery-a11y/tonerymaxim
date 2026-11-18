@@ -28,6 +28,10 @@ const products = [product, variant(12, 'original', 104.66), variant(13, 'renovat
   { ...variant(41, 'original', 42, 'TN-2010'),
     description_html: '<h2>TN-2010</h2><p>Originálny toner pre testovanú tlačiareň.</p><h3>Obsah balenia</h3><ul><li>Jedna kazeta</li></ul><h3>Pokyny</h3><p>Posledný odsek pôvodného popisu.</p>' },
   { ...variant(51, 'compatible', 10.17, 'CE285A', 2000), product_brand: 'HP', name: 'HP CE285A čierny kompatibilný toner', compatible_printers: ['HP LaserJet P1102'] },
+  ...['CMY azúrový', 'CMY purpurový', 'CMY žltý', 'BK čierny'].map((tone, i) => ({ ...variant(61+i, 'compatible', 35),
+    name: `Brother DR-241CL ${tone} kompatibilný optický valec`, oem_codes: 'DR-241CL '+tone.split(' ')[0], compatible_printers: ['Brother DCP-9020CDW'] })),
+  ...['kompatibilný','originálny'].map((type, i) => ({ ...variant(71+i, i ? 'original':'compatible', 28),
+    name: `Brother TN-245Y žltý ${type} toner`, oem_codes:'TN-245Y', compatible_printers: ['Brother DCP-9020CDW'] })),
   { id: 91, sku: 'PAPER', slug: 'kancelarsky-papier-a4-80g-500-harkov', name: 'Kancelársky papier A4', price: 6,
     product_type_key: 'product', stock_status: 'instock', stock_quantity: 30, compatible_printers: [] }];
 const orders = Array.from({ length: 61 }, (_, index) => ({ id: 701 - index, number: String(701 - index), customer_id: 7, status: index === 1 ? 'cancelled' : 'completed',

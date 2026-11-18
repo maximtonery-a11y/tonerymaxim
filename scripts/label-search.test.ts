@@ -1,8 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { exactLabelOffers, hpOrderCode, labelCandidates, liveLabelCandidate, selectedLabelCandidates } from '../src/lib/label-search.ts';
+import { exactLabelOffers, hpOrderCode, labelCandidates, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
+
+test('full drum marking overrides the family and preserves the single colour-drum designation', () => {
+  const result = read('DR-2410L\nDR-241 CL\nDR-241CL-CMY');
+  assert.deepEqual(result.map(r => r.code), ['DR-241CL-CMY']);
+  const name = (mark: string, suffix: string) => ({ title:'Brother '+mark+' '+suffix, url:'/produkt/'+suffix });
+  const products = [name('DR-241CL CMY','azurovy'),name('DR-241CL-CMY','zlty'),name('DR-241CL BK','cierny'),name('DR-241CL CMYK','sada')];
+  assert.deepEqual(exactLabelOffers(result[0],{products}).map(p=>p.url), ['/produkt/azurovy','/produkt/zlty']);
+  assert.equal(read('DR-241CL-CMY\nDR-242CL-BK').length,2);
+  assert.equal(read('Brother LC-426M')[0].kind, 'supply');
+});
+
+test('regional codes printed on a coloured cartridge only admit complete references in that colour', () => {
+  const print = 'LBTN225/245/255/265/285/296Y';
+  assert.deepEqual(printedTonerCodes(print),[225,245,255,265,285,296].map(n=>'TN-'+n+'Y'));
+  const [candidate] = read(print);
+  const title = (value: string,i: number) => ({ title:value,url:'/produkt/test-'+i });
+  const products = ['Brother TN-245Y žltý toner','Brother TN-245M purpurový toner','Brother TN-245Y CMYK sada','Canon TN-245Y','Brother TN-2450Y'].map(title);
+  assert.deepEqual(exactLabelOffers(candidate,{products}).map(p=>p.title),[products[0].title]);
+  assert.deepEqual(printedTonerCodes('LBTN225/245/255'),[]);
+  assert.deepEqual(printedTonerCodes('XTN225/245Y'),[]);
+  const privateCodes=new Set<string>();
+  labelCandidates([{text:'S/N: '+print,confidence:95}],privateCodes);
+  assert.deepEqual(labelCandidates([{text:print,confidence:96}],privateCodes),[]);
+  assert.equal(liveLabelCandidate([{text:'ABFX47P15879234KT',confidence:99}],new Set()),undefined);
+});
 test('retains complete manufacturer references and distinguishes supplies from printers', () => {
   for (const [text, code, kind] of [
     ['HP CE285AD', 'CE285AD', 'supply'], ['Canon PG-545 XL', 'PG-545XL', 'supply'],
