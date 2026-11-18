@@ -22,7 +22,7 @@ const privateLine = /\b(?:S\s*\/\s*N|SN|SERIAL|SERI[AO]V[EÉ]|IMEI|MAC|PASSWORD|
 const codeKey = (text: string) => text.toUpperCase().replace(/[^A-Z0-9]/g, '');
 const clean = (text: string) => text.toUpperCase().replace(/[‐‑‒–—−]/g, '-');
 const codePrefix = /\b(DCP|MFC|HL|TN|DR|LC|BT|WT|CLI|PGI|GI|CL|PG|CRG|PFI|TK|MLT|CLT|ET|XP|WF|LBP)\s*-?\s+([A-Z]?\d)/g;
-const separateSuffix = /\b((?:PGI|CLI|PG|CL|GI|LC|TN)-?\d{2,5})\s+(XXL|XL|PGBK|BK|[CMY])\b/g;
+const separateSuffix = /\b((?:(?:PGI|CLI|PG|CL|GI|LC|TN)-?\d{2,5}|\d{3}))\s+(XXL|XL|PGBK|BK|[CMY])\b/g;
 function tokens(text: string): string[] {
   return clean(text).replace(codePrefix, '$1-$2').replace(separateSuffix, '$1$2')
     .match(/[A-Z0-9]+(?:-[A-Z0-9]+)*/g) || [];
@@ -63,8 +63,13 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
     }
     useful.push(line);
   }
-  for (const line of useful) {
-    const text = line.text;
+  for (const [index, line] of useful.entries()) {
+    let text = line.text;
+    // Canon sometimes prints the family number and its ink colour on separate lines.
+    const below = useful[index + 1]?.text.trim() || '';
+    if (brands.has('CANON') && /^\d{3}$/.test(text.trim()) && /^(?:PGBK|BK|[CMY]|XX?L)$/i.test(below)) {
+      text = text.trim() + below;
+    }
     for (const token of tokens(text)) {
       if (privateCodes.has(codeKey(token))) continue;
       const rule = rules.find(rule => rule.pattern.test(token));

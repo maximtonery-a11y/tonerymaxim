@@ -62,4 +62,7 @@ test('a tap on a short label keeps the manufacturer seen on the original box', (
   assert.equal(read('Epson\n101')[0].certain, false);
   assert.equal(read('85A')[0].certain, false);
   assert.deepEqual(read('545'), []);
+  for (const label of ['Canon\n570\nPGBK', 'Canon 570 PGBK']) {
+    assert.deepEqual(read(label).map(row => [row.code, row.certain]), [['570PGBK', false]]);
+  }
 });
