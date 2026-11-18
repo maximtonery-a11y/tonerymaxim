@@ -412,6 +412,32 @@ async function checkDiscountJourney(page, origin, guest) {
   }
 }
 
+async function checkSearchWarmup(page, origin, interruptFirst) {
+  const warmUrl = origin + '/api/smart-search?q=__tm_warm__';
+  if (interruptFirst) {
+    // Hold the first warmup until the browser leaves the document, as on a slow connection.
+    let heldRoute;
+    await page.route(warmUrl, route => { heldRoute = route; });
+    await Promise.all([page.waitForRequest(warmUrl, { timeout: 15000 }), page.goto(origin)]);
+    await page.goto('about:blank');
+    await page.unroute(warmUrl);
+    await heldRoute.abort('aborted');
+  }
+  const [response] = await Promise.all([
+    page.waitForResponse(res => res.url() === warmUrl && res.request().method() === 'GET', { timeout: 15000 }),
+    page.goto(origin),
+  ]);
+  assert.equal(response.status(), 200);
+  assert.equal((await response.json()).warmed, true);
+  await page.waitForFunction(() => Number(sessionStorage.getItem('tm_smart_search_warmed_at_v1')) > 0);
+  const found = await page.evaluate(async () => {
+    const response = await fetch('/api/smart-search?q=TN-2421');
+    const data = await response.json();
+    return response.ok && data.ok && (data.products.length > 0 || data.productGroups.length > 0);
+  });
+  assert.equal(found, true, 'A real product query works after the search index is ready');
+}
+
 async function verifyEngine(origin, engine, configurations, options) {
   const browser = await engine.launch(options);
   try {
@@ -430,6 +456,7 @@ async function verifyEngine(origin, engine, configurations, options) {
         return route.abort();
       });
       try {
+        await checkSearchWarmup(page, origin, width === 390);
         if (width === 390) await verifyMobileLabel(page, origin);
         await checkLayout(page, origin, layout);
         if (width === 390 || width === 1280) await checkDiscountJourney(page, origin, width === 390);

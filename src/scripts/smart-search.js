@@ -8,6 +8,7 @@
 
   const CACHE_KEY = "tm_smart_search_v8";
   const CACHE_TTL = 20 * 60 * 1000;
+  const WARMED_AT = "tm_smart_search_warmed_at_v1";
   // Nášepkávač štartuje od 3 znakov. Krátky debounce iba zlučuje veľmi rýchle
   // údery klávesov; používateľ nemá čakať stovky ms pred samotným requestom.
   const MIN_QUERY_LENGTH = 3;
@@ -285,12 +286,29 @@
   function warmupSearch() {
     if (warmupStarted) return;
     warmupStarted = true;
-    const start = () => {
-      fetch('/api/smart-search?q=__tm_warm__', {
-        headers: { Accept: 'application/json' },
-        cache: 'no-store',
-        priority: 'low',
-      }).catch(() => {});
+    try {
+      const last = Number(sessionStorage.getItem(WARMED_AT));
+      const age = Date.now() - last;
+      if (last > 0 && age >= 0 && age < CACHE_TTL) return;
+    } catch { /* Some browsers disable session storage. */ }
+
+    const controller = new AbortController();
+    const cancel = () => controller.abort();
+    window.addEventListener('pagehide', cancel, { once: true });
+    const start = async () => {
+      try {
+        if (controller.signal.aborted || document.visibilityState === 'hidden') return;
+        const response = await fetch('/api/smart-search?q=__tm_warm__', {
+          headers: { Accept: 'application/json' },
+          cache: 'no-store',
+          priority: 'low',
+          signal: controller.signal,
+        });
+        if (response.ok && (await response.json()).warmed === true && !controller.signal.aborted) {
+          sessionStorage.setItem(WARMED_AT, String(Date.now()));
+        }
+      } catch { /* Suggestions can build the index on their first real query. */ }
+      finally { window.removeEventListener('pagehide', cancel); }
     };
     // Warmup nesmie súperiť s prvým vykreslením ani s ďalším kliknutím.
     // Server index skladá po dávkach, toto oneskorenie navyše chráni slabší VPS.
