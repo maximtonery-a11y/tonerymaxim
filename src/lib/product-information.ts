@@ -102,7 +102,8 @@ const typeKeys = ['typproduktu','producttype'];
 const warrantyKeys = ['zaruka','warranty'];
 const chipKeys = ['cip','chip'];
 const packKeys = ['obsahbalenia','pocetkusovvbaleni','packsize'];
-const skipKeys = new Set([...colourKeys,...yieldKeys,...typeKeys,...warrantyKeys,...chipKeys,...packKeys,
+const skuKeys = ['sku','kodproduktu'];
+const skipKeys = new Set([...colourKeys,...yieldKeys,...typeKeys,...warrantyKeys,...chipKeys,...packKeys,...skuKeys,
   'oem','typspotrebnehomaterialu','vyrobcatlaciarne','vyrobcatlaciarni','printermanufacturer',
   'seriatlaciarne','seriatlaciarni','printerseries','series','modeltlaciarne','modeltlaciarni','printermodel','printermodels','models']);
 
@@ -144,9 +145,10 @@ export function productSpecifications(product: Product) {
   add('Čip', toner && normalize(chip) === 's cipom' ? 'Súčasť kazety' : chip, 'chip');
   add('Záruka', present(product.warranty) || present(product.zaruka) || field(warrantyKeys), 'shield');
   if (codes.length === 1) add('Kód výrobcu (OEM)', codes[0], 'tag');
+  add('Kód produktu', present(product.sku) || field(skuKeys), 'barcode');
   for (const attr of fields) {
     if (attr.name && !skipKeys.has(attr.key) && !facts.some(f => keyOf(f.label) === attr.key && f.value === attr.value)) add(attr.name, attr.value, 'list');
   }
   const extraCodes = codes.length > 1 ? codes.filter(code => !yields.some(y => y.code === code)) : [];
-  return { facts, yields, extraCodes, sku: present(product.sku) };
+  return { facts, yields, extraCodes };
 }

@@ -122,6 +122,8 @@ async function checkDescription(page) {
   };
   page.on('request', observe);
   try {
+    assert.equal(await page.locator('.pd-info-facts').getByText('SKU-41', { exact: true }).isVisible(), true);
+    assert.equal(await page.locator('.pd-info-codes').count(), 0);
     await fits(page.locator('.pd-info, .pd-info-facts dd, .pd-info-reading summary, .pd-info-pop'));
     await summary.click();
     assert.match(await details.innerText(), /Posledný odsek pôvodného popisu/);
@@ -147,6 +149,7 @@ async function checkDescriptionWithoutScript(browser, origin) {
     const page = await context.newPage();
     await page.goto(origin + productPath + '41');
     assert.equal(await page.locator('.tm-product-loading').isVisible(), false);
+    assert.equal(await page.locator('.pd-info-facts').getByText('SKU-41', { exact: true }).isVisible(), true);
     assert.equal(await page.locator('.pd-info-pop').isVisible(), false);
     await page.locator('.pd-info-reading summary').click();
     assert.equal(await page.getByText('Posledný odsek pôvodného popisu.', { exact: true }).isVisible(), true);

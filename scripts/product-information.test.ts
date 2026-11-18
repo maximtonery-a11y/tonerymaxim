@@ -38,11 +38,24 @@ test('per-colour yields retain explicit units, codes and each component quantity
   assert.equal(specs.facts.find(f => f.label === 'Obsah balenia')?.value, '4 atramentové náplne');
   assert.deepEqual(specs.yields.map(y => [y.pages.replace(/\s/g,''),y.code]), [['6000','GI-490BK'],['7000','GI-490C'],['7000','GI-490M'],['7000','GI-490Y']]);
   assert.deepEqual(specs.extraCodes, ['0663C001']);
+  assert.equal(specs.facts.find(f => f.label === 'Kód produktu')?.value, 'SET-GI490');
   for (const capacity of ['Čierna: 100 ml; Žltá: 800 strán', 'Čierna: 400 strán; Čierna: 700 strán', '2 × 1600 strán']) {
     const other = productSpecifications({ ...p, capacity });
     assert.deepEqual(other.yields, []);
     assert.ok(other.facts.some(f => f.value === capacity));
   }
+});
+
+test('the shop SKU is a visible fact alongside the OEM, including for older catalogue entries', () => {
+  const toner = { name: 'HP W1490A (149A) kompatibilný toner', color: 'Čierna', capacity: '2900 strán', warranty: '24 mesiacov', mpn: 'W1490A', sku: '13271',
+    attributes: [{ name: 'Kód produktu', value: 'starý kód' }] };
+  const { facts, extraCodes } = productSpecifications(toner);
+  assert.deepEqual(facts.map(f => f.label), ['Typ náplne', 'Farba', 'Výťažnosť', 'Záruka', 'Kód výrobcu (OEM)', 'Kód produktu']);
+  assert.deepEqual(facts.slice(-2).map(f => f.value), ['W1490A', '13271']);
+  assert.deepEqual(extraCodes, []);
+  const legacy = productSpecifications({ attributes: [{ name: 'SKU', value: '00123' }] });
+  assert.deepEqual(legacy.facts.map(f => f.value), ['00123']);
+  assert.deepEqual(productSpecifications({ sku: ' ' }).facts, []);
 });
 
 test('single toners and other products retain explicit facts, use legacy attributes and omit missing ones', () => {

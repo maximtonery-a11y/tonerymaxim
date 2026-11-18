@@ -7,7 +7,7 @@ import '../styles/product-information.css';
 interface Props { product: TmProduct }
 const { product } = Astro.props;
 const copy = productDescription(product);
-const { facts, yields, extraCodes, sku } = productSpecifications(product);
+const { facts, yields, extraCodes } = productSpecifications(product);
 ---
 <article class="pd-info" aria-label="Informácie o produkte">
   {(copy.html || copy.teaser) && <section class="pd-info-intro" aria-labelledby="pd-info-description">
@@ -40,11 +40,10 @@ const { facts, yields, extraCodes, sku } = productSpecifications(product);
       <dl>{yields.map(y => <div><dt><i class={'pd-info-dot ' + y.key} aria-hidden="true"></i>{y.name}</dt><dd>{y.pages} <small>strán</small></dd>{y.code && <dd class="pd-info-colour-code">{y.code}</dd>}</div>)}</dl>
     </div>}
   </section>}
-  {(extraCodes.length > 0 || sku) && <details class="pd-info-codes">
-    <summary><Icon name="tag"/><span>{extraCodes.length && sku ? 'Ďalšie kódy výrobcu a kód produktu' : sku ? 'Kód produktu' : 'Ďalšie kódy výrobcu'}</span><Icon name="chevron"/></summary>
+  {extraCodes.length > 0 && <details class="pd-info-codes">
+    <summary><Icon name="tag"/><span>Ďalšie kódy výrobcu</span><Icon name="chevron"/></summary>
     <dl>
-      {extraCodes.length > 0 && <div><dt>Kódy výrobcu (OEM)</dt><dd>{extraCodes.map(c => <span>{c}</span>)}</dd></div>}
-      {sku && <div><dt>Kód produktu</dt><dd>{sku}</dd></div>}
+      <div><dt>Kódy výrobcu (OEM)</dt><dd>{extraCodes.map(c => <span>{c}</span>)}</dd></div>
     </dl>
   </details>}
 </article>
