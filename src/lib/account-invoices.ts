@@ -1,6 +1,7 @@
-import { createHash } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { getWooAuthHeader, getWooBaseUrl } from './woo-client';
 import { getAccountOrderNumbers } from './account-orders';
+import { authSecret } from './runtime-secret';
 
 export const INVOICE_ID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
 export type CustomerInvoice = {
@@ -31,6 +32,27 @@ export function invoiceOrderFilter(value: unknown): number | undefined {
   if (value == null || value === '') return undefined;
   if (!positiveId(value)) throw new InvoiceError('Neplatná objednávka.', 400);
   return Number(value);
+}
+
+function signOrderReference(customerId: number, encoded: string): string {
+  return createHmac('sha256', authSecret()).update(`invoice-order:v1:${customerId}:${encoded}`).digest('base64url');
+}
+
+export function invoiceOrderReference(customerId: number, orderId: number): string {
+  const id = invoiceOrderFilter(orderId);
+  if (id === undefined) throw new InvoiceError('Neplatná objednávka.', 400);
+  const encoded = Buffer.from(String(id)).toString('base64url');
+  return encoded + '.' + signOrderReference(customerId, encoded);
+}
+
+export function readInvoiceOrderReference(customerId: number, reference: unknown): number {
+  const match = typeof reference === 'string' && /^([A-Za-z0-9_-]{2,22})\.([A-Za-z0-9_-]{43})$/.exec(reference);
+  if (!match || !timingSafeEqual(Buffer.from(match[2]), Buffer.from(signOrderReference(customerId, match[1])))) {
+    throw new InvoiceError('Neplatný odkaz na faktúry objednávky.', 400);
+  }
+  const orderId = Number(Buffer.from(match[1], 'base64url').toString('utf8'));
+  if (!Number.isSafeInteger(orderId) || orderId < 1) throw new InvoiceError('Neplatná objednávka.', 400);
+  return orderId;
 }
 
 async function request(endpoint: string, query: Record<string, string | number>, limit: number): Promise<any> {

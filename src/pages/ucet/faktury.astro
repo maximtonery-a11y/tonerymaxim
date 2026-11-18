@@ -5,7 +5,7 @@ import "../../styles/account.css";
 import { readCustomerSession, setCustomerCookie } from "../../lib/auth-session";
 import { getWooCustomerById } from "../../lib/woo-client";
 import { customerToSession, formatDate } from "../../lib/account-data";
-import { getCustomerInvoices, InvoiceError, invoiceOrderFilter, invoicePageNumber, type CustomerInvoice } from "../../lib/account-invoices";
+import { getCustomerInvoices, InvoiceError, invoiceOrderFilter, invoiceOrderReference, invoicePageNumber, readInvoiceOrderReference, type CustomerInvoice } from "../../lib/account-invoices";
 import AccountShell from "../../components/AccountShell.astro";
 
 const session = readCustomerSession(Astro.cookies);
@@ -15,17 +15,26 @@ if (!wooCustomer) return Astro.redirect("/prihlasenie?next=" + encodeURIComponen
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 let documents: CustomerInvoice[] = [];
-let page = 1, hasMore = false, orderId: number | undefined;
+let page = 1, hasMore = false;
+let reference = "";
 let error = "";
 try {
   const filter = Astro.request.method === "POST" ? await Astro.request.formData() : Astro.url.searchParams;
   page = invoicePageNumber(filter.get("page"));
-  orderId = invoiceOrderFilter(filter.get("order"));
+  const orderId = filter.has("ref")
+    ? readInvoiceOrderReference(customer.id, filter.get("ref"))
+    : invoiceOrderFilter(filter.get("order"));
+  if (orderId !== undefined) reference = invoiceOrderReference(customer.id, orderId);
   const result = await getCustomerInvoices(customer.id, page, orderId);
   documents = result.documents; hasMore = result.hasMore;
 } catch (caught) {
   error = caught instanceof InvoiceError ? caught.message : "Faktúry momentálne nie sú dostupné. Skúste to o chvíľu.";
   Astro.response.status = caught instanceof InvoiceError ? caught.status : 503;
+}
+function invoicePageUrl(targetPage: number) {
+  const params = new URLSearchParams({ page: String(targetPage) });
+  if (reference) params.set("ref", reference);
+  return "/ucet/faktury?" + params.toString();
 }
 ---
 <!doctype html>
@@ -33,13 +42,12 @@ try {
   <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="robots" content="noindex,nofollow" /><title>Faktúry | ToneryMaxim.sk</title></head>
   <body>
     <AccountShell user={customer} active="faktury" title="Faktúry" subtitle="Vaše faktúry a dobropisy na stiahnutie.">
-      {orderId && <p><a href="/ucet/faktury">Zobraziť faktúry zo všetkých objednávok</a></p>}
+      {reference && <p><a href="/ucet/faktury">Zobraziť faktúry zo všetkých objednávok</a></p>}
       {error ? (
         <section class="account-panel" role="alert"><h2>Faktúry sa nepodarilo načítať</h2><p>{error}</p>
-          <form method={orderId ? "post" : "get"} action="/ucet/faktury">
-            {orderId && <input type="hidden" name="order" value={orderId} />}
-            <button class="tm-btn" name="page" value={page}>Skúsiť znova</button>
-          </form>
+          {(Astro.response.status ?? 503) >= 500
+            ? <a class="tm-btn" href={invoicePageUrl(page)}>Skúsiť znova</a>
+            : <a class="tm-btn" href="/ucet/objednavky">Moje objednávky</a>}
         </section>
       ) : documents.length ? (
         <div class="account-section-grid">
@@ -58,12 +66,11 @@ try {
       ) : (
         <section class="account-panel"><h2>Zatiaľ tu nie sú žiadne faktúry</h2><p class="account-muted">Faktúra sa tu zobrazí po jej vystavení a pridaní k objednávke.</p><a class="tm-btn" href="/ucet/objednavky">Moje objednávky</a></section>
       )}
-      {!error && (page > 1 || hasMore) && <nav aria-label="Stránky faktúr"><form class="invoice-pagination" method={orderId ? "post" : "get"} action="/ucet/faktury">
-        {orderId && <input type="hidden" name="order" value={orderId} />}
-        {page > 1 && <button class="tm-btn" name="page" value={page - 1}>Predchádzajúca strana</button>}
+      {!error && (page > 1 || hasMore) && <nav class="invoice-pagination" aria-label="Stránky faktúr">
+        {page > 1 && <a class="tm-btn" href={invoicePageUrl(page - 1)} rel="prev">Predchádzajúca strana</a>}
         <span>Strana {page}</span>
-        {hasMore && <button class="tm-btn" name="page" value={page + 1}>Ďalšia strana</button>}
-      </form></nav>}
+        {hasMore && <a class="tm-btn" href={invoicePageUrl(page + 1)} rel="next">Ďalšia strana</a>}
+      </nav>}
     </AccountShell>
   </body>
 </html>

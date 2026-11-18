@@ -40,16 +40,18 @@ const shim = `
 import os from 'node:os';import {Server} from 'node:http';
 os.networkInterfaces=()=>({lo:[{address:'127.0.0.1',netmask:'255.0.0.0',family:'IPv4',mac:'00:00:00:00:00:00',internal:true,cidr:'127.0.0.1/8'}]});
 const orders=${JSON.stringify(orders)}, product=${JSON.stringify(product)};
+let invoiceTemporarilyUnavailable = true;
 const emit=Server.prototype.emit;Server.prototype.emit=function(name,...args){if(name==='request'&&args[0].url==='/__account_fixture_session'){args[1].writeHead(302,{'Set-Cookie':${JSON.stringify(cookie + '; Path=/; HttpOnly; SameSite=Lax')},Location:'/ucet/objednavky'});args[1].end();return true}return emit.call(this,name,...args)};
 globalThis.fetch=async(input,options={})=>{const url=new URL(String(input));if(url.hostname!=='woo.example.invalid'||(options.method||'GET')!=='GET')throw new Error('Fixture blocks external requests and Woo writes');
 if(url.pathname.endsWith('/customers/7'))return Response.json({id:7,email:'test@example.invalid',first_name:'Test',last_name:'Zákazník',billing:{city:'Testovacie mesto'},meta_data:[
   {key:'tm_loyalty_credited_orders',value:orders.map(order=>String(order.id))}, {key:'tm_loyalty_lifetime_points',value:10},
   {key:'tm_loyalty_history',value:[{orderId:701,title:'Objednávka #701',points:10},{orderId:700,title:'Použitá zľava pri objednávke #700',points:-2}]}]});
 if(url.pathname.endsWith('/invoices')){
-  const orderId=Number(url.searchParams.get('order_id'));
-  if(orderId!==701||url.searchParams.get('customer_id')!=='7')return Response.json({ok:true,documents:[],page:1,has_more:false});
-  return Response.json({ok:true,page:Number(url.searchParams.get('page')),has_more:false,documents:[
-    {id:'b871932e-5bb4-4d77-a0f6-000000000001',customer_id:7,order_id:701,order_number:'701',number:'INV-100',date:'2026-11-16',type:'invoice',pdf:true,xml:false}]});
+  const orderId=Number(url.searchParams.get('order_id')), page=Number(url.searchParams.get('page'));
+  if(orderId===699 && invoiceTemporarilyUnavailable){invoiceTemporarilyUnavailable=false;return Response.json({}, {status:503})}
+  if(orderId!==701||url.searchParams.get('customer_id')!=='7')return Response.json({ok:true,documents:[],page,has_more:false});
+  return Response.json({ok:true,page,has_more:page===1,documents:[
+    {id:'b871932e-5bb4-4d77-a0f6-000000000001',customer_id:7,order_id:701,order_number:'701',number:page===1?'INV-100':'INV-101',date:'2026-11-16',type:'invoice',pdf:true,xml:false}]});
 }
 if(url.pathname.endsWith('/orders')){const page=Number(url.searchParams.get('page')||1),size=Number(url.searchParams.get('per_page')||20);if(page>Math.ceil(orders.length/size))return Response.json({}, {status:400});return Response.json(orders.slice((page-1)*size,page*size),{headers:{'X-WP-Total':String(orders.length),'X-WP-TotalPages':String(Math.ceil(orders.length/size))}})}
 if(url.pathname.endsWith('/orders/701'))return Response.json(orders[0]);if(url.pathname.endsWith('/orders/999'))return Response.json({...orders[0],id:999,customer_id:8});
@@ -79,10 +81,35 @@ try {
     assert.doesNotMatch(page.text, />#(?:701|700)</);
   }
   assert.doesNotMatch(history.text, /href="[^"]*faktury\?order=/);
-  assert.match(history.text, /method="post" action="\/ucet\/faktury"/);
-  const invoices = await request('/ucet/faktury', true, new URLSearchParams({ order: '701' }));
+  const invoiceLinks = [...history.text.matchAll(/href="(\/ucet\/faktury\?ref=[A-Za-z0-9_.-]+)"/g)].map(match => match[1]);
+  assert.equal(invoiceLinks.length, 20);
+  const invoices = await request(invoiceLinks[0]);
   assert.equal(invoices.status, 200); assert.match(invoices.text, /INV-100/); assert.match(invoices.text, />312345</);
   assert.doesNotMatch(invoices.text, />701</);
+  const follow = (html, label) => {
+    const href = html.match(new RegExp('<a [^>]*href="([^"]+)"[^>]*>' + label + '</a>'))?.[1];
+    assert.ok(href, 'Missing link: ' + label);
+    return href.replaceAll('&amp;', '&');
+  };
+  const next = follow(invoices.text, 'Ďalšia strana');
+  const firstRef = new URL(invoiceLinks[0], 'http://fixture.local').searchParams.get('ref');
+  const nextParams = new URL(next, 'http://fixture.local').searchParams;
+  assert.equal(nextParams.get('ref'), firstRef); assert.equal(nextParams.get('page'), '2');
+  const second = await request(next);
+  assert.equal(second.status, 200); assert.match(second.text, /INV-101/); assert.doesNotMatch(second.text, /INV-100/);
+  assert.match((await request(follow(second.text, 'Predchádzajúca strana'))).text, /INV-100/);
+  const noTm = await request(invoiceLinks[1]);
+  assert.equal(noTm.status, 200); assert.match(noTm.text, /Zatiaľ tu nie sú žiadne faktúry/);
+  const failed = await request(invoiceLinks[2]); assert.equal(failed.status, 503);
+  const retry = follow(failed.text, 'Skúsiť znova');
+  assert.equal(new URL(retry, 'http://fixture.local').searchParams.get('ref'), new URL(invoiceLinks[2], 'http://fixture.local').searchParams.get('ref'));
+  const recovered = await request(retry); assert.equal(recovered.status, 200); assert.match(recovered.text, /Zatiaľ tu nie sú žiadne faktúry/);
+  assert.equal((await request(invoiceLinks[0], false)).status, 302);
+  const invalidRef = await request('/ucet/faktury?ref=&order=701');
+  assert.equal(invalidRef.status, 400); assert.doesNotMatch(invalidRef.text, /INV-100/);
+  for (const previous of [await request('/ucet/faktury?order=701'), await request('/ucet/faktury', true, new URLSearchParams({ order: '701' }))]) {
+    assert.equal(previous.status, 200); assert.match(previous.text, /INV-100/);
+  }
   const loyalty = await request('/ucet/vernost');
   assert.equal(loyalty.status, 200); assert.match(loyalty.text, /Objednávka #312345/);
   assert.doesNotMatch(loyalty.text, /#(?:701|700)\b/);
