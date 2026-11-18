@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { compactKey, explicitlyRequestsSpecialChipVariant, getProductsCache, isSpecialChipVariantProduct, jsonResponse, normalize, sortProducts } from "../../lib/tm-products-cache.ts";
 import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, partialProductCodeMatch, productPrinterValues, relatedPrefixPacks, searchPackPriority } from "../../lib/catalog-query.ts";
 import { entitySlug, printerBrandForName } from "../../lib/seo-catalog.ts";
+import { matchesPrintedToner, printedTonerCodes } from "../../lib/label-search.ts";
 
 export const prerender = false;
 
@@ -748,6 +749,16 @@ export const GET: APIRoute = async ({ url }) => {
     const resultKey = cachedResultKey(index.generatedAt, q) + (includeOem ? ":label" : "");
     const cached = getCachedResult(resultKey);
     if (cached) return jsonResponse({ ...cached, source: "smart-search-result-cache" }, 200, "public, max-age=60, s-maxage=600, stale-while-revalidate=3600");
+
+    const printed = includeOem && q.length <= 96 && /^Brother TN-/i.test(q) ? printedTonerCodes(q) : [];
+    if (printed.length > 1) {
+      const matches = index.items.filter(({ brand, product }) => brand === 'Brother'
+        && matchesPrintedToner(printed, product.name || '', product.oem_codes || '') && !isSpecialChipVariantProduct(product));
+      const data: SmartSearchResponse = { ok: true, query: q, products: matches.slice(0,24).map(item => productItem(item, 100, true)),
+        printers: [], productGroups: [], categories: [], brands: [] };
+      setCachedResult(resultKey, data);
+      return jsonResponse(data, 200, 'public, max-age=60, s-maxage=600');
+    }
 
     const prefixCandidates = getCandidateItems(index, query);
     const candidateProducts = prefixCandidates.map((item) => item.product);

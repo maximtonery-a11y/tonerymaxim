@@ -1,9 +1,10 @@
 import type { Block } from 'tesseract.js';
 import { drawLabelLine, type LabelSelection } from '../lib/label-image';
 import type { LabelLine } from '../lib/label-search';
+import { readPrintedLabel, type OcrMode } from './label-physical-ocr';
 
 // Resize and discard the original before starting OCR; camera metadata never enters the search.
-async function prepareImages(file: File, signal: AbortSignal, area?: LabelSelection): Promise<Uint8Array<ArrayBuffer>[]> {
+async function prepareImages(file: File, signal: AbortSignal, area?: LabelSelection): Promise<HTMLCanvasElement[]> {
   if (!file.size || file.size > 22 * 1024 * 1024 || !/^image\/(?:jpeg|jpg|png|webp|avif|heic|heif|bmp)$/i.test(file.type)) {
     throw new Error('Vyberte fotku do 22 MB. Najistejší formát je JPG alebo PNG.');
   }
@@ -14,23 +15,19 @@ async function prepareImages(file: File, signal: AbortSignal, area?: LabelSelect
     await image.decode();
     const width = image.naturalWidth, height = image.naturalHeight;
     if (!width || !height || width * height > 64_000_000) throw new Error('size');
-    const canvas = document.createElement('canvas');
-    const frames: Uint8Array<ArrayBuffer>[] = [];
-    async function saveFrame() {
-      signal.throwIfAborted();
-      const png = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-      if (!png) throw new Error('decode');
-      frames.push(new Uint8Array(await png.arrayBuffer()));
-    }
+    const frames: HTMLCanvasElement[] = [];
     try {
       signal.throwIfAborted();
       if (area && 'start' in area) {
         for (const ratio of [.18, .24]) {
           signal.throwIfAborted();
+          const canvas = document.createElement('canvas');
+          frames.push(canvas);
           drawLabelLine(canvas, image, width, height, area.start, area.end, ratio);
-          await saveFrame();
         }
       } else {
+        const canvas = document.createElement('canvas');
+        frames.push(canvas);
         const cutWidth = area ? Math.max(1, Math.round(width * .62)) : width;
         const cutHeight = area ? Math.max(1, Math.round(height * .17)) : height;
         const left = area ? Math.max(0, Math.min(width - cutWidth, width * area.x - cutWidth / 2)) : 0;
@@ -43,11 +40,11 @@ async function prepareImages(file: File, signal: AbortSignal, area?: LabelSelect
         context.fillStyle = 'white';
         context.fillRect(0, 0, canvas.width, canvas.height);
         context.drawImage(image, left, top, cutWidth, cutHeight, 0, 0, canvas.width, canvas.height);
-        await saveFrame();
       }
       return frames;
-    } finally {
-      canvas.width = canvas.height = 1;
+    } catch (error) {
+      for (const frame of frames) frame.width = frame.height = 1;
+      throw error;
     }
   } catch {
     signal.throwIfAborted();
@@ -61,7 +58,7 @@ async function prepareImages(file: File, signal: AbortSignal, area?: LabelSelect
 type WorkerPayload = Record<string, unknown>;
 type WorkerResult = { blocks?: Block[] | null };
 
-export async function createLabelReader(signal: AbortSignal, singleLine = false) {
+export async function createLabelReader(signal: AbortSignal) {
   signal.throwIfAborted();
   const folder = new URL('/citanie-stitku/v7/', location.origin).href;
   const worker = new Worker(folder + 'worker.min.js');
@@ -106,14 +103,20 @@ export async function createLabelReader(signal: AbortSignal, singleLine = false)
     await job('load', { options: { lstmOnly: true, corePath: folder } });
     await job('loadLanguage', { langs: 'eng', options: { langPath: folder, gzip: true, lstmOnly: true, cachePath: 'tm-label-v7' } });
     await job('initialize', { langs: 'eng', oem: 1, config: {} });
-    await job('setParameters', { params: { tessedit_pageseg_mode: singleLine ? '7' : '11', user_defined_dpi: '200' } });
+    await job('setParameters', { params: { tessedit_pageseg_mode: '11', user_defined_dpi: '200' } });
     return {
       close,
-      async recognize(image: Uint8Array<ArrayBuffer>, progress?: (n: number) => void, lineOnly = false): Promise<LabelLine[]> {
-        const options = lineOnly ? { tessedit_pageseg_mode: '7' } : {};
-        const { blocks } = await job('recognize', { image, options, output: { blocks: true } }, [image.buffer], progress);
-        return (blocks || []).flatMap(block => (block.paragraphs || []).flatMap(paragraph => paragraph.lines || []))
-          .map(line => ({ text: line.text, confidence: line.confidence, words: (line.words || []).map(word => ({ text: word.text, confidence: word.confidence })) }));
+      async recognize(canvas: HTMLCanvasElement, progress?: (n: number) => void, lineOnly = false, explore = true) {
+        async function read(frame: HTMLCanvasElement, mode: OcrMode) {
+          signal.throwIfAborted();
+          const png = await new Promise<Blob | null>(resolve => frame.toBlob(resolve, 'image/png'));
+          if (!png) throw new Error('decode');
+          const image = new Uint8Array(await png.arrayBuffer());
+          const options = { tessedit_pageseg_mode: mode === 'scene' ? '11' : '7', tessedit_char_whitelist: mode === 'digits' ? '0123456789' : '' };
+          const { blocks } = await job('recognize', { image, options, output: { blocks: true } }, [image.buffer], progress);
+          return blocks || [];
+        }
+        return readPrintedLabel(canvas, read, lineOnly, explore);
       },
     };
   } catch (error) {
@@ -122,16 +125,23 @@ export async function createLabelReader(signal: AbortSignal, singleLine = false)
   }
 }
 
-export async function readLabel(file: File, signal: AbortSignal, report: (message: string) => void, area?: LabelSelection): Promise<LabelLine[][]> {
+export async function readLabel(file: File, signal: AbortSignal, report: (message: string) => void, area?: LabelSelection) {
   const images = await prepareImages(file, signal, area);
   report('Pripravujem čítanie štítku…');
-  const reader = await createLabelReader(signal, Boolean(area && 'start' in area));
+  let reader: Awaited<ReturnType<typeof createLabelReader>> | undefined;
   try {
+    reader = await createLabelReader(signal);
+    let barcode = false;
     const passes: LabelLine[][] = [];
     for (const image of images) {
-      passes.push(await reader.recognize(image, progress =>
-        report(`Čítam označenie… ${Math.round((passes.length + progress) * 100 / images.length)} %`)));
+      const result = await reader.recognize(image, progress =>
+        report(`Čítam označenie… ${Math.round((passes.length + progress) * 100 / images.length)} %`), Boolean(area && 'start' in area), !area);
+      passes.push(result.lines);
+      barcode ||= result.barcode;
     }
-    return passes;
-  } finally { reader.close(); }
+    return { passes, barcode };
+  } finally {
+    reader?.close();
+    for (const image of images) image.width = image.height = 1;
+  }
 }

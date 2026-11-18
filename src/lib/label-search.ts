@@ -1,7 +1,9 @@
 // Only manufacturer references leave the device. Keep the entire suffix throughout matching.
-export type LabelLine = { text: string; confidence: number; words?: { text: string; confidence: number }[] };
+export type LabelLine = { text: string; confidence: number; confirmedList?: boolean; words?: { text: string; confidence: number; verifiedDigits?: boolean }[] };
 export type LabelCandidate = { brand: string; code: string; kind: 'printer' | 'supply'; certain: boolean; requiresPairing?: boolean };
 type Rule = { kind: LabelCandidate['kind']; brand: string; pattern: RegExp };
+
+export const barcodeGuidance = 'Vidím čiarový kód. Otočte kazetu alebo valec k nápisu s modelom, prípadne namierte na názov tlačiarne.';
 
 const printerFamilies = [
   { brand: 'HP', name: /\b(?:LASERJET|DESKJET|OFFICEJET|DESIGNJET|ENVY|SMART TANK|HP (?:COLOR )?LASER|LASER(?=\s+107[AW]\b))\b/i, number: /^(?:\d{4}[A-Z]{0,4}|107A|\d{3}(?:W|WE|NW|NWE|FNW|FDW))$/ },
@@ -22,7 +24,7 @@ const productNumberField = /\b(?:PRODUCT\s*(?:NO\.?|NUMBER|ID)|PROD\.?\s*(?:NO\.
 const hpOem = /^(?:C[BEFH]\d{3}|[CQW]\d{4}|[A-Z]\d[A-Z]\d{2})[A-Z]{1,3}$/;
 const rules: Rule[] = [
   { kind: 'supply', brand: 'HP', pattern: hpOem },
-  { kind: 'supply', brand: 'Brother', pattern: /^(?:TN|DR|LC|BT|WT)-?[A-Z]?\d{2,5}[A-Z0-9]{0,5}$/ },
+  { kind: 'supply', brand: 'Brother', pattern: /^(?:(?:TN|DR|LC|BT|WT|BU)-?[A-Z]?\d{2,5}[A-Z0-9]{0,5}|DR-?\d{2,5}CL-(?:CMYK|CMY|BK|[CMY]))$/ },
   { kind: 'supply', brand: 'Canon', pattern: /^(?:GI|PGI|CLI|PG|CL|CRG|PFI)-?\d{2,4}[A-Z]{0,5}$/ },
   { kind: 'supply', brand: 'Epson', pattern: /^C13[TS][A-Z0-9]{4,11}$/ },
   { kind: 'supply', brand: 'Kyocera', pattern: /^TK-?\d{2,5}[A-Z]{0,2}$/ },
@@ -41,7 +43,23 @@ const codePrefix = /\b(DCP|MFC|HL|TN|DR|LC|BT|WT|CLI|PGI|GI|CL|PG|CRG|PFI|TK|MLT
 const separateSuffix = /\b((?:(?:PGI|CLI|PG|CL|GI|LC|TN)-?\d{2,5}|\d{3}))\s+(XXL|XL|PGBK|BK|[CMY])\b/g;
 function tokens(text: string): string[] {
   return clean(text).replace(codePrefix, '$1-$2').replace(/\b((?:TN|DR|LC)-[A-Z]?\d)[ \t]+(\d{2,4}[A-Z]{0,3})\b/g, '$1$2').replace(separateSuffix, '$1$2')
+    .replace(/\b(DR-?\d{2,5})\s+CL\b/g, '$1CL').replace(/\b(DR-?\d{2,5}CL)[ -]+(CMYK|CMY|BK|[CMY])\b/g, '$1-$2')
     .match(/[A-Z0-9]+(?:-[A-Z0-9]+)*/g) || [];
+}
+
+// Aftermarket labels may print several regional article numbers and one common colour.
+// Expand only an entire printed list. Ignore partial lists, mixed colours and barcodes.
+export function printedTonerCodes(text: string): string[] {
+  const match = clean(text).match(/(?:^|[^A-Z0-9/])(?:LB)?TN[ -]?(\d{3,4}(?:\s*\/\s*\d{3,4}){1,7})[ -]?(BK|[CMYK])(?![A-Z0-9/])/);
+  if (!match) return [];
+  const numbers = match[1].split(/\s*\/\s*/);
+  if (!numbers.every(n => n.length === numbers[0].length)) return [];
+  return [...new Set(numbers.map(n => 'TN-' + n + match[2]))];
+}
+
+export function matchesPrintedToner(codes: string[], name: string, oem: string) {
+  if (/\b(?:CMYK|sada|multipack)\b/i.test(name)) return false;
+  return tokens(name + ' ' + oem).some(token => codes.some(code => codeKey(code) === codeKey(token)));
 }
 
 export function labelBrands(lines: LabelLine[]): string[] {
@@ -62,6 +80,7 @@ function visibleLabelLines(lines: LabelLine[], privateCodes: Set<string>) {
     if (!text) continue;
     if (privateLine.test(text)) {
       for (const token of tokens(text)) privateCodes.add(codeKey(token));
+      for (const code of printedTonerCodes(text)) privateCodes.add(codeKey(code));
       privateValueOnNextLine = /(?:[S5]\s*[/|\\]\s*[I1]?N|S[1I]N|SN|SERIAL(?:\s+(?:NUMBER|NO\.?))?|PASSWORD|MAC|RMN|EAN|UPC|GTIN)\s*[:#-]?$/i.test(text);
       continue;
     }
@@ -88,6 +107,16 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
   const useful = visibleLabelLines(lines, privateCodes);
   for (const [index, line] of useful.entries()) {
     let text = line.text;
+    const listed = printedTonerCodes(text);
+    if (listed.length > 1 && (!brands.size || brands.has('BROTHER')) && line.confidence >= 60) {
+      const code = listed[0].slice(0,3) + listed.map(ref => ref.slice(3).match(/^\d+/)![0]).join('/') + listed[0].match(/[A-Z]+$/)![0];
+      if (!listed.some(ref => privateCodes.has(codeKey(ref))) && !privateCodes.has(codeKey(code))) {
+        const key = 'supply:Brother:' + code;
+        const certain = line.confidence >= 80 || line.confirmedList === true;
+        if (!found.has(key) || certain) found.set(key, { brand:'Brother', code, kind:'supply', certain });
+      }
+      continue;
+    }
     // Canon sometimes prints the family number and its ink colour on separate lines.
     const below = useful[index + 1]?.text.trim() || '';
     if (brands.has('CANON') && /^\d{3}$/.test(text.trim()) && /^(?:PGBK|BK|[CMY]|XX?L)$/i.test(below)) {
@@ -124,15 +153,24 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
       if (kind === 'printer' && packageLabel) continue;
       const word = line.words?.find(word => codeKey(word.text) === codeKey(token));
       const confidence = word?.confidence ?? line.confidence;
-      const brandAgrees = brands.size === 1 ? brands.has(brand.toUpperCase()) : !brands.size && kind === 'supply';
+      const brandAgrees = brands.size === 1 ? brands.has(brand.toUpperCase()) : !brands.size && (kind === 'supply' || word?.verifiedDigits === true);
       if (brands.size && !brands.has(brand.toUpperCase())) continue;
       const code = kind === 'printer' && words[position + 1] === 'PLUS' ? token + ' Plus' : token;
       const key = kind + ':' + brand + ':' + codeKey(code);
-      const candidate = { brand, code, kind, certain: (!explicitHpNumber || Boolean(numberedPrinter)) && !shortHP && !shortCanon && !shortEpson && brandAgrees && confidence >= 85 };
+      const candidate = { brand, code, kind, certain: (!explicitHpNumber || Boolean(numberedPrinter)) && !shortHP && !shortCanon && !shortEpson && brandAgrees && (confidence >= 85 || word?.verifiedDigits === true) };
       if (!found.has(key) || candidate.certain) found.set(key, candidate);
     }
   }
-  return [...found.values()];
+  const items = [...found.values()];
+  // The large DR family name and the precise colour suffix can occupy two lines.
+  const preciseDrums = items.filter(item => item.brand === 'Brother' && /^DR-?\d+CL-(?:CMYK|CMY|BK|[CMY])$/.test(item.code));
+  return items.filter(item => !preciseDrums.some(drum => {
+    if (item === drum || item.brand !== drum.brand) return false;
+    const stem = codeKey(drum.code.split('CL-')[0]);
+    const code = codeKey(item.code);
+    // A large CL can look like C, 0L or C1 above the complete article number.
+    return code.startsWith(stem) && /^(?:[C06][L1I]?|L)?$/.test(code.slice(stem.length));
+  }));
 }
 
 // Live scans have no confirmation step. A complete, legible reference must be read
@@ -148,6 +186,7 @@ export function liveLabelCandidate(lines: LabelLine[], privateCodes: Set<string>
   }
   const item = candidates[0];
   if (!item || item.certain) return item;
+  if (printedTonerCodes(item.code).length > 1) return item;
   const explicitBrand = labelBrands(lines).includes(item.brand.toUpperCase());
   // An HP box often shows just “106A” in large print. A bare short code needs
   // three clear readings AND an unambiguous full manufacturer code in the shop.
@@ -195,13 +234,14 @@ export function exactLabelOffers(candidate: LabelCandidate, response: LabelOffer
   const allowedPath = printer ? /^\/tlaciarne\/[a-z0-9-]+\/[a-z0-9-]+\/?$/i : /^\/produkt\/[a-z0-9-]+\/?$/i;
   const result = (printer ? response.printers : response.products) || [];
   const target = codeKey(candidate.code);
+  const printed = candidate.brand === 'Brother' && !printer ? printedTonerCodes(candidate.code) : [];
   const seen = new Set<string>();
   return result.filter(item => {
     if (!item?.title || !allowedPath.test(item.url) || seen.has(item.url)) return false;
     const brands = clean(item.title).match(brandPattern) || [];
     if (![...brands, (item.brand || '').toUpperCase()].includes(candidate.brand.toUpperCase())) return false;
     const identities = tokens(item.title + (printer ? '' : ' ' + (item.oem || '')));
-    const matches = identities.some((code, position) => {
+    const matches = printed.length ? matchesPrintedToner(printed, item.title, item.oem || '') : identities.some((code, position) => {
       const key = codeKey(printer && identities[position + 1] === 'PLUS' ? code + 'PLUS' : code);
       if (key === target) return true;
       return !printer && candidate.brand === 'Canon' && /^\d{3}/.test(target)

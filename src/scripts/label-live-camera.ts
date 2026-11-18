@@ -1,5 +1,5 @@
 import { drawLabelLine } from '../lib/label-image';
-import { liveLabelCandidate, type LabelCandidate } from '../lib/label-search';
+import { barcodeGuidance, liveLabelCandidate, type LabelCandidate } from '../lib/label-search';
 
 function pause(signal: AbortSignal, delay: number) {
   signal.throwIfAborted();
@@ -24,7 +24,7 @@ async function playPreview(video: HTMLVideoElement, signal: AbortSignal) {
 
 // Match the guide to the visible part of an object-fit: cover preview, even when
 // the portrait phone displays a landscape sensor or rotates during a scan.
-async function captureGuide(video: HTMLVideoElement, guide: HTMLElement, canvas: HTMLCanvasElement, angle?: number) {
+function captureGuide(video: HTMLVideoElement, guide: HTMLElement, canvas: HTMLCanvasElement, angle?: number) {
   const view = video.getBoundingClientRect(), box = guide.getBoundingClientRect();
   if (!view.width || !view.height || !box.width || !box.height) return;
   const scale = Math.max(view.width / video.videoWidth, view.height / video.videoHeight);
@@ -34,13 +34,19 @@ async function captureGuide(video: HTMLVideoElement, guide: HTMLElement, canvas:
   const marginX = Math.min(box.width * .1, box.left - view.left) / scale;
   const marginY = Math.min(box.height * .4, box.top - view.top) / scale;
   const width = box.width / scale + 2 * marginX, height = box.height / scale + 2 * marginY;
-  if (angle === undefined) {
+  if (angle === undefined || Math.abs(angle) === 4) {
     const ratio = Math.min(1.6, 1080 / width, 470 / height);
     canvas.width = Math.max(1, Math.round(width * ratio));
     canvas.height = Math.max(1, Math.round(height * ratio));
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('canvas');
+    ctx.save();
+    if (angle) {
+      ctx.fillStyle = 'white'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.translate(canvas.width/2,canvas.height/2); ctx.rotate(-angle*Math.PI/180); ctx.translate(-canvas.width/2,-canvas.height/2);
+    }
     ctx.drawImage(video, x - marginX, y - marginY, width, height, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
   } else {
     const cx = x + box.width / (2 * scale), cy = y + box.height / (2 * scale);
     const dx = box.width * .36 / scale, dy = dx * Math.tan(angle * Math.PI / 180);
@@ -48,8 +54,7 @@ async function captureGuide(video: HTMLVideoElement, guide: HTMLElement, canvas:
       { x: (cx - dx) / video.videoWidth, y: (cy - dy) / video.videoHeight },
       { x: (cx + dx) / video.videoWidth, y: (cy + dy) / video.videoHeight }, .18);
   }
-  const png = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-  if (png) return new Uint8Array(await png.arrayBuffer());
+  return canvas;
 }
 
 export async function scanLiveCamera(video: HTMLVideoElement, guide: HTMLElement, task: AbortController,
@@ -93,16 +98,19 @@ export async function scanLiveCamera(video: HTMLVideoElement, guide: HTMLElement
       report('Podržte celý názov v strede rámčeka.');
       const started = performance.now();
       // Revisit the wider view for brand and private-field context between tight readings.
-      const angles = [undefined, 0, undefined, -16, undefined, 16];
+      const angles = [undefined, 4, -4, 0, undefined, -16, undefined, 16];
       let previous = '', repeated = 0, pass = 0, lastTime = -1, hinted = false;
       while (!signal.aborted) {
         if (video.readyState >= 2 && video.videoWidth && video.videoHeight && video.currentTime !== lastTime) {
           lastTime = video.currentTime;
           const angle = angles[pass];
-          const frame = await captureGuide(video, guide, canvas, angle);
+          const frame = captureGuide(video, guide, canvas, angle);
           signal.throwIfAborted();
-          const candidate = frame && liveLabelCandidate(await reader.recognize(frame, undefined, angle !== undefined), privateCodes);
+          const lineOnly = angle !== undefined && Math.abs(angle) !== 4;
+          const reading = frame && await reader.recognize(frame, undefined, lineOnly, !lineOnly);
+          const candidate = reading && liveLabelCandidate(reading.lines, privateCodes);
           signal.throwIfAborted();
+          if (!candidate && reading?.barcode) { report(barcodeGuidance); hinted = true; }
           const key = candidate ? candidate.kind + ':' + candidate.brand + ':' + candidate.code : '';
           repeated = key && key === previous ? repeated + 1 : 1;
           if (candidate && repeated >= (candidate.certain ? 2 : 3) && !noOffers.has(key)) {

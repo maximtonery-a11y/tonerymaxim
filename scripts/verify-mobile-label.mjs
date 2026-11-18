@@ -1,6 +1,7 @@
 // The two release browsers run the real same-origin OCR worker against the local shop.
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
+import { verifyPhysicalLabels } from './verify-physical-labels.mjs';
 
 async function labelFile(text) {
   const svg = `<svg width="1050" height="250" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="white"/><text x="55" y="150" font-family="sans-serif" font-size="65" fill="black">${text}</text></svg>`;
@@ -93,6 +94,7 @@ export async function verifyMobileLabel(page, origin) {
     await gallery.setInputFiles(await labelFile('HP LaserJet P1102'));
     await page.waitForURL('**/tlaciarne/hp/*p1102', { timeout: 60_000 });
     assert.match(await page.locator('h1').innerText(), /P1102/i);
+    await verifyPhysicalLabels(page, origin, false);
     console.log('mobile label search OK: real local OCR, offers, exact model, crop, private label, lazy loading');
   } finally {
     page.context().off('request', record);

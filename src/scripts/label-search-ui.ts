@@ -1,7 +1,7 @@
 import type { LabelSelection } from '../lib/label-image';
 import { scanLiveCamera } from './label-live-camera';
 import { setupLabelLinePicker } from './label-line-picker';
-import { exactLabelOffers, hpOrderCode, labelBrands, labelCandidates, selectedLabelCandidates, type LabelCandidate, type LabelOffers } from '../lib/label-search';
+import { barcodeGuidance, exactLabelOffers, hpOrderCode, labelBrands, labelCandidates, matchesPrintedToner, printedTonerCodes, selectedLabelCandidates, type LabelCandidate, type LabelOffers } from '../lib/label-search';
 
 function setup(root: HTMLElement) {
   const controls = root.querySelector<HTMLElement>('[data-photo-controls]')!;
@@ -87,7 +87,8 @@ function setup(root: HTMLElement) {
   }
 
   function showOffers(candidate: LabelCandidate, items: Awaited<ReturnType<typeof findOffers>>) {
-    const query = candidate.brand + ' ' + candidate.code;
+    const listed = printedTonerCodes(candidate.code).filter(ref => items.some(item => matchesPrintedToner([ref], item.title, item.oem || '')));
+    const query = candidate.brand + ' ' + (listed.length ? listed.join(' / ') : candidate.code);
     lastFile = undefined;
     field.value = query;
     if (candidate.kind === 'printer' && items.length === 1) {
@@ -95,7 +96,9 @@ function setup(root: HTMLElement) {
       location.assign(items[0].url);
       return;
     }
-    status.textContent = candidate.kind === 'printer' ? 'Vyberte presný názov tlačiarne.' : 'Nájdené náplne pre ' + query;
+    const drum = candidate.brand === 'Brother' && /^DR[-\d]/.test(candidate.code);
+    status.textContent = candidate.kind === 'printer' ? 'Vyberte presný názov tlačiarne.'
+      : (drum ? 'Nájdené optické valce pre ' : 'Nájdené náplne pre ') + query;
     for (const item of items) {
       const link = document.createElement('a');
       link.href = item.url;
@@ -182,10 +185,10 @@ function setup(root: HTMLElement) {
     } finally { if (active === task) reset(); }
   }
 
-  function choose(candidates: LabelCandidate[]) {
+  function choose(candidates: LabelCandidate[], barcode = false) {
     cropToggle.hidden = !lastFile;
     if (!candidates.length) {
-      status.textContent = 'Označenie sa nepodarilo prečítať. Odfoťte iba riadok s modelom alebo ho zadajte ručne.';
+      status.textContent = barcode ? barcodeGuidance : 'Označenie sa nepodarilo prečítať. Odfoťte iba riadok s modelom alebo ho zadajte ručne.';
       return;
     }
     if (candidates.length === 1) field.value = candidates[0].brand + ' ' + candidates[0].code;
@@ -212,7 +215,7 @@ function setup(root: HTMLElement) {
     try {
       const { readLabel } = await import('./label-reader');
       if (task.signal.aborted) return;
-      const passes = await readLabel(file, task.signal, message => {
+      const { passes, barcode } = await readLabel(file, task.signal, message => {
         if (!task.signal.aborted) status.textContent = message;
       }, area);
       if (task.signal.aborted) return;
@@ -221,7 +224,7 @@ function setup(root: HTMLElement) {
       if (!area) previousBrands = labelBrands(lines);
       choose(area && 'start' in area
         ? selectedLabelCandidates(passes, privateCodes, previousBrands)
-        : labelCandidates(lines, privateCodes, previousBrands));
+        : labelCandidates(lines, privateCodes, previousBrands), barcode);
     } catch (error) {
       if (!task.signal.aborted) {
         cropToggle.hidden = !lastFile;
