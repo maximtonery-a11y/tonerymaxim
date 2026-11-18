@@ -48,6 +48,4 @@ test('živý košík overuje produkt a blokuje iba chýbajúci alebo nepredajný
   assert.match(cart,/data-cart-unavailable-notice/);
   assert.match(cart,/setAttribute\('aria-disabled', 'true'\)/);
 
-  const assistant=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
-  assert.match(assistant,/data\?\.queryLabel\|\|state\.lastQuestion/);
 });

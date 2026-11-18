@@ -13,6 +13,10 @@ function compactKey(value: unknown) {
   return normalize(value).replace(/[^a-z0-9]/g, "");
 }
 
+export function explicitSkuFromMessage(message: string): string | null {
+  return message.match(/\bsku\s*[:#-]?\s*([a-z0-9][a-z0-9_-]{1,99})\b/i)?.[1] || null;
+}
+
 export const CATALOG_BRANDS = [
   "Konica Minolta",
   "Panasonic",

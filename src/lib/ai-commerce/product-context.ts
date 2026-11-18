@@ -1,5 +1,5 @@
 import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductFromCache, getProductsCache, isSpecialChipVariantProduct } from '../tm-products-cache.ts';
-import { analyzeCatalogQuery, exactPrinterModelMatch, findExactProductIdentityMatches } from '../catalog-query.ts';
+import { analyzeCatalogQuery, explicitSkuFromMessage, exactPrinterModelMatch, findExactProductIdentityMatches } from '../catalog-query.ts';
 import { currentProductSlug } from '../product-slug-aliases.ts';
 import { productIdForHistoricalSlug } from '../product-slug-history.ts';
 import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from '../product-availability.ts';
@@ -138,13 +138,19 @@ async function resolveProduct(message: string, page: string, state: CommerceStat
   // An explicit different toner beats the page. Remove printer references so
   // checking "this toner in HP ... 4302dw" is not a search for another toner.
   let identityQuestion = message;
-  for (const printer of printerMentions(message)) identityQuestion = identityQuestion.replace(printer, ' ');
+  const printers = printerMentions(message);
+  for (const printer of printers) identityQuestion = identityQuestion.replace(printer, ' ');
   const analysis = analyzeCatalogQuery(identityQuestion);
-  const sku = identityQuestion.match(/\bsku\s*[:#-]?\s*([a-z0-9][a-z0-9_-]*)/i)?.[1];
-  if (explicitSearch && (analysis.hasReference||sku)) {
+  const namedSku = explicitSkuFromMessage(identityQuestion);
+  // A copied printer status page can label the printer model itself as its SKU.
+  const printerSku = namedSku && printers.some(model => key(model.split(/\s+/).at(-1)) === key(namedSku));
+  const sku = printerSku ? null : namedSku;
+  if (explicitSearch && (analysis.hasReference || sku)) {
     const cache = await getProductsCache();
-    const exactSku = sku ? cache.products.filter(product => key(product.sku) === key(sku)) : [];
-    const matches = narrowProducts(exactSku.length ? exactSku : findExactProductIdentityMatches(cache.products, identityQuestion).map(match => match.product), identityQuestion);
+    const identities = sku
+      ? cache.products.filter(product => norm(product.sku) === norm(sku))
+      : findExactProductIdentityMatches(cache.products, identityQuestion).map(match => match.product);
+    const matches = narrowProducts(identities, identityQuestion);
     if (pageProduct && matches.some(product => String(product.id) === String(pageProduct.id))) return { product: pageProduct, choices: [] };
     if (matches.length === 1) return { product: (await getProductFromCache({ id: matches[0].id })).product, choices: [] };
     // No fallback to the page or a previous selection for an unknown code.

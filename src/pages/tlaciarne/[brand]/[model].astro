@@ -497,7 +497,7 @@ if (!notFound) lowerContentSections.push({
   heading: "Výhody nákupu na ToneryMaxim.sk",
   paragraphs: ["Pri výbere aj objednávke zobrazujeme aktuálne údaje priradené ku konkrétnemu produktu."],
   bullets: [
-    "Overená kompatibilita s presným modelom tlačiarne.",
+    "Náplne priradené v katalógu k tomuto modelu tlačiarne.",
     ...(stats.compatible ? ["Na kompatibilné náplne získate zľavu 10 % pri nákupe 2–3 kusov a 25 % pri nákupe 4 a viac kusov."] : []),
     "Doprava zdarma pri hodnote objednávky od 29 €.",
     "Skladový tovar objednaný v pracovný deň do 15:00 spravidla expedujeme v ten istý deň; po 15:00, cez víkend alebo sviatok najbližší pracovný deň.",
@@ -515,7 +515,7 @@ const commerceBenefits = [
   ...(stats.compatible ? [{ icon: "%", title: "Na kompatibilné náplne", detail: "2–3 ks −10 % · 4+ ks −25 %", compatibleOnly: true }] : []),
   { icon: "🚚", title: "Expedujeme", detail: "najbližší pracovný deň", dispatch: true },
   { icon: "📦", title: "Doprava zdarma", detail: "pri nákupe od 29 €" },
-  { icon: "✓", title: "Overená kompatibilita", detail: `pre ${printerName}` },
+  { icon: "✓", title: "Kompatibilita podľa katalógu", detail: `pre ${printerName}` },
 ];
 
 const recommendationCard = !inkBased && compatibleBest ? {
@@ -526,7 +526,7 @@ const recommendationCard = !inkBased && compatibleBest ? {
 
 const printerFaq = !notFound ? [
   {
-    question: mainKind === "ink" ? `Aké atramentové náplne používa ${printerName}?` : mainKind === "toner" ? `Aký toner používa ${printerName}?` : `Aký spotrebný materiál používa ${printerName}?`,
+    question: benchmark?.prompt || (mainKind === "ink" ? `Aké atramentové náplne používa ${printerName}?` : mainKind === "toner" ? `Aký toner používa ${printerName}?` : `Aký spotrebný materiál používa ${printerName}?`),
     answer: tonerOems.length ? `${printerName} používa ${consumableName} ${brandName} ${oemText}.` : `Správne produkty sú uvedené v ponuke pre presný model ${printerName}.`,
   },
   ...(capacityAdvice ? [{ question: "Aký je rozdiel medzi štandardnou a vysokou kapacitou?", answer: `${capacityAdvice} Vyššia kapacita je vhodná najmä pri pravidelnej tlači.` }] : []),
@@ -535,11 +535,18 @@ const printerFaq = !notFound ? [
   { question: "Kedy objednávku odošlete?", answer: "Skladový tovar objednaný v pracovný deň do 15:00 spravidla expedujeme v ten istý deň. Po 15:00, cez víkend alebo sviatok ho spravidla expedujeme najbližší pracovný deň." },
 ] : [];
 const exactPrinterLinks = exactRelatedPrinterLinks();
-const lowerLinkGroups = exactPrinterLinks.length ? [{
-  heading: mainKind === "ink" ? "Ďalšie tlačiarne s rovnakou sadou atramentových náplní" : mainKind === "toner" ? "Ďalšie tlačiarne s rovnakou sadou tonerov" : "Ďalšie tlačiarne s rovnakým spotrebným materiálom",
-  intro: "Tieto modely používajú rovnaký spotrebný materiál z aktuálnej ponuky.",
-  links: exactPrinterLinks,
-}] : [];
+const lowerLinkGroups = [
+  ...(exactPrinterLinks.length ? [{
+    heading: mainKind === "ink" ? "Ďalšie tlačiarne s rovnakou sadou atramentových náplní" : mainKind === "toner" ? "Ďalšie tlačiarne s rovnakou sadou tonerov" : "Ďalšie tlačiarne s rovnakým spotrebným materiálom",
+    intro: "Tieto modely používajú rovnaký spotrebný materiál z aktuálnej ponuky.",
+    links: exactPrinterLinks,
+  }] : []),
+  ...(geoPriority && !notFound && guideLinks.length ? [{
+    heading: "Relevantné návody",
+    intro: "Ako vybrať správnu náplň a porovnať náklady na tlač.",
+    links: [...guideLinks, { href: "#produkty", label: "Späť na ponuku pre tento model" }],
+  }] : []),
+];
 
 const typeFacts = [
   `Všetky: ${stats.total}`,

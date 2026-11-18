@@ -25,6 +25,7 @@ export type ConversationContext = {
   resetSelection: boolean;
   clarification: string | null;
   deliveryPrice?: boolean;
+  deliveryCountry?: 'CZ';
   quoteQuantity?: number;
 };
 
@@ -51,6 +52,7 @@ const referenceWords = /\b(?:ten|tento|tomto|ta|tato|tejto|tieto|tychto|tuto|to|
 const explicitReturn = /\b(?:vratme|vrat|vratit|spat|naspat|povodn\w*|predchadzajuc\w*|predtym|este\s+k)\b/;
 const acknowledgement = /^(?:(?:dobre|ok|okay|dakujem|vdaka|super|rozumiem|jasne|ano|nie|v poriadku|dakujem pekne)[,.! ]*)+$/;
 const quantity = /^(?:(?:a|tak|prosim)\s+)?-?\d+(?:[.,]\d+)?\s*(?:ks|kus\w*)?[?.! ]*$/;
+const productPriceFollowUp = /\b(?:cen[auy]|stoji|stoja|najlacnej\w*|lacnejs\w*|drahs\w*)\b/;
 const productModifier = /\b(?:original\w*|kompatibiln\w*|renovovan\w*|repasovan\w*|skladom|vytaznost|kapacita|vydrz|kolko\s+stran)\b/;
 
 export function isConversationRepairQuestion(message:string){
@@ -62,8 +64,15 @@ export function conversationProductReference(message: string): string | null {
   if (sku) return `SKU: ${sku[1]}`;
   const oem = message.match(/\b(?:(?:cf|ce|crg|tn|dr|wt|mc|q|clt|mlt|tk|pgi|pfi|cli|lc|gi|pg)(?:[- ]?[a-z])?[- ]?\d{2,}[a-z0-9-]*|w[- ]?\d{3,}[a-z0-9-]*)\b/i);
   if (oem) return oem[0];
-  const branded = message.match(/\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?)(?:\s+[a-z][a-z-]*){0,5}\s+[a-z-]*\d+[a-z0-9-]*\b/i);
+  const normalizedBrand = message.replace(/\bbroter(?=\s+(?:hl[- ]?)?l[- ]?\d{4})/i, 'Brother');
+  const branded = normalizedBrand.match(/\b(?:hp|brother|canon|epson|samsung|oki|xerox|kyocera|lexmark|ricoh|sharp|toshiba|pantum|dell|konica(?:\s+minolta)?)(?:\s+[a-z][a-z-]*){0,5}\s+[a-z-]*\d+[a-z0-9-]*\b/i);
   return branded?.[0] || null;
+}
+
+export function isDiscountedCartTotal(message: string): boolean {
+  const n = norm(message);
+  return /\b(?:kosik\w*|nakup\w*|tovar\w*)\b/.test(n) && /\bpo\s+zlav\w*\b/.test(n)
+    && (n.match(/\d+(?:[.,]\d+)?\s*(?:eur\w*\b|€)/g) || []).length >= 2;
 }
 
 export function conversationTopic(message: string): ConversationTopic | null {
@@ -71,16 +80,18 @@ export function conversationTopic(message: string): ConversationTopic | null {
   if(isProductPriceQuestion(message)&&conversationProductReference(message))return 'product';
   if (/\b(?:reklam\w*|vrat(?:it|ite|im|ime|ia)|vraten\w*|odstup\w*|refund\w*|nespravny\s+toner|zly\s+toner|vymenit\s+tovar)\b/.test(n.replace(/\bvratit\s+sa\b/g,''))) return 'claim';
   if (/\b(?:hesl\w*|prihlas\w*|profil\w*)\b/.test(n)) return 'account';
+  if (isDiscountedCartTotal(message)) return 'shipping';
   if (/\b(?:zlav\w*|kupon\w*|odmen\w*|vernost\w*|akciov\w*|bod(?:y|ov|mi|och|u|om)?)\b|\b(?:5|7)\s*(?:%|percent)/.test(n)) return 'discount';
   if (/\b(?:registr\w*|zaregistr\w*|ucet|uctu)\b/.test(n)) return 'account';
-  if (/firmware|firmver|hp\s*\+|cartridge\s+(?:policy|protection)|authorized\s+hp|\b(?:netlaci|nerozpozna|pasy|pruhy|smuhy|bled\w*|rozmaz\w*|podavac\w*|neberie\s+papier)\b/.test(n)) return 'diagnostic';
+  if (/\btlaci\w*\b.{0,32}\bslab\w*\b|firmware|firmver|hp\s*\+|cartridge\s+(?:policy|protection)|authorized\s+hp|\b(?:netlaci|nerozpozna|pasy|pruhy|smuhy|bled\w*|rozmaz\w*|podavac\w*|neberie\s+papier)\b/.test(n)) return 'diagnostic';
   if (/\b(?:kalenda\w*|kaledar\w*|kalemdar\w*|diar\w*|minidiar\w*|planovac\w*)\b|\b(?:D|NK|SK|PF|PP)(?:-\d+){1,4}\b/i.test(n)) return 'calendar';
   if (/\b(?:dobierk\w*|gopay|plat(?:b|ob)\w*|plati(?:t|m|me|te|s|a)|zaplat\w*|kartou|hotovost\w*|bankov\w*\s+prevod\w*|prevodom|faktur\w*|firemn\w*\s+udaj\w*|ico|dic)\b/.test(n)) return 'payment';
-  if (/\b(?:doprav\w*|postovn\w*|kurier\w*|doruc\w*|packet\w*|zasielkovn\w*|pickup|balikomat|parcelshop|gls|dpd|z-?box)\b/.test(n)) return 'shipping';
+  if (/\b(?:posl|posiel|odosl)\w*\b.{0,40}\b(?:domov|na adresu)\b|\b(?:doprav\w*|postovn\w*|kurier\w*|doruc\w*|packet\w*|zasielkovn\w*|pickup|balikomat|parcelshop|gls|dpd|z-?box)\b/.test(n)) return 'shipping';
   if (/cesk|\b(?:cr|cz|brna|brno|praha|prahy)\b/.test(n) && /\b(?:do|posiel\w*|posl\w*|doruc\w*)\b/.test(n)) return 'shipping';
   if (/\b(?:objednavk\w*|zasielk\w*|balik\w*|tracking|exped\w*)\b/.test(n)) return 'order';
   if (/\b(?:kontakt\w*|telefon\w*|otvarac\w*|otvoren\w*|pracovn\w*\s+doba|vas\w*\s+(?:e-?mail|adres\w*)|e-?mail\w*\s+(?:firmy|podpory))\b/.test(n)) return 'contact';
-  if (/\b(?:gdpr|cookies|obchodn\w*\s+podmien\w*|osobn\w*\s+udaj\w*)\b/.test(n)) return 'legal';
+  if (/\b(?:prevadzkuje|prevadzkovatel\w*|gdpr|cookies|obchodn\w*\s+podmien\w*|osobn\w*\s+udaj\w*)\b/.test(n)) return 'legal';
+  if (/\b(?:na pocitaci|ovladac\w*|na stitku)\b/.test(n) && /\bl[- ]?\d{4}[a-z]*\b/.test(n)) return 'product';
   if (conversationProductReference(message) || /\b(?:toner\w*|napln\w*|atrament\w*|tlaciarn\w*|valec|valca|kazet\w*)\b/.test(n) || productModifier.test(n)) return 'product';
   return null;
 }
@@ -137,7 +148,7 @@ function framesFromHistory(history: ConversationTurn[]) {
         active.end = i;
         if (reference) { active.reference = reference; active.anchor = turn.content; }
       }
-    } else if (active && continuation(turn.content)) active.end = i;
+    } else if (active && (continuation(turn.content) || active.topic === 'product' && productPriceFollowUp.test(norm(turn.content)))) active.end = i;
     else active = null;
   }
   return { frames, active };
@@ -186,6 +197,18 @@ export function resolveConversationContext(message: string, history: Conversatio
     const currentDetail=productPage&&/\b(?:tento|tato|tieto|uvedeny)\b/.test(n)&&productPage!==product?.page;
     return {...result,topic:'product',deliveryPrice:true,relation:named||currentDetail?'new':product?active===product?'follow_up':'resume':'new',productQuery:named||(currentDetail?null:product?.reference)||null,contextHistory:!named&&!currentDetail&&product?turns.slice(product.start,product.end+1):[]};
   }
+  if (!explicit && !active && !state.pendingQuestion && /^\d{2,4}[.!?]?$/.test(n)) return { ...result, topic: 'product' };
+  if (active?.topic === 'product' && active.reference && !newCue) {
+    const shipSelected = explicit === 'shipping' && /\b(?:posiel|posl|doruc)\w*\b/.test(n)
+      && /\b(?:ho|ju|ich|to)\b/.test(n) && /cesk|\b(?:cr|cz|brno|brna|praha|prahy)\b/.test(n);
+    const fitsPrinter = explicit === 'product' && reference && /\b(?:tam|do nej|do neho)\b/.test(n)
+      && /\b(?:pasuj\w*|mozem|pouzit|hodi\w*)\b/.test(n);
+    if (shipSelected || fitsPrinter) return {
+      ...result, relation: 'follow_up', topic: 'product', productQuery: active.reference,
+      contextHistory: turns.slice(active.start, active.end + 1),
+      ...(shipSelected ? { deliveryCountry: 'CZ' as const } : {}),
+    };
+  }
   if(quantity.test(n)&&active&&!['product','calendar','discount'].includes(active.topic))return {...result,relation:'clarify',topic:null,resetSelection:true,clarification:'Čo znamená tento počet — kusy produktu, číslo objednávky alebo iný údaj? Napíšte, prosím, k čomu sa vzťahuje.'};
   if(productPage&&active?.topic==='product'&&active.page&&productPage!==active.page&&!reference&&(explicit==='product'||/\b(?:cena|cenu|stoji|tento|ten|to)\b/.test(n)))return {...result,topic:'product',resetSelection:true};
   if (acknowledgement.test(n) && !/^(ano|nie)[.! ]*$/.test(n)) return { ...result, relation: 'acknowledge', topic: active?.topic || null, contextHistory: active ? turns.slice(active.start, active.end + 1) : [] };
@@ -195,7 +218,7 @@ export function resolveConversationContext(message: string, history: Conversatio
     const product=frames.findLast(frame=>frame.topic==='product'||frame.topic==='discount'&&Boolean(frame.reference));
     if(product)return {...result,relation:active===product?'follow_up':'resume',topic:'product',productQuery:product.reference||state.lastProductQuery||null,contextHistory:turns.slice(product.start,product.end+1)};
   }
-  if(!explicit&&active?.topic==='product'&&/\b(?:cena|cenu|ceny|stoji|stoja)\b/.test(n))return {...result,relation:'follow_up',topic:'product',productQuery:active.reference||state.lastProductQuery||null,contextHistory:turns.slice(active.start,active.end+1)};
+  if(!explicit&&active?.topic==='product'&&productPriceFollowUp.test(n))return {...result,relation:'follow_up',topic:'product',productQuery:active.reference||state.lastProductQuery||null,contextHistory:turns.slice(active.start,active.end+1)};
   if(!explicit&&active?.topic==='calendar'&&/\b(?:modr\w*|cerven\w*|zelen\w*|ciern\w*|farb\w*|denn\w*|tyzdenn\w*|mini\w*)\b/.test(n))return {...result,relation:'follow_up',topic:'calendar',question:`${question} ${subject(active)}.`,contextHistory:turns.slice(active.start,active.end+1)};
 
   let target = active;

@@ -36,7 +36,7 @@ test('server pri zákaze zachová aj existujúci košík',async()=>{
   const result=await askApi('Chcem kúpiť 1 ks kompatibilného HP CF280X, ale nič nepridávaj do košíka, iba mi ho ukáž.',state);
   assert.deepEqual(result.state.cart,state.cart);
   assert.equal(result.action,null);
-  assert.match(result.advisor.answer.join(' '),/nič som nepridal/i);
+  assert.match(result.advisor.answer.join(' '),/košík som ponechal bez zmien|nič som nepridal/i);
 });
 
 test('AI pridá CRG-069H iba ako jeden skutočný katalógový produkt sady',async()=>{

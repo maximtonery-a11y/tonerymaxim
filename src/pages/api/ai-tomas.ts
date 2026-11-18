@@ -3,6 +3,7 @@ import { priceForQuantity } from "../../lib/ai-commerce/pricing.ts";
 import type { APIRoute } from 'astro';
 import { randomUUID } from 'node:crypto';
 import { normalizeCommerceState } from '../../lib/ai-commerce/domain.ts';
+import { explicitSkuFromMessage } from '../../lib/catalog-query.ts';
 import { routeCommerceMessage } from '../../lib/ai-commerce/router.ts';
 import { isPackProduct, searchCommerce } from '../../lib/ai-commerce/engine.ts';
 import { forbidsCartMutation, hasExplicitCartAddCommand, isCartChangingAction, isNonExecutingShoppingRequest } from '../../lib/ai-cart-safety.ts';
@@ -34,7 +35,7 @@ function matchesExplicitBrandFamily(product:any,request:{brand:string;family:str
   const hasBrand=new RegExp(`(?:^|[^a-z0-9])${escapedBrand}(?:$|[^a-z0-9])`,'i').test(identity);
   // Rodina môže mať kapacitnú príponu XL/XXL, ale nesmie pokračovať ďalšou
   // číslicou. HP 305 tak zachová 305XL, no nevpustí inú číselnú rodinu.
-  const hasFamily=new RegExp(`(?:^|[^0-9])${escapedFamily}(?:[a-z]{0,3})?(?:$|[^a-z0-9])`,'i').test(identity);
+  const hasFamily=new RegExp(`(?:^|[^0-9])${escapedFamily}(?:xxl|xl)?(?:$|[^a-z0-9])`,'i').test(identity);
   // Staré zberné produkty typu „Epson 101/102/103/104“ nie sú presná
   // rodina 104 a už vôbec nie hotová sada. Ak názov obsahuje zoznam
   // viacerých číselných rodín, odmietneme ho pri presnom dopyte.
@@ -319,14 +320,17 @@ export const POST: APIRoute = async ({ request }) => {
       state.history=[...state.history,{role:'user' as const,content:rawMessage},{role:'assistant' as const,content:answer}].slice(-20);
       return respond({ok:true,route,advisor:{answer:[answer],products:[],groups:[],intent:'printer_conflict',confidence:1,unanswered:false},commerce:null,state,action:{kind:'CLARIFY_PRINTER'}},{headers:{'Cache-Control':'no-store'}});
     }
-    const needsAdvisor = !(route.needsProducts && isProductPriceQuestion(message)) && !calendarRoute && route.intents.some(x => ['ADVICE','POLICY','HUMAN_ESCALATION','UNKNOWN'].includes(x));
+    const needsAdvisor = Boolean(conversation.deliveryCountry) || !(route.needsProducts && isProductPriceQuestion(message)) && !calendarRoute && route.intents.some(x => ['ADVICE','POLICY','HUMAN_ESCALATION','UNKNOWN'].includes(x));
     // Poradenska znalostna vrstva a produktovy nakupca sa nacitavaju oddelene.
     // Bezna produktova otazka tak nedrzi v RAM aj cely poradensky modul.
-    const advisorPromise = needsAdvisor ? import('../../lib/aiSalesAssistant.ts').then(({buildAssistantAnswer})=>buildAssistantAnswer(message,page,conversation.contextHistory as any)) : Promise.resolve({
+    const advisorPromise = needsAdvisor ? import('../../lib/aiSalesAssistant.ts').then(({buildAssistantAnswer})=>buildAssistantAnswer(message,page,conversation.deliveryCountry ? [] : conversation.contextHistory as any)) : Promise.resolve({
       answer: route.needsProducts ? ['V našej ponuke máme tieto produkty:'] : ['Rád vám pomôžem s výberom.'],
       products: [], groups: [], intent: 'commerce', confidence: 1, unanswered: false,
     });
-    const commercePromise = route.needsProducts && route.productQuery ? searchCommerce(route.productQuery) : Promise.resolve(null);
+    // A single selected offer is stored in the conversation as “SKU: 15048”.
+    // Look up the same catalogue identity when the next turn only says “it”.
+    const strictSku = explicitSkuFromMessage(rawMessage) || route.productQuery?.match(/^SKU:\s*(\S+)$/i)?.[1];
+    const commercePromise = route.needsProducts && route.productQuery ? searchCommerce(strictSku || route.productQuery) : Promise.resolve(null);
     const resolved = await Promise.all([advisorPromise,commercePromise]);
     let advisor:any = resolved[0];
     let commerce:any = resolved[1];
@@ -341,8 +345,10 @@ export const POST: APIRoute = async ({ request }) => {
     // ktorých názov používa výrobné označenie (napr. C13T00P640), ale slug
     // obsahuje zákaznícke označenie Epson 104.
     const strictFamily=explicitBrandFamily(route.productQuery);
-    if(strictFamily&&commerce){
-      const exactProducts=(commerce.products||[]).filter((product:any)=>matchesExplicitBrandFamily(product,strictFamily));
+    if (commerce && (strictFamily || strictSku)) {
+      const exactProducts = (commerce.products || []).filter((product:any) => strictSku
+        ? normalized(product.sku) === normalized(strictSku)
+        : matchesExplicitBrandFamily(product, strictFamily!));
       const exactIds=new Set(exactProducts.map((product:any)=>String(product.id)));
       commerce={...commerce,products:exactProducts,presentation:{...(commerce.presentation||{}),sets:(commerce.presentation?.sets||[]).filter((set:any)=>set.products?.length===1&&exactIds.has(String(set.products[0]?.id)))}};
     }
@@ -495,7 +501,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
     if(!action&&route.needsProducts&&commerce&&!(commerce.products||[]).length&&!requestedTypeUnavailable){
       const answer = calendarRoute
-        ? 'Takýto kalendár alebo diár som nenašiel. Aký typ, motív alebo kód produktu hľadáte?'
+        ? 'Takýto motív som nenašiel. Hľadáte nástenný kalendár, stolový kalendár alebo minidiár? Môžete zadať aj kód produktu.'
         : 'Pod týmto označením som vhodnú náplň nenašiel. Aký je celý model tlačiarne zo štítku alebo presný kód pôvodnej náplne?';
       advisor={...advisor,answer:[answer],products:[],groups:[],intent:calendarRoute?'calendar_search':advisor?.intent,confidence:calendarRoute?1:advisor?.confidence,unanswered:false,handoffSuggested:false};
       action={kind:'CLARIFY_PRODUCT'};

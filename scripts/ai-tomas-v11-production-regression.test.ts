@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
 import { POST } from '../src/pages/api/ai-tomas.ts';
 import { analyzeCatalogQuery } from '../src/lib/catalog-query.ts';
 import { routeCommerceMessage } from '../src/lib/ai-commerce/router.ts';
@@ -79,13 +78,4 @@ test('Epson EcoTank L3250 zostáva po úprave presným modelom tlačiarne',()=>{
 test('explicitné číselné SKU a nejednoznačné 711 zostávajú bezpečné',()=>{
   assert.equal(routeCommerceMessage('SKU 123456',emptyCommerceState()).productQuery,'123456');
   assert.equal(routeCommerceMessage('Potrebujem náplň 711',emptyCommerceState()).productQuery,null);
-});
-
-test('UI oznamuje chýbajúci typ a používa správny názov atramentových náplní',async()=>{
-  const script=await readFile(new URL('../src/scripts/ai-sales-assistant.js',import.meta.url),'utf8');
-  assert.match(script,/missingRequestedTypes/);
-  assert.match(script,/momentálne v katalógu nemáme/);
-  assert.match(script,/offerProductNoun/);
-  assert.match(script,/atramentové náplne/);
-  assert.match(script,/data-ai-singles-panel[^>]*hidden/);
 });

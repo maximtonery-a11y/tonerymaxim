@@ -44,7 +44,7 @@ export async function interpretConversation(message:string,page:string,history:C
 }
 
 export function applyConversationPlan(message:string,history:ConversationTurn[],fallback:ConversationContext,plan:ContextPlan|null):ConversationContext{
-  if(!plan||isConversationRepairQuestion(message)||hasExplicitCartAddCommand(message)||conversationProductReference(message))return fallback;
+  if(!plan||fallback.deliveryCountry||isConversationRepairQuestion(message)||hasExplicitCartAddCommand(message)||conversationProductReference(message))return fallback;
   // "Za jeden kus" asks for a unit price at the remembered purchase quantity.
   // A model must not turn that denominator into a new order of one unit.
   if(isProductUnitPriceQuestion(message)&&fallback.topic==='product'&&fallback.productQuery)return fallback;
