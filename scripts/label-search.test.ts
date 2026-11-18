@@ -22,6 +22,8 @@ test('retains complete manufacturer references and distinguishes supplies from p
 test('uncertainty stays local and sensitive labels never become queries', () => {
   assert.deepEqual(read('Serial number:\nCE285A\nS/N: TN-2421\nEAN: 1234567890123\nWi-Fi password: P1102W\nHSTNS-1234'), []);
   assert.deepEqual(read('HP LaserJet\n230 V\n2026\n600 pages'), []);
+  assert.deepEqual(labelCandidates([{ text: '1325', confidence: 97 }], new Set(), ['HP']), []);
+  assert.equal(read('HP DeskJet\n2720')[0]?.code, '2720');
   assert.deepEqual(read('Canon\nP1102W'), []);
   assert.equal(read('85A\nLASERJET')[0]?.certain, false);
   assert.equal(read('TN-2421', 64)[0]?.certain, false);

@@ -86,7 +86,9 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
       const shortCanon = brands.has('CANON') && /^\d{3}(?:XXL|XL|PGBK|BK|[HCMY])?$/.test(token);
       const shortEpson = brands.has('EPSON') && /^\d{3}(?:XL)?$/.test(token);
       const numberedPrinter = !packageLabel && family && family.number.test(token)
-        && !/^(?:19|20)\d{2}$/.test(token);
+        && !/^(?:19|20)\d{2}$/.test(token)
+        && (!/^\d+$/.test(token) || family.name.test(text)
+          || (text.trim() === token && family.name.test(useful[index - 1]?.text || '')));
       if (!rule && !shortHP && !shortCanon && !shortEpson && !numberedPrinter) continue;
       const brand = numberedPrinter ? family.brand : rule?.brand || (shortCanon ? 'Canon' : shortEpson ? 'Epson' : 'HP');
       const kind = numberedPrinter ? 'printer' : rule?.kind || 'supply';
