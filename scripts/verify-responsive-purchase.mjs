@@ -1,5 +1,6 @@
 // Invoked by account-orders-render-smoke.mjs --responsive, against its disposable, local-only shop.
 import assert from 'node:assert/strict';
+import { chromiumLabelCamera, verifyLiveCamera } from './verify-live-camera.mjs';
 import { verifyMobileLabel } from './verify-mobile-label.mjs';
 
 const productPath = '/produkt/fixture-toner-';
@@ -472,7 +473,10 @@ async function verifyEngine(origin, engine, configurations, options) {
       });
       try {
         await checkSearchWarmup(page, origin, width === 390);
-        if (width === 390) await verifyMobileLabel(page, origin);
+        if (width === 390) {
+          await verifyLiveCamera(page, origin, engine.name() === 'chromium');
+          await verifyMobileLabel(page, origin);
+        }
         await checkLayout(page, origin, layout);
         if (width === 390 || width === 1280) await checkDiscountJourney(page, origin, width === 390);
         assert.deepEqual(unexpected, []);
@@ -486,6 +490,9 @@ async function verifyEngine(origin, engine, configurations, options) {
 
 export async function verifyResponsivePurchase(origin) {
   const { chromium, webkit } = await import(process.env.TM_PLAYWRIGHT_MODULE || 'playwright');
-  await verifyEngine(origin, chromium, layouts, process.env.TM_CHROMIUM_PATH ? { executablePath: process.env.TM_CHROMIUM_PATH } : {});
+  const camera = await chromiumLabelCamera();
+  try {
+    await verifyEngine(origin, chromium, layouts, { args: camera.args, executablePath: process.env.TM_CHROMIUM_PATH });
+  } finally { await camera.close(); }
   await verifyEngine(origin, webkit, layouts.filter(([width]) => [390, 844, 1280].includes(width)), {});
 }

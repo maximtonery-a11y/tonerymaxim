@@ -58,53 +58,80 @@ async function prepareImages(file: File, signal: AbortSignal, area?: LabelSelect
   }
 }
 
-export async function readLabel(file: File, signal: AbortSignal, report: (message: string) => void, area?: LabelSelection): Promise<LabelLine[][]> {
-  const images = await prepareImages(file, signal, area);
-  if (signal.aborted) throw new DOMException('Zrušené', 'AbortError');
+type WorkerPayload = Record<string, unknown>;
+type WorkerResult = { blocks?: Block[] | null };
+
+export async function createLabelReader(signal: AbortSignal, singleLine = false) {
+  signal.throwIfAborted();
   const folder = new URL('/citanie-stitku/v7/', location.origin).href;
-  // Own the worker from the first byte. A cancel, timeout or page exit must also end a
-  // stalled language download. These are the dedicated worker jobs of pinned Tesseract.js 7.
   const worker = new Worker(folder + 'worker.min.js');
-  const jobs = [
-    { action: 'load', payload: { options: { lstmOnly: true, corePath: folder } } },
-    { action: 'loadLanguage', payload: { langs: 'eng', options: { langPath: folder, gzip: true, lstmOnly: true, cachePath: 'tm-label-v7' } } },
-    { action: 'initialize', payload: { langs: 'eng', oem: 1, config: {} } },
-    { action: 'setParameters', payload: { params: { tessedit_pageseg_mode: area && 'start' in area ? '7' : '11', user_defined_dpi: '200' } } },
-    ...images.map(image => ({ action: 'recognize', payload: { image, options: {}, output: { blocks: true } } })),
-  ];
-  let onAbort = () => {};
-  try {
-    report('Pripravujem čítanie štítku…');
-    const passes = await new Promise<Block[][]>((resolve, reject) => {
-      const completed: Block[][] = [];
-      onAbort = () => reject(new DOMException('Zrušené', 'AbortError'));
-      signal.addEventListener('abort', onAbort, { once: true });
-      worker.onerror = () => reject(new Error('worker'));
-      worker.onmessageerror = () => reject(new Error('worker message'));
-      let step = 0;
-      const send = () => {
-        const job = jobs[step];
-        worker.postMessage({ ...job, workerId: 'label', jobId: String(step) }, 'image' in job.payload && job.payload.image ? [job.payload.image.buffer] : []);
-      };
-      worker.onmessage = ({ data }) => {
-        if (data.jobId !== String(step)) return;
-        if (data.status === 'reject') { reject(new Error('recognition')); return; }
-        if (data.status === 'progress') {
-          if (data.data.status === 'recognizing text') report(`Čítam označenie… ${Math.round((completed.length + data.data.progress) * 100 / images.length)} %`);
-          return;
-        }
-        if (data.status !== 'resolve') return;
-        if (data.action === 'recognize') completed.push(data.data.blocks || []);
-        step++;
-        if (step === jobs.length) resolve(completed);
-        else send();
-      };
-      send();
-    });
-    return passes.map(blocks => blocks.flatMap(block => block.paragraphs.flatMap(paragraph => paragraph.lines))
-      .map(line => ({ text: line.text, confidence: line.confidence, words: line.words.map(word => ({ text: word.text, confidence: word.confidence })) })));
-  } finally {
+  let nextId = 0;
+  let stopped = false;
+  let pending: { id: string; resolve: (data: WorkerResult) => void; reject: (error: Error) => void; progress?: (n: number) => void } | undefined;
+
+  function close(reason: Error = new DOMException('Zrušené', 'AbortError')) {
+    if (stopped) return;
+    stopped = true;
     signal.removeEventListener('abort', onAbort);
     worker.terminate();
+    pending?.reject(reason);
+    pending = undefined;
   }
+  function onAbort() { close(); }
+  signal.addEventListener('abort', onAbort, { once: true });
+  worker.onerror = worker.onmessageerror = () => close(new Error('worker'));
+  worker.onmessage = ({ data }) => {
+    if (!pending || data.jobId !== pending.id) return;
+    if (data.status === 'progress') {
+      if (data.data?.status === 'recognizing text') pending.progress?.(data.data.progress);
+      return;
+    }
+    if (data.status === 'reject') { close(new Error('recognition')); return; }
+    if (data.status === 'resolve') {
+      const { resolve } = pending;
+      pending = undefined;
+      resolve(data.data || {});
+    }
+  };
+  function job(action: string, payload: WorkerPayload, transfer: Transferable[] = [], progress?: (n: number) => void) {
+    if (stopped || pending) throw new Error('reader unavailable');
+    const id = String(++nextId);
+    return new Promise<WorkerResult>((resolve, reject) => {
+      pending = { id, resolve, reject, progress };
+      try { worker.postMessage({ action, payload, workerId: 'label', jobId: id }, transfer); }
+      catch { close(new Error('worker message')); }
+    });
+  }
+  try {
+    await job('load', { options: { lstmOnly: true, corePath: folder } });
+    await job('loadLanguage', { langs: 'eng', options: { langPath: folder, gzip: true, lstmOnly: true, cachePath: 'tm-label-v7' } });
+    await job('initialize', { langs: 'eng', oem: 1, config: {} });
+    await job('setParameters', { params: { tessedit_pageseg_mode: singleLine ? '7' : '11', user_defined_dpi: '200' } });
+    return {
+      close,
+      async recognize(image: Uint8Array<ArrayBuffer>, progress?: (n: number) => void, lineOnly = false): Promise<LabelLine[]> {
+        const options = lineOnly ? { tessedit_pageseg_mode: '7' } : {};
+        const { blocks } = await job('recognize', { image, options, output: { blocks: true } }, [image.buffer], progress);
+        return (blocks || []).flatMap(block => (block.paragraphs || []).flatMap(paragraph => paragraph.lines || []))
+          .map(line => ({ text: line.text, confidence: line.confidence, words: (line.words || []).map(word => ({ text: word.text, confidence: word.confidence })) }));
+      },
+    };
+  } catch (error) {
+    close();
+    throw error;
+  }
+}
+
+export async function readLabel(file: File, signal: AbortSignal, report: (message: string) => void, area?: LabelSelection): Promise<LabelLine[][]> {
+  const images = await prepareImages(file, signal, area);
+  report('Pripravujem čítanie štítku…');
+  const reader = await createLabelReader(signal, Boolean(area && 'start' in area));
+  try {
+    const passes: LabelLine[][] = [];
+    for (const image of images) {
+      passes.push(await reader.recognize(image, progress =>
+        report(`Čítam označenie… ${Math.round((passes.length + progress) * 100 / images.length)} %`)));
+    }
+    return passes;
+  } finally { reader.close(); }
 }

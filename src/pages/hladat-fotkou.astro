@@ -2,27 +2,33 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import SeoHead from '../components/SeoHead.astro';
+import { permissionsPolicy } from '../lib/permissions-policy';
+Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pathname));
 ---
 <!doctype html>
 <html lang="sk">
   <head>
     <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-    <SeoHead title="Hľadať náplň podľa fotky | ToneryMaxim.sk" description="Odfoťte označenie na kazete alebo model tlačiarne a nájdite vhodné náplne." noindex />
+    <SeoHead title="Nájsť náplň fotoaparátom | ToneryMaxim.sk" description="Namierte fotoaparát na označenie kazety alebo model tlačiarne a zobrazte vhodné náplne." noindex />
   </head>
   <body><div class="page"><Header />
     <main class="label-search" data-label-search>
       <a class="back" href="/">← Späť na vyhľadávanie</a>
       <section aria-labelledby="label-heading">
-        <h1 id="label-heading">Nájdite náplň podľa fotky</h1>
-        <p>Odfoťte zblízka označenie na kazete alebo celý názov modelu na prednej strane tlačiarne. Dobre čitateľné musí byť aj posledné písmeno.</p>
+        <h1 id="label-heading">Nájdite náplň fotoaparátom</h1>
+        <p>Namierte na kód kazety alebo názov tlačiarne. Keď ho skener prečíta, zobrazí sa ponuka náplní.</p>
         <div class="capture" data-photo-controls hidden>
-          <label class="primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v13H3z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
-            Odfotiť štítok<input type="file" accept="image/*" capture="environment" data-camera />
-          </label>
+          <button type="button" class="primary" data-live-start aria-controls="live-camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v13H3z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
+            Spustiť fotoaparát
+          </button>
           <label>Vybrať fotku z galérie<input type="file" accept="image/*" data-gallery /></label>
         </div>
-        <p class="privacy">Fotka ostáva vo vašom zariadení. V katalógu vyhľadáme iba označenie.</p>
-        <p id="label-status" role="status" aria-live="polite"></p>
+        <div class="live-camera" id="live-camera" hidden>
+          <video muted playsinline autoplay aria-label="Živý obraz zo zadného fotoaparátu"></video>
+          <div class="live-guide" data-live-guide aria-hidden="true"></div>
+        </div>
+        <p class="privacy">Obraz zostáva vo vašom zariadení. V katalógu hľadáme iba prečítané označenie.</p>
+        <p id="label-status" tabindex="-1" role="status" aria-live="polite"></p>
         <button class="secondary" type="button" data-stop hidden>Zrušiť čítanie</button>
         <div class="matches" data-matches></div>
         <button type="button" class="secondary crop-toggle" data-crop-toggle aria-expanded="false" aria-controls="crop-photo" hidden>Vybrať riadok z fotky</button>
@@ -59,15 +65,20 @@ import SeoHead from '../components/SeoHead.astro';
   h1 { font-size:clamp(1.6rem,4vw,2.15rem); line-height:1.15; margin:0 0 .65rem; }
   p { line-height:1.5; margin:0 0 1rem; }
   .capture { display:flex; flex-wrap:wrap; gap:.6rem; }
-  .capture label,.secondary,.matches :global(button),.matches :global(a) { font:inherit; font-weight:600; min-height:46px; border:1px solid #bdd0e3; border-radius:10px; background:white; color:#163b5b; padding:.65rem .9rem; cursor:pointer; }
-  .capture label { position:relative; display:inline-flex; gap:.5rem; align-items:center; justify-content:center; overflow:hidden; }
-  .capture label.primary { background:#0b3154; color:white; border-color:#0b3154; }
+  .capture label,.capture button,.secondary,.matches :global(button),.matches :global(a) { font:inherit; font-weight:600; min-height:46px; border:1px solid #bdd0e3; border-radius:10px; background:white; color:#163b5b; padding:.65rem .9rem; cursor:pointer; touch-action:manipulation; }
+  .capture label,.capture button { position:relative; display:inline-flex; gap:.5rem; align-items:center; justify-content:center; overflow:hidden; }
+  .capture .primary { background:#0b3154; color:white; border-color:#0b3154; }
   .capture svg { width:21px; height:21px; }
   .capture input { position:absolute; inset:0; height:100%; width:100%; opacity:0; cursor:pointer; }
   .capture label:focus-within,button:focus-visible,input:focus-visible,.matches :global(a:focus-visible) { outline:3px solid #1970af; outline-offset:2px; }
+  .live-camera { position:relative; isolation:isolate; aspect-ratio:4/3; width:100%; max-height:45svh; overflow:hidden; border-radius:12px; background:#112235; scroll-margin-block:8rem; }
+  .live-camera video { display:block; width:100%; height:100%; object-fit:cover; }
+  .live-guide { position:absolute; inset:31% 7%; border:2px solid white; border-radius:8px; box-shadow:0 0 0 100vmax #07162365, inset 0 0 0 1px #10263c99; pointer-events:none; }
+  .live-guide::before,.live-guide::after { content:""; position:absolute; top:50%; width:.7rem; height:2px; background:white; }
+  .live-guide::before { left:0; } .live-guide::after { right:0; }
   .privacy { margin:.75rem 0; color:#476078; font-size:.875rem; }
   #label-status:empty { margin:0; }
-  #label-status { font-weight:600; }
+  #label-status { font-weight:600; scroll-margin-top:clamp(5rem,18vh,10rem); }
   .matches { display:grid; gap:.55rem; }
   .matches :global(a) { text-decoration:none; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:.4rem; }
   .matches :global(small) { white-space:nowrap; }
@@ -87,7 +98,7 @@ import SeoHead from '../components/SeoHead.astro';
   .manual div { display:flex; flex-wrap:wrap; gap:.5rem; }
   .manual input { font:inherit; padding:.65rem; min-width:0; width:100%; flex:1 1 12rem; border:1px solid #9fb2c6; border-radius:9px; }
   [hidden] { display:none !important; }
-  @media(max-width:420px) { .capture label { width:100%; } }
+  @media(max-width:420px) { .capture > * { flex:1 1 100%; } }
 </style>
 <script>
   import '../scripts/label-search-ui';
