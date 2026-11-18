@@ -34,7 +34,7 @@ const bundled = await build({
   stdin: { contents: instrumented, resolveDir: resolve('src/scripts'), sourcefile: 'product-detail.js', loader: 'js' },
   bundle: true, write: false, format: 'iife', platform: 'browser',
 });
-const html = `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${globalCss}\n${detailCss}</style></head><body class="product-detail-body"><div class="page"><main class="product-detail-page" data-product-slug="audit"><div class="detail-wrap"><section data-product-root class="tm-detail"></section></div></main></div><script>window.__tmLayoutAudit=true</script><script>${bundled.outputFiles[0].text.replace(/<\/script/gi, '<\\/script')}</script></body></html>`;
+const html = `<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${globalCss}\n${detailCss}</style></head><body class="product-detail-body"><div class="page"><main class="product-detail-page" data-product-slug="audit"><div class="detail-wrap"><section data-product-root class="tm-detail"><div data-product-head></div><div data-product-tail></div></section></div></main></div><script>window.__tmLayoutAudit=true</script><script>${bundled.outputFiles[0].text.replace(/<\/script/gi, '<\\/script')}</script></body></html>`;
 const server = createServer((request, response) => {
   if (request.url === '/') response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end(html);
   else response.writeHead(204).end();

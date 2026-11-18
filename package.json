@@ -46,12 +46,14 @@
   "dependencies": {
     "@astrojs/node": "11.1.5",
     "astro": "7.3.2",
-    "nodemailer": "10.0.2"
+    "nodemailer": "10.0.2",
+    "sanitize-html": "2.18.2"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
     "@types/node": "26.1.2",
     "@types/nodemailer": "8.0.1",
+    "@types/sanitize-html": "2.16.2",
     "typescript": "6.0.3"
   }
 }

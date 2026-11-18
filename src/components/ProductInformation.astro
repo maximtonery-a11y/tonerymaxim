@@ -1,0 +1,50 @@
+---
+import type { TmProduct } from '../lib/tm-products-cache';
+import { productDescription, productSpecifications } from '../lib/product-information';
+import Icon from './ProductInfoIcon.astro';
+import '../styles/product-information.css';
+
+interface Props { product: TmProduct }
+const { product } = Astro.props;
+const copy = productDescription(product);
+const { facts, yields, extraCodes, sku } = productSpecifications(product);
+---
+<article class="pd-info" aria-label="Informácie o produkte">
+  {(copy.html || copy.teaser) && <section class="pd-info-intro" aria-labelledby="pd-info-description">
+    <h2 id="pd-info-description">Popis produktu</h2>
+    {copy.expandable ? <>
+      {copy.teaser && <p class="pd-info-lead">{copy.teaser}</p>}
+      <div class="pd-info-actions">
+        <details class="pd-info-reading">
+          <summary><Icon name="chevron" /><span class="pd-info-more">Zobraziť celý popis</span><span class="pd-info-less">Zbaliť popis</span></summary>
+          <div class="pd-info-slot"><div class="pd-info-copy" set:html={copy.html}></div></div>
+        </details>
+        <button type="button" class="pd-info-pop" aria-haspopup="dialog" aria-controls="pd-info-dialog" hidden><Icon name="expand" />Otvoriť v okne</button>
+      </div>
+      <dialog id="pd-info-dialog" aria-labelledby="pd-info-dialog-title">
+        <div class="pd-info-dialog-head">
+          <h2 id="pd-info-dialog-title">Popis produktu</h2>
+          <form method="dialog"><button type="submit" aria-label="Zavrieť popis" autofocus><Icon name="close" /></button></form>
+        </div>
+        <div class="pd-info-dialog-body" tabindex="0" role="region" aria-label="Celý popis produktu"></div>
+      </dialog>
+    </> : copy.html ? <div class="pd-info-copy" set:html={copy.html}></div> : <p class="pd-info-lead">{copy.teaser}</p>}
+  </section>}
+  {(facts.length > 0 || yields.length > 0) && <section class="pd-info-specs" aria-labelledby="pd-info-specs">
+    <h2 id="pd-info-specs">Parametre produktu</h2>
+    {facts.length > 0 && <dl class="pd-info-facts">
+      {facts.map(f => <div><dt><Icon name={f.icon}/>{f.label}</dt><dd>{f.value}</dd></div>)}
+    </dl>}
+    {yields.length > 0 && <div class="pd-info-yields">
+      <h3><Icon name="pages" />Deklarovaná výťažnosť podľa farby</h3>
+      <dl>{yields.map(y => <div><dt><i class={'pd-info-dot ' + y.key} aria-hidden="true"></i>{y.name}</dt><dd>{y.pages} <small>strán</small></dd>{y.code && <dd class="pd-info-colour-code">{y.code}</dd>}</div>)}</dl>
+    </div>}
+  </section>}
+  {(extraCodes.length > 0 || sku) && <details class="pd-info-codes">
+    <summary><Icon name="tag"/><span>{extraCodes.length && sku ? 'Ďalšie kódy výrobcu a kód produktu' : sku ? 'Kód produktu' : 'Ďalšie kódy výrobcu'}</span><Icon name="chevron"/></summary>
+    <dl>
+      {extraCodes.length > 0 && <div><dt>Kódy výrobcu (OEM)</dt><dd>{extraCodes.map(c => <span>{c}</span>)}</dd></div>}
+      {sku && <div><dt>Kód produktu</dt><dd>{sku}</dd></div>}
+    </dl>
+  </details>}
+</article>

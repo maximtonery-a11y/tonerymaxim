@@ -5,12 +5,13 @@ import "../../styles/global.css";
 import "../../styles/footer.css";
 import "../../styles/product-detail.css";
 import { chipVariant } from "../../lib/product-chip";
+import ProductInformation from "../../components/ProductInformation.astro";
 import ProductAlternatives from "../../components/ProductAlternatives.astro";
 import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import FloatingAdvisor from "../../components/FloatingAdvisor.astro";
 import SeoHead from "../../components/SeoHead.astro";
-import { getProductFromCache, stripHtml } from "../../lib/tm-products-cache";
+import { getProductFromCache } from "../../lib/tm-products-cache";
 import { buildProductSeo } from "../../lib/catalog-seo-text";
 import { breadcrumbJsonLd, organizationJsonLd, productJsonLd, absoluteUrl, websiteJsonLd } from "../../lib/seo";
 import { printerBrandForName, printerLinksFromNames, productOemCodes, validIndexableProduct } from "../../lib/seo-catalog";
@@ -126,7 +127,6 @@ const brandLinks = [...new Map(
     .map((brand) => [brand!.slug, { href: `/znacky/${brand!.slug}`, label: brand!.name }]),
 ).values()];
 const detailChipVariant = chipVariant(product);
-const plainDescription = stripHtml(product.description_html || product.short_description_html || product.description || '');
 const productSafetyRows = [
   ['Výrobca produktu', product.manufacturer_name],
   ['Poštová adresa výrobcu', product.manufacturer_address],
@@ -134,7 +134,12 @@ const productSafetyRows = [
   ['Zodpovedný hospodársky subjekt v EÚ', product.eu_responsible_person],
   ['Bezpečnostné informácie a upozornenia', product.safety_information],
 ].filter(([, value]) => String(value || '').trim());
-const initialProductJson = JSON.stringify(product)
+// The formatted description already lives in the server-rendered information panel.
+const { description_html: _full, short_description_html: _short, search_text: _searchIndex, ...interactiveProduct } = product;
+// Older cache entries can carry distinct aliases. Omit only identical arrays.
+if (interactiveProduct.attributes_all === interactiveProduct.attributes) delete interactiveProduct.attributes_all;
+if (interactiveProduct.printers === interactiveProduct.compatible_printers) delete interactiveProduct.printers;
+const initialProductJson = JSON.stringify(interactiveProduct)
   .replace(/</g, "\\u003c")
   .replace(/>/g, "\\u003e")
   .replace(/&/g, "\\u0026")
@@ -150,6 +155,11 @@ const initialProductJson = JSON.stringify(product)
     <link rel="preconnect" href="https://www.coloriq.store" crossorigin />
     <link rel="dns-prefetch" href="https://www.coloriq.store" />
     <link rel="preload" as="image" href={primaryImage} fetchpriority="high" />
+    <noscript><style is:inline>
+      .tm-product-hydrating [data-product-head] > .tm-product-loading { display: none; }
+      .tm-product-hydrating [data-product-head] > .tm-product-seo-fallback { display: block !important; }
+      .tm-product-hydrating { min-height: 0; }
+    </style></noscript>
     <SeoHead title={title} description={description} canonical={canonical} image={image} type="product" noindex={noindex} jsonLd={productStructuredData} />
   </head>
 
@@ -165,40 +175,44 @@ const initialProductJson = JSON.stringify(product)
         <script id="tm-product-initial-data" type="application/json" is:inline set:html={initialProductJson}></script>
         <div class="detail-wrap">
           <a class="back-link" href="/produkty">← Späť na produkty</a>
-          <section data-product-root class="tm-detail product-seo-initial tm-product-hydrating" aria-busy="true">
-            <div class="tm-product-loading" aria-label="Načítava sa detail produktu">
-              <div class="tm-product-loading-image"></div>
-              <div class="tm-product-loading-copy">
-                <span></span><span></span><span></span><span></span>
+          <section data-product-root class="tm-detail product-seo-initial tm-product-hydrating">
+            <div data-product-head>
+              <div class="tm-product-loading" aria-busy="true" aria-label="Načítava sa detail produktu">
+                <div class="tm-product-loading-image"></div>
+                <div class="tm-product-loading-copy">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="tm-product-loading-price"><span></span><span></span></div>
               </div>
-              <div class="tm-product-loading-price"><span></span><span></span></div>
-            </div>
-            <div class="tm-product-seo-fallback">
-            <section class="detail-hero-card">
-              <div class="product-gallery"><div class="main-image"><img src={primaryImage} alt={product.name} width="640" height="640" loading="eager" decoding="async" fetchpriority="high" /></div></div>
-              <div class="product-info">
-                <div class="badge-row"><span class="type-badge">{product.product_type_label}</span>{detailChipVariant && <span class={`chip-variant chip-variant--${detailChipVariant.key}`}>{detailChipVariant.label}<small>{detailChipVariant.note}</small></span>}</div>
-                <h1>{product.name}</h1>
-                <p class="summary-subtitle">{description}</p>
-                {printerLinks.length > 0 && (
-                  <details class="product-printer-links">
-                    <summary>Kompatibilné tlačiarne ({printerLinks.length})</summary>
-                    <nav aria-label="Kompatibilné modely tlačiarní">
-                      {printerLinks.map((printer) => <a href={printer.href}>{printer.label}</a>)}
-                    </nav>
-                  </details>
-                )}
-                <div class:list={["stock-line", inStock ? "is-available" : "is-unavailable"]}><strong>{inStock ? 'Skladom' : 'Na objednávku – dodanie 3–10 pracovných dní'}</strong></div>
-              </div>
-              <aside class="purchase-panel"><span class="vat-label">Cena s DPH</span><div class="price-row"><strong>{price}</strong><span>s DPH</span></div>{fallbackCostPerPage && <div class="cost-per-page"><strong>{fallbackCostPerPage} € / strana</strong><small>Orientačne podľa ceny s DPH a deklarovanej výťažnosti v stranách.</small></div>}{lowestPrice30d && <small class="tm-lowest-price-detail">Najnižšia cena za posledných 30 dní: <b>{lowestPrice30d}</b></small>}</aside>
-            </section>
-            {plainDescription && <section class="info-grid"><article class="params-card"><h2>Popis produktu</h2><p>{plainDescription}</p></article></section>}
-            {productSafetyRows.length > 0 && (
-              <section class="product-safety-card" aria-labelledby="product-safety-fallback-title">
-                <div><span class="section-eyebrow">Bezpečnosť výrobku</span><h2 id="product-safety-fallback-title">Výrobca a bezpečnostné informácie</h2></div>
-                <dl>{productSafetyRows.map(([label, value]) => <div><dt>{label}</dt><dd>{String(value)}</dd></div>)}</dl>
+              <div class="tm-product-seo-fallback">
+              <section class="detail-hero-card">
+                <div class="product-gallery"><div class="main-image"><img src={primaryImage} alt={product.name} width="640" height="640" loading="eager" decoding="async" fetchpriority="high" /></div></div>
+                <div class="product-info">
+                  <div class="badge-row"><span class="type-badge">{product.product_type_label}</span>{detailChipVariant && <span class={`chip-variant chip-variant--${detailChipVariant.key}`}>{detailChipVariant.label}<small>{detailChipVariant.note}</small></span>}</div>
+                  <h1>{product.name}</h1>
+                  <p class="summary-subtitle">{description}</p>
+                  {printerLinks.length > 0 && (
+                    <details class="product-printer-links">
+                      <summary>Kompatibilné tlačiarne ({printerLinks.length})</summary>
+                      <nav aria-label="Kompatibilné modely tlačiarní">
+                        {printerLinks.map((printer) => <a href={printer.href}>{printer.label}</a>)}
+                      </nav>
+                    </details>
+                  )}
+                  <div class:list={["stock-line", inStock ? "is-available" : "is-unavailable"]}><strong>{inStock ? 'Skladom' : 'Na objednávku – dodanie 3–10 pracovných dní'}</strong></div>
+                </div>
+                <aside class="purchase-panel"><span class="vat-label">Cena s DPH</span><div class="price-row"><strong>{price}</strong><span>s DPH</span></div>{fallbackCostPerPage && <div class="cost-per-page"><strong>{fallbackCostPerPage} € / strana</strong><small>Orientačne podľa ceny s DPH a deklarovanej výťažnosti v stranách.</small></div>}{lowestPrice30d && <small class="tm-lowest-price-detail">Najnižšia cena za posledných 30 dní: <b>{lowestPrice30d}</b></small>}</aside>
               </section>
-            )}
+              </div>
+            </div>
+            <ProductInformation product={product} />
+            <div data-product-tail>
+              {productSafetyRows.length > 0 && (
+                <section class="product-safety-card" aria-labelledby="product-safety-fallback-title">
+                  <div><span class="section-eyebrow">Bezpečnosť výrobku</span><h2 id="product-safety-fallback-title">Výrobca a bezpečnostné informácie</h2></div>
+                  <dl>{productSafetyRows.map(([label, value]) => <div><dt>{label}</dt><dd>{String(value)}</dd></div>)}</dl>
+                </section>
+              )}
             </div>
           </section>
           <section class="related-section related-section-stacked" aria-label="Súvisiace produkty">

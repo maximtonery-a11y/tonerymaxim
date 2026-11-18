@@ -704,49 +704,6 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
   }
 
 
-  function applyMobileParameterVisibility(root) {
-    if (!root) return;
-
-    const hiddenLabels = new Set([
-      "vyrobca tlaciarne",
-      "vyrobca tlaciarni",
-      "seria tlaciarne",
-      "seria tlaciarni",
-      "model tlaciarne",
-      "model tlaciarni",
-    ]);
-
-    const isMobile = window.matchMedia("(max-width: 820px)").matches;
-
-    root.querySelectorAll(".params-card dl > div").forEach((row) => {
-      const label = String(row.querySelector("dt")?.textContent || "")
-        .trim()
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-
-      row.hidden = isMobile && hiddenLabels.has(label);
-    });
-  }
-
-  function productAttributeRows(product) {
-    const attrs = Array.isArray(product.attributes_all) ? product.attributes_all : Array.isArray(product.attributes) ? product.attributes : [];
-    const skip = new Set(["farba", "color", "colour", "barva", "kapacita", "vytaznost", "vyťažnosť", "pocetstran", "početstrán", "pageyield", "yield", "pages", "zaruka", "záruka", "warranty", "vyrobcatlaciarne", "vyrobcatlaciarni", "manufacturer", "printermanufacturer", "seriatlaciarne", "seriatlaciarni", "printerseries", "series", "modeltlaciarne", "modeltlaciarni", "printermodel", "printermodels", "models"]);
-    return attrs
-      .map((attribute) => ({
-        name: String(attribute?.name || "").trim(),
-        value: String(attribute?.value || (Array.isArray(attribute?.values) ? attribute.values.join(", ") : "")).trim(),
-        key: String(attribute?.slug || attribute?.name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, ""),
-      }))
-      .filter((attribute) => attribute.name && attribute.value && !skip.has(attribute.key));
-  }
-
-  function productAttributeRowsHtml(product) {
-    return productAttributeRows(product)
-      .map((attribute) => `<div><dt>${esc(attribute.name)}</dt><dd>${esc(attribute.value)}</dd></div>`)
-      .join("");
-  }
-
   function productSafetyHtml(product) {
     const rows = [
       ["Výrobca produktu", product?.manufacturer_name],
@@ -946,28 +903,6 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     return `<div class="compat-grid">${printers.map((printer) => `<a href="${printerProductsUrl(printer)}">${esc(printer)}</a>`).join("")}</div>`;
   }
 
-  function descriptionHtml(product) {
-    const html = product.description_html || product.short_description_html || "";
-    if (html && String(html).trim()) return html;
-    return `<p>${esc(product.name)} je spotrebný materiál pre vašu tlačiareň. Pred nákupom odporúčame overiť kompatibilitu s modelom tlačiarne.</p>`;
-  }
-
-  function plainTextFromHtml(html) {
-    const div = document.createElement("div");
-    div.innerHTML = String(html || "");
-    return div.textContent.replace(/\s+/g, " ").trim();
-  }
-
-  function descriptionPreviewHtml(product) {
-    const full = descriptionHtml(product);
-    const plain = plainTextFromHtml(full);
-    const short = plain.length > 310 ? `${plain.slice(0, 310).trim()}…` : plain;
-    return `
-      <p>${esc(short)}</p>
-      ${plain.length > 310 ? `<button type="button" class="desc-more" data-show-description>Zobraziť celý popis produktu</button>` : ""}
-    `;
-  }
-
   function getProductUrl(product) {
     const direct = String(product?.detail_url || product?.url || "").trim();
     if (direct.startsWith("/")) return direct;
@@ -1086,7 +1021,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
     root.className = `tm-detail product-theme-${theme.key}`;
     root.setAttribute("aria-busy", "false");
 
-    root.innerHTML = `
+    root.querySelector("[data-product-head]").innerHTML = `
       <section class="detail-hero-card">
         <div class="product-gallery">
           <div class="thumbs" role="group" aria-label="Galéria produktu">
@@ -1206,32 +1141,9 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
         <div data-series-colors></div>
       </section>
 
-      <section class="info-grid">
-        <article class="params-card">
-          <h2>Parametre produktu</h2>
-          <dl>
-            <div><dt>Typ produktu</dt><dd>${esc(product.product_type_detail_label || product.product_type_label || theme.label)}</dd></div>
-            <div><dt>Farba</dt><dd>${esc(productColor)}</dd></div>
-            <div><dt>Výťažnosť</dt><dd>${esc(productYield)}</dd></div>
-            <div><dt>Záruka</dt><dd>${esc(productWarrantyValue)}</dd></div>
-            ${productAttributeRowsHtml(product)}
-            <div><dt>Dostupnosť</dt><dd>${esc(stockText(product))}</dd></div>
-            <div><dt>Kód produktu</dt><dd>${esc(product.sku || "bez SKU")}</dd></div>
-          </dl>
-        </article>
+    `;
 
-        <article class="description-card">
-          <h2>Popis produktu</h2>
-          <div class="product-description product-description-preview">${descriptionPreviewHtml(product)}</div>
-          <div class="micro-benefits">
-            <div><span>✓</span><strong>Presný model</strong><small>Kontrolujte celý názov tlačiarne.</small></div>
-            <div><span>⌁</span><strong>Celý OEM kód</strong><small>Rozhoduje aj koncovka kódu.</small></div>
-            <div><span>📄</span><strong>Cena za stranu</strong><small>Porovnávajte rovnakú výťažnosť.</small></div>
-            <div><span>☎</span><strong>Bezplatné overenie</strong><small>Pri neistote poradíme pred nákupom.</small></div>
-          </div>
-        </article>
-      </section>
-
+    root.querySelector("[data-product-tail]").innerHTML = `
       ${productSafetyHtml(product)}
 
       ${printerRelated ? `<section class="compat-section compat-section-modern" id="compatible-printers">
@@ -1256,14 +1168,6 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
           ${printersListHtml(product)}
         </div>
       </div>` : ""}
-
-      <div class="description-modal" data-description-modal hidden>
-        <div class="description-modal-card">
-          <button type="button" class="modal-close" data-close-description>×</button>
-          <h2>Popis produktu</h2>
-          <div class="description-modal-content">${descriptionHtml(product)}</div>
-        </div>
-      </div>
 
       <div class="image-zoom-modal" data-image-zoom-modal hidden>
         <div class="image-zoom-backdrop" data-close-zoom></div>
@@ -1398,36 +1302,9 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
       window.location.href = "/pokladna";
     });
 
-    root.querySelector("[data-show-description]")?.addEventListener("click", () => {
-      const modal = root.querySelector("[data-description-modal]");
-      if (!modal) return;
-      modal.hidden = false;
-      document.body.classList.add("tm-modal-open");
-    });
-
-    root.querySelector("[data-close-description]")?.addEventListener("click", () => {
-      const modal = root.querySelector("[data-description-modal]");
-      if (!modal) return;
-      modal.hidden = true;
-      document.body.classList.remove("tm-modal-open");
-    });
-
-    root.querySelector("[data-description-modal]")?.addEventListener("click", (event) => {
-      if (event.target === event.currentTarget) {
-        event.currentTarget.hidden = true;
-        document.body.classList.remove("tm-modal-open");
-      }
-    });
-
-
-    applyMobileParameterVisibility(root);
     if (window.location.hash === "#compatible-printers") {
       window.requestAnimationFrame(() => root.querySelector("#compatible-printers")?.scrollIntoView({ block: "start" }));
     }
-
-    const mobileParameterMedia = window.matchMedia("(max-width: 820px)");
-    const refreshMobileParameterVisibility = () => applyMobileParameterVisibility(root);
-    mobileParameterMedia.addEventListener("change", refreshMobileParameterVisibility);
 
     hydrateSeriesColors(product);
     hydrateExtraProducts(product);
@@ -1458,6 +1335,37 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
         event.currentTarget.hidden = true;
         document.body.classList.remove("tm-modal-open");
       }
+    });
+  }
+
+  function bindProductDescription() {
+    const dialog = document.getElementById("pd-info-dialog");
+    if (!dialog || typeof dialog.showModal !== "function") return;
+    const panel = dialog.closest(".pd-info-intro");
+    const details = panel.querySelector(".pd-info-reading");
+    const button = panel.querySelector(".pd-info-pop");
+    const slot = details.querySelector(".pd-info-slot");
+    const copy = slot.querySelector(".pd-info-copy");
+    const body = dialog.querySelector(".pd-info-dialog-body");
+
+    button.hidden = false;
+    button.addEventListener("click", () => {
+      if (dialog.open) return;
+      if (details.open) slot.style.minHeight = slot.getBoundingClientRect().height + "px";
+      body.append(copy);
+      dialog.showModal();
+      body.scrollTop = 0;
+    });
+    dialog.addEventListener("click", (event) => {
+      if (event.target !== dialog) return;
+      const box = dialog.getBoundingClientRect();
+      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
+    });
+    dialog.addEventListener("close", () => {
+      if (dialog.open) return;
+      slot.append(copy);
+      slot.style.minHeight = "";
+      button.focus({ preventScroll: true });
     });
   }
 
@@ -1509,6 +1417,7 @@ import { isAvailableNow, ORDER_DELIVERY_LABEL, storefrontStockText } from "../li
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    bindProductDescription();
     updateCartBadge();
     loadProduct();
     refreshDispatchMessages(document);

@@ -1,0 +1,16 @@
+---
+const { name } = Astro.props;
+const paths: Record<string, string> = {
+  drop: 'M12 3c-2 3-7 8-7 12a7 7 0 0014 0c0-4-5-9-7-12Z M8.5 15.5a3.5 3.5 0 003.5 3',
+  box: 'm3 7.5 9-5 9 5v9l-9 5-9-5Z m0 0 9 4.5 9-4.5 M12 12v9 M7.5 5l9 4.5',
+  toner: 'M3 9h3l2-2h8l2 2h3v9H3Z M7 14.5h10 M10 10h4',
+  pages: 'M6 3.5h9L20 8v12H6Z M15 4v4h5 M9.5 12h7m-7 3.5h5',
+  shield: 'M12 3c3 2 5.5 2.7 8 3v6c0 4-4 7-8 9-4-2-8-5-8-9V6c2.5-.3 5-1 8-3Z m-3 9 2 2 4-4',
+  chip: 'M6.5 6.5h11v11h-11Z M9.5 3v3m5-3v3m-5 12v3m5-3v3M3 9.5h3m-3 5h3m12-5h3m-3 5h3',
+  tag: 'M3 4h8l10 10-7 7L3 10Z M7 7h.1',
+  list: 'M8 6h12M8 12h12M8 18h12M4 6h.1M4 12h.1M4 18h.1',
+  chevron: 'm6 9 6 6 6-6', expand: 'M14 4h6v6m0-6-8 8M10 6H5a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1v-5',
+  close: 'm6.5 6.5 11 11m0-11-11 11',
+};
+---
+<svg class="pd-info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d={paths[name]} /></svg>
