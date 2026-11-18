@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { applyResponseSecurityHeaders } from './lib/response-security-headers';
 import { startOrderWorker } from './lib/order-worker-start';
 
 const BACKGROUND_WORKERS_GLOBAL_KEY = '__tmBackgroundWorkersScheduled';
@@ -174,6 +175,7 @@ function finish(response: Response, url: URL, request?: Request, startedAt?: num
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'SAMEORIGIN');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  applyResponseSecurityHeaders(headers, url);
   if (privatePath(url.pathname)) headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
   else if (NOINDEX_HOSTS.has(url.hostname.toLowerCase())) headers.set('X-Robots-Tag', 'noindex, follow');
   if (url.pathname.startsWith('/api/') || privatePath(url.pathname) || liveCatalogPath(url.pathname)) headers.set('Cache-Control', 'no-store');
