@@ -3,6 +3,12 @@ export type LabelLine = { text: string; confidence: number; words?: { text: stri
 export type LabelCandidate = { brand: string; code: string; kind: 'printer' | 'supply'; certain: boolean };
 type Rule = { kind: LabelCandidate['kind']; brand: string; pattern: RegExp };
 
+const printerFamilies = [
+  { brand: 'HP', name: /\b(?:LASERJET|DESKJET|OFFICEJET|DESIGNJET|ENVY|SMART TANK|HP (?:COLOR )?LASER)\b/i, number: /^(?:\d{4}[A-Z]{0,4}|\d{3}(?:W|WE|NW|NWE|FNW|FDW))$/ },
+  { brand: 'Xerox', name: /\b(?:WORKCENTRE|PHASER|VERSALINK|ALTALINK)\b/i, number: /^[BC]?\d{3,4}[A-Z]{0,3}$/ },
+  { brand: 'Samsung', name: /\b(?:XPRESS|PROXPRESS|SAMSUNG)\b/i, number: /^(?:(?:SL-)?[CMX]|SCX-|ML-)\d{3,5}[A-Z]{0,4}$/ },
+  { brand: 'Kyocera', name: /\b(?:ECOSYS|TASKALFA)\b/i, number: /^(?:[MP][A-Z]?-?)?\d{3,5}[A-Z]{0,4}$/ },
+];
 const hpOem = /^(?:C[BEFH]\d{3}|[CQW]\d{4}|[A-Z]\d[A-Z]\d{2})[A-Z]{1,3}$/;
 const rules: Rule[] = [
   { kind: 'supply', brand: 'HP', pattern: hpOem },
@@ -31,7 +37,8 @@ function tokens(text: string): string[] {
 export function labelBrands(lines: LabelLine[]): string[] {
   const brands = new Set(lines.flatMap(line => clean(line.text).match(brandPattern) || []));
   const context = lines.map(line => line.text).join(' ');
-  if (/\b(?:LASERJET|DESKJET|OFFICEJET|JETINTELLIGENCE)\b/i.test(context)) brands.add('HP');
+  for (const family of printerFamilies) if (family.name.test(context)) brands.add(family.brand.toUpperCase());
+  if (/\bJETINTELLIGENCE\b/i.test(context)) brands.add('HP');
   if (/\b(?:PIXMA|MAXIFY)\b/i.test(context)) brands.add('CANON');
   if (/\bECOTANK\b/i.test(context)) brands.add('EPSON');
   return [...brands];
@@ -42,7 +49,8 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
   const found = new Map<string, LabelCandidate>();
   const brands = new Set([...labelBrands(lines), ...previousBrands]);
   const context = lines.map(line => line.text).join(' ');
-  const hpPrinterFamily = /\b(?:LASERJET|DESKJET|OFFICEJET|DESIGNJET|ENVY|SMART TANK)\b/i.test(context);
+  const family = printerFamilies.find(family => brands.size === 1 && brands.has(family.brand.toUpperCase())
+    && (family.name.test(context) || previousBrands.includes(family.brand.toUpperCase())));
   const packageLabel = /\b(?:TONER|CARTRIDGES?|CARTOUCHES?|DUAL PACK|DRUM UNIT|PRINT CARTRIDGE|FOR USE WITH)\b/i.test(context);
   let privateValueOnNextLine = false;
   const useful: LabelLine[] = [];
@@ -77,10 +85,11 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
         || (/^\d{2,3}$/.test(token) && new RegExp('\\bHP\\s+' + token + '\\b', 'i').test(text)));
       const shortCanon = brands.has('CANON') && /^\d{3}(?:XXL|XL|PGBK|BK|[HCMY])?$/.test(token);
       const shortEpson = brands.has('EPSON') && /^\d{3}(?:XL)?$/.test(token);
-      const numberedPrinter = hpPrinterFamily && /^\d{4}(?:[A-Z]{1,4})$/.test(token);
+      const numberedPrinter = !packageLabel && family && family.number.test(token)
+        && !/^(?:19|20)\d{2}$/.test(token);
       if (!rule && !shortHP && !shortCanon && !shortEpson && !numberedPrinter) continue;
-      const brand = rule?.brand || (shortCanon ? 'Canon' : shortEpson ? 'Epson' : 'HP');
-      const kind = rule?.kind || (numberedPrinter ? 'printer' : 'supply');
+      const brand = numberedPrinter ? family.brand : rule?.brand || (shortCanon ? 'Canon' : shortEpson ? 'Epson' : 'HP');
+      const kind = numberedPrinter ? 'printer' : rule?.kind || 'supply';
       if (kind === 'printer' && packageLabel) continue;
       const word = line.words?.find(word => codeKey(word.text) === codeKey(token));
       const confidence = word?.confidence ?? line.confidence;

@@ -10,6 +10,9 @@ test('retains complete manufacturer references and distinguishes supplies from p
     ['Canon GI-490BK', 'GI-490BK', 'supply'], ['Epson C13T03V14A', 'C13T03V14A', 'supply'],
     ['HP LaserJet Pro M110we', 'M110WE', 'printer'], ['HP LaserJet Pro 4002dw', '4002DW', 'printer'],
     ['Brother DCP L2532DW', 'DCP-L2532DW', 'printer'], ['Canon PIXMA G3411', 'G3411', 'printer'],
+    ['HP Laser 107w', '107W', 'printer'], ['HP DeskJet 2720', '2720', 'printer'],
+    ['Xerox WorkCentre 6025', '6025', 'printer'], ['Samsung Xpress C460w', 'C460W', 'printer'],
+    ['Kyocera ECOSYS M2040dn', 'M2040DN', 'printer'],
     ['Epson EcoTank L3250', 'L3250', 'printer'], ['Canon iPF8300', 'IPF8300', 'printer'],
   ]) {
     assert.deepEqual(read(text).map(row => [row.code, row.kind, row.certain]), [[code, kind, true]], text);
