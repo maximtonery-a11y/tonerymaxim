@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { applyResponseSecurityHeaders } from './lib/response-security-headers';
+import { startOrderWorker } from './lib/order-worker-start';
 
 const BACKGROUND_WORKERS_GLOBAL_KEY = '__tmBackgroundWorkersScheduled';
 
@@ -189,6 +190,8 @@ function finish(response: Response, url: URL, request?: Request, startedAt?: num
 
 export const onRequest = defineMiddleware(async ({ request, url }, next) => {
   const startedAt = performance.now();
+  // Aj samotný healthcheck po reštarte musí obnoviť rozpracované objednávky.
+  startOrderWorker();
   // Healthcheck zostáva úplne ľahký. Prvá bežná požiadavka iba naplánuje
   // oneskorený štart workerov bez ich načítania v kritickej ceste odpovede.
   if (!['/api/health', '/api/readiness', '/api/storefront-check'].includes(url.pathname)) {

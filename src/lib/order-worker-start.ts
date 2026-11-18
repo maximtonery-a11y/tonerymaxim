@@ -7,7 +7,8 @@ let starting: Promise<void> | undefined;
 export function startOrderWorker(): void {
   if (process.env.TM_DISABLE_BACKGROUND_WORKERS === "1" || starting) return;
 
-  starting = import("./async-order-queue")
+  starting = new Promise<void>(resolve => { setTimeout(resolve, 2_000).unref(); })
+    .then(() => import("./async-order-queue"))
     .then(({ ensureAsyncOrderQueueStarted }) => {
       ensureAsyncOrderQueueStarted();
     })

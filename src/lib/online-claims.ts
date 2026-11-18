@@ -1,3 +1,4 @@
+import { tmOrderNumber } from './order-display';
 import { createHash } from 'node:crypto';
 import { mkdir, readdir, rm, stat } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -15,7 +16,7 @@ export type ClaimPayload = {
 export type StoredClaim = ClaimPayload & { id: string; wp_id: number; [key: string]: unknown };
 type ClaimRecord = {
   caseNumber: string; fingerprint: string; createdAt: string; contact: Contact; payload: ClaimPayload;
-  wooClaim?: StoredClaim; delivery: { customer: boolean; admin: boolean; attempts: number };
+  displayOrderNumber?: string; wooClaim?: StoredClaim; delivery: { customer: boolean; admin: boolean; attempts: number };
 };
 const DIRECTORY = join(TM_DATA_ROOT, 'online-claims');
 const LOCKS = join(DIRECTORY, 'locks');
@@ -88,11 +89,18 @@ async function synchronize(record: ClaimRecord): Promise<void> {
 async function processRecord(record: ClaimRecord): Promise<ClaimRecord> {
   try { await synchronize(record); }
   catch { console.error('[TM claims] Woo confirmation pending', record.caseNumber); return record; }
+  if (record.delivery.customer && record.delivery.admin) return record;
+  // Older outbox records contain a plugin lookup reference that can be a Woo ID.
+  if (record.displayOrderNumber === undefined) {
+    const order = await wooRequest<any>(`/orders/${record.payload.order_id}`).catch(() => null);
+    record.displayOrderNumber = Number(order?.id) === record.payload.order_id ? tmOrderNumber(order) : '';
+  }
+  const contact = { ...record.contact, orderNumber: record.displayOrderNumber || '—' };
   const caseNumber = displayClaimNumber(record.wooClaim);
   const submitted = new Intl.DateTimeFormat('sk-SK', { dateStyle: 'medium', timeStyle: 'medium', timeZone: 'Europe/Bratislava' }).format(new Date(record.createdAt));
-  const content = buildCustomerCareText('reklamacia', caseNumber, record.contact);
+  const content = buildCustomerCareText('reklamacia', caseNumber, contact);
   const plain = `${content}\nDátum a čas prijatia podania: ${submitted}\n`;
-  const html = buildCustomerCareHtml('reklamacia', caseNumber, record.contact);
+  const html = buildCustomerCareHtml('reklamacia', caseNumber, contact);
   for (const recipient of ['customer', 'admin'] as const) {
     if (record.delivery[recipient]) continue;
     try {
@@ -152,7 +160,7 @@ export function claimResult(record: ClaimRecord) {
   };
 }
 
-export async function submitOnlineClaim(scope: string, submissionId: unknown, contact: Contact, payload: Omit<ClaimPayload, 'claim_number'>) {
+export async function submitOnlineClaim(scope: string, submissionId: unknown, contact: Contact, payload: Omit<ClaimPayload, 'claim_number'>, displayOrderNumber: string) {
   const key = text(submissionId);
   if (!key) throw new ClaimInputError('Formulár bol aktualizovaný. Obnovte stránku a odošlite reklamáciu znova.');
   if (!/^[a-zA-Z0-9_-]{16,100}$/.test(key)) throw new ClaimInputError('Neplatný identifikátor podania. Obnovte formulár.');
@@ -163,7 +171,7 @@ export async function submitOnlineClaim(scope: string, submissionId: unknown, co
     if (stored) {
       if (stored.fingerprint !== fingerprint) throw new ClaimInputError('Tento pokus už obsahuje iné údaje. Obnovte formulár pre nové podanie.', 409);
     } else {
-      stored = { caseNumber: id, fingerprint, createdAt: new Date().toISOString(), contact, payload: { ...payload, claim_number: id }, delivery: { customer: false, admin: false, attempts: 0 } };
+      stored = { caseNumber: id, fingerprint, displayOrderNumber, createdAt: new Date().toISOString(), contact, payload: { ...payload, claim_number: id }, delivery: { customer: false, admin: false, attempts: 0 } };
       // The durable outbox exists BEFORE contacting Woo or SMTP.
       await writeSignedJson(fileFor(id), stored);
     }
@@ -205,7 +213,8 @@ export async function retryOnlineClaims(): Promise<void> {
 }
 
 function normalized(value: unknown): string { return text(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
-// The claims plugin accepts a Woo reference for legacy orders that have no TM number.
+// Keep the wire reference stable for old plugin versions and pending claim retries.
+// Outbound receipts use displayOrderNumber from the verified order.
 export function claimOrderReference(order: any): string {
   for (const key of ['tm_order_number', 'gopay_order_number']) {
     const value = order.meta_data?.find((item: any) => item.key === key)?.value;
@@ -219,12 +228,14 @@ export function claimMessageWithContact(contact: Contact): string {
     contact.phone ? `Telefón: ${contact.phone}` : '', contact.iban ? `IBAN pre prípadné vrátenie peňazí: ${contact.iban}` : ''].filter((line, index) => line || index === 1).join('\n');
 }
 
-export async function resolvePublicClaim(contact: Contact): Promise<Omit<ClaimPayload, 'claim_number'>> {
+export async function resolvePublicClaim(contact: Contact) {
+  const requestedNumber = normalized(contact.orderNumber);
+  if (!requestedNumber) throw new ClaimInputError('Zadajte číslo objednávky.');
   let order: any;
   for (let page = 1; page <= 10; page++) {
     const orders = await wooRequest<any[]>('/orders', { query: { search: contact.email, per_page: 100, page, orderby: 'date', order: 'desc' } });
     if (!Array.isArray(orders)) throw new Error('Neplatná odpoveď objednávok.');
-    order = orders.find(item => email(item.billing?.email) === contact.email && [claimOrderReference(item), item.number, item.id].some(value => normalized(value) === normalized(contact.orderNumber)));
+    order = orders.find(item => email(item.billing?.email) === contact.email && [tmOrderNumber(item), claimOrderReference(item), item.number, item.id].some(value => normalized(value) === requestedNumber));
     if (order || orders.length < 100) break;
   }
   if (!order) throw new ClaimInputError('Objednávku sa nepodarilo overiť podľa čísla a e-mailu. Skontrolujte údaje. Pri staršom nákupe nás kontaktujte na info@tonerymaxim.sk.');
@@ -234,5 +245,6 @@ export async function resolvePublicClaim(contact: Contact): Promise<Omit<ClaimPa
   if (!matches.length && requested.length >= 4) matches = items.filter(item => normalized(item.name).includes(requested));
   if (matches.length !== 1 || !positiveId(matches[0].product_id || matches[0].variation_id)) throw new ClaimInputError('Produkt uveďte presným názvom alebo SKU z objednávky.');
   const product = matches[0];
-  return { customer_id: Number(order.customer_id || 0), customer_email: contact.email, order_id: Number(order.id), order_number: claimOrderReference(order), product_id: Number(product.product_id || product.variation_id), product_name: text(product.name), product_sku: text(product.sku), reason: contact.reason, message: claimMessageWithContact(contact), status: 'received' };
+  const payload: Omit<ClaimPayload, 'claim_number'> = { customer_id: Number(order.customer_id || 0), customer_email: contact.email, order_id: Number(order.id), order_number: claimOrderReference(order), product_id: Number(product.product_id || product.variation_id), product_name: text(product.name), product_sku: text(product.sku), reason: contact.reason, message: claimMessageWithContact(contact), status: 'received' };
+  return { payload, displayOrderNumber: tmOrderNumber(order) };
 }

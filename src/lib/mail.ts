@@ -1,3 +1,4 @@
+import { validTmOrderNumber } from './order-display';
 import { existsSync } from "node:fs";
 import { checkoutGrossLines, discountedGrossLine, grossVatTotals } from './checkout-vat';
 import { join } from "node:path";
@@ -185,7 +186,10 @@ function formatMoney(value: unknown): string {
   return new Intl.NumberFormat("sk-SK", { style: "currency", currency: "EUR" }).format(toNumber(value));
 }
 
-function bankPaymentText(orderNumber: unknown, total: unknown): string {
+const missingBankReference = "Pred úhradou nám napíšte na info@tonerymaxim.sk. Pošleme vám správny variabilný symbol.";
+
+function bankPaymentText(orderNumber: string, total: unknown): string {
+  if (orderNumber === "—") return missingBankReference;
   return [
     "Platobné údaje k prevodu:",
     `Majiteľ účtu: ${BANK_TRANSFER_DETAILS.accountHolder}`,
@@ -196,7 +200,8 @@ function bankPaymentText(orderNumber: unknown, total: unknown): string {
   ].join("\n");
 }
 
-function bankPaymentHtml(orderNumber: unknown, total: unknown): string {
+function bankPaymentHtml(orderNumber: string, total: unknown): string {
+  if (orderNumber === "—") return `<p>${missingBankReference}</p>`;
   const rows = [
     ["Majiteľ účtu", BANK_TRANSFER_DETAILS.accountHolder],
     ["Banka", BANK_TRANSFER_DETAILS.bank],
@@ -249,12 +254,6 @@ type OrderConfirmationContent = {
   attachments: Array<{ filename: string; path: string; contentType?: string }>;
 };
 
-function normalizeCustomerOrderNumber(value: unknown): string {
-  const raw = String(value || "").trim();
-  const digits = raw.replace(/\D/g, "").slice(-6);
-  return digits || raw || "—";
-}
-
 export function buildOrderConfirmationContent(input: {
   orderNumber: string;
   source: any;
@@ -265,7 +264,7 @@ export function buildOrderConfirmationContent(input: {
   const contact = source.contact || {};
   const billing = source.billing || {};
   const delivery = source.delivery || {};
-  const orderNumber = normalizeCustomerOrderNumber(input.orderNumber || source.orderNumber);
+  const orderNumber = validTmOrderNumber(source.orderNumber) || validTmOrderNumber(input.orderNumber) || "—";
   const firstName = String(billing.firstName || contact.name || "").trim().split(/\s+/)[0] || "zákazník";
   const items = Array.isArray(source.cart) ? source.cart : [];
   const availabilityNotice = orderAvailabilityNotice(items);
@@ -538,7 +537,7 @@ export async function sendWooOrderStatusEmail(payload: WooOrderStatusEmailPayloa
     throw new Error("Objednávka nemá platný zákaznícky e-mail.");
   }
 
-  const orderNumber = normalizeCustomerOrderNumber(payload.order_number || payload.order_id);
+  const orderNumber = validTmOrderNumber(payload.order_number) || "—";
   const firstName = String(payload.customer?.first_name || "").trim() || "zákazník";
   const basePresentation = statusPresentation(payload.to_status, orderNumber);
   const customSubject = String(payload.subject_override || "").trim().replaceAll("{order_number}", orderNumber);

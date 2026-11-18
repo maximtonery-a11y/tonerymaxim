@@ -14,10 +14,10 @@ export const POST: APIRoute = async ({ request }) => {
     const contact = sanitizeCustomerCarePayload(input);
     const error = validateCustomerCarePayload("reklamacia", contact);
     if (error) return json({ ok: false, error }, 400);
-    const payload = await resolvePublicClaim(contact);
+    const { payload, displayOrderNumber } = await resolvePublicClaim(contact);
     contact.product = payload.product_name;
     contact.orderNumber = payload.order_number;
-    const result = await submitOnlineClaim(`public:${contact.email}`, input.submissionId, contact, payload);
+    const result = await submitOnlineClaim(`public:${contact.email}`, input.submissionId, contact, payload, displayOrderNumber);
     // Public callers receive only their receipt, never WordPress/internal notes.
     return json({ ok: result.ok, caseNumber: result.caseNumber, wooSaved: result.wooSaved, emailSent: result.emailSent, emailPending: result.emailPending });
   } catch (error) {

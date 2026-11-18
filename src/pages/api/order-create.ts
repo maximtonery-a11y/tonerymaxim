@@ -137,12 +137,12 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
 
     const result = await profiler.measure("woo-create-order-total", () => createWooOrderFromCheckout(orderSource));
 
-    profiler.done({ orderId: result.orderId, orderNumber: result.orderNumber, cartItems: cart.length, paymentCode });
+    profiler.done({ orderId: result.orderId, orderNumber, cartItems: cart.length, paymentCode });
 
     return new Response(JSON.stringify({
       ok: true,
       orderId: result.orderId,
-      orderNumber: result.orderNumber,
+      orderNumber,
     }), {
       status: 200,
       headers: { "Content-Type": "application/json; charset=utf-8" },

@@ -239,3 +239,31 @@ test('custom template rendering replaces order number, preserves new lines and e
   assert.doesNotMatch(outgoing[0].html, /<img/);
   assert.match(outgoing[0].text, /Dáme vám vedieť/);
 });
+
+
+test('status, template and confirmation emails preserve the public TM reference', async () => {
+  const outgoing: any[] = [];
+  const mail = await loadServer('src/lib/mail.ts', { nodemailer: { default: { createTransport: () => ({ sendMail: async (value: any) => { outgoing.push(value); return {}; } }) } } });
+  for (const number of ['300936', 'TM-2025/003786', '']) {
+    const { queue, meta, sent } = await queueFixture({ status: 'on-hold' });
+    meta.delete('tm_order_number');
+    meta.set('tm_order_snapshot', JSON.stringify({ orderNumber: number }));
+    await queue.runEmailQueueOnce();
+    assert.equal(sent.length, 2);
+    for (const payload of sent) {
+      assert.equal(payload.order_id, 100);
+      assert.equal(payload.order_number, number);
+      await mail.sendWooOrderStatusEmail({ ...payload, payment_method: 'bacs', total: 19 });
+      const message = outgoing.at(-1);
+      for (const part of [message.subject, message.html, message.text]) {
+        assert.doesNotMatch(part, /Objednávk[ay] (?:č\. )?100\b/iu);
+      }
+      assert.ok(message.subject.includes(number || '—'));
+      assert.equal(message.text.includes('Variabilný symbol:'), Boolean(number));
+      if (!number) assert.match(message.text, /Pošleme vám správny variabilný symbol/);
+      if (number) assert.ok(message.text.includes('Variabilný symbol: ' + number.replace(/\D/g, '').slice(-6)));
+    }
+    const confirmation = mail.buildOrderConfirmationContent({ source: { orderNumber: number }, orderNumber: number, paymentTitle: 'Dobierka', shippingTitle: 'DPD' });
+    assert.ok(confirmation.subject.includes(number || '—'));
+  }
+});

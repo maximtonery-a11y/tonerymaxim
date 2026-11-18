@@ -2,6 +2,7 @@
 // Manual document archive. Never saves a Woo order or sends customer emails.
 if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/customer-accounts.php';
+require_once __DIR__ . '/order-numbers.php';
 
 final class TM_Manual_Invoices {
     const POST_TYPE = 'tm_invoice_document';
@@ -74,10 +75,6 @@ final class TM_Manual_Invoices {
             if (str_contains(strtolower((string) $value), 'tonerymaxim') || str_starts_with((string) $value, 'TM-')) return true;
         }
         return false;
-    }
-
-    private static function order_number($order): string {
-        return (string) ($order->get_meta('tm_order_number') ?: $order->get_order_number());
     }
 
     private static function key(): string {
@@ -228,7 +225,7 @@ final class TM_Manual_Invoices {
     private static function summary(array $record): array {
         $order = wc_get_order((int) $record['order_id']);
         return ['id' => $record['id'], 'order_id' => (int) $record['order_id'],
-            'customer_id' => (int) $record['customer_id'], 'order_number' => self::order_number($order),
+            'customer_id' => (int) $record['customer_id'], 'order_number' => TM_Order_Numbers::number($order),
             'number' => $record['number'], 'date' => $record['date'], 'type' => $record['type'],
             'pdf' => true, 'xml' => isset($record['files']['xml'])];
     }
@@ -402,10 +399,9 @@ final class TM_Manual_Invoices {
             if ($search === '') $orders = wc_get_orders($args);
             elseif (is_email($search)) $orders = wc_get_orders($args + ['billing_email' => $search]);
             else {
-                if (ctype_digit($search)) { $direct = wc_get_order((int) $search); if ($direct) $orders[] = $direct; }
-                $matched = wc_get_orders($args + ['meta_query' => ['relation' => 'OR',
-                    ['key' => 'tm_order_number', 'value' => $search], ['key' => 'gopay_order_number', 'value' => $search]]]);
-                $orders = array_merge($orders, $matched);
+                $number = ltrim($search, '#');
+                if (ctype_digit($number)) { $direct = wc_get_order((int) $number); if ($direct) $orders[] = $direct; }
+                $orders = array_merge($orders, TM_Order_Numbers::find($number));
             }
             $seen = [];
             echo '<table class="widefat striped" style="margin-top:20px"><thead><tr><th>Objednávka</th><th>Zákazník</th><th>Faktúry</th></tr></thead><tbody>';
@@ -413,12 +409,12 @@ final class TM_Manual_Invoices {
                 if (!self::tm_order($item) || isset($seen[$item->get_id()])) continue;
                 if ($search === '' && !TM_Customer_Accounts::registered($item)) continue;
                 $seen[$item->get_id()] = true;
-                echo '<tr><td>' . esc_html(self::order_number($item)) . '<br><small>Woo ID ' . (int) $item->get_id() . '</small></td><td>' . esc_html($item->get_formatted_billing_full_name()) . '<br>' . esc_html($item->get_billing_email()) . '<p>' . TM_Customer_Accounts::badge($item) . '</p></td><td>' . (TM_Customer_Accounts::registered($item) ? '<a class="button" href="' . esc_url(self::page_url($item->get_id())) . '">Spravovať faktúry</a>' : 'Bez zákazníckeho účtu – nahrávanie nie je dostupné') . '</td></tr>';
+                echo '<tr><td>' . esc_html(TM_Order_Numbers::label($item)) . '</td><td>' . esc_html($item->get_formatted_billing_full_name()) . '<br>' . esc_html($item->get_billing_email()) . '<p>' . TM_Customer_Accounts::badge($item) . '</p></td><td>' . (TM_Customer_Accounts::registered($item) ? '<a class="button" href="' . esc_url(self::page_url($item->get_id())) . '">Spravovať faktúry</a>' : 'Bez zákazníckeho účtu – nahrávanie nie je dostupné') . '</td></tr>';
             }
             if (!$seen) echo '<tr><td colspan="3">Objednávka nebola nájdená. Skúste celé číslo objednávky alebo e-mail.</td></tr>';
             echo '</tbody></table></div>'; return;
         }
-        echo '<p><a href="' . esc_url(self::page_url()) . '">← Vybrať inú objednávku</a></p><div class="tm-card"><h2>Objednávka ' . esc_html(self::order_number($order)) . '</h2><p>' . esc_html($order->get_formatted_billing_full_name()) . ' — ' . esc_html($order->get_billing_email()) . '</p>';
+        echo '<p><a href="' . esc_url(self::page_url()) . '">← Vybrať inú objednávku</a></p><div class="tm-card"><h2>' . esc_html(TM_Order_Numbers::label($order, 'Objednávka ')) . '</h2><p>' . esc_html($order->get_formatted_billing_full_name()) . ' — ' . esc_html($order->get_billing_email()) . '</p>';
         echo TM_Customer_Accounts::badge($order);
         if (!TM_Customer_Accounts::registered($order)) {
             echo '<p>Táto objednávka nemá priradený existujúci zákaznícky účet. Faktúru sem nenahrávajte. Samotná zhoda e-mailu s registráciou nestačí.</p></div></div>';

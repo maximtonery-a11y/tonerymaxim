@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ToneryMaxim – Customer Administration
  * Description: Produkčná administrácia zákazníkov a TM objednávok: úplná editácia položiek, dopravy, platby, adries, výdajných miest, stavov, vernostných bodov, kupónov a reklamácií.
- * Version: 6.4.0
+ * Version: 6.4.1
  * Author: ToneryMaxim.sk
  * Requires Plugins: woocommerce
  * Requires PHP: 8.0
@@ -10,9 +10,10 @@
 
 if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/customer-accounts.php';
+require_once __DIR__ . '/order-numbers.php';
 
 final class TM_Customer_Administration_V1 {
-    const VERSION = '6.4.0';
+    const VERSION = '6.4.1';
     const MENU_SLUG = 'tm-customers';
     const NONCE = 'tm_customer_admin_nonce';
 
@@ -27,6 +28,11 @@ final class TM_Customer_Administration_V1 {
 
     public static function init(): void {
         add_action('admin_menu', [__CLASS__, 'admin_menu']);
+        add_action('current_screen', [__CLASS__, 'native_order_screen']);
+        add_filter('woocommerce_admin_order_preview_get_order_details', static function ($details, $order) {
+            $details['order_number'] = self::native_order_number($details['order_number'], $order);
+            return $details;
+        }, 20, 2);
         add_action('admin_enqueue_scripts', [__CLASS__, 'assets']);
         add_action('admin_post_tm_customer_save_profile', [__CLASS__, 'save_profile']);
         add_action('admin_post_tm_customer_adjust_points', [__CLASS__, 'adjust_points']);
@@ -55,6 +61,24 @@ final class TM_Customer_Administration_V1 {
             'customer_completed_order','customer_refunded_order','customer_invoice','customer_note'
         ] as $email_id) {
             add_filter('woocommerce_email_enabled_' . $email_id, [__CLASS__, 'disable_tm_order_email'], 100, 3);
+        }
+    }
+
+    public static function native_order_number($number, $order) {
+        return self::is_tm_order($order) ? TM_Order_Numbers::number($order, '—') : $number;
+    }
+
+    public static function native_order_screen($screen): void {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET' || wp_doing_ajax()
+            || (defined('REST_REQUEST') && REST_REQUEST)
+            || !in_array($screen->id, ['shop_order', 'edit-shop_order', 'woocommerce_page_wc-orders'], true)) return;
+        // WordPress processes order actions before rendering the admin header.
+        // Only the HTML view needs a different reference. Exports and redirects retain Woo's number.
+        add_action('admin_head', static function () {
+            add_filter('woocommerce_order_number', [__CLASS__, 'native_order_number'], 20, 2);
+        });
+        foreach (['woocommerce_shop_order_search_fields', 'woocommerce_order_table_search_query_meta_keys'] as $hook) {
+            add_filter($hook, static fn($keys) => array_unique(array_merge($keys, ['tm_order_number', 'gopay_order_number'])));
         }
     }
 
@@ -113,14 +137,20 @@ CSS;
         $per_page = 30;
 
         $orders = self::tm_orders(500);
+        $number_search = ltrim($search, '#');
+        if (strlen($number_search) >= 5 && TM_Order_Numbers::valid($number_search) !== ''
+            && !array_filter($orders, fn($order) => strcasecmp(TM_Order_Numbers::number($order), $number_search) === 0)) {
+            $older = array_filter(TM_Order_Numbers::find($number_search), fn($order) => self::is_tm_order($order));
+            $orders = array_merge($older, $orders);
+        }
         if ($account !== '') $orders = array_values(array_filter($orders, fn($order) => TM_Customer_Accounts::registered($order) === ($account === 'registered')));
         if ($status !== '') $orders = array_values(array_filter($orders, fn($order) => $order->get_status() === $status));
         if ($search !== '') {
-            $needle = mb_strtolower($search);
+            $needle = mb_strtolower(TM_Order_Numbers::valid($number_search) !== '' ? $number_search : $search);
             $orders = array_values(array_filter($orders, function($order) use ($needle) {
                 $haystack = implode(' ', [
                     $order->get_order_number(), $order->get_billing_first_name(), $order->get_billing_last_name(),
-                    $order->get_billing_email(), $order->get_billing_phone(), $order->get_meta('tm_order_number')
+                    $order->get_billing_email(), $order->get_billing_phone(), TM_Order_Numbers::number($order)
                 ]);
                 return str_contains(mb_strtolower($haystack), $needle);
             }));
@@ -141,7 +171,7 @@ CSS;
                 <?php if (!$orders): ?><tr><td colspan="7" class="tm-empty">Nenašli sa žiadne TM objednávky.</td></tr><?php endif; ?>
                 <?php foreach ($orders as $order): $edit = add_query_arg(['page'=>self::MENU_SLUG.'-orders','order_id'=>$order->get_id()], admin_url('admin.php')); ?>
                     <tr>
-                        <td><a class="tm-order-link" href="<?php echo esc_url($edit); ?>">#<?php echo esc_html($order->get_order_number()); ?></a><br><span class="tm-muted"><?php echo esc_html((string)$order->get_meta('tm_order_number')); ?></span></td>
+                        <td><a class="tm-order-link" href="<?php echo esc_url($edit); ?>"><?php echo esc_html(TM_Order_Numbers::label($order)); ?></a></td>
                         <td><strong><?php echo esc_html(trim($order->get_formatted_billing_full_name()) ?: 'Zákazník'); ?></strong><br><a href="mailto:<?php echo esc_attr($order->get_billing_email()); ?>"><?php echo esc_html($order->get_billing_email()); ?></a><p style="margin:7px 0 0"><?php echo TM_Customer_Accounts::badge($order); ?></p></td>
                         <td><?php echo esc_html($order->get_date_created() ? wc_format_datetime($order->get_date_created()) : '—'); ?></td>
                         <td><?php echo esc_html($order->get_payment_method_title() ?: '—'); ?><br><span class="tm-muted"><?php echo esc_html($order->get_shipping_method() ?: '—'); ?></span></td>
@@ -449,7 +479,7 @@ CSS;
     }
 
     private static function money_gross($value): string { return wc_price((float)$value, ['currency'=>'EUR']); }
-    private static function snapshot($order): array { $raw=(string)$order->get_meta('tm_order_snapshot'); $data=json_decode($raw,true); return is_array($data)?$data:[]; }
+    private static function snapshot($order): array { $raw=$order->get_meta('tm_order_snapshot'); $data=is_string($raw) ? json_decode($raw,true) : $raw; return is_array($data)?$data:[]; }
 
     private static function gross_order_total($order): float {
         $snapshot = self::snapshot($order);
@@ -851,10 +881,11 @@ CSS;
 
     public static function render_tm_order_detail(int $order_id): void {
         $order=wc_get_order($order_id); if(!$order || !self::is_tm_order($order)) wp_die('TM objednávka nebola nájdená.');
-        $visible=self::meta_first($order,['tm_order_number']) ?: $order->get_order_number();
-        if(!empty($_GET['tm_edit'])){ ?><div class="wrap tm-wrap"><div class="tm-head"><div><h1>Upraviť TM objednávku #<?php echo esc_html($visible); ?></h1></div></div><div class="tm-grid"><?php self::render_full_editor($order); ?></div></div><?php return; }
+        $visible=TM_Order_Numbers::number($order);
+        $suffix=$visible === '' ? '' : ' #' . $visible;
+        if(!empty($_GET['tm_edit'])){ ?><div class="wrap tm-wrap"><div class="tm-head"><div><h1>Upraviť TM objednávku<?php echo esc_html($suffix); ?></h1></div></div><div class="tm-grid"><?php self::render_full_editor($order); ?></div></div><?php return; }
         $snap=self::snapshot($order); $items=is_array($snap['items']??null)?$snap['items']:[];$pickup=self::pickup_data($order);$payment_id=self::meta_first($order,['gopay_payment_id']);$gstate=self::meta_first($order,['gopay_state']);[$gl,$gd,$gc]=self::gopay_state_info($gstate); ?>
-        <div class="wrap tm-wrap"><div class="tm-head"><div><h1>TM objednávka #<?php echo esc_html($visible); ?></h1><p class="tm-muted">Interné Woo ID: <?php echo (int)$order->get_id(); ?></p></div><div class="tm-actions"><a class="button button-primary" href="<?php echo esc_url(add_query_arg(['page'=>self::MENU_SLUG.'-orders','order_id'=>$order_id,'tm_edit'=>1],admin_url('admin.php'))); ?>">Upraviť celú objednávku</a><a class="button" href="<?php echo esc_url(add_query_arg('page',self::MENU_SLUG.'-orders',admin_url('admin.php'))); ?>">← TM objednávky</a></div></div><?php self::notice(); ?>
+        <div class="wrap tm-wrap"><div class="tm-head"><div><h1>TM objednávka<?php echo esc_html($suffix); ?></h1></div><div class="tm-actions"><a class="button button-primary" href="<?php echo esc_url(add_query_arg(['page'=>self::MENU_SLUG.'-orders','order_id'=>$order_id,'tm_edit'=>1],admin_url('admin.php'))); ?>">Upraviť celú objednávku</a><a class="button" href="<?php echo esc_url(add_query_arg('page',self::MENU_SLUG.'-orders',admin_url('admin.php'))); ?>">← TM objednávky</a></div></div><?php self::notice(); ?>
         <div class="tm-grid"><div class="tm-card tm-span-8"><h2>Produkty a presné ceny s DPH</h2><table class="tm-table"><thead><tr><th>Produkt</th><th>Počet</th><th>Základná cena/ks s DPH</th><th>Pôvodná cena spolu</th><th>Zľava</th><th>Cena po zľave</th></tr></thead><tbody><?php if($items):foreach($items as $item): $qty=max(1,(int)($item['qty']??0));$unit_gross=isset($item['unitGross'])?(float)$item['unitGross']:((float)($item['originalGross']??0)/$qty); ?><tr><td><strong><?php echo esc_html($item['name']??'Produkt'); ?></strong><br><span class="tm-muted">SKU: <?php echo esc_html($item['sku']??''); ?></span></td><td><?php echo (int)($item['qty']??0); ?></td><td><strong><?php echo wp_kses_post(self::money_gross($unit_gross)); ?></strong></td><td><?php echo wp_kses_post(self::money_gross($item['originalGross']??0)); ?></td><td class="tm-success">-<?php echo wp_kses_post(self::money_gross($item['discountGross']??0)); ?></td><td><strong><?php echo wp_kses_post(self::money_gross($item['totalGross']??0)); ?></strong></td></tr><?php endforeach;else:foreach($order->get_items('line_item')as$item): $qty=max(1,(int)$item->get_quantity());$original_gross=self::gross_item($item,'subtotal'); ?><tr><td><strong><?php echo esc_html($item->get_name()); ?></strong></td><td><?php echo (int)$item->get_quantity(); ?></td><td><strong><?php echo wp_kses_post(self::money_gross($original_gross/$qty)); ?></strong></td><td><?php echo wp_kses_post(self::money_gross($original_gross)); ?></td><td class="tm-success">-<?php echo wp_kses_post(self::money_gross(max(0,$original_gross-self::gross_item($item)))); ?></td><td><strong><?php echo wp_kses_post(self::money_gross(self::gross_item($item))); ?></strong></td></tr><?php endforeach;endif; ?></tbody></table></div>
         <div class="tm-card tm-span-4"><h2>Súhrn objednávky</h2><table class="tm-table"><tr><td>Tovar pred zľavou</td><td><?php echo wp_kses_post(self::money_gross($snap['originalSubtotal']??$order->get_subtotal())); ?></td></tr><tr><td>Množstevná zľava</td><td class="tm-success">-<?php echo wp_kses_post(self::money_gross($snap['quantityDiscount']??0)); ?></td></tr><?php if((float)($snap['couponDiscount']??0)>0): ?><tr><td><?php echo esc_html($snap['couponLabel']??'Kupónová zľava'); ?></td><td class="tm-success">-<?php echo wp_kses_post(self::money_gross($snap['couponDiscount'])); ?></td></tr><?php endif; ?><?php if((float)($snap['loyaltyDiscount']??0)>0): ?><tr><td>Vernostná zľava</td><td class="tm-success">-<?php echo wp_kses_post(self::money_gross($snap['loyaltyDiscount'])); ?></td></tr><?php endif; ?><tr><td><?php echo esc_html($snap['shippingLabel']??$order->get_shipping_method()?:'Doprava'); ?></td><td><?php echo wp_kses_post(self::money_gross($snap['shippingPrice']??0)); ?></td></tr><tr><td><?php echo esc_html($snap['paymentLabel']??$order->get_payment_method_title()?:'Platba'); ?></td><td><?php echo wp_kses_post(self::money_gross($snap['paymentPrice']??0)); ?></td></tr><tr><td><strong>Spolu s DPH</strong></td><td><strong><?php echo wp_kses_post(self::money_gross($snap['total']??$order->get_total())); ?></strong></td></tr></table></div>
         <div class="tm-card tm-span-6"><h2>Doprava a výdajné miesto</h2><p><strong><?php echo esc_html($order->get_shipping_method()?:'Neuvedené'); ?></strong></p><?php if($pickup['text']||$pickup['id']): ?><div class="tm-note"><strong><?php echo esc_html($pickup['name']?:'Výdajné miesto'); ?></strong><br><?php echo esc_html($pickup['address']?:'Adresa nebola uložená'); ?><br><span class="tm-muted"><?php echo esc_html(trim(($pickup['carrier']??'').' '.($pickup['type']??''))); ?><?php if($pickup['id'])echo' · ID '.esc_html($pickup['id']); ?></span></div><?php elseif(str_contains(strtolower($order->get_shipping_method()),'pickup')||str_contains(strtolower($order->get_shipping_method()),'parcel')||str_contains(strtolower($order->get_shipping_method()),'balík')): ?><p class="tm-danger"><strong>Adresa výdajného miesta nebola v tejto starej objednávke uložená.</strong></p><?php endif; ?></div>
@@ -1036,11 +1067,29 @@ CSS;
 
     private static function tab_loyalty(WP_User $user): void {
         $id = (int)$user->ID; $points = (int)get_user_meta($id, self::META_POINTS, true); $history = self::json_meta($id, self::META_HISTORY);
+        $ids = [];
+        foreach ($history as &$row) {
+            $title = $row['title'] ?? '';
+            if (preg_match('~^(Objednávka|Použitá zľava pri objednávke)(?:\s+#(\S+))?$~iuD', $title, $match)) {
+                $row['title'] = $match[1];
+                $row['orderId'] = $row['orderId'] ?? ($match[2] ?? '');
+            }
+            $order_id = absint($row['orderId'] ?? 0);
+            if ($order_id) $ids[$order_id] = $order_id;
+        }
+        unset($row);
+        $numbers = [];
+        if ($ids) {
+            $orders = wc_get_orders(['type' => 'shop_order', 'customer_id' => $id, 'post__in' => array_values($ids), 'limit' => count($ids)]);
+            foreach ($orders as $order) {
+                if ((int)$order->get_customer_id() === $id) $numbers[$order->get_id()] = TM_Order_Numbers::number($order);
+            }
+        }
         ?>
         <div class="tm-grid">
             <div class="tm-card tm-span-4"><h2>Aktuálny stav</h2><div class="tm-kpi">Vernostné body<strong><?php echo number_format_i18n($points); ?></strong></div><p class="tm-muted">100 bodov = 1,00 € zľava.</p></div>
             <div class="tm-card tm-span-8"><h2>Manuálna úprava</h2><form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"><input type="hidden" name="action" value="tm_customer_adjust_points"><input type="hidden" name="customer_id" value="<?php echo $id; ?>"><?php wp_nonce_field(self::NONCE); ?><div class="tm-form-grid"><div class="tm-field"><label>Zmena bodov</label><input type="number" name="points_delta" required placeholder="napr. 100 alebo -50"></div><div class="tm-field"><label>Dôvod</label><input type="text" name="reason" required></div></div><p><button class="button button-primary">Uložiť zmenu</button></p></form></div>
-            <div class="tm-card tm-span-12"><h2>História bodov</h2><table class="tm-table"><thead><tr><th>Dátum</th><th>Popis</th><th>Body</th><th>Objednávka</th></tr></thead><tbody><?php if (!$history) echo '<tr><td colspan="4" class="tm-empty">Bez histórie.</td></tr>'; foreach ($history as $row): ?><tr><td><?php echo esc_html($row['date'] ?? '—'); ?></td><td><?php echo esc_html($row['title'] ?? '—'); ?></td><td class="<?php echo ((int)($row['points'] ?? 0) >= 0) ? 'tm-success':'tm-danger'; ?>"><?php echo ((int)($row['points'] ?? 0) > 0 ? '+' : '') . (int)($row['points'] ?? 0); ?></td><td><?php echo esc_html($row['orderId'] ?? '—'); ?></td></tr><?php endforeach; ?></tbody></table></div>
+            <div class="tm-card tm-span-12"><h2>História bodov</h2><table class="tm-table"><thead><tr><th>Dátum</th><th>Popis</th><th>Body</th><th>Objednávka</th></tr></thead><tbody><?php if (!$history) echo '<tr><td colspan="4" class="tm-empty">Bez histórie.</td></tr>'; foreach ($history as $row): ?><tr><td><?php echo esc_html($row['date'] ?? '—'); ?></td><td><?php echo esc_html($row['title'] ?? '—'); ?></td><td class="<?php echo ((int)($row['points'] ?? 0) >= 0) ? 'tm-success':'tm-danger'; ?>"><?php echo ((int)($row['points'] ?? 0) > 0 ? '+' : '') . (int)($row['points'] ?? 0); ?></td><td><?php echo esc_html(($numbers[absint($row['orderId'] ?? 0)] ?? '') ?: '—'); ?></td></tr><?php endforeach; ?></tbody></table></div>
         </div><?php
     }
 
@@ -1079,7 +1128,7 @@ CSS;
     private static function orders_table(array $orders): void {
         echo '<table class="tm-table"><thead><tr><th>Objednávka</th><th>Dátum</th><th>Stav</th><th>Platba</th><th>Celkom</th></tr></thead><tbody>';
         if(!$orders) echo '<tr><td colspan="5" class="tm-empty">Žiadne objednávky.</td></tr>';
-        foreach($orders as $order){$edit=add_query_arg(['page'=>self::MENU_SLUG.'-orders','order_id'=>$order->get_id()],admin_url('admin.php'));echo '<tr><td><a class="tm-order-link" href="'.esc_url($edit).'">#'.esc_html($order->get_order_number()).'</a></td><td>'.esc_html($order->get_date_created()?wc_format_datetime($order->get_date_created()):'—').'</td><td><span class="tm-badge">'.esc_html(wc_get_order_status_name($order->get_status())).'</span></td><td>'.esc_html($order->get_payment_method_title()?:'—').'</td><td>'.wp_kses_post(self::formatted_gross_order_total($order)).'</td></tr>';}
+        foreach($orders as $order){$edit=add_query_arg(['page'=>self::MENU_SLUG.'-orders','order_id'=>$order->get_id()],admin_url('admin.php'));echo '<tr><td><a class="tm-order-link" href="'.esc_url($edit).'">'.esc_html(self::is_tm_order($order) ? TM_Order_Numbers::label($order) : '#'.$order->get_order_number()).'</a></td><td>'.esc_html($order->get_date_created()?wc_format_datetime($order->get_date_created()):'—').'</td><td><span class="tm-badge">'.esc_html(wc_get_order_status_name($order->get_status())).'</span></td><td>'.esc_html($order->get_payment_method_title()?:'—').'</td><td>'.wp_kses_post(self::formatted_gross_order_total($order)).'</td></tr>';}
         echo '</tbody></table>';
     }
 

@@ -1,5 +1,5 @@
 // Disposable, offline-after-download WordPress/Woo integration fixture. Never points at production.
-import { mkdtemp, mkdir, writeFile, symlink, copyFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, symlink, copyFile, cp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -52,7 +52,13 @@ echo "Disposable WordPress 7.1.4 and Woo 11.2.1 installed; HTTP and email are bl
   await run(php, [installer]);
   const env = { ...process.env, TM_PHP_BIN: php, TM_WOO_REFERENCE_DIR: join(root, 'woocommerce/includes'), TM_WOO_INTEGRATION_ROOT: wp };
   if (process.argv.includes('--run')) {
+    const hposRoot = join(root, 'wordpress-hpos');
+    await cp(wp, hposRoot, { recursive: true, verbatimSymlinks: true });
     await run(process.execPath, ['--experimental-strip-types', '--test', 'scripts/vat-price-integrity.test.ts'], { cwd: project, env });
+    await run(php, ['scripts/order-numbers-woo.test.php', 'classic'], { cwd: project, env });
+    for (const mode of ['enable-hpos', 'hpos']) {
+      await run(php, ['scripts/order-numbers-woo.test.php', mode], { cwd: project, env: { ...env, TM_WOO_INTEGRATION_ROOT: hposRoot } });
+    }
   } else {
     await mkdir(join(project, '.tm-cache'), { recursive: true });
     await writeFile(join(project, '.tm-cache/vat-fixture-path.txt'), wp);
