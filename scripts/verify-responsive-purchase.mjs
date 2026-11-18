@@ -230,6 +230,16 @@ async function checkLayout(page, origin, [width, height, touch]) {
 
   await page.goto(origin + '/__account_fixture_session');
   const order = page.locator('[data-account-order="701"]');
+  assert.equal(await order.getByRole('heading').innerText(), '#312345');
+  assert.equal(await page.locator('[data-account-order="700"]').getByRole('heading').innerText(), 'Objednávka');
+  if (width === 390 || width === 1280) {
+    await order.getByRole('button', { name: 'Faktúry k objednávke' }).click();
+    await page.getByRole('heading', { name: 'Faktúra INV-100' }).waitFor();
+    assert.equal(page.url(), origin + '/ucet/faktury');
+    assert.equal(await page.getByText('312345', { exact: true }).isVisible(), true);
+    assert.equal(await page.getByText('701', { exact: true }).count(), 0);
+    await page.goto(origin + '/ucet/objednavky');
+  }
   assert.match(await order.innerText(), /30,00/);
   await order.locator('[data-reorder-start]').click();
   const plan = order.locator('[data-reorder-preview]');

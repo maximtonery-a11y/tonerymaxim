@@ -205,7 +205,8 @@ export async function retryOnlineClaims(): Promise<void> {
 }
 
 function normalized(value: unknown): string { return text(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
-export function displayClaimOrderNumber(order: any): string {
+// The claims plugin accepts a Woo reference for legacy orders that have no TM number.
+export function claimOrderReference(order: any): string {
   for (const key of ['tm_order_number', 'gopay_order_number']) {
     const value = order.meta_data?.find((item: any) => item.key === key)?.value;
     if (text(value)) return text(value);
@@ -223,7 +224,7 @@ export async function resolvePublicClaim(contact: Contact): Promise<Omit<ClaimPa
   for (let page = 1; page <= 10; page++) {
     const orders = await wooRequest<any[]>('/orders', { query: { search: contact.email, per_page: 100, page, orderby: 'date', order: 'desc' } });
     if (!Array.isArray(orders)) throw new Error('Neplatná odpoveď objednávok.');
-    order = orders.find(item => email(item.billing?.email) === contact.email && [displayClaimOrderNumber(item), item.number, item.id].some(value => normalized(value) === normalized(contact.orderNumber)));
+    order = orders.find(item => email(item.billing?.email) === contact.email && [claimOrderReference(item), item.number, item.id].some(value => normalized(value) === normalized(contact.orderNumber)));
     if (order || orders.length < 100) break;
   }
   if (!order) throw new ClaimInputError('Objednávku sa nepodarilo overiť podľa čísla a e-mailu. Skontrolujte údaje. Pri staršom nákupe nás kontaktujte na info@tonerymaxim.sk.');
@@ -233,5 +234,5 @@ export async function resolvePublicClaim(contact: Contact): Promise<Omit<ClaimPa
   if (!matches.length && requested.length >= 4) matches = items.filter(item => normalized(item.name).includes(requested));
   if (matches.length !== 1 || !positiveId(matches[0].product_id || matches[0].variation_id)) throw new ClaimInputError('Produkt uveďte presným názvom alebo SKU z objednávky.');
   const product = matches[0];
-  return { customer_id: Number(order.customer_id || 0), customer_email: contact.email, order_id: Number(order.id), order_number: displayClaimOrderNumber(order), product_id: Number(product.product_id || product.variation_id), product_name: text(product.name), product_sku: text(product.sku), reason: contact.reason, message: claimMessageWithContact(contact), status: 'received' };
+  return { customer_id: Number(order.customer_id || 0), customer_email: contact.email, order_id: Number(order.id), order_number: claimOrderReference(order), product_id: Number(product.product_id || product.variation_id), product_name: text(product.name), product_sku: text(product.sku), reason: contact.reason, message: claimMessageWithContact(contact), status: 'received' };
 }

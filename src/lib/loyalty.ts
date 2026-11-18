@@ -2,7 +2,6 @@ import { getCustomerMeta, getWooCustomerById, getWooCustomerOrders, parseJsonMet
 import { isLoyaltyCreditStatus } from "./order-statuses";
 import { earnedPaperPacks } from "./loyalty-rules";
 import { getAccountOrderNumbers } from "./account-orders";
-import { tmOrderNumber } from "./order-display";
 import type { WooOrder } from "./woo-client";
 export { earnedPaperPacks } from "./loyalty-rules";
 
@@ -82,10 +81,9 @@ export async function syncCustomerLoyaltyPoints(customerId: number, showAccountH
     points += add;
     lifetimePoints += add;
     creditedSet.add(id);
-    const number = tmOrderNumber(order);
     history.unshift({
       date: todaySk(),
-      title: number ? `Objednávka #${number}` : "Objednávka",
+      title: `Objednávka #${order.number || order.id}`,
       points: add,
       orderId: Number(order.id),
     });
@@ -176,7 +174,7 @@ export async function reserveLoyaltyDiscount(customerId: number, orderId: number
   const history = [
     {
       date: todaySk(),
-      title: "Použitá zľava pri objednávke",
+      title: `Použitá zľava pri objednávke #${orderId}`,
       points: -pointsUsed,
       orderId: Number(orderId) || undefined,
     },

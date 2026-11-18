@@ -4,7 +4,7 @@ import { getWooCustomerById, getWooCustomerOrders, wooRequest } from "../../../l
 import { sanitizeCustomerCarePayload } from "../../../lib/customer-care";
 import { getAccountOrderNumbers } from "../../../lib/account-orders";
 import { tmOrderNumber } from "../../../lib/order-display";
-import { ClaimInputError, claimMessageWithContact, claimsRequest, displayClaimNumber, displayClaimOrderNumber, pendingCustomerClaims, submitOnlineClaim } from "../../../lib/online-claims";
+import { ClaimInputError, claimMessageWithContact, claimOrderReference, claimsRequest, displayClaimNumber, pendingCustomerClaims, submitOnlineClaim } from "../../../lib/online-claims";
 
 export const prerender = false;
 
@@ -164,7 +164,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
     if (!product) return json({ ok: false, error: "Produkt nepatrí k vybranej objednávke." }, 400);
     const tmNumber = tmOrderNumber(order);
     const contact = sanitizeCustomerCarePayload({
-      orderNumber: displayClaimOrderNumber(order), email: customer.email,
+      orderNumber: claimOrderReference(order), email: customer.email,
       name: [customer.first_name || customer.billing?.first_name, customer.last_name || customer.billing?.last_name].filter(Boolean).join(' ') || customer.email,
       phone: customer.billing?.phone, product: product.name, reason, message,
     });
