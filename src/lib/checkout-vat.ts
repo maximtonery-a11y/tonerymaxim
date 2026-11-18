@@ -56,6 +56,7 @@ export function discountedGrossLine(item: Record<string, any>) {
 }
 
 export function percentageCouponDiscount(cart: Record<string, any>[], percent: number, scope: string) {
+  if (!Number.isFinite(Number(percent)) || !(percent > 0)) return 0;
   const eligible = scope === "compatible" ? cart.filter(compatibleLine) : cart;
   const eligibleCents = eligible.reduce((sum, item) => sum + cents(discountedGrossLine(item)), 0);
   return Math.round(eligibleCents * percent / 100) / 100;

@@ -125,6 +125,7 @@ test('goods, coupons, points and the 29 EUR delivery threshold agree at cent pre
   assert.equal(redeemableLoyaltyDiscount(.24, .24, 30), .24);
   assert.equal(redeemableLoyaltyDiscount(99, .24, .21), .21);
   assert.equal(redeemableLoyaltyDiscount('bad', 5, 30), 0);
+  assert.equal(percentageCouponDiscount([hp], NaN, 'compatible'), 0);
 });
 
 test('four separate CMYK products have exactly the same discount before submission and on the server', () => {
