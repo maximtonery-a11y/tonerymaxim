@@ -1,8 +1,8 @@
+import { ownsGoPayOrder, goPayOrderPreview } from "../../lib/gopay-access";
 import type { APIRoute } from "astro";
 import { readPendingGoPayOrder, savePendingGoPayOrder, updateWooOrderPayment } from "../../lib/checkout-order";
 import { replaceQueuedOrderPayment } from "../../lib/async-order-queue";
 import { verifyGoPayPaymentAgainstOrder } from "../../lib/gopay-client";
-import { verifyPaymentAccessToken } from "../../lib/payment-access";
 import { withOrderIdempotency } from "../../lib/order-idempotency";
 
 export const prerender = false;
@@ -27,11 +27,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const pending = await readPendingGoPayOrder(paymentId);
     if (!pending) return json({ ok: false, error: "Pôvodnú objednávku sa nepodarilo nájsť." }, 404);
-    const access = cookies.get("tm_gopay_access")?.value;
-    if ((pending as any).paymentAccessRequired && !verifyPaymentAccessToken(access, pending.orderNumber)) {
+    const access = body?.access || cookies.get("tm_gopay_access")?.value;
+    if ((pending as any).paymentAccessRequired && !ownsGoPayOrder(pending, cookies, access)) {
       return json({ ok: false, error: "Odkaz na zmenu platby nie je platný alebo expiroval." }, 403);
     }
 
+    if (paymentCode === "invoice_org" && (!pending.billing?.companyEnabled || !pending.billing?.company || !/^\d{8}$/.test(String(pending.billing?.ico || "")))) {
+      return json({ ok: false, error: "Platba pre firmy vyžaduje firemné údaje v pôvodnej objednávke." }, 400);
+    }
     const storedState = String(pending.paymentState || "").toUpperCase();
     if (storedState === "RETRIED") {
       return json({ ok: false, error: "K tejto objednávke už bol vytvorený nový GoPay platobný pokus. Pôvodnú platbu už nemožno zmeniť." }, 409);
@@ -47,6 +50,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         // interný identifikátor a nesmie sa dostať do URL ani potvrdenia.
         orderNumber: pending.orderNumber,
         payment: paymentCode,
+        preview: goPayOrderPreview(pending),
         replayed: true,
       });
     }
@@ -103,7 +107,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return {
         ok: true,
         status: 200,
-        payload: { ok: true, orderId: orderId || updatedSource.orderNumber, orderNumber, payment: paymentCode },
+        payload: { ok: true, orderId: orderId || updatedSource.orderNumber, orderNumber, payment: paymentCode, preview: goPayOrderPreview(updatedSource) },
         createdAt: new Date().toISOString(),
       };
     });

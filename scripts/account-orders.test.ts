@@ -274,3 +274,14 @@ test('duplicate lines merge safely, quantities above 99 are disclosed and failur
   const failure = fixture({ networkFailure: true }); const response = await failure.post();
   assert.equal(response.status, 404); assert.equal((await response.text()).includes('credentials'), false);
 });
+
+
+test('only unpaid online orders get a recovery link using their gateway ID', async () => {
+  const f=fixture({orders:[
+    {id:7001,status:'pending',payment_method:'gopay',meta_data:[{key:'gopay_payment_id',value:'1001001'}]},
+    {id:7002,status:'completed',date_paid:'2026-11-18',payment_method:'gopay',meta_data:[{key:'gopay_payment_id',value:'1001002'}]},
+    {id:7003,status:'pending',payment_method:'cod',meta_data:[{key:'gopay_payment_id',value:'1001003'}]},
+  ]});
+  const page=await app.getAccountOrdersPage(f.customer);
+  assert.deepEqual(page.orders.map((order: any)=>order.paymentRecoveryId),['1001001','','']);
+});

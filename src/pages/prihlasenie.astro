@@ -157,7 +157,7 @@ const resetSent = Astro.url.searchParams.get("reset") === "sent";
           }
 
           showMessage("Prihlásenie prebehlo úspešne. Presmerovávam...", "success");
-          try { sessionStorage.removeItem("tm_header_account_v1"); } catch {}
+          try { sessionStorage.removeItem("tm_header_account_v1"); sessionStorage.removeItem("tm_cart_benefits_v1"); localStorage.setItem("tm_cart_benefits_epoch", Date.now() + "-" + Math.random()); localStorage.removeItem("tm_coupon_v1"); } catch {}
           window.location.href = result.redirect || "/ucet";
         } catch (error) {
           showMessage(error instanceof Error ? error.message : "Prihlásenie zlyhalo.");

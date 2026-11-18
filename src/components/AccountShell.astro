@@ -109,7 +109,7 @@ const navItems = [
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || result?.ok !== true) throw new Error(result?.error || 'Odhlásenie zlyhalo.');
-      try { sessionStorage.removeItem('tm_header_account_v1'); } catch {}
+      try { sessionStorage.removeItem('tm_header_account_v1'); sessionStorage.removeItem('tm_cart_benefits_v1'); localStorage.setItem('tm_cart_benefits_epoch', Date.now() + '-' + Math.random()); localStorage.removeItem('tm_coupon_v1'); } catch {}
       window.location.assign('/prihlasenie?logout=1');
     } catch (error) {
       if (button) button.disabled = false;

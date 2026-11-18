@@ -1,7 +1,8 @@
+import { ownsGoPayOrder } from "../../lib/gopay-access";
 import type { APIRoute } from "astro";
 import { readPendingGoPayOrder, savePendingGoPayOrder } from "../../lib/checkout-order";
 import { getEnv, getGoPayAccessToken, getGoPayHost, verifyGoPayPaymentAgainstOrder } from "../../lib/gopay-client";
-import { makePaymentAccessToken, paymentReturnUrl, verifyPaymentAccessToken } from "../../lib/payment-access";
+import { makePaymentAccessToken, paymentReturnUrl } from "../../lib/payment-access";
 import { withOrderIdempotency } from "../../lib/order-idempotency";
 
 export const prerender = false;
@@ -29,7 +30,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
     const access = body?.access || cookies.get('tm_gopay_access')?.value;
-    if ((pending as any).paymentAccessRequired && !verifyPaymentAccessToken(access, pending.orderNumber)) {
+    if ((pending as any).paymentAccessRequired && !ownsGoPayOrder(pending, cookies, access)) {
       return new Response(JSON.stringify({ ok: false, error: 'Odkaz na opakovanie platby nie je platný alebo expiroval.' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },

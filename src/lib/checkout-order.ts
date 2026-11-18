@@ -25,6 +25,7 @@ export type NormalizedCartItem = {
   product_id?: string | number;
   sku: string;
   name: string;
+  image?: string;
   price: number;
   qty: number;
   product_type_key?: string;

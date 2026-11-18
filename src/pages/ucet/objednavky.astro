@@ -58,6 +58,7 @@ const orders = result?.orders || [];
                 {(order.line_items || []).length > 6 && <details class="account-order-more"><summary>Zobraziť ďalších {(order.line_items || []).length - 6} položiek</summary>{(order.line_items || []).slice(6).map(item => <div class="order-item"><span>{safeText(item.name)} × {item.quantity || 1}</span><strong>{formatMoney(orderLineGrossTotal(item), order.currency || 'EUR')} s DPH</strong></div>)}</details>}
               </div>
               <div class="account-order-actions">
+                {order.paymentRecoveryId && <a class="tm-btn is-dark" href={"/platba-dokoncena?id=" + encodeURIComponent(order.paymentRecoveryId)}>Zmeniť spôsob platby</a>}
                 <button class="tm-btn is-dark" type="button" data-reorder-start>Objednať znova</button>
                 <a class="tm-btn is-outline" href={'/ucet/faktury?ref=' + invoiceOrderReference(customer.id, order.id)}>Faktúry k objednávke</a>
               </div>

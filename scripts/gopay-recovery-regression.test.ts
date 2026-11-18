@@ -18,8 +18,8 @@ test("zrušená GoPay platba sa pri offline platbe nemení na novú objednávku"
 test("opakovať GoPay vytvorí novú platbu k pôvodnej objednávke", async () => {
   const confirmation = await read("src/pages/platba-dokoncena.astro");
   const retryApi = await read("src/pages/api/gopay-retry.ts");
-  assert.match(confirmation, /fetch\('\/api\/gopay-retry'/);
-  assert.match(confirmation, /paymentId:String\(data\.paymentId/);
+  assert.match(confirmation, /fetch\('\/api\/gopay-change-payment'/);
+  assert.match(confirmation, /data-order-payment-form/);
   assert.match(retryApi, /order_number:\s*clean\(pending\.orderNumber\)/);
   assert.match(retryApi, /verifyGoPayPaymentAgainstOrder/);
   assert.match(retryApi, /withOrderIdempotency\(`gopay-retry-/);
@@ -32,11 +32,13 @@ test("opakovať GoPay vytvorí novú platbu k pôvodnej objednávke", async () =
   assert.match(retryApi, /\["CANCELED",\s*"TIMEOUTED",\s*"FAILED"\]/);
 });
 
-test("nedokončená GoPay platba vždy ponúkne opakovanie aj zmenu platby", async () => {
+test("nedokončená GoPay platba ponúkne zmenu pri pôvodnej objednávke", async () => {
   const confirmation = await read("src/pages/platba-dokoncena.astro");
   assert.match(confirmation, /data-gopay-change/);
   assert.match(confirmation, /Zmeniť spôsob platby/);
-  assert.match(confirmation, /\['CREATED','PAYMENT_METHOD_CHOSEN'\]\.includes\(state\)[\s\S]*showRecoveryActions\(\)/);
+  assert.match(confirmation, /\['CANCELED','TIMEOUTED','FAILED','CREATED','PAYMENT_METHOD_CHOSEN'\]\.includes\(state\)/);
+  assert.match(confirmation, /function fail[\s\S]*showRecoveryActions\(\)/);
+  assert.doesNotMatch(confirmation, /data-gopay-change href="\/pokladna/);
 });
 
 test("zmena na dobierku overí GoPay a upraví pôvodnú objednávku", async () => {

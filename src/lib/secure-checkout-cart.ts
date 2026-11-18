@@ -236,6 +236,7 @@ export async function normalizeSecureCheckoutCart(rawCart: unknown, options: {
       product_id: product.id,
       sku: isReward ? LOYALTY_PAPER_REWARD_SKU : String(product.sku || ""),
       name: String(isReward ? options.loyalty?.paperReward?.name : (product.name || product.sku || product.id || "Produkt")).slice(0, 160),
+      image: String(cached.image || ""),
       price: isReward ? LOYALTY_PAPER_PRICE : money(product.price),
       qty,
       product_type_key: String(product.product_type_key || ""),
