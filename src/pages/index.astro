@@ -19,6 +19,7 @@ import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 import SeoHead from "../components/SeoHead.astro";
 import { organizationJsonLd, websiteJsonLd } from "../lib/seo";
 
+const showLabelSearch = process.env.TM_PHOTO_SEARCH_ENABLED === '1' || Astro.url.searchParams.get('foto') === '1';
 const SEO_ORIGIN = 'https://www.tonerymaxim.sk';
 const title = "Tonery a náplne do tlačiarní | ToneryMaxim.sk";
 const description = "Tonery, atramentové náplne, optické valce a komponenty pre tlačiarne HP, Canon, Brother, Epson a ďalšie. Rýchle doručenie a odborná pomoc.";
@@ -127,6 +128,11 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
               </button>
             </form>
+
+            {showLabelSearch && <a class="tm-mobile-label-search" href="/hladat-fotkou">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v13H3z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
+              Odfotiť štítok
+            </a>}
 
             <div class="tm-mobile-search-examples" aria-label="Príklady hľadania">
               <a href="/tlaciarne/hp/hp-laserjet-m110w">HP M110w</a>

@@ -1,5 +1,6 @@
 // Invoked by account-orders-render-smoke.mjs --responsive, against its disposable, local-only shop.
 import assert from 'node:assert/strict';
+import { verifyMobileLabel } from './verify-mobile-label.mjs';
 
 const productPath = '/produkt/fixture-toner-';
 const layouts = [
@@ -419,6 +420,7 @@ async function verifyEngine(origin, engine, configurations, options) {
         return route.abort();
       });
       try {
+        if (width === 390) await verifyMobileLabel(page, origin);
         await checkLayout(page, origin, layout);
         if (width === 390 || width === 1280) await checkDiscountJourney(page, origin, width === 390);
         assert.deepEqual(unexpected, []);

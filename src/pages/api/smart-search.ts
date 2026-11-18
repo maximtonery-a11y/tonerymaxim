@@ -598,12 +598,13 @@ function printerScore(printer: IndexedPrinter, query: QueryInfo) {
   return score;
 }
 
-function productItem(item: IndexedProduct, relevance: number) {
+function productItem(item: IndexedProduct, relevance: number, includeOem: boolean) {
   const product = item.product;
   const categoryText = Array.isArray(product.categories) ? product.categories.map((cat: any) => cat.name || cat.slug || "").filter(Boolean).join(", ") : "";
   return {
     id: product.id,
     sku: product.sku || "",
+    ...(includeOem ? { oem: String(product.oem_codes || "").slice(0, 256) } : {}),
     title: product.name || "Produkt",
     subtitle: [item.brand, categoryText, product.product_type_label].filter(Boolean).join(" · "),
     url: `/produkt/${product.slug || product.id}`,
@@ -718,11 +719,11 @@ function findPrinterSuggestions(printers: IndexedPrinter[], query: QueryInfo) {
     });
 }
 
-function findProductSuggestions(items: IndexedProduct[], query: QueryInfo, relatedPackIds = new Set<number>()) {
+function findProductSuggestions(items: IndexedProduct[], query: QueryInfo, relatedPackIds = new Set<number>(), includeOem = false) {
   const candidates = items.filter((item) => relatedPackIds.has(item.product.id) || isLikelyCandidate(item, query));
   return sortSuggestionProducts(
     candidates
-      .map((item) => productItem(item, Math.max(relatedPackIds.has(item.product.id) ? 65 : 0, relevanceScore(item, query))))
+      .map((item) => productItem(item, Math.max(relatedPackIds.has(item.product.id) ? 65 : 0, relevanceScore(item, query)), includeOem))
       .filter((item) => item.relevance >= 65),
     query.raw,
   );
@@ -743,7 +744,8 @@ export const GET: APIRoute = async ({ url }) => {
     }
     const query = queryInfo(q);
     const queryAnalysis = analyzeCatalogQuery(q);
-    const resultKey = cachedResultKey(index.generatedAt, q);
+    const includeOem = url.searchParams.get("label") === "1";
+    const resultKey = cachedResultKey(index.generatedAt, q) + (includeOem ? ":label" : "");
     const cached = getCachedResult(resultKey);
     if (cached) return jsonResponse({ ...cached, source: "smart-search-result-cache" }, 200, "public, max-age=60, s-maxage=600, stale-while-revalidate=3600");
 
@@ -769,7 +771,7 @@ export const GET: APIRoute = async ({ url }) => {
     const suggestionItems = relatedPackIds.size
       ? [...new Set([...candidateItems, ...index.items.filter(item => relatedPackIds.has(item.product.id))])]
       : candidateItems;
-    const suggestedProducts = findProductSuggestions(suggestionItems, query, relatedPackIds);
+    const suggestedProducts = findProductSuggestions(suggestionItems, query, relatedPackIds, includeOem);
     // Nášepkávač je súčasťou bežného katalógu. Bezčipové, OEM-čipové a
     // Hatona varianty v ňom nesmú presakovať iba preto, že sú kompatibilné
     // s nájdenou tlačiarňou. Zobrazia sa len pri výslovnom dopyte na daný typ.
