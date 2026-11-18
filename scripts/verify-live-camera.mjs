@@ -38,7 +38,15 @@ function installVideoFixture() {
     return play.apply(this, args);
   };
   let source;
-  function makeCameraSource() {
+  async function makeCameraSource() {
+    // A real camera still points at the same label after WebKit restarts its preview.
+    const imageUrl = sessionStorage.getItem('testCameraImage');
+    let image;
+    if (imageUrl) {
+      image = new Image();
+      image.src = imageUrl;
+      await image.decode();
+    }
     const canvas = document.createElement('canvas');
     canvas.width = 960; canvas.height = 540;
     // Keep this video source rendered throughout each WebKit capture session.
@@ -46,7 +54,7 @@ function installVideoFixture() {
     document.body.append(canvas);
     const ctx = canvas.getContext('2d');
     function draw() {
-      if (fixture.image) { ctx.drawImage(fixture.image,0,0,960,540); return; }
+      if (image) { ctx.drawImage(image, 0, 0, 960, 540); return; }
       ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 960, 540);
       ctx.fillStyle = 'black'; ctx.font = 'bold 42px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(fixture.text, 480, 286);
@@ -63,7 +71,7 @@ function installVideoFixture() {
     if (fixture.mode === 'deny') throw new DOMException('test', 'NotAllowedError');
     if (fixture.mode === 'defer') await new Promise(resolve => { fixture.allow = resolve; });
     source ||= makeCameraSource();
-    const session = source.clone();
+    const session = (await source).clone();
     fixture.tracks.push(...session.getVideoTracks());
     return session;
   } } });

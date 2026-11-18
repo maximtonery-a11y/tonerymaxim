@@ -59,12 +59,7 @@ export async function verifyPhysicalLabels(page, origin, camera) {
     try {
       if (camera) {
         await page.evaluate(
-          async url => {
-            const image = new Image();
-            image.src = url;
-            await image.decode();
-            window.labelCameraTest.image = image;
-          },
+          url => sessionStorage.setItem('testCameraImage', url),
           'data:image/png;base64,' + image.toString('base64')
         );
         await page.getByRole('button', { name: 'Spustiť fotoaparát' }).click();
@@ -100,6 +95,7 @@ export async function verifyPhysicalLabels(page, origin, camera) {
       );
     } finally {
       page.off('request', record);
+      if (camera) await page.evaluate(() => sessionStorage.removeItem('testCameraImage'));
     }
   }
   console.log(
