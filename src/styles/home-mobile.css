@@ -190,6 +190,8 @@
     stroke-linejoin: round;
   }
 
+  .tm-mobile-label-search { display:inline-flex; min-height:44px; align-items:center; gap:8px; padding:0 6px; color:#104d7e; font-weight:650; }
+  body.home-page .tm-mobile-label-search + .tm-mobile-search-examples { margin-top:4px; }
   body.home-page .tm-mobile-search-examples {
     margin: 22px auto 24px;
     display: grid;

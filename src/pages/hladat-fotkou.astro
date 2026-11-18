@@ -1,0 +1,75 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import SeoHead from '../components/SeoHead.astro';
+---
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SeoHead title="Hľadať náplň podľa fotky | ToneryMaxim.sk" description="Odfoťte označenie na kazete alebo model tlačiarne a nájdite vhodné náplne." noindex />
+  </head>
+  <body><div class="page"><Header />
+    <main class="label-search" data-label-search>
+      <a class="back" href="/">← Späť na vyhľadávanie</a>
+      <section aria-labelledby="label-heading">
+        <h1 id="label-heading">Nájdite náplň podľa fotky</h1>
+        <p>Odfoťte zblízka označenie na kazete alebo celý názov modelu na prednej strane tlačiarne. Dobre čitateľné musí byť aj posledné písmeno.</p>
+        <div class="capture" data-photo-controls hidden>
+          <label class="primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v13H3z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
+            Odfotiť štítok<input type="file" accept="image/*" capture="environment" data-camera />
+          </label>
+          <label>Vybrať fotku z galérie<input type="file" accept="image/*" data-gallery /></label>
+        </div>
+        <p class="privacy">Fotka ostáva vo vašom zariadení. V katalógu vyhľadáme iba označenie.</p>
+        <p id="label-status" role="status" aria-live="polite"></p>
+        <button class="secondary" type="button" data-stop hidden>Zrušiť čítanie</button>
+        <div class="matches" data-matches></div>
+        <button type="button" class="secondary crop-toggle" data-crop-toggle aria-expanded="false" aria-controls="crop-photo" hidden>Vybrať riadok z fotky</button>
+        <div id="crop-photo" hidden>
+          <p>Ťuknite priamo na kód kazety alebo názov modelu. Prečítame detail okolo tohto miesta.</p>
+          <button type="button" class="crop-image" aria-label="Prečítať vybrané miesto na fotke"><img alt="Vaša fotka štítku" data-crop-image /></button>
+        </div>
+
+        <form class="manual" method="get" action="/produkty">
+          <label for="label-code">Zadať alebo opraviť označenie</label>
+          <div><input id="label-code" type="search" name="s" placeholder="Napr. CE285A alebo HP P1102w" maxlength="64" required />
+          <button class="secondary" type="submit">Vyhľadať</button></div>
+        </form>
+      </section>
+    </main>
+  </div></body>
+</html>
+<style>
+  .label-search { width: min(100% - 28px, 40rem); margin: clamp(1.25rem,4vw,3rem) auto 4rem; color:#102845; }
+  .back { display:inline-block; padding:.5rem 0; color:#245587; }
+  section { margin-top:.65rem; padding:clamp(1.15rem,4vw,2.5rem); background:white; border:1px solid #d9e4ee; border-radius:18px; }
+  h1 { font-size:clamp(1.6rem,4vw,2.15rem); line-height:1.15; margin:0 0 .65rem; }
+  p { line-height:1.5; margin:0 0 1rem; }
+  .capture { display:flex; flex-wrap:wrap; gap:.6rem; }
+  .capture label,.secondary,.matches :global(button),.matches :global(a) { font:inherit; font-weight:600; min-height:46px; border:1px solid #bdd0e3; border-radius:10px; background:white; color:#163b5b; padding:.65rem .9rem; cursor:pointer; }
+  .capture label { position:relative; display:inline-flex; gap:.5rem; align-items:center; justify-content:center; overflow:hidden; }
+  .capture label.primary { background:#0b3154; color:white; border-color:#0b3154; }
+  .capture svg { width:21px; height:21px; }
+  .capture input { position:absolute; inset:0; height:100%; width:100%; opacity:0; cursor:pointer; }
+  .capture label:focus-within,button:focus-visible,input:focus-visible,.matches :global(a:focus-visible) { outline:3px solid #1970af; outline-offset:2px; }
+  .privacy { margin:.75rem 0; color:#476078; font-size:.875rem; }
+  #label-status:empty { margin:0; }
+  #label-status { font-weight:600; }
+  .matches { display:grid; gap:.55rem; }
+  .matches :global(a) { text-decoration:none; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:.4rem; }
+  .matches :global(small) { white-space:nowrap; }
+  .crop-toggle { margin-top:.7rem; }
+  #crop-photo p { margin:.7rem 0; }
+  .crop-image { display:block; width:fit-content; max-width:100%; margin:auto; border:0; padding:0; background:none; cursor:crosshair; }
+  .crop-image img { display:block; max-width:100%; max-height:40vh; width:auto; height:auto; }
+  .manual { margin-top:1.25rem; padding-top:1rem; border-top:1px solid #d9e4ee; }
+  .manual label { display:block; margin-bottom:.5rem; }
+  .manual div { display:flex; flex-wrap:wrap; gap:.5rem; }
+  .manual input { font:inherit; padding:.65rem; min-width:0; width:100%; flex:1 1 12rem; border:1px solid #9fb2c6; border-radius:9px; }
+  [hidden] { display:none !important; }
+  @media(max-width:420px) { .capture label { width:100%; } }
+</style>
+<script>
+  import '../scripts/label-search-ui';
+</script>
