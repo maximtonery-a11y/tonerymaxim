@@ -325,7 +325,7 @@ export function parseJsonMeta<T>(value: any, fallback: T): T {
   }
 }
 
-export type SavedPrinter = {
+export type SavedPrinter = import("./toner-care-rules").TonerCarePlan & {
   title: string;
   brand?: string;
   url?: string;
@@ -349,6 +349,7 @@ export function getSavedPrintersFromCustomer(customer: WooCustomer | null | unde
     ? printers
         .filter((printer) => String(printer?.title || "").trim())
         .map((printer) => ({
+          ...printer,
           title: String(printer.title || "").trim(),
           brand: String(printer.brand || "").trim(),
           url: String(printer.url || "").trim(),
@@ -358,13 +359,18 @@ export function getSavedPrintersFromCustomer(customer: WooCustomer | null | unde
           installed_at: String(printer.installed_at || "").trim(),
           expected_months: Math.min(24, Math.max(1, Number(printer.expected_months || 3))),
           expected_replacement_at: String(printer.expected_replacement_at || "").trim(),
-          reminder_days: 21,
+          reminder_days: 30,
           preferred_type: ["compatible", "original", "renovated", "any"].includes(String(printer.preferred_type || ""))
             ? printer.preferred_type
             : "any",
           customer_reminder_sent_for: String(printer.customer_reminder_sent_for || "").trim(),
           admin_reminder_sent_for: String(printer.admin_reminder_sent_for || "").trim(),
           last_reminder_at: String(printer.last_reminder_at || "").trim(),
+          care_cycle_id: String(printer.care_cycle_id || "").trim(),
+          care_ended_at: String(printer.care_ended_at || "").trim(),
+          care_end_reason: ["expired", "disabled", "changed"].includes(String(printer.care_end_reason)) ? printer.care_end_reason : undefined,
+          care_reminders: Array.isArray(printer.care_reminders) ? printer.care_reminders.filter((item) => item && typeof item.scheduled_for === "string") : [],
+          care_history: Array.isArray(printer.care_history) ? printer.care_history.filter((item) => item && typeof item.cycle_id === "string" && Array.isArray(item.reminders)) : [],
         }))
     : [];
 }

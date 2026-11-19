@@ -14,8 +14,10 @@ const canonical = `${SEO_ORIGIN}/toner-bez-starosti`;
 const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.hostname.toLowerCase());
 const faq = [
   { q: "Pošlete mi toner automaticky?", a: "Nie. Služba odošle pripomienku a zobrazí vhodné náplne. Objednávku musí zákazník vždy potvrdiť." },
-  { q: "Kedy dostanem upozornenie?", a: "Približne 21 dní pred dátumom výmeny vypočítaným z dátumu vloženia a predpokladanej výdrže." },
+  { q: "Kedy dostanem upozornenie?", a: "Prvý e-mail vám aj pracovníkovi ToneryMaxim pošleme približne jeden kalendárny mesiac pred vypočítaným termínom výmeny. Potom upozornenie opakujeme každých 7 dní až do termínu. Ak plán zapnete neskôr, prvé upozornenie odošleme pri najbližšej dennej kontrole. Zmeškané upozornenia neposielame naraz." },
   { q: "Čo ak toner vydrží dlhšie?", a: "V zákazníckom účte môžete plán kedykoľvek posunúť, vypnúť alebo nastaviť nový dátum po výmene." },
+  { q: "Čo sa stane po uplynutí termínu?", a: "Strážca sa automaticky vypne. Tlačiareň zostane uložená a v histórii uvidíte použitý plán aj odoslané upozornenia. Nový plán si zapnete po ďalšej výmene náplne." },
+  { q: "Ako strážcu vypnem skôr?", a: "V časti Moje tlačiarne kliknite na Vypnúť strážcu. Vypnú sa ďalšie upozornenia zákazníkovi aj ToneryMaxim. Tlačiareň ani história sa nevymažú." },
   { q: "Je služba spoplatnená?", a: "Nie. Toner bez starostí je bezplatná funkcia pre registrovaných zákazníkov ToneryMaxim." },
 ];
 const jsonLd = [
@@ -42,7 +44,7 @@ const jsonLd = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <SeoHead
       title="Toner bez starostí – pripomienka výmeny | ToneryMaxim.sk"
-      description="Nastavte dátum vloženia tonera a jeho predpokladanú výdrž. Približne 21 dní pred výmenou vás upozorníme a ukážeme vhodné náplne."
+      description="Nastavte dátum vloženia tonera a jeho predpokladanú výdrž. Prvý e-mail príde približne mesiac pred výmenou, ďalšie každý týždeň až do termínu. Strážcu môžete kedykoľvek vypnúť."
       canonical={canonical}
       noindex={noindex}
       jsonLd={jsonLd}
@@ -59,7 +61,7 @@ const jsonLd = [
           intro="Jednoduchá pripomienka, vďaka ktorej viete o blížiacej sa výmene vopred. Bez QR kódov, bez pripojenia tlačiarne a bez automatického posielania tovaru."
         >
           <section class="care-highlight-grid">
-            <article><span>21 dní</span><strong>Upozornenie vopred</strong><p>Čas pripraviť objednávku bez stresu.</p></article>
+            <article><span>1 mesiac</span><strong>Upozornenie vopred</strong><p>Prvé upozornenie, potom pripomienka každých 7 dní.</p></article>
             <article><span>0 €</span><strong>Bez poplatku</strong><p>Služba je súčasťou zákazníckeho účtu.</p></article>
             <article><span>100 %</span><strong>Pod vašou kontrolou</strong><p>Bez potvrdenia nič automaticky neposielame.</p></article>
           </section>
@@ -72,7 +74,7 @@ const jsonLd = [
             <div class="care-steps">
               <article><i>1</i><h3>Uložíte tlačiareň</h3><p>V účte otvoríte „Moje tlačiarne“ a vyberiete svoj model z existujúceho vyhľadávača.</p></article>
               <article><i>2</i><h3>Zadáte dátum</h3><p>Nastavíte deň vloženia náplne, očakávanú výdrž a preferovaný typ produktu.</p></article>
-              <article><i>3</i><h3>Dostanete pripomienku</h3><p>Približne 21 dní pred odhadovaným termínom vám príde e-mail a upozornenie dostane aj ToneryMaxim.</p></article>
+              <article><i>3</i><h3>Dostanete pripomienku</h3><p>Približne mesiac pred termínom príde prvý e-mail vám aj ToneryMaxim. Ďalšie upozornenia pošleme každých 7 dní až do termínu.</p></article>
               <article><i>4</i><h3>Rozhodnete sa</h3><p>Zobrazíte vhodné náplne, objednáte ich alebo plán upravíte, ak toner ešte nepotrebujete.</p></article>
             </div>
           </section>
@@ -98,7 +100,7 @@ const jsonLd = [
           <section class="care-panel care-notification">
             <div>
               <span class="care-mail-icon" aria-hidden="true">✉</span>
-              <div><span>Približne 3 týždne pred výmenou</span><h2>Čo bude obsahovať upozornenie</h2></div>
+              <div><span>Mesiac vopred a potom každý týždeň</span><h2>Čo bude obsahovať upozornenie</h2></div>
             </div>
             <ul>
               <li>model vašej tlačiarne,</li>
@@ -106,6 +108,12 @@ const jsonLd = [
               <li>odkaz na vhodné náplne,</li>
               <li>možnosť upraviť plán alebo označiť, že ste toner už vymenili.</li>
             </ul>
+          </section>
+
+          <section class="care-panel">
+            <h2>Príklad plánu a jeho ukončenie</h2>
+            <p>Pri termíne výmeny 20. decembra naplánujeme e-maily na 20. a 27. novembra, potom na 4., 11. a 18. decembra. Kontrola prebieha denne; po prípadnom výpadku pošleme jednu aktuálnu pripomienku a medzi úspešne odoslanými e-mailmi dodržíme aspoň 7 dní.</p>
+            <p>Strážca platí do konca zadaného dňa podľa slovenského času. Od 21. decembra je v tomto príklade ukončený. História zostane uložená. Tlačidlom „Vypnúť strážcu“ ho môžete ukončiť aj skôr bez odstránenia tlačiarne.</p>
           </section>
 
           <section class="care-action">

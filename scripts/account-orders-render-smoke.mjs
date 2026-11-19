@@ -12,7 +12,7 @@ const secret = randomBytes(32).toString('hex');
 const payload = Buffer.from(JSON.stringify({ id: 7, email: 'test@example.invalid', first_name: 'Test', last_name: 'Zákazník', exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url');
 const token = payload + '.' + createHmac('sha256', secret).update(payload).digest('base64url');
 const cookie = 'tm_customer_session=' + token;
-const port = 4398;
+const port = Number(process.env.PORT || 4398);
 const product = { id: 11, sku: 'SKU-11', name: 'Brother TN-2421 čierny kompatibilný toner', slug: 'brother-tn-2421-cierny-kompatibilny-toner', price: 13.05,
   product_type_key: 'compatible', product_type_label: 'Kompatibilný', product_brand: 'Brother', image: '/images/tm-product-placeholder-box.jpg', stock_status: 'instock', stock_quantity: 20, page_yield: '3 000 strán', color: 'Čierna' };
 product.compatible_printers = ['Brother DCP-L2512D', 'Brother HL-L2352DW'];
@@ -41,6 +41,7 @@ const orders = Array.from({ length: 61 }, (_, index) => ({ id: 701 - index, numb
     { id: 2, product_id: 99, sku: 'DELETED', name: 'Vyradený toner', quantity: 1, total: '50.00', total_tax: '10.00' }] }));
 await writeFile(join(directory, 'products.json'), JSON.stringify({ ok: true, version: 4, total: products.length, generated_at: new Date().toISOString(), products }));
 const shim = `
+${process.argv.includes('--purchase') ? `import ${JSON.stringify(new URL('./purchase-prepublish-shim.mjs', import.meta.url).href)};` : ''}
 import os from 'node:os';import {Server} from 'node:http';
 os.networkInterfaces=()=>({lo:[{address:'127.0.0.1',netmask:'255.0.0.0',family:'IPv4',mac:'00:00:00:00:00:00',internal:true,cidr:'127.0.0.1/8'}]});
 const orders=${JSON.stringify(orders)}, product=${JSON.stringify(product)};
@@ -64,7 +65,7 @@ if(url.pathname.endsWith('/products'))return Response.json([{...product,status:'
 const preload = join(directory, 'preload.mjs'); await writeFile(preload, shim);
 const env = { PATH: process.env.PATH, NODE_ENV: 'production', HOST: '127.0.0.1', PORT: String(port), AUTH_SECRET: secret,
   WOO_URL: 'https://woo.example.invalid', WOO_CONSUMER_KEY: 'fixture', WOO_CONSUMER_SECRET: 'fixture',
-  TM_CACHE_DIR: directory, TM_DISABLE_BACKGROUND_WORKERS: '1', TM_DISABLE_INDEXNOW: '1', OPENAI_ASSISTANT_ENABLED: '0' };
+  TM_CACHE_DIR: directory, TM_TONER_CARE_ENABLED: '0', TM_DISABLE_BACKGROUND_WORKERS: '1', TM_DISABLE_INDEXNOW: '1', OPENAI_ASSISTANT_ENABLED: '0' };
 const child = spawn(process.execPath, ['--import', preload, './dist/server/entry.mjs'], { cwd: process.cwd(), env, stdio: ['ignore', 'pipe', 'pipe'] });
 let logs = ''; child.stdout.on('data', data => logs += data); child.stderr.on('data', data => logs += data);
 function request(path, signedIn = true, body) { return new Promise((resolve, reject) => {

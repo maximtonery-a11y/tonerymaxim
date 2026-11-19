@@ -630,6 +630,13 @@
   background: #fff;
 }
 .toner-care-form[hidden] { display: none !important; }
+.toner-care-history { grid-column: 1 / -1; font-size: 14px; color: var(--tm-muted); }
+.toner-care-history:empty { display: none; }
+.toner-care-history summary { padding: 10px 0; color: var(--tm-navy); cursor: pointer; }
+.toner-care-history p { overflow-wrap: anywhere; line-height: 1.5; }
+.saved-printer-manage { grid-column: 1 / -1; color: var(--tm-muted); font-size: 14px; }
+.saved-printer-manage summary { padding: 10px 0; cursor: pointer; }
+.saved-printer-mini-actions [hidden] { display: none !important; }
 .toner-care-switch {
   display: flex;
   align-items: center;
@@ -2466,3 +2473,45 @@
 .auth-form .tm-check small{display:block;margin-top:3px;color:#718096;font-size:12px;line-height:1.4}
 .auth-form .tm-check a{display:inline;color:var(--tm-blue);font-weight:750;text-decoration:underline;text-underline-offset:2px}
 @media(max-width:620px){.auth-form .tm-check{grid-template-columns:17px minmax(0,1fr)!important;gap:9px!important;font-size:13px!important;line-height:1.4!important}.auth-form .tm-check>input{width:15px!important;height:15px!important}.auth-form .tm-check small{font-size:11.5px;line-height:1.35}}
+
+/* Account navigation uses the existing URLs; it never writes customer settings. */
+.account-mobile-nav, .account-mobile-fallback { display: none; }
+.account-mobile-drawer { padding: 0; border: 0; border-radius: 24px 24px 0 0; width: min(100%, 600px); max-width: 100%; max-height: min(80dvh, 740px); margin: auto auto 0; color: var(--tm-navy); background: #fff; box-shadow: 0 -16px 60px #061b3a26; }
+.account-mobile-drawer::backdrop { background: #061b3a80; }
+.account-mobile-drawer-head { display: flex; gap: 16px; align-items: center; justify-content: space-between; padding: 16px 20px 8px; }
+.account-mobile-drawer-head h2 { margin: 0; font-size: 22px; }
+.account-mobile-drawer-head button { width: 48px; height: 48px; border: 0; border-radius: 12px; background: #f1f5fa; color: var(--tm-navy); font-size: 30px; }
+.account-mobile-drawer nav { padding: 0 20px max(20px, env(safe-area-inset-bottom, 0px)); }
+.account-mobile-drawer nav[hidden] { display: none; }
+.account-mobile-drawer-link { display: block; width: 100%; box-sizing: border-box; padding: 16px 4px; min-height: 52px; border: 0; border-bottom: 1px solid var(--tm-line); background: #fff; color: var(--tm-navy); font: inherit; font-size: 16px; text-align: left; text-decoration: none; }
+.account-mobile-drawer-link[aria-current="page"] { font-weight: 800; color: #075ea8; }
+@media (max-width: 1100px) {
+  .account-page { padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px)); }
+  .account-mobile-nav { position: fixed; z-index: 150; inset: auto 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #fff; border-top: 1px solid var(--tm-line); box-shadow: 0 -4px 18px #061b3a0a; padding: 6px max(4px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px)); }
+  .account-mobile-nav > a, .account-mobile-nav > button { min-width: 0; min-height: 56px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 5px; padding: 5px 1px; border: 0; border-radius: 12px; background: transparent; color: #53647c; font: inherit; font-size: 12px; line-height: 1.2; text-decoration: none; }
+  .account-mobile-nav svg { width: 22px; height: 22px; }
+  .account-mobile-nav > a > span, .account-mobile-nav > button > span { font-size: 11px; letter-spacing: -.12px; }
+  .account-mobile-nav [aria-current="page"], .account-mobile-nav .is-active, .account-mobile-nav [aria-expanded="true"] { background: #fff2c4; color: var(--tm-navy); font-weight: 800; }
+  .account-page .account-menu-toggle { display: none; }
+  .account-page .tm-ai-assistant:not(.is-open) { right: 16px !important; bottom: calc(94px + env(safe-area-inset-bottom, 0px)) !important; }
+  .account-page .tm-ai-assistant:not(.is-open) .tm-ai-assistant__launcher { bottom: 0 !important; }
+  .account-page .tm-ai-assistant:not(.is-open) .tm-ai-nudge { position: fixed; bottom: calc(158px + env(safe-area-inset-bottom, 0px)) !important; }
+  .account-page .mobile-newsletter, .account-page .footer-newsletter { display: none; }
+  .account-mobile-fallback { display: flex; flex-wrap: wrap; gap: 14px; padding: 20px; }
+}
+@media (max-width: 720px) {
+  .account-page .account-topbar { margin-bottom: 18px; }
+  .account-page .account-topbar h1 { font-size: 30px; line-height: 1.15; }
+  .account-page .account-kicker { display: none; }
+  .account-page .account-topbar p { font-size: 14px; margin-top: 7px; }
+  .account-page .account-wrap { padding-top: 22px; }
+  .account-page .toner-care-intro { padding: 14px; }
+  .account-page .toner-care-intro-icon { display: none; }
+}
+@media (max-width: 1100px) {
+  .account-page .toner-care-printers-panel { grid-row: 1; }
+}
+@media (max-width: 720px) {
+  .account-page .toner-care-printers-panel { padding: 15px; }
+  .account-page .saved-printer-mini.toner-care-card { padding: 14px; }
+}

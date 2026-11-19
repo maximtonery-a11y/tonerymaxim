@@ -1,4 +1,6 @@
 import type { APIRoute } from "astro";
+import { randomUUID } from "node:crypto";
+import { bratislavaDay, endTonerCare, expireTonerCare, replacementDate, validPlanDate } from "../../../lib/toner-care-rules";
 import { compactKey, getProductsCache, normalize } from "../../../lib/tm-products-cache";
 import { readCustomerSession } from "../../../lib/auth-session";
 import { entitySlug, printerBrandForName } from "../../../lib/seo-catalog";
@@ -16,19 +18,6 @@ function json(data: unknown, status = 200) {
     status,
     headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
   });
-}
-
-function isoDate(value: unknown): string {
-  const raw = String(value || "").trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return "";
-  const date = new Date(`${raw}T12:00:00.000Z`);
-  return Number.isNaN(date.getTime()) ? "" : raw;
-}
-
-function replacementDate(installedAt: string, months: number): string {
-  const date = new Date(`${installedAt}T12:00:00.000Z`);
-  date.setUTCMonth(date.getUTCMonth() + months);
-  return date.toISOString().slice(0, 10);
 }
 
 function printerBrand(printer: string) {
@@ -101,7 +90,7 @@ async function requireCustomer(cookies: any) {
 export const GET: APIRoute = async ({ cookies }) => {
   const customer = await requireCustomer(cookies);
   if (!customer) return json({ ok: false, error: "Nie ste prihlásený." }, 401);
-  return json({ ok: true, printers: getSavedPrintersFromCustomer(customer) });
+  return json({ ok: true, printers: getSavedPrintersFromCustomer(customer).map((printer) => expireTonerCare(printer)) });
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -129,8 +118,23 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
   const title = String(body.title || "").trim();
   if (!title) return json({ ok: false, error: "Chýba model tlačiarne." }, 400);
 
-  const installedAt = isoDate(body.installed_at);
-  const expectedMonths = Math.min(24, Math.max(1, Math.trunc(Number(body.expected_months || 3))));
+  const existing = getSavedPrintersFromCustomer(customer).map((printer) => expireTonerCare(printer));
+  const index = existing.findIndex((item) => compactKey(item.title) === compactKey(title));
+  if (index < 0) return json({ ok: false, error: "Uložená tlačiareň nebola nájdená." }, 404);
+  const previous = existing[index];
+
+  if (body.action === "disable" || body.care_enabled === false) {
+    const updated = endTonerCare(previous, "disabled");
+    existing[index] = updated;
+    await saveWooCustomerPrinters(customer.id, existing);
+    return json({ ok: true, printer: updated, printers: existing });
+  }
+
+  const installedAt = validPlanDate(body.installed_at);
+  const expectedMonths = Number(body.expected_months ?? 3);
+  if (!Number.isInteger(expectedMonths) || expectedMonths < 1 || expectedMonths > 24) {
+    return json({ ok: false, error: "Predpokladaná výdrž musí byť 1 až 24 celých mesiacov." }, 400);
+  }
   const preferredType = ["compatible", "original", "renovated", "any"].includes(String(body.preferred_type || ""))
     ? String(body.preferred_type)
     : "any";
@@ -140,27 +144,30 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
     return json({ ok: false, error: "Pri aktívnom strážcovi zadajte dátum vloženia náplne." }, 400);
   }
 
-  const today = new Date();
-  today.setHours(23, 59, 59, 999);
-  if (installedAt && new Date(`${installedAt}T12:00:00.000Z`).getTime() > today.getTime()) {
+  const today = bratislavaDay();
+  if (installedAt && installedAt > today) {
     return json({ ok: false, error: "Dátum vloženia nemôže byť v budúcnosti." }, 400);
   }
 
-  const existing = getSavedPrintersFromCustomer(customer);
-  const index = existing.findIndex((item) => compactKey(item.title) === compactKey(title));
-  if (index < 0) return json({ ok: false, error: "Uložená tlačiareň nebola nájdená." }, 404);
-
-  const previous = existing[index];
-  const cycleChanged = previous.installed_at !== installedAt || Number(previous.expected_months || 3) !== expectedMonths;
+  const due = installedAt ? replacementDate(installedAt, expectedMonths) : "";
+  if (careEnabled && due < today) {
+    return json({ ok: false, error: "Termín výmeny už uplynul. Nastavte nový plán výmeny." }, 400);
+  }
+  const cycleChanged = !previous.care_enabled || previous.installed_at !== installedAt || Number(previous.expected_months || 3) !== expectedMonths;
+  const base = cycleChanged && previous.care_enabled ? endTonerCare(previous, "changed") : previous;
   const updated = {
-    ...previous,
+    ...base,
     care_enabled: careEnabled,
     installed_at: installedAt,
     expected_months: expectedMonths,
-    expected_replacement_at: installedAt ? replacementDate(installedAt, expectedMonths) : "",
-    reminder_days: 21,
+    expected_replacement_at: due,
+    reminder_days: 30,
     preferred_type: preferredType as "compatible" | "original" | "renovated" | "any",
     ...(cycleChanged ? {
+      care_cycle_id: randomUUID(),
+      care_ended_at: "",
+      care_end_reason: undefined,
+      care_reminders: [],
       customer_reminder_sent_for: "",
       admin_reminder_sent_for: "",
       last_reminder_at: "",

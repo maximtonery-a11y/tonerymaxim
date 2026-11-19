@@ -2,6 +2,7 @@
 import Header from "./Header.astro";
 import Footer from "./Footer.astro";
 import FloatingAdvisor from "./FloatingAdvisor.astro";
+import AccountMobileNav from "./AccountMobileNav.astro";
 import { customerDisplayName, customerInitials, type CustomerSession } from "../lib/auth-session";
 
 const {
@@ -54,6 +55,7 @@ const navItems = [
             <a
               class:list={["account-nav-link", active === item.id && "is-active"]}
               href={item.href}
+              aria-current={active === item.id ? "page" : undefined}
               rel={active === item.id ? undefined : "prefetch"}
             >
               <span>{item.icon}</span>
@@ -75,13 +77,15 @@ const navItems = [
             <h1>{title}</h1>
             <p>{subtitle}</p>
           </div>
-          <button class="account-menu-toggle" type="button" data-account-menu-toggle>Menu účtu</button>
+          <button class="account-menu-toggle" type="button" data-account-drawer-open="more" aria-controls="account-mobile-drawer" aria-expanded="false">Menu účtu</button>
         </div>
 
         <slot />
       </section>
     </div>
   </main>
+
+  <AccountMobileNav active={active} items={navItems} />
 
   <Footer />
   <FloatingAdvisor />
@@ -90,7 +94,7 @@ const navItems = [
 <script>
   import "../scripts/account-ui.js";
 
-  document.querySelector<HTMLFormElement>('[data-account-logout-form]')?.addEventListener('submit', async (event) => {
+  document.querySelectorAll<HTMLFormElement>('[data-account-logout-form]').forEach((logoutForm) => logoutForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = event.currentTarget as HTMLFormElement;
     const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
@@ -118,7 +122,7 @@ const navItems = [
         errorBox.hidden = false;
       }
     }
-  });
+  }));
 
   const accountLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".account-nav-link[href]"));
   const prefetched = new Set<string>();
