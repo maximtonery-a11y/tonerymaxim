@@ -208,6 +208,10 @@ test('a dual-brand physical cartridge keeps both order codes including their com
   }
   assert.deepEqual(pair('Canon CRG-737'), ['Canon CRG-737']);
   assert.deepEqual(pair('HP CF283X'), ['HP CF283X']);
+  assert.deepEqual(pair('HP 85A / CE285A'), ['HP CE285A']);
+  assert.deepEqual(pair('HP CE285A / 85A'), ['HP CE285A']);
+  assert.deepEqual(pair('H-CF283X/'), []);
+  assert.deepEqual(pair('/CRG-737'), []);
   assert.deepEqual(pair('H-CF283X/CRG-7'), []);
   const blocked = new Set<string>();
   assert.deepEqual(pair('S/N: H-CF283X/CRG-737', blocked), []);

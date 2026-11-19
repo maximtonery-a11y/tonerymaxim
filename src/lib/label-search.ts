@@ -103,16 +103,31 @@ function visibleLabelLines(lines: LabelLine[], privateCodes: Set<string>) {
 
 // An aftermarket label can name a different orderable article for each printer brand.
 function printedBrandPair(line: string) {
-  if (!/[/／]/.test(line)) return;
-  const names = tokens(line);
-  const hp = names.find(code => hpOem.test(code));
-  const canon = names.find(code => /^CRG-?\d{3,4}[A-Z]{0,2}$/.test(code));
-  if (hp && canon) return [hp, canon] as const;
+  const parts = line.split(/[/／]/);
+  if (parts.length !== 2) return;
+  const left = tokens(parts[0]), right = tokens(parts[1]);
+  const canonCode = /^CRG-?\d{3,4}[A-Z]{0,2}$/;
+  for (const [hpSide, canonSide] of [[left, right], [right, left]]) {
+    const hp = hpSide.filter(code => hpOem.test(code));
+    const canon = canonSide.filter(code => canonCode.test(code));
+    if (hp.length === 1 && canon.length === 1) return [hp[0], canon[0]] as const;
+  }
 }
 
 export function hasSplitSupplyLabel(lines: LabelLine[]) {
-  return lines.some(line => !privateLine.test(line.text) &&
-    /(?:\b(?:C[BEFH]\d{3}[A-Z]{1,3}|CRG[- ]?\d{3,4}[A-Z]{0,2})\s*[/／]|[/／]\s*(?:CRG[- ]?\d|(?:H-)?C[BEFH]\d))/i.test(line.text));
+  return lines.some(({ text }) => {
+    if (privateLine.test(text) || !/[/／]/.test(text)) return false;
+    if (printedBrandPair(text)) return true;
+    const sides = clean(text).split(/[/／]/).map(part => part.trim());
+    if (sides.length !== 2) return false;
+    const hp = /\b(?:C[BEFH]\d{1,3}|[QW]\d{2,4})[A-Z]{0,3}\b/;
+    const canon = /\bCRG(?:[- ]?\d{0,4})?[A-Z]{0,2}\b/;
+    // A cropped side cannot identify a second brand. A complete same-brand
+    // commercial alias (such as HP 85A / CE285A) is still a valid single match.
+    const [a, b] = sides;
+    return (hp.test(a) && (canon.test(b) || !b)) || (hp.test(b) && (canon.test(a) || !a))
+      || (canon.test(a) && !b) || (canon.test(b) && !a);
+  });
 }
 
 export function candidateText(item: LabelCandidate) {

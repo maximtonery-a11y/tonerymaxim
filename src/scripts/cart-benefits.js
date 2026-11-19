@@ -12,7 +12,7 @@ export function setCouponDisabled(disabled) {
   if (disabled) localStorage.setItem(COUPON_DISABLED, '1');
   else localStorage.removeItem(COUPON_DISABLED);
   localStorage.removeItem('tm_coupon_v1');
-  invalidateCartBenefits();
+  invalidateCartBenefits(false, true);
   window.dispatchEvent(new CustomEvent('tm:coupon-choice'));
 }
 export function benefitsKey(cart, enteredCode) {
@@ -28,7 +28,34 @@ export function readCartBenefits(cart, enteredCode) {
   if (!identity || identity.expiresAt <= Date.now() || Number(identity.customer?.id || 0) !== Number(saved.data.customerId || 0)) return null;
   return saved.data;
 }
-export function invalidateCartBenefits(identityChanged = false) {
+export function readDrawerBenefits() {
+  const identity = json(sessionStorage, 'tm_header_account_v1');
+  if (!identity?.customer?.id || identity.expiresAt <= Date.now()) return null;
+
+  const verified = json(sessionStorage, CACHE);
+  const data = verified?.until > Date.now() && verified.data?.customerId === identity.customer.id ? verified.data : null;
+  const preview = identity.cartPreview?.expiresAt > Date.now() ? identity.cartPreview : null;
+  const discountValue = data?.loyalty?.discountValue ?? preview?.discountValue ?? 0;
+  const saved = json(localStorage, 'tm_coupon_v1');
+  const coupon = data?.coupon;
+  const verifiedCoupon = coupon?.ok && coupon.percent > 0
+    && (!coupon.expiresAt || Date.parse(coupon.expiresAt) > Date.now())
+    && (!saved?.manual || saved.code === coupon.code) ? coupon : null;
+  const welcome = !saved?.manual && preview?.welcome?.expiresAt > Date.now() ? preview.welcome : null;
+  const estimatedCoupon = couponDisabled() ? null : verifiedCoupon || welcome;
+  return estimatedCoupon || discountValue > 0 ? { discountValue, coupon: estimatedCoupon } : null;
+}
+
+export function invalidateCartBenefits(identityChanged = false, preservePreview = false) {
+  if (!preservePreview || identityChanged) {
+    try {
+      const identity = json(sessionStorage, 'tm_header_account_v1');
+      if (identity?.cartPreview) {
+        delete identity.cartPreview;
+        sessionStorage.setItem('tm_header_account_v1', JSON.stringify(identity));
+      }
+    } catch {}
+  }
   try { sessionStorage.removeItem(CACHE); } catch {}
   try {
     localStorage.setItem(EPOCH, Date.now() + '-' + Math.random());

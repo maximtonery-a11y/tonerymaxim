@@ -170,7 +170,16 @@ const specialGroups = [
           <small>s DPH</small>
           {pagePrice && <small class="tm-cost-per-page">{pagePrice}</small>}
           {hasLowestPriceReference(product) && <small class="tm-lowest-price">Najnižšia cena za posledných 30 dní: <b>{money(product.lowest_price_30d)}</b></small>}
-          <button type="button" aria-label={`Pridať do košíka ${product.name}`}>
+          <button type="button" data-add-to-cart
+            disabled={!String(product.sku || "").trim() || !(Number(product.price) > 0)}
+            data-sku={product.sku} data-name={product.name} data-price={product.price}
+            data-image={product.image} data-url={productDetailUrl(product)} data-slug={product.slug}
+            data-product-type-key={type.key} data-product-type-label={product.product_type_label}
+            data-color={color} data-capacity={capacity} data-stock-status={product.stock_status}
+            data-stock-quantity={product.stock_quantity} data-stock-text={stockText(product)}
+            data-series-pack-key={product.series_pack_key} data-series-pack-label={product.series_pack_label}
+            data-series-pack-discount-rate={product.series_pack_discount_rate}
+            aria-label={`Pridať do košíka ${product.name}`}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h16l-2 8H7zM5 6 4 3H2M8 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"></path></svg>Do košíka
           </button>
         </div>

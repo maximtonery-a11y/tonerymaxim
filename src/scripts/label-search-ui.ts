@@ -312,7 +312,17 @@ function setup(root: HTMLElement) {
   });
   manual.addEventListener('submit', event => {
     lastFile = undefined;
-    const candidates = labelCandidates([{ text: field.value, confidence: 100 }]);
+    const lines = [{ text: field.value, confidence: 100 }];
+    const options = hasSplitSupplyLabel(lines) ? liveLabelOptions(lines, new Set()) : [];
+    if (options.length === 2) {
+      event.preventDefault();
+      reset();
+      results.replaceChildren();
+      choose(options);
+      focusResult();
+      return;
+    }
+    const candidates = labelCandidates(lines);
     if (candidates.length === 1) { event.preventDefault(); void lookup(candidates[0]); }
     else reset(); // An explicitly typed free-text query uses the usual catalogue search.
   });

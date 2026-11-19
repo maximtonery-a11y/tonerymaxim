@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { runInNewContext } from 'node:vm';
 import { build } from 'esbuild';
 import { remainingCart, acceptSubmittedOrder, readSubmittedOrder, consumeLegacySubmittedCart, cartSignature, resetCheckoutAttempt, saveShoppingCart } from '../src/scripts/submitted-order.js';
-import { getCartBenefits, readCartBenefits, invalidateCartBenefits, couponDisabled, setCouponDisabled } from '../src/scripts/cart-benefits.js';
+import { getCartBenefits, readCartBenefits, readDrawerBenefits, invalidateCartBenefits, couponDisabled, setCouponDisabled } from '../src/scripts/cart-benefits.js';
 
 class Storage {
   values = new Map<string, string>();
@@ -202,7 +202,7 @@ test('add-to-cart drawer shows the price immediately during slow and failed bene
   const render = source.slice(source.indexOf('  function renderAddCartSummary('), source.indexOf('  function showAddCartDrawer('));
   let html = '';
   const scope = {
-    benefitStatus: 'pending',
+    benefitStatus: 'pending', tmCoupon: null, readDrawerBenefits: () => null,
     readCart: () => [a], ensureCartBenefits() {}, cartCount: () => 2,
     cartPricing() {}, couponDiscountForTotal() {}, loyaltyDiscountForTotal() {},
     cartGoodsTotals: () => ({ subtotal: 20, total: 18, missingForFreeShipping: 11 }),
@@ -222,4 +222,21 @@ test('add-to-cart drawer shows the price immediately during slow and failed bene
   draw({ querySelector: () => ({}) });
   assert.match(html, /Spolu za tovar/);
   assert.match(html, /Do dopravy zdarma chýba 11.00 €/);
+});
+
+
+test('drawer estimates use recent account data and never expose another account’s benefits', () => {
+  identity();
+  const current = JSON.parse(session.getItem('tm_header_account_v1')!);
+  const expiresAt = Date.now() + 60_000;
+  current.cartPreview = { expiresAt, discountValue: 0.5, welcome: { percent: 5, expiresAt } };
+  session.setItem('tm_header_account_v1', JSON.stringify(current));
+  assert.equal(readDrawerBenefits()?.coupon?.percent, 5);
+  assert.equal(readCartBenefits([a]), null);
+  setCouponDisabled(true);
+  assert.equal(readDrawerBenefits()?.coupon, null);
+  invalidateCartBenefits();
+  assert.equal(readDrawerBenefits(), null);
+  identity(8);
+  assert.equal(readDrawerBenefits(), null);
 });

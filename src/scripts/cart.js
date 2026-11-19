@@ -3,7 +3,7 @@ import { getDispatchMessage, refreshDispatchMessages } from "./dispatch-message.
 import { collapsePaperRewardCart, isPaperRewardCartItem, syncPaperRewardCart } from "./paper-reward-cart.js";
 import { cartProductUnavailable, markMissingCartProduct, mergeCurrentCartProduct } from "../lib/cart-product-refresh.ts";
 import { isAvailableNow, orderFulfilmentText, ORDER_DELIVERY_LABEL } from "../lib/product-availability.ts";
-import { benefitsKey, getCartBenefits, readCartBenefits, couponDisabled, setCouponDisabled } from './cart-benefits.js';
+import { benefitsKey, getCartBenefits, readCartBenefits, readDrawerBenefits, couponDisabled, setCouponDisabled } from './cart-benefits.js';
 import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponDiscount, redeemableLoyaltyDiscount } from '../lib/checkout-vat.ts';
 
 (() => {
@@ -714,8 +714,8 @@ function formatMoney(value) {
     return rows.length ? `<div class="add-cart-meta">${rows.join('')}</div>` : '';
   }
 
-  function discountRows({ discount, couponDiscount, loyaltyDiscount }) {
-    const percent = Number(tmCoupon?.percent || 0);
+  function discountRows({ discount, couponDiscount, loyaltyDiscount }, coupon = tmCoupon) {
+    const percent = Number(coupon?.percent || 0);
     return [
       ["Množstevná / sadová zľava", discount],
       [percent > 0 ? `Kupónová zľava ${percent} %` : "Kupónová zľava", couponDiscount],
@@ -735,11 +735,18 @@ function formatMoney(value) {
     const summary = drawer.querySelector("[data-add-cart-summary]");
     const line = (label, value) => `<div><span>${label}</span><strong>${value}</strong></div>`;
     let html = line("V košíku", `${count} ${count === 1 ? "produkt" : count >= 2 && count <= 4 ? "produkty" : "produktov"}`);
-    const totals = cartGoodsTotals(cart, cartPricing(cart), couponDiscountForTotal, loyaltyDiscountForTotal);
-    const discounts = discountRows(totals);
+    const preview = benefitStatus === "ready" ? null : readDrawerBenefits();
+    const previewCoupon = preview?.coupon;
+    const totals = preview
+      ? cartGoodsTotals(cart, cartPricing(cart),
+        () => previewCoupon ? percentageCouponDiscount(cart, previewCoupon.percent, previewCoupon.scope || "all") : 0,
+        (amount) => localStorage.getItem("tm_loyalty_apply") === "0" ? 0
+          : redeemableLoyaltyDiscount(preview.discountValue, preview.discountValue, amount))
+      : cartGoodsTotals(cart, cartPricing(cart), couponDiscountForTotal, loyaltyDiscountForTotal);
+    const discounts = discountRows(totals, preview ? previewCoupon : tmCoupon);
     if (discounts.length) html += line("Tovar pred zľavami", formatMoney(totals.subtotal));
     for (const [label, amount] of discounts) html += line(label, "-" + formatMoney(amount));
-    html += line(benefitStatus === "ready" ? "Spolu za tovar" : "Pred osobnými zľavami", formatMoney(totals.total) + " s DPH");
+    html += line(benefitStatus === "ready" ? "Spolu za tovar" : preview ? "Odhad po zľavách" : "Pred osobnými zľavami", formatMoney(totals.total) + " s DPH");
     if (benefitStatus === "ready") {
       html += totals.missingForFreeShipping > 0
         ? `<p>Do dopravy zdarma chýba ${formatMoney(totals.missingForFreeShipping)}</p>`
@@ -1158,6 +1165,9 @@ function formatMoney(value) {
         qty: 1,
         product_type_key: addButton.dataset.productTypeKey || addButton.dataset.type || "",
         product_type_label: addButton.dataset.productTypeLabel || "",
+        series_pack_key: addButton.dataset.seriesPackKey,
+        series_pack_label: addButton.dataset.seriesPackLabel,
+        series_pack_discount_rate: addButton.dataset.seriesPackDiscountRate,
         color: addButton.dataset.color || "",
         capacity: addButton.dataset.capacity || addButton.dataset.yield || addButton.dataset.pageYield || addButton.dataset.kapacita || "",
         warranty: addButton.dataset.warranty || "24 mesiacov",
@@ -1166,17 +1176,7 @@ function formatMoney(value) {
         stock_text: addButton.dataset.stockText || "",
       };
 
-      addToCart(product);
-      showAddCartDrawer(product);
-
-      const originalText = addButton.textContent;
-      addButton.textContent = "Pridané do košíka";
-      addButton.classList.add("is-added");
-
-      setTimeout(() => {
-        addButton.textContent = originalText;
-        addButton.classList.remove("is-added");
-      }, 1000);
+      if (addToCart(product)?.added) showAddCartDrawer(product);
 
       return;
     }
@@ -1252,6 +1252,7 @@ function formatMoney(value) {
     }
   });
 
+  window.addEventListener("tm:account-preview", renderCartViews);
   window.addEventListener("tm:order-accepted", () => { refreshCartCounters(); renderCartViews(); });
   window.addEventListener("pageshow", event => {
     if (event.persisted) { consumeLegacySubmittedCart(); refreshCartCounters(); renderCartViews(); }
