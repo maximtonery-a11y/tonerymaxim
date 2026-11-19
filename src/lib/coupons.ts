@@ -209,7 +209,10 @@ export function couponRedemptionCommitted(order: any): boolean {
 function couponUsageCheck() {
   let pending: Promise<any[]> | undefined;
   return async (code: string) => {
-    pending ??= wooRequest<any[]>('/orders', { query: { per_page: 100, orderby: 'date', order: 'desc' } });
+    pending ??= wooRequest<any[]>('/orders', { query: {
+      per_page: 100, orderby: 'date', order: 'desc',
+      _fields: 'status,date_paid,date_paid_gmt,payment_method,meta_data',
+    } });
     const orders = await pending;
     if (!Array.isArray(orders)) throw new Error('Históriu použitia kupónu sa nepodarilo overiť.');
     const matching = orders.filter(order => normalizeCouponCode(orderMeta(order, 'tm_coupon_code')) === code);

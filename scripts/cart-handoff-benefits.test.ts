@@ -1,8 +1,9 @@
 import test, { after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, mkdir } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { runInNewContext } from 'node:vm';
 import { build } from 'esbuild';
 import { remainingCart, acceptSubmittedOrder, readSubmittedOrder, consumeLegacySubmittedCart, cartSignature, resetCheckoutAttempt, saveShoppingCart } from '../src/scripts/submitted-order.js';
 import { getCartBenefits, readCartBenefits, invalidateCartBenefits, couponDisabled, setCouponDisabled } from '../src/scripts/cart-benefits.js';
@@ -194,4 +195,31 @@ test('one lightweight benefits response reads customer/orders once and excludes 
   const response = await api.benefits({cookies:owner(777),request:new Request('https://example.invalid/api/cart-benefits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cart:[a]})})});
   assert.equal(response.status,200);const data=await response.json();assert.equal(data.customerId,777);assert.equal(data.loyalty.discountValue,0.5);assert.equal(data.coupon.percent,5);
   assert.equal(urls.length,2);assert.doesNotMatch(JSON.stringify(data),/history|creditedOrders|fixture@example/);
+});
+
+test('add-to-cart drawer shows the price immediately during slow and failed benefits checks', async () => {
+  const source = await readFile('src/scripts/cart.js', 'utf8');
+  const render = source.slice(source.indexOf('  function renderAddCartSummary('), source.indexOf('  function showAddCartDrawer('));
+  let html = '';
+  const scope = {
+    benefitStatus: 'pending',
+    readCart: () => [a], ensureCartBenefits() {}, cartCount: () => 2,
+    cartPricing() {}, couponDiscountForTotal() {}, loyaltyDiscountForTotal() {},
+    cartGoodsTotals: () => ({ subtotal: 20, total: 18, missingForFreeShipping: 11 }),
+    discountRows: () => [['Množstevná zľava', 2]],
+    formatMoney: (value: number) => value.toFixed(2) + ' €',
+    setMarkup: (_node: unknown, markup: string) => { html = markup; },
+  };
+  const draw = runInNewContext(render + ';renderAddCartSummary', scope);
+  for (const status of ['pending', 'error']) {
+    scope.benefitStatus = status;
+    draw({ querySelector: () => ({}) });
+    assert.match(html, /Pred osobnými zľavami<\/span><strong>18.00 € s DPH/);
+    assert.match(html, /Doprava zdarma od 29 € po zľavách/);
+    assert.doesNotMatch(html, /role="status"|Skúsiť znova|is-free/);
+  }
+  scope.benefitStatus = 'ready';
+  draw({ querySelector: () => ({}) });
+  assert.match(html, /Spolu za tovar/);
+  assert.match(html, /Do dopravy zdarma chýba 11.00 €/);
 });

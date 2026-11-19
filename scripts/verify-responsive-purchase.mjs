@@ -354,7 +354,9 @@ async function checkDiscountJourney(page, origin, guest) {
   if (await page.locator("#tm-cookie-reject").isVisible()) await page.locator("#tm-cookie-reject").click();
   assert.equal(lookups, 0, "Browsing a product must not load cart benefits");
   await buy(4);
-  await drawer.getByText("Osobné zľavy ešte overujeme…").waitFor();
+  await drawer.getByText("Doprava zdarma od 29 € po zľavách").waitFor();
+  assert.match(await drawer.innerText(), /Pred osobnými zľavami\s+30,51/);
+  assert.doesNotMatch(await drawer.innerText(), /overujeme|Skúsiť znova/);
   assert.equal(await drawer.locator("p.is-free").count(), 0);
   releaseBenefits();
   if (guest) {

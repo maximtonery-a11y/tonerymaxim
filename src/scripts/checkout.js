@@ -56,7 +56,6 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     return source === "kalendare-2027" || id.startsWith("calendar:") || calendarUrl;
   }
   let tmLoyalty = { ok: false, points: 0, discountValue: 0 };
-  let tmLoyaltyLoadPromise = null;
   const TM_LOYALTY_MIN_DISCOUNT = 0.2;
   // Vernostná zľava je pre prihláseného zákazníka predvolene zapnutá.
   // Hodnota "0" vznikne iba po jeho vedomom odškrtnutí voľby.
@@ -110,6 +109,15 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
       ? percentageCouponDiscount(cart, percent, tmCoupon.scope)
       : Number(tmCoupon.discount || 0);
     return Math.min(Math.max(0, Number.isFinite(discount) ? discount : 0), Math.max(0, total));
+  }
+
+  function loadCheckoutBenefits(enteredCode, force = false) {
+    const task = refreshCheckoutCoupon(enteredCode, force);
+    couponLoadPromise = task;
+    void task.finally(() => {
+      if (couponLoadPromise === task) couponLoadPromise = undefined;
+    });
+    return task;
   }
 
   async function refreshCheckoutCoupon(enteredCode, force = false) {
@@ -1647,17 +1655,10 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
   async function submitOrder(event) {
     event?.preventDefault?.();
     if (tmOrderSubmitting) return;
-    // Rýchle kliknutie po otvorení pokladne nesmie predbehnúť načítanie
-    // automatickej vernostnej odmeny.
-    if (tmLoyaltyLoadPromise) await tmLoyaltyLoadPromise.catch(() => {});
-    if (couponLoadPromise) await couponLoadPromise;
-    // Kým prvý handler čakal na vernostné údaje, druhý klik mohol vstúpiť
-    // do rovnakej vetvy. Zámku preto kontrolujeme znova po await.
-    if (tmOrderSubmitting) return;
     const status = document.querySelector("[data-order-status]");
     renderCheckoutSummary();
 
-    const cart = readCart();
+    let cart = readCart();
 
     if (cart.length === 0) {
       status.textContent = "Košík je prázdny. Vráťte sa späť do košíka.";
@@ -1665,15 +1666,29 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
       return;
     }
 
-    if (!tmBenefitsReady) {
-      await refreshCheckoutCoupon();
+    const resumeOnlinePayment = submittedGoPayForCart(cart) && isOnlinePayment(getSelected("payment") || "gopay");
+    if (!resumeOnlinePayment) {
+      if (!validateCheckout()) {
+        status.textContent = "Skontrolujte zvýraznené povinné údaje.";
+        status.className = "order-status is-error";
+        return;
+      }
+
+      const pendingBenefits = couponLoadPromise || (!tmBenefitsReady ? loadCheckoutBenefits() : undefined);
+      const submittedBenefitsRevision = couponRevision;
+      if (pendingBenefits) await pendingBenefits;
+      if (tmOrderSubmitting || submittedBenefitsRevision !== couponRevision) return;
       if (!tmBenefitsReady) {
         status.textContent = "Osobné zľavy sa nepodarilo overiť. Skúste odoslanie o chvíľu znova.";
         status.className = "order-status is-error";
         return;
       }
+      if (pendingBenefits) {
+        cart = readCart();
+        if (!cart.length || !validateCheckout()) return;
+      }
     }
-    if (tmOrderSubmitting) return;
+
     const selectedPayment = getSelected("payment") || "gopay";
     const alreadySubmitted = submittedGoPayForCart(cart);
     if (alreadySubmitted && isOnlinePayment(selectedPayment)) {
@@ -1686,12 +1701,6 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
         ? `/platba-dokoncena?id=${encodeURIComponent(alreadySubmitted.paymentId)}`
         : String(alreadySubmitted.gwUrl || "/platba-dokoncena");
       window.location.href = statusUrl;
-      return;
-    }
-
-    if (!validateCheckout()) {
-      status.textContent = "Skontrolujte zvýraznené povinné údaje.";
-      status.className = "order-status is-error";
       return;
     }
 
@@ -1757,12 +1766,6 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
       setSubmitDisabled(true);
       status.textContent = onlinePaymentSelected ? "Vytváram GoPay platbu..." : (isGoPayRecovery ? "Mením spôsob platby..." : "Ukladám objednávku...");
       status.className = "order-status";
-      setSubmitProgress(true, onlinePaymentSelected
-        ? "Pripravujeme bezpečnú platbu GoPay. Prosím, nezatvárajte túto stránku."
-        : (isGoPayRecovery
-          ? "Aktualizujeme platbu na pôvodnej objednávke. Novú objednávku nevytvárame."
-          : "Objednávku bezpečne ukladáme. Prosím, nezatvárajte túto stránku."));
-
       const endpoint = onlinePaymentSelected
         ? "/api/gopay-create"
         : (isGoPayRecovery ? "/api/gopay-change-payment" : "/api/order-create");
@@ -1783,7 +1786,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
       if (!response.ok && data.code === "COUPON_UNAVAILABLE" && data.orderCreated === false) {
         localStorage.removeItem("tm_coupon_v1");
         invalidateCartBenefits();
-        await refreshCheckoutCoupon(undefined, true);
+        await loadCheckoutBenefits(undefined, true);
         throw new Error("Kupón už nie je dostupný. Zľavy a celkovú sumu sme aktualizovali. Skontrolujte sumu a odošlite objednávku znova, prípadne zvoľte Nepoužiť kupón.");
       }
 
@@ -2017,12 +2020,12 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     if (!form) return;
     event.preventDefault();
     if (couponDisabled()) setCouponDisabled(false);
-    couponLoadPromise = refreshCheckoutCoupon((form.querySelector("[data-coupon-input]")?.value || "").trim());
+    loadCheckoutBenefits((form.querySelector("[data-coupon-input]")?.value || "").trim());
   });
 
   window.addEventListener("tm:coupon-choice", () => {
     tmCoupon = null; tmBenefitsReady = false;
-    couponLoadPromise = refreshCheckoutCoupon(); tmLoyaltyLoadPromise = couponLoadPromise;
+    loadCheckoutBenefits();
   });
 
   document.addEventListener("click", (event) => {
@@ -2058,7 +2061,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     if (event.key === "tm_cart_v1" && !resumeAcceptedOrder()) renderCheckoutSummary();
     if (event.key === "tm_cart_benefits_epoch") {
       tmCoupon = null; tmLoyaltyApply = false; tmBenefitsReady = false;
-      couponLoadPromise = refreshCheckoutCoupon(); tmLoyaltyLoadPromise = couponLoadPromise;
+      loadCheckoutBenefits();
     }
   });
   window.addEventListener("pageshow", event => {
@@ -2117,8 +2120,7 @@ import { cartGoodsTotals, discountedGrossLine, grossVatTotals, percentageCouponD
     if (cachedBenefits) applyCheckoutBenefits(cachedBenefits);
     else { const note = document.querySelector("[data-checkout-benefits-status]"); if (note) note.hidden = false; }
     renderCheckoutSummary();
-    couponLoadPromise = refreshCheckoutCoupon();
-    tmLoyaltyLoadPromise = couponLoadPromise;
+    loadCheckoutBenefits();
     updateVisibility();
     setupPickupWidgets();
     setupMobileCheckoutSteps();

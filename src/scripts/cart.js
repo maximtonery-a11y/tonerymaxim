@@ -729,6 +729,7 @@ function formatMoney(value) {
 
   function renderAddCartSummary(drawer) {
     const cart = readCart();
+    if (!drawer) return;
     ensureCartBenefits(cart);
     const count = cartCount(cart);
     const summary = drawer.querySelector("[data-add-cart-summary]");
@@ -739,12 +740,12 @@ function formatMoney(value) {
     if (discounts.length) html += line("Tovar pred zľavami", formatMoney(totals.subtotal));
     for (const [label, amount] of discounts) html += line(label, "-" + formatMoney(amount));
     html += line(benefitStatus === "ready" ? "Spolu za tovar" : "Pred osobnými zľavami", formatMoney(totals.total) + " s DPH");
-    html += benefitStatus !== "ready" ? "<p>Dopravu vypočítame po overení osobných zliav.</p>" : totals.missingForFreeShipping > 0
-      ? `<p>Do dopravy zdarma chýba ${formatMoney(totals.missingForFreeShipping)}</p>`
-      : '<p class="is-free">Dopravu máte zdarma</p>';
-    if (benefitStatus !== "ready") {
-      html += `<span role="status">${benefitStatusText()}</span>`;
-      if (benefitStatus === "error") html += '<button class="btn-link" type="button" data-cart-retry-discounts>Skúsiť znova</button>';
+    if (benefitStatus === "ready") {
+      html += totals.missingForFreeShipping > 0
+        ? `<p>Do dopravy zdarma chýba ${formatMoney(totals.missingForFreeShipping)}</p>`
+        : '<p class="is-free">Dopravu máte zdarma</p>';
+    } else {
+      html += "<p>Doprava zdarma od 29 € po zľavách</p>";
     }
     setMarkup(summary, html);
 
@@ -784,7 +785,7 @@ function formatMoney(value) {
     document.body.classList.add('has-add-cart-drawer');
     window.requestAnimationFrame(() => drawer.classList.add('is-open'));
     addCartDrawerTimer = window.setTimeout(() => {
-      if (benefitStatus === "ready") hideAddCartDrawer();
+      hideAddCartDrawer();
     }, 10000);
   }
 

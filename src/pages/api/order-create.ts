@@ -29,19 +29,27 @@ const PAYMENT: Record<string, { label: string; price: number }> = {
 
 export const prerender = false;
 
-const handlePost: APIRoute = async ({ request, cookies }) => {
+const handlePost = async ({ request, cookies }: Parameters<APIRoute>[0], body: any) => {
   let creationStarted = false;
   const profiler = new CheckoutProfiler("order-create");
   try {
     const session = readCustomerSession(cookies);
     profiler.mark("session");
-    const body = await profiler.measure("request.json", () => request.json().catch(() => ({})));
     const checkout = validateCheckoutRequest(body, new Set(Object.keys(PAYMENT)));
-    const needsLoyalty = Boolean(session?.id) && (body?.loyalty?.apply || cartRequestsPaperReward(body?.cart));
-    const loyalty = needsLoyalty
-      ? await profiler.measure("loyalty-load", () => getCustomerLoyalty(session!.id))
+    const hasPaperReward = cartRequestsPaperReward(body?.cart);
+    const loyaltyLookup = session?.id && (body?.loyalty?.apply || hasPaperReward)
+      ? profiler.measure("loyalty-load", () => getCustomerLoyalty(session.id))
       : null;
-    const cart = await profiler.measure("normalize-cart", () => normalizeSecureCheckoutCart(body.cart, { customerId: session?.id, loyalty }));
+    const [loyalty, cart] = await Promise.all([
+      loyaltyLookup,
+      profiler.measure("normalize-cart", async () => normalizeSecureCheckoutCart(body.cart, {
+        customerId: session?.id,
+        loyalty: hasPaperReward ? await loyaltyLookup : null,
+      })),
+      Array.isArray(body.cart) && body.cart.length > 0
+        ? profiler.measure('pricing-context', () => getWooPricingContext())
+        : null,
+    ]);
 
     if (cart.length === 0) {
       return markCheckoutUnsubmitted(new Response(JSON.stringify({ ok: false, error: "Košík je prázdny." }), {
@@ -51,7 +59,6 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
     }
 
     const { shippingCode, paymentCode } = checkout;
-    await profiler.measure('pricing-context', () => getWooPricingContext());
     const shipping = SHIPPING[shippingCode];
     const payment = PAYMENT[paymentCode];
     const originalSubtotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
@@ -73,9 +80,8 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
       coupon.discount = Math.round(couponDiscount * 100) / 100;
     }
     let loyaltyDiscount = 0;
-    if (session?.id && body?.loyalty?.apply) {
-      const currentLoyalty = loyalty || await profiler.measure("loyalty-load", () => getCustomerLoyalty(session.id));
-      loyaltyDiscount = redeemableLoyaltyDiscount(body.loyalty.discount, currentLoyalty.discountValue, subtotal - couponDiscount);
+    if (loyalty && body?.loyalty?.apply) {
+      loyaltyDiscount = redeemableLoyaltyDiscount(body.loyalty.discount, loyalty.discountValue, subtotal - couponDiscount);
     }
     const goodsAfterDiscounts = Math.max(0, Math.round((subtotal - couponDiscount - loyaltyDiscount) * 100) / 100);
     const shippingPrice = goodsAfterDiscounts >= 29 ? 0 : shipping.price;
@@ -164,7 +170,7 @@ const handlePost: APIRoute = async ({ request, cookies }) => {
 };
 
 export const POST: APIRoute = async (context) => {
-  const body = await context.request.clone().json().catch(() => ({}));
+  const body = await context.request.json().catch(() => ({}));
   const requestId = String(body?.requestId || context.request.headers.get("x-tm-idempotency-key") || "").trim();
-  return withCheckoutSubmission(requestId, "order", body, async () => handlePost(context));
+  return withCheckoutSubmission(requestId, "order", body, async () => handlePost(context, body));
 };
