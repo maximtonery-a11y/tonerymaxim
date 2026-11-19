@@ -240,6 +240,9 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     await page.locator('[data-matches] a').first().waitFor();
     assert.ok((await page.locator('[data-matches] a').allTextContents()).every(t => t.includes('Canon CRG-737')));
 
+    assert.equal(searches.filter(q => q === 'HP CF283X').length, 1, 'clicking either brand uses verified offers');
+    assert.equal(searches.filter(q => q === 'Canon CRG-737').length, 1);
+
     await page.evaluate(() => { window.labelCameraTest.text = 'C530dn'; });
     await start.click();
     const oki = page.getByRole('link', { name: 'OKI C530dn', exact: true });

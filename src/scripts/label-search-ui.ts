@@ -3,6 +3,8 @@ import { LabelPreviewTimeout, scanLiveCamera } from './label-live-camera';
 import { setupLabelLinePicker } from './label-line-picker';
 import { barcodeGuidance, candidateText, hasSplitSupplyLabel, liveLabelOptions, drumNeedsSuffix, exactLabelOffers, hpOrderCode, labelBrands, labelCandidates, matchesPrintedToner, printedTonerCodes, selectedLabelCandidates, type CatalogLink, type LabelCandidate, type LabelOffers } from '../lib/label-search';
 
+type CapturedOffers = Map<string, CatalogLink[]>;
+
 function setup(root: HTMLElement) {
   const controls = root.querySelector<HTMLElement>('[data-photo-controls]')!;
   const liveStart = root.querySelector<HTMLButtonElement>('[data-live-start]')!;
@@ -130,13 +132,13 @@ function setup(root: HTMLElement) {
     }
   }
 
-  async function lookup(candidate: LabelCandidate, automatic = false, alternatives?: LabelCandidate[]) {
+  async function lookup(candidate: LabelCandidate, automatic = false, alternatives?: LabelCandidate[], capturedOffers?: CapturedOffers) {
     const query = candidateText(candidate);
     const task = begin('Hľadám ' + query + ' v katalógu…', 18_000);
     stop.textContent = 'Zrušiť hľadanie';
     field.value = query;
     try {
-      const items = await findOffers(candidate, task.signal, automatic);
+      const items = capturedOffers?.get(query) ?? await findOffers(candidate, task.signal, automatic);
       if (task.signal.aborted) return;
       if (items === 'suffix') {
         cropToggle.hidden = !lastFile;
@@ -155,7 +157,7 @@ function setup(root: HTMLElement) {
           const back = document.createElement('button');
           back.type = 'button';
           back.textContent = 'Vybrať inú značku';
-          back.addEventListener('click', () => { results.replaceChildren(); choose(alternatives); focusResult(); });
+          back.addEventListener('click', () => { results.replaceChildren(); choose(alternatives, false, capturedOffers); focusResult(); });
           results.append(back);
         }
         focusResult();
@@ -189,6 +191,7 @@ function setup(root: HTMLElement) {
     cameraActions.append(stop);
     livePanel.showModal();
     const display = (message: string) => { if (!task.signal.aborted) status.textContent = message; };
+    const capturedOffers: CapturedOffers = new Map();
     try {
       await scanLiveCamera(video, guide, task, display, () => {
         closeCamera();
@@ -202,7 +205,22 @@ function setup(root: HTMLElement) {
           status.textContent = 'Čítanie záberu trvalo pridlho. Skúste nový záber alebo zadajte označenie ručne.';
         }, 28_000);
       }, async options => {
-        if (options.length > 1) { choose(options); focusResult(); return true; }
+        if (options.length > 1) {
+          display('Telefón môžete odložiť. Overujem obe označenia v katalógu…');
+          const verified = await Promise.all(options.map(async candidate => {
+            const key = candidateText(candidate);
+            const saved = capturedOffers.get(key);
+            if (saved) return saved.length > 0;
+            const offers = await findOffers(candidate, task.signal, true).catch(() => { throw new Error('catalog'); });
+            const items = Array.isArray(offers) ? offers : [];
+            capturedOffers.set(key, items);
+            return items.length > 0;
+          }));
+          if (task.signal.aborted || !verified.every(Boolean)) return false;
+          choose(options, false, capturedOffers);
+          focusResult();
+          return true;
+        }
         const [candidate] = options;
         display('Telefón môžete odložiť. Hľadám ' + candidateText(candidate) + ' v katalógu…');
         const items = await findOffers(candidate, task.signal, true).catch(() => { throw new Error('catalog'); });
@@ -234,7 +252,7 @@ function setup(root: HTMLElement) {
     } finally { if (active === task) reset(); }
   }
 
-  function choose(candidates: LabelCandidate[], barcode = false) {
+  function choose(candidates: LabelCandidate[], barcode = false, capturedOffers?: CapturedOffers) {
     cropToggle.hidden = !lastFile;
     if (!candidates.length) {
       status.textContent = barcode ? barcodeGuidance : 'Označenie sa nepodarilo prečítať. Odfoťte iba riadok s modelom alebo ho zadajte ručne.';
@@ -251,7 +269,7 @@ function setup(root: HTMLElement) {
       const button = document.createElement('button');
       button.type = 'button';
       button.textContent = candidateText(candidate);
-      button.addEventListener('click', () => void lookup(candidate, false, mixedBrands ? candidates : undefined));
+      button.addEventListener('click', () => void lookup(candidate, false, mixedBrands ? candidates : undefined, capturedOffers));
       results.append(button);
     }
   }
