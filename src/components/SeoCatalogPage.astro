@@ -477,7 +477,7 @@ const jsonLd = [
       document.querySelectorAll(".seo-catalog-list .tm-product-row").forEach((row) => {
         const target = row.querySelector(".tm-row-main h2 a, .tm-row-photo")?.getAttribute("href");
         if (!target) return;
-        row.querySelectorAll(".tm-row-buy button, [data-open-printers]").forEach((button) => {
+        row.querySelectorAll("[data-open-printers]").forEach((button) => {
           button.addEventListener("click", () => { window.location.href = target; });
         });
       });

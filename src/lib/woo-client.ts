@@ -272,10 +272,10 @@ export async function updateWooCustomer(customerId: number, body: Record<string,
   return customer;
 }
 
-export async function getWooCustomerOrders(customerId: number, perPage = 20): Promise<WooOrder[]> {
+export async function getWooCustomerOrders(customerId: number, perPage = 20, fields?: string): Promise<WooOrder[]> {
   if (!customerId) return [];
 
-  const key = `${customerId}:${perPage}`;
+  const key = `${customerId}:${perPage}:${fields || ""}`;
   const cached = getCached(wooCustomerOrdersCache, key);
   if (cached !== undefined) return cached;
 
@@ -283,6 +283,7 @@ export async function getWooCustomerOrders(customerId: number, perPage = 20): Pr
     query: {
       customer: customerId,
       per_page: perPage,
+      _fields: fields,
       orderby: "date",
       order: "desc",
     },

@@ -68,7 +68,7 @@ export async function syncCustomerLoyaltyPoints(customerId: number, showAccountH
   const claimedPacks = Math.max(0, Math.floor(Number(getCustomerMeta(customer, LOYALTY_META_PAPER_CLAIMED) || 0)));
   const historyLifetime = history.reduce((sum, item) => sum + Math.max(0, Number(item?.points || 0)), 0);
   const creditedSet = new Set((creditedOrders || []).map(String));
-  const orders = await getWooCustomerOrders(customerId, 100);
+  const orders = await getWooCustomerOrders(customerId, 100, showAccountHistory ? undefined : "id,status,total,meta_data");
 
   let points = Number.isFinite(currentPoints) ? currentPoints : 0;
   let lifetimePoints = Math.max(Number.isFinite(storedLifetime) ? storedLifetime : 0, historyLifetime);

@@ -288,14 +288,15 @@ body.has-add-cart-drawer { overflow: hidden; }
       const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null');
       if (cached && Number(cached.expiresAt) > Date.now()) {
         render(cached.customer || null);
-        return;
+        if (!cached.customer || cached.cartPreview) return;
       }
       const response = await fetch('/api/auth/me', { credentials: 'same-origin', headers: { Accept: 'application/json' }, cache: 'no-store' });
       const data = await response.json().catch(() => ({}));
       const customer = data?.customer;
       if (!response.ok || !data?.ok || !customer) throw new Error('not logged');
-      sessionStorage.setItem(cacheKey, JSON.stringify({ customer, expiresAt: Date.now() + 300000 }));
+      sessionStorage.setItem(cacheKey, JSON.stringify({ customer, cartPreview: data.cartPreview, expiresAt: Date.now() + 300000 }));
       render(customer);
+      window.dispatchEvent(new Event("tm:account-preview"));
     } catch {
       sessionStorage.setItem(cacheKey, JSON.stringify({ customer: null, expiresAt: Date.now() + 30000 }));
       render(null);

@@ -85,6 +85,15 @@ async function checkPrinterFit(page, origin) {
 async function checkPrinterJourney(page, origin) {
   const model = 'Brother DCP-L2512D';
   await page.goto(origin + '/tlaciarne/brother/brother-dcp-l2512d');
+  const listing = page.url();
+  const tonerLink = page.locator('a[href="' + productPath + '22"]').first();
+  const row = tonerLink.locator('xpath=ancestor::article');
+  await row.locator('[data-add-to-cart]').click();
+  await page.locator('[data-add-cart-summary]').getByText('1 produkt', { exact: true }).waitFor();
+  assert.equal(page.url(), listing);
+  assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('tm_cart_v1'))[0].sku), 'SKU-22');
+  await page.getByRole('button', { name: 'Pokračovať v nákupe' }).click();
+  await page.evaluate(() => window.ToneryMaximCart.clearCart());
   await page.locator('a[href="' + productPath + '22"]').first().click();
   await page.waitForFunction(() => document.querySelector('[data-check-heading]')?.textContent.includes('Vybraná'));
   assert.equal(await page.locator('[data-check-summary]').innerText(), model);
