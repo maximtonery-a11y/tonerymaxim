@@ -38,6 +38,17 @@ function installVideoFixture() {
       super.postMessage(job, ...args);
     }
   };
+  const fetchResponse = window.fetch.bind(window);
+  window.fetch = async (input, options) => {
+    const response = await fetchResponse(input, options);
+    const url = new URL(input instanceof Request ? input.url : String(input), location.href);
+    if (fixture.holdCatalog && url.pathname === '/api/smart-search' && url.searchParams.get('label') === '1') {
+      await new Promise(resolve => {
+        fixture.releaseCatalog = () => { fixture.holdCatalog = false; resolve(); };
+      });
+    }
+    return response;
+  };
   const play = HTMLMediaElement.prototype.play;
   HTMLMediaElement.prototype.play = function (...args) {
     const remaining = Number(sessionStorage.getItem('testStalledPreviews'));
@@ -168,7 +179,7 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
 
     // An indefinitely delayed first OCR job cannot hold the camera. Change the
     // live source after the track ends: the captured toner must still be found.
-    await page.evaluate(() => { window.labelCameraTest.holdOCR = true; window.labelCameraTest.text = 'Brother TN-2421'; });
+    await page.evaluate(() => { window.labelCameraTest.holdOCR = true; window.labelCameraTest.holdCatalog = true; window.labelCameraTest.text = 'Brother TN-2421'; });
     await start.click();
     const captured = status.filter({ hasText: 'Telefón môžete odložiť' });
     await captured.waitFor({ timeout: 10_000 });
@@ -187,16 +198,10 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     const steadyMs = await captureTime();
     await page.evaluate(() => { window.labelCameraTest.text = 'HP LaserJet P1102'; });
     await page.waitForFunction(() => typeof window.labelCameraTest.releaseOCR === 'function');
-    const gate = Promise.withResolvers();
-    const matchRequest = url => url.pathname === '/api/smart-search' && url.searchParams.get('label') === '1';
-    const startedSearch = page.waitForRequest(req => matchRequest(new URL(req.url())), { timeout: 35_000 });
-    const delaySearch = async route => { await gate.promise; await route.continue(); };
-    await page.route(matchRequest, delaySearch);
-    try {
-      await page.evaluate(() => window.labelCameraTest.releaseOCR());
-      await startedSearch;
-      assert.equal(await captureTime(), steadyMs, 'catalogue waits with the track already stopped');
-    } finally { gate.resolve(); await page.unroute(matchRequest, delaySearch); }
+    await page.evaluate(() => window.labelCameraTest.releaseOCR());
+    await page.waitForFunction(() => typeof window.labelCameraTest.releaseCatalog === 'function', undefined, { timeout: 35_000 });
+    assert.equal(await captureTime(), steadyMs, 'catalogue waits with the track already stopped');
+    await page.evaluate(() => window.labelCameraTest.releaseCatalog());
     await page.locator('[data-matches] a').first().waitFor({ timeout: 30_000 });
     assert.match(await status.innerText(), /Brother TN-2421/);
 
