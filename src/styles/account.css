@@ -2483,15 +2483,17 @@
 .account-mobile-drawer-head button { width: 48px; height: 48px; border: 0; border-radius: 12px; background: #f1f5fa; color: var(--tm-navy); font-size: 30px; }
 .account-mobile-drawer nav { padding: 0 20px max(20px, env(safe-area-inset-bottom, 0px)); }
 .account-mobile-drawer nav[hidden] { display: none; }
-.account-mobile-drawer-link { display: block; width: 100%; box-sizing: border-box; padding: 16px 4px; min-height: 52px; border: 0; border-bottom: 1px solid var(--tm-line); background: #fff; color: var(--tm-navy); font: inherit; font-size: 16px; text-align: left; text-decoration: none; }
+.account-mobile-drawer-link { display: block; width: 100%; box-sizing: border-box; padding: 16px 4px; min-height: 52px; border: 0; border-bottom: 1px solid var(--tm-line); background: #fff; color: var(--tm-navy); font: inherit; font-size: 16px; text-align: left; text-decoration: none; touch-action: manipulation; }
 .account-mobile-drawer-link[aria-current="page"] { font-weight: 800; color: #075ea8; }
 @media (max-width: 1100px) {
   .account-page { padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px)); }
-  .account-mobile-nav { position: fixed; z-index: 150; inset: auto 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #fff; border-top: 1px solid var(--tm-line); box-shadow: 0 -4px 18px #061b3a0a; padding: 6px max(4px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px)); }
-  .account-mobile-nav > a, .account-mobile-nav > button { min-width: 0; min-height: 56px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 5px; padding: 5px 1px; border: 0; border-radius: 12px; background: transparent; color: #53647c; font: inherit; font-size: 12px; line-height: 1.2; text-decoration: none; }
-  .account-mobile-nav svg { width: 22px; height: 22px; }
-  .account-mobile-nav > a > span, .account-mobile-nav > button > span { font-size: 11px; letter-spacing: -.12px; }
-  .account-mobile-nav [aria-current="page"], .account-mobile-nav .is-active, .account-mobile-nav [aria-expanded="true"] { background: #fff2c4; color: var(--tm-navy); font-weight: 800; }
+  .account-mobile-nav { position: fixed; z-index: 150; inset: auto 0 0; height: calc(74px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); align-items: center; background: #fff; border-top: 1px solid var(--tm-line); box-shadow: 0 -4px 18px #061b3a0a; padding: 6px max(4px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px)); transform: translate3d(0, 0, 0); backface-visibility: hidden; contain: layout paint; isolation: isolate; touch-action: manipulation; }
+  .account-mobile-nav > a, .account-mobile-nav > button { min-width: 0; min-height: 0; height: 58px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 5px; margin: 0; padding: 5px 1px; border: 0; border-radius: 12px; background: transparent; color: #53647c; font: inherit; font-size: 12px; font-weight: 700; line-height: 1.2; text-decoration: none; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: pointer; transition: none; }
+  .account-mobile-nav > a > *, .account-mobile-nav > button > * { pointer-events: none; }
+  .account-mobile-nav svg { width: 22px; height: 22px; flex-shrink: 0; }
+  .account-mobile-nav > a > span, .account-mobile-nav > button > span { font-size: clamp(10px, 2.8vw, 12px); letter-spacing: -.12px; }
+  .account-mobile-nav [aria-current="page"], .account-mobile-nav .is-active, .account-mobile-nav [aria-expanded="true"], .account-mobile-nav [data-navigation-pending], .account-mobile-nav > :active { background: #fff2c4; color: var(--tm-navy); }
+  .account-mobile-nav > :focus-visible { outline: 2px solid #075ea8; outline-offset: -3px; }
   .account-page .account-menu-toggle { display: none; }
   .account-page .tm-ai-assistant:not(.is-open) { right: 16px !important; bottom: calc(94px + env(safe-area-inset-bottom, 0px)) !important; }
   .account-page .tm-ai-assistant:not(.is-open) .tm-ai-assistant__launcher { bottom: 0 !important; }

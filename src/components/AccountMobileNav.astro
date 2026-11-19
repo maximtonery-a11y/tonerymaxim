@@ -1,4 +1,5 @@
 ---
+import menuScript from "../scripts/account-menu.js?raw";
 const { active = "prehlad", items = [] } = Astro.props as {
   active?: string;
   items?: Array<{ id: string; href: string; icon: string; label: string }>;
@@ -14,9 +15,9 @@ const icons = {
   viac: "M4 6h16 M4 12h16 M4 18h16",
 };
 ---
-<nav class="account-mobile-nav" aria-label="Rýchle menu účtu">
+<nav class="account-mobile-nav" data-account-mobile-nav aria-label="Rýchle menu účtu">
   {items.filter((item) => primary.has(item.id)).map((item) => (
-    <a href={item.href} aria-current={(active === item.id || (item.id === "objednavky" && ["faktury", "reklamacie"].includes(active))) ? "page" : undefined}>
+    <a href={item.href} data-account-nav-link aria-current={(active === item.id || (item.id === "objednavky" && ["faktury", "reklamacie"].includes(active))) ? "page" : undefined}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={icons[item.id as keyof typeof icons]} /></svg>
       <span>{item.id === "tlaciarne" ? "Tlačiarne" : item.label}</span>
     </a>
@@ -39,6 +40,5 @@ const icons = {
   </nav>
 </dialog>
 <noscript><nav class="account-mobile-fallback" aria-label="Všetky časti účtu">{items.map((item) => <a href={item.href}>{item.label}</a>)}</nav></noscript>
-<script>
-  import "../scripts/account-menu";
-</script>
+<!-- Critical tap handlers run while parsing the menu, before deferred account/advisor bundles. -->
+<script is:inline data-account-menu-script set:html={menuScript} />

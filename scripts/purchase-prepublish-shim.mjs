@@ -28,6 +28,10 @@ Server.prototype.emit = function(name, ...args) {
   if (url.pathname === '/__purchase_mobile') {
     const width = Number(url.searchParams.get('width') || 390);
     const safe = [320, 390, 768, 1280].includes(width) ? width : 390;
+    if (url.searchParams.get('page') === 'account') {
+      html(response, `<!doctype html><html lang="sk"><meta charset="utf-8"><title>Skúška mobilného menu účtu</title><style>body{font:16px Arial;background:#eef2f7;margin:16px}label{display:inline-flex;gap:8px;margin:0 16px 12px 0}main{resize:both;overflow:hidden;width:${safe}px;height:800px;min-width:300px;min-height:420px;border:1px solid #9baec5}iframe{width:100%;height:100%;border:0;background:white}</style><label>Šírka <select onchange="document.querySelector('main').style.width=this.value+'px'"><option>320</option><option selected>390</option><option>768</option><option>1280</option></select></label><label>Výška <select onchange="document.querySelector('main').style.height=this.value+'px'"><option>640</option><option selected>800</option><option>900</option></select></label><main><iframe title="Mobilný účet" src="/__account_fixture_session"></iframe></main></html>`);
+      return true;
+    }
     html(response, `<!doctype html><html lang="sk"><meta charset="utf-8"><title>Test nákupného procesu</title><style>body{font:16px Arial;background:#eef2f7;padding:14px}nav{display:flex;gap:14px;margin-bottom:12px}iframe{display:block;width:${safe}px;height:860px;border:1px solid #bbc9dc;background:#fff;border-radius:10px}</style><nav><a href="/__purchase_mobile?width=320">320 px</a><a href="/__purchase_mobile?width=390">390 px</a><a href="/__purchase_mobile?width=768">768 px</a><a href="/__purchase_mobile?width=1280">Desktop</a></nav><iframe title="Skúšobný nákup" src="/produkt/fixture-toner-12"></iframe></html>`);
     return true;
   }
