@@ -1,6 +1,13 @@
 import type { Block, Word } from 'tesseract.js';
 import { locateLabelRows, printStrip, readLoopDigit, type PixelBox } from '../lib/label-photo';
-import { labelCandidates, liveLabelCandidate, printedTonerCodes, type LabelLine } from '../lib/label-search';
+import {
+  hasSplitSupplyLabel,
+  labelCandidates,
+  liveLabelCandidate,
+  liveLabelOptions,
+  printedTonerCodes,
+  type LabelLine,
+} from '../lib/label-search';
 
 export type OcrMode = 'scene' | 'line' | 'digits';
 type ReadCanvas = (canvas: HTMLCanvasElement, mode: OcrMode) => Promise<Block[]>;
@@ -130,7 +137,9 @@ export async function readPrintedLabel(
     !explore ||
     blocked.size ||
     (!inspectSuffix &&
-      (candidates.some((item) => item.certain) || (!tentative && liveLabelCandidate(lines, blocked))))
+      (hasSplitSupplyLabel(lines)
+        ? liveLabelOptions(lines, blocked).length === 2
+        : candidates.some((item) => item.certain) || (!tentative && liveLabelCandidate(lines, blocked))))
   ) {
     return { lines, barcode: false };
   }
@@ -154,7 +163,51 @@ export async function readPrintedLabel(
   }
   const rows = locateLabelRows(source).filter((row) => !acceptLine || acceptLine(row.box));
   const barcode = rows.some((row) => row.barcode);
-  // Spend at most two short line reads on difficult frames, independently of
+  // The screen or recessed bezel can split one badge into several edge groups.
+  // Read the neighbourhood on the same baseline, without including the LCD beneath.
+  if (!inspectSuffix && !barcode) {
+    for (const { box } of rows.slice(0, 2)) {
+      const wide = {
+        ...box,
+        x0: Math.max(0, box.x0 - source.width * 0.4),
+        x1: Math.min(source.width, box.x1 + source.width * 0.4),
+      };
+      const strip = printStrip(source, wide, 46, 0.8, 0.12, 0.4);
+      try {
+        const extra = await readLines(strip, 'line');
+        lines.push(...extra);
+        // Re-read a short, heavy model badge after a small baseline correction.
+        // Keep the actual letters and digits. The catalogue will resolve its manufacturer.
+        if (
+          !liveLabelOptions(extra, blocked).length &&
+          extra.some((line) => /[CB£]?[A-Z0-9]{2,7}D[NW]\b/i.test(line.text))
+        ) {
+          const tilted = printStrip(source, wide, 44, 0.8, 0.12, 0.58, 3);
+          try {
+            lines.push(...(await readLines(tilted, 'line')));
+          } finally {
+            tilted.width = tilted.height = 1;
+          }
+        }
+        const options = liveLabelOptions(extra, blocked);
+        if (
+          options.length &&
+          !hasSplitSupplyLabel(lines) &&
+          !options.some((item) => /^DR-?\d/.test(item.code))
+        ) {
+          // An OCR misread of the large scene must not mask a complete reading of the physical line.
+          if (options[0].kind === 'printer') {
+            const good = extra.filter((line) => liveLabelOptions([line], blocked).length);
+            if (good.length) return { lines: good, barcode: false };
+          }
+        }
+        if (liveLabelOptions(lines, blocked).length) break;
+      } finally {
+        strip.width = strip.height = 1;
+      }
+    }
+  }
+  // Keep the narrow strip fallback for smaller cartridge or drum lettering, independently of
   // how many edges the scene contains. Do not transcribe the barcode itself.
   for (const row of rows.filter((row) => !row.barcode).slice(0, 2)) {
     const strip = printStrip(source, row.box, 56, 1.27, 0.2, 0.18);

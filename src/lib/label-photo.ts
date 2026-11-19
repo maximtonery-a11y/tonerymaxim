@@ -124,7 +124,8 @@ export function printStrip(
   height: number,
   stretch: number,
   padX: number,
-  padY: number
+  padY: number,
+  tilt = 0
 ) {
   const glyphHeight = Math.max(1, box.y1 - box.y0);
   const left = Math.max(0, box.x0 - padX * glyphHeight),
@@ -164,7 +165,18 @@ export function printStrip(
     pixels[i] = pixels[i + 1] = pixels[i + 2] = invert ? 255 - tone : tone;
   }
   ctx.putImageData(data, 8, 8);
-  return canvas;
+  if (!tilt) return canvas;
+  const rotated = document.createElement('canvas');
+  rotated.width = canvas.width;
+  rotated.height = canvas.height;
+  const turn = rotated.getContext('2d')!;
+  turn.fillStyle = 'white';
+  turn.fillRect(0, 0, rotated.width, rotated.height);
+  turn.translate(rotated.width / 2, rotated.height / 2);
+  turn.rotate(tilt * Math.PI / 180);
+  turn.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+  canvas.width = canvas.height = 1;
+  return rotated;
 }
 
 /** Distinguish a closed upper loop (9) from two loops (8) on wide moulded lettering. */
@@ -210,4 +222,18 @@ export function readLoopDigit(source: HTMLCanvasElement, box: PixelBox): string 
   }
   const dark = holes(96);
   return dark && dark === holes(155) ? dark : undefined;
+}
+
+// Leptonica reads binary PGM directly. Transfer one byte per pixel to the
+// local OCR worker without encoding and then decompressing a PNG for every row.
+export function grayscaleLabelImage(canvas: HTMLCanvasElement) {
+  const { width, height } = canvas;
+  const rgba = canvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+  const header = new TextEncoder().encode(`P5\n${width} ${height}\n255\n`);
+  const image = new Uint8Array(header.length + width * height);
+  image.set(header);
+  for (let i = 0, p = header.length; i < rgba.length; i += 4, p++) {
+    image[p] = (77 * rgba[i] + 150 * rgba[i + 1] + 29 * rgba[i + 2]) >> 8;
+  }
+  return image;
 }

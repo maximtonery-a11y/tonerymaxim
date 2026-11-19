@@ -24,9 +24,19 @@ export async function chromiumLabelCamera() {
 
 function installVideoFixture() {
   if (location.pathname !== '/hladat-fotkou' || window.labelCameraTest) return;
-  const fixture = window.labelCameraTest = { mode: 'feed', calls: [], tracks: [],
+  const fixture = window.labelCameraTest = { mode: 'feed', calls: [], tracks: [], captures: [],
     get text() { return sessionStorage.getItem('testCameraLabel') || 'Brother TN-2421'; },
     set text(value) { sessionStorage.setItem('testCameraLabel', value); },
+  };
+  const NativeWorker = window.Worker;
+  window.Worker = class extends NativeWorker {
+    postMessage(job, ...args) {
+      if (fixture.holdOCR && job?.action === 'load') {
+        fixture.releaseOCR = () => { fixture.holdOCR = false; super.postMessage(job, ...args); };
+        return;
+      }
+      super.postMessage(job, ...args);
+    }
   };
   const play = HTMLMediaElement.prototype.play;
   HTMLMediaElement.prototype.play = function (...args) {
@@ -56,8 +66,14 @@ function installVideoFixture() {
     function draw() {
       if (image) { ctx.drawImage(image, 0, 0); return; }
       ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 960, 540);
+      if (fixture.mode === 'blank') return;
       ctx.fillStyle = 'black'; ctx.font = 'bold 42px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(fixture.text, 480, 286);
+      if (fixture.mode === 'lcd') {
+        ctx.fillStyle = '#42454a'; ctx.fillRect(0, 0, 960, 540);
+        ctx.fillStyle = '#bfc1c4'; ctx.font = '34px sans-serif'; ctx.fillText(fixture.text, 480, 245);
+        ctx.fillStyle = '#a7a999'; ctx.fillRect(265, 265, 430, 110);
+        ctx.fillStyle = '#4a4b44'; ctx.fillText('Hromad Kopírt', 480, 325);
+      } else ctx.fillText(fixture.text, 480, 286);
     }
     draw();
     const stream = canvas.captureStream(8), track = stream.getVideoTracks()[0];
@@ -75,6 +91,10 @@ function installVideoFixture() {
     const [track] = session.getVideoTracks();
     Object.defineProperty(track,'getCapabilities',{value:()=>({focusMode:['continuous']})});
     Object.defineProperty(track,'applyConstraints',{value:async options => { fixture.focus = options.advanced[0].focusMode; }});
+    const capture = { started: performance.now() };
+    fixture.captures.push(capture);
+    const stopTrack = track.stop.bind(track);
+    track.stop = () => { capture.ended ??= performance.now(); stopTrack(); };
     fixture.tracks.push(...session.getVideoTracks());
     return session;
   } } });
@@ -146,19 +166,90 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     assert.equal(constraints.audio, false);
     assert.equal(constraints.video.facingMode.ideal, 'environment');
 
-    // Keep scanning through a serial and an unstocked reference, then turn the
-    // camera towards a printer. The session should use just one OCR worker.
+    // An indefinitely delayed first OCR job cannot hold the camera. Change the
+    // live source after the track ends: the captured toner must still be found.
+    await page.evaluate(() => { window.labelCameraTest.holdOCR = true; window.labelCameraTest.text = 'Brother TN-2421'; });
+    await start.click();
+    const captured = status.filter({ hasText: 'Telefón môžete odložiť' });
+    await captured.waitFor({ timeout: 10_000 });
+    async function captureTime() {
+      const result = await page.evaluate(() => {
+        const fixture = window.labelCameraTest;
+        const capture = fixture.captures.at(-1);
+        return { ms: capture.ended - capture.started, state: fixture.tracks.at(-1).readyState,
+          open: document.querySelector('#live-camera').open };
+      });
+      assert.equal(result.state, 'ended');
+      assert.equal(result.open, false);
+      assert.ok(result.ms > 0 && result.ms < 10_000, JSON.stringify(result));
+      return Math.round(result.ms);
+    }
+    const steadyMs = await captureTime();
+    await page.evaluate(() => { window.labelCameraTest.text = 'HP LaserJet P1102'; });
+    await page.waitForFunction(() => typeof window.labelCameraTest.releaseOCR === 'function');
+    const gate = Promise.withResolvers();
+    const matchRequest = url => url.pathname === '/api/smart-search' && url.searchParams.get('label') === '1';
+    const startedSearch = page.waitForRequest(req => matchRequest(new URL(req.url())), { timeout: 35_000 });
+    const delaySearch = async route => { await gate.promise; await route.continue(); };
+    await page.route(matchRequest, delaySearch);
+    try {
+      await page.evaluate(() => window.labelCameraTest.releaseOCR());
+      await startedSearch;
+      assert.equal(await captureTime(), steadyMs, 'catalogue waits with the track already stopped');
+    } finally { gate.resolve(); await page.unroute(matchRequest, delaySearch); }
+    await page.locator('[data-matches] a').first().waitFor({ timeout: 30_000 });
+    assert.match(await status.innerText(), /Brother TN-2421/);
+
     await page.evaluate(() => { window.labelCameraTest.text = 'S/N: CE285A'; });
     await start.click();
-    await status.filter({ hasText: 'Priblížte sa' }).waitFor({ timeout: 60_000 });
-    assert.deepEqual(searches, ['Brother TN-2421']);
+    await status.filter({ hasText: 'nepodarilo bezpečne prečítať' }).waitFor({ timeout: 40_000 });
+    assert.deepEqual(searches, ['Brother TN-2421', 'Brother TN-2421']);
+
     await page.evaluate(() => { window.labelCameraTest.text = 'Brother TN-9999'; });
-    await status.filter({ hasText: 'nemáme presnú ponuku' }).waitFor({ timeout: 20_000 });
-    await page.evaluate(() => { window.labelCameraTest.text = 'HP LaserJet P1102'; });
-    await page.waitForURL('**/tlaciarne/hp/*p1102', { timeout: 30_000 });
-    assert.deepEqual(searches, ['Brother TN-2421', 'Brother TN-9999', 'HP P1102']);
-    assert.equal(workers.length, 2, 'one OCR worker per camera session');
+    await start.click();
+    await status.filter({ hasText: 'nenašli presnú ponuku' }).waitFor({ timeout: 40_000 });
+    assert.equal(await page.locator('[data-matches] a').count(), 0);
+
+    await page.evaluate(() => { window.labelCameraTest.mode = 'blank'; });
+    await start.click();
+    await captured.waitFor({ timeout: 10_000 });
+    const blankMs = await captureTime();
+    await page.getByRole('button', { name: 'Zrušiť čítanie' }).click();
+    await page.evaluate(() => { window.labelCameraTest.mode = 'feed'; window.labelCameraTest.text = 'HP LaserJet P1102'; });
+    await start.click();
+    await page.waitForURL('**/tlaciarne/hp/*p1102', { timeout: 40_000 });
+    assert.deepEqual(searches, ['Brother TN-2421', 'Brother TN-2421', 'Brother TN-9999', 'HP P1102']);
+    await page.goto(origin + '/hladat-fotkou');
+    await page.evaluate(() => { window.labelCameraTest.text = 'H-CF283X/CRG-737'; });
+    await start.click();
+    const hp = page.getByRole('button', { name: 'HP CF283X', exact: true });
+    const canon = page.getByRole('button', { name: 'Canon CRG-737', exact: true });
+    await hp.waitFor({ timeout: 35_000 });
+    assert.ok(await canon.isVisible());
+    await captureTime();
+    await hp.click();
+    await page.locator('[data-matches] a').first().waitFor();
+    assert.ok((await page.locator('[data-matches] a').allTextContents()).every(t => t.includes('HP CF283X')));
+    await page.getByRole('button', { name: 'Vybrať inú značku' }).click();
+    await canon.click();
+    await page.locator('[data-matches] a').first().waitFor();
+    assert.ok((await page.locator('[data-matches] a').allTextContents()).every(t => t.includes('Canon CRG-737')));
+
+    await page.evaluate(() => { window.labelCameraTest.text = 'C530dn'; });
+    await start.click();
+    const oki = page.getByRole('link', { name: 'OKI C530dn', exact: true });
+    await oki.waitFor({ timeout: 35_000 });
+    assert.ok(await page.getByRole('link', { name: 'Lexmark C530DN', exact: true }).isVisible());
+    await oki.click();
+    await page.waitForURL('**/tlaciarne/oki/oki-c530dn');
+
+    await page.goto(origin + '/hladat-fotkou');
+    await page.evaluate(() => { window.labelCameraTest.mode = 'lcd'; window.labelCameraTest.text = 'DCP-L3510CDW'; });
+    await start.click();
+    await page.waitForURL('**/tlaciarne/brother/brother-dcp-l3510cdw', { timeout: 35_000 });
+    const sessions = workers.length;
     assert.deepEqual(uploads, []);
+    console.log(`Camera released in ${steadyMs} ms with OCR held, ${blankMs} ms with no label; correct captured offers after moving away.`);
 
     await page.goto(origin + '/hladat-fotkou');
     await page.evaluate(() => sessionStorage.setItem('testStalledPreviews', '2'));
@@ -167,7 +258,7 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     assert.equal(await page.evaluate(() => sessionStorage.getItem('testStalledPreviews')), '0');
     assert.equal(await page.evaluate(() => window.labelCameraTest.tracks[0].readyState), 'ended');
     assert.equal(await start.isVisible(), true);
-    assert.equal(workers.length, 2, 'a stalled preview never loads OCR');
+    assert.equal(workers.length, sessions, 'a stalled preview never loads OCR');
     await verifyPhysicalLabels(page, origin, true);
     console.log('Live label video OK: single-tap start, toner prices, exact printer, private code, empty match, denial, cancel, bounded retry and device release');
   } catch (error) {

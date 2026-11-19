@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, labelCandidates, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
+import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
 import { createLiveConsensus, focusScore } from '../src/lib/label-camera-frame.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
@@ -198,4 +198,31 @@ test('live camera offers require a legible, unambiguous manufacturer reference',
   assert.equal(live('HP CE285A'), undefined);
   assert.equal(liveLabelCandidate([{ text: 'Brother TN-2421', confidence: 99,
     words: [{ text: 'TN-2421', confidence: 50 }] }], seen), undefined);
+});
+
+test('a dual-brand physical cartridge keeps both order codes including their complete suffix', () => {
+  const pair = (text: string, blocked = new Set<string>()) =>
+    liveLabelOptions([{ text, confidence: 92 }], blocked).map(candidateText);
+  for (const label of ['H-CF283X/CRG-737', 'CF283X / CRG 737', 'CRG-737 / HP-CF283X']) {
+    assert.deepEqual(pair(label), ['HP CF283X', 'Canon CRG-737']);
+  }
+  assert.deepEqual(pair('Canon CRG-737'), ['Canon CRG-737']);
+  assert.deepEqual(pair('HP CF283X'), ['HP CF283X']);
+  assert.deepEqual(pair('H-CF283X/CRG-7'), []);
+  const blocked = new Set<string>();
+  assert.deepEqual(pair('S/N: H-CF283X/CRG-737', blocked), []);
+  assert.deepEqual(pair('H-CF283X/CRG-737', blocked), []);
+});
+
+test('an unbranded printer badge offers each exact catalogue model and retains an explicit brand', () => {
+  const refs = ['OKI C530dn', 'Lexmark C530DN', 'OKI C530', 'OKI C530DW', 'OKI C530DN2'].map((title,i) =>
+    ({ title, url: '/tlaciarne/' + title.split(' ')[0].toLowerCase() + '/model-' + i }));
+  for (const text of ['C530dn', 'OKI C530dn', 'Lexmark C530dn']) {
+    const [model] = liveLabelOptions([{ text, confidence: 92 }], new Set());
+    assert.equal(candidateText(model), text.toUpperCase().replace('LEXMARK', 'Lexmark'));
+    const hits = exactLabelOffers(model, { printers: refs }).map(hit => hit.title);
+    assert.deepEqual(hits, text === 'C530dn' ? ['OKI C530dn','Lexmark C530DN'] :
+      [text.startsWith('OKI') ? 'OKI C530dn' : 'Lexmark C530DN']);
+  }
+  assert.deepEqual(liveLabelOptions([{ text: 'S/N: C530dn', confidence: 98 }], new Set()), []);
 });
