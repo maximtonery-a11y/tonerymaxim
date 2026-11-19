@@ -21,6 +21,7 @@
     "test:vat": "node scripts/setup-vat-wordpress.mjs --run",
     "test:claims": "node --experimental-strip-types --test scripts/online-claims.test.ts",
     "test:toner-care": "node --experimental-vm-modules --experimental-strip-types --test scripts/toner-care.test.ts scripts/account-menu.test.ts",
+    "test:account-speed": "node --experimental-strip-types --test scripts/account-read-cache.test.ts scripts/account-navigation-server.test.ts scripts/account-menu.test.ts",
     "test:invoices": "node --experimental-strip-types --test scripts/account-invoices.test.ts",
     "test:order-emails": "node --experimental-vm-modules --experimental-strip-types --test scripts/order-email-availability.test.ts",
     "test:live": "node scripts/verify-live-stability.mjs",

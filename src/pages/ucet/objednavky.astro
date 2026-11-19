@@ -14,17 +14,20 @@ import AccountShell from "../../components/AccountShell.astro";
 const session = readCustomerSession(Astro.cookies);
 if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`);
 
-const wooCustomer = await getWooCustomerById(session.id);
+const historyRead = Promise.resolve().then(() => getAccountOrdersPage(session.id, accountOrderPage(Astro.url.searchParams.get('page'))))
+  .then(result => ({ result, error: null }), error => ({ result: null, error }));
+const [wooCustomer, history] = await Promise.all([getWooCustomerById(session.id), historyRead]);
 if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 let result: Awaited<ReturnType<typeof getAccountOrdersPage>> | null = null;
 let error = '';
-try { result = await getAccountOrdersPage(customer.id, accountOrderPage(Astro.url.searchParams.get('page'))); }
-catch (caught) {
+if (history.error) {
+  const caught = history.error;
   error = caught instanceof AccountOrderError ? caught.message : 'Objednávky momentálne nie sú dostupné. Skúste to o chvíľu.';
   Astro.response.status = caught instanceof AccountOrderError ? caught.status : 503;
 }
+else result = history.result;
 const orders = result?.orders || [];
 ---
 
