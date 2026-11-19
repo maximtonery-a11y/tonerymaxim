@@ -79,7 +79,7 @@ export async function verifyPhysicalLabels(page, origin, camera) {
       } else if (name === 'barcode') {
         await page.locator('#label-status').filter({ hasText: 'Vidím čiarový kód' }).waitFor({ timeout: 30_000 });
         assert.deepEqual(outbound, []);
-        if (camera) await page.getByRole('button', { name: 'Zastaviť skenovanie' }).click();
+        if (camera) assert.equal(await page.locator('#live-camera').evaluate(el => el.open), false);
       } else {
         const offers = page.locator('[data-matches] a');
         await offers.first().waitFor({ timeout: 45_000 });
