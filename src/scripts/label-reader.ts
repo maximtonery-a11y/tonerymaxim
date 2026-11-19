@@ -1,7 +1,7 @@
 import type { Block } from 'tesseract.js';
 import { drawLabelLine, type LabelSelection } from '../lib/label-image';
 import type { LabelLine } from '../lib/label-search';
-import { grayscaleLabelImage, type PixelBox } from '../lib/label-photo';
+import { labelImageForOcr, type PixelBox } from '../lib/label-photo';
 import { readPrintedLabel, type OcrMode } from './label-physical-ocr';
 
 // Resize and discard the original before starting OCR; camera metadata never enters the search.
@@ -108,10 +108,10 @@ export async function createLabelReader(signal: AbortSignal) {
     return {
       close,
       async recognize(canvas: HTMLCanvasElement, progress?: (n: number) => void, lineOnly = false, explore = true,
-        acceptLine?: (box: PixelBox) => boolean, privateCodes?: Set<string>) {
+        acceptLine?: (box: PixelBox) => boolean, privateCodes?: Set<string>, keepColor = true) {
         async function read(frame: HTMLCanvasElement, mode: OcrMode) {
           signal.throwIfAborted();
-          const image = grayscaleLabelImage(frame);
+          const image = labelImageForOcr(frame, keepColor);
           const options = { tessedit_pageseg_mode: mode === 'scene' ? '11' : '7', tessedit_char_whitelist: mode === 'digits' ? '0123456789' : '' };
           const { blocks } = await job('recognize', { image, options, output: { blocks: true } }, [image.buffer], progress);
           return blocks || [];

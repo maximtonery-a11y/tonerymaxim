@@ -102,7 +102,7 @@ export function captureLabelFrame(frame: CapturedLabelFrame, canvas: HTMLCanvasE
   const width = box.x1 - box.x0,
     height = box.y1 - box.y0;
   if (width < 2 || height < 2) return;
-  const ratio = Math.min(pass.mode === 'scene' || pass.mode === 'context' ? 1 : 1.65, 1600 / width, 1600 / height, Math.sqrt(1_300_000 / (width * height)));
+  const ratio = Math.min((pass.mode === 'scene' || pass.mode === 'context') && !pass.angle ? 1 : 1.65, 1600 / width, 1600 / height, Math.sqrt(1_300_000 / (width * height)));
   canvas.width = Math.max(1, Math.round(width * ratio));
   canvas.height = Math.max(1, Math.round(height * ratio));
   const ctx = canvas.getContext('2d', { alpha: false });

@@ -224,16 +224,24 @@ export function readLoopDigit(source: HTMLCanvasElement, box: PixelBox): string 
   return dark && dark === holes(155) ? dark : undefined;
 }
 
-// Leptonica reads binary PGM directly. Transfer one byte per pixel to the
-// local OCR worker without encoding and then decompressing a PNG for every row.
-export function grayscaleLabelImage(canvas: HTMLCanvasElement) {
+// Leptonica reads raw PNM. Ordinary video needs one byte per pixel. Keep the
+// sensor colour for angled or still-photo recovery without a PNG round trip.
+export function labelImageForOcr(canvas: HTMLCanvasElement, color = false) {
   const { width, height } = canvas;
   const rgba = canvas.getContext('2d')!.getImageData(0, 0, width, height).data;
-  const header = new TextEncoder().encode(`P5\n${width} ${height}\n255\n`);
-  const image = new Uint8Array(header.length + width * height);
+  const header = new TextEncoder().encode(`${color ? 'P6' : 'P5'}\n${width} ${height}\n255\n`);
+  const image = new Uint8Array(header.length + width * height * (color ? 3 : 1));
   image.set(header);
-  for (let i = 0, p = header.length; i < rgba.length; i += 4, p++) {
-    image[p] = (77 * rgba[i] + 150 * rgba[i + 1] + 29 * rgba[i + 2]) >> 8;
+  if (color) {
+    for (let i = 0, p = header.length; i < rgba.length; i += 4) {
+      image[p++] = rgba[i];
+      image[p++] = rgba[i + 1];
+      image[p++] = rgba[i + 2];
+    }
+  } else {
+    for (let i = 0, p = header.length; i < rgba.length; i += 4, p++) {
+      image[p] = (77 * rgba[i] + 150 * rgba[i + 1] + 29 * rgba[i + 2]) >> 8;
+    }
   }
   return image;
 }

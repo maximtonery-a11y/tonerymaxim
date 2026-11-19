@@ -32,14 +32,22 @@ function pause(signal: AbortSignal, delay: number) {
   });
 }
 
-async function playPreview(video: HTMLVideoElement, signal: AbortSignal) {
+export class LabelPreviewTimeout extends Error {
+  retryUntil: number;
+  constructor(retryUntil: number) {
+    super('camera-preview-timeout');
+    this.retryUntil = retryUntil;
+  }
+}
+
+async function playPreview(video: HTMLVideoElement, signal: AbortSignal, remaining: number) {
   const waiting = new AbortController();
   const cancel = () => waiting.abort();
   signal.addEventListener('abort', cancel, { once: true });
   try {
     await Promise.race([
       video.play(),
-      pause(waiting.signal, 5000).then(() => {
+      pause(waiting.signal, Math.min(5000, remaining)).then(() => {
         throw new Error('camera-preview-timeout');
       }),
     ]);
@@ -165,8 +173,15 @@ async function readExposures(
   let readingMs = 0;
   // Use real, independent exposures to confirm a reading. An OCR retry on the
   // same pixels cannot vote twice. All passes here run with the camera OFF.
+  const first = frames[0];
+  // A landscape sensor in a portrait viewfinder can clip a long reference to a
+  // different, valid-looking code. Read its full centred row before trying crops.
+  const cropped = first.visible.x1 - first.visible.x0 < first.image.width * 0.82;
+  const passes = cropped
+    ? [liveReadPasses.find(pass => pass.mode === 'context')!, ...liveReadPasses.filter(pass => pass.mode !== 'context')]
+    : liveReadPasses;
   try {
-    for (const mode of liveReadPasses) {
+    for (const mode of passes) {
       for (const [index, frame] of frames.entries()) {
         signal.throwIfAborted();
         if (readingMs > 12_000) break;
@@ -180,7 +195,8 @@ async function readExposures(
           mode.mode === 'line',
           mode.mode !== 'line',
           region.acceptLine,
-          privateCodes
+          privateCodes,
+          Boolean(mode.angle)
         );
         readingMs += performance.now() - started;
         signal.throwIfAborted();
@@ -228,9 +244,11 @@ export async function scanLiveCamera(
   task: AbortController,
   report: (message: string) => void,
   captured: () => void,
-  match: Match
+  match: Match,
+  retryUntil?: number
 ) {
   const { signal } = task;
+  let expiresAt = retryUntil;
   let stream: MediaStream | undefined;
   let cutoff: ReturnType<typeof setTimeout> | undefined;
   let frames: Exposure[] = [];
@@ -262,7 +280,10 @@ export async function scanLiveCamera(
     signal.throwIfAborted();
     // The optical capture budget starts when permission is granted, even if playback is slow.
     const granted = performance.now();
-    cutoff = setTimeout(release, 8000);
+    expiresAt ??= Date.now() + 8000;
+    const remaining = Math.min(8000, expiresAt - Date.now());
+    if (remaining <= 0) throw new Error('camera-preview-timeout');
+    cutoff = setTimeout(release, remaining);
     const track = stream.getVideoTracks()[0];
     if (!track || track.readyState === 'ended') throw new DOMException('Kamera', 'NotReadableError');
     track.addEventListener('ended', interrupted, { once: true, signal });
@@ -271,12 +292,12 @@ export async function scanLiveCamera(
     video.playsInline = true;
     video.srcObject = stream;
     report('Namierte na celý názov tlačiarne alebo kód náplne.');
-    await playPreview(video, signal);
+    await playPreview(video, signal, remaining);
     signal.throwIfAborted();
     const ready = import('./label-reader').then(({ createLabelReader }) => createLabelReader(signal));
     // Observe an early download failure without tying device release to the worker.
     void ready.catch(() => {});
-    frames = await collectExposures(video, guide, signal, Math.min(granted + 7400, performance.now() + 6000));
+    frames = await collectExposures(video, guide, signal, Math.min(granted + remaining - 250, performance.now() + 6000));
     release();
     signal.throwIfAborted();
     captured();
@@ -287,6 +308,9 @@ export async function scanLiveCamera(
     } finally {
       reader.close();
     }
+  } catch (error) {
+    if (error instanceof Error && error.message === 'camera-preview-timeout') throw new LabelPreviewTimeout(expiresAt || 0);
+    throw error;
   } finally {
     signal.removeEventListener('abort', release);
     release();

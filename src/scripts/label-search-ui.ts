@@ -1,5 +1,5 @@
 import type { LabelSelection } from '../lib/label-image';
-import { scanLiveCamera } from './label-live-camera';
+import { LabelPreviewTimeout, scanLiveCamera } from './label-live-camera';
 import { setupLabelLinePicker } from './label-line-picker';
 import { barcodeGuidance, candidateText, hasSplitSupplyLabel, liveLabelOptions, drumNeedsSuffix, exactLabelOffers, hpOrderCode, labelBrands, labelCandidates, matchesPrintedToner, printedTonerCodes, selectedLabelCandidates, type CatalogLink, type LabelCandidate, type LabelOffers } from '../lib/label-search';
 
@@ -168,7 +168,7 @@ function setup(root: HTMLElement) {
     status.scrollIntoView({block:'start'});
   }
 
-  async function startCamera(resumed = false) {
+  async function startCamera(retryUntil?: number) {
     if (scanningLive) return;
     if (!navigator.mediaDevices?.getUserMedia || typeof livePanel.showModal !== 'function') {
       status.textContent = 'Tento prehliadač nesprístupnil fotoaparát. Otvorte stránku v Safari alebo Chrome, prípadne vyberte fotku z galérie.';
@@ -212,15 +212,15 @@ function setup(root: HTMLElement) {
         showOffers(candidate, items);
         if (results.childElementCount) focusResult();
         return true;
-      });
+      }, retryUntil);
     } catch (error) {
       if (!task.signal.aborted) {
-        if (error instanceof Error && error.message === 'camera-preview-timeout') {
+        if (error instanceof LabelPreviewTimeout) {
           // A browser can grant a live track yet keep its player stopped. Reopen
           // the scanner once in a fresh document, remembering this gesture only.
-          if (!resumed && !document.hidden) {
+          if (!retryUntil && error.retryUntil - Date.now() > 600 && !document.hidden) {
             display('Fotoaparát neposkytol obraz. Spúšťam ho ešte raz…');
-            history.replaceState({ ...history.state, tmResumeCamera: true }, '');
+            history.replaceState({ ...history.state, tmResumeCamera: error.retryUntil }, '');
             location.reload();
           } else display('Z fotoaparátu neprichádza obraz. Skúste ho spustiť znova.');
         } else if (error instanceof DOMException && ['NotAllowedError', 'SecurityError'].includes(error.name)) {
@@ -321,9 +321,11 @@ function setup(root: HTMLElement) {
     controls.hidden = false;
     const { tmResumeCamera, ...state } = history.state || {};
     const fromPilot = location.hash === '#skenovat' && document.referrer && new URL(document.referrer).origin === location.origin;
-    if (tmResumeCamera === true || fromPilot) {
+    const retryUntil = typeof tmResumeCamera === 'number' ? tmResumeCamera : undefined;
+    if (retryUntil || fromPilot) {
       history.replaceState(state, '', location.pathname + location.search);
-      if (!document.hidden) void startCamera(tmResumeCamera === true);
+      if (!document.hidden && (!retryUntil || retryUntil > Date.now())) void startCamera(retryUntil);
+      else if (retryUntil) status.textContent = 'Z fotoaparátu neprichádza obraz. Skúste ho spustiť znova.';
     }
   }
 }
