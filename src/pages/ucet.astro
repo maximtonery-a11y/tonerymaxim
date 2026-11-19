@@ -5,7 +5,7 @@ import "../styles/account.css";
 import "../styles/account-orders.css";
 import { readCustomerSession, setCustomerCookie, customerDisplayName } from "../lib/auth-session";
 import { getWooCustomerById } from "../lib/woo-client";
-import { getAccountOverview } from "../lib/account-orders";
+import { getAccountOverview, getAccountHomePreview } from "../lib/account-orders";
 import { orderLineGrossTotal } from "../lib/order-display";
 import { customerToSession, formatDate, formatMoney, orderNumber, orderStatusLabel, safeText } from "../lib/account-data";
 import AccountShell from "../components/AccountShell.astro";
@@ -13,13 +13,15 @@ import AccountShell from "../components/AccountShell.astro";
 const session = readCustomerSession(Astro.cookies);
 if (!session) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 
-const wooCustomer = await getWooCustomerById(session.id);
+const detailedSummary = Astro.url.searchParams.get('summary') === '1';
+const [wooCustomer, overview] = await Promise.all([
+  getWooCustomerById(session.id),
+  (detailedSummary ? getAccountOverview(session.id) : getAccountHomePreview(session.id)).catch(() => null),
+]);
 if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 setCustomerCookie(Astro.cookies, wooCustomer);
 const customer = customerToSession(wooCustomer);
 const customerName = customerDisplayName(customer);
-let overview: Awaited<ReturnType<typeof getAccountOverview>> | null = null;
-try { overview = await getAccountOverview(customer.id); } catch { /* Keep the rest of the account usable when Woo is unavailable. */ }
 const lastOrder = overview?.latestOrder || null;
 const billing = wooCustomer.billing || {};
 ---
@@ -37,7 +39,7 @@ const billing = wooCustomer.billing || {};
         <a class="account-stat" href="/ucet/objednavky"><span class="account-stat-icon">▣</span><small>Objednávky</small><strong>{overview ? overview.count : '—'}</strong><span class="account-link">Zobraziť všetky</span></a>
         <a class="account-stat" href="/ucet/adresy"><span class="account-stat-icon">⌖</span><small>Adresa</small><strong>{billing.city ? "OK" : "Chýba"}</strong><span>{billing.city || "Doplniť adresu"}</span></a>
         <a class="account-stat" href="/ucet/profil"><span class="account-stat-icon">◎</span><small>Profil</small><strong>{customer.email ? "OK" : "—"}</strong><span class="account-link">Upraviť</span></a>
-        <a class="account-stat" href="/ucet/objednavky" title="Objednávky v spracovaní, uhradené, expedované alebo dokončené; po odpočítaní refundácií."><span class="account-stat-icon">€</span><small>Celkový nákup</small><strong>{overview ? (overview.spending.length ? overview.spending.map(entry => formatMoney(entry.total, entry.currency)).join(' / ') : formatMoney(0)) : '—'}</strong><span>po odpočítaní refundácií</span></a>
+        <a class="account-stat" href={overview?.spending === null ? '/ucet?summary=1' : '/ucet/objednavky'} title="Objednávky v spracovaní, uhradené, expedované alebo dokončené; po odpočítaní refundácií."><span class="account-stat-icon">€</span><small>Celkový nákup</small><strong>{overview ? (overview.spending === null ? 'Zobraziť' : overview.spending.length ? overview.spending.map(entry => formatMoney(entry.total, entry.currency)).join(' / ') : formatMoney(0)) : '—'}</strong><span>{overview?.spending === null ? 'Súhrn všetkých nákupov' : 'po odpočítaní refundácií'}</span></a>
       </div>
       {!overview && <p class="account-orders-error" role="status">Súhrn objednávok momentálne nie je dostupný. <a href="/ucet">Skúsiť znova</a></p>}
 

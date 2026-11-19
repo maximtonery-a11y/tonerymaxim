@@ -34,7 +34,9 @@ const products = [product, variant(12, 'original', 104.66), variant(13, 'renovat
     name: `Brother TN-245Y žltý ${type} toner`, oem_codes:'TN-245Y', compatible_printers: ['Brother DCP-9020CDW'] })),
   { id: 91, sku: 'PAPER', slug: 'kancelarsky-papier-a4-80g-500-harkov', name: 'Kancelársky papier A4', price: 6,
     product_type_key: 'product', stock_status: 'instock', stock_quantity: 30, compatible_printers: [] }];
-const orders = Array.from({ length: 61 }, (_, index) => ({ id: 701 - index, number: String(701 - index), customer_id: 7, status: index === 1 ? 'cancelled' : 'completed',
+const measuring = process.argv.includes('--measure-navigation');
+const fixtureOrderCount = measuring ? Math.max(1, Math.min(151, Number(process.env.TM_FIXTURE_ORDER_COUNT || 61))) : 61;
+const orders = Array.from({ length: fixtureOrderCount }, (_, index) => ({ id: 701 - index, number: String(701 - index), customer_id: 7, status: index === 1 ? 'cancelled' : 'completed',
   meta_data: index === 1 ? [] : [{ key: 'tm_order_number', value: String(312345 + index) }],
   date_created: new Date(Date.UTC(2026, 10, 17 - index)).toISOString(), currency: 'EUR', total: '180.00', total_tax: '30.00', refunds: index === 0 ? [{ id: 900, total: '-12.00' }] : [],
   line_items: [{ id: 1, product_id: 11, sku: 'SKU-11', name: product.name, quantity: 4, total: '100.00', total_tax: '20.00' },
@@ -45,9 +47,19 @@ ${process.argv.includes('--purchase') ? `import ${JSON.stringify(new URL('./purc
 import os from 'node:os';import {Server} from 'node:http';
 os.networkInterfaces=()=>({lo:[{address:'127.0.0.1',netmask:'255.0.0.0',family:'IPv4',mac:'00:00:00:00:00:00',internal:true,cidr:'127.0.0.1/8'}]});
 const orders=${JSON.stringify(orders)}, product=${JSON.stringify(product)};
+const fixtureReads=[];
 let invoiceTemporarilyUnavailable = true;
-const emit=Server.prototype.emit;Server.prototype.emit=function(name,...args){if(name==='request'&&args[0].url==='/__account_fixture_session'){args[1].writeHead(302,{'Set-Cookie':${JSON.stringify(cookie + '; Path=/; HttpOnly; SameSite=Lax')},Location:'/ucet/objednavky'});args[1].end();return true}return emit.call(this,name,...args)};
+const emit=Server.prototype.emit;Server.prototype.emit=function(name,...args){
+  if(name==='request'){
+    if(args[0].url==='/__account_fixture_metrics'){args[1].writeHead(200,{'Content-Type':'application/json'});args[1].end(JSON.stringify({reads:fixtureReads}));return true}
+    if(args[0].url==='/__account_fixture_session'){args[1].writeHead(302,{'Set-Cookie':${JSON.stringify(cookie + '; Path=/; HttpOnly; SameSite=Lax')},Location:'/ucet/objednavky'});args[1].end();return true}
+    const pause=Number(process.env.TM_FIXTURE_HTML_DELAY_MS||0);
+    if(pause&&args[0].url==='/ucet/tlaciarne'){setTimeout(()=>emit.call(this,name,...args),pause);return true}
+  }
+  return emit.call(this,name,...args)
+};
 globalThis.fetch=async(input,options={})=>{const url=new URL(String(input));if(url.hostname!=='woo.example.invalid'||(options.method||'GET')!=='GET')throw new Error('Fixture blocks external requests and Woo writes');
+fixtureReads.push(url.pathname+url.search);const fixtureDelay=Number(process.env.TM_FIXTURE_WOO_DELAY_MS||0);if(fixtureDelay)await new Promise(resolve=>setTimeout(resolve,fixtureDelay));
 if(url.pathname.endsWith('/customers/7'))return Response.json({id:7,email:'test@example.invalid',first_name:'Test',last_name:'Zákazník',billing:{city:'Testovacie mesto'},meta_data:[
   {key:'tm_loyalty_credited_orders',value:orders.map(order=>String(order.id))}, {key:'tm_loyalty_lifetime_points',value:10},
   {key:'tm_loyalty_history',value:[{orderId:701,title:'Objednávka #701',points:10},{orderId:700,title:'Použitá zľava pri objednávke #700',points:-2}]}]});
@@ -65,8 +77,10 @@ if(url.pathname.endsWith('/products'))return Response.json([{...product,status:'
 const preload = join(directory, 'preload.mjs'); await writeFile(preload, shim);
 const env = { PATH: process.env.PATH, NODE_ENV: 'production', HOST: '127.0.0.1', PORT: String(port), AUTH_SECRET: secret,
   WOO_URL: 'https://woo.example.invalid', WOO_CONSUMER_KEY: 'fixture', WOO_CONSUMER_SECRET: 'fixture',
-  TM_CACHE_DIR: directory, TM_TONER_CARE_ENABLED: '0', TM_DISABLE_BACKGROUND_WORKERS: '1', TM_DISABLE_INDEXNOW: '1', OPENAI_ASSISTANT_ENABLED: '0' };
-const child = spawn(process.execPath, ['--import', preload, './dist/server/entry.mjs'], { cwd: process.cwd(), env, stdio: ['ignore', 'pipe', 'pipe'] });
+  TM_CACHE_DIR: directory, TM_TONER_CARE_ENABLED: '0', TM_DISABLE_BACKGROUND_WORKERS: '1', TM_DISABLE_INDEXNOW: '1', OPENAI_ASSISTANT_ENABLED: '0',
+  TM_FIXTURE_WOO_DELAY_MS: String(measuring ? Math.min(1000, Math.max(0, Number(process.env.TM_FIXTURE_WOO_DELAY_MS || 400))) : 0),
+  TM_FIXTURE_HTML_DELAY_MS: String(Math.min(5000, Math.max(0, Number(process.env.TM_FIXTURE_HTML_DELAY_MS || 0)))) };
+const child = spawn(process.execPath, ['--import', preload, process.env.TM_RENDER_ENTRY || './dist/server/entry.mjs'], { cwd: process.cwd(), env, stdio: ['ignore', 'pipe', 'pipe'] });
 let logs = ''; child.stdout.on('data', data => logs += data); child.stderr.on('data', data => logs += data);
 function request(path, signedIn = true, body) { return new Promise((resolve, reject) => {
   const form = body instanceof URLSearchParams;
@@ -79,7 +93,40 @@ function request(path, signedIn = true, body) { return new Promise((resolve, rej
 try {
   for (let i = 0; i < 100 && !logs.includes('Server listening'); i++) { if (child.exitCode != null) throw new Error(logs); await new Promise(resolve => setTimeout(resolve, 100)); }
   assert.match(logs, /Server listening/);
-  const home = await request('/ucet'); assert.equal(home.status, 200); assert.match(home.text, /10\s*788|10&nbsp;788|10&#160;788/); assert.match(home.text, />61</);
+  if (measuring) {
+    const reads = async () => JSON.parse((await request('/__account_fixture_metrics')).text).reads;
+    const measure = async path => {
+      const before = (await reads()).length;
+      const started = performance.now(); const response = await request(path);
+      const ms = Math.round(performance.now() - started);
+      assert.equal(response.status, 200);
+      assert.match(response.headers['cache-control'] || '', /no-store/);
+      return { path, ms, wooReads: (await reads()).length - before };
+    };
+    const first = [];
+    for (const path of ['/ucet', '/ucet/objednavky', '/ucet/tlaciarne']) first.push(await measure(path));
+    const warm = [];
+    for (let round=0; round<2; round++) for (const path of ['/ucet', '/ucet/objednavky', '/ucet/tlaciarne']) warm.push(await measure(path));
+    let concurrent = null;
+    if (fixtureOrderCount > 20) {
+      const before = (await reads()).length; const started = performance.now();
+      const results = await Promise.all(Array.from({length:8},()=>request('/ucet/objednavky?page=2')));
+      results.forEach(response=>assert.equal(response.status,200));
+      concurrent = { requests:8, ms:Math.round(performance.now()-started), wooReads:(await reads()).length-before };
+    }
+    if (process.argv.includes('--expect-fast-navigation')) {
+      assert.equal(first[0].wooReads, 2, 'Cold landing needs one customer and one shared order page');
+      assert.equal(first[1].wooReads + first[2].wooReads, 0, 'History and printers must reuse the landing data');
+      assert.ok(warm.every(result=>result.wooReads===0&&result.ms<250), 'Warm account navigation must stay below 250 ms without Woo requests');
+      const delay=Number(env.TM_FIXTURE_WOO_DELAY_MS);
+      if(delay)assert.ok(first[0].ms < delay*1.75+100,'Customer and order reads must overlap');
+      if(concurrent)assert.equal(concurrent.wooReads,1,'Concurrent history reads must share a request');
+    }
+    console.log(JSON.stringify({ok:true,orderCount:fixtureOrderCount,wooDelayMs:Number(env.TM_FIXTURE_WOO_DELAY_MS),first,warm,concurrent}));
+  } else {
+  const home = await request('/ucet'); assert.equal(home.status, 200); assert.match(home.text, />61</);
+  assert.match(home.text, /\/ucet\?summary=1/);
+  const fullSummary = await request('/ucet?summary=1'); assert.equal(fullSummary.status,200); assert.match(fullSummary.text, /10\s*788|10&nbsp;788|10&#160;788/);
   const history = await request('/ucet/objednavky'); assert.equal(history.status, 200); assert.match(history.text, /Objednať znova/); assert.match(history.text, /Stránka 1 z 4/);
   for (const page of [home, history]) {
     assert.match(page.text, />#312345</);
@@ -133,4 +180,5 @@ try {
     await verifyResponsivePurchase('http://127.0.0.1:' + port);
   }
   if (process.argv.includes('--serve')) { console.log('Fixture browser preview: http://127.0.0.1:' + port + '/__account_fixture_session'); await new Promise(resolve => { process.once('SIGINT', resolve); process.once('SIGTERM', resolve); }); }
+  }
 } finally { child.kill('SIGTERM'); await rm(directory, { recursive: true, force: true }); }

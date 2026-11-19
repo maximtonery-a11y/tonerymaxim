@@ -1,6 +1,7 @@
 import { getWooAuthHeader, getWooBaseUrl, wooRequest, type WooOrder } from './woo-client';
 import { isLoyaltyCreditStatus, normalizeOrderStatus } from './order-statuses';
 import { TM_ORDER_NUMBER_META, tmOrderNumber } from './order-display';
+import { readAccountDisplay } from './account-read-cache';
 
 export type AccountOrder = Omit<WooOrder, 'line_items'> & {
   customer_id: number;
@@ -81,7 +82,10 @@ async function readPage(customerId: number, page: number, perPage: number, summa
   return { orders, page, total: count, totalPages: pages, hasMore: page < pages };
 }
 export async function getAccountOrdersPage(customerId: number, page = 1) {
-  const result = await readPage(customerId, accountOrderPage(page), ACCOUNT_ORDERS_PER_PAGE);
+  if (!integer(customerId)) throw new AccountOrderError('Neprihlásený zákazník.', 401);
+  const requestedPage = accountOrderPage(page);
+  return readAccountDisplay(customerId, `orders:${requestedPage}`, 15_000, async () => {
+  const result = await readPage(customerId, requestedPage, ACCOUNT_ORDERS_PER_PAGE);
   const orders = result.orders.map(({ meta_data, number: _wooNumber, ...order }) => ({
     ...order, tmNumber: tmOrderNumber({ meta_data }),
     paymentRecoveryId: !order.date_paid && ['pending', 'on-hold', 'tm-await-pay', 'failed'].includes(normalizeOrderStatus(order.status))
@@ -90,6 +94,28 @@ export async function getAccountOrdersPage(customerId: number, page = 1) {
 
   }));
   return { ...result, orders };
+  });
+}
+
+// Landing/recent-printer reads share the same first page as the order history.
+// A lifetime sum for a longer history is explicitly requested, not a navigation prerequisite.
+export async function getAccountHomePreview(customerId: number) {
+  const page = await getAccountOrdersPage(customerId);
+  const spending = new Map<string, number>();
+  if (!page.hasMore) for (const order of page.orders) {
+    if (!countsAsCustomerPurchase(order)) continue;
+    const total = accountOrderTotals(order).afterRefund;
+    if (total == null || !/^[A-Z]{3}$/.test(String(order.currency || ''))) throw new AccountOrderError();
+    spending.set(order.currency!, (spending.get(order.currency!) || 0) + Math.round(total * 100));
+  }
+  const order = page.orders[0];
+  return {
+    count: page.total,
+    spending: page.hasMore ? null : [...spending].map(([currency, total]) => ({ currency, total: total / 100 })),
+    latestOrder: order ? { id: order.id, customer_id: order.customer_id, tmNumber: order.tmNumber, status: order.status,
+      date_created: order.date_created, total: order.total, currency: order.currency,
+      line_items: order.line_items?.slice(0, 5).map(item => ({ name: String(item.name || '').slice(0, 500), quantity: item.quantity, total: item.total, total_tax: item.total_tax })) } : null,
+  };
 }
 
 // Old invoices, claims and loyalty entries can contain a copied Woo number.
@@ -117,17 +143,9 @@ export async function getAccountOrderNumbers(customerId: number, ids: number[], 
 }
 
 type Overview = { count: number; spending: Array<{ currency: string; total: number }>; latestOrder: (AccountOrder & { tmNumber: string }) | null };
-const overviews = new Map<number, { until: number; value: Overview }>();
-const pending = new Map<number, Promise<Overview>>();
 export async function getAccountOverview(customerId: number): Promise<Overview> {
   if (!integer(customerId)) throw new AccountOrderError('Neprihlásený zákazník.', 401);
-  for (const [key, entry] of overviews) if (entry.until <= Date.now()) overviews.delete(key);
-  const cached = overviews.get(customerId);
-  if (cached) return cached.value;
-  const running = pending.get(customerId);
-  if (running) return running;
-  if (pending.size >= 100) throw new AccountOrderError();
-  const task = (async () => {
+  return readAccountDisplay(customerId, 'overview', 60_000, async () => {
     const signal = AbortSignal.timeout(30_000);
     const [first, recent] = await Promise.all([readPage(customerId, 1, 100, true, signal), readPage(customerId, 1, 1, false, signal)]);
     if (recent.total !== first.total || recent.orders[0]?.id !== first.orders[0]?.id) throw new AccountOrderError();
@@ -156,10 +174,6 @@ export async function getAccountOverview(customerId: number): Promise<Overview> 
       id: latest.id, customer_id: latest.customer_id, tmNumber: tmOrderNumber(latest), status: latest.status, date_created: latest.date_created, total: latest.total, currency: latest.currency,
       line_items: latest.line_items?.slice(0, 5).map(item => ({ name: String(item.name || '').slice(0, 500), quantity: item.quantity, total: item.total, total_tax: item.total_tax })),
     } : null };
-    while (overviews.size >= 200) overviews.delete(overviews.keys().next().value!);
-    overviews.set(customerId, { until: Date.now() + 60_000, value });
     return value;
-  })();
-  pending.set(customerId, task);
-  try { return await task; } finally { pending.delete(customerId); }
+  });
 }

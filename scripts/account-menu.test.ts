@@ -27,13 +27,16 @@ async function menuFixture() {
   const media = { matches: false, onChange: () => {}, addEventListener(_name: string, fn: () => void) { this.onChange = fn; } };
   const forbidden = () => { throw new Error('Navigation must not use persistence or HTTP'); };
   const windowListeners: Record<string, Function> = {};
+  const timers = new Map<number, Function>();
+  let timer = 0;
   const window = { matchMedia: () => media, location: { href: 'https://shop.example/ucet/objednavky' }, scrollX: 0, scrollY: 640,
+    setTimeout(fn: Function) { timers.set(++timer, fn); return timer; }, clearTimeout(id: number) { timers.delete(id); },
     addEventListener(name: string, fn: Function) { windowListeners[name] = fn; },
     scrollTo(options: { left: number; top: number; behavior: string }) { this.scrollX = options.left; this.scrollY = options.top; } };
   Object.defineProperty(window, 'localStorage', { get: forbidden });
   const source = await readFile(new URL('../src/scripts/account-menu.js', import.meta.url), 'utf8');
   vm.runInNewContext(source, { URL, document: { querySelector: (selector: string) => selector === '[data-account-drawer]' ? drawer : nav, querySelectorAll: (selector: string) => selector === '[data-account-nav-link]' ? links : triggers, documentElement: html }, window, fetch: forbidden, localStorage: new Proxy({}, { get: forbidden }) });
-  return { triggers, groups, title, drawer, html, media, listeners, nav, links, window, windowListeners };
+  return { triggers, groups, title, drawer, html, media, listeners, nav, links, window, windowListeners, timers };
 }
 
 test('mobile menu switches groups without accessing customer storage or HTTP', async () => {
@@ -76,6 +79,24 @@ test('tapping the current section does not reload it or start a request', async 
   const event = click();
   f.links[1].callbacks.click(event);
   assert.equal(event.defaultPrevented, true);
+  assert.equal(f.nav.attrs['aria-busy'], undefined);
+  f.triggers[1].callbacks.click();
+  f.links[1].callbacks.click(click());
+  assert.equal(f.drawer.open, false, 'The current destination closes its drawer immediately');
+});
+
+test('repeated taps do not restart a pending navigation and an interrupted load can be retried', async () => {
+  const f = await menuFixture();
+  const first = click(); f.links[2].callbacks.click(first);
+  const again = click(); f.links[2].callbacks.click(again);
+  assert.equal(first.defaultPrevented, false);
+  assert.equal(again.defaultPrevented, true);
+  assert.equal(f.links[2].attrs['aria-disabled'], 'true');
+  [...f.timers.values()][0]();
+  assert.equal(f.links[2].attrs['aria-disabled'], undefined);
+  const retry = click(); f.links[2].callbacks.click(retry);
+  assert.equal(retry.defaultPrevented, false);
+  f.windowListeners.keydown({ key: 'Escape' });
   assert.equal(f.nav.attrs['aria-busy'], undefined);
 });
 

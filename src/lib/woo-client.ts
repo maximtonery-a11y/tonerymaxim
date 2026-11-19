@@ -1,4 +1,5 @@
 import { createHmac } from "node:crypto";
+import { invalidateAccountReads } from './account-read-cache';
 
 const WOO_ACCOUNT_CACHE_TTL_MS = Number(process.env.ACCOUNT_CACHE_TTL_MS || import.meta.env.ACCOUNT_CACHE_TTL_MS || 60_000);
 const WOO_ACCOUNT_ORDERS_CACHE_TTL_MS = Number(process.env.ACCOUNT_ORDERS_CACHE_TTL_MS || import.meta.env.ACCOUNT_ORDERS_CACHE_TTL_MS || 60_000);
@@ -9,6 +10,7 @@ const WOO_ACCOUNT_ORDERS_CACHE_MAX_ITEMS = 300;
 type CacheEntry<T> = { value: T; expiresAt: number };
 const wooCustomerCache = new Map<number, CacheEntry<WooCustomer | null>>();
 const wooCustomerOrdersCache = new Map<string, CacheEntry<WooOrder[]>>();
+const wooCustomerPending = new Map<number, Promise<WooCustomer | null>>();
 
 function cacheTtl(value: number, fallback: number): number {
   return Number.isFinite(value) && value > 0 ? value : fallback;
@@ -41,6 +43,8 @@ function setCached<T>(cache: Map<string | number, CacheEntry<T>>, key: string | 
 function clearCustomerAccountCache(customerId: number): void {
   if (!customerId) return;
   wooCustomerCache.delete(customerId);
+  wooCustomerPending.delete(customerId);
+  invalidateAccountReads(customerId);
   for (const key of [...wooCustomerOrdersCache.keys()]) {
     if (key.startsWith(`${customerId}:`)) wooCustomerOrdersCache.delete(key);
   }
@@ -139,6 +143,11 @@ export async function wooRequest<T = any>(endpoint: string, options: WooRequestO
     throw error;
   }
 
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && /^\/orders(?:\/|$)/.test(cleanEndpoint)) {
+    const owner = Number(data?.customer_id || (options.body as any)?.customer_id);
+    // Synchronous display-cache invalidation adds no HTTP to checkout or GoPay.
+    invalidateAccountReads(Number.isSafeInteger(owner) && owner > 0 ? owner : undefined);
+  }
   return data as T;
 }
 
@@ -249,16 +258,24 @@ export async function getWooCustomerById(customerId: number): Promise<WooCustome
 
   const cached = getCached(wooCustomerCache, customerId);
   if (cached !== undefined) return cached;
-
-  try {
-    const customer = await wooRequest<WooCustomer>(`/customers/${customerId}`);
-    return setCached(wooCustomerCache, customerId, customer, cacheTtl(WOO_ACCOUNT_CACHE_TTL_MS, 60_000), WOO_ACCOUNT_CACHE_MAX_ITEMS);
-  } catch (error: any) {
-    if (error?.status === 404) {
-      return setCached(wooCustomerCache, customerId, null, 10_000, WOO_ACCOUNT_CACHE_MAX_ITEMS);
+  const running = wooCustomerPending.get(customerId);
+  if (running) return running;
+  const task: Promise<WooCustomer | null> = Promise.resolve().then(async () => {
+    try {
+      const customer = await wooRequest<WooCustomer>(`/customers/${customerId}`);
+      if (wooCustomerPending.get(customerId) === task) setCached(wooCustomerCache, customerId, customer, cacheTtl(WOO_ACCOUNT_CACHE_TTL_MS, 60_000), WOO_ACCOUNT_CACHE_MAX_ITEMS);
+      return customer;
+    } catch (error: any) {
+      if (error?.status === 404) {
+        if (wooCustomerPending.get(customerId) === task) setCached(wooCustomerCache, customerId, null, 10_000, WOO_ACCOUNT_CACHE_MAX_ITEMS);
+        return null;
+      }
+      throw error;
     }
-    throw error;
-  }
+  });
+  // Bound concurrent deduplication state; the existing settled cache remains unchanged.
+  if (wooCustomerPending.size < WOO_ACCOUNT_CACHE_MAX_ITEMS) wooCustomerPending.set(customerId, task);
+  try { return await task; } finally { if (wooCustomerPending.get(customerId) === task) wooCustomerPending.delete(customerId); }
 }
 
 export async function updateWooCustomer(customerId: number, body: Record<string, any>): Promise<WooCustomer> {
@@ -268,6 +285,7 @@ export async function updateWooCustomer(customerId: number, body: Record<string,
     method: "PUT",
     body,
   });
+  clearCustomerAccountCache(customerId);
   setCached(wooCustomerCache, customerId, customer, cacheTtl(WOO_ACCOUNT_CACHE_TTL_MS, 60_000), WOO_ACCOUNT_CACHE_MAX_ITEMS);
   return customer;
 }
