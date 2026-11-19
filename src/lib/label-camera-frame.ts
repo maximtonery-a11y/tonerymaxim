@@ -2,7 +2,7 @@ import { drawLabelLine } from './label-image.ts';
 import type { PixelBox } from './label-photo';
 import type { LabelCandidate } from './label-search';
 
-type FramePass = {
+export type FramePass = {
   mode: 'scene' | 'guide' | 'context' | 'band' | 'line';
   angle?: number;
   center?: number;

@@ -203,7 +203,7 @@ test('live camera offers require a legible, unambiguous manufacturer reference',
 test('a dual-brand physical cartridge keeps both order codes including their complete suffix', () => {
   const pair = (text: string, blocked = new Set<string>()) =>
     liveLabelOptions([{ text, confidence: 92 }], blocked).map(candidateText);
-  for (const label of ['H-CF283X/CRG-737', 'CF283X / CRG 737', 'CRG-737 / HP-CF283X']) {
+  for (const label of ['H-CF283X/CRG-737', 'CF283X / CRG 737', 'CRG-737 / HP-CF283X','H-CF283XICRG-737','H-CF283X/ICRG-737','CRG-737|CF283X']) {
     assert.deepEqual(pair(label), ['HP CF283X', 'Canon CRG-737']);
   }
   assert.deepEqual(pair('Canon CRG-737'), ['Canon CRG-737']);
@@ -214,6 +214,7 @@ test('a dual-brand physical cartridge keeps both order codes including their com
   assert.deepEqual(pair('/CRG-737'), []);
   assert.deepEqual(pair('H-CF283X/CRG-7'), []);
   const blocked = new Set<string>();
+  assert.deepEqual(pair('S/N: H-CF283XICRG-737', blocked), []);
   assert.deepEqual(pair('S/N: H-CF283X/CRG-737', blocked), []);
   assert.deepEqual(pair('H-CF283X/CRG-737', blocked), []);
 });

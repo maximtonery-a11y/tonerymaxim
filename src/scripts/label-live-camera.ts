@@ -6,6 +6,7 @@ import {
   liveReadPasses,
   saveLabelFrame,
   type CapturedLabelFrame,
+  type FramePass,
 } from '../lib/label-camera-frame';
 import { locateLabelRows } from '../lib/label-photo';
 import {
@@ -177,8 +178,11 @@ async function readExposures(
   // A landscape sensor in a portrait viewfinder can clip a long reference to a
   // different, valid-looking code. Read its full centred row before trying crops.
   const cropped = first.visible.x1 - first.visible.x0 < first.image.width * 0.82;
-  const passes = cropped
-    ? [liveReadPasses.find(pass => pass.mode === 'context')!, ...liveReadPasses.filter(pass => pass.mode !== 'context')]
+  const passes: FramePass[] = cropped
+    ? [
+        { mode: 'context' }, { mode: 'context', angle: -3 }, { mode: 'context', angle: 3 },
+        ...liveReadPasses.filter(pass => pass.mode !== 'context'),
+      ]
     : liveReadPasses;
   try {
     for (const mode of passes) {

@@ -44,8 +44,15 @@ const codeKey = (text: string) => text.toUpperCase().replace(/[^A-Z0-9]/g, '');
 const clean = (text: string) => text.toUpperCase().replace(/[‐‑‒–—−]/g, '-');
 const codePrefix = /\b(DCP|MFC|HL|TN|DR|LC|BT|WT|CLI|PGI|GI|CL|PG|CRG|PFI|TK|MLT|CLT|ET|XP|WF|LBP)\s*-?\s+([A-Z]?\d)/g;
 const separateSuffix = /\b((?:(?:PGI|CLI|PG|CL|GI|LC|TN)-?\d{2,5}|\d{3}))\s+(XXL|XL|PGBK|BK|[CMY])\b/g;
-function tokens(text: string): string[] {
+// On thick type a printed slash may look like an I. Recover just the separator
+// between two complete references. Never substitute a character inside either code.
+function labelSeparators(text: string) {
   return clean(text)
+    .replace(/\b(C[BEFH]\d{3}[AX]D?)\s*\/?[I|\\]\s*(?=CRG[ -]?\d{3,4}\b)/g, '$1/')
+    .replace(/\b(CRG[ -]?\d{3,4}H?)\s*\/?[I|\\]\s*(?=(?:H-)?C[BEFH]\d{3}[AX]D?\b)/g, '$1/');
+}
+function tokens(text: string): string[] {
+  return labelSeparators(text)
     .replace(/\b(?:H|HP)\s*-\s*(?=C[BEFH]\d{3}[A-Z]{1,3}\b)/g, '')
     .replace(codePrefix, '$1-$2').replace(/\b((?:TN|DR|LC)-[A-Z]?\d)[ \t]+(\d{2,4}[A-Z]{0,3})\b/g, '$1$2').replace(separateSuffix, '$1$2')
     .replace(/\b(DR-?\d{2,5})\s+CL\b/g, '$1CL').replace(/\b(DR-?\d{2,5}CL)[ -]+(CMYK|CMY|BK|[CMY])\b/g, '$1-$2')
@@ -103,7 +110,7 @@ function visibleLabelLines(lines: LabelLine[], privateCodes: Set<string>) {
 
 // An aftermarket label can name a different orderable article for each printer brand.
 function printedBrandPair(line: string) {
-  const parts = line.split(/[/／]/);
+  const parts = labelSeparators(line).split(/[/／]/);
   if (parts.length !== 2) return;
   const left = tokens(parts[0]), right = tokens(parts[1]);
   const canonCode = /^CRG-?\d{3,4}[A-Z]{0,2}$/;
@@ -116,9 +123,11 @@ function printedBrandPair(line: string) {
 
 export function hasSplitSupplyLabel(lines: LabelLine[]) {
   return lines.some(({ text }) => {
-    if (privateLine.test(text) || !/[/／]/.test(text)) return false;
-    if (printedBrandPair(text)) return true;
-    const sides = clean(text).split(/[/／]/).map(part => part.trim());
+    if (privateLine.test(text)) return false;
+    const normalized = labelSeparators(text);
+    if (!/[/／]/.test(normalized)) return false;
+    if (printedBrandPair(normalized)) return true;
+    const sides = normalized.split(/[/／]/).map(part => part.trim());
     if (sides.length !== 2) return false;
     const hp = /\b(?:C[BEFH]\d{1,3}|[QW]\d{2,4})[A-Z]{0,3}\b/;
     const canon = /\bCRG(?:[- ]?\d{0,4})?[A-Z]{0,2}\b/;
