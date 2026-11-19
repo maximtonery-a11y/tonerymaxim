@@ -28,6 +28,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run test:order-emails
+      - run: npm run test:toner-care
       - run: php -l wordpress-plugin/tonerymaxim-customer-administration/tonerymaxim-customer-administration.php
       - run: php scripts/tm-email-template-options.test.php
       - run: php -l wordpress-plugin/tonerymaxim-customer-administration/manual-invoices.php
@@ -40,6 +41,7 @@ jobs:
       - run: php -l wordpress-plugin/tonerymaxim-customer-administration/checkout-pricing.php
       # npm prebuild runs the isolated release guard and blocks Astro on failure.
       - run: npm run build
+      - run: node scripts/toner-care-render-smoke.mjs
       - run: node --experimental-strip-types scripts/verify-order-worker-restart.mjs
       - name: Check the mobile, tablet and desktop shopping journey
         run: |
