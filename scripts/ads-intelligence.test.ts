@@ -26,7 +26,7 @@ test('ekonomika porovnáva ceny bez DPH a reaguje na sadzbu DPH',()=>{
 });
 
 test('platená reklama povoľuje iba bežné kompatibilné tonery a atramenty',()=>{
-  const ok=buildProductEconomics(product());
+  const ok=buildProductEconomics(product(),{realPurchasePrice:10});
   assert.equal(decideCampaignV2(ok,null,{},DEFAULT_ADS_INTELLIGENCE_SETTINGS).eligible,true);
   for(const changes of [
     {name:'HP W1420A No Chip kompatibilný toner'},
@@ -34,6 +34,20 @@ test('platená reklama povoľuje iba bežné kompatibilné tonery a atramenty',(
     {name:'HATONA HP W1420A kompatibilný toner'},
     {product_type_key:'original',name:'HP W1420A originálny toner'},
   ]) assert.equal(decideCampaignV2(buildProductEconomics(product(changes)),null,{},DEFAULT_ADS_INTELLIGENCE_SETTINGS).eligible,false);
+});
+
+test('schválená politika reklamy: len nad 10 EUR s overenou dodávateľskou cenou',()=>{
+  const cheap=buildProductEconomics(product({price:'10.00'}),{realPurchasePrice:2});
+  const cheapDecision=decideCampaignV2(cheap,null,{},DEFAULT_ADS_INTELLIGENCE_SETTINGS);
+  assert.equal(cheapDecision.eligible,false);
+  assert.ok(cheapDecision.reason_codes.includes('PRICE_NOT_ABOVE_10_EUR'));
+  const estimated=buildProductEconomics(product({price:'35.00'}));
+  const estimatedDecision=decideCampaignV2(estimated,null,{},DEFAULT_ADS_INTELLIGENCE_SETTINGS);
+  assert.equal(estimatedDecision.eligible,false);
+  assert.ok(estimatedDecision.reason_codes.includes('NO_VERIFIED_SUPPLIER_COST'));
+  const verified=buildProductEconomics(product({price:'35.00'}),{realPurchasePrice:10});
+  assert.equal(decideCampaignV2(verified,null,{},DEFAULT_ADS_INTELLIGENCE_SETTINGS).eligible,true);
+  assert.equal(DEFAULT_ADS_INTELLIGENCE_SETTINGS.dailyBudgetEur,10);
 });
 
 test('market mapovanie odlišuje rovnaký OEM kód rôznych značiek',()=>{
@@ -46,7 +60,7 @@ test('market mapovanie odlišuje rovnaký OEM kód rôznych značiek',()=>{
 });
 
 test('rozpočet dostane iba obmedzený počet najlepších kandidátov',()=>{
-  const e=buildProductEconomics(product());
+  const e=buildProductEconomics(product(),{realPurchasePrice:10});
   const decisions=Array.from({length:250},(_,i)=>({...decideCampaignV2({...e,product_id:String(i),sku:String(i),name:`P${i}`},null,{},DEFAULT_ADS_INTELLIGENCE_SETTINGS),priority_score:250-i}));
   const out=allocateDailyBudget(decisions,{...DEFAULT_ADS_INTELLIGENCE_SETTINGS,dailyBudgetEur:30,maxActiveProducts:100});
   assert.equal(out.filter(x=>x.allocated_daily_budget>0).length,100);
@@ -54,7 +68,7 @@ test('rozpočet dostane iba obmedzený počet najlepších kandidátov',()=>{
 });
 
 test('rozpočet zostane presný aj pri duplicitnom product_id',()=>{
-  const e=buildProductEconomics(product());
+  const e=buildProductEconomics(product(),{realPurchasePrice:10});
   const base=decideCampaignV2(e,null,{},DEFAULT_ADS_INTELLIGENCE_SETTINGS);
   const decisions=[{...base,product_id:'DUP',priority_score:100},{...base,product_id:'DUP',priority_score:50}];
   const out=allocateDailyBudget(decisions,{...DEFAULT_ADS_INTELLIGENCE_SETTINGS,dailyBudgetEur:30});
@@ -81,19 +95,19 @@ test('reálna Abix cena má prednosť a zápornú maržu reklama vylúči',()=>{
 });
 
 test('engine je konzervatívny: pár klikov produkt nezastaví',()=>{
-  const e=buildProductEconomics(product());
+  const e=buildProductEconomics(product(),{realPurchasePrice:10});
   const d=decideCampaignV2(e,null,{clicks:3,cost:2,conversions:0},DEFAULT_ADS_INTELLIGENCE_SETTINGS);
   assert.equal(d.state,'UČÍ SA'); assert.ok(d.reason_codes.includes('NOT_ENOUGH_OBSERVED_EVIDENCE'));
 });
 
 test('engine zastaví až dostatočne stratový produkt bez konverzie',()=>{
-  const e=buildProductEconomics(product());
+  const e=buildProductEconomics(product(),{realPurchasePrice:10});
   const d=decideCampaignV2(e,null,{clicks:60,cost:100,conversions:0},DEFAULT_ADS_INTELLIGENCE_SETTINGS);
   assert.equal(d.state,'ZASTAVIŤ'); assert.ok(d.reason_codes.includes('ENOUGH_EVIDENCE_SPEND_WITHOUT_CONVERSION'));
 });
 
 test('dobré CPA posilní produkt, slabý ROAS ho vráti na PONECHAŤ',()=>{
-  const e=buildProductEconomics(product());
+  const e=buildProductEconomics(product(),{realPurchasePrice:10});
   const good=decideCampaignV2(e,null,{clicks:50,cost:10,conversions:4,conversion_value:100},DEFAULT_ADS_INTELLIGENCE_SETTINGS);
   assert.equal(good.state,'POSILNIŤ');
   const guarded=decideCampaignV2(e,null,{clicks:50,cost:10,conversions:4,conversion_value:1},DEFAULT_ADS_INTELLIGENCE_SETTINGS);
@@ -128,8 +142,11 @@ test('celý reálny katalóg spĺňa finančné a bezpečnostné invarianty',asy
   const result=await calculateAdsIntelligenceLive(DEFAULT_ADS_INTELLIGENCE_SETTINGS);
   assert.ok(result.summary.products>7_000);
   assert.equal(result.decisions.length,result.summary.products);
-  assert.equal(result.decisions.filter(d=>d.allocated_daily_budget>0).length,DEFAULT_ADS_INTELLIGENCE_SETTINGS.maxActiveProducts);
-  assert.equal(Math.round(result.decisions.reduce((sum,d)=>sum+d.allocated_daily_budget,0)*100),DEFAULT_ADS_INTELLIGENCE_SETTINGS.dailyBudgetEur*100);
+  const funded=result.decisions.filter(d=>d.allocated_daily_budget>0);
+  assert.ok(funded.length<=DEFAULT_ADS_INTELLIGENCE_SETTINGS.maxActiveProducts);
+  assert.ok(funded.every(d=>d.eligible));
+  const fundedCents=Math.round(result.decisions.reduce((sum,d)=>sum+d.allocated_daily_budget,0)*100);
+  assert.equal(fundedCents,result.summary.eligible>0?DEFAULT_ADS_INTELLIGENCE_SETTINGS.dailyBudgetEur*100:0);
   for(const d of result.decisions){
     for(const value of [d.priority_score,d.max_cpc,d.target_cpa,d.break_even_cpa,d.target_roas,d.allocated_daily_budget]) assert.ok(Number.isFinite(value),`${d.sku}: neplatné číslo`);
     assert.ok(d.max_cpc>=0&&d.max_cpc<=DEFAULT_ADS_INTELLIGENCE_SETTINGS.maxCpcAbsolute,`${d.sku}: CPC mimo limitu`);
