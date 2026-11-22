@@ -50,6 +50,21 @@ test('schválená politika reklamy: len nad 10 EUR s overenou dodávateľskou ce
   assert.equal(DEFAULT_ADS_INTELLIGENCE_SETTINGS.dailyBudgetEur,10);
 });
 
+test('CMYK sada tonerov zostáva oprávnená na reklamu pri overenej marži',()=>{
+  const bundle=buildProductEconomics(product({
+    name:'Brother TN-248XL CMYK kompatibilná sada tonerov',
+    slug:'brother-tn-248xl-cmyk-kompatibilna-sada-tonerov',
+    product_brand:'Brother',
+    price:'89.00',
+    categories:[{name:'Sady tonerov'}],
+  }),{realPurchasePrice:40});
+  assert.equal(bundle.material_type,'toner');
+  assert.equal(bundle.product_type,'compatible');
+  assert.equal(decideCampaignV2(bundle,null,{},DEFAULT_ADS_INTELLIGENCE_SETTINGS).eligible,true);
+  const cheapBundle=buildProductEconomics(product({name:'Brother TN-248XL CMYK kompatibilná sada tonerov',price:'9.90'}),{realPurchasePrice:2});
+  assert.equal(decideCampaignV2(cheapBundle,null,{},DEFAULT_ADS_INTELLIGENCE_SETTINGS).eligible,false);
+});
+
 test('market mapovanie odlišuje rovnaký OEM kód rôznych značiek',()=>{
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'tm-market-'));
   const file=path.join(dir,'market.csv');
