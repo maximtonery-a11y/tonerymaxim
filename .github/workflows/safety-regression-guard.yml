@@ -1,0 +1,70 @@
+name: Safety regression guard
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: safety-regression-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  safety-regressions:
+    name: Typecheck, full regression suite, security and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout proposed changes
+        uses: actions/checkout@v4
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install reproducible dependencies
+        run: npm ci
+      - name: Type and Astro checks
+        run: npm run check
+      - name: All project regressions (includes cart, checkout, DPD, SEO, security)
+        run: npm test
+      - name: Production build and release guard
+        run: npm run build
+      - name: Dependency production audit
+        run: npm audit --omit=dev --audit-level=high
+
+  evidence-check:
+    name: Mandatory baseline and change journal
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require dated task journal and rollback plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/changes.txt
+          if ! grep -Eq '^docs/change-journal/[0-9]{4}-[0-9]{2}-[0-9]{2}-[^/]+\.md$' /tmp/changes.txt; then
+            echo "::error::A per-task docs/change-journal/YYYY-MM-DD-name.md is mandatory."
+            exit 1
+          fi
+          while IFS= read -r journal; do
+            if [[ "$journal" =~ ^docs/change-journal/[0-9]{4}-[0-9]{2}-[0-9]{2}-[^/]+\.md$ ]]; then
+              for required in 'Baseline:' 'Testy pred zmenou:' 'Testy po zmene:' 'Výkon pred / po / rozdiel:' 'Rollback:'; do
+                if ! grep -Fq "$required" "$journal"; then
+                  echo "::error file=$journal::Missing $required"
+                  exit 1
+                fi
+              done
+            fi
+          done </tmp/changes.txt
+
+# IMPORTANT: This CI validates code and journal presence only.
+# Real mobile Lighthouse baseline-vs-candidate and checkout staging E2E
+# must be verified externally and documented; branch protection must require
+# review plus these jobs. Do NOT deploy based on CI alone.
