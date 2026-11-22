@@ -19,7 +19,8 @@ export function decideCampaignV2(e:ProductEconomics,m:MarketPretraining|null,s:C
  const cfg=sanitizeAdsSettings(raw); const reasons:string[]=[];
  const clicks=n(s.clicks),cost=n(s.cost),conv=n(s.conversions),value=n(s.conversion_value);
  const phase:DecisionV2['phase']=(clicks>0||cost>0||conv>0)?'OBSERVED':'COLD_START';
- const eligible=cfg.enabled&&e.merchant_eligible&&e.product_type==='compatible'&&(e.material_type==='toner'||e.material_type==='ink')&&!excludedPaidVariant(e)&&e.selling_price>0&&e.purchase_price_used>0&&e.estimated_gross_margin>0;
+ const eligible=cfg.enabled&&e.merchant_eligible&&e.product_type==='compatible'&&(e.material_type==='toner'||e.material_type==='ink')&&!excludedPaidVariant(e)&&e.selling_price>10&&e.purchase_price_source==='abix'&&e.purchase_price_used>0&&e.estimated_gross_margin>0;
+ if(e.selling_price<=10)reasons.push('PRICE_NOT_ABOVE_10_EUR'); if(e.purchase_price_source!=='abix')reasons.push('NO_VERIFIED_SUPPLIER_COST');
  if(!cfg.enabled)reasons.push('ENGINE_DISABLED'); if(!e.merchant_eligible)reasons.push('NOT_MERCHANT_ELIGIBLE');
  if(e.stock_status!=='instock')reasons.push('OUT_OF_STOCK'); if(e.estimated_gross_margin<=0)reasons.push('NO_POSITIVE_MARGIN');
  if(e.product_type!=='compatible')reasons.push('PAID_ADS_COMPATIBLE_ONLY');
