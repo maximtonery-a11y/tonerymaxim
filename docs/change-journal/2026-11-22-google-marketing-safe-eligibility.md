@@ -32,3 +32,13 @@ Deployment: NOT DEPLOYED. All Google campaigns left as-is.
 - `product-economics.ts` toner material classifier previously matched only singular `toner`, potentially excluding `sada tonerov` and `Tonery` categories. Updated to include inflected Slovak toner forms and added a test for `Brother TN-248XL CMYK kompatibilná sada tonerov`.
 - Search Console last_28d top non-brand queries with impressions and zero clicks: `tonery` (165 impressions, avg pos 8.34), `107a toner` (70, 8.63), `hp laserjet 1536dnf mfp toner` (67, 8.87), `hp laserjet pro m102a toner` (65, 8.97), `hp color laserjet pro mfp m283fdw toner` (57, 9.23). These are audit candidates, not evidence of SEO defects. Review relevant canonical pages, intent and competing snippets before edit.
 - Existing optional baseline actions remain unavailable; PR still DRAFT, unmerged, no deployment, CI not verified.
+
+## Search Console sitemaps – read-only evidence
+At audit time, GSC reports zero sitemap errors and zero warnings for these submitted resources:
+- `/sitemap.xml` (index; 33,511 submitted URLs reported)
+- `/sitemap-products.xml` (14,970 submitted)
+- `/sitemap-printers.xml` (15,886 submitted)
+- `/sitemap-oem.xml` (2,488 submitted)
+- `/sitemap-pages.xml` (61 submitted)
+- `/sitemap-brands.xml` (38 submitted)
+This means GSC reported no sitemap-level errors, **not** that all submitted URLs are indexed or ranking well. No sitemap changes made.
