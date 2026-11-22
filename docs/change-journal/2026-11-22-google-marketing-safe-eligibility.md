@@ -24,3 +24,11 @@ Security and checkout: No edited runtime payment/cart/account routes. No live pu
 Risks/blockers: Existing saved marketing settings may hold budget 30; new default is not a production daily spending limit. Ads API and GA4 admin write access unavailable here. Product cost matching depends on SKU -> Abix XML freshness. Excluding unverified COGS may sharply reduce candidates, as intended for safety.
 Rollback: Close PR (no merge) or revert commits; no production changes have been made.
 Deployment: NOT DEPLOYED. All Google campaigns left as-is.
+
+
+## Second read-only review and CMYK correction
+- Merchant Center paid label `ads-compatible`: **1,236** items in linked product feed: 522 ink, 646 toner, 50 drum, 18 other components. Among these, **376** listed prices <= EUR10 (all categories); **797** ink/toner entries cost > EUR10; **544** ink/toner entries >= EUR20. Product-specific supplier margin was not verified and no campaigns were enabled.
+- Within paid labels, **144** product titles mention `sada`, `cmyk` or `multipack` (this also includes CMYK drums and is not a count of validated saleable four-color kits). CMYK set availability and underlying components require independent verification.
+- `product-economics.ts` toner material classifier previously matched only singular `toner`, potentially excluding `sada tonerov` and `Tonery` categories. Updated to include inflected Slovak toner forms and added a test for `Brother TN-248XL CMYK kompatibilná sada tonerov`.
+- Search Console last_28d top non-brand queries with impressions and zero clicks: `tonery` (165 impressions, avg pos 8.34), `107a toner` (70, 8.63), `hp laserjet 1536dnf mfp toner` (67, 8.87), `hp laserjet pro m102a toner` (65, 8.97), `hp color laserjet pro mfp m283fdw toner` (57, 9.23). These are audit candidates, not evidence of SEO defects. Review relevant canonical pages, intent and competing snippets before edit.
+- Existing optional baseline actions remain unavailable; PR still DRAFT, unmerged, no deployment, CI not verified.
