@@ -75,6 +75,10 @@ export function createCameraProbe(signal: AbortSignal) {
     get split() { return split; },
     get serialOnly() { return !split && readings.every(r => !r.options.length) && readings.filter(r => r.serialOnly).length >= 2; },
     get unrelated() { return !split && readings.length >= 2 && readings.every(r => r.unrelated); },
+    get fallbackBudget() {
+      return !split && readings.length >= 2 && readings.every(r => !r.options.length) && readings.some(r => r.unrelated)
+        ? 4000 : 12000;
+    },
     close() { reader.close(); canvas.width = canvas.height = 1; },
   };
 }

@@ -43,7 +43,9 @@ function installVideoFixture() {
       if (new URL(url, location.href).pathname.endsWith('/label-worker.mjs')) {
         this.addEventListener('message', ({ data }) => {
           if (data.rows?.length) sessionStorage.setItem('testReadScene', 'yes');
+          if (data.failed) sessionStorage.setItem('testSceneFailure', data.stage + '/' + data.reason);
         });
+        this.addEventListener('error', error => sessionStorage.setItem('testSceneFailure', error.message || 'worker error'));
       }
     }
     postMessage(job, ...args) {
@@ -320,6 +322,7 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
       mode: window.labelCameraTest?.mode, calls: window.labelCameraTest?.calls.length, tracks: window.labelCameraTest?.tracks.map(t => t.readyState),
       selectedRow: document.querySelector('[data-live-guide]')?.style.top,
       scene: sessionStorage.getItem('testCameraScene'),
+      engine: sessionStorage.getItem('testSceneFailure'), offscreen: typeof OffscreenCanvas, nativeText: typeof TextDetector,
       video: document.querySelector('video')?.readyState, viewport: document.querySelector('video')?.getBoundingClientRect().toJSON(),
     })).catch(() => ({}));
     throw new Error('Camera test ' + JSON.stringify({ diagnostic, searches, workers: workers.length }) + ': ' + error.message, { cause: error });

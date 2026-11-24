@@ -132,10 +132,11 @@ async function collectExposures(
           retained.sort((a, b) => b.score - a.score || b.at - a.at);
           if (retained.length > 3) discard(retained.pop()!);
           // Let the customer put the phone down as soon as there is a readable model.
-          // If the recognizer is still downloading, save a steady burst independently.
+          // Once we have steady lettering, keep the burst and finish reading it off camera.
           if (retained.length === 3 && evidence === 'seen') break;
+          const captureAfter = evidence === 'searching' ? 1800 : 950;
           if (retained.length === 3 && lettering && now - stableSince >= 550 &&
-              evidence === 'unready' && now - started >= 1800) break;
+              now - started >= captureAfter) break;
         }
       }
       await pause(signal, Math.min(135, Math.max(0, deadline - performance.now())));
@@ -240,7 +241,7 @@ export async function scanLiveCamera(
     const [{ createLabelReader }, { readExposures }] = await Promise.all([import('./label-reader'), import('./label-live-analysis')]);
     const reader = await createLabelReader(signal);
     try {
-      const message = await readExposures(frames, reader, signal, match, probe?.privateCodes, probe?.split);
+      const message = await readExposures(frames, reader, signal, match, probe?.privateCodes, probe?.split, probe?.fallbackBudget);
       if (message && !signal.aborted) report(message);
     } finally { reader.close(); }
   } catch (error) {

@@ -1,8 +1,8 @@
-import * as ort from './ort.mjs';
-import { initDet, initRec, warpDet } from './paddle.mjs';
+import * as ort from 'onnxruntime-web/wasm';
+import { initDet, initRec, warpDet } from 'esearch-ocr';
 
 // A single dedicated worker owns both sessions. Cancelling a scan releases both, including the WASM heap.
-const folder = new URL('./', import.meta.url);
+const folder = new URL('./', self.location.href);
 // The bundled runtime contains its loader. WebKit workers can start without
 // dynamically importing a second script, and the WASM bytes are supplied below.
 ort.env.wasm.numThreads = 1;
@@ -55,5 +55,8 @@ self.onmessage = async ({ data }) => {
     if (!detected.length || detected.length > 18) { self.postMessage({ rows: [] }); return; }
     const rows = await reader.rec(detected);
     self.postMessage({ rows: rows.map(({ text, mean, box }) => ({ text, confidence: mean * 100, box })) });
-  } catch { self.postMessage({ failed: true }); }
+  } catch (error) {
+    self.postMessage({ failed: true, stage: data.action === 'load' ? 'load' : 'read',
+      reason: error instanceof Error ? error.name : 'Error' });
+  }
 };

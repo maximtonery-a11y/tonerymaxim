@@ -10,8 +10,6 @@ export const getStaticPaths = (() => {
   const files = {
     'det.onnx.gz': 'paddle-ocr-onnx-models/models/en_PP-OCRv3_det_infer.onnx',
     'rec.onnx.gz': 'paddle-ocr-onnx-models/models/en_PP-OCRv4_rec.onnx',
-    'paddle.mjs': 'esearch-ocr/dist/esearch-ocr.js',
-    'ort.mjs': 'onnxruntime-web/dist/ort.wasm.bundle.min.mjs',
     'ort-wasm-simd-threaded.wasm.gz': 'onnxruntime-web/dist/ort-wasm-simd-threaded.wasm',
     'LICENSE-paddle.txt': 'paddle-ocr-onnx-models/LICENSE',
     'LICENSE-esearch.txt': 'esearch-ocr/LICENSE',
