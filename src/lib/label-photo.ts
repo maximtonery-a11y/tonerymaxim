@@ -1,5 +1,51 @@
 export type PixelBox = { x0: number; y0: number; x1: number; y1: number };
 
+// A grayscale opening estimates the background underneath light letters on
+// moulded plastic. The sliding window costs four linear passes on a frozen frame.
+export function isolateLightPrint(canvas: HTMLCanvasElement) {
+  const { width, height } = canvas;
+  const ctx = canvas.getContext('2d')!;
+  const image = ctx.getImageData(0, 0, width, height);
+  const pixels = image.data;
+  const grey = new Uint8Array(width * height);
+  for (let i = 0; i < grey.length; i++) {
+    const p = i * 4;
+    grey[i] = (77 * pixels[p] + 150 * pixels[p + 1] + 29 * pixels[p + 2]) >> 8;
+  }
+  const temp = new Uint8Array(grey.length), background = new Uint8Array(grey.length);
+  const queue = new Uint16Array(Math.max(width, height));
+  const radius = Math.max(4, Math.min(16, Math.round(width / 95)));
+  function sweep(src: Uint8Array, dest: Uint8Array, vertical: boolean, minimum: boolean) {
+    const length = vertical ? height : width, lines = vertical ? width : height, stride = vertical ? width : 1;
+    for (let line = 0; line < lines; line++) {
+      const start = vertical ? line : line * width;
+      let head = 0, tail = 0, next = 0;
+      for (let i = 0; i < length; i++) {
+        while (next < length && next <= i + radius) {
+          const value = src[start + next * stride];
+          while (tail > head) {
+            const last = src[start + queue[tail - 1] * stride];
+            if (minimum ? last < value : last > value) break;
+            tail--;
+          }
+          queue[tail++] = next++;
+        }
+        while (queue[head] < i - radius) head++;
+        dest[start + i * stride] = src[start + queue[head] * stride];
+      }
+    }
+  }
+  sweep(grey, temp, false, true);
+  sweep(temp, background, true, true);
+  sweep(background, temp, false, false);
+  sweep(temp, background, true, false);
+  for (let i = 0; i < grey.length; i++) {
+    const at = i * 4;
+    pixels[at] = pixels[at + 1] = pixels[at + 2] = 255 - (grey[i] - background[i] - 12) * 15;
+  }
+  ctx.putImageData(image, 0, 0);
+}
+
 // Locate a printed row by the vertical strokes shared by adjacent scanlines.
 // Work on a small copy irrespective of the phone's camera resolution.
 export function locateLabelRows(source: HTMLCanvasElement): { box: PixelBox; barcode: boolean }[] {
@@ -124,7 +170,8 @@ export function printStrip(
   height: number,
   stretch: number,
   padX: number,
-  padY: number
+  padY: number,
+  tilt = 0
 ) {
   const glyphHeight = Math.max(1, box.y1 - box.y0);
   const left = Math.max(0, box.x0 - padX * glyphHeight),
@@ -164,7 +211,18 @@ export function printStrip(
     pixels[i] = pixels[i + 1] = pixels[i + 2] = invert ? 255 - tone : tone;
   }
   ctx.putImageData(data, 8, 8);
-  return canvas;
+  if (!tilt) return canvas;
+  const rotated = document.createElement('canvas');
+  rotated.width = canvas.width;
+  rotated.height = canvas.height;
+  const turn = rotated.getContext('2d')!;
+  turn.fillStyle = 'white';
+  turn.fillRect(0, 0, rotated.width, rotated.height);
+  turn.translate(rotated.width / 2, rotated.height / 2);
+  turn.rotate(tilt * Math.PI / 180);
+  turn.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+  canvas.width = canvas.height = 1;
+  return rotated;
 }
 
 /** Distinguish a closed upper loop (9) from two loops (8) on wide moulded lettering. */
@@ -210,4 +268,26 @@ export function readLoopDigit(source: HTMLCanvasElement, box: PixelBox): string 
   }
   const dark = holes(96);
   return dark && dark === holes(155) ? dark : undefined;
+}
+
+// Leptonica reads raw PNM. Ordinary video needs one byte per pixel. Keep the
+// sensor colour for angled or still-photo recovery without a PNG round trip.
+export function labelImageForOcr(canvas: HTMLCanvasElement, color = false) {
+  const { width, height } = canvas;
+  const rgba = canvas.getContext('2d')!.getImageData(0, 0, width, height).data;
+  const header = new TextEncoder().encode(`${color ? 'P6' : 'P5'}\n${width} ${height}\n255\n`);
+  const image = new Uint8Array(header.length + width * height * (color ? 3 : 1));
+  image.set(header);
+  if (color) {
+    for (let i = 0, p = header.length; i < rgba.length; i += 4) {
+      image[p++] = rgba[i];
+      image[p++] = rgba[i + 1];
+      image[p++] = rgba[i + 2];
+    }
+  } else {
+    for (let i = 0, p = header.length; i < rgba.length; i += 4, p++) {
+      image[p] = (77 * rgba[i] + 150 * rgba[i + 1] + 29 * rgba[i + 2]) >> 8;
+    }
+  }
+  return image;
 }

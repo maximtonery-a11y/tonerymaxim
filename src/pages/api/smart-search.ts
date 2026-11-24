@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { compactKey, explicitlyRequestsSpecialChipVariant, getProductsCache, isSpecialChipVariantProduct, jsonResponse, normalize, sortProducts } from "../../lib/tm-products-cache.ts";
 import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIdentityMatches, partialPrinterModelMatch, partialProductCodeMatch, productPrinterValues, relatedPrefixPacks, searchPackPriority } from "../../lib/catalog-query.ts";
 import { entitySlug, printerBrandForName } from "../../lib/seo-catalog.ts";
-import { matchesPrintedToner, printedTonerCodes } from "../../lib/label-search.ts";
+import { exactLabelOffers, labelCandidates, matchesPrintedToner, printedTonerCodes } from "../../lib/label-search.ts";
 
 export const prerender = false;
 
@@ -746,9 +746,26 @@ export const GET: APIRoute = async ({ url }) => {
     const query = queryInfo(q);
     const queryAnalysis = analyzeCatalogQuery(q);
     const includeOem = url.searchParams.get("label") === "1";
-    const resultKey = cachedResultKey(index.generatedAt, q) + (includeOem ? ":label" : "");
+    const scannerPrinter = includeOem && url.searchParams.get("kind") === "printer";
+    const resultKey = cachedResultKey(index.generatedAt, q) + (scannerPrinter ? ":label-printer" : includeOem ? ":label" : "");
     const cached = getCachedResult(resultKey);
     if (cached) return jsonResponse({ ...cached, source: "smart-search-result-cache" }, 200, "public, max-age=60, s-maxage=600, stale-while-revalidate=3600");
+
+    // A captured printer model needs only its exact printer pages. Avoid scoring
+    // every compatible supply, and keep both brands when the badge is shared.
+    if (scannerPrinter && q.length <= 64) {
+      const model = labelCandidates([{text:q, confidence:100}]).find(item => item.kind === 'printer');
+      if (model) {
+        const code = compactKey(model.code);
+        const links = index.printers.filter(printer => printer.compact.includes(code)).flatMap(printer => {
+          const brand = printerBrandForName(printer.title);
+          return brand ? [{title:printer.title, url:`/tlaciarne/${brand.slug}/${entitySlug(printer.title)}`}] : [];
+        });
+        const data: SmartSearchResponse = { ok:true, query:q, printers: exactLabelOffers(model, {printers:links}), products:[], productGroups:[], brands:[], categories:[] };
+        setCachedResult(resultKey, data);
+        return jsonResponse(data, 200, 'public, max-age=60, s-maxage=600');
+      }
+    }
 
     const printed = includeOem && q.length <= 96 && /^Brother TN-/i.test(q) ? printedTonerCodes(q) : [];
     if (printed.length > 1) {

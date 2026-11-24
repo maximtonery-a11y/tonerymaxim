@@ -51,6 +51,8 @@ jobs:
           TM_PLAYWRIGHT_MODULE="$RUNNER_TEMP/tm-browser/node_modules/playwright/index.mjs" node scripts/verify-gopay-return.mjs
   native-woo-vat:
     runs-on: ubuntu-latest
+    # Test the shop's precise PHP patch regardless of runner image updates.
+    container: php:8.5.12-cli-bookworm@sha256:050713ce008e2360ea9dc96e1f9a075690132388d917fc3552806f7a7be6f2a0
     timeout-minutes: 15
     env:
       TM_DISABLE_BACKGROUND_WORKERS: '1'
@@ -58,6 +60,10 @@ jobs:
       OPENAI_ASSISTANT_ENABLED: '0'
       TM_VAT_EXPECT_PHP: '8.5.12'
     steps:
+      - name: Install fixture tools and verify the PHP runtime
+        run: |
+          apt-get update -qq && apt-get install -y -qq --no-install-recommends git unzip
+          php -r 'if (PHP_VERSION !== getenv("TM_VAT_EXPECT_PHP")) exit(1); foreach (["pdo_sqlite","mbstring","dom","xml","simplexml","fileinfo"] as $ext) if (!extension_loaded($ext)) { fwrite(STDERR, "$ext missing\n"); exit(1); }'
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
@@ -65,10 +71,5 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5.12'
-          extensions: pdo_sqlite, mbstring, dom, xml, simplexml, fileinfo
-          coverage: none
       - run: npm ci
       - run: npm run test:vat
