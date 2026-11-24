@@ -44,7 +44,7 @@ function categoryText(product: TmProduct): string {
 function materialType(product: TmProduct): EconomicsMaterial {
   const text = norm(`${product.name || ''} ${product.slug || ''} ${product.product_type_detail_label || ''} ${categoryText(product)}`);
   if (/\batrament\b|\bink\b|inkjet|kazet|napln/.test(text)) return 'ink';
-  if (/\btoner\b|laserov/.test(text)) return 'toner';
+  if (/\btoner(?:ov|y|u|om|mi|ova|ove|ovy|ovej|ovych)?\b|laserov/.test(text)) return 'toner';
   return 'other';
 }
 function productType(product: TmProduct): EconomicsProductType {

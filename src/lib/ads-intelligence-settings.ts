@@ -26,7 +26,7 @@ export const DEFAULT_ADS_INTELLIGENCE_SETTINGS: AdsIntelligenceSettings = {
   minClicksBeforePause: 50,
   pauseSpendTargetCpaMultiple: 1.25,
   maxCpcAbsolute: 1.50,
-  dailyBudgetEur: 30,
+  dailyBudgetEur: 10,
   maxActiveProducts: 100,
 };
 
