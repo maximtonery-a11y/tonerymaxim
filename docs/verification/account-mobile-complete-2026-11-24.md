@@ -1,0 +1,25 @@
+# Complete customer account navigation — 2026-11-24
+
+## Baseline recorded before source changes
+- Base: `d602483defc54c1b56478ece42bc815674439624`; clean working tree; preceding main release checks succeeded (run 45461550474).
+- Scope: account navigation, printer reminder visibility/forms. Existing customer metadata, reminder schedule, checkout, shipping and payment contracts remain authoritative.
+- Reproduction reported on Android: bar height changes when browser controls hide; Claims incorrectly marks Orders; delayed taps; reminder settings difficult to find on mobile.
+- Code confirms explicit Claims→Orders active mapping and dynamic safe-area inset in both bar height and padding. Existing reminder editor requires deferred JavaScript to reveal it.
+- Original private fixture, 61 orders / 400 ms Woo: first account 488 ms, then Orders 25 ms, Printers 8 ms; warm 4–14 ms, zero Woo reads; 8 concurrent requests share one Woo read (513 ms). A copy of the original built output was retained for paired comparisons.
+- Existing desktop inventory: overview, orders/reorder, invoices, printers/supplies, saved products, claims, loyalty, rewards, addresses/company data, newsletter, profile/password, logout. Toner reminder settings, disable, replacement and history are inside saved printers.
+- Existing limitations: full npm test needs the untracked real product cache for two ads tests; dependency audit has 7 high/3 moderate findings, no critical. No dependencies will be changed in this task.
+
+## Implementation and verification
+- Rebuilt dock: four direct routes (overview, orders, printers, claims) and one native More disclosure. All 12 routes share the same server-only inventory as the desktop sidebar. Claims is selected only on the Claims route. Added a dedicated Upozornenia na toner route.
+- Controls remain 74 px high. Dynamic safe-area inset changes dock position only; static maximum inset reserves the bottom space. The menu uses native anchors/details, no blocking timer, no disabled navigation, no scroll locking and no focus-driven scroll restoration. Its small inline script only handles feedback/closing. The dock is above the closed AI advisor so links remain tappable.
+- Printer cards and the reminder page share the existing fields, history and API. Native form fallback calls the same authenticated PUT handler; no new data schema or migration. Editing, disabling and replacement work before the deferred account script and without JavaScript. The new reminder route reads only the customer, without scanning orders.
+- Local check: 622 files, 0 errors, 0 warnings (22 existing hints). Guard/menu unit tests 20/20; account speed/cache tests 17/17; security 14/14; DPD 36/36. Built release guard: 433 total, 424 passed, 9 skipped, 0 failed. Three obsolete dialog-specific unit cases were replaced by native navigation cases; the total changed accordingly.
+- Built HTTP tests: 12 routes, authenticated/no-store reminder editor, native save/off/replacement, invalid-date rejection, guest/cross-origin rejection, fixed internal redirect, retained history and both printers. Billing, shipping, identity, other printer and unrelated metadata are identical after the sequence.
+- Assets: 60 before/after, 58 byte-identical. Only account CSS (+1,246 bytes) and the account UI bundle (+244 bytes) changed; the critical inline menu script shrank substantially. No extra client module or dependency, and shopping/public-page bundles are identical.
+- Paired three-round fixture measurements (400 ms Woo, same inputs): 61 orders first account/Orders/Printers medians 483/34/10 ms before, 460/30/9 ms after. Three orders 479/22/12 ms before, 456/20/9 ms after. Warm readings 4–22 ms before and 4–20 ms after, no Woo reads. Eight simultaneous reads still coalesce to one Woo read. Values are server fixture timings, not mobile network or physical device measurements.
+- Full npm test still stops at the same two ads tests needing the absent real catalog (83 pass, 2 fail); this task does not fabricate product data. Dependency audit remains 7 high, 3 moderate, 0 critical, with unchanged dependency inputs. These pre-existing limitations are distinct from regressions in this change.
+- CUA tested the disposable saved-printer account at mobile width 375 px: full menu, dedicated reminder fields, save, disable, history and replacement. Browser toolbar/safe-area animation on a physical Android phone cannot be validated by this desktop fixture.
+- CI additionally requires Chromium/Firefox/WebKit at 320/390/768/1280 px, native no-JS menu/save/off/replacement, all route links, hit-area/overflow/controlled-safe-inset checks, immediate navigation feedback, Claims selection and Back. Existing responsive purchase/DPD/GoPay and native Woo VAT checks remain required.
+
+## Publication
+Changes are isolated in `codex/account-mobile-complete` from the baseline above. No production merge before the PR checks pass. The PR records the tested commit, CI run and final merge result. No real customer data, live orders, e-mails or payment transactions were used.

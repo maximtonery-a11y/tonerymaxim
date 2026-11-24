@@ -1,0 +1,89 @@
+---
+import type { SavedPrinter } from "../lib/woo-client";
+import { bratislavaDay, daysUntil, tonerCareReminders } from "../lib/toner-care-rules";
+const { printer, expanded = false, returnTo = "/ucet/tlaciarne" } = Astro.props as { printer: SavedPrinter; expanded?: boolean; returnTo?: string };
+const today = bratislavaDay();
+function formatPlanDate(value?: string) {
+  if (!value) return "Nenastavené";
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return "Nenastavené";
+  return new Intl.DateTimeFormat("sk-SK", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+}
+
+function planStatus(printer: SavedPrinter) {
+  if (!printer.care_enabled) return printer.care_end_reason === "expired" ? "Strážca je ukončený" : "Strážca je vypnutý";
+  if (!printer.expected_replacement_at) return "Doplňte dátum vloženia";
+  const days = daysUntil(printer.expected_replacement_at) ?? 0;
+  if (days < 0) return `Odhadovaný termín uplynul pred ${Math.abs(days)} dňami`;
+  if (days === 0) return "Odhadovaná výmena je dnes";
+  return `Odhadovaná výmena o ${days} dní`;
+}
+---
+                <article class:list={["saved-printer-mini", "toner-care-card", printer.care_enabled && "is-care-active"]} data-saved-printer-card data-printer-title={printer.title}>
+                  <div class="saved-printer-mini-icon" aria-hidden="true">▤</div>
+                  <div class="saved-printer-mini-body">
+                    <strong>{printer.title}</strong>
+                    <span>{[printer.brand, printer.product_count ? `${printer.product_count} kompatibilných produktov` : "Kompatibilné náplne"].filter(Boolean).join(" · ")}</span>
+                  </div>
+                  <div class="toner-care-status">
+                    <i aria-hidden="true"></i>
+                    <div>
+                      <strong>{planStatus(printer)}</strong>
+                      <span>{printer.expected_replacement_at ? `Predpokladaný termín: ${formatPlanDate(printer.expected_replacement_at)}` : "Prvý e-mail mesiac vopred, potom každých 7 dní"}</span>
+                    </div>
+                  </div>
+                  <div class="saved-printer-mini-actions">
+                    <a class="account-link-pill is-small" href={printer.url || `/produkty?printer=${encodeURIComponent(printer.title)}`}>Zobraziť náplne</a>
+                    <form method="post" action="/api/account/toner-care" data-toner-care-disable-form hidden={!printer.care_enabled}>
+                      <input type="hidden" name="title" value={printer.title} /><input type="hidden" name="return_to" value={returnTo} /><input type="hidden" name="action" value="disable" />
+                      <button class="tm-btn is-outline is-small" type="submit" data-disable-toner-care>Vypnúť strážcu</button>
+                    </form>
+                  </div>
+                  <details class="saved-printer-manage"><summary>Možnosti tlačiarne</summary><button class="tm-btn is-danger-soft is-small" type="button" data-remove-saved-printer>Odstrániť tlačiareň</button></details>
+                  <div class="toner-care-history" data-toner-care-history>
+                    {(tonerCareReminders(printer).some((item) => item.customer_sent_at) || (printer.care_history || []).length > 0) && <details>
+                      <summary>História strážcu</summary>
+                      {tonerCareReminders(printer).some((item) => item.customer_sent_at) && <p>Odoslané upozornenia: {tonerCareReminders(printer).filter((item) => item.customer_sent_at).map((item) => formatPlanDate(bratislavaDay(new Date(item.customer_sent_at!)))).join(", ")}</p>}
+                      {(printer.care_history || []).map((cycle) => <p>{cycle.reason === "expired" ? "Použitý a ukončený" : cycle.reason === "disabled" ? "Vypnutý ručne" : "Nahradený novým plánom"} · termín {formatPlanDate(cycle.expected_replacement_at)} · odoslaných upozornení: {cycle.reminders.filter((item) => item.customer_sent_at).length}</p>)}
+                    </details>}
+                  </div>
+                  <details class="toner-care-editor" open={expanded}>
+                    <summary>Nastaviť upozornenie na výmenu</summary>
+                    <form class="toner-care-form" data-toner-care-form method="post" action="/api/account/toner-care">
+                    <input type="hidden" name="return_to" value={returnTo} />
+                    <input type="hidden" name="title" value={printer.title} />
+                    <label class="toner-care-switch">
+                      <input type="checkbox" name="care_enabled" checked={printer.care_enabled} />
+                      <span aria-hidden="true"></span>
+                      <strong>Zapnúť pripomienku výmeny</strong>
+                    </label>
+                    <div class="toner-care-fields">
+                      <label>
+                        <span>Dátum vloženia náplne</span>
+                        <input class="account-input" type="date" name="installed_at" max={today} value={printer.installed_at || ""} />
+                      </label>
+                      <label>
+                        <span>Predpokladaná výdrž</span>
+                        <select class="account-input" name="expected_months">
+                          {[1, 2, 3, 4, 6, 9, 12, 18, 24].map((months) => <option value={months} selected={Number(printer.expected_months || 3) === months}>{months === 1 ? "1 mesiac" : `${months} mesiacov`}</option>)}
+                        </select>
+                      </label>
+                      <label>
+                        <span>Preferovaný typ</span>
+                        <select class="account-input" name="preferred_type">
+                          <option value="any" selected={(printer.preferred_type || "any") === "any"}>Najvhodnejšia možnosť</option>
+                          <option value="compatible" selected={printer.preferred_type === "compatible"}>Kompatibilný</option>
+                          <option value="original" selected={printer.preferred_type === "original"}>Originálny</option>
+                          <option value="renovated" selected={printer.preferred_type === "renovated"}>Renovovaný</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div class="toner-care-form-note">Prvý e-mail pošleme približne mesiac pred termínom, potom každých 7 dní vám aj ToneryMaxim. Po uplynutí termínu sa strážca automaticky vypne. Plán môžete vypnúť aj skôr bez odstránenia tlačiarne.</div>
+                    <div class="toner-care-form-actions">
+                      <button class="tm-btn" type="submit">Uložiť plán</button>
+                      <button class="tm-btn is-outline" type="submit" name="action" value="replaced" data-toner-replaced-today>Toner som vymenil dnes</button>
+                    </div>
+                    <div class="account-form-message" data-toner-care-message role="status" hidden></div>
+                  </form>
+                  </details>
+                </article>

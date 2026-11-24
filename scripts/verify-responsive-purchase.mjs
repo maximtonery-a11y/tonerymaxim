@@ -1,5 +1,6 @@
 // Invoked by account-orders-render-smoke.mjs --responsive, against its disposable, local-only shop.
 import assert from 'node:assert/strict';
+import { checkAccountNavigation } from './verify-account-navigation.mjs';
 import { chromiumLabelCamera, verifyFirefoxLabels, verifyLiveCamera } from './verify-live-camera.mjs';
 import { verifyMobileLabel } from './verify-mobile-label.mjs';
 
@@ -9,80 +10,6 @@ const layouts = [
   [844, 390, true], [768, 1024, true], [1024, 768, true], [1280, 800, false], [1440, 900, false],
 ];
 const cents = text => Math.round(Number(text.replace(/[^0-9,.-]/g, '').replace(',', '.')) * 100);
-async function checkAccountNavigation(page, origin, [width, height, touch]) {
-  await page.goto(origin + '/__account_fixture_session');
-  const rejectCookies = page.locator('#tm-cookie-reject');
-  if (await rejectCookies.isVisible()) await rejectCookies.click();
-  const nav = page.locator('[data-account-mobile-nav]');
-  assert.equal(await nav.isVisible(), touch);
-  if (!touch) return;
-  const position = await nav.boundingBox();
-  assert.ok(Math.abs(position.y + position.height - height) <= 1);
-  assert.equal(Math.round(position.height), 74);
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  const scroll = await page.evaluate(() => scrollY);
-  const moved = await nav.boundingBox();
-  assert.equal(Math.round(moved.y), Math.round(position.y));
-  for (const group of ['Výhody', 'Viac']) {
-    await nav.getByRole('button', { name: group, exact: true }).click();
-    await page.locator('[data-account-drawer]').waitFor({ state: 'visible' });
-    if (group === 'Výhody') await page.keyboard.press('Escape');
-    else await page.getByRole('button', { name: 'Zavrieť menu účtu' }).click();
-    await page.locator('[data-account-drawer]').waitFor({ state: 'hidden' });
-    assert.equal(await page.evaluate(() => scrollY), scroll);
-  }
-  const destination = origin + '/ucet/tlaciarne';
-  const feedback = [];
-  await page.exposeFunction('__accountFeedback', snapshot => { feedback.push(snapshot); });
-  await page.evaluate(destination => {
-    const nav = document.querySelector('[data-account-mobile-nav]');
-    let repeated = false;
-    // The account's target handler runs before this bubbling observer. Capture
-    // the actual displayed feedback before native document navigation begins.
-    nav.addEventListener('click', event => {
-      const target = event.target.closest('a[data-account-nav-link]');
-      if (!target || target.href !== destination) return;
-      const attempt = repeated ? 2 : 1;
-      repeated = true;
-      const snapshot = {
-        attempt, pending: target.hasAttribute('data-navigation-pending'),
-        busy: nav.getAttribute('aria-busy'), prevented: event.defaultPrevented,
-        feedbackMs: performance.now() - event.timeStamp,
-        highlighted: [...nav.children]
-          .filter(child => !['rgba(0, 0, 0, 0)', 'transparent'].includes(getComputedStyle(child).backgroundColor))
-          .map(child => child.textContent.trim()),
-      };
-      void window.__accountFeedback(snapshot).catch(() => {});
-      // Replay a second activation while the first handler's pending state is
-      // active. A broken duplicate guard is visible even before HTTP starts.
-      if (attempt === 1) target.click();
-    });
-  }, destination);
-  let requests = 0;
-  const record = request => { if (request.isNavigationRequest() && request.url() === destination) requests++; };
-  page.on('request', record);
-  try {
-    await nav.getByRole('link', { name: 'Tlačiarne', exact: true }).tap();
-    await page.waitForURL(destination);
-    await page.getByRole('heading', { level: 1, name: 'Moje tlačiarne', exact: true }).waitFor();
-    assert.equal(feedback.length, 2);
-    const first = feedback.find(snapshot => snapshot.attempt === 1);
-    const again = feedback.find(snapshot => snapshot.attempt === 2);
-    assert.equal(first.pending, true);
-    assert.equal(first.busy, 'true');
-    assert.equal(first.prevented, false);
-    assert.ok(first.feedbackMs < 100, 'Tap feedback must be visible within 100 ms');
-    assert.deepEqual(first.highlighted, ['Tlačiarne']);
-    assert.equal(again.prevented, true, 'The repeated activation must be cancelled');
-    assert.deepEqual(again.highlighted, ['Tlačiarne']);
-    assert.equal(requests, 1, 'Repeated activation must not restart navigation');
-    assert.equal(await page.locator('[data-account-mobile-nav]').getAttribute('aria-busy'), null);
-    await page.goBack();
-    await page.getByRole('heading', { level: 1, name: 'Objednávky', exact: true }).waitFor();
-    assert.equal(await page.locator('[data-navigation-pending]').count(), 0);
-  } finally { page.off('request', record); }
-  console.log(`Account menu ${width}×${height} OK: stable bar, drawers, immediate feedback, one navigation, browser Back`);
-}
 async function checkCameraPromotion(page, origin, width, touch) {
   const home = page.locator(touch ? '.tm-mobile-home-final' : '.hero-copy');
   const start = home.getByRole('link', { name: touch ? 'Spustiť fotoaparát' : 'Hľadať podľa fotky', exact: true });
