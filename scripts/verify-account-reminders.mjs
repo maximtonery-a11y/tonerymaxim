@@ -22,6 +22,7 @@ export async function verifySavedTonerCare(origin) {
           await page.waitForURL(origin + '/ucet/upozornenia');
           const card = page.locator('[data-printer-title="Brother DCP-L3517CDW"]');
           const fields = card.locator('[data-toner-care-form]');
+          assert.equal(await page.locator('[data-printer-title="HP LaserJet M110w"] [name="expected_months"]').inputValue(), '5', 'Keep every existing 1–24 month duration selectable');
           assert.ok(await fields.isVisible());
           await fields.locator('[name="expected_months"]').selectOption('6');
           await fields.locator('[name="preferred_type"]').selectOption('original');

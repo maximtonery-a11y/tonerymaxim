@@ -65,7 +65,7 @@ function planStatus(printer: SavedPrinter) {
                       <label>
                         <span>Predpokladaná výdrž</span>
                         <select class="account-input" name="expected_months">
-                          {[1, 2, 3, 4, 6, 9, 12, 18, 24].map((months) => <option value={months} selected={Number(printer.expected_months || 3) === months}>{months === 1 ? "1 mesiac" : `${months} mesiacov`}</option>)}
+                          {Array.from({ length: 24 }, (_, index) => index + 1).map((months) => <option value={months} selected={Number(printer.expected_months || 3) === months}>{months === 1 ? "1 mesiac" : months < 5 ? `${months} mesiace` : `${months} mesiacov`}</option>)}
                         </select>
                       </label>
                       <label>

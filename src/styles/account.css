@@ -2514,7 +2514,7 @@
   .account-more-links a, .account-more-logout { display: flex; align-items: center; min-height: 56px; box-sizing: border-box; padding: 10px; border: 1px solid var(--tm-line); border-radius: 10px; background: #fff; color: var(--tm-navy); font: inherit; font-size: 14px; font-weight: 650; line-height: 1.35; text-decoration: none; touch-action: manipulation; }
   .account-more-links a[aria-current="page"] { background: #fff2c4; border-color: #e7d07b; }
   .account-more-logout { justify-content: center; width: 100%; min-height: 48px; margin-top: 10px; cursor: pointer; }
-  .account-page .tm-ai-assistant:not(.is-open) { right: 16px !important; bottom: calc(94px + var(--account-safe-max)) !important; }
+  .account-page .tm-ai-assistant:not(.is-open) { z-index: 149 !important; right: 16px !important; bottom: calc(94px + var(--account-safe-max)) !important; }
   .account-page .tm-ai-assistant:not(.is-open) .tm-ai-assistant__launcher { bottom: 0 !important; }
   .account-page .tm-ai-assistant:not(.is-open) .tm-ai-nudge { position: fixed; bottom: calc(158px + var(--account-safe-max)) !important; }
   .account-page .mobile-newsletter, .account-page .footer-newsletter { display: none; }

@@ -20,7 +20,7 @@ const customer = { id: 7, email: 'test@example.invalid', first_name: 'Test', las
   billing: { first_name: 'Test', last_name: 'Zákazník', address_1: 'Testovacia 12', city: 'Testovacie mesto', postcode: '12345', country: 'SK', phone: '0900000000' },
   shipping: { address_1: 'Testovacia 34', city: 'Iné mesto', postcode: '54321', country: 'SK' },
   meta_data: [
-    { key: 'tm_saved_printers', value: JSON.stringify([printer('Brother DCP-L3517CDW'), printer('HP LaserJet M110w', false)]) },
+    { key: 'tm_saved_printers', value: JSON.stringify([printer('Brother DCP-L3517CDW'), { ...printer('HP LaserJet M110w', false), expected_months: 5 }]) },
     { key: 'tm_saved_products', value: JSON.stringify([{ id: 11, sku: 'TEST-11', title: 'Uložený toner' }]) },
     { key: 'tm_saved_shipping_addresses', value: JSON.stringify([{ id: 'office', address_1: 'Testovacia 34' }]) },
     { key: 'tm_loyalty_points', value: 250 }, { key: 'tm_loyalty_lifetime_points', value: 250 },

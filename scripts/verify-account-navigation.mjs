@@ -27,8 +27,8 @@ export async function checkAccountNavigation(page, origin, [width, height, touch
   const menu = page.locator('[data-account-more]');
   await menu.locator('summary').click();
   assert.ok(await page.getByRole('link', { name: 'Upozornenia na toner', exact: true }).last().isVisible());
-  const menuLinks = await menu.locator('a').evaluateAll(nodes => nodes.map(node => { const r = node.getBoundingClientRect(); return { height: r.height, left: r.left, right: r.right, viewport: innerWidth }; }));
-  for (const box of menuLinks) assert.ok(box.height >= 48 && box.left >= 0 && box.right <= box.viewport);
+  const menuLinks = await menu.locator('a, button').evaluateAll(nodes => nodes.map(node => { const r = node.getBoundingClientRect(); const points = [[r.x + r.width / 2, r.y + r.height / 2], [r.right - 12, r.bottom - 12]]; return { height: r.height, left: r.left, right: r.right, viewport: innerWidth, tappable: points.every(([x, y]) => node.contains(document.elementFromPoint(x, y))) }; }));
+  for (const box of menuLinks) assert.ok(box.height >= 44 && box.left >= 0 && box.right <= box.viewport && box.tappable);
   await page.keyboard.press('Escape');
   assert.equal(await menu.getAttribute('open'), null);
   assert.equal(await page.evaluate(() => scrollY), scroll);

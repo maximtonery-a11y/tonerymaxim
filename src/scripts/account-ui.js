@@ -429,7 +429,7 @@
         </label>
         <div class="toner-care-fields">
           <label><span>Dátum vloženia náplne</span><input class="account-input" type="date" name="installed_at" max="${careToday()}" /></label>
-          <label><span>Predpokladaná výdrž</span><select class="account-input" name="expected_months"><option value="1">1 mesiac</option><option value="2">2 mesiace</option><option value="3" selected>3 mesiace</option><option value="4">4 mesiace</option><option value="6">6 mesiacov</option><option value="9">9 mesiacov</option><option value="12">12 mesiacov</option><option value="18">18 mesiacov</option><option value="24">24 mesiacov</option></select></label>
+          <label><span>Predpokladaná výdrž</span><select class="account-input" name="expected_months">${Array.from({ length: 24 }, (_, index) => index + 1).map(months => `<option value="${months}"${months === 3 ? ' selected' : ''}>${months === 1 ? '1 mesiac' : months < 5 ? `${months} mesiace` : `${months} mesiacov`}</option>`).join('')}</select></label>
           <label><span>Preferovaný typ</span><select class="account-input" name="preferred_type"><option value="any">Najvhodnejšia možnosť</option><option value="compatible">Kompatibilný</option><option value="original">Originálny</option><option value="renovated">Renovovaný</option></select></label>
         </div>
         <div class="toner-care-form-note">Prvý e-mail pošleme približne mesiac pred termínom, potom každých 7 dní vám aj ToneryMaxim. Po uplynutí termínu sa strážca automaticky vypne. Plán môžete vypnúť aj skôr bez odstránenia tlačiarne.</div>
