@@ -249,6 +249,9 @@ export function toMerchantProduct(product: TmProduct, origin: string, allProduct
 
   const price = Number(product.price || 0);
   const inStock = isAvailableNow(product);
+  const shoppingEligible = productType === "compatible" && inStock &&
+    Number.isFinite(price) && Math.round(price * 100) > 1000 &&
+    (material === "toner" || material === "ink");
   const images = productImages(origin, product);
   const ids = identifiers(product, productType);
   const exactOemCodes = oemCodes(product);
@@ -271,13 +274,11 @@ export function toMerchantProduct(product: TmProduct, origin: string, allProduct
     color: cleanText(product.color || product.farba, 100),
     description: description(product, productType, material),
     oemCodes: exactOemCodes,
-    // Originály a renovované výrobky ostávajú v bezplatných záznamoch, ale
-    // samotný feed ich už technicky nepustí do platenej Shopping inzercie.
-    excludedDestinations: productType === "compatible" ? [] : ["Shopping_ads"],
+    excludedDestinations: shoppingEligible ? [] : ["Shopping_ads"],
     labels: [
       productType,
       material,
-      productType === "compatible" ? "ads-compatible" : "organic-only",
+      shoppingEligible ? "ads-compatible" : "organic-only",
       oemFamilyLabel(exactOemCodes),
       price >= 29 ? "free-shipping" : "paid-shipping",
     ],
