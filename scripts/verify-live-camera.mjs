@@ -140,7 +140,7 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     if (url.pathname === '/api/smart-search' && url.searchParams.get('label') === '1') searches.push(url.searchParams.get('q'));
     if (r.method() !== 'GET') uploads.push([r.method(), url.pathname]);
   };
-  const worker = w => { if (w.url().endsWith('/worker.min.js')) workers.push(w.url()); };
+  const worker = w => { if (/\/(?:worker\.min\.js|label-worker\.mjs)$/.test(w.url())) workers.push(w.url()); };
   page.context().on('request', request); page.on('worker', worker);
   try {
     const response = await page.goto(origin + '/hladat-fotkou');
@@ -176,8 +176,8 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     assert.equal(await page.locator('video').evaluate(el => el.srcObject), null);
     assert.equal(workers.length, 0);
 
-    // One tap on the pilot home link starts the scanner and brings up toner prices.
-    await page.goto(origin + '/?foto=1');
+    // One tap on the mobile home link starts the scanner and brings up toner prices.
+    await page.goto(origin + '/');
     await page.getByRole('link', { name: 'Skenovať štítok' }).click();
     await page.locator('[data-matches] a').first().waitFor({ timeout: 60_000 });
     assert.equal(await page.locator('[data-matches] a').count(), 3);
@@ -309,4 +309,18 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     })).catch(() => ({}));
     throw new Error('Camera test ' + JSON.stringify({ diagnostic, searches, workers: workers.length }) + ': ' + error.message, { cause: error });
   } finally { page.context().off('request', request); page.off('worker', worker); }
+}
+
+
+// Gecko on a phone-sized viewport exercises the same catalogue and canvas-backed camera.
+export async function verifyFirefoxLabels(browserType, origin) {
+  const browser = await browserType.launch();
+  try {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+    await context.route(url => url.origin !== origin, route => route.abort());
+    const page = await context.newPage();
+    await page.addInitScript(installVideoFixture);
+    await verifyPhysicalLabels(page, origin, true);
+    await verifyPhysicalLabels(page, origin, false);
+  } finally { await browser.close(); }
 }

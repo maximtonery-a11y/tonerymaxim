@@ -315,7 +315,7 @@ function setup(root: HTMLElement) {
       if (task.signal.aborted) return;
       const { passes, barcode } = await readLabel(file, task.signal, message => {
         if (!task.signal.aborted) status.textContent = message;
-      }, area);
+      }, area, privateCodes);
       if (task.signal.aborted) return;
       reset();
       const lines = passes[0] || [];

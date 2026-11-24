@@ -19,7 +19,7 @@ import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 import SeoHead from "../components/SeoHead.astro";
 import { organizationJsonLd, websiteJsonLd } from "../lib/seo";
 
-const showLabelSearch = process.env.TM_PHOTO_SEARCH_ENABLED === '1' || Astro.url.searchParams.get('foto') === '1';
+const showLabelSearch = process.env.TM_PHOTO_SEARCH_ENABLED !== '0' || Astro.url.searchParams.get('foto') === '1';
 const SEO_ORIGIN = 'https://www.tonerymaxim.sk';
 const title = "Tonery a náplne do tlačiarní | ToneryMaxim.sk";
 const description = "Tonery, atramentové náplne, optické valce a komponenty pre tlačiarne HP, Canon, Brother, Epson a ďalšie. Rýchle doručenie a odborná pomoc.";

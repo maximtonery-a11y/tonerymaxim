@@ -1,6 +1,8 @@
 import { focusScore, hasLabelStrokes, saveLabelFrame, type CapturedLabelFrame, type LabelExposure } from '../lib/label-camera-frame';
 import type { locateLabelRows } from '../lib/label-photo';
 import type { LabelMatch } from './label-live-analysis';
+import type { createCameraProbe } from './label-camera-probe';
+type CameraProbe = ReturnType<typeof createCameraProbe>;
 
 function pause(signal: AbortSignal, delay: number) {
   signal.throwIfAborted();
@@ -65,7 +67,8 @@ async function collectExposures(
   guide: HTMLElement,
   signal: AbortSignal,
   deadline: number,
-  locateRows: (canvas: HTMLCanvasElement) => number
+  locateRows: (canvas: HTMLCanvasElement) => number,
+  sample: CameraProbe['sample']
 ) {
   const retained: LabelExposure[] = [];
   const thumbnail = document.createElement('canvas');
@@ -122,15 +125,20 @@ async function collectExposures(
           const now = performance.now();
           if (!samples || change / samples > 12 || !lettering) stableSince = now;
           previous = pixels;
-          retained.push({ ...frame, score, at: now });
+          const exposure = { ...frame, score, at: now };
+          const evidence = sample(exposure, key, lettering);
+          retained.push(exposure);
           // Keep the clearest independently captured images, preferring a newer one on ties.
           retained.sort((a, b) => b.score - a.score || b.at - a.at);
           if (retained.length > 3) discard(retained.pop()!);
-          const steadyInterval = rows ? 750 : 1250;
-          if (retained.length === 3 && lettering && now - started >= 1800 && now - stableSince >= steadyInterval) break;
+          // Let the customer put the phone down as soon as there is a readable model.
+          // If the recognizer is still downloading, save a steady burst independently.
+          if (retained.length === 3 && evidence === 'seen') break;
+          if (retained.length === 3 && lettering && now - stableSince >= 550 &&
+              evidence === 'unready' && now - started >= 1800) break;
         }
       }
-      await pause(signal, Math.min(360, Math.max(0, deadline - performance.now())));
+      await pause(signal, Math.min(135, Math.max(0, deadline - performance.now())));
     }
     if (!retained.length) throw new Error('camera-preview-timeout');
     return retained;
@@ -156,6 +164,8 @@ export async function scanLiveCamera(
   let stream: MediaStream | undefined;
   let cutoff: ReturnType<typeof setTimeout> | undefined;
   let frames: LabelExposure[] = [];
+  let probe: CameraProbe | undefined;
+  let finished = false;
   function release() {
     clearTimeout(cutoff);
     stream?.getTracks().forEach((track) => track.stop());
@@ -201,27 +211,39 @@ export async function scanLiveCamera(
     report('Namierte na celý názov alebo kód. Pri drobnom písme ťuknite na riadok s označením.');
     await playPreview(video, signal, remaining);
     signal.throwIfAborted();
-    const ready = import('./label-reader').then(({ createLabelReader }) => createLabelReader(signal));
-    const analysis = import('./label-live-analysis');
-    void analysis.catch(() => {});
-    // Observe an early download failure without tying device release to the worker.
-    void ready.catch(() => {});
-    frames = await collectExposures(video, guide, signal, Math.min(granted + remaining - 250, performance.now() + 6000), canvas => locate?.(canvas).length ?? 0);
+    const ready = import('./label-camera-probe').then(({ createCameraProbe }) => {
+      if (!finished && !signal.aborted) probe = createCameraProbe(signal);
+    }).catch(() => {});
+    frames = await collectExposures(video, guide, signal, Math.min(granted + remaining - 250, performance.now() + 6000),
+      canvas => locate?.(canvas).length ?? 0, (frame, key, lettering) => probe?.sample(frame, key, lettering) || 'unready');
     release();
     signal.throwIfAborted();
     captured();
-    const reader = await ready;
-    try {
-      const { readExposures } = await analysis;
-      const message = await readExposures(frames, reader, signal, match);
-      if (message && !signal.aborted) report(message);
-    } finally {
-      reader.close();
+    await ready;
+    let options: Awaited<ReturnType<CameraProbe['confirm']>> = undefined;
+    try { options = await probe?.confirm(frames); }
+    catch { signal.throwIfAborted(); }
+    finally { probe?.close(); }
+    if (options?.length) {
+      const found = await match(options);
+      signal.throwIfAborted();
+      if (found === true) return;
+      if (found === 'suffix') report('Pri tomto valci rozhodujú aj posledné písmená. Zachyťte celý kód vrátane koncovky.');
+      else report('Pre prečítané označenie sme v katalógu nenašli presnú ponuku. Skontrolujte označenie.');
+      return;
     }
+    const [{ createLabelReader }, { readExposures }] = await Promise.all([import('./label-reader'), import('./label-live-analysis')]);
+    const reader = await createLabelReader(signal);
+    try {
+      const message = await readExposures(frames, reader, signal, match, probe?.privateCodes, probe?.split);
+      if (message && !signal.aborted) report(message);
+    } finally { reader.close(); }
   } catch (error) {
     if (error instanceof Error && error.message === 'camera-preview-timeout') throw new LabelPreviewTimeout(expiresAt || 0);
     throw error;
   } finally {
+    finished = true;
+    probe?.close();
     signal.removeEventListener('abort', release);
     release();
     frames.forEach(discard);

@@ -52,7 +52,10 @@ export function isShorterReading(candidate: LabelCandidate, confirmed: LabelCand
   });
 }
 
-const clean = (text: string) => text.toUpperCase().replace(/[‐‑‒–—−]/g, '-');
+const clean = (text: string) => text.toUpperCase().replace(/[‐‑‒–—−]/g, '-')
+  .replace(/\b(LASERJET|OFFICEJET|DESKJET|DESIGNJET)\s*(PRO)?\s*(MFP)?(?=[MPC]{1,2}\d{3,5}\b|[MPC]{1,2}\d{3,5}[A-Z])/g,
+    (_, family, pro, mfp) => [family, pro, mfp].filter(Boolean).join(' ') + ' ')
+  .replace(/\b((?:[MP]|CP|CM)\d{3,5})[ \t]+(FDNW|FDW|FDN|DNW|DWN|DN|DW|NW|NWE|WE)\b/g, '$1$2');
 const codePrefix = /\b(DCP|MFC|HL|TN|DR|LC|BT|WT|CLI|PGI|GI|CL|PG|CRG|PFI|TK|MLT|CLT|ET|XP|WF|LBP)\s*-?\s+([A-Z]?\d)/g;
 const separateSuffix = /\b((?:(?:PGI|CLI|PG|CL|GI|LC|TN)-?\d{2,5}|\d{3}))\s+(XXL|XL|PGBK|BK|[CMY])\b/g;
 // On thick type a printed slash may look like an I. Recover just the separator
@@ -87,7 +90,7 @@ export function matchesPrintedToner(codes: string[], name: string, oem: string) 
 
 export function labelBrands(lines: LabelLine[]): string[] {
   const brands = new Set(lines.flatMap(line => clean(line.text).match(brandPattern) || []));
-  const context = lines.map(line => line.text).join(' ');
+  const context = clean(lines.map(line => line.text).join(' '));
   for (const family of printerFamilies) if (family.name.test(context)) brands.add(family.brand.toUpperCase());
   if (/\bJETINTELLIGENCE\b/i.test(context)) brands.add('HP');
   if (/\b(?:PIXMA|MAXIFY)\b/i.test(context)) brands.add('CANON');
@@ -154,7 +157,7 @@ export function hasSplitSupplyLabel(lines: LabelLine[]) {
 export function labelCandidates(lines: LabelLine[], privateCodes = new Set<string>(), previousBrands: string[] = []): LabelCandidate[] {
   const found = new Map<string, LabelCandidate>();
   const brands = new Set([...labelBrands(lines), ...previousBrands]);
-  const context = lines.map(line => line.text).join(' ');
+  const context = clean(lines.map(line => line.text).join(' '));
   const family = printerFamilies.find(family => brands.size === 1 && brands.has(family.brand.toUpperCase())
     && (family.name.test(context) || previousBrands.includes(family.brand.toUpperCase())));
   const packageLabel = /\b(?:TONER|CARTRIDGES?|CARTOUCHES?|DUAL PACK|DRUM UNIT|PRINT CARTRIDGE|FOR USE WITH)\b/i.test(context);
@@ -229,7 +232,10 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
       if (kind === 'printer' && packageLabel) continue;
       const word = line.words?.find(word => codeKey(word.text) === codeKey(token));
       const confidence = word?.confidence ?? line.confidence;
-      const brandAgrees = brands.size === 1 ? brands.has(brand.toUpperCase()) : !brands.size && (kind === 'supply' || word?.verifiedDigits === true);
+      const brotherBadge = kind === 'printer' && brand === 'Brother' && confidence >= 92
+        && /^(?:DCP|MFC|HL)-[A-Z]?\d{3,5}(?:CDW|CDN|DW|DN|CW|NW)$/.test(token);
+      const brandAgrees = brands.size === 1 ? brands.has(brand.toUpperCase())
+        : !brands.size && (kind === 'supply' || brotherBadge || word?.verifiedDigits === true);
       if (brands.size && !brands.has(brand.toUpperCase())) continue;
       const code = kind === 'printer' && words[position + 1] === 'PLUS' ? token + ' Plus' : token;
       const key = kind + ':' + brand + ':' + codeKey(code);

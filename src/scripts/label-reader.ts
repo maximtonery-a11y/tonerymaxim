@@ -1,6 +1,6 @@
 import type { Block } from 'tesseract.js';
 import { drawLabelLine, type LabelSelection } from '../lib/label-image';
-import type { LabelLine } from '../lib/label-search';
+import { labelCandidates, liveLabelOptions, type LabelLine } from '../lib/label-search';
 import { labelImageForOcr, type PixelBox } from '../lib/label-photo';
 import { readPrintedLabel, type OcrMode } from './label-physical-ocr';
 
@@ -125,17 +125,28 @@ export async function createLabelReader(signal: AbortSignal) {
   }
 }
 
-export async function readLabel(file: File, signal: AbortSignal, report: (message: string) => void, area?: LabelSelection) {
+export async function readLabel(file: File, signal: AbortSignal, report: (message: string) => void, area?: LabelSelection, privateCodes = new Set<string>()) {
   const images = await prepareImages(file, signal, area);
   report('Pripravujem čítanie štítku…');
   let reader: Awaited<ReturnType<typeof createLabelReader>> | undefined;
   try {
+    if (!area) {
+      const { createSceneReader } = await import('./label-scene-reader');
+      const scene = createSceneReader(signal);
+      try {
+        const { lines } = await scene.read(images[0], privateCodes);
+        if (liveLabelOptions(lines, privateCodes).length || labelCandidates(lines, privateCodes).length > 1) {
+          return { passes: [lines], barcode: false };
+        }
+      } catch { signal.throwIfAborted(); }
+      finally { scene.close(); }
+    }
     reader = await createLabelReader(signal);
     let barcode = false;
     const passes: LabelLine[][] = [];
     for (const image of images) {
       const result = await reader.recognize(image, progress =>
-        report(`Čítam označenie… ${Math.round((passes.length + progress) * 100 / images.length)} %`), Boolean(area && 'start' in area), !area);
+        report(`Čítam označenie… ${Math.round((passes.length + progress) * 100 / images.length)} %`), Boolean(area && 'start' in area), !area, undefined, privateCodes);
       passes.push(result.lines);
       barcode ||= result.barcode;
     }

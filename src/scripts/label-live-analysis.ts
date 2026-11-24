@@ -8,16 +8,16 @@ export async function readExposures(
   frames: LabelExposure[],
   reader: Awaited<ReturnType<typeof createLabelReader>>,
   signal: AbortSignal,
-  match: LabelMatch
+  match: LabelMatch,
+  privateCodes = new Set<string>(),
+  split = false
 ) {
   const canvas = document.createElement('canvas');
-  const privateCodes = new Set<string>();
   const votes = new Map<string, { frames: Set<number>; consensus: ReturnType<typeof createLiveConsensus> }>();
   const tried = new Set<string>();
   const confirmed: LabelCandidate[] = [];
   const barcodeFrames = new Set<number>();
   let barcode = false,
-    split = false,
     suffix = false,
     lastQuery = '';
   let readingMs = 0;

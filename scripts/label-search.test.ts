@@ -268,3 +268,22 @@ test('an unbranded printer badge offers each exact catalogue model and retains a
   }
   assert.deepEqual(liveLabelOptions([{ text: 'S/N: C530dn', confidence: 98 }], new Set()), []);
 });
+
+
+test('printed HP family and model retain the full suffix across OCR word boundaries', () => {
+  for (const text of ['LaserJetProM201dw', 'LaserJet Pro M201 dw', 'LaserJetPro M201dw']) {
+    assert.deepEqual(liveLabelOptions([{ text, confidence: 95 }], new Set()).map(candidateText), ['HP M201DW']);
+  }
+  const blocked = new Set<string>();
+  assert.deepEqual(liveLabelOptions([{ text: 'S/N: LaserJetProM201dw', confidence: 99 }], blocked), []);
+  assert.deepEqual(liveLabelOptions([{ text: 'HP LaserJet Pro M201 dw', confidence: 99 }], blocked), []);
+  assert.deepEqual(read('LaserJet Pro M201').map(candidateText), ['HP M201']);
+});
+
+test('a clear complete Brother badge is distinctive even when the brand is on a different panel', () => {
+  assert.equal(read('DCP-7070DW', 96)[0].certain, true);
+  assert.equal(read('DCP-L3510CDW', 95)[0].certain, true);
+  assert.equal(read('DCP-L3510CD', 98)[0].certain, false);
+  assert.equal(read('DCP-7070DW', 80)[0].certain, false);
+  assert.deepEqual(read('S/N: DCP-7070DW'), []);
+});

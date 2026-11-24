@@ -46,7 +46,7 @@ jobs:
       - name: Check the mobile, tablet and desktop shopping journey
         run: |
           npm install --prefix "$RUNNER_TEMP/tm-browser" --no-save --no-audit --no-fund playwright@1.62.1
-          "$RUNNER_TEMP/tm-browser/node_modules/.bin/playwright" install --with-deps chromium webkit
+          "$RUNNER_TEMP/tm-browser/node_modules/.bin/playwright" install --with-deps chromium webkit firefox
           TM_PLAYWRIGHT_MODULE="$RUNNER_TEMP/tm-browser/node_modules/playwright/index.mjs" node scripts/account-orders-render-smoke.mjs --responsive
           TM_PLAYWRIGHT_MODULE="$RUNNER_TEMP/tm-browser/node_modules/playwright/index.mjs" node scripts/verify-gopay-return.mjs
   native-woo-vat:
