@@ -7,6 +7,8 @@ import Footer from "../components/Footer.astro";
 import FloatingAdvisor from "../components/FloatingAdvisor.astro";
 import SeoHead from "../components/SeoHead.astro";
 import CatalogInitialRows from "../components/CatalogInitialRows.astro";
+import PhotoSearchFallback from "../components/PhotoSearchFallback.astro";
+import { showPhotoSearch } from "../lib/photo-search-promo";
 import { breadcrumbJsonLd } from "../lib/seo";
 import { explicitlyRequestsSpecialChipVariant, filterProducts, getProductsCache, isSpecialChipVariantProduct, normalize } from "../lib/tm-products-cache";
 import { printerEntities } from "../lib/seo-catalog";
@@ -256,6 +258,7 @@ const initialCatalogJson = JSON.stringify(initialCatalog)
               </div>
 
               <div data-catalog-grid class="catalog-list">
+                {(query || printerSelection) && initialCatalog?.count === 0 && !initialCatalog.special_variants?.length && showPhotoSearch(Astro.url) && <p><PhotoSearchFallback /></p>}
                 {initialCatalog && <CatalogInitialRows products={initialCatalog.products} specialProducts={initialCatalog.special_variants || []} showSpecialAsProducts={Boolean(initialFilters.search && /bez[ -]?(?:č|c)ipu|no[ -]?chip|oem[ -]?(?:č|c)ip|hatona/i.test(initialFilters.search))} />}
               </div>
 

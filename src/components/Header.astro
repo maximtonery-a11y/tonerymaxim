@@ -3,12 +3,15 @@ import { HP_TONER_HELP_PATH } from "../lib/hp-toner-help.ts";
 import logo420 from "../assets/tonerymaxim-logo-420.webp";
 import mobileLogo from "../assets/tonerymaxim-logo-840.webp";
 import TrustBar from "./TrustBar.astro";
+import PhotoSearchFallback from "./PhotoSearchFallback.astro";
+import { PHOTO_GUIDE_MENU_LABEL, PHOTO_GUIDE_PATH, showPhotoSearch } from "../lib/photo-search-promo";
 
 const privateNoIndexPaths = new Set([
   "/kosik", "/pokladna", "/platba-dokoncena", "/prihlasenie", "/registracia",
   "/zabudnute-heslo", "/reset-hesla",
 ]);
 const pathname = Astro.url.pathname;
+const promotePhotoSearch = showPhotoSearch(Astro.url);
 const analyticsEnabled = String(
   process.env.TM_ANALYTICS_ENABLED || import.meta.env.TM_ANALYTICS_ENABLED || '',
 ).trim().toLowerCase() === 'true';
@@ -33,6 +36,13 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
     <a href="/opticke-valce">Valce</a>
     <a href="/komponenty-do-tlaciarni">Komponenty</a>
     <a href="/kalendare/">Kalendáre 2027</a>
+    {promotePhotoSearch && <details class="site-advice-menu">
+      <summary>Poradňa</summary>
+      <div>
+        <a href="/poradna">Odborná poradňa</a>
+        <a href={PHOTO_GUIDE_PATH}>{PHOTO_GUIDE_MENU_LABEL}</a>
+      </div>
+    </details>}
   </nav>
 
   <div class="header-search-area">
@@ -118,6 +128,7 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
         <a href="/kontakt">Kontakt</a>
         <a href="/faq">FAQ – časté otázky</a>
         <a href="/poradna">Odborná poradňa</a>
+        {promotePhotoSearch && <a href={PHOTO_GUIDE_PATH}>{PHOTO_GUIDE_MENU_LABEL}</a>}
         <a href={HP_TONER_HELP_PATH}>HP+ a kompatibilné tonery</a>
         <a href="/doprava-a-platba">Doprava a platba</a>
         <a href="/toner-bez-starosti">Toner bez starostí</a>
@@ -152,6 +163,7 @@ const includeGoogleTag = /^(?:G|GT|AW|GTM)-[A-Z0-9]+$/.test(googleTagId);
 
   <TrustBar />
 </header>
+{promotePhotoSearch && <template id="tm-photo-fallback"><PhotoSearchFallback /></template>}
 {includeGoogleTag && (
   <script is:inline src="/tm-google-tags.js" data-google-tag-id={googleTagId}></script>
 )}
@@ -245,6 +257,7 @@ body.has-add-cart-drawer { overflow: hidden; }
   const globalMenuToggle = document.querySelector("[data-tm-global-menu-toggle]");
   const globalMenu = document.querySelector("[data-tm-global-menu]");
   const globalMenuClose = document.querySelector("[data-tm-global-menu-close]");
+  const adviceMenu = document.querySelector<HTMLDetailsElement>(".site-advice-menu");
 
   function setGlobalMenu(open: boolean) {
     if (!globalMenu || !globalMenuToggle) return;
@@ -261,7 +274,16 @@ body.has-add-cart-drawer { overflow: hidden; }
     if (event.target instanceof Element && event.target.closest("a")) setGlobalMenu(false);
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") setGlobalMenu(false);
+    if (event.key === "Escape") {
+      setGlobalMenu(false);
+      if (adviceMenu?.open) {
+        if (adviceMenu.contains(document.activeElement)) adviceMenu.querySelector("summary")?.focus();
+        adviceMenu.open = false;
+      }
+    }
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (adviceMenu?.open && event.target instanceof Node && !adviceMenu.contains(event.target)) adviceMenu.open = false;
   });
 
   async function updateHeaderAccountState() {

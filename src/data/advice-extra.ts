@@ -1,10 +1,12 @@
 import type { AdviceArticle } from "./advice";
 import { hpPlusAdviceArticle } from './hp-plus-advice.ts';
+import { photoSearchAdvice } from './photo-search-advice.ts';
 
 const dates = { published: "2026-08-14", updated: "2026-08-14" };
 
 export const additionalAdviceArticles: AdviceArticle[] = [
   hpPlusAdviceArticle,
+  photoSearchAdvice,
   {
     ...dates, category: "riesenie-problemov", slug: "hp-supply-memory-error-co-robit", readingMinutes: 6,
     title: "HP Supply Memory Error: čo chyba znamená a čo skontrolovať",

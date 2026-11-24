@@ -120,10 +120,24 @@ input {
   font-size: 15px;
   font-weight: 700;
 }
+.site-advice-menu { position: relative; z-index: 2; }
+.site-advice-menu summary { display: flex; align-items: center; gap: .4em; min-height: 44px; list-style: none; cursor: pointer; }
+.site-advice-menu summary::-webkit-details-marker { display: none; }
+.site-advice-menu summary::after { content: ''; width: .42em; height: .42em; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: translateY(-.1em) rotate(45deg); }
+.site-advice-menu[open] summary::after { transform: translateY(.1em) rotate(225deg); }
+.site-advice-menu > div { position: absolute; top: 100%; inset-inline-end: 0; width: max-content; max-width: 17rem; padding: .3rem; background: #fff; border: 1px solid #d9e4ee; border-radius: 12px; box-shadow: var(--shadow-sm); }
+.site-advice-menu a { display: flex; align-items: center; min-height: 44px; padding: .4rem .7rem; border-radius: 8px; }
+.site-advice-menu a:hover, .site-advice-menu a:focus-visible { background: #eef8f4; }
+.tm-photo-fallback { display: inline-flex; align-items: center; min-height: 44px; color: #125b52; font-weight: 700; text-decoration: underline; text-underline-offset: .18em; }
 .header-search-area {
   flex: 1 1 420px;
   max-width: 520px;
   min-width: 260px;
+}
+/* Compact, mouse-operated windows have a second row for text search. */
+@media (min-width: 761px) and (max-width: 1100px) and (hover: hover) and (pointer: fine) {
+  .site-header .site-nav:has(.site-advice-menu) { display: flex; order: 1; }
+  .site-header .site-nav > a { display: none; }
 }
 
 .header-search-area .tm-smart-search-wrap {

@@ -240,6 +240,10 @@
       </div>
     `;
 
+    if (!html) {
+      const photoFallback = document.getElementById("tm-photo-fallback");
+      if (photoFallback) panel.querySelector(".tm-smart-empty")?.append(photoFallback.content.cloneNode(true));
+    }
     panel.hidden = false;
   }
 

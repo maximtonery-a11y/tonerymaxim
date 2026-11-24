@@ -193,7 +193,7 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
 
     // One tap on the mobile home link starts the scanner and brings up toner prices.
     await page.goto(origin + '/');
-    await page.getByRole('link', { name: 'Skenovať štítok' }).click();
+    await page.getByRole('link', { name: 'Spustiť fotoaparát', exact: true }).click();
     await page.locator('[data-matches] a').first().waitFor({ timeout: 60_000 });
     assert.equal(await page.locator('[data-matches] a').count(), 3);
     assert.match(await status.innerText(), /Brother TN-2421/);

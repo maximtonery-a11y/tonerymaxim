@@ -14,6 +14,7 @@ export type AdviceArticle = {
     heading: string;
     paragraphs: string[];
     bullets?: string[];
+    steps?: string[];
     note?: string;
   }>;
   faq: Array<{ question: string; answer: string }>;

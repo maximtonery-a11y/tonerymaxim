@@ -9,6 +9,64 @@ const layouts = [
   [844, 390, true], [768, 1024, true], [1024, 768, true], [1280, 800, false], [1440, 900, false],
 ];
 const cents = text => Math.round(Number(text.replace(/[^0-9,.-]/g, '').replace(',', '.')) * 100);
+async function checkCameraPromotion(page, origin, width, touch) {
+  const home = page.locator(touch ? '.tm-mobile-home-final' : '.hero-copy');
+  const start = home.getByRole('link', { name: touch ? 'Spustiť fotoaparát' : 'Hľadať podľa fotky', exact: true });
+  assert.ok(await start.isVisible());
+  assert.equal(await start.getAttribute('href'), touch ? '/hladat-fotkou#skenovat' : '/hladat-fotkou');
+  assert.equal(await page.locator('.photo-promo:visible').count(), 1);
+  const qr = page.locator('.photo-qr');
+  assert.equal(await qr.isVisible(), !touch);
+  const loaded = await page.evaluate(() => performance.getEntriesByType('resource').map(e => e.name));
+  assert.ok(!loaded.some(url => /\.wasm|traineddata|\/ocr\/|onnxruntime/i.test(url)));
+  assert.equal(loaded.some(url => url.endsWith('/images/qr-hladat-fotkou.png')), !touch);
+  const box = await start.boundingBox();
+  assert.ok(box && box.x >= 0 && box.x + box.width <= width + 1 && box.height >= 44);
+  if (![390, 1280].includes(width)) return;
+
+  const guidePath = '/poradna/ako-najst-napln-fotoaparatom';
+  await home.getByRole('link', { name: 'Ako to funguje?' }).click();
+  await page.waitForURL(origin + guidePath);
+  await page.getByRole('heading', { level: 1, name: 'Ako nájsť správnu náplň fotoaparátom' }).waitFor({ state: 'visible' });
+  assert.equal(await page.locator('.advice-body ol li').count(), 3);
+  const cta = page.locator('.advice-conversion a:visible');
+  assert.equal(await cta.getAttribute('href'), touch ? '/hladat-fotkou#skenovat' : '/hladat-fotkou');
+  if (touch) {
+    await page.getByRole('button', { name: 'Otvoriť menu' }).click();
+    assert.ok(await page.locator('[data-tm-global-menu]').getByRole('link', { name: 'Ako nájsť náplň fotoaparátom' }).isVisible());
+  }
+  await page.goto(origin);
+  if (touch) {
+    await home.getByRole('button', { name: 'Otvoriť menu' }).click();
+    assert.equal(await home.getByRole('link', { name: 'Ako nájsť náplň fotoaparátom' }).getAttribute('href'), guidePath);
+    await home.getByRole('button', { name: 'Zavrieť menu' }).click();
+  } else {
+    const menu = page.locator('.site-advice-menu');
+    await menu.locator('summary').click();
+    assert.ok(await menu.getByRole('link', { name: 'Ako nájsť náplň fotoaparátom' }).isVisible());
+    await page.keyboard.press('Escape');
+    assert.equal(await menu.getAttribute('open'), null);
+  }
+
+  const input = home.locator('input[data-smart-search-input]');
+  const noMatch = 'ZZQX998877TEST';
+  await input.fill(noMatch);
+  const retryLink = page.getByRole('link', { name: 'Skúsiť hľadanie fotoaparátom', exact: true });
+  await retryLink.click();
+  await page.waitForURL(origin + '/hladat-fotkou');
+  await page.locator('[data-live-start]').waitFor({ state: 'visible' });
+  await page.goto(origin);
+  await input.fill(noMatch);
+  await retryLink.waitFor({ state: 'visible' });
+  await input.press('Enter');
+  await page.waitForURL('**/produkty?s=' + noMatch);
+  await page.locator('[data-no-results] .tm-photo-fallback').click();
+  await page.waitForURL(origin + '/hladat-fotkou');
+  await page.locator('[data-gallery]').waitFor({ state: 'attached' });
+  await page.locator('[data-live-start]').waitFor({ state: 'visible' });
+  await page.goto(origin + '/produkty?s=TN-2421');
+  assert.equal(await page.locator('[data-catalog-grid] .tm-photo-fallback').count(), 0);
+}
 async function amount(page, selector, expected) {
   const node = page.locator(selector);
   await node.waitFor({ state: 'visible' });
@@ -494,6 +552,7 @@ async function verifyEngine(origin, engine, configurations, options) {
       });
       try {
         await checkSearchWarmup(page, origin, width === 390);
+        await checkCameraPromotion(page, origin, width, touch);
         if (width === 390) {
           await verifyLiveCamera(page, origin, engine.name() === 'chromium');
           await verifyMobileLabel(page, origin);

@@ -10,6 +10,7 @@ import { adviceArticles } from "../data/advice";
 import { adviceCategories } from "../data/advice-categories";
 import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
 import { EXPERT_PATH, expertPersonJsonLd } from "../lib/expert";
+import { PHOTO_GUIDE_SLUG, showPhotoSearch } from "../lib/photo-search-promo";
 
 const origin = "https://www.tonerymaxim.sk";
 const canonical = `${origin}/poradna`;
@@ -95,6 +96,7 @@ const jsonLd = [
             </div>
             <div class="advice-card-grid">
               {[
+                ...(showPhotoSearch(Astro.url) ? [PHOTO_GUIDE_SLUG] : []),
                 "ako-vybrat-toner-podla-modelu-tlaciarne",
                 "tlaciaren-po-vymene-nerozpoznala-toner",
                 "hp-supply-memory-error-co-robit",
