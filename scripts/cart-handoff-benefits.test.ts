@@ -231,10 +231,14 @@ test('drawer estimates use recent account data and never expose another accountâ
   const expiresAt = Date.now() + 60_000;
   current.cartPreview = { expiresAt, discountValue: 0.5, welcome: { percent: 5, expiresAt } };
   session.setItem('tm_header_account_v1', JSON.stringify(current));
-  assert.equal(readDrawerBenefits().coupon.percent, 5);
+  const active = readDrawerBenefits();
+  assert.ok(active);
+  assert.equal(active.coupon.percent, 5);
   assert.equal(readCartBenefits([a]), null);
   setCouponDisabled(true);
-  assert.equal(readDrawerBenefits().coupon, null);
+  const disabled = readDrawerBenefits();
+  assert.ok(disabled);
+  assert.equal(disabled.coupon, null);
   invalidateCartBenefits();
   assert.equal(readDrawerBenefits(), null);
   identity(8);
