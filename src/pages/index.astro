@@ -132,16 +132,12 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
               </button>
             </form>
 
-            {showLabelSearch && <PhotoSearchPromo layout="mobile" />}
-
             <div class="tm-mobile-search-examples" aria-label="Príklady hľadania">
               <a href="/tlaciarne/hp/hp-laserjet-m110w">HP M110w</a>
-              <a href="/produkty?s=Brother%20DCP-L2532DW">Brother DCP-L2532DW</a>
               <a href="/produkty?s=HP+305&category=atramentove-naplne">HP 305</a>
               <a href="/produkty?s=TN-2421">TN-2421</a>
-              <a href="/tlaciarne/hp/hp-laserjet-m1132">HP LaserJet M1132</a>
-              <a href="/produkty?s=W1420A">W1420A</a>
             </div>
+            {showLabelSearch && <PhotoSearchPromo layout="mobile" />}
 
             <a class="tm-mobile-printer-picker" href="/tlaciarne">
               <span class="tm-mobile-printer-icon" aria-hidden="true">

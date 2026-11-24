@@ -191,7 +191,7 @@
   }
 
   body.home-page .tm-mobile-search-examples {
-    margin: 22px auto 24px;
+    margin: 8px 0 0;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px 9px;
@@ -544,9 +544,7 @@
   }
 
   body.home-page .tm-mobile-search-examples {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 8px;
-    margin: 14px 0 16px;
   }
 
   body.home-page .tm-mobile-search-examples a {

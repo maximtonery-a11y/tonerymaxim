@@ -1,4 +1,4 @@
-import type { LabelCandidate } from './label-reference.ts';
+import { candidateText, type LabelCandidate } from './label-reference.ts';
 export { candidateText, barcodeGuidance, type LabelCandidate } from './label-reference.ts';
 
 // Only manufacturer references leave the device. Keep the entire suffix throughout matching.
@@ -109,6 +109,8 @@ function tokens(text: string): string[] {
   return labelSeparators(text)
     .replace(/\b(?:H|HP)\s*-\s*(?=C[BEFH]\d{3}[A-Z]{1,3}\b)/g, '')
     .replace(codePrefix, '$1-$2').replace(/\b((?:TN|DR|LC)-[A-Z]?\d)[ \t]+(\d{2,4}[A-Z]{0,3})\b/g, '$1$2').replace(separateSuffix, '$1$2')
+    .replace(/\b((?:LC|CLI|PGI|PG|CL)-?\d{2,4}(?:XXL|XL))[- ]+(PGBK|BK|GY|PB|[CMY])\b/g, '$1$2')
+    .replace(/\b((?:LC|CLI|PGI|PG|CL)-?\d{2,4}(?:PGBK|BK|GY|PB|[CMY]))[- ]+(XXL|XL)\b/g, '$1$2')
     .replace(/\b(DR-?\d{2,5})\s+CL\b/g, '$1CL').replace(/\b(DR-?\d{2,5}CL)[ -]+(CMYK|CMY|BK|[CMY])\b/g, '$1-$2')
     .match(/[A-Z0-9]+(?:-[A-Z0-9]+)*/g) || [];
 }
@@ -369,7 +371,12 @@ export function selectedLabelCandidates(passes: LabelLine[][], privateCodes: Set
   return [...candidates.values()];
 }
 
-export type CatalogLink = { title: string; url: string; price?: number; brand?: string; oem?: string };
+export type CatalogLink = { title: string; url: string; price?: number; brand?: string; oem?: string; type?: string; verifiedForLabel?: string };
+export function preferCompatibleOffers(items: CatalogLink[]) {
+  return items.sort((a, b) => Number(b.type === 'compatible') - Number(a.type === 'compatible')
+    || Number(Boolean(a.verifiedForLabel)) - Number(Boolean(b.verifiedForLabel)));
+}
+
 export type LabelOffers = { printers?: CatalogLink[]; products?: CatalogLink[]; warning?: string };
 
 // Search suggestions can include related families. The scan accepts only complete references.
@@ -392,8 +399,9 @@ export function exactLabelOffers(candidate: LabelCandidate, response: LabelOffer
   const result = (printer ? response.printers : response.products) || [];
   const target = codeKey(candidate.code);
   const printed = candidate.brand === 'Brother' && !printer ? printedTonerCodes(candidate.code) : [];
+  const scannedLabel = codeKey(candidateText(candidate));
   const seen = new Set<string>();
-  return result.filter(item => {
+  const offers = result.filter(item => {
     if (!item?.title || !allowedPath.test(item.url) || seen.has(item.url)) return false;
     const brands = clean(item.title).match(brandPattern) || [];
     if (candidate.brand) {
@@ -406,10 +414,12 @@ export function exactLabelOffers(candidate: LabelCandidate, response: LabelOffer
       return !printer && candidate.brand === 'Canon' && /^\d{3}/.test(target)
         && key.replace(/^(?:CRG|PGI|CLI|PG|CL|GI|PFI)/, '') === target;
     });
-    if (!matches) return false;
+    const verified = !printer && item.type === 'compatible' && typeof item.verifiedForLabel === 'string' && codeKey(item.verifiedForLabel) === scannedLabel;
+    if (!matches && !verified) return false;
     seen.add(item.url);
     return true;
   });
+  return printer ? offers : preferCompatibleOffers(offers);
 }
 
 // Short HP names (for example 85A) are often printed larger than the OEM code.

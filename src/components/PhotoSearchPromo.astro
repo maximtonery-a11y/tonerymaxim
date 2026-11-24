@@ -50,7 +50,7 @@ const mobile = Astro.props.layout === 'mobile';
   .photo-promo a:focus-visible { outline: 3px solid #08778c; outline-offset: 2px; }
   .photo-promo-mobile {
     grid-template-columns: auto minmax(0,1fr); grid-template-areas: 'badge title' 'copy copy' 'actions actions';
-    margin: .7rem 0 0; gap: .55rem .65rem; padding: .9rem; border-radius: 17px; background: linear-gradient(120deg,#f8fdfb,#eaf7f3);
+    margin: .7rem 0 1rem; gap: .55rem .65rem; padding: .9rem; border-radius: 17px; background: linear-gradient(120deg,#f8fdfb,#eaf7f3);
   }
   .photo-promo-mobile h2 { font-size: 1.22rem; }
   @media (min-width: 761px) and (max-width: 1100px) {

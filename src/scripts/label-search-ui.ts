@@ -113,7 +113,7 @@ function setup(root: HTMLElement) {
   }
 
   async function findOffers(candidate: LabelCandidate, signal: AbortSignal, automatic: boolean): Promise<CatalogLink[] | 'suffix'> {
-    const [data, { drumNeedsSuffix, exactLabelOffers, hpOrderCode }] = await Promise.all([
+    const [data, { drumNeedsSuffix, exactLabelOffers, hpOrderCode, preferCompatibleOffers }] = await Promise.all([
       catalogOffers(candidate, signal), import('../lib/label-search')
     ]);
     if (automatic && drumNeedsSuffix(candidate, data)) return 'suffix';
@@ -123,7 +123,7 @@ function setup(root: HTMLElement) {
     if (!fullCode || signal.aborted) return items;
     const fullCandidate = { ...candidate, code: fullCode };
     const full = await catalogOffers(fullCandidate, signal).then(result => exactLabelOffers(fullCandidate, result)).catch(() => []);
-    return [...new Map([...full, ...items].map(item => [item.url, item])).values()];
+    return preferCompatibleOffers([...new Map([...full, ...items].map(item => [item.url, item])).values()]);
   }
 
   async function showOffers(candidate: LabelCandidate, items: CatalogLink[], signal: AbortSignal) {
