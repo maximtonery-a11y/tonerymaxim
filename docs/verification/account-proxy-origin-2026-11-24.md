@@ -1,0 +1,23 @@
+# Account forms behind the HTTPS proxy — 2026-11-24
+
+## Baseline before changing application configuration
+- Base main: `6f78ee073abd438289fc2cce9e9cdc6b92a393a4`, clean tree. Astro 7.3.2, Node adapter 11.1.5.
+- Live deployment confirmed by byte-identical account CSS (57,322 bytes, SHA256 90b48ff08af02606836f81ff2752d25487c43c718221525e467ca91c79a6b7f8) and account JS (26,971 bytes, SHA256 f17574b9ce24e1102da5dd88266ae79a95786134ef079616473d918dca369ee6).
+- Read-only authenticated browser navigation reached all 12 account routes, with the exact matching current route in each mobile menu. Reminder page and claim selection are correct. This was desktop live navigation, not a physical-phone touch/toolbar test. No customer settings, live orders, e-mails or payments were changed.
+- Public live health, homepage, cart, checkout and login return 200; protected account routes redirect guests (302), saved-printer API rejects guests (401).
+- Reused-connection public page HTTP totals from the test environment: homepage 425 ms, cart 372 ms, checkout 376 ms, login 372 ms. Initial proxy/TLS setup takes several seconds in this environment; these are not customer page-render or authenticated account timings.
+- Additional unauthenticated URL-encoded POST to `/api/account/toner-care`, Origin `https://www.tonerymaxim.sk`, returned 403, `Cross-site POST form submissions are forbidden`. An untrusted origin is also rejected (403). Requests had no customer cookie and made no write.
+- The existing config has no `security.allowedDomains`. Astro's installed request pipeline ignores forwarded host/protocol without it; origin checks compare the external HTTPS Origin with the internal HTTP URL. JSON AJAX is unaffected, while native forms (including the new early/no-JS reminder fallback) are blocked.
+- Official reference: https://docs.astro.build/en/reference/configuration-reference/#securityalloweddomains . Installed implementation inspected in astro/dist/core/fetch/fetch-state.js and core/app/origin-check.js.
+
+## Change and verification
+- Added four exact HTTPS domain patterns in astro.config.mjs: www/bare tonerymaxim.sk and tonerymaxim.info. checkOrigin stays enabled; middleware origin checks are unchanged. No wildcard, dependency, checkout, payment, customer metadata or client UI change.
+- Reproduced the live defect in the old built server before editing config: a trusted HTTPS proxy native form got 403 instead of reaching authentication (303). The new regression assertion failed against that baseline.
+- Fixed build integration passes: all four trusted proxy origins reach authentication, an authenticated proxy native form saves successfully, all five hostile origin/host/protocol/port cases remain 403, untrusted forwarded port is ignored, guest protection remains active, unrelated settings/other printer/history are preserved. The same check is mandatory in CI and runs again with the browser suite.
+- Astro check: 622 files, 0 errors/warnings (22 existing hints). Release guard: 433 total, 424 pass, 9 skip, 0 fail. Security 14/14, DPD 36/36, account speed/cache 17/17, reminder/menu 20/20.
+- All 60 client assets are byte-identical to baseline. No additional client bytes or network requests; Woo read counts unchanged (2 cold reads, 0 warm, 8 simultaneous requests share 1 read).
+- First three sequential pairs had noisy cold measurements (61 orders home medians 457→557 ms). Because this was unresolved, ran five paired concurrent processes per account size with alternate launch order and isolated ports/caches. Confirmation medians account/Orders/Printers: 61 orders 474/38/11→477/37/11 ms, 3 orders 484/25/17→508/22/13 ms. Cold-home ranges overlap (61:455–485 vs 461–527; 3:473–521 vs 463–587 ms); warm ranges 4–26 vs 4–28 ms (61), 4–17 vs 4–22 ms (3). These are noisy synthetic-Woo processing measurements, not a demonstrated live speed gain. Every run met the existing cold/warm latency and read budgets. Both raw series are retained alongside this record.
+- Baseline's missing real catalog still prevents two unrelated ads cases in full npm test; unchanged dependency audit debt is recorded in the preceding menu verification. These are not new regressions or claims of full-suite success.
+
+## Publication
+Await the full PR CI (including all account browser widths, native no-JS forms, shopping, DPD and 48 GoPay scenarios) before merging. The PR records the exact tested commit/tree and final main commit. No production credentials, customer data, orders, payments or e-mails were used or stored in this report. A further Coolify redeploy is necessary to make this configuration correction live.
