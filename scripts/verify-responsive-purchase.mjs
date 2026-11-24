@@ -35,6 +35,13 @@ async function checkAccountNavigation(page, origin, [width, height, touch]) {
   const destination = origin + '/ucet/tlaciarne';
   let release;
   const gate = new Promise(resolve => { release = resolve; });
+  let holdExpired = false;
+  const watchdog = setTimeout(() => {
+    holdExpired = true;
+    console.error('Account navigation fixture exceeded its 5-second hold limit');
+    release();
+  }, 5000);
+  watchdog.unref();
   let routeFailure;
   const hold = async route => {
     await gate;
@@ -71,12 +78,14 @@ async function checkAccountNavigation(page, origin, [width, height, touch]) {
     release();
     await page.waitForURL(destination);
     await page.getByRole('heading', { level: 1, name: 'Moje tlačiarne', exact: true }).waitFor();
+    assert.equal(holdExpired, false, 'Feedback checks must finish before the navigation hold deadline');
     assert.equal(routeFailure, undefined);
     assert.equal(await page.locator('[data-account-mobile-nav]').getAttribute('aria-busy'), null);
     await page.goBack();
     await page.getByRole('heading', { level: 1, name: 'Objednávky', exact: true }).waitFor();
     assert.equal(await page.locator('[data-navigation-pending]').count(), 0);
   } finally {
+    clearTimeout(watchdog);
     release();
     await page.unroute(destination, hold);
     page.off('request', record);
