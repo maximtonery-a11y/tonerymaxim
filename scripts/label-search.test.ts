@@ -1,9 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
-import { createLiveConsensus, focusScore } from '../src/lib/label-camera-frame.ts';
+import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
+import { createLiveConsensus, focusScore, hasLabelStrokes } from '../src/lib/label-camera-frame.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
+
+test('an unavailable full reference cannot turn into an orderable shorter reference', () => {
+  const full = read('Brother TN-9999');
+  assert.equal(isShorterReading(read('Brother TN-99')[0], full), true);
+  assert.equal(isShorterReading(read('Brother TN-9999')[0], full), false);
+  assert.equal(isShorterReading(read('Brother TN-2421')[0], full), false);
+  assert.equal(isShorterReading(read('Brother DCP-L3510CD')[0], read('Brother DCP-L3510CDW')), true);
+});
+
+test('a bold row can be captured without waiting for separate OCR character boxes', () => {
+  const width = 104, height = 32;
+  const pixels = new Uint8ClampedArray(width * height * 4);
+  function shade(pattern: (x: number, y: number) => number) {
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++)
+      pixels[4 * (y * width + x) + 1] = pattern(x, y);
+    return hasLabelStrokes(pixels, width, height);
+  }
+  assert.equal(shade(x => 128 + x / 3), false);
+  assert.equal(shade(x => x < 52 ? 40 : 180), false);
+  assert.equal(shade((x, y) => y > 8 && y < 21 && x % 12 < 6 ? 48 : 188), true);
+});
 
 test('frame selection favours sharply focused lettering over a softened view of the same lines', () => {
   const width = 96, height = 40;

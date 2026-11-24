@@ -3,6 +3,7 @@ import {
   createLiveConsensus,
   enhanceInk,
   focusScore,
+  hasLabelStrokes,
   liveReadPasses,
   saveLabelFrame,
   type CapturedLabelFrame,
@@ -13,6 +14,7 @@ import {
   barcodeGuidance,
   candidateText,
   hasSplitSupplyLabel,
+  isShorterReading,
   liveLabelOptions,
   type LabelCandidate,
 } from '../lib/label-search';
@@ -97,7 +99,7 @@ async function collectExposures(
       if (video.readyState >= 2 && video.currentTime !== lastTime) {
         lastTime = video.currentTime;
         const view = video.getBoundingClientRect();
-        const key = [video.videoWidth, video.videoHeight, view.width, view.height].join('/');
+        const key = [video.videoWidth, video.videoHeight, view.width, view.height, guide.style.top].join('/');
         if (key !== geometry) {
           retained.splice(0).forEach(discard);
           previous = undefined;
@@ -126,6 +128,7 @@ async function collectExposures(
           const rows = locateLabelRows(thumbnail);
           const score = Math.min(4, focusScore(thumbnail, focus)) + Math.min(2, rows.length);
           const pixels = ctx.getImageData(0, 0, thumbnail.width, thumbnail.height).data;
+          const lettering = rows.length > 0 || hasLabelStrokes(pixels, thumbnail.width, thumbnail.height);
           let change = 0,
             samples = 0;
           if (previous?.length === pixels.length) {
@@ -135,13 +138,14 @@ async function collectExposures(
             }
           }
           const now = performance.now();
-          if (!samples || change / samples > 12 || !rows.length) stableSince = now;
+          if (!samples || change / samples > 12 || !lettering) stableSince = now;
           previous = pixels;
           retained.push({ ...frame, score, at: now });
           // Keep the clearest independently captured images, preferring a newer one on ties.
           retained.sort((a, b) => b.score - a.score || b.at - a.at);
           if (retained.length > 3) discard(retained.pop()!);
-          if (retained.length === 3 && rows.length && now - started >= 1800 && now - stableSince >= 750) break;
+          const steadyInterval = rows.length ? 750 : 1250;
+          if (retained.length === 3 && lettering && now - started >= 1800 && now - stableSince >= steadyInterval) break;
         }
       }
       await pause(signal, Math.min(360, Math.max(0, deadline - performance.now())));
@@ -167,6 +171,7 @@ async function readExposures(
   const privateCodes = new Set<string>();
   const votes = new Map<string, { frames: Set<number>; consensus: ReturnType<typeof createLiveConsensus> }>();
   const tried = new Set<string>();
+  const confirmed: LabelCandidate[] = [];
   let barcode = false,
     split = false,
     suffix = false,
@@ -178,12 +183,16 @@ async function readExposures(
   // A landscape sensor in a portrait viewfinder can clip a long reference to a
   // different, valid-looking code. Read its full centred row before trying crops.
   const cropped = first.visible.x1 - first.visible.x0 < first.image.width * 0.82;
-  const passes: FramePass[] = cropped
+  let passes: FramePass[] = cropped
     ? [
         { mode: 'context' }, { mode: 'context', angle: -3 }, { mode: 'context', angle: 3 },
         ...liveReadPasses.filter(pass => pass.mode !== 'context'),
       ]
     : liveReadPasses;
+  if (first.picked) {
+    passes = [{ mode: 'context' }, { mode: 'guide' }, { mode: 'guide', angle: -3 },
+      { mode: 'guide', angle: 3 }, { mode: 'guide', ink: 'light' }, { mode: 'guide', ink: 'dark' }];
+  }
   try {
     for (const mode of passes) {
       for (const [index, frame] of frames.entries()) {
@@ -214,7 +223,7 @@ async function readExposures(
           continue;
         }
         const key = options.map(candidateText).join(' / ');
-        if (tried.has(key)) break;
+        if (tried.has(key) || options.some(option => isShorterReading(option, confirmed))) break;
         const vote = votes.get(key) || { frames: new Set<number>(), consensus: createLiveConsensus() };
         votes.set(key, vote);
         if (vote.frames.has(frame.at)) continue;
@@ -223,6 +232,7 @@ async function readExposures(
         const found = await match(options);
         signal.throwIfAborted();
         if (found === true) return;
+        confirmed.push(...options);
         tried.add(key);
         suffix ||= found === 'suffix';
         lastQuery = key;
@@ -295,7 +305,7 @@ export async function scanLiveCamera(
     video.muted = true;
     video.playsInline = true;
     video.srcObject = stream;
-    report('Namierte na celý názov tlačiarne alebo kód náplne.');
+    report('Namierte na celý názov alebo kód. Pri drobnom písme ťuknite na riadok s označením.');
     await playPreview(video, signal, remaining);
     signal.throwIfAborted();
     const ready = import('./label-reader').then(({ createLabelReader }) => createLabelReader(signal));

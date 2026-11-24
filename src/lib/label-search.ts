@@ -41,6 +41,17 @@ const sharedPrinterBrands = ['OKI', 'Lexmark', 'Xerox', 'Samsung'];
 const brandPattern = /\b(HP|BROTHER|CANON|EPSON|KYOCERA|XEROX|SAMSUNG|OKI|LEXMARK)\b/gi;
 const privateLine = /\b(?:[S5]\s*[/|\\]\s*[I1]?N|S[1I]N(?=\s*[:#])|SN|SERIAL|SERI[AO]V[EÉ]|IMEI|MAC|PASSWORD|HESLO|WIFI|WI-FI|REGULATORY|RMN|EAN|UPC|GTIN)\b/i;
 const codeKey = (text: string) => text.toUpperCase().replace(/[^A-Z0-9]/g, '');
+// Once independent exposures agree on a complete marking, a narrower crop must
+// never substitute its prefix, even if the shop carries that shorter model.
+export function isShorterReading(candidate: LabelCandidate, confirmed: LabelCandidate[]) {
+  const code = codeKey(candidate.code);
+  return confirmed.some(full => {
+    if (candidate.kind !== full.kind || candidate.brand !== full.brand) return false;
+    const previous = codeKey(full.code);
+    return previous.length > code.length && previous.startsWith(code);
+  });
+}
+
 const clean = (text: string) => text.toUpperCase().replace(/[‐‑‒–—−]/g, '-');
 const codePrefix = /\b(DCP|MFC|HL|TN|DR|LC|BT|WT|CLI|PGI|GI|CL|PG|CRG|PFI|TK|MLT|CLT|ET|XP|WF|LBP)\s*-?\s+([A-Z]?\d)/g;
 const separateSuffix = /\b((?:(?:PGI|CLI|PG|CL|GI|LC|TN)-?\d{2,5}|\d{3}))\s+(XXL|XL|PGBK|BK|[CMY])\b/g;

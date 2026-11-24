@@ -84,6 +84,9 @@ function installVideoFixture() {
         ctx.fillStyle = '#bfc1c4'; ctx.font = '34px sans-serif'; ctx.fillText(fixture.text, 480, 245);
         ctx.fillStyle = '#a7a999'; ctx.fillRect(265, 265, 430, 110);
         ctx.fillStyle = '#4a4b44'; ctx.fillText('Hromad Kopírt', 480, 325);
+      } else if (fixture.mode === 'two-rows') {
+        ctx.fillText('HP LaserJet P1102', 480, 150);
+        ctx.fillText('Brother TN-2421', 480, 382);
       } else ctx.fillText(fixture.text, 480, 286);
     }
     draw();
@@ -255,6 +258,21 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     await page.evaluate(() => { window.labelCameraTest.mode = 'lcd'; window.labelCameraTest.text = 'DCP-L3510CDW'; });
     await start.click();
     await page.waitForURL('**/tlaciarne/brother/brother-dcp-l3510cdw', { timeout: 35_000 });
+    await page.goto(origin + '/hladat-fotkou');
+    await page.evaluate(() => { window.labelCameraTest.mode = 'two-rows'; });
+    const previousSearches = searches.length;
+    await start.click();
+    await page.waitForFunction(() => document.querySelector('#live-camera video')?.videoHeight > 0);
+    const pick = page.locator('.pick-row');
+    const point = await pick.evaluate(button => {
+      const video = document.querySelector('#live-camera video');
+      const rect = button.getBoundingClientRect();
+      const scale = Math.max(rect.width / video.videoWidth, rect.height / video.videoHeight);
+      return { x: rect.width / 2, y: rect.height / 2 + (362 - video.videoHeight / 2) * scale };
+    });
+    await pick.click({ position: point });
+    await page.locator('[data-matches] a').first().waitFor({ timeout: 35_000 });
+    assert.deepEqual(searches.slice(previousSearches), ['Brother TN-2421'], 'tapping the lower row excludes the other orderable model');
     const sessions = workers.length;
     assert.deepEqual(uploads, []);
     console.log(`Camera released in ${steadyMs} ms with OCR held, ${blankMs} ms with no label; correct captured offers after moving away.`);

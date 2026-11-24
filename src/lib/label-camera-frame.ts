@@ -33,6 +33,7 @@ export type CapturedLabelFrame = {
   image: HTMLCanvasElement;
   visible: PixelBox;
   target: PixelBox;
+  picked?: boolean;
 };
 
 /** Save one sensor exposure and its on-screen geometry before releasing the camera. */
@@ -58,7 +59,27 @@ export function saveLabelFrame(video: HTMLVideoElement, guide: HTMLElement): Cap
       y1: Math.min(image.height, (((rect.bottom - sensorTop) / cover) * image.height) / h),
     };
   }
-  return { image, visible: pixels(stage), target: pixels(guide.getBoundingClientRect()) };
+  return { image, visible: pixels(stage), target: pixels(guide.getBoundingClientRect()), picked: guide.hasAttribute('data-picked') };
+}
+
+// Thick moulded lettering can form one connected region instead of separate
+// OCR boxes. Count opposite light/dark edges across neighbouring scan lines.
+export function hasLabelStrokes(pixels: Uint8ClampedArray, width: number, height: number) {
+  let rows = 0;
+  for (let y = 2; y < height - 2; y += 2) {
+    let previousSign = 0, edges = 0;
+    for (let x = 3; x < width - 3; x += 2) {
+      const at = (y * width + x) * 4 + 1;
+      const change = pixels[at] - pixels[at - 8];
+      if (Math.abs(change) < 18) continue;
+      const sign = Math.sign(change);
+      if (sign !== previousSign) edges++;
+      previousSign = sign;
+    }
+    rows = edges >= 10 ? rows + 1 : 0;
+    if (rows >= 3) return true;
+  }
+  return false;
 }
 
 export function captureLabelFrame(frame: CapturedLabelFrame, canvas: HTMLCanvasElement, pass: FramePass) {
@@ -85,8 +106,8 @@ export function captureLabelFrame(frame: CapturedLabelFrame, canvas: HTMLCanvasE
   if (pass.mode === 'guide') {
     const extraY = (target.y1 - target.y0) * 0.15;
     box = {
-      x0: visible.x0,
-      x1: visible.x1,
+      x0: frame.picked ? 0 : visible.x0,
+      x1: frame.picked ? w : visible.x1,
       y0: Math.max(visible.y0, target.y0 - extraY),
       y1: Math.min(visible.y1, target.y1 + extraY),
     };
@@ -123,9 +144,17 @@ export function captureLabelFrame(frame: CapturedLabelFrame, canvas: HTMLCanvasE
   ctx.restore();
   const left = (visible.x0 - box.x0) * ratio,
     right = (visible.x1 - box.x0) * ratio;
+  const angle = (pass.angle || 0) * Math.PI / 180;
   return {
     acceptLine: (row: PixelBox) => {
       const mid = (row.x0 + row.x1) / 2;
+      if (frame.picked) {
+        // Read privacy fields in the full scene, but only accept text in the chosen row.
+        const cy = (row.y0 + row.y1) / 2;
+        const sourceY = box.y0 + (canvas.height / 2 + (mid - canvas.width / 2) * Math.sin(angle)
+          + (cy - canvas.height / 2) * Math.cos(angle)) / ratio;
+        if (sourceY < target.y0 || sourceY > target.y1) return false;
+      }
       return row.x0 > 2 && row.x1 < canvas.width - 2 && mid >= left && mid <= right;
     },
   };

@@ -15,6 +15,7 @@ function setup(root: HTMLElement) {
   const cameraZoom = livePanel.querySelector<HTMLButtonElement>('[data-live-zoom]')!;
   let preview = livePanel.querySelector('video')!;
   const guide = livePanel.querySelector<HTMLElement>('[data-live-guide]')!;
+  const pickRow = livePanel.querySelector<HTMLButtonElement>('.pick-row')!;
   const status = root.querySelector<HTMLElement>('[role=status]')!;
   const results = root.querySelector<HTMLElement>('[data-matches]')!;
   const stop = root.querySelector<HTMLButtonElement>('[data-stop]')!;
@@ -31,6 +32,22 @@ function setup(root: HTMLElement) {
   let active: AbortController | undefined;
   let scanningLive = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
+
+  function aimAt(y: number) {
+    if (!scanningLive) return;
+    guide.style.top = Math.max(11, Math.min(89, y)) + '%';
+    guide.dataset.picked = '';
+    status.textContent = 'Riadok je zameraný. Podržte celý nápis v rámčeku.';
+  }
+  pickRow.addEventListener('click', event => {
+    const box = pickRow.getBoundingClientRect();
+    if (box.height) aimAt(event.detail ? 100 * (event.clientY - box.top) / box.height : parseFloat(guide.style.top) || 50);
+  });
+  pickRow.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    aimAt((parseFloat(guide.style.top) || 50) + (event.key === 'ArrowUp' ? -10 : 10));
+  });
 
   function setCameraZoom(zoom: boolean) {
     livePanel.style.setProperty('--label-zoom', zoom ? '2' : '1');
@@ -186,6 +203,8 @@ function setup(root: HTMLElement) {
     preview.replaceWith(video);
     preview = video;
     stop.textContent = 'Zastaviť skenovanie';
+    delete guide.dataset.picked;
+    guide.style.removeProperty('top');
     setCameraZoom(false);
     cameraFeedback.append(status);
     cameraActions.append(stop);
