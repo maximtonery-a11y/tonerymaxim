@@ -42,6 +42,8 @@ export async function verifyMobileLabel(page, origin) {
     assert.equal(await page.getByRole('button', { name: 'Spustiť fotoaparát' }).count(), 1);
     assert.equal(await gallery.getAttribute('capture'), null);
     assert.ok(!requests.some(({ url }) => url.pathname.includes('/citanie-stitku/')), 'OCR was loaded before photo selection');
+    assert.ok(!requests.some(({ url }) => /\/(?:label-live-analysis|label-photo|label-search|label-reader)\.[\w-]+\.js$/.test(url.pathname)),
+      'optical processing and catalogue matching load only when the scanner is used');
 
     await gallery.setInputFiles(await labelFile('Brother TN-2421'));
     await page.locator('[data-matches] a').first().waitFor({ timeout: 60_000 });
@@ -95,6 +97,10 @@ export async function verifyMobileLabel(page, origin) {
     await page.waitForURL('**/tlaciarne/hp/*p1102', { timeout: 60_000 });
     assert.match(await page.locator('h1').innerText(), /P1102/i);
     await verifyPhysicalLabels(page, origin, false);
+    await page.goto(origin + '/hladat-fotkou');
+    await page.locator('#label-code').fill('cierny toner do kancelarie');
+    await page.locator('form.manual button').click();
+    await page.waitForURL(url => url.pathname === '/produkty' && url.searchParams.get('s') === 'cierny toner do kancelarie');
     console.log('mobile label search OK: real local OCR, offers, exact model, crop, private label, lazy loading');
   } finally {
     page.context().off('request', record);

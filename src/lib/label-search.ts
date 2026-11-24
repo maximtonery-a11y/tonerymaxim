@@ -1,9 +1,9 @@
+import type { LabelCandidate } from './label-reference.ts';
+export { candidateText, barcodeGuidance, type LabelCandidate } from './label-reference.ts';
+
 // Only manufacturer references leave the device. Keep the entire suffix throughout matching.
 export type LabelLine = { text: string; confidence: number; confirmedList?: boolean; words?: { text: string; confidence: number; verifiedDigits?: boolean; legibleList?: boolean }[] };
-export type LabelCandidate = { brand: string; code: string; kind: 'printer' | 'supply'; certain: boolean; requiresPairing?: boolean };
 type Rule = { kind: LabelCandidate['kind']; brand: string; pattern: RegExp };
-
-export const barcodeGuidance = 'Vidím čiarový kód. Otočte kazetu alebo valec k nápisu s modelom, prípadne namierte na názov tlačiarne.';
 
 const printerFamilies = [
   { brand: 'HP', name: /\b(?:LASERJET|DESKJET|OFFICEJET|DESIGNJET|ENVY|SMART TANK|HP (?:COLOR )?LASER|LASER(?=\s+107[AW]\b))\b/i, number: /^(?:\d{4}[A-Z]{0,4}|107A|\d{3}(?:W|WE|NW|NWE|FNW|FDW))$/ },
@@ -148,10 +148,6 @@ export function hasSplitSupplyLabel(lines: LabelLine[]) {
     return (hp.test(a) && (canon.test(b) || !b)) || (hp.test(b) && (canon.test(a) || !a))
       || (canon.test(a) && !b) || (canon.test(b) && !a);
   });
-}
-
-export function candidateText(item: LabelCandidate) {
-  return [item.brand, item.code].filter(Boolean).join(' ');
 }
 
 // The full-frame pass also protects references seen beside serial numbers during a later crop.

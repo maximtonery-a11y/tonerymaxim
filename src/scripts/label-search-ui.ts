@@ -1,7 +1,8 @@
 import type { LabelSelection } from '../lib/label-image';
 import { LabelPreviewTimeout, scanLiveCamera } from './label-live-camera';
 import { setupLabelLinePicker } from './label-line-picker';
-import { barcodeGuidance, candidateText, hasSplitSupplyLabel, liveLabelOptions, drumNeedsSuffix, exactLabelOffers, hpOrderCode, labelBrands, labelCandidates, matchesPrintedToner, printedTonerCodes, selectedLabelCandidates, type CatalogLink, type LabelCandidate, type LabelOffers } from '../lib/label-search';
+import { barcodeGuidance, candidateText, type LabelCandidate } from '../lib/label-reference';
+import type { CatalogLink, LabelOffers } from '../lib/label-search';
 
 type CapturedOffers = Map<string, CatalogLink[]>;
 
@@ -112,7 +113,9 @@ function setup(root: HTMLElement) {
   }
 
   async function findOffers(candidate: LabelCandidate, signal: AbortSignal, automatic: boolean): Promise<CatalogLink[] | 'suffix'> {
-    const data = await catalogOffers(candidate, signal);
+    const [data, { drumNeedsSuffix, exactLabelOffers, hpOrderCode }] = await Promise.all([
+      catalogOffers(candidate, signal), import('../lib/label-search')
+    ]);
     if (automatic && drumNeedsSuffix(candidate, data)) return 'suffix';
     const items = exactLabelOffers(candidate, data);
     const fullCode = hpOrderCode(candidate, items);
@@ -123,7 +126,9 @@ function setup(root: HTMLElement) {
     return [...new Map([...full, ...items].map(item => [item.url, item])).values()];
   }
 
-  function showOffers(candidate: LabelCandidate, items: CatalogLink[]) {
+  async function showOffers(candidate: LabelCandidate, items: CatalogLink[], signal: AbortSignal) {
+    const { printedTonerCodes, matchesPrintedToner } = await import('../lib/label-search');
+    if (signal.aborted) return;
     const listed = printedTonerCodes(candidate.code).filter(ref => items.some(item => matchesPrintedToner([ref], item.title, item.oem || '')));
     const query = candidateText({ ...candidate, code: listed.length ? listed.join(' / ') : candidate.code });
     lastFile = undefined;
@@ -160,7 +165,7 @@ function setup(root: HTMLElement) {
       if (items === 'suffix') {
         cropToggle.hidden = !lastFile;
         status.textContent = 'Vidím ' + query + '. Pri tomto valci rozhodujú aj posledné písmená. Zachyťte celý riadok s označením.';
-      } else if (items.length) showOffers(candidate, items);
+      } else if (items.length) await showOffers(candidate, items, task.signal);
       else {
         cropToggle.hidden = !lastFile;
         status.textContent = 'Presnú zhodu pre ' + query + ' sme nenašli. Porovnajte označenie so štítkom alebo skúste bližšiu fotku.';
@@ -246,7 +251,7 @@ function setup(root: HTMLElement) {
         if (task.signal.aborted) return false;
         if (items === 'suffix') return 'suffix';
         if (!items.length) return false;
-        showOffers(candidate, items);
+        await showOffers(candidate, items, task.signal);
         if (results.childElementCount) focusResult();
         return true;
       }, retryUntil);
@@ -300,7 +305,8 @@ function setup(root: HTMLElement) {
     stop.textContent = 'Zrušiť čítanie';
     field.value = '';
     try {
-      const { readLabel } = await import('./label-reader');
+      const [{ readLabel }, { labelBrands, hasSplitSupplyLabel, liveLabelOptions, selectedLabelCandidates, labelCandidates }] =
+        await Promise.all([import('./label-reader'), import('../lib/label-search')]);
       if (task.signal.aborted) return;
       const { passes, barcode } = await readLabel(file, task.signal, message => {
         if (!task.signal.aborted) status.textContent = message;
@@ -347,21 +353,33 @@ function setup(root: HTMLElement) {
     input.value = '';
     if (file) void scan(file);
   });
-  manual.addEventListener('submit', event => {
+  manual.addEventListener('submit', async event => {
+    event.preventDefault();
     lastFile = undefined;
-    const lines = [{ text: field.value, confidence: 100 }];
-    const options = hasSplitSupplyLabel(lines) ? liveLabelOptions(lines, new Set()) : [];
-    if (options.length === 2) {
-      event.preventDefault();
-      reset();
-      results.replaceChildren();
-      choose(options);
-      focusResult();
-      return;
+    const submitted = field.value;
+    const task = begin('Overujem označenie…', 18_000);
+    try {
+      const { hasSplitSupplyLabel, liveLabelOptions, labelCandidates } = await import('../lib/label-search');
+      if (task.signal.aborted || field.value !== submitted) return;
+      const lines = [{ text: submitted, confidence: 100 }];
+      const options = hasSplitSupplyLabel(lines) ? liveLabelOptions(lines, new Set()) : [];
+      if (options.length === 2) {
+        choose(options);
+        focusResult();
+        return;
+      }
+      const candidates = labelCandidates(lines);
+      if (candidates.length === 1) {
+        void lookup(candidates[0]);
+        return;
+      }
+    } catch {
+      if (task.signal.aborted || field.value !== submitted) return;
+    } finally {
+      if (active === task) reset();
     }
-    const candidates = labelCandidates(lines);
-    if (candidates.length === 1) { event.preventDefault(); void lookup(candidates[0]); }
-    else reset(); // An explicitly typed free-text query uses the usual catalogue search.
+    // Keep the original GET form usable for free text or a failed module download.
+    manual.submit();
   });
   window.addEventListener('pagehide', () => { reset(); hideCrop(); lastFile = undefined; privateCodes.clear(); });
   if ('Worker' in window && typeof WebAssembly === 'object' && 'decode' in HTMLImageElement.prototype) {
