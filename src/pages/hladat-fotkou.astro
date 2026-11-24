@@ -21,7 +21,7 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
           <button type="button" class="primary" data-live-start aria-controls="live-camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v13H3z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
             Spustiť fotoaparát
           </button>
-          <label>Vybrať fotku z galérie<input type="file" accept="image/*" data-gallery /></label>
+          <label><span class="gallery-desktop">Vybrať fotku z počítača</span><span class="gallery-mobile">Vybrať fotku z galérie</span><input type="file" accept="image/*" data-gallery /></label>
         </div>
         <dialog class="live-camera" id="live-camera" aria-labelledby="camera-heading">
           <div class="live-header"><h2 id="camera-heading">Skenovanie štítku</h2><div data-live-actions></div></div>
@@ -79,6 +79,11 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
   .capture svg { width:21px; height:21px; }
   .capture input { position:absolute; inset:0; height:100%; width:100%; opacity:0; cursor:pointer; }
   .capture label:focus-within,button:focus-visible,input:focus-visible,.matches :global(a:focus-visible) { outline:3px solid #1970af; outline-offset:2px; }
+  .gallery-mobile { display: none; }
+  @media (hover: none) and (pointer: coarse), (max-width: 760px) {
+    .gallery-desktop { display: none; }
+    .gallery-mobile { display: inline; }
+  }
   .live-camera { box-sizing:border-box; position:fixed; inset:0; margin:auto; padding:0; border:0; border-radius:16px; width:min(56rem,94vw); height:min(48rem,92dvh); max-width:none; max-height:none; overflow:hidden; color:#fff; background:#102337; }
   .live-camera[open] { display:grid; grid-template-rows:auto minmax(0,1fr) auto; }
   .live-camera::backdrop { background:#081626c9; }

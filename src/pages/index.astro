@@ -8,6 +8,8 @@ import "../styles/home-mobile.css";
 
 import Header from "../components/Header.astro";
 import HeroSearch from "../components/HeroSearch.astro";
+import PhotoSearchPromo from "../components/PhotoSearchPromo.astro";
+import { PHOTO_GUIDE_MENU_LABEL, PHOTO_GUIDE_PATH, showPhotoSearch } from "../lib/photo-search-promo";
 import ProductFinder from "../components/ProductFinder.astro";
 import Benefits from "../components/Benefits.astro";
 import AccountBenefits from "../components/AccountBenefits.astro";
@@ -19,7 +21,7 @@ import tmHelpVisual from "../assets/tm-help-kontaktujte-final.jpg";
 import SeoHead from "../components/SeoHead.astro";
 import { organizationJsonLd, websiteJsonLd } from "../lib/seo";
 
-const showLabelSearch = process.env.TM_PHOTO_SEARCH_ENABLED !== '0' || Astro.url.searchParams.get('foto') === '1';
+const showLabelSearch = showPhotoSearch(Astro.url);
 const SEO_ORIGIN = 'https://www.tonerymaxim.sk';
 const title = "Tonery a náplne do tlačiarní | ToneryMaxim.sk";
 const description = "Tonery, atramentové náplne, optické valce a komponenty pre tlačiarne HP, Canon, Brother, Epson a ďalšie. Rýchle doručenie a odborná pomoc.";
@@ -87,6 +89,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
                 <a href="/kontakt">Kontakt</a>
                 <a href="/faq">FAQ – časté otázky</a>
                 <a href="/poradna">Odborná poradňa</a>
+                {showLabelSearch && <a href={PHOTO_GUIDE_PATH}>{PHOTO_GUIDE_MENU_LABEL}</a>}
                 <a href={HP_TONER_HELP_PATH}>HP+ a kompatibilné tonery</a>
                 <a href="/doprava-a-platba">Doprava a platba</a>
                 <a href="/toner-bez-starosti">Toner bez starostí</a>
@@ -129,10 +132,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
               </button>
             </form>
 
-            {showLabelSearch && <a class="tm-mobile-label-search" href="/hladat-fotkou#skenovat">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v13H3z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
-              Skenovať štítok
-            </a>}
+            {showLabelSearch && <PhotoSearchPromo layout="mobile" />}
 
             <div class="tm-mobile-search-examples" aria-label="Príklady hľadania">
               <a href="/tlaciarne/hp/hp-laserjet-m110w">HP M110w</a>
@@ -212,7 +212,7 @@ const noindex = ["tonerymaxim.info", "www.tonerymaxim.info"].includes(Astro.url.
           </div>
         </section>
 
-        <HeroSearch />
+        <HeroSearch showPhotoSearch={showLabelSearch} />
 
         <ProductFinder />
         <section class="business-entry" aria-labelledby="business-entry-title">

@@ -35,7 +35,7 @@ export async function verifyMobileLabel(page, origin) {
   const lookup = () => requests.filter(({ url }) => url.pathname === '/api/smart-search').map(({ url }) => url.searchParams.get('q')).filter(q => q !== '__tm_warm__');
   try {
     await page.goto(origin + '/');
-    assert.ok(await page.getByRole('link', { name: 'Skenovať štítok' }).isVisible());
+    assert.ok(await page.getByRole('link', { name: 'Spustiť fotoaparát', exact: true }).isVisible());
     await page.goto(origin + '/hladat-fotkou');
     const gallery = page.locator('[data-gallery]');
     await gallery.waitFor({ state: 'visible' });

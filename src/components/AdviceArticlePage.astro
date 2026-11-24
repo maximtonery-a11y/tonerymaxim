@@ -12,9 +12,11 @@ import { adviceArticles } from "../data/advice";
 import { findAdviceCategory } from "../data/advice-categories";
 import { breadcrumbJsonLd, organizationJsonLd, websiteJsonLd } from "../lib/seo";
 import { EXPERT_PATH, expertPersonJsonLd } from "../lib/expert";
+import { PHOTO_GUIDE_SLUG, PHOTO_SEARCH_PATH, showPhotoSearch } from "../lib/photo-search-promo";
 
 interface Props { article: AdviceArticle }
 const { article } = Astro.props;
+const cameraGuide = article.slug === PHOTO_GUIDE_SLUG && showPhotoSearch(Astro.url);
 const origin = "https://www.tonerymaxim.sk";
 const canonical = `${origin}/poradna/${article.slug}`;
 const category = findAdviceCategory(article.category)!;
@@ -106,6 +108,7 @@ const jsonLd = [
                   <h2>{section.heading}</h2>
                   {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
                   {section.bullets && <ul>{section.bullets.map((item) => <li>{item}</li>)}</ul>}
+                  {section.steps && <ol>{section.steps.map((step) => <li>{step}</li>)}</ol>}
                   {section.note && <aside class="advice-note"><strong>Dôležité:</strong> {section.note}</aside>}
                 </section>
               ))}
@@ -126,7 +129,14 @@ const jsonLd = [
                 <a href="/kalkulacka-ceny-tlace">Otvoriť kalkulačku →</a>
               </section>
             )}
-            {article.category === "vyber-naplne" && (
+            {cameraGuide && (
+              <section class="advice-conversion" aria-label="Hľadanie fotoaparátom">
+                <div><h2>Máte po ruke tlačiareň alebo náplň?</h2><p>Otvorte skener alebo vyberte uloženú fotku štítku.</p></div>
+                <a class="guide-camera-desktop" href={PHOTO_SEARCH_PATH}>Hľadať podľa fotky</a>
+                <a class="guide-camera-mobile" href={PHOTO_SEARCH_PATH + '#skenovat'}>Spustiť fotoaparát</a>
+              </section>
+            )}
+            {article.category === "vyber-naplne" && !cameraGuide && (
               <section class="advice-conversion" aria-label="Nájsť správnu náplň">
                 <div><p class="advice-eyebrow">Pokračovať výberom</p><h2>Nájdite iba náplne pre svoju tlačiareň</h2><p>Vyberte presný model tlačiarne alebo zadajte celý OEM kód pôvodnej kazety.</p></div>
                 <a href="/tlaciarne">Vybrať tlačiareň →</a>

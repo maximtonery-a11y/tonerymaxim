@@ -1,5 +1,7 @@
 ---
 import heroPrinterImage from "../assets/tlaciaren-optimized.webp";
+import PhotoSearchPromo from "./PhotoSearchPromo.astro";
+interface Props { showPhotoSearch: boolean }
 ---
 
 <section class="hero-shell">
@@ -19,6 +21,7 @@ import heroPrinterImage from "../assets/tlaciaren-optimized.webp";
         <input type="search" name="s" data-smart-search-input placeholder="Zadajte model tlačiarne alebo označenie toneru" />
         <button type="submit">Vyhľadať</button>
       </form>
+      {Astro.props.showPhotoSearch && <PhotoSearchPromo layout="desktop" />}
 
       <div class="examples">
         <span class="examples-label">Príklady:</span>

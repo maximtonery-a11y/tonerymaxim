@@ -758,6 +758,8 @@ import { isAvailableNow, storefrontStockClass, storefrontStockText } from "../li
           </form>
         </section>`;
       const alternative = list.querySelector("[data-no-results-alternative]");
+      const photoFallback = document.getElementById("tm-photo-fallback");
+      if (searched && !specialVariants.length && photoFallback) alternative.before(photoFallback.content.cloneNode(true));
       if (searched && alternative) {
         fetch(`/api/smart-search?q=${encodeURIComponent(searched)}`, { headers: { Accept: "application/json" } })
           .then((response) => response.ok ? response.json() : null)
