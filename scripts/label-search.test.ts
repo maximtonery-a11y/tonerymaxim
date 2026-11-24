@@ -1,10 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { corroboratedBrotherBadge, drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
+import { confirmsBrotherColourBadge, corroboratedBrotherBadge, drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
 import { createLiveConsensus, focusScore, hasLabelStrokes, sameLabelScene } from '../src/lib/label-camera-frame.ts';
 import { isolateLightPrint } from '../src/lib/label-photo.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
+
+test('only an independently legible colour suffix can resolve a closed C on a printer badge', () => {
+  const precise = read('DCP-9020CDW');
+  const noisy = read('DCP-90200DW');
+  assert.ok(confirmsBrotherColourBadge(precise, noisy));
+  assert.ok(confirmsBrotherColourBadge(precise, [...precise, ...noisy]));
+  assert.equal(confirmsBrotherColourBadge(noisy, precise), false);
+  assert.equal(confirmsBrotherColourBadge(read('DCP-9020CDW', 63), noisy), false);
+  for (const model of ['DCP-9028CDW', 'DCP-90200DN', 'MFC-90200DW', 'S/N: DCP-9020CDW']) {
+    assert.equal(confirmsBrotherColourBadge(precise, read(model)), false);
+  }
+});
 
 test('a gallery badge can lose an extra stroke only when the complete model was also read verbatim', () => {
   const rows = (...texts: string[]) => texts.map(text => [{ text, confidence: 88 }]);

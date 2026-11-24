@@ -26,6 +26,19 @@ export function isCompleteBrotherModel(code: string) {
   return /^(?:DCP|MFC|HL)-[A-Z]?\d{3,5}(?:CDW|CDN|DW|DN|CW|NW)$/.test(code);
 }
 
+// Read the open C on a colour printer independently. Only the full word from
+// the trusted read is returned. No digit, family or network suffix is inferred.
+export function confirmsBrotherColourBadge(precise: LabelCandidate[], other: LabelCandidate[]) {
+  if (precise.length !== 1 || !other.length) return false;
+  const [reading] = precise;
+  if (!reading.certain || reading.brand !== 'Brother' || reading.kind !== 'printer') return false;
+  const mark = /^((?:DCP|MFC|HL)-[A-Z]?\d{3,4})C(D[WN])$/.exec(reading.code);
+  if (!mark) return false;
+  const closedGlyph = mark[1] + '0' + mark[2];
+  return other.every(item => item.kind === 'printer' && item.brand === 'Brother'
+    && (item.code === reading.code || item.code === closedGlyph));
+}
+
 // On one physical nameplate an extra stroke can turn CDW into CDHW.
 // Accept only a complete printed spelling, corroborated by another reading
 // of the same family and digits. Two plausible suffixes still need a choice.

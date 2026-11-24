@@ -1,6 +1,6 @@
 import type { Block } from 'tesseract.js';
 import { drawLabelLine, type LabelSelection } from '../lib/label-image';
-import { candidateText, corroboratedBrotherBadge, hasSplitSupplyLabel, isCompleteBrotherModel, labelCandidates, type LabelLine } from '../lib/label-search';
+import { candidateText, confirmsBrotherColourBadge, corroboratedBrotherBadge, hasSplitSupplyLabel, isCompleteBrotherModel, labelCandidates, type LabelLine } from '../lib/label-search';
 import { labelImageForOcr, type PixelBox } from '../lib/label-photo';
 import { readPrintedLabel, type OcrMode } from './label-physical-ocr';
 
@@ -138,12 +138,16 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
       try {
         const { lines } = await scene.read(images[0], privateCodes);
         const candidates = labelCandidates(lines, privateCodes);
-        if (hasSplitSupplyLabel(lines) || candidates.length > 1 || candidates.some(item => item.certain)) {
+        // An illuminated C can close into a zero. Read those printer badges
+        // independently, including when the scene reader offers both spellings.
+        const needsColourCheck = candidates.length > 0 && candidates.every(item => item.kind === 'printer' && item.brand === 'Brother')
+          && candidates.some(item => /\d{3,4}0D[WN]$/.test(item.code));
+        if (!needsColourCheck && (hasSplitSupplyLabel(lines) || candidates.length > 1 || candidates.some(item => item.certain))) {
           return { passes: [lines], barcode: false };
         }
         const candidate = candidates[0];
         const completeBrother = candidate?.kind === 'printer' && candidate.brand === 'Brother' && isCompleteBrotherModel(candidate.code);
-        if (completeBrother) {
+        if (completeBrother && !needsColourCheck) {
           // The narrow silver lettering on a dark panel often needs a different
           // scale. Keep the whole photograph so serial-number context is visible.
           const enhanced = document.createElement('canvas');
@@ -179,6 +183,7 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
     if (sceneLines.length) {
       const first = labelCandidates(sceneLines, privateCodes);
       const second = labelCandidates(passes.flat(), privateCodes);
+      if (confirmsBrotherColourBadge(second, first)) return { passes, barcode };
       const confirmed = corroboratedBrotherBadge([sceneLines, secondScene, ...passes], privateCodes);
       if (confirmed) return { passes: [confirmed], barcode, confirmedPrinter: candidateText(labelCandidates(confirmed, privateCodes)[0]) };
       if (!second.length) return { passes: [sceneLines], barcode };
