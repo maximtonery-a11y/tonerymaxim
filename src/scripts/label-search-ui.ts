@@ -192,7 +192,7 @@ function setup(root: HTMLElement) {
     status.scrollIntoView({block:'start'});
   }
 
-  async function startCamera(retryUntil?: number) {
+  async function startCamera(retryUntil?: number, selectedRow?: number, zoom = false) {
     if (scanningLive) return;
     if (!navigator.mediaDevices?.getUserMedia || typeof livePanel.showModal !== 'function') {
       status.textContent = 'Tento prehliadač nesprístupnil fotoaparát. Otvorte stránku v Safari alebo Chrome, prípadne vyberte fotku z galérie.';
@@ -210,7 +210,8 @@ function setup(root: HTMLElement) {
     stop.textContent = 'Zastaviť skenovanie';
     delete guide.dataset.picked;
     guide.style.removeProperty('top');
-    setCameraZoom(false);
+    setCameraZoom(zoom);
+    if (typeof selectedRow === 'number' && Number.isFinite(selectedRow)) aimAt(selectedRow);
     cameraFeedback.append(status);
     cameraActions.append(stop);
     livePanel.showModal();
@@ -259,10 +260,14 @@ function setup(root: HTMLElement) {
       if (!task.signal.aborted) {
         if (error instanceof LabelPreviewTimeout) {
           // A browser can grant a live track yet keep its player stopped. Reopen
-          // the scanner once in a fresh document, remembering this gesture only.
+          // once in a fresh document with the same framing and original deadline.
           if (!retryUntil && error.retryUntil - Date.now() > 600 && !document.hidden) {
             display('Fotoaparát neposkytol obraz. Spúšťam ho ešte raz…');
-            history.replaceState({ ...history.state, tmResumeCamera: error.retryUntil }, '');
+            history.replaceState({
+              ...history.state, tmResumeCamera: error.retryUntil,
+              tmResumeRow: guide.hasAttribute('data-picked') ? parseFloat(guide.style.top) : undefined,
+              tmResumeZoom: cameraZoom.getAttribute('aria-pressed') === 'true',
+            }, '');
             location.reload();
           } else display('Z fotoaparátu neprichádza obraz. Skúste ho spustiť znova.');
         } else if (error instanceof DOMException && ['NotAllowedError', 'SecurityError'].includes(error.name)) {
@@ -384,12 +389,14 @@ function setup(root: HTMLElement) {
   window.addEventListener('pagehide', () => { reset(); hideCrop(); lastFile = undefined; privateCodes.clear(); });
   if ('Worker' in window && typeof WebAssembly === 'object' && 'decode' in HTMLImageElement.prototype) {
     controls.hidden = false;
-    const { tmResumeCamera, ...state } = history.state || {};
+    const { tmResumeCamera, tmResumeRow, tmResumeZoom, ...state } = history.state || {};
     const fromPilot = location.hash === '#skenovat' && document.referrer && new URL(document.referrer).origin === location.origin;
     const retryUntil = typeof tmResumeCamera === 'number' ? tmResumeCamera : undefined;
     if (retryUntil || fromPilot) {
       history.replaceState(state, '', location.pathname + location.search);
-      if (!document.hidden && (!retryUntil || retryUntil > Date.now())) void startCamera(retryUntil);
+      if (!document.hidden && (!retryUntil || retryUntil > Date.now())) {
+        void startCamera(retryUntil, retryUntil ? tmResumeRow : undefined, !!retryUntil && tmResumeZoom === true);
+      }
       else if (retryUntil) status.textContent = 'Z fotoaparátu neprichádza obraz. Skúste ho spustiť znova.';
     }
   }

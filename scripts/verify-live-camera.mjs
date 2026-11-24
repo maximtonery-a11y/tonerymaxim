@@ -24,7 +24,15 @@ export async function chromiumLabelCamera() {
 
 function installVideoFixture() {
   if (location.pathname !== '/hladat-fotkou' || window.labelCameraTest) return;
-  const fixture = window.labelCameraTest = { mode: 'feed', calls: [], tracks: [], captures: [],
+  const resuming = history.state?.tmResumeCamera > Date.now();
+  if (!resuming) sessionStorage.removeItem('testCameraScene');
+  let mode = (resuming && sessionStorage.getItem('testCameraScene')) || 'feed';
+  const fixture = window.labelCameraTest = { calls: [], tracks: [], captures: [],
+    get mode() { return mode; },
+    set mode(value) {
+      mode = value;
+      if (['feed', 'blank', 'lcd', 'two-rows'].includes(value)) sessionStorage.setItem('testCameraScene', value);
+    },
     get text() { return sessionStorage.getItem('testCameraLabel') || 'Brother TN-2421'; },
     set text(value) { sessionStorage.setItem('testCameraLabel', value); },
   };
@@ -274,6 +282,7 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
       return { x: rect.width / 2, y: rect.height / 2 + (362 - video.videoHeight / 2) * scale };
     });
     await pick.click({ position: point });
+    await page.waitForFunction(() => parseFloat(document.querySelector('[data-live-guide][data-picked]')?.style.top) > 60);
     await page.locator('[data-matches] a').first().waitFor({ timeout: 35_000 });
     assert.deepEqual(searches.slice(previousSearches), ['Brother TN-2421'], 'tapping the lower row excludes the other orderable model');
     const sessions = workers.length;
@@ -294,6 +303,8 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     const diagnostic = await page.evaluate(() => ({
       status: document.querySelector('#label-status')?.textContent,
       mode: window.labelCameraTest?.mode, calls: window.labelCameraTest?.calls.length, tracks: window.labelCameraTest?.tracks.map(t => t.readyState),
+      selectedRow: document.querySelector('[data-live-guide]')?.style.top,
+      scene: sessionStorage.getItem('testCameraScene'),
       video: document.querySelector('video')?.readyState, viewport: document.querySelector('video')?.getBoundingClientRect().toJSON(),
     })).catch(() => ({}));
     throw new Error('Camera test ' + JSON.stringify({ diagnostic, searches, workers: workers.length }) + ': ' + error.message, { cause: error });
