@@ -145,6 +145,11 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
   try {
     const response = await page.goto(origin + '/hladat-fotkou');
     assert.match(response.headers()['permissions-policy'], /camera=\(self\), microphone=\(\)/);
+    const engine = await page.request.get(origin + '/citanie-stitku/v8/label-worker.mjs');
+    assert.ok(engine.ok());
+    const policy = engine.headers()['content-security-policy'] || '';
+    assert.match(policy, /(?:^|;\s*)connect-src 'self'(?:;|$)/);
+    assert.equal(engine.headers()['cross-origin-resource-policy'], 'same-origin');
     const start = page.getByRole('button', { name: 'Spustiť fotoaparát' });
     const stop = page.getByRole('button', { name: 'Zastaviť skenovanie' });
     const status = page.locator('#label-status');

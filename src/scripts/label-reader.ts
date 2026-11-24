@@ -1,6 +1,6 @@
 import type { Block } from 'tesseract.js';
 import { drawLabelLine, type LabelSelection } from '../lib/label-image';
-import { labelCandidates, liveLabelOptions, type LabelLine } from '../lib/label-search';
+import { candidateText, hasSplitSupplyLabel, labelCandidates, type LabelLine } from '../lib/label-search';
 import { labelImageForOcr, type PixelBox } from '../lib/label-photo';
 import { readPrintedLabel, type OcrMode } from './label-physical-ocr';
 
@@ -129,15 +129,18 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
   const images = await prepareImages(file, signal, area);
   report('Pripravujem čítanie štítku…');
   let reader: Awaited<ReturnType<typeof createLabelReader>> | undefined;
+  let sceneLines: LabelLine[] = [];
   try {
     if (!area) {
       const { createSceneReader } = await import('./label-scene-reader');
       const scene = createSceneReader(signal);
       try {
         const { lines } = await scene.read(images[0], privateCodes);
-        if (liveLabelOptions(lines, privateCodes).length || labelCandidates(lines, privateCodes).length > 1) {
+        const candidates = labelCandidates(lines, privateCodes);
+        if (hasSplitSupplyLabel(lines) || candidates.length > 1 || candidates.some(item => item.certain)) {
           return { passes: [lines], barcode: false };
         }
+        if (candidates.length) sceneLines = lines;
       } catch { signal.throwIfAborted(); }
       finally { scene.close(); }
     }
@@ -149,6 +152,21 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
         report(`Čítam označenie… ${Math.round((passes.length + progress) * 100 / images.length)} %`), Boolean(area && 'start' in area), !area, undefined, privateCodes);
       passes.push(result.lines);
       barcode ||= result.barcode;
+    }
+    if (sceneLines.length) {
+      const first = labelCandidates(sceneLines, privateCodes);
+      const second = labelCandidates(passes.flat(), privateCodes);
+      if (!second.length) return { passes: [sceneLines], barcode };
+      if (first.length === 1 && second.length === 1 && candidateText(first[0]) === candidateText(second[0])) {
+        // Independently read the entire Brother model, including its suffix, with both engines.
+        // Shared model numbers from multiple manufacturers still need the brand choice.
+        const samePrinter = first[0].brand === 'Brother' && first[0].kind === 'printer'
+          && /^(?:DCP|MFC|HL)-[A-Z]?\d{3,5}(?:CDW|CDN|DW|DN|CW|NW)$/.test(first[0].code);
+        return { passes, barcode, confirmedPrinter: samePrinter ? candidateText(first[0]) : undefined };
+      }
+      if (first.length && second.every(item => !first.some(other => candidateText(other) === candidateText(item)))) {
+        return { passes: [[...sceneLines, ...passes.flat()]], barcode, disputed: true };
+      }
     }
     return { passes, barcode };
   } finally {

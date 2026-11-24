@@ -1,8 +1,8 @@
-import { captureLabelFrame, createLiveConsensus, type LabelExposure } from '../lib/label-camera-frame';
+import { captureLabelFrame, createLiveConsensus, sameLabelScene, type LabelExposure } from '../lib/label-camera-frame';
 import { candidateText, hasSplitSupplyLabel, liveLabelOptions, type LabelCandidate } from '../lib/label-search';
 import { createSceneReader, type SceneResult } from './label-scene-reader';
 
-type Reading = { at: number; key: string; options: LabelCandidate[]; boxes: SceneResult['boxes'] };
+type Reading = { at: number; signature?: Uint8Array; options: LabelCandidate[]; boxes: SceneResult['boxes']; serialOnly: boolean };
 
 export function createCameraProbe(signal: AbortSignal) {
   const reader = createSceneReader(signal);
@@ -17,7 +17,9 @@ export function createCameraProbe(signal: AbortSignal) {
     if (key !== geometry || signal.aborted) return;
     split ||= hasSplitSupplyLabel(result.lines);
     const options = liveLabelOptions(result.lines, privateCodes);
-    readings.push({ at: frame.at, key, options, boxes: result.boxes });
+    const serialOnly = !!frame.barcode && !options.length && result.lines.some(row =>
+      /\b(?=[A-Z0-9]{12,}\b)(?=[A-Z0-9]*[A-Z])(?=[A-Z0-9]*\d)[A-Z0-9]+\b/i.test(row.text));
+    readings.push({ at: frame.at, signature: frame.signature, options, boxes: result.boxes, serialOnly });
   }
   function sample(frame: LabelExposure, key: string, lettering: boolean) {
     if (geometry !== key) { readings.length = 0; geometry = key; split = false; }
@@ -53,7 +55,8 @@ export function createCameraProbe(signal: AbortSignal) {
     for (const frame of frames) {
       if (readings.some(item => item.at === frame.at)) continue;
       const previous = readings.at(-1);
-      await read(frame, geometry, previous?.options.length ? previous.boxes : undefined);
+      const reuse = previous?.options.length && sameLabelScene(previous.signature, frame.signature);
+      await read(frame, geometry, reuse ? previous.boxes : undefined);
       signal.throwIfAborted();
       const item = readings.at(-1);
       if (item) {
@@ -65,6 +68,7 @@ export function createCameraProbe(signal: AbortSignal) {
   return {
     sample, confirm, privateCodes,
     get split() { return split; },
+    get serialOnly() { return !split && readings.every(r => !r.options.length) && readings.filter(r => r.serialOnly).length >= 2; },
     close() { reader.close(); canvas.width = canvas.height = 1; },
   };
 }

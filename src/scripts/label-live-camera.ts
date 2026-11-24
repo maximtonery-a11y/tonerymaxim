@@ -1,4 +1,5 @@
-import { focusScore, hasLabelStrokes, saveLabelFrame, type CapturedLabelFrame, type LabelExposure } from '../lib/label-camera-frame';
+import { focusScore, hasLabelStrokes, sameLabelScene, saveLabelFrame, type CapturedLabelFrame, type LabelExposure } from '../lib/label-camera-frame';
+import { barcodeGuidance } from '../lib/label-reference';
 import type { locateLabelRows } from '../lib/label-photo';
 import type { LabelMatch } from './label-live-analysis';
 import type { createCameraProbe } from './label-camera-probe';
@@ -67,13 +68,14 @@ async function collectExposures(
   guide: HTMLElement,
   signal: AbortSignal,
   deadline: number,
-  locateRows: (canvas: HTMLCanvasElement) => number,
+  locateRows: (canvas: HTMLCanvasElement) => ReturnType<typeof locateLabelRows>,
   sample: CameraProbe['sample']
 ) {
   const retained: LabelExposure[] = [];
   const thumbnail = document.createElement('canvas');
   const focus = document.createElement('canvas');
-  let previous: Uint8ClampedArray | undefined;
+  let previous: Uint8Array | undefined;
+  let scene = 0;
   let stableSince = 0,
     lastTime = -1,
     geometry = '';
@@ -111,22 +113,20 @@ async function collectExposures(
             thumbnail.height
           );
           const rows = locateRows(thumbnail);
-          const score = Math.min(4, focusScore(thumbnail, focus)) + Math.min(2, rows);
+          const score = Math.min(4, focusScore(thumbnail, focus)) + Math.min(2, rows.length);
           const pixels = ctx.getImageData(0, 0, thumbnail.width, thumbnail.height).data;
-          const lettering = rows > 0 || hasLabelStrokes(pixels, thumbnail.width, thumbnail.height);
-          let change = 0,
-            samples = 0;
-          if (previous?.length === pixels.length) {
-            for (let i = 1; i < pixels.length; i += 116) {
-              change += Math.abs(pixels[i] - previous[i]);
-              samples++;
-            }
-          }
+          const lettering = rows.length > 0 || hasLabelStrokes(pixels, thumbnail.width, thumbnail.height);
+          const signature = new Uint8Array(Math.ceil((pixels.length - 1) / 116));
+          for (let i = 0; i < signature.length; i++) signature[i] = pixels[i * 116 + 1];
           const now = performance.now();
-          if (!samples || change / samples > 12 || !lettering) stableSince = now;
-          previous = pixels;
-          const exposure = { ...frame, score, at: now };
-          const evidence = sample(exposure, key, lettering);
+          if (previous && !sameLabelScene(previous, signature, 22)) {
+            scene++;
+            retained.splice(0).forEach(discard);
+          }
+          if (!sameLabelScene(previous, signature, 12) || !lettering) stableSince = now;
+          previous = signature;
+          const exposure = { ...frame, score, at: now, signature, barcode: rows.some(row => row.barcode) };
+          const evidence = sample(exposure, key + '/' + scene, lettering);
           retained.push(exposure);
           // Keep the clearest independently captured images, preferring a newer one on ties.
           retained.sort((a, b) => b.score - a.score || b.at - a.at);
@@ -215,7 +215,7 @@ export async function scanLiveCamera(
       if (!finished && !signal.aborted) probe = createCameraProbe(signal);
     }).catch(() => {});
     frames = await collectExposures(video, guide, signal, Math.min(granted + remaining - 250, performance.now() + 6000),
-      canvas => locate?.(canvas).length ?? 0, (frame, key, lettering) => probe?.sample(frame, key, lettering) || 'unready');
+      canvas => locate?.(canvas) ?? [], (frame, key, lettering) => probe?.sample(frame, key, lettering) || 'unready');
     release();
     signal.throwIfAborted();
     captured();
@@ -224,6 +224,7 @@ export async function scanLiveCamera(
     try { options = await probe?.confirm(frames); }
     catch { signal.throwIfAborted(); }
     finally { probe?.close(); }
+    if (probe?.serialOnly && !options?.length) { report(barcodeGuidance); return; }
     if (options?.length) {
       const found = await match(options);
       signal.throwIfAborted();
