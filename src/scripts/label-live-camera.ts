@@ -225,6 +225,10 @@ export async function scanLiveCamera(
     catch { signal.throwIfAborted(); }
     finally { probe?.close(); }
     if (probe?.serialOnly && !options?.length) { report(barcodeGuidance); return; }
+    if (probe?.unrelated && !options?.length) {
+      report('Označenie sa nepodarilo bezpečne prečítať. Namierte na celý názov tlačiarne alebo na kód náplne.');
+      return;
+    }
     if (options?.length) {
       const found = await match(options);
       signal.throwIfAborted();

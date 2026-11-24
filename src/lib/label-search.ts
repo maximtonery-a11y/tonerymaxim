@@ -22,6 +22,9 @@ const hpPrinterNumbers = new Map([
 ]);
 const productNumberField = /\b(?:PRODUCT\s*(?:NO\.?|NUMBER|ID)|PROD\.?\s*(?:NO\.?|ID)|P\/N|ČÍSLO\s+PRODUKTU)[\s:#.,_–-]{0,8}([A-Z0-9]{6})(?:#[A-Z0-9]{3})?(?![A-Z0-9#-])/i;
 const hpOem = /^(?:C[BEFH]\d{3}|[CQW]\d{4}|[A-Z]\d[A-Z]\d{2})[A-Z]{1,3}$/;
+export function isCompleteBrotherModel(code: string) {
+  return /^(?:DCP|MFC|HL)-[A-Z]?\d{3,5}(?:CDW|CDN|DW|DN|CW|NW)$/.test(code);
+}
 const rules: Rule[] = [
   { kind: 'supply', brand: 'HP', pattern: hpOem },
   { kind: 'supply', brand: 'Brother', pattern: /^(?:(?:TN|DR|LC|BT|WT|BU)-?[A-Z]?\d{2,5}[A-Z0-9]{0,5}|DR-?\d{2,5}CL-(?:CMYK|CMY|BK|[CMY]))$/ },
@@ -232,8 +235,7 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
       if (kind === 'printer' && packageLabel) continue;
       const word = line.words?.find(word => codeKey(word.text) === codeKey(token));
       const confidence = word?.confidence ?? line.confidence;
-      const brotherBadge = kind === 'printer' && brand === 'Brother' && confidence >= 92
-        && /^(?:DCP|MFC|HL)-[A-Z]?\d{3,5}(?:CDW|CDN|DW|DN|CW|NW)$/.test(token);
+      const brotherBadge = kind === 'printer' && brand === 'Brother' && confidence >= 92 && isCompleteBrotherModel(token);
       const brandAgrees = brands.size === 1 ? brands.has(brand.toUpperCase())
         : !brands.size && (kind === 'supply' || brotherBadge || word?.verifiedDigits === true);
       if (brands.size && !brands.has(brand.toUpperCase())) continue;

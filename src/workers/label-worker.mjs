@@ -3,7 +3,8 @@ import { initDet, initRec, warpDet } from './paddle.mjs';
 
 // A single dedicated worker owns both sessions. Cancelling a scan releases both, including the WASM heap.
 const folder = new URL('./', import.meta.url);
-ort.env.wasm.wasmPaths = folder.href;
+// The bundled runtime contains its loader. WebKit workers can start without
+// dynamically importing a second script, and the WASM bytes are supplied below.
 ort.env.wasm.numThreads = 1;
 ort.env.logLevel = 'error';
 const options = { ort, ortOption: { executionProviders: ['wasm'], graphOptimizationLevel: 'basic' } };

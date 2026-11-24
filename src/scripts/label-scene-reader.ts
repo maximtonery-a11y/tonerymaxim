@@ -41,7 +41,8 @@ export function createSceneReader(signal: AbortSignal) {
     if (!ready) {
       if (typeof OffscreenCanvas !== 'function') throw new Error('offscreen unavailable');
       worker = new Worker('/citanie-stitku/v8/label-worker.mjs', { type: 'module' });
-      worker.onerror = worker.onmessageerror = close;
+      worker.onerror = event => { event.preventDefault(); close(); };
+      worker.onmessageerror = close;
       worker.onmessage = event => {
         clearTimeout(timer);
         if (event.data.failed) { close(); return; }

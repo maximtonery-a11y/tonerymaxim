@@ -38,6 +38,14 @@ function installVideoFixture() {
   };
   const NativeWorker = window.Worker;
   window.Worker = class extends NativeWorker {
+    constructor(url, options) {
+      super(url, options);
+      if (new URL(url, location.href).pathname.endsWith('/label-worker.mjs')) {
+        this.addEventListener('message', ({ data }) => {
+          if (data.rows?.length) sessionStorage.setItem('testReadScene', 'yes');
+        });
+      }
+    }
     postMessage(job, ...args) {
       if (fixture.holdOCR && job?.action === 'load') {
         fixture.releaseOCR = () => { fixture.holdOCR = false; super.postMessage(job, ...args); };
@@ -303,6 +311,8 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     assert.equal(await start.isVisible(), true);
     assert.equal(workers.length, sessions, 'a stalled preview never loads OCR');
     await verifyPhysicalLabels(page, origin, true);
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('testReadScene')), 'yes',
+      'the local scene recognizer read printed lettering in this browser');
     console.log('Live label video OK: single-tap start, toner prices, exact printer, private code, empty match, denial, cancel, bounded retry and device release');
   } catch (error) {
     const diagnostic = await page.evaluate(() => ({
@@ -327,5 +337,7 @@ export async function verifyFirefoxLabels(browserType, origin) {
     await page.addInitScript(installVideoFixture);
     await verifyPhysicalLabels(page, origin, true);
     await verifyPhysicalLabels(page, origin, false);
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('testReadScene')), 'yes',
+      'the local scene recognizer read printed lettering in Firefox');
   } finally { await browser.close(); }
 }

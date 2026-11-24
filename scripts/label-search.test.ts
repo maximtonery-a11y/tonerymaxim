@@ -1,10 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
-import { createLiveConsensus, focusScore, hasLabelStrokes } from '../src/lib/label-camera-frame.ts';
+import { createLiveConsensus, focusScore, hasLabelStrokes, sameLabelScene } from '../src/lib/label-camera-frame.ts';
 import { isolateLightPrint } from '../src/lib/label-photo.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
+
+test('a new or differently framed scene never reuses the old label positions', () => {
+  const frame = Uint8Array.from([25, 160, 82, 110]);
+  assert.ok(sameLabelScene(frame, Uint8Array.from([28, 164, 79, 113])));
+  assert.equal(sameLabelScene(frame, Uint8Array.from([160, 25, 110, 82])), false);
+  assert.equal(sameLabelScene(frame, frame.subarray(1)), false);
+  assert.equal(sameLabelScene(undefined, frame), false);
+});
 
 test('an unavailable full reference cannot turn into an orderable shorter reference', () => {
   const full = read('Brother TN-9999');

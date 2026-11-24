@@ -1,6 +1,6 @@
 import type { Block } from 'tesseract.js';
 import { drawLabelLine, type LabelSelection } from '../lib/label-image';
-import { candidateText, hasSplitSupplyLabel, labelCandidates, type LabelLine } from '../lib/label-search';
+import { candidateText, hasSplitSupplyLabel, isCompleteBrotherModel, labelCandidates, type LabelLine } from '../lib/label-search';
 import { labelImageForOcr, type PixelBox } from '../lib/label-photo';
 import { readPrintedLabel, type OcrMode } from './label-physical-ocr';
 
@@ -140,6 +140,27 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
         if (hasSplitSupplyLabel(lines) || candidates.length > 1 || candidates.some(item => item.certain)) {
           return { passes: [lines], barcode: false };
         }
+        const candidate = candidates[0];
+        const completeBrother = candidate?.kind === 'printer' && candidate.brand === 'Brother' && isCompleteBrotherModel(candidate.code);
+        if (completeBrother) {
+          // The narrow silver lettering on a dark panel often needs a different
+          // scale. Keep the whole photograph so serial-number context is visible.
+          const enhanced = document.createElement('canvas');
+          try {
+            const scale = Math.min(.85, 800 / Math.max(images[0].width, images[0].height));
+            enhanced.width = Math.max(1, Math.round(images[0].width * scale));
+            enhanced.height = Math.max(1, Math.round(images[0].height * scale));
+            const ctx = enhanced.getContext('2d')!;
+            ctx.filter = 'contrast(1.35)';
+            ctx.drawImage(images[0], 0, 0, enhanced.width, enhanced.height);
+            const second = await scene.read(enhanced, privateCodes);
+            const options = labelCandidates(second.lines, privateCodes);
+            if (options.length === 1 && candidateText(options[0]) === candidateText(candidate)
+                && labelCandidates(lines, privateCodes).length === 1) {
+              return { passes: [lines], barcode: false, confirmedPrinter: candidateText(candidate) };
+            }
+          } finally { enhanced.width = enhanced.height = 1; }
+        }
         if (candidates.length) sceneLines = lines;
       } catch { signal.throwIfAborted(); }
       finally { scene.close(); }
@@ -160,8 +181,7 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
       if (first.length === 1 && second.length === 1 && candidateText(first[0]) === candidateText(second[0])) {
         // Independently read the entire Brother model, including its suffix, with both engines.
         // Shared model numbers from multiple manufacturers still need the brand choice.
-        const samePrinter = first[0].brand === 'Brother' && first[0].kind === 'printer'
-          && /^(?:DCP|MFC|HL)-[A-Z]?\d{3,5}(?:CDW|CDN|DW|DN|CW|NW)$/.test(first[0].code);
+        const samePrinter = first[0].brand === 'Brother' && first[0].kind === 'printer' && isCompleteBrotherModel(first[0].code);
         return { passes, barcode, confirmedPrinter: samePrinter ? candidateText(first[0]) : undefined };
       }
       if (first.length && second.every(item => !first.some(other => candidateText(other) === candidateText(item)))) {
