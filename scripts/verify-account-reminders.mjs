@@ -18,7 +18,7 @@ export async function verifySavedTonerCare(origin) {
           if (mobile) {
             await page.locator('[data-account-more] > summary').click();
             await page.locator('[data-account-more]').getByRole('link', { name: 'Upozornenia na toner', exact: true }).click();
-          } else await page.locator('.account-nav').getByRole('link', { name: 'Upozornenia na toner', exact: true }).click();
+          } else await page.locator('.account-nav a[href="/ucet/upozornenia"]').click();
           await page.waitForURL(origin + '/ucet/upozornenia');
           const card = page.locator('[data-printer-title="Brother DCP-L3517CDW"]');
           const fields = card.locator('[data-toner-care-form]');

@@ -18,9 +18,10 @@ export const POST: APIRoute = async (context) => {
     expected_months: Number(fields.get("expected_months") || 3),
     preferred_type: String(fields.get("preferred_type") || "any"),
   };
-  const response = await updatePlan({ ...context, request: new Request(context.request.url, {
+  const updateContext = Object.create(context, { request: { value: new Request(context.request.url, {
     method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-  }) });
+  }) } });
+  const response = await updatePlan(updateContext);
   const result = await response.json().catch(() => ({}));
   const returnTo = fields.get("return_to") === "/ucet/tlaciarne" ? "/ucet/tlaciarne" : "/ucet/upozornenia";
   const target = new URL(returnTo, context.request.url);
