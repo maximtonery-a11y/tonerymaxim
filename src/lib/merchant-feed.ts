@@ -251,8 +251,25 @@ export function buildMerchantFeed(
     throw new Error(`Merchant feed safety gate: ${products.length} products, minimum ${config.minimumProducts}.`);
   }
 
+  // GA4 sends the original SKU. Only use an alias that cannot identify another catalogue item.
+  const skuOwner = new Map<string, string | null>();
+  const skuById = new Map<string, string>();
+  const catalogIds = new Set(sourceProducts.map(product => String(product.id).toLowerCase()));
+  for (const product of sourceProducts) {
+    const sku = String(product.sku || "");
+    const key = sku.toLowerCase();
+    const id = String(product.id);
+    if (!sku || !/^[A-Za-z0-9._:-]{1,50}$/.test(sku)) continue;
+    skuById.set(id, sku);
+    if (!skuOwner.has(key)) skuOwner.set(key, id);
+    else if (skuOwner.get(key) !== id) skuOwner.set(key, null);
+  }
+
   const items = products.map((product) => {
     const labels = product.labels.slice(0, 5);
+    const sku = skuById.get(product.id);
+    const displayId = sku && skuOwner.get(sku.toLowerCase()) === product.id
+      && !catalogIds.has(sku.toLowerCase()) && !product.excludedDestinations.includes("Shopping_ads") ? sku : null;
     const printerBrand = printerBrandFromMerchantProduct(product);
     const feedTitle = optimizedMerchantTitle(product);
     const feedDescription = optimizedMerchantDescription(product);
@@ -260,6 +277,7 @@ export function buildMerchantFeed(
     return [
       "    <item>",
       `      <g:id>${xml(product.id)}</g:id>`,
+      ...(displayId ? [`      <g:display_ads_id>${xml(displayId)}</g:display_ads_id>`] : []),
       `      <g:title>${xml(feedTitle)}</g:title>`,
       `      <g:description>${xml(feedDescription)}</g:description>`,
       `      <g:link>${xml(product.url)}</g:link>`,
