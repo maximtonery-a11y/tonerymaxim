@@ -26,8 +26,8 @@ async function checkCameraPromotion(page, origin, width, touch) {
 
   const guidePath = '/poradna/ako-najst-napln-fotoaparatom';
   await home.getByRole('link', { name: 'Ako to funguje?' }).click();
-  assert.equal(new URL(page.url()).pathname, guidePath);
-  assert.ok(await page.getByRole('heading', { level: 1, name: 'Ako nájsť správnu náplň fotoaparátom' }).isVisible());
+  await page.waitForURL(origin + guidePath);
+  await page.getByRole('heading', { level: 1, name: 'Ako nájsť správnu náplň fotoaparátom' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('.advice-body ol li').count(), 3);
   const cta = page.locator('.advice-conversion a:visible');
   assert.equal(await cta.getAttribute('href'), touch ? '/hladat-fotkou#skenovat' : '/hladat-fotkou');
@@ -52,10 +52,18 @@ async function checkCameraPromotion(page, origin, width, touch) {
   const noMatch = 'ZZQX998877TEST';
   await input.fill(noMatch);
   const retryLink = page.getByRole('link', { name: 'Skúsiť hľadanie fotoaparátom', exact: true });
+  await retryLink.click();
+  await page.waitForURL(origin + '/hladat-fotkou');
+  await page.locator('[data-live-start]').waitFor({ state: 'visible' });
+  await page.goto(origin);
+  await input.fill(noMatch);
   await retryLink.waitFor({ state: 'visible' });
   await input.press('Enter');
   await page.waitForURL('**/produkty?s=' + noMatch);
-  await page.locator('[data-no-results] .tm-photo-fallback').waitFor({ state: 'visible' });
+  await page.locator('[data-no-results] .tm-photo-fallback').click();
+  await page.waitForURL(origin + '/hladat-fotkou');
+  await page.locator('[data-gallery]').waitFor({ state: 'attached' });
+  await page.locator('[data-live-start]').waitFor({ state: 'visible' });
   await page.goto(origin + '/produkty?s=TN-2421');
   assert.equal(await page.locator('[data-catalog-grid] .tm-photo-fallback').count(), 0);
 }
