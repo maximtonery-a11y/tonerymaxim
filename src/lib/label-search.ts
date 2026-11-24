@@ -1,9 +1,9 @@
+import type { LabelCandidate } from './label-reference.ts';
+export { candidateText, barcodeGuidance, type LabelCandidate } from './label-reference.ts';
+
 // Only manufacturer references leave the device. Keep the entire suffix throughout matching.
 export type LabelLine = { text: string; confidence: number; confirmedList?: boolean; words?: { text: string; confidence: number; verifiedDigits?: boolean; legibleList?: boolean }[] };
-export type LabelCandidate = { brand: string; code: string; kind: 'printer' | 'supply'; certain: boolean; requiresPairing?: boolean };
 type Rule = { kind: LabelCandidate['kind']; brand: string; pattern: RegExp };
-
-export const barcodeGuidance = 'Vidím čiarový kód. Otočte kazetu alebo valec k nápisu s modelom, prípadne namierte na názov tlačiarne.';
 
 const printerFamilies = [
   { brand: 'HP', name: /\b(?:LASERJET|DESKJET|OFFICEJET|DESIGNJET|ENVY|SMART TANK|HP (?:COLOR )?LASER|LASER(?=\s+107[AW]\b))\b/i, number: /^(?:\d{4}[A-Z]{0,4}|107A|\d{3}(?:W|WE|NW|NWE|FNW|FDW))$/ },
@@ -35,14 +35,37 @@ const rules: Rule[] = [
   { kind: 'printer', brand: 'HP', pattern: /^(?:M|P|CP|CM)\d{3,5}[A-Z]{0,5}$/ },
   { kind: 'printer', brand: 'Epson', pattern: /^(?:ET|XP|WF|L)-?\d{3,5}[A-Z]{0,3}$/ },
 ];
-const brandPattern = /\b(HP|BROTHER|CANON|EPSON|KYOCERA|XEROX|SAMSUNG)\b/gi;
+// Several manufacturers sell printers with the same short badge, e.g. C530dn.
+const sharedPrinterModel = /^(?:C|B|MC|MB)\d{3,4}(?:DNW|DWN|DTN|DN|DW|NW|N|W)$/;
+const sharedPrinterBrands = ['OKI', 'Lexmark', 'Xerox', 'Samsung'];
+const brandPattern = /\b(HP|BROTHER|CANON|EPSON|KYOCERA|XEROX|SAMSUNG|OKI|LEXMARK)\b/gi;
 const privateLine = /\b(?:[S5]\s*[/|\\]\s*[I1]?N|S[1I]N(?=\s*[:#])|SN|SERIAL|SERI[AO]V[EÉ]|IMEI|MAC|PASSWORD|HESLO|WIFI|WI-FI|REGULATORY|RMN|EAN|UPC|GTIN)\b/i;
 const codeKey = (text: string) => text.toUpperCase().replace(/[^A-Z0-9]/g, '');
+// Once independent exposures agree on a complete marking, a narrower crop must
+// never substitute its prefix, even if the shop carries that shorter model.
+export function isShorterReading(candidate: LabelCandidate, confirmed: LabelCandidate[]) {
+  const code = codeKey(candidate.code);
+  return confirmed.some(full => {
+    if (candidate.kind !== full.kind || candidate.brand !== full.brand) return false;
+    const previous = codeKey(full.code);
+    return previous.length > code.length && previous.startsWith(code);
+  });
+}
+
 const clean = (text: string) => text.toUpperCase().replace(/[‐‑‒–—−]/g, '-');
 const codePrefix = /\b(DCP|MFC|HL|TN|DR|LC|BT|WT|CLI|PGI|GI|CL|PG|CRG|PFI|TK|MLT|CLT|ET|XP|WF|LBP)\s*-?\s+([A-Z]?\d)/g;
 const separateSuffix = /\b((?:(?:PGI|CLI|PG|CL|GI|LC|TN)-?\d{2,5}|\d{3}))\s+(XXL|XL|PGBK|BK|[CMY])\b/g;
+// On thick type a printed slash may look like an I. Recover just the separator
+// between two complete references. Never substitute a character inside either code.
+function labelSeparators(text: string) {
+  return clean(text)
+    .replace(/\b(C[BEFH]\d{3}[AX]D?)\s*\/?[I|\\]\s*(?=CRG[ -]?\d{3,4}\b)/g, '$1/')
+    .replace(/\b(CRG[ -]?\d{3,4}H?)\s*\/?[I|\\]\s*(?=(?:H-)?C[BEFH]\d{3}[AX]D?\b)/g, '$1/');
+}
 function tokens(text: string): string[] {
-  return clean(text).replace(codePrefix, '$1-$2').replace(/\b((?:TN|DR|LC)-[A-Z]?\d)[ \t]+(\d{2,4}[A-Z]{0,3})\b/g, '$1$2').replace(separateSuffix, '$1$2')
+  return labelSeparators(text)
+    .replace(/\b(?:H|HP)\s*-\s*(?=C[BEFH]\d{3}[A-Z]{1,3}\b)/g, '')
+    .replace(codePrefix, '$1-$2').replace(/\b((?:TN|DR|LC)-[A-Z]?\d)[ \t]+(\d{2,4}[A-Z]{0,3})\b/g, '$1$2').replace(separateSuffix, '$1$2')
     .replace(/\b(DR-?\d{2,5})\s+CL\b/g, '$1CL').replace(/\b(DR-?\d{2,5}CL)[ -]+(CMYK|CMY|BK|[CMY])\b/g, '$1-$2')
     .match(/[A-Z0-9]+(?:-[A-Z0-9]+)*/g) || [];
 }
@@ -96,6 +119,37 @@ function visibleLabelLines(lines: LabelLine[], privateCodes: Set<string>) {
   return useful;
 }
 
+// An aftermarket label can name a different orderable article for each printer brand.
+function printedBrandPair(line: string) {
+  const parts = labelSeparators(line).split(/[/／]/);
+  if (parts.length !== 2) return;
+  const left = tokens(parts[0]), right = tokens(parts[1]);
+  const canonCode = /^CRG-?\d{3,4}[A-Z]{0,2}$/;
+  for (const [hpSide, canonSide] of [[left, right], [right, left]]) {
+    const hp = hpSide.filter(code => hpOem.test(code));
+    const canon = canonSide.filter(code => canonCode.test(code));
+    if (hp.length === 1 && canon.length === 1) return [hp[0], canon[0]] as const;
+  }
+}
+
+export function hasSplitSupplyLabel(lines: LabelLine[]) {
+  return lines.some(({ text }) => {
+    if (privateLine.test(text)) return false;
+    const normalized = labelSeparators(text);
+    if (!/[/／]/.test(normalized)) return false;
+    if (printedBrandPair(normalized)) return true;
+    const sides = normalized.split(/[/／]/).map(part => part.trim());
+    if (sides.length !== 2) return false;
+    const hp = /\b(?:C[BEFH]\d{1,3}|[QW]\d{2,4})[A-Z]{0,3}\b/;
+    const canon = /\bCRG(?:[- ]?\d{0,4})?[A-Z]{0,2}\b/;
+    // A cropped side cannot identify a second brand. A complete same-brand
+    // commercial alias (such as HP 85A / CE285A) is still a valid single match.
+    const [a, b] = sides;
+    return (hp.test(a) && (canon.test(b) || !b)) || (hp.test(b) && (canon.test(a) || !a))
+      || (canon.test(a) && !b) || (canon.test(b) && !a);
+  });
+}
+
 // The full-frame pass also protects references seen beside serial numbers during a later crop.
 export function labelCandidates(lines: LabelLine[], privateCodes = new Set<string>(), previousBrands: string[] = []): LabelCandidate[] {
   const found = new Map<string, LabelCandidate>();
@@ -107,6 +161,16 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
   const useful = visibleLabelLines(lines, privateCodes);
   for (const [index, line] of useful.entries()) {
     let text = line.text;
+    const pair = printedBrandPair(text);
+    if (pair && pair.every(code => !privateCodes.has(codeKey(code)))) {
+      for (const [i, code] of pair.entries()) {
+        const brand = i === 0 ? 'HP' : 'Canon';
+        const item: LabelCandidate = { brand, code, kind: 'supply', certain: line.confidence >= 78 };
+        const key = 'supply:' + brand + ':' + codeKey(code);
+        if (!found.has(key) || item.certain) found.set(key, item);
+      }
+      continue;
+    }
     const listed = printedTonerCodes(text);
     const printedWord = listed.length > 1 && line.words?.find(word => printedTonerCodes(word.text).join('/') === listed.join('/'));
     const listConfidence = printedWord ? Math.max(printedWord.confidence,line.confidence) : line.confidence;
@@ -136,6 +200,16 @@ export function labelCandidates(lines: LabelLine[], privateCodes = new Set<strin
         if (printedNumber === token && !packageLabel && (!brands.size || brands.has('HP'))) {
           const key = 'printer:HP:' + model;
           if (!found.has(key)) found.set(key, { brand: 'HP', code: model, kind: 'printer', certain: false });
+        }
+        continue;
+      }
+      if (!packageLabel && sharedPrinterModel.test(token)) {
+        const manufacturer = sharedPrinterBrands.find(b => brands.has(b.toUpperCase()));
+        if (!brands.size || manufacturer) {
+          const brand = manufacturer || '';
+          const confidence = line.words?.find(w => codeKey(w.text) === codeKey(token))?.confidence ?? line.confidence;
+          const item: LabelCandidate = { brand, code: token, kind: 'printer', certain: !!brand && confidence >= 85 };
+          found.set('printer:' + brand + ':' + token, item);
         }
         continue;
       }
@@ -215,10 +289,26 @@ export function liveLabelCandidate(lines: LabelLine[], privateCodes: Set<string>
     const distinctivePrinter = item.kind === 'printer' && /^(?:DCP|MFC|HL|MF|LBP|ET|XP|WF)-?[A-Z]?\d/.test(item.code);
     const distinctiveSupply = item.kind === 'supply' && /^(?:TN|DR|LC|GI|PGI|CLI|CRG|PFI|TK|C13[TS])[-A-Z]*\d{2,}/.test(item.code);
     const confidence = line.words?.find(word => codeKey(word.text) === target)?.confidence ?? line.confidence;
+    if (item.kind === 'printer' && sharedPrinterModel.test(item.code) && tokens(line.text).includes(item.code)) return confidence >= 50;
     return (explicitBrand || distinctivePrinter || distinctiveSupply) && tokens(line.text).some(token => codeKey(token) === target)
       && confidence >= (distinctivePrinter || distinctiveSupply ? 76 : 85);
   });
   return hasClearCode ? item : undefined;
+}
+
+export function liveLabelOptions(lines: LabelLine[], privateCodes: Set<string>): LabelCandidate[] {
+  if (hasSplitSupplyLabel(lines)) {
+    const candidates = labelCandidates(lines, privateCodes);
+    for (const line of visibleLabelLines(lines, privateCodes)) {
+      const pair = printedBrandPair(line.text);
+      if (!pair || line.confidence < 55) continue;
+      const options = pair.map(code => candidates.find(item => item.kind === 'supply' && item.code === code));
+      if (options[0] && options[1]) return [options[0], options[1]];
+    }
+    return [];
+  }
+  const one = liveLabelCandidate(lines, privateCodes);
+  return one ? [one] : [];
 }
 
 // Each reading is an independent interpretation of the same row. Present exact alternatives
@@ -261,7 +351,9 @@ export function exactLabelOffers(candidate: LabelCandidate, response: LabelOffer
   return result.filter(item => {
     if (!item?.title || !allowedPath.test(item.url) || seen.has(item.url)) return false;
     const brands = clean(item.title).match(brandPattern) || [];
-    if (![...brands, (item.brand || '').toUpperCase()].includes(candidate.brand.toUpperCase())) return false;
+    if (candidate.brand) {
+      if (![...brands, (item.brand || '').toUpperCase()].includes(candidate.brand.toUpperCase())) return false;
+    } else if (!printer || !sharedPrinterModel.test(candidate.code) || !brands.length) return false;
     const identities = tokens(item.title + (printer ? '' : ' ' + (item.oem || '')));
     const matches = printed.length ? matchesPrintedToner(printed, item.title, item.oem || '') : identities.some((code, position) => {
       const key = codeKey(printer && identities[position + 1] === 'PLUS' ? code + 'PLUS' : code);

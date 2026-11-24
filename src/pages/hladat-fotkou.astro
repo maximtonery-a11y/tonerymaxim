@@ -16,7 +16,7 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
       <a class="back" href="/">← Späť na vyhľadávanie</a>
       <section aria-labelledby="label-heading">
         <h1 id="label-heading">Nájdite náplň fotoaparátom</h1>
-        <p>Namierte na názov tlačiarne alebo označenie tonera, atramentovej náplne či optického valca. Ponuka sa zobrazí automaticky.</p>
+        <p>Namierte na názov tlačiarne alebo označenie tonera, atramentovej náplne či optického valca. Po zachytení záberu môžete telefón odložiť.</p>
         <div class="capture" data-photo-controls hidden>
           <button type="button" class="primary" data-live-start aria-controls="live-camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v13H3z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
             Spustiť fotoaparát
@@ -27,6 +27,7 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
           <div class="live-header"><h2 id="camera-heading">Skenovanie štítku</h2><div data-live-actions></div></div>
           <div class="viewfinder">
             <video muted playsinline autoplay aria-label="Živý obraz zo zadného fotoaparátu"></video>
+            <button type="button" class="pick-row" aria-label="Zamerať riadok s označením. Šípkami hore a dole môžete presunúť rámček."></button>
             <div class="live-guide" data-live-guide aria-hidden="true"></div>
             <button type="button" class="live-zoom" data-live-zoom aria-label="Priblížiť obraz 2×" aria-pressed="false">2×</button>
           </div>
@@ -87,7 +88,10 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
   .live-header .secondary { background:#213b52; color:white; border-color:#6b8192; padding:.45rem .75rem; min-height:44px; font-size:.875rem; }
   .viewfinder { position:relative; min-height:0; overflow:hidden; background:#08131b; isolation:isolate; }
   .viewfinder video { display:block; width:100%; height:100%; object-fit:cover; transform:scale(var(--label-zoom,1)); }
+  .pick-row { position:absolute; inset:0; width:100%; height:100%; padding:0; border:0; background:transparent; cursor:crosshair; touch-action:manipulation; }
+  .pick-row:focus-visible { outline-offset:-4px; }
   .live-guide { position:absolute; inset:27% 4%; border:2px solid #fff; border-radius:12px; box-shadow:0 0 0 100vmax #06101c26, inset 0 0 0 1px #10263c66; pointer-events:none; }
+  .live-guide[data-picked] { bottom:auto; height:22%; box-sizing:border-box; transform:translateY(-50%); }
   .live-zoom { position:absolute; bottom:12px; right:max(12px,env(safe-area-inset-right)); border:1px solid #ffffff94; border-radius:24px; background:#122435dd; color:white; min-width:48px; height:44px; font:inherit; font-weight:600; cursor:pointer; }
   .live-zoom[aria-pressed="true"] { background:white; color:#102337; }
   .live-feedback { padding:.8rem 1rem; min-height:3.5rem; align-content:center; }

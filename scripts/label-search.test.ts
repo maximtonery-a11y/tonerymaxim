@@ -1,9 +1,46 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, labelCandidates, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
-import { createLiveConsensus, focusScore } from '../src/lib/label-camera-frame.ts';
+import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
+import { createLiveConsensus, focusScore, hasLabelStrokes } from '../src/lib/label-camera-frame.ts';
+import { isolateLightPrint } from '../src/lib/label-photo.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
+
+test('an unavailable full reference cannot turn into an orderable shorter reference', () => {
+  const full = read('Brother TN-9999');
+  assert.equal(isShorterReading(read('Brother TN-99')[0], full), true);
+  assert.equal(isShorterReading(read('Brother TN-9999')[0], full), false);
+  assert.equal(isShorterReading(read('Brother TN-2421')[0], full), false);
+  assert.equal(isShorterReading(read('Brother DCP-L3510CD')[0], read('Brother DCP-L3510CDW')), true);
+});
+
+test('a bold row can be captured without waiting for separate OCR character boxes', () => {
+  const width = 104, height = 32;
+  const pixels = new Uint8ClampedArray(width * height * 4);
+  function shade(pattern: (x: number, y: number) => number) {
+    for (let y = 0; y < height; y++) for (let x = 0; x < width; x++)
+      pixels[4 * (y * width + x) + 1] = pattern(x, y);
+    return hasLabelStrokes(pixels, width, height);
+  }
+  assert.equal(shade(x => 128 + x / 3), false);
+  assert.equal(shade(x => x < 52 ? 40 : 180), false);
+  assert.equal(shade((x, y) => y > 8 && y < 21 && x % 12 < 6 ? 48 : 188), true);
+});
+
+test('light printing on an uneven panel becomes dark ink without turning the panel into text', () => {
+  const width = 110, height = 38;
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const at = (y * width + x) * 4;
+    const stroke = x >= 48 && x <= 51 && y >= 11 && y <= 27;
+    data.fill(90 + Math.floor(x / 4) + (stroke ? 44 : 0), at, at + 3);
+    data[at + 3] = 255;
+  }
+  const mock = { width, height, getContext: () => ({ getImageData: () => ({ data }), putImageData() {} }) };
+  isolateLightPrint(mock as unknown as HTMLCanvasElement);
+  assert.equal(data[4 * (19 * width + 49)], 0);
+  for (const x of [1, 32, 53, 95]) assert.equal(data[4 * (19 * width + x)], 255);
+});
 
 test('frame selection favours sharply focused lettering over a softened view of the same lines', () => {
   const width = 96, height = 40;
@@ -198,4 +235,36 @@ test('live camera offers require a legible, unambiguous manufacturer reference',
   assert.equal(live('HP CE285A'), undefined);
   assert.equal(liveLabelCandidate([{ text: 'Brother TN-2421', confidence: 99,
     words: [{ text: 'TN-2421', confidence: 50 }] }], seen), undefined);
+});
+
+test('a dual-brand physical cartridge keeps both order codes including their complete suffix', () => {
+  const pair = (text: string, blocked = new Set<string>()) =>
+    liveLabelOptions([{ text, confidence: 92 }], blocked).map(candidateText);
+  for (const label of ['H-CF283X/CRG-737', 'CF283X / CRG 737', 'CRG-737 / HP-CF283X','H-CF283XICRG-737','H-CF283X/ICRG-737','CRG-737|CF283X']) {
+    assert.deepEqual(pair(label), ['HP CF283X', 'Canon CRG-737']);
+  }
+  assert.deepEqual(pair('Canon CRG-737'), ['Canon CRG-737']);
+  assert.deepEqual(pair('HP CF283X'), ['HP CF283X']);
+  assert.deepEqual(pair('HP 85A / CE285A'), ['HP CE285A']);
+  assert.deepEqual(pair('HP CE285A / 85A'), ['HP CE285A']);
+  assert.deepEqual(pair('H-CF283X/'), []);
+  assert.deepEqual(pair('/CRG-737'), []);
+  assert.deepEqual(pair('H-CF283X/CRG-7'), []);
+  const blocked = new Set<string>();
+  assert.deepEqual(pair('S/N: H-CF283XICRG-737', blocked), []);
+  assert.deepEqual(pair('S/N: H-CF283X/CRG-737', blocked), []);
+  assert.deepEqual(pair('H-CF283X/CRG-737', blocked), []);
+});
+
+test('an unbranded printer badge offers each exact catalogue model and retains an explicit brand', () => {
+  const refs = ['OKI C530dn', 'Lexmark C530DN', 'OKI C530', 'OKI C530DW', 'OKI C530DN2'].map((title,i) =>
+    ({ title, url: '/tlaciarne/' + title.split(' ')[0].toLowerCase() + '/model-' + i }));
+  for (const text of ['C530dn', 'OKI C530dn', 'Lexmark C530dn']) {
+    const [model] = liveLabelOptions([{ text, confidence: 92 }], new Set());
+    assert.equal(candidateText(model), text.toUpperCase().replace('LEXMARK', 'Lexmark'));
+    const hits = exactLabelOffers(model, { printers: refs }).map(hit => hit.title);
+    assert.deepEqual(hits, text === 'C530dn' ? ['OKI C530dn','Lexmark C530DN'] :
+      [text.startsWith('OKI') ? 'OKI C530dn' : 'Lexmark C530DN']);
+  }
+  assert.deepEqual(liveLabelOptions([{ text: 'S/N: C530dn', confidence: 98 }], new Set()), []);
 });
