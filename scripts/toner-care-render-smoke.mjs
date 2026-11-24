@@ -59,7 +59,7 @@ function request(path, body, method = 'GET', options = {}) {
     const isForm = body instanceof URLSearchParams;
     const data = body ? (isForm ? body.toString() : JSON.stringify(body)) : '';
     const req = http.request({ hostname: '127.0.0.1', port, path, method, headers: { ...(options.guest ? {} : { Cookie: cookie }), Origin: options.origin || 'http://127.0.0.1:' + port,
-      ...(body ? { 'Content-Type': isForm ? 'application/x-www-form-urlencoded' : 'application/json', 'Content-Length': Buffer.byteLength(data) } : {}) } }, res => {
+      ...(body ? { 'Content-Type': isForm ? 'application/x-www-form-urlencoded' : 'application/json', 'Content-Length': Buffer.byteLength(data) } : {}), ...(options.headers || {}) } }, res => {
       let text = ''; res.setEncoding('utf8'); res.on('data', chunk => text += chunk); res.on('end', () => resolve({ status: res.statusCode, text, headers: res.headers }));
     });
     req.on('error', reject); if (data) req.write(data); req.end();
@@ -78,6 +78,26 @@ try {
   assert.match(reminderPage.text, /toner-care-editor[^>]*open/); assert.match(reminderPage.text, /name="installed_at"/);
   assert.match(reminderPage.text, /name="expected_months"/); assert.match(reminderPage.text, /name="preferred_type"/);
   assert.match(reminderPage.text, /Toner som vymenil dnes/);
+  const proxyHeaders = host => ({ Host: 'tm-container.internal:4321', 'X-Forwarded-Host': host, 'X-Forwarded-Proto': 'https', 'X-Forwarded-Port': '443' });
+  const proxyOptions = { origin: 'https://www.tonerymaxim.sk', headers: proxyHeaders('www.tonerymaxim.sk') };
+  const emptyForm = () => new URLSearchParams({ title: '', return_to: '/ucet/upozornenia' });
+  for (const host of ['www.tonerymaxim.sk', 'tonerymaxim.sk', 'www.tonerymaxim.info', 'tonerymaxim.info']) {
+    const response = await request('/api/account/toner-care', emptyForm(), 'POST', { guest: true, origin: 'https://' + host, headers: proxyHeaders(host) });
+    assert.equal(response.status, 303, 'Trusted HTTPS proxy must reach authentication rather than fail CSRF: ' + host);
+    assert.match(response.headers.location, /^\/ucet\/upozornenia\?error=/);
+  }
+  for (const options of [
+    { ...proxyOptions, origin: 'https://evil.example.invalid' },
+    { ...proxyOptions, headers: proxyHeaders('www.tonerymaxim.sk.evil.example.invalid') },
+    { ...proxyOptions, headers: { ...proxyOptions.headers, 'X-Forwarded-Proto': 'http' } },
+    { ...proxyOptions, headers: { ...proxyOptions.headers, 'X-Forwarded-Proto': 'javascript' } },
+    { ...proxyOptions, origin: 'https://www.tonerymaxim.sk:444', headers: { ...proxyOptions.headers, 'X-Forwarded-Port': '444' } },
+  ]) {
+    const response = await request('/api/account/toner-care', new URLSearchParams({ title: 'Brother DCP-L3517CDW', action: 'disable' }), 'POST', options);
+    assert.equal(response.status, 403, 'Untrusted proxy/origin must not change a signed-in customer');
+  }
+  const ignoredPort = await request('/api/account/toner-care', emptyForm(), 'POST', { ...proxyOptions, guest: true, headers: { ...proxyOptions.headers, 'X-Forwarded-Port': '444' } });
+  assert.equal(ignoredPort.status, 303, 'Unconfigured forwarded port must not replace the canonical HTTPS port');
   const before = JSON.parse((await request('/__guard_fixture_customer')).text).customer;
   assert.equal(JSON.parse((await request('/__guard_fixture_customer')).text).writes.length, 0);
   const disabled = await request('/api/account/saved-printers', { title: 'Brother DCP-L3517CDW', action: 'disable' }, 'PUT');
@@ -91,8 +111,8 @@ try {
   assert.deepEqual(saved[1], JSON.parse(before.meta_data.find(item => item.key === 'tm_saved_printers').value)[1]);
   const refreshed = await request('/ucet/tlaciarne'); assert.match(refreshed.text, /Brother DCP-L3517CDW/); assert.match(refreshed.text, /Vypnutý ručne/);
   // Native forms exercise the exact API validation, origin gate and preservation path.
-  const native = fields => request('/api/account/toner-care', new URLSearchParams({ title: 'Brother DCP-L3517CDW', return_to: '/ucet/upozornenia', ...fields }), 'POST');
-  const savedForm = await native({ care_enabled: 'on', installed_at: '2026-11-20', expected_months: '6', preferred_type: 'original' });
+  const native = (fields, options) => request('/api/account/toner-care', new URLSearchParams({ title: 'Brother DCP-L3517CDW', return_to: '/ucet/upozornenia', ...fields }), 'POST', options);
+  const savedForm = await native({ care_enabled: 'on', installed_at: '2026-11-20', expected_months: '6', preferred_type: 'original' }, proxyOptions);
   assert.equal(savedForm.status, 303); assert.equal(savedForm.headers.location, '/ucet/upozornenia?saved=1');
   let state = JSON.parse((await request('/__guard_fixture_customer')).text);
   let firstPrinter = JSON.parse(state.customer.meta_data.find(item => item.key === 'tm_saved_printers').value)[0];
@@ -120,7 +140,7 @@ try {
     await verifySavedTonerCare('http://127.0.0.1:' + port);
   }
   const guide = await request('/toner-bez-starosti'); assert.equal(guide.status, 200); assert.match(guide.text, /každých 7 dní/);
-  console.log(JSON.stringify({ ok: true, existingRoutes: paths.length, unrelatedCustomerSettingsPreserved: true, otherPrinterUnchanged: true, disableSurvivesReload: true, historyRetained: true }));
+  console.log(JSON.stringify({ ok: true, existingRoutes: paths.length, trustedProxyHosts: 4, rejectedProxyOriginCases: 5, proxyFormSave: true, unrelatedCustomerSettingsPreserved: true, otherPrinterUnchanged: true, disableSurvivesReload: true, historyRetained: true }));
   if (process.argv.includes('--serve')) {
     await request('/__guard_fixture_reset');
     console.log('Guard fixture ready at http://127.0.0.1:' + port + '/');
