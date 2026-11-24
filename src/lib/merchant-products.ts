@@ -3,6 +3,7 @@ import { compactKey, stripHtml } from "./tm-products-cache.ts";
 import { cleanGtin, cleanMpn, cleanProductBrand } from "./product-identifiers.ts";
 import { publicationEligibleProduct } from "./product-publication-policy.ts";
 import { buildProductSeo } from "./catalog-seo-text.ts";
+import { isSearchPack } from "./catalog-query.ts";
 import { isAvailableNow } from "./product-availability.ts";
 
 export type MerchantProductType = "compatible" | "original" | "renovated" | "product";
@@ -250,8 +251,14 @@ export function toMerchantProduct(product: TmProduct, origin: string, allProduct
   const price = Number(product.price || 0);
   const inStock = isAvailableNow(product);
   const shoppingEligible = productType === "compatible" && inStock &&
-    Number.isFinite(price) && Math.round(price * 100) > 1000 &&
+    Number.isFinite(price) && Number(price.toFixed(2)) > 10 &&
     (material === "toner" || material === "ink");
+  let shoppingLabel = "organic-only";
+  if (shoppingEligible) {
+    if (isSearchPack(product)) shoppingLabel = "ads-set";
+    else if (price >= 25) shoppingLabel = "ads-premium";
+    else shoppingLabel = "ads-compatible";
+  }
   const images = productImages(origin, product);
   const ids = identifiers(product, productType);
   const exactOemCodes = oemCodes(product);
@@ -278,7 +285,7 @@ export function toMerchantProduct(product: TmProduct, origin: string, allProduct
     labels: [
       productType,
       material,
-      shoppingEligible ? "ads-compatible" : "organic-only",
+      shoppingLabel,
       oemFamilyLabel(exactOemCodes),
       price >= 29 ? "free-shipping" : "paid-shipping",
     ],
