@@ -621,7 +621,20 @@ async function verifyEngine(origin, engine, configurations, options) {
         return route.abort();
       });
       try {
-        if ([320, 390, 768, 1280].includes(width)) await checkAccountNavigation(page, origin, layout);
+        if ([320, 390, 768, 1280].includes(width)) {
+          // Account sign-in and consent must not change the shopping fixture's state.
+          const accountContext = await browser.newContext({ viewport: { width, height }, isMobile: touch, hasTouch: touch, reducedMotion: 'reduce' });
+          await accountContext.route(url => url.origin !== origin || purchaseRoutes.includes(url.pathname), route => {
+            const url = new URL(route.request().url());
+            if (url.origin === origin) unexpected.push(url.pathname);
+            return route.abort();
+          });
+          const accountPage = await accountContext.newPage();
+          accountPage.setDefaultTimeout(8000);
+          accountPage.on('pageerror', err => unexpected.push(err.message));
+          try { await checkAccountNavigation(accountPage, origin, layout); }
+          finally { await accountContext.close(); }
+        }
         await checkSearchWarmup(page, origin, width === 390);
         await checkCameraPromotion(page, origin, width, touch);
         if (width === 390) {
