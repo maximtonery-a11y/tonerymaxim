@@ -176,11 +176,14 @@ test("Merchant XML obsahuje povinné Google atribúty, dopravu a cache validáci
   assert.match(source, /status: 304/);
 });
 
-test("Merchant feed povoľuje platené Shopping reklamy iba kompatibilným produktom", () => {
+test("Merchant feed povoľuje Shopping iba skladovým kompatibilným náplniam nad 10 EUR", () => {
   const products = read("src/lib/merchant-products.ts");
   const feed = read("src/lib/merchant-feed.ts");
-  assert.match(products, /productType === "compatible" \? \[\] : \["Shopping_ads"\]/);
-  assert.match(products, /productType === "compatible" \? "ads-compatible" : "organic-only"/);
+  assert.match(products, /productType === "compatible" && inStock/);
+  assert.match(products, /Math.round\(price \* 100\) > 1000/);
+  assert.match(products, /material === "toner" \|\| material === "ink"/);
+  assert.match(products, /shoppingEligible \? \[\] : \["Shopping_ads"\]/);
+  assert.match(products, /shoppingEligible \? "ads-compatible" : "organic-only"/);
   assert.doesNotMatch(products, /productType === "compatible" \|\| productType === "renovated" \? "ads-primary"/);
   assert.match(feed, /g:excluded_destination/);
 });
