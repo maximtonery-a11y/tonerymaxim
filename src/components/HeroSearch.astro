@@ -21,7 +21,6 @@ interface Props { showPhotoSearch: boolean }
         <input type="search" name="s" data-smart-search-input placeholder="Zadajte model tlačiarne alebo označenie toneru" />
         <button type="submit">Vyhľadať</button>
       </form>
-      {Astro.props.showPhotoSearch && <PhotoSearchPromo layout="desktop" />}
 
       <div class="examples">
         <span class="examples-label">Príklady:</span>
@@ -31,6 +30,7 @@ interface Props { showPhotoSearch: boolean }
         <a class="chip" href="/produkty?s=TN-2421">TN-2421</a>
         <a class="chip" href="/produkty?s=W1420A">W1420A</a>
       </div>
+      {Astro.props.showPhotoSearch && <PhotoSearchPromo layout="desktop" />}
     </div>
 
     <div class="hero-art">

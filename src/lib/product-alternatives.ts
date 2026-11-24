@@ -88,6 +88,56 @@ function match(current: Profile, candidate: Profile) {
   return { exact, shared, partial, comparable, basis, difference };
 }
 
+// Recognize capacity suffixes within one series and ink/toner slot. HP A/X toner
+// codes intentionally stay exact: their supported printer ranges can differ.
+const capacityReference = /^(Brother|Canon|HP|Epson)\s+((?:LC|TN|PGI|CLI|PG|CL|CRG)[- ]?\d{2,4}|\d{2,3})[- ]?(XXL|XL|H)?[- ]?(PGBK|BK|GY|PB|[CMY])?[- ]?(XXL|XL)?(?=$|[\s(])/i;
+const supplySeries: Record<string, RegExp> = {
+  brother: /^(?:LC|TN)\d+$/, canon: /^(?:PGI|CLI|PG|CL|CRG)\d+$/, hp: /^\d{2,3}$/, epson: /^\d{2,3}$/,
+};
+
+function parseCapacityReference(text: string) {
+  const parts = capacityReference.exec(text);
+  if (!parts || (parts[3] && parts[5])) return;
+  const brand = parts[1].toLowerCase();
+  const stem = parts[2].replace(/[- ]/g, '').toUpperCase();
+  const slot = (parts[4] || '').toUpperCase();
+  const suffix = (parts[3] || parts[5] || '').toUpperCase();
+  if (!supplySeries[brand].test(stem) || (stem.startsWith('LC') && !slot) || (suffix === 'H' && !stem.startsWith('CRG'))) return;
+  return { brand, family: stem + ':' + slot, level: suffix === 'XXL' ? 2 : Number(Boolean(suffix)), text: parts[0].trim() };
+}
+
+type ScanSupplyRow = { product: TmProduct; brand: string; printers: { key: string }[] };
+
+export function compatibleScanAlternatives<T extends ScanSupplyRow>(query: string, rows: T[]): T[] {
+  const target = parseCapacityReference(query);
+  if (!target || target.text !== query) return [];
+  const exact: T[] = [];
+  const variants: T[] = [];
+  for (const row of rows) {
+    if (row.brand.toLowerCase() !== target.brand) continue;
+    const ref = parseCapacityReference(row.product.name || '');
+    if (!ref || ref.brand !== target.brand || ref.family !== target.family || specialChipVariantKey(row.product)) continue;
+    if (ref.level === target.level) exact.push(row);
+    else if (ref.level > target.level && row.product.product_type_key === 'compatible') variants.push(row);
+  }
+  if (!exact.length || !variants.length) return [];
+  // A pack may remain an exact offer, but cannot establish compatibility for a single cartridge.
+  const singles = exact.filter(row => packSize(row.product) === 1);
+  const references = singles.map(row => profile(row.product));
+  const models = new Set(singles.flatMap(row => row.printers.map(p => p.key)));
+  const provenBase = singles.some(row => row.product.product_type_key === 'original')
+    && singles.every(row => row.printers.length > 0) && models.size > 0
+    && [...models].every(model => /[a-z]/i.test(model) && /\d/.test(model));
+  if (!provenBase) return [];
+  return variants.filter(row => {
+    const p = profile(row.product);
+    if ((p.kind !== 'ink' && p.kind !== 'toner') || p.size !== 1 || !p.color || p.extras || !(Number(row.product.price) > 0)) return false;
+    if (!references.every(r => r.brand === p.brand && r.kind === p.kind && r.color === p.color && r.slot === p.slot && !r.extras)) return false;
+    const supported = new Set(row.printers.map(printer => printer.key));
+    return [...models].every(model => supported.has(model));
+  });
+}
+
 export function selectProductAlternatives(current: TmProduct, candidates: Iterable<TmProduct>) {
   const baseline = profile(current);
   const seen = new Set([String(current.id)]);

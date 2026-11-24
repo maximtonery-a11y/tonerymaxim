@@ -70,6 +70,12 @@ export async function verifyMobileLabel(page, origin) {
     await page.waitForFunction(() => document.querySelector('#label-status')?.textContent.includes('nepodarilo prečítať'));
     assert.deepEqual(lookup(), ['Brother TN-2421'], 'even a tight strip cannot resurrect a serial');
 
+    await gallery.setInputFiles(await labelFile('Brother LC-123 Bk'));
+    const blackInk = page.locator('[data-matches] a');
+    await blackInk.filter({ hasText: 'LC-123XLBK' }).waitFor({ state: 'visible', timeout: 60_000 });
+    assert.match(await blackInk.first().innerText(), /LC-123XLBK/);
+    assert.match(await blackInk.nth(1).innerText(), /LC-123BK/);
+
     await page.locator('#label-code').fill('Brother TN-24219');
     await page.locator('form.manual button').click();
     await page.waitForFunction(() => document.querySelector('#label-status')?.textContent.includes('Presnú zhodu'));

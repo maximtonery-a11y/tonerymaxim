@@ -39,6 +39,10 @@ const products = [product, variant(12, 'original', 104.66), variant(13, 'renovat
   ].map(([brand, oem, printer], i) => ({ ...variant(901+i, 'compatible', 19),
     name: brand + ' ' + oem + ' čierny kompatibilný toner', product_brand: brand,
     oem_codes: oem, compatible_printers: [printer] })),
+  ...[['LC-123BK', 'original'], ['LC-123XLBK', 'compatible']].map(([code, type], i) => ({
+    ...variant(920 + i, type, i ? 3.40 : 28.86, code), name: 'Brother ' + code + ' čierna atramentová náplň',
+    compatible_printers: ['Brother DCP-J152W'],
+  })),
   { id: 91, sku: 'PAPER', slug: 'kancelarsky-papier-a4-80g-500-harkov', name: 'Kancelársky papier A4', price: 6,
     product_type_key: 'product', stock_status: 'instock', stock_quantity: 30, compatible_printers: [] }];
 const orders = Array.from({ length: 61 }, (_, index) => ({ id: 701 - index, number: String(701 - index), customer_id: 7, status: index === 1 ? 'cancelled' : 'completed',

@@ -316,3 +316,46 @@ test('a clear complete Brother badge is distinctive even when the brand is on a 
   assert.equal(read('DCP-7070DW', 80)[0].certain, false);
   assert.deepEqual(read('S/N: DCP-7070DW'), []);
 });
+
+test('only a single compatible supply covering every reference printer can extend a scanned code', async () => {
+  const { compatibleScanAlternatives } = await import('../src/lib/product-alternatives.ts');
+  const models = Array.from({ length: 83 }, (_, i) => 'brotherdcpj' + i);
+  function row(code: string, type: string, printers = models, color = 'Čierna', extra = '') {
+    return { brand: 'Brother', printers: printers.map(key => ({ key })), product: {
+      product_brand: 'Brother', product_type_key: type, price: 8, color,
+      name: 'Brother ' + code + ' čierna atramentová náplň ' + extra,
+    } };
+  }
+  const base = row('LC-123BK', 'original');
+  const xl = row('LC-123XLBK', 'compatible');
+  const query = 'Brother LC-123BK';
+  const rejected = [row('LC-123XLBK', 'compatible', models.slice(0, 82)), row('LC-123XLBK', 'compatible', []),
+    row('LC-123XLC', 'compatible'), row('LC-123XLBK', 'compatible', models, 'Žltá'),
+    row('LC-123XLBK', 'compatible', models, 'Čierna', 'multipack'),
+    row('LC-123XLBK', 'compatible', models, 'Čierna', 'bez čipu'), row('LC-123XLBK', 'renovated')];
+  assert.deepEqual(compatibleScanAlternatives(query, [base, ...rejected, xl]), [xl]);
+  assert.deepEqual(compatibleScanAlternatives(query, [xl]), []);
+  assert.deepEqual(compatibleScanAlternatives(query, [row('LC-123BK', 'original', []), xl]), []);
+  assert.deepEqual(compatibleScanAlternatives(query, [base, row('LC-123BK', 'compatible', ['brotherextra1']), xl]), []);
+  for (const text of ['Brother LC-123 BK','Brother LC-123XL BK', 'Brother LC-123 XL BK']) {
+    assert.equal(read(text)[0]?.code.replace('-', ''), text.includes('XL') ? 'LC123XLBK' : 'LC123BK');
+  }
+  const canon = (code: string, type: string) => ({ ...base, brand: 'Canon', product: {
+    ...base.product, product_brand: 'Canon', product_type_key: type, name: 'Canon ' + code + ' čierna atramentová náplň',
+  } });
+  assert.equal(compatibleScanAlternatives('Canon PG-545', [canon('PG-545', 'original'), canon('PG-545XL', 'compatible')]).length, 1);
+  const hp = (code: string, type: string) => ({ ...base, brand: 'HP', product: {
+    ...base.product, product_brand: 'HP', product_type_key: type, name: 'HP ' + code + ' čierny toner',
+  } });
+  assert.deepEqual(compatibleScanAlternatives('HP CF283A', [hp('CF283A', 'original'), hp('CF283X', 'compatible')]), []);
+});
+
+test('scanner keeps trusted compatible alternatives first and binds them to the exact scanned label', () => {
+  const base = { title: 'Brother LC-123BK originál', url: '/produkt/original', type: 'original' };
+  const xl = { title: 'Brother LC-123XLBK kompatibilná', url: '/produkt/compatible', type: 'compatible', verifiedForLabel: 'Brother LC-123BK' };
+  const input = read('Brother LC-123 Bk')[0];
+  assert.deepEqual(exactLabelOffers(input, { products: [base, xl] }), [xl, base]);
+  assert.deepEqual(exactLabelOffers(read('Brother LC123BK')[0], { products: [base, xl] }), [xl, base]);
+  assert.deepEqual(exactLabelOffers(input, { products: [base, { ...xl, verifiedForLabel: 'Brother LC-123Y' }] }), [base]);
+  assert.deepEqual(exactLabelOffers(input, { products: [{ ...xl, url: 'https://example.invalid/' }] }), []);
+});

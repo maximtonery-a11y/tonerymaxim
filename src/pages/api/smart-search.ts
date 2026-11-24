@@ -4,6 +4,8 @@ import { analyzeCatalogQuery, findExactPrinterModelMatches, findExactProductIden
 import { entitySlug, printerBrandForName } from "../../lib/seo-catalog.ts";
 import { exactLabelOffers, labelCandidates, matchesPrintedToner, printedTonerCodes } from "../../lib/label-search.ts";
 
+import { compatibleScanAlternatives } from "../../lib/product-alternatives.ts";
+
 export const prerender = false;
 
 const BRANDS = ["HP", "Canon", "Brother", "Epson", "Xerox", "Samsung", "Lexmark", "Kyocera", "OKI", "Ricoh", "Utax", "Toshiba", "Panasonic", "Dell", "Konica Minolta", "Sharp", "Pantum", "Philips", "IBM"];
@@ -809,6 +811,17 @@ export const GET: APIRoute = async ({ url }) => {
           const indexed = index.items.find((entry) => String(entry.product?.id) === String(item.id));
           return !indexed || !isSpecialChipVariantProduct(indexed.product);
         });
+    // Use complete model lists from the server index, before the response trims them.
+    // Preserve original OEM aliases and results for all regular text queries.
+    let labelProducts = products;
+    if (includeOem && !scannerPrinter && q.length <= 64) {
+      const compatible = compatibleScanAlternatives(q, index.items);
+      if (compatible.length) {
+        const compatibleIds = new Set(compatible.map(row => row.product.id));
+        const alternatives = compatible.map(item => ({ ...productItem(item, 90, true), verifiedForLabel: q }));
+        labelProducts = sortSuggestionProducts([...products.filter(p => !compatibleIds.has(p.id)), ...alternatives], q);
+      }
+    }
     const staticResults = filteredStaticSuggestions(query);
     // Ak názov/SKU presne obsahuje hľadané označenie náplne, modely tlačiarní
     // s podobným číslom (6520, M652...) nesmú prekryť správne produkty.
@@ -849,7 +862,7 @@ export const GET: APIRoute = async ({ url }) => {
       query: q,
       printers: printerItems,
       productGroups: makeProductGroups(products, q, exactPrinterProducts.size > 0),
-      products: products.slice(0, 12),
+      products: labelProducts.slice(0, 12),
       brands: [...brandMap.values()].slice(0, 8),
       categories: [...categoryMap.values()].slice(0, 8),
       didYouMean: products.length === 0 && printerItems.length === 0 ? didYouMeanCode(index, q) : null,

@@ -15,6 +15,15 @@ async function checkCameraPromotion(page, origin, width, touch) {
   assert.ok(await start.isVisible());
   assert.equal(await start.getAttribute('href'), touch ? '/hladat-fotkou#skenovat' : '/hladat-fotkou');
   assert.equal(await page.locator('.photo-promo:visible').count(), 1);
+  const exampleLinks = home.locator(touch ? '.tm-mobile-search-examples a' : '.examples a');
+  const positions = await exampleLinks.evaluateAll(links => links.map(a => a.getBoundingClientRect().top));
+  assert.equal(positions.length, touch ? 3 : 5);
+  if (touch) assert.equal(new Set(positions).size, 1, 'mobile examples fit on one row');
+  const searchBox = await home.locator('form[data-smart-search]').boundingBox();
+  const examplesBox = await home.locator(touch ? '.tm-mobile-search-examples' : '.examples').boundingBox();
+  const cameraBox = await home.locator('.photo-promo').boundingBox();
+  assert.ok(searchBox.y + searchBox.height <= examplesBox.y + 1);
+  assert.ok(examplesBox.y + examplesBox.height <= cameraBox.y + 1);
   const qr = page.locator('.photo-qr');
   assert.equal(await qr.isVisible(), !touch);
   const loaded = await page.evaluate(() => performance.getEntriesByType('resource').map(e => e.name));
