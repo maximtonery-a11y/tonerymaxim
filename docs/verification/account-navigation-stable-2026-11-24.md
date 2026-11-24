@@ -55,6 +55,8 @@ Ručné overenie zostaveného náhľadu v cloudovom prehliadači: obe menu pri 3
 
 Prvý nový GitHub beh `45453288341` zachytil prekážku v pridanom browser scenári: čerstvý kontext mal nad menu otvorenú cookie lištu. V scenári sa doplnilo jej bežné odmietnutie pred interakciou s účtom; kontrola klikateľnosti sa neobchádza vynúteným kliknutím a produkčný kód sa tým nemení. Skúška účtu používa samostatný browser kontext, aby jej prihlásenie a voľba cookies neovplyvnili pôvodné nákupné scenáre. Neúspešný beh sa nezlúčil.
 
+Beh `45454636897` následne ukončila výnimka `Route is already handled` pri uvoľňovaní pozastavenej testovacej navigácie. Scenár používa priamy dotyk namiesto programového aktivovania odkazu; pri ukončení držanej požiadavky zachová prípadnú pôvodnú chybu a úspešná vetva vyžaduje dokončenie navigácie bez chyby routovania. Limity odozvy, jediného zvýraznenia a jednej navigácie zostávajú zachované. Táto oprava patrí len testovaciemu kódu.
+
 Záverečný GitHub stav, presný commit a zlúčenie sa evidujú v [PR #38](https://github.com/maximtonery-a11y/tonerymaxim/pull/38). Pred zlúčením musia prejsť všetky povinné joby vrátane nákupných scenárov a GoPay. Táto lokálna skúška neposiela produkčné e-maily, nemení účty zákazníkov a nestrháva platby. Redeploy v Coolify a odozva fyzického Android telefónu sú samostatné následné overenie.
 
 Pri ďalšej úlohe začni aktuálnym stavom PR #38, týmto záznamom a aktuálnou hlavnou vetvou. Starú vetvu z 19. novembra nekopíruj cez novší web. Existujúce nálezy závislostí a testy vyžadujúce reálny lokálny katalóg ostávajú výslovne evidované; celá aplikácia sa neoznačuje za bezchybnú na základe testov tejto úpravy.

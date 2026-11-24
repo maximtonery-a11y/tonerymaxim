@@ -35,7 +35,12 @@ async function checkAccountNavigation(page, origin, [width, height, touch]) {
   const destination = origin + '/ucet/tlaciarne';
   let release;
   const gate = new Promise(resolve => { release = resolve; });
-  const hold = route => gate.then(() => route.continue());
+  let routeFailure;
+  const hold = async route => {
+    await gate;
+    try { await route.continue(); }
+    catch (error) { routeFailure = error; }
+  };
   let requests = 0;
   const record = request => { if (request.isNavigationRequest() && request.url() === destination) requests++; };
   page.on('request', record);
@@ -43,9 +48,11 @@ async function checkAccountNavigation(page, origin, [width, height, touch]) {
   try {
     const started = page.waitForRequest(request => request.isNavigationRequest() && request.url() === destination);
     const target = nav.getByRole('link', { name: 'Tlačiarne', exact: true });
-    // Native anchor activation returns before document navigation completes.
+    const box = await target.boundingBox();
+    assert.ok(box);
+    // Raw touch input does not wait for the intentionally held navigation.
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
     const immediate = await target.evaluate(el => {
-      el.click();
       return { pending: el.hasAttribute('data-navigation-pending'), busy: el.closest('nav').getAttribute('aria-busy') };
     });
     assert.deepEqual(immediate, { pending: true, busy: 'true' });
@@ -54,11 +61,12 @@ async function checkAccountNavigation(page, origin, [width, height, touch]) {
       .filter(child => !['rgba(0, 0, 0, 0)', 'transparent'].includes(getComputedStyle(child).backgroundColor))
       .map(child => child.textContent.trim()));
     assert.deepEqual(highlighted, ['Tlačiarne']);
-    await target.evaluate(el => el.click());
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
     assert.equal(requests, 1, 'Repeated activation must not restart a pending navigation');
     release();
     await page.waitForURL(destination);
     await page.getByRole('heading', { level: 1, name: 'Moje tlačiarne', exact: true }).waitFor();
+    assert.equal(routeFailure, undefined);
     assert.equal(await page.locator('[data-account-mobile-nav]').getAttribute('aria-busy'), null);
     await page.goBack();
     await page.getByRole('heading', { level: 1, name: 'Objednávky', exact: true }).waitFor();
