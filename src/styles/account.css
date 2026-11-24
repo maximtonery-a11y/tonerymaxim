@@ -2474,37 +2474,51 @@
 .auth-form .tm-check a{display:inline;color:var(--tm-blue);font-weight:750;text-decoration:underline;text-underline-offset:2px}
 @media(max-width:620px){.auth-form .tm-check{grid-template-columns:17px minmax(0,1fr)!important;gap:9px!important;font-size:13px!important;line-height:1.4!important}.auth-form .tm-check>input{width:15px!important;height:15px!important}.auth-form .tm-check small{font-size:11.5px;line-height:1.35}}
 
-/* Account navigation uses the existing URLs; it never writes customer settings. */
-.account-mobile-nav, .account-mobile-fallback { display: none; }
-.account-mobile-drawer { padding: 0; border: 0; border-radius: 24px 24px 0 0; width: min(100%, 600px); max-width: 100%; max-height: min(80dvh, 740px); margin: auto auto 0; color: var(--tm-navy); background: #fff; box-shadow: 0 -16px 60px #061b3a26; }
-.account-mobile-drawer::backdrop { background: #061b3a80; }
-.account-mobile-drawer-head { display: flex; gap: 16px; align-items: center; justify-content: space-between; padding: 16px 20px 8px; }
-.account-mobile-drawer-head h2 { margin: 0; font-size: 22px; }
-.account-mobile-drawer-head button { width: 48px; height: 48px; border: 0; border-radius: 12px; background: #f1f5fa; color: var(--tm-navy); font-size: 30px; }
-.account-mobile-drawer nav { padding: 0 20px max(20px, env(safe-area-inset-bottom, 0px)); }
-.account-mobile-drawer nav[hidden] { display: none; }
-.account-mobile-drawer-link { display: block; width: 100%; box-sizing: border-box; padding: 16px 4px; min-height: 52px; border: 0; border-bottom: 1px solid var(--tm-line); background: #fff; color: var(--tm-navy); font: inherit; font-size: 16px; text-align: left; text-decoration: none; touch-action: manipulation; }
-.account-mobile-drawer-link[aria-current="page"] { font-weight: 800; color: #075ea8; }
-.account-mobile-drawer-link[data-navigation-pending] { background: #fff2c4; color: var(--tm-navy); }
+/* One route inventory for desktop/mobile. Keep control height independent of the
+   dynamic Android safe inset: only the dock position follows browser controls. */
+.account-dock { display: none; }
+.account-reminder-guide { font-size: 16px; line-height: 1.6; margin: 0 0 20px; }
+.account-reminder-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-bottom: 20px; }
+.toner-care-editor { grid-column: 1 / -1; min-width: 0; border-top: 1px solid var(--tm-line); }
+.toner-care-editor > summary { padding: 15px 2px; min-height: 48px; box-sizing: border-box; color: #075ea8; font-size: 15px; font-weight: 800; cursor: pointer; touch-action: manipulation; }
+.toner-care-editor > .toner-care-form { margin: 0; padding: 12px 0 0; border: 0; }
+.toner-care-editor .toner-care-fields { grid-template-columns: 1fr; }
+.toner-care-editor .toner-care-fields label > span, .toner-care-editor .toner-care-form-note { font-size: 14px; }
+.toner-care-editor .account-input { width: 100%; min-width: 0; box-sizing: border-box; font-size: 16px; min-height: 48px; }
+.toner-care-card [data-toner-care-disable-form][hidden] { display: none !important; }
+.toner-care-card .saved-printer-mini-actions form { margin: 0; }
+.toner-care-card .toner-care-status strong { font-size: 15px; }
+.toner-care-card .toner-care-status span { font-size: 14px; }
+.toner-care-switch:focus-within { outline: 2px solid #075ea8; outline-offset: 3px; }
 @media (max-width: 1100px) {
-  .account-page { padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px)); }
-  .account-mobile-nav { position: fixed; z-index: 150; inset: auto 0 0; height: calc(74px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); align-items: center; background: #fff; border-top: 1px solid var(--tm-line); box-shadow: 0 -4px 18px #061b3a0a; padding: 6px max(4px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px)); transform: translate3d(0, 0, 0); backface-visibility: hidden; contain: layout paint; isolation: isolate; touch-action: manipulation; }
-  .account-mobile-nav > a, .account-mobile-nav > button { min-width: 0; min-height: 0; height: 58px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 5px; margin: 0; padding: 5px 1px; border: 0; border-radius: 12px; background: transparent; color: #53647c; font: inherit; font-size: 12px; font-weight: 700; line-height: 1.2; text-decoration: none; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: pointer; transition: none; }
-  .account-mobile-nav > a > *, .account-mobile-nav > button > * { pointer-events: none; }
+  :root { --account-safe-current: env(safe-area-inset-bottom, 0px); --account-safe-max: env(safe-area-max-inset-bottom, 36px); }
+  .account-page { padding-bottom: calc(82px + var(--account-safe-max)); }
+  .account-dock { position: fixed; z-index: 10000; inset-inline: 0; bottom: calc(var(--account-safe-current) - var(--account-safe-max)); display: block; padding-bottom: var(--account-safe-max); background: #fff; box-shadow: 0 -4px 18px #061b3a0a; }
+  .account-mobile-nav { position: relative; height: 74px; box-sizing: border-box; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; gap: 2px; padding: 7px max(4px, env(safe-area-inset-right, 0px)) 8px max(4px, env(safe-area-inset-left, 0px)); border-top: 1px solid var(--tm-line); background: #fff; touch-action: manipulation; }
+  .account-mobile-nav > a, .account-more > summary { box-sizing: border-box; min-width: 0; height: 58px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 5px; margin: 0; padding: 5px 0; border: 0; border-radius: 12px; background: transparent; color: #53647c; font: inherit; font-size: 12px; font-weight: 700; line-height: 1.2; text-decoration: none; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: pointer; transition: none; }
+  .account-mobile-nav > a > *, .account-more > summary > * { pointer-events: none; }
   .account-mobile-nav svg { width: 22px; height: 22px; flex-shrink: 0; }
-  .account-mobile-nav > a > span, .account-mobile-nav > button > span { font-size: clamp(10px, 2.8vw, 12px); letter-spacing: -.12px; }
-  .account-mobile-nav [aria-current="page"], .account-mobile-nav .is-active, .account-mobile-nav [aria-expanded="true"], .account-mobile-nav [data-navigation-pending], .account-mobile-nav > :active { background: #fff2c4; color: var(--tm-navy); }
-  .account-mobile-nav[aria-busy="true"] > [aria-current="page"]:not([data-navigation-pending]), .account-mobile-nav[aria-busy="true"] > .is-active:not([data-navigation-pending]) { background: transparent; color: #53647c; }
-  @supports selector(:has(*)) {
-    .account-mobile-nav:has(> :active) > [aria-current="page"]:not(:active):not([data-navigation-pending]), .account-mobile-nav:has(> :active) > .is-active:not(:active):not([data-navigation-pending]) { background: transparent; color: #53647c; }
-  }
-  .account-mobile-nav > :focus-visible { outline: 2px solid #075ea8; outline-offset: -3px; }
-  .account-page .account-menu-toggle { display: none; }
-  .account-page .tm-ai-assistant:not(.is-open) { right: 16px !important; bottom: calc(94px + env(safe-area-inset-bottom, 0px)) !important; }
+  .account-mobile-nav > a > span, .account-more > summary > span { font-size: clamp(10px, 2.8vw, 12px); letter-spacing: -.12px; }
+  .account-mobile-nav > [aria-current="page"], .account-mobile-nav [data-navigation-pending], .account-mobile-nav > a:active, .account-more > summary:active { background: #fff2c4; color: var(--tm-navy); }
+  .account-mobile-nav[aria-busy="true"] > [aria-current="page"]:not([data-navigation-pending]) { background: transparent; color: #53647c; }
+  .account-mobile-nav a:focus-visible, .account-more summary:focus-visible, .account-more button:focus-visible { outline: 2px solid #075ea8; outline-offset: -3px; }
+  .account-more[open] > summary { background: #edf3fa; color: var(--tm-navy); }
+  .account-more { min-width: 0; }
+  .account-more > summary { list-style: none; }
+  .account-more > summary::-webkit-details-marker { display: none; }
+  .account-more-panel { position: absolute; inset-inline: 8px; bottom: calc(100% + 8px); max-height: 70vh; max-height: 70svh; overflow-y: auto; overscroll-behavior: contain; padding: 14px; border: 1px solid var(--tm-line); border-radius: 18px; background: #fff; box-shadow: 0 -8px 36px #061b3a29; color: var(--tm-navy); }
+  .account-more-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .account-more-head h2 { font-size: 20px; margin: 0; }
+  .account-more-head button { height: 44px; width: 44px; border: 0; border-radius: 10px; background: #f1f5fa; color: inherit; font-size: 28px; cursor: pointer; touch-action: manipulation; }
+  .account-more-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .account-more-links a, .account-more-logout { display: flex; align-items: center; min-height: 56px; box-sizing: border-box; padding: 10px; border: 1px solid var(--tm-line); border-radius: 10px; background: #fff; color: var(--tm-navy); font: inherit; font-size: 14px; font-weight: 650; line-height: 1.35; text-decoration: none; touch-action: manipulation; }
+  .account-more-links a[aria-current="page"] { background: #fff2c4; border-color: #e7d07b; }
+  .account-more-logout { justify-content: center; width: 100%; min-height: 48px; margin-top: 10px; cursor: pointer; }
+  .account-page .tm-ai-assistant:not(.is-open) { z-index: 149 !important; right: 16px !important; bottom: calc(94px + var(--account-safe-max)) !important; }
   .account-page .tm-ai-assistant:not(.is-open) .tm-ai-assistant__launcher { bottom: 0 !important; }
-  .account-page .tm-ai-assistant:not(.is-open) .tm-ai-nudge { position: fixed; bottom: calc(158px + env(safe-area-inset-bottom, 0px)) !important; }
+  .account-page .tm-ai-assistant:not(.is-open) .tm-ai-nudge { position: fixed; bottom: calc(158px + var(--account-safe-max)) !important; }
   .account-page .mobile-newsletter, .account-page .footer-newsletter { display: none; }
-  .account-mobile-fallback { display: flex; flex-wrap: wrap; gap: 14px; padding: 20px; }
+  .account-page .toner-care-printers-panel { grid-row: 1; }
 }
 @media (max-width: 720px) {
   .account-page .account-topbar { margin-bottom: 18px; }
@@ -2514,11 +2528,9 @@
   .account-page .account-wrap { padding-top: 22px; }
   .account-page .toner-care-intro { padding: 14px; }
   .account-page .toner-care-intro-icon { display: none; }
-}
-@media (max-width: 1100px) {
-  .account-page .toner-care-printers-panel { grid-row: 1; }
-}
-@media (max-width: 720px) {
   .account-page .toner-care-printers-panel { padding: 15px; }
   .account-page .saved-printer-mini.toner-care-card { padding: 14px; }
+  .account-reminder-list { grid-template-columns: 1fr; }
+  .toner-care-card .saved-printer-mini-actions, .toner-care-form-actions { display: grid; grid-template-columns: 1fr; }
+  .toner-care-card .saved-printer-mini-actions > *, .toner-care-card .saved-printer-mini-actions button, .toner-care-form-actions > * { width: 100%; min-height: 48px; box-sizing: border-box; white-space: normal; }
 }

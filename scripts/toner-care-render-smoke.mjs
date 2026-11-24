@@ -20,7 +20,7 @@ const customer = { id: 7, email: 'test@example.invalid', first_name: 'Test', las
   billing: { first_name: 'Test', last_name: 'Zákazník', address_1: 'Testovacia 12', city: 'Testovacie mesto', postcode: '12345', country: 'SK', phone: '0900000000' },
   shipping: { address_1: 'Testovacia 34', city: 'Iné mesto', postcode: '54321', country: 'SK' },
   meta_data: [
-    { key: 'tm_saved_printers', value: JSON.stringify([printer('Brother DCP-L3517CDW'), printer('HP LaserJet M110w', false)]) },
+    { key: 'tm_saved_printers', value: JSON.stringify([printer('Brother DCP-L3517CDW'), { ...printer('HP LaserJet M110w', false), expected_months: 5 }]) },
     { key: 'tm_saved_products', value: JSON.stringify([{ id: 11, sku: 'TEST-11', title: 'Uložený toner' }]) },
     { key: 'tm_saved_shipping_addresses', value: JSON.stringify([{ id: 'office', address_1: 'Testovacia 34' }]) },
     { key: 'tm_loyalty_points', value: 250 }, { key: 'tm_loyalty_lifetime_points', value: 250 },
@@ -54,12 +54,13 @@ const env = { PATH: process.env.PATH, NODE_ENV: 'production', HOST: '127.0.0.1',
   TM_DISABLE_BACKGROUND_WORKERS: '1', TM_DISABLE_INDEXNOW: '1', OPENAI_ASSISTANT_ENABLED: '0' };
 const child = spawn(process.execPath, ['--import', preload, './dist/server/entry.mjs'], { cwd: process.cwd(), env, stdio: ['ignore', 'pipe', 'pipe'] });
 let logs = ''; child.stdout.on('data', data => { logs += data; if (process.argv.includes('--serve')) process.stdout.write(data); }); child.stderr.on('data', data => logs += data);
-function request(path, body, method = 'GET') {
+function request(path, body, method = 'GET', options = {}) {
   return new Promise((resolve, reject) => {
-    const data = body ? JSON.stringify(body) : '';
-    const req = http.request({ hostname: '127.0.0.1', port, path, method, headers: { Cookie: cookie, Origin: 'http://127.0.0.1:' + port,
-      ...(body ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) } : {}) } }, res => {
-      let text = ''; res.setEncoding('utf8'); res.on('data', chunk => text += chunk); res.on('end', () => resolve({ status: res.statusCode, text }));
+    const isForm = body instanceof URLSearchParams;
+    const data = body ? (isForm ? body.toString() : JSON.stringify(body)) : '';
+    const req = http.request({ hostname: '127.0.0.1', port, path, method, headers: { ...(options.guest ? {} : { Cookie: cookie }), Origin: options.origin || 'http://127.0.0.1:' + port,
+      ...(body ? { 'Content-Type': isForm ? 'application/x-www-form-urlencoded' : 'application/json', 'Content-Length': Buffer.byteLength(data) } : {}) } }, res => {
+      let text = ''; res.setEncoding('utf8'); res.on('data', chunk => text += chunk); res.on('end', () => resolve({ status: res.statusCode, text, headers: res.headers }));
     });
     req.on('error', reject); if (data) req.write(data); req.end();
   });
@@ -68,10 +69,15 @@ try {
   for (let i = 0; i < 100 && !logs.includes('Server listening'); i++) { if (child.exitCode != null) throw new Error(logs); await new Promise(resolve => setTimeout(resolve, 100)); }
   assert.match(logs, /Server listening/);
   const page = await request('/ucet/tlaciarne'); assert.equal(page.status, 200);
-  assert.match(page.text, /Vypnúť strážcu/); assert.match(page.text, /account-mobile-drawer/); assert.match(page.text, /Rýchle menu účtu/);
+  assert.match(page.text, /Vypnúť strážcu/); assert.match(page.text, /data-account-more/); assert.match(page.text, /Rýchle menu účtu/);
   assert.match(page.text, /Prvý e-mail mesiac vopred/);
-  const paths = ['/ucet', '/ucet/objednavky', '/ucet/faktury', '/ucet/tlaciarne', '/ucet/produkty', '/ucet/reklamacie', '/ucet/vernost', '/ucet/odmeny', '/ucet/adresy', '/ucet/newsletter', '/ucet/profil'];
+  const paths = ['/ucet', '/ucet/objednavky', '/ucet/faktury', '/ucet/tlaciarne', '/ucet/upozornenia', '/ucet/produkty', '/ucet/reklamacie', '/ucet/vernost', '/ucet/odmeny', '/ucet/adresy', '/ucet/newsletter', '/ucet/profil'];
   for (const path of paths) assert.ok(page.text.includes(`href="${path}"`), 'Existing account route missing: ' + path);
+  const reminderPage = await request('/ucet/upozornenia');
+  assert.equal(reminderPage.status, 200); assert.match(reminderPage.headers['cache-control'], /no-store/);
+  assert.match(reminderPage.text, /toner-care-editor[^>]*open/); assert.match(reminderPage.text, /name="installed_at"/);
+  assert.match(reminderPage.text, /name="expected_months"/); assert.match(reminderPage.text, /name="preferred_type"/);
+  assert.match(reminderPage.text, /Toner som vymenil dnes/);
   const before = JSON.parse((await request('/__guard_fixture_customer')).text).customer;
   assert.equal(JSON.parse((await request('/__guard_fixture_customer')).text).writes.length, 0);
   const disabled = await request('/api/account/saved-printers', { title: 'Brother DCP-L3517CDW', action: 'disable' }, 'PUT');
@@ -84,6 +90,35 @@ try {
   assert.equal(saved[0].custom_label, 'Kancelária');
   assert.deepEqual(saved[1], JSON.parse(before.meta_data.find(item => item.key === 'tm_saved_printers').value)[1]);
   const refreshed = await request('/ucet/tlaciarne'); assert.match(refreshed.text, /Brother DCP-L3517CDW/); assert.match(refreshed.text, /Vypnutý ručne/);
+  // Native forms exercise the exact API validation, origin gate and preservation path.
+  const native = fields => request('/api/account/toner-care', new URLSearchParams({ title: 'Brother DCP-L3517CDW', return_to: '/ucet/upozornenia', ...fields }), 'POST');
+  const savedForm = await native({ care_enabled: 'on', installed_at: '2026-11-20', expected_months: '6', preferred_type: 'original' });
+  assert.equal(savedForm.status, 303); assert.equal(savedForm.headers.location, '/ucet/upozornenia?saved=1');
+  let state = JSON.parse((await request('/__guard_fixture_customer')).text);
+  let firstPrinter = JSON.parse(state.customer.meta_data.find(item => item.key === 'tm_saved_printers').value)[0];
+  assert.equal(firstPrinter.care_enabled, true); assert.equal(firstPrinter.expected_months, 6); assert.equal(firstPrinter.preferred_type, 'original');
+  const writeCount = state.writes.length;
+  const invalid = await native({ care_enabled: 'on', installed_at: '2999-01-01', expected_months: '3' });
+  assert.equal(invalid.status, 303); assert.match(invalid.headers.location, /error=/);
+  const crossSite = await request('/api/account/toner-care', new URLSearchParams({ title: 'Brother DCP-L3517CDW', action: 'disable' }), 'POST', { origin: 'https://evil.example.invalid' });
+  assert.equal(crossSite.status, 403);
+  const guest = await request('/api/account/toner-care', new URLSearchParams({ title: 'Brother DCP-L3517CDW', action: 'disable' }), 'POST', { guest: true });
+  assert.equal(guest.status, 303); assert.match(guest.headers.location, /error=/);
+  state = JSON.parse((await request('/__guard_fixture_customer')).text); assert.equal(state.writes.length, writeCount);
+  const formDisabled = await native({ action: 'disable', return_to: 'https://evil.example.invalid' });
+  assert.equal(formDisabled.headers.location, '/ucet/upozornenia?saved=1');
+  const replaced = await native({ action: 'replaced', expected_months: '3', preferred_type: 'compatible' });
+  assert.equal(replaced.status, 303);
+  state = JSON.parse((await request('/__guard_fixture_customer')).text);
+  firstPrinter = JSON.parse(state.customer.meta_data.find(item => item.key === 'tm_saved_printers').value)[0];
+  assert.equal(firstPrinter.care_enabled, true); assert.equal(firstPrinter.installed_at, new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Bratislava', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()));
+  for (const field of ['billing', 'shipping', 'email', 'first_name', 'last_name']) assert.deepEqual(state.customer[field], before[field], field);
+  for (const item of before.meta_data.filter(item => item.key !== 'tm_saved_printers')) assert.deepEqual(state.customer.meta_data.find(entry => entry.key === item.key), item, item.key);
+  assert.deepEqual(JSON.parse(state.customer.meta_data.find(item => item.key === 'tm_saved_printers').value)[1], JSON.parse(before.meta_data.find(item => item.key === 'tm_saved_printers').value)[1]);
+  if (process.argv.includes('--responsive')) {
+    const { verifySavedTonerCare } = await import('./verify-account-reminders.mjs');
+    await verifySavedTonerCare('http://127.0.0.1:' + port);
+  }
   const guide = await request('/toner-bez-starosti'); assert.equal(guide.status, 200); assert.match(guide.text, /každých 7 dní/);
   console.log(JSON.stringify({ ok: true, existingRoutes: paths.length, unrelatedCustomerSettingsPreserved: true, otherPrinterUnchanged: true, disableSurvivesReload: true, historyRetained: true }));
   if (process.argv.includes('--serve')) {

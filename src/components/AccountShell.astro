@@ -3,6 +3,7 @@ import Header from "./Header.astro";
 import Footer from "./Footer.astro";
 import FloatingAdvisor from "./FloatingAdvisor.astro";
 import AccountMobileNav from "./AccountMobileNav.astro";
+import { accountNavigation as navItems } from "../lib/account-navigation";
 import { customerDisplayName, customerInitials, type CustomerSession } from "../lib/auth-session";
 
 const {
@@ -21,19 +22,7 @@ const displayName = customerDisplayName(user);
 const initials = customerInitials(user);
 const email = user?.email || "";
 
-const navItems = [
-  { id: "prehlad", href: "/ucet", icon: "⌂", label: "Prehľad" },
-  { id: "objednavky", href: "/ucet/objednavky", icon: "▣", label: "Objednávky" },
-  { id: "faktury", href: "/ucet/faktury", icon: "▧", label: "Faktúry" },
-  { id: "tlaciarne", href: "/ucet/tlaciarne", icon: "▤", label: "Moje tlačiarne" },
-  { id: "produkty", href: "/ucet/produkty", icon: "▧", label: "Moje produkty" },
-  { id: "reklamacie", href: "/ucet/reklamacie", icon: "◇", label: "Reklamácie" },
-  { id: "vernost", href: "/ucet/vernost", icon: "★", label: "Vernostný program" },
-  { id: "odmeny", href: "/ucet/odmeny", icon: "🎁", label: "Moje odmeny" },
-  { id: "adresy", href: "/ucet/adresy", icon: "⌖", label: "Adresy" },
-  { id: "newsletter", href: "/ucet/newsletter", icon: "✉", label: "Newsletter" },
-  { id: "profil", href: "/ucet/profil", icon: "◎", label: "Profil" },
-];
+
 ---
 
 <div class="page account-page">
@@ -76,7 +65,6 @@ const navItems = [
             <h1>{title}</h1>
             <p>{subtitle}</p>
           </div>
-          <button class="account-menu-toggle" type="button" data-account-drawer-open="more" aria-controls="account-mobile-drawer" aria-expanded="false">Menu účtu</button>
         </div>
 
         <slot />
@@ -86,9 +74,16 @@ const navItems = [
 
   <Footer />
   <FloatingAdvisor />
+  <noscript>
+    <style is:inline>
+      /* Keep cookie information readable in the footer without an inert overlay. */
+      .account-page #tm-cookie-consent { position: static !important; inset: auto !important; margin-block: 20px !important; }
+      .account-page #tm-cookie-consent button { display: none !important; }
+    </style>
+  </noscript>
 </div>
 
-<AccountMobileNav active={active} items={navItems} />
+<AccountMobileNav active={active} />
 
 <script>
   import "../scripts/account-ui.js";

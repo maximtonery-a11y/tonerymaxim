@@ -416,12 +416,11 @@
       </div>
       <div class="saved-printer-mini-actions">
         <a class="account-link-pill is-small" href="${escapeHtml(url)}">Zobraziť náplne</a>
-        <button class="tm-btn is-outline is-small" type="button" data-toggle-toner-care aria-expanded="false">Nastaviť strážcu</button>
-        <button class="tm-btn is-outline is-small" type="button" data-disable-toner-care hidden>Vypnúť strážcu</button>
+        <form method="post" action="/api/account/toner-care" data-toner-care-disable-form hidden><input type="hidden" name="title" value="${escapeHtml(title)}" /><input type="hidden" name="return_to" value="/ucet/tlaciarne" /><input type="hidden" name="action" value="disable" /><button class="tm-btn is-outline is-small" type="submit" data-disable-toner-care>Vypnúť strážcu</button></form>
       </div>
       <details class="saved-printer-manage"><summary>Možnosti tlačiarne</summary><button class="tm-btn is-danger-soft is-small" type="button" data-remove-saved-printer>Odstrániť tlačiareň</button></details>
       <div class="toner-care-history" data-toner-care-history></div>
-      <form class="toner-care-form" data-toner-care-form hidden>
+      <details class="toner-care-editor"><summary>Nastaviť upozornenie na výmenu</summary><form class="toner-care-form" data-toner-care-form method="post" action="/api/account/toner-care"><input type="hidden" name="return_to" value="/ucet/tlaciarne" />
         <input type="hidden" name="title" value="${escapeHtml(title)}" />
         <label class="toner-care-switch">
           <input type="checkbox" name="care_enabled" />
@@ -429,14 +428,14 @@
           <strong>Zapnúť pripomienku výmeny</strong>
         </label>
         <div class="toner-care-fields">
-          <label><span>Dátum vloženia náplne</span><input class="account-input" type="date" name="installed_at" max="${new Date().toISOString().slice(0, 10)}" /></label>
-          <label><span>Predpokladaná výdrž</span><select class="account-input" name="expected_months"><option value="1">1 mesiac</option><option value="2">2 mesiace</option><option value="3" selected>3 mesiace</option><option value="4">4 mesiace</option><option value="6">6 mesiacov</option><option value="9">9 mesiacov</option><option value="12">12 mesiacov</option><option value="18">18 mesiacov</option><option value="24">24 mesiacov</option></select></label>
+          <label><span>Dátum vloženia náplne</span><input class="account-input" type="date" name="installed_at" max="${careToday()}" /></label>
+          <label><span>Predpokladaná výdrž</span><select class="account-input" name="expected_months">${Array.from({ length: 24 }, (_, index) => index + 1).map(months => `<option value="${months}"${months === 3 ? ' selected' : ''}>${months === 1 ? '1 mesiac' : months < 5 ? `${months} mesiace` : `${months} mesiacov`}</option>`).join('')}</select></label>
           <label><span>Preferovaný typ</span><select class="account-input" name="preferred_type"><option value="any">Najvhodnejšia možnosť</option><option value="compatible">Kompatibilný</option><option value="original">Originálny</option><option value="renovated">Renovovaný</option></select></label>
         </div>
         <div class="toner-care-form-note">Prvý e-mail pošleme približne mesiac pred termínom, potom každých 7 dní vám aj ToneryMaxim. Po uplynutí termínu sa strážca automaticky vypne. Plán môžete vypnúť aj skôr bez odstránenia tlačiarne.</div>
-        <div class="toner-care-form-actions"><button class="tm-btn" type="submit">Uložiť plán</button><button class="tm-btn is-outline" type="button" data-toner-replaced-today>Toner som vymenil dnes</button></div>
-        <div class="account-form-message" data-toner-care-message hidden></div>
-      </form>
+        <div class="toner-care-form-actions"><button class="tm-btn" type="submit">Uložiť plán</button><button class="tm-btn is-outline" type="submit" name="action" value="replaced" data-toner-replaced-today>Toner som vymenil dnes</button></div>
+        <div class="account-form-message" data-toner-care-message role="status" hidden></div>
+      </form></details>
     `;
     savedPrintersList.prepend(article);
   }
@@ -471,29 +470,9 @@
     showPrinterMessage('Tlačiareň bola uložená.', 'success');
   });
 
-  document.addEventListener('click', (event) => {
-    const toggle = event.target.closest('[data-toggle-toner-care]');
-    if (!toggle) return;
-    const card = toggle.closest('[data-saved-printer-card]');
-    const form = card?.querySelector('[data-toner-care-form]');
-    if (!form) return;
-    const open = form.hidden;
-    form.hidden = !open;
-    toggle.setAttribute('aria-expanded', String(open));
-    toggle.textContent = open ? 'Zavrieť nastavenie' : 'Nastaviť strážcu';
-  });
-
-  document.addEventListener('click', (event) => {
-    const replaced = event.target.closest('[data-toner-replaced-today]');
-    if (!replaced) return;
-    const form = replaced.closest('[data-toner-care-form]');
-    if (!form) return;
-    const dateInput = form.querySelector('[name="installed_at"]');
-    const enabledInput = form.querySelector('[name="care_enabled"]');
-    if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
-    if (enabledInput) enabledInput.checked = true;
-    form.requestSubmit();
-  });
+  function careToday() {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Bratislava', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  }
 
   function careDate(value) {
     return new Intl.DateTimeFormat('sk-SK', { timeZone: 'Europe/Bratislava', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value.length === 10 ? `${value}T12:00:00Z` : value));
@@ -504,7 +483,7 @@
     card.classList.add('toner-care-card');
     card.classList.toggle('is-care-active', Boolean(printer.care_enabled));
     const disable = card.querySelector('[data-disable-toner-care]');
-    if (disable) disable.hidden = !printer.care_enabled;
+    if (disable) disable.closest('[data-toner-care-disable-form]').hidden = !printer.care_enabled;
     const enabled = card.querySelector('[name="care_enabled"]');
     if (enabled) enabled.checked = Boolean(printer.care_enabled);
     const status = card.querySelector('.toner-care-status');
@@ -520,8 +499,11 @@
     }
   }
 
-  document.addEventListener('click', async (event) => {
-    const button = event.target.closest('[data-disable-toner-care]');
+  document.addEventListener('submit', async (event) => {
+    const disableForm = event.target.closest?.('[data-toner-care-disable-form]');
+    if (!disableForm) return;
+    event.preventDefault();
+    const button = disableForm.querySelector('[data-disable-toner-care]');
     if (!button || button.disabled) return;
     const card = button.closest('[data-saved-printer-card]');
     if (!card) return;
@@ -535,6 +517,8 @@
       card.append(message);
     }
     message.hidden = true;
+    const formMessage = card.querySelector('[data-toner-care-message]');
+    if (formMessage) formMessage.hidden = true;
     button.disabled = true;
     const response = await fetch('/api/account/saved-printers', {
       method: 'PUT', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -561,6 +545,12 @@
     const submit = form.querySelector('button[type="submit"]');
     const message = form.querySelector('[data-toner-care-message]');
     const card = form.closest('[data-saved-printer-card]');
+    const actionMessage = card?.querySelector('[data-toner-care-action-message]');
+    if (actionMessage) actionMessage.hidden = true;
+    if (event.submitter?.matches('[data-toner-replaced-today]')) {
+      form.querySelector('[name="installed_at"]').value = careToday();
+      form.querySelector('[name="care_enabled"]').checked = true;
+    }
     const fields = new FormData(form);
     const payload = {
       title: String(fields.get('title') || ''),

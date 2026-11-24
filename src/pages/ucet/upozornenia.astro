@@ -1,0 +1,31 @@
+---
+import "../../styles/global.css";
+import "../../styles/footer.css";
+import "../../styles/account.css";
+import AccountShell from "../../components/AccountShell.astro";
+import AccountTonerCareCard from "../../components/AccountTonerCareCard.astro";
+import { readCustomerSession } from "../../lib/auth-session";
+import { getSavedPrintersFromCustomer, getWooCustomerById } from "../../lib/woo-client";
+import { expireTonerCare } from "../../lib/toner-care-rules";
+const customer = readCustomerSession(Astro.cookies);
+if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+const stored = await getWooCustomerById(customer.id);
+if (!stored) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
+const printers = getSavedPrintersFromCustomer(stored).map(printer => expireTonerCare(printer));
+---
+<!doctype html>
+<html lang="sk">
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Upozornenia na toner | ToneryMaxim.sk</title></head>
+  <body>
+    <AccountShell user={customer} active="upozornenia" title="Upozornenia na toner" subtitle="Nastavte si pripomienku výmeny pre každú uloženú tlačiareň.">
+      {Astro.url.searchParams.get("saved") === "1" && <p class="account-form-message" data-type="success" role="status">Nastavenie bolo uložené.</p>}
+      {Astro.url.searchParams.has("error") && <p class="account-form-message" data-type="error" role="alert">{Astro.url.searchParams.get("error")?.slice(0, 300)}</p>}
+      <p class="account-reminder-guide">Prvý e-mail pošleme vám aj ToneryMaxim približne mesiac pred termínom, ďalšie každých 7 dní až do termínu. Potom sa strážca vypne a história zostane uložená. <a href="/toner-bez-starosti">Ako služba funguje</a></p>
+      <div class="account-reminder-list" data-saved-printers-list>
+        {printers.map(printer => <AccountTonerCareCard printer={printer} expanded returnTo="/ucet/upozornenia" />)}
+        {printers.length === 0 && <div class="account-empty-box"><strong>Najprv si uložte tlačiareň.</strong><p>Potom tu nastavíte termín, typ náplne a pripomienky.</p></div>}
+      </div>
+      <a class="tm-btn is-outline" href="/ucet/tlaciarne#pridat-tlaciaren">Pridať tlačiareň</a>
+    </AccountShell>
+  </body>
+</html>

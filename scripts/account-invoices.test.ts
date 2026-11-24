@@ -223,5 +223,7 @@ test('the account UI links to authenticated downloads and supports history beyon
   assert.match(page, /Stiahnuť PDF/); assert.match(page, /document\.xml &&/);
   assert.match(page, /invoice-pagination/); assert.match(page, /noindex,nofollow/);
   assert.doesNotMatch(page, /getWooCustomerOrders|wp-content\/uploads|set:html/);
-  assert.match(shell, /href: "\/ucet\/faktury"/);
+  const navigation = await readFile(join(root, 'src/lib/account-navigation.ts'), 'utf8');
+  assert.match(shell, /accountNavigation as navItems/);
+  assert.match(navigation, /href: "\/ucet\/faktury"/);
 });
