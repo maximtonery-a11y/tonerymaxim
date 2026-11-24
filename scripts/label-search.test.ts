@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
 import { createLiveConsensus, focusScore, hasLabelStrokes } from '../src/lib/label-camera-frame.ts';
+import { isolateLightPrint } from '../src/lib/label-photo.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
 
@@ -24,6 +25,21 @@ test('a bold row can be captured without waiting for separate OCR character boxe
   assert.equal(shade(x => 128 + x / 3), false);
   assert.equal(shade(x => x < 52 ? 40 : 180), false);
   assert.equal(shade((x, y) => y > 8 && y < 21 && x % 12 < 6 ? 48 : 188), true);
+});
+
+test('light printing on an uneven panel becomes dark ink without turning the panel into text', () => {
+  const width = 110, height = 38;
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const at = (y * width + x) * 4;
+    const stroke = x >= 48 && x <= 51 && y >= 11 && y <= 27;
+    data.fill(90 + Math.floor(x / 4) + (stroke ? 44 : 0), at, at + 3);
+    data[at + 3] = 255;
+  }
+  const mock = { width, height, getContext: () => ({ getImageData: () => ({ data }), putImageData() {} }) };
+  isolateLightPrint(mock as unknown as HTMLCanvasElement);
+  assert.equal(data[4 * (19 * width + 49)], 0);
+  for (const x of [1, 32, 53, 95]) assert.equal(data[4 * (19 * width + x)], 255);
 });
 
 test('frame selection favours sharply focused lettering over a softened view of the same lines', () => {

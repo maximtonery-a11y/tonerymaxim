@@ -1,24 +1,6 @@
-import {
-  captureLabelFrame,
-  createLiveConsensus,
-  enhanceInk,
-  focusScore,
-  hasLabelStrokes,
-  liveReadPasses,
-  saveLabelFrame,
-  type CapturedLabelFrame,
-  type FramePass,
-} from '../lib/label-camera-frame';
-import { locateLabelRows } from '../lib/label-photo';
-import {
-  barcodeGuidance,
-  candidateText,
-  hasSplitSupplyLabel,
-  isShorterReading,
-  liveLabelOptions,
-  type LabelCandidate,
-} from '../lib/label-search';
-import type { createLabelReader } from './label-reader';
+import { focusScore, hasLabelStrokes, saveLabelFrame, type CapturedLabelFrame, type LabelExposure } from '../lib/label-camera-frame';
+import type { locateLabelRows } from '../lib/label-photo';
+import type { LabelMatch } from './label-live-analysis';
 
 function pause(signal: AbortSignal, delay: number) {
   signal.throwIfAborted();
@@ -73,7 +55,6 @@ function requestContinuousFocus(track: MediaStreamTrack) {
   }
 }
 
-type Exposure = CapturedLabelFrame & { score: number; at: number };
 const discard = (frame: CapturedLabelFrame) => {
   frame.image.width = frame.image.height = 1;
 };
@@ -83,9 +64,10 @@ async function collectExposures(
   video: HTMLVideoElement,
   guide: HTMLElement,
   signal: AbortSignal,
-  deadline: number
+  deadline: number,
+  locateRows: (canvas: HTMLCanvasElement) => number
 ) {
-  const retained: Exposure[] = [];
+  const retained: LabelExposure[] = [];
   const thumbnail = document.createElement('canvas');
   const focus = document.createElement('canvas');
   let previous: Uint8ClampedArray | undefined;
@@ -125,10 +107,10 @@ async function collectExposures(
             thumbnail.width,
             thumbnail.height
           );
-          const rows = locateLabelRows(thumbnail);
-          const score = Math.min(4, focusScore(thumbnail, focus)) + Math.min(2, rows.length);
+          const rows = locateRows(thumbnail);
+          const score = Math.min(4, focusScore(thumbnail, focus)) + Math.min(2, rows);
           const pixels = ctx.getImageData(0, 0, thumbnail.width, thumbnail.height).data;
-          const lettering = rows.length > 0 || hasLabelStrokes(pixels, thumbnail.width, thumbnail.height);
+          const lettering = rows > 0 || hasLabelStrokes(pixels, thumbnail.width, thumbnail.height);
           let change = 0,
             samples = 0;
           if (previous?.length === pixels.length) {
@@ -144,7 +126,7 @@ async function collectExposures(
           // Keep the clearest independently captured images, preferring a newer one on ties.
           retained.sort((a, b) => b.score - a.score || b.at - a.at);
           if (retained.length > 3) discard(retained.pop()!);
-          const steadyInterval = rows.length ? 750 : 1250;
+          const steadyInterval = rows ? 750 : 1250;
           if (retained.length === 3 && lettering && now - started >= 1800 && now - stableSince >= steadyInterval) break;
         }
       }
@@ -160,112 +142,20 @@ async function collectExposures(
   }
 }
 
-type Match = (options: LabelCandidate[]) => Promise<boolean | 'suffix'>;
-async function readExposures(
-  frames: Exposure[],
-  reader: Awaited<ReturnType<typeof createLabelReader>>,
-  signal: AbortSignal,
-  match: Match
-) {
-  const canvas = document.createElement('canvas');
-  const privateCodes = new Set<string>();
-  const votes = new Map<string, { frames: Set<number>; consensus: ReturnType<typeof createLiveConsensus> }>();
-  const tried = new Set<string>();
-  const confirmed: LabelCandidate[] = [];
-  let barcode = false,
-    split = false,
-    suffix = false,
-    lastQuery = '';
-  let readingMs = 0;
-  // Use real, independent exposures to confirm a reading. An OCR retry on the
-  // same pixels cannot vote twice. All passes here run with the camera OFF.
-  const first = frames[0];
-  // A landscape sensor in a portrait viewfinder can clip a long reference to a
-  // different, valid-looking code. Read its full centred row before trying crops.
-  const cropped = first.visible.x1 - first.visible.x0 < first.image.width * 0.82;
-  let passes: FramePass[] = cropped
-    ? [
-        { mode: 'context' }, { mode: 'context', angle: -3 }, { mode: 'context', angle: 3 },
-        ...liveReadPasses.filter(pass => pass.mode !== 'context'),
-      ]
-    : liveReadPasses;
-  if (first.picked) {
-    passes = [{ mode: 'context' }, { mode: 'guide' }, { mode: 'guide', angle: -3 },
-      { mode: 'guide', angle: 3 }, { mode: 'guide', ink: 'light' }, { mode: 'guide', ink: 'dark' }];
-  }
-  try {
-    for (const mode of passes) {
-      for (const [index, frame] of frames.entries()) {
-        signal.throwIfAborted();
-        if (readingMs > 12_000) break;
-        const started = performance.now();
-        const region = captureLabelFrame(frame, canvas, mode);
-        if (!region) continue;
-        if (mode.ink) enhanceInk(canvas, mode.ink);
-        const result = await reader.recognize(
-          canvas,
-          undefined,
-          mode.mode === 'line',
-          mode.mode !== 'line',
-          region.acceptLine,
-          privateCodes,
-          Boolean(mode.angle)
-        );
-        readingMs += performance.now() - started;
-        signal.throwIfAborted();
-        barcode ||= result.barcode;
-        split ||= hasSplitSupplyLabel(result.lines);
-        const options = liveLabelOptions(result.lines, privateCodes);
-        if (!options.length || (split && options.length === 1)) {
-          // On a blank first exposure try another moment too. On the following pass
-          // alternate which one is first, so moving away cannot erase an earlier label.
-          if (index >= 1) break;
-          continue;
-        }
-        const key = options.map(candidateText).join(' / ');
-        if (tried.has(key) || options.some(option => isShorterReading(option, confirmed))) break;
-        const vote = votes.get(key) || { frames: new Set<number>(), consensus: createLiveConsensus() };
-        votes.set(key, vote);
-        if (vote.frames.has(frame.at)) continue;
-        vote.frames.add(frame.at);
-        if (!vote.consensus.observe(options[0], frame.at)) continue;
-        const found = await match(options);
-        signal.throwIfAborted();
-        if (found === true) return;
-        confirmed.push(...options);
-        tried.add(key);
-        suffix ||= found === 'suffix';
-        lastQuery = key;
-      }
-      if (readingMs > 12_000 || (barcode && !votes.size && mode.mode === 'guide')) break;
-      frames.push(frames.shift()!);
-    }
-    if (suffix)
-      return 'Pri tomto valci rozhodujú aj posledné písmená. Skúste znovu zachytiť celý kód vrátane koncovky.';
-    if (split)
-      return 'Na štítku je viac označení. Skúste zachytiť celý riadok na oboch stranách lomky alebo zadajte kód.';
-    if (lastQuery) return 'Pre ' + lastQuery + ' sme v katalógu nenašli presnú ponuku. Skontrolujte označenie.';
-    if (barcode) return barcodeGuidance;
-    return 'Označenie sa nepodarilo bezpečne prečítať. Skúste nasnímať bližšie samotný nápis alebo ho zadajte ručne.';
-  } finally {
-    canvas.width = canvas.height = 1;
-  }
-}
-
 export async function scanLiveCamera(
   video: HTMLVideoElement,
   guide: HTMLElement,
   task: AbortController,
   report: (message: string) => void,
   captured: () => void,
-  match: Match,
+  match: LabelMatch,
   retryUntil?: number
 ) {
   const { signal } = task;
   let expiresAt = retryUntil;
   let stream: MediaStream | undefined;
   let cutoff: ReturnType<typeof setTimeout> | undefined;
-  let frames: Exposure[] = [];
+  let frames: LabelExposure[] = [];
   function release() {
     clearTimeout(cutoff);
     stream?.getTracks().forEach((track) => track.stop());
@@ -290,6 +180,9 @@ export async function scanLiveCamera(
       frameRate: { ideal: 24 },
       resizeMode: { ideal: 'none' },
     };
+    // Loading the row detector never delays a captured frame or a permission gesture.
+    let locate: typeof locateLabelRows | undefined;
+    void import('../lib/label-photo').then(module => { locate = module.locateLabelRows; }).catch(() => {});
     stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: constraints });
     signal.throwIfAborted();
     // The optical capture budget starts when permission is granted, even if playback is slow.
@@ -309,14 +202,17 @@ export async function scanLiveCamera(
     await playPreview(video, signal, remaining);
     signal.throwIfAborted();
     const ready = import('./label-reader').then(({ createLabelReader }) => createLabelReader(signal));
+    const analysis = import('./label-live-analysis');
+    void analysis.catch(() => {});
     // Observe an early download failure without tying device release to the worker.
     void ready.catch(() => {});
-    frames = await collectExposures(video, guide, signal, Math.min(granted + remaining - 250, performance.now() + 6000));
+    frames = await collectExposures(video, guide, signal, Math.min(granted + remaining - 250, performance.now() + 6000), canvas => locate?.(canvas).length ?? 0);
     release();
     signal.throwIfAborted();
     captured();
     const reader = await ready;
     try {
+      const { readExposures } = await analysis;
       const message = await readExposures(frames, reader, signal, match);
       if (message && !signal.aborted) report(message);
     } finally {

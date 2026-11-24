@@ -93,7 +93,7 @@ function installVideoFixture() {
     const stream = canvas.captureStream(8), track = stream.getVideoTracks()[0];
     const timer = setInterval(() => { draw(); track.requestFrame?.(); }, 120);
     window.addEventListener('pagehide', () => { clearInterval(timer); track.stop(); canvas.remove(); }, { once: true });
-    return stream;
+    return { stream, refresh: () => { draw(); track.requestFrame?.(); } };
   }
   // The virtual device stays available while individual camera sessions are released.
   Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { async getUserMedia(constraints) {
@@ -101,7 +101,10 @@ function installVideoFixture() {
     if (fixture.mode === 'deny') throw new DOMException('test', 'NotAllowedError');
     if (fixture.mode === 'defer') await new Promise(resolve => { fixture.allow = resolve; });
     source ||= makeCameraSource();
-    const session = (await source).clone();
+    const camera = await source;
+    camera.refresh();
+    const session = camera.stream.clone();
+    camera.refresh();
     const [track] = session.getVideoTracks();
     Object.defineProperty(track,'getCapabilities',{value:()=>({focusMode:['continuous']})});
     Object.defineProperty(track,'applyConstraints',{value:async options => { fixture.focus = options.advanced[0].focusMode; }});

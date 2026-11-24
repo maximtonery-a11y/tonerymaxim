@@ -6,7 +6,7 @@ export type FramePass = {
   mode: 'scene' | 'guide' | 'context' | 'band' | 'line';
   angle?: number;
   center?: number;
-  ink?: 'light' | 'dark';
+  ink?: 'light' | 'dark' | 'raised';
 };
 export const liveReadPasses: FramePass[] = [
   { mode: 'scene' },
@@ -35,6 +35,8 @@ export type CapturedLabelFrame = {
   target: PixelBox;
   picked?: boolean;
 };
+
+export type LabelExposure = CapturedLabelFrame & { score: number; at: number };
 
 /** Save one sensor exposure and its on-screen geometry before releasing the camera. */
 export function saveLabelFrame(video: HTMLVideoElement, guide: HTMLElement): CapturedLabelFrame | undefined {

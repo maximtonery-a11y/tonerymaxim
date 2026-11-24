@@ -1,5 +1,51 @@
 export type PixelBox = { x0: number; y0: number; x1: number; y1: number };
 
+// A grayscale opening estimates the background underneath light letters on
+// moulded plastic. The sliding window costs four linear passes on a frozen frame.
+export function isolateLightPrint(canvas: HTMLCanvasElement) {
+  const { width, height } = canvas;
+  const ctx = canvas.getContext('2d')!;
+  const image = ctx.getImageData(0, 0, width, height);
+  const pixels = image.data;
+  const grey = new Uint8Array(width * height);
+  for (let i = 0; i < grey.length; i++) {
+    const p = i * 4;
+    grey[i] = (77 * pixels[p] + 150 * pixels[p + 1] + 29 * pixels[p + 2]) >> 8;
+  }
+  const temp = new Uint8Array(grey.length), background = new Uint8Array(grey.length);
+  const queue = new Uint16Array(Math.max(width, height));
+  const radius = Math.max(4, Math.min(16, Math.round(width / 95)));
+  function sweep(src: Uint8Array, dest: Uint8Array, vertical: boolean, minimum: boolean) {
+    const length = vertical ? height : width, lines = vertical ? width : height, stride = vertical ? width : 1;
+    for (let line = 0; line < lines; line++) {
+      const start = vertical ? line : line * width;
+      let head = 0, tail = 0, next = 0;
+      for (let i = 0; i < length; i++) {
+        while (next < length && next <= i + radius) {
+          const value = src[start + next * stride];
+          while (tail > head) {
+            const last = src[start + queue[tail - 1] * stride];
+            if (minimum ? last < value : last > value) break;
+            tail--;
+          }
+          queue[tail++] = next++;
+        }
+        while (queue[head] < i - radius) head++;
+        dest[start + i * stride] = src[start + queue[head] * stride];
+      }
+    }
+  }
+  sweep(grey, temp, false, true);
+  sweep(temp, background, true, true);
+  sweep(background, temp, false, false);
+  sweep(temp, background, true, false);
+  for (let i = 0; i < grey.length; i++) {
+    const at = i * 4;
+    pixels[at] = pixels[at + 1] = pixels[at + 2] = 255 - (grey[i] - background[i] - 12) * 15;
+  }
+  ctx.putImageData(image, 0, 0);
+}
+
 // Locate a printed row by the vertical strokes shared by adjacent scanlines.
 // Work on a small copy irrespective of the phone's camera resolution.
 export function locateLabelRows(source: HTMLCanvasElement): { box: PixelBox; barcode: boolean }[] {
