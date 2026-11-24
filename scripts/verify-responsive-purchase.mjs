@@ -9,6 +9,65 @@ const layouts = [
   [844, 390, true], [768, 1024, true], [1024, 768, true], [1280, 800, false], [1440, 900, false],
 ];
 const cents = text => Math.round(Number(text.replace(/[^0-9,.-]/g, '').replace(',', '.')) * 100);
+async function checkAccountNavigation(page, origin, [width, height, touch]) {
+  await page.goto(origin + '/__account_fixture_session');
+  const nav = page.locator('[data-account-mobile-nav]');
+  assert.equal(await nav.isVisible(), touch);
+  if (!touch) return;
+  const position = await nav.boundingBox();
+  assert.ok(Math.abs(position.y + position.height - height) <= 1);
+  assert.equal(Math.round(position.height), 74);
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const scroll = await page.evaluate(() => scrollY);
+  const moved = await nav.boundingBox();
+  assert.equal(Math.round(moved.y), Math.round(position.y));
+  for (const group of ['Výhody', 'Viac']) {
+    await nav.getByRole('button', { name: group, exact: true }).click();
+    await page.locator('[data-account-drawer]').waitFor({ state: 'visible' });
+    if (group === 'Výhody') await page.keyboard.press('Escape');
+    else await page.getByRole('button', { name: 'Zavrieť menu účtu' }).click();
+    await page.locator('[data-account-drawer]').waitFor({ state: 'hidden' });
+    assert.equal(await page.evaluate(() => scrollY), scroll);
+  }
+  // Hold only the fixture's HTML navigation, so feedback is tested before it finishes.
+  const destination = origin + '/ucet/tlaciarne';
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  const hold = route => gate.then(() => route.continue());
+  let requests = 0;
+  const record = request => { if (request.isNavigationRequest() && request.url() === destination) requests++; };
+  page.on('request', record);
+  await page.route(destination, hold);
+  try {
+    const started = page.waitForRequest(request => request.isNavigationRequest() && request.url() === destination);
+    const target = nav.getByRole('link', { name: 'Tlačiarne', exact: true });
+    // Native anchor activation returns before document navigation completes.
+    const immediate = await target.evaluate(el => {
+      el.click();
+      return { pending: el.hasAttribute('data-navigation-pending'), busy: el.closest('nav').getAttribute('aria-busy') };
+    });
+    assert.deepEqual(immediate, { pending: true, busy: 'true' });
+    await started;
+    const highlighted = await nav.evaluate(el => [...el.children]
+      .filter(child => !['rgba(0, 0, 0, 0)', 'transparent'].includes(getComputedStyle(child).backgroundColor))
+      .map(child => child.textContent.trim()));
+    assert.deepEqual(highlighted, ['Tlačiarne']);
+    await target.evaluate(el => el.click());
+    assert.equal(requests, 1, 'Repeated activation must not restart a pending navigation');
+    release();
+    await page.waitForURL(destination);
+    await page.getByRole('heading', { level: 1, name: 'Moje tlačiarne', exact: true }).waitFor();
+    assert.equal(await page.locator('[data-account-mobile-nav]').getAttribute('aria-busy'), null);
+    await page.goBack();
+    await page.getByRole('heading', { level: 1, name: 'Objednávky', exact: true }).waitFor();
+    assert.equal(await page.locator('[data-navigation-pending]').count(), 0);
+  } finally {
+    release();
+    await page.unroute(destination, hold);
+    page.off('request', record);
+  }
+  console.log(`Account menu ${width}×${height} OK: stable bar, drawers, immediate feedback, one navigation, browser Back`);
+}
 async function checkCameraPromotion(page, origin, width, touch) {
   const home = page.locator(touch ? '.tm-mobile-home-final' : '.hero-copy');
   const start = home.getByRole('link', { name: touch ? 'Spustiť fotoaparát' : 'Hľadať podľa fotky', exact: true });
@@ -560,6 +619,7 @@ async function verifyEngine(origin, engine, configurations, options) {
         return route.abort();
       });
       try {
+        if ([320, 390, 768, 1280].includes(width)) await checkAccountNavigation(page, origin, layout);
         await checkSearchWarmup(page, origin, width === 390);
         await checkCameraPromotion(page, origin, width, touch);
         if (width === 390) {

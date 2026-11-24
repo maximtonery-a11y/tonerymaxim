@@ -8,19 +8,23 @@ import {
   getHiddenRecentProductKeys,
   getSavedPrintersFromCustomer,
   getWooCustomerById,
-  getWooCustomerOrders,
   type WooOrderLineItem,
 } from "../../lib/woo-client";
 import { formatMoney } from "../../lib/account-data";
+import { getAccountOrdersPage } from '../../lib/account-orders';
 import { bratislavaDay, daysUntil, expireTonerCare, tonerCareReminders } from "../../lib/toner-care-rules";
 
 const customer = readCustomerSession(Astro.cookies);
 if (!customer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 
-const wooCustomer = await getWooCustomerById(customer.id);
+const [wooCustomer, history] = await Promise.all([
+  getWooCustomerById(customer.id),
+  getAccountOrdersPage(customer.id).catch(() => null),
+]);
+if (!wooCustomer) return Astro.redirect(`/prihlasenie?next=${encodeURIComponent(Astro.url.pathname)}`);
 const savedPrinters = getSavedPrintersFromCustomer(wooCustomer).map((printer) => expireTonerCare(printer));
 const hiddenRecent = new Set(getHiddenRecentProductKeys(wooCustomer));
-const orders = await getWooCustomerOrders(customer.id, 10).catch(() => []);
+const orders = history?.orders.slice(0, 10) || [];
 
 type RecentProduct = WooOrderLineItem & { key: string; currency?: string };
 const recentMap = new Map<string, RecentProduct>();

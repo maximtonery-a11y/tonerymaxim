@@ -3,23 +3,37 @@
   const drawer = /** @type {HTMLDialogElement|null} */ (document.querySelector('[data-account-drawer]'));
   const nav = document.querySelector('[data-account-mobile-nav]');
   const links = Array.from(document.querySelectorAll('[data-account-nav-link]'));
+  let pendingHref = '';
+  let pendingTimer = 0;
   const clearPending = () => {
+    pendingHref = '';
+    window.clearTimeout(pendingTimer);
     nav?.removeAttribute('aria-busy');
-    links.forEach(link => link.removeAttribute('data-navigation-pending'));
+    links.forEach(link => { link.removeAttribute('data-navigation-pending'); link.removeAttribute('aria-disabled'); });
   };
   links.forEach(link => link.addEventListener('click', (event) => {
     const click = /** @type {MouseEvent} */ (event);
     if (click.defaultPrevented || click.button !== 0 || click.metaKey || click.ctrlKey || click.shiftKey || click.altKey) return;
     const target = new URL(link.getAttribute('href') || '', window.location.href);
-    if (target.href === window.location.href) {
+    if (target.href === pendingHref) {
       event.preventDefault();
       return;
     }
+    if (target.href === window.location.href && !pendingHref) {
+      event.preventDefault();
+      if (drawer?.open) drawer.close();
+      return;
+    }
     clearPending();
+    pendingHref = target.href;
     link.setAttribute('data-navigation-pending', '');
+    link.setAttribute('aria-disabled', 'true');
     nav?.setAttribute('aria-busy', 'true');
+    pendingTimer = window.setTimeout(clearPending, 15000);
   }));
   window.addEventListener('pageshow', clearPending);
+  window.addEventListener('pagehide', clearPending);
+  window.addEventListener('keydown', event => { if (event.key === 'Escape') clearPending(); });
   if (!drawer) return;
   const triggers = Array.from(document.querySelectorAll('[data-account-drawer-open]'));
   let opener = /** @type {HTMLElement|null} */ (null);
