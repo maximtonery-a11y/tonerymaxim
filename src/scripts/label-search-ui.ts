@@ -313,9 +313,9 @@ function setup(root: HTMLElement) {
       const [{ readLabel }, { labelBrands, hasSplitSupplyLabel, liveLabelOptions, selectedLabelCandidates, labelCandidates }] =
         await Promise.all([import('./label-reader'), import('../lib/label-search')]);
       if (task.signal.aborted) return;
-      const { passes, barcode } = await readLabel(file, task.signal, message => {
+      const { passes, barcode, confirmedPrinter, disputed } = await readLabel(file, task.signal, message => {
         if (!task.signal.aborted) status.textContent = message;
-      }, area);
+      }, area, privateCodes);
       if (task.signal.aborted) return;
       reset();
       const lines = passes[0] || [];
@@ -329,9 +329,12 @@ function setup(root: HTMLElement) {
         }
         return;
       }
-      choose(area && 'start' in area
+      const options = area && 'start' in area
         ? selectedLabelCandidates(passes, privateCodes, previousBrands)
-        : labelCandidates(lines, privateCodes, previousBrands), barcode);
+        : labelCandidates(lines, privateCodes, previousBrands);
+      if (options.length === 1 && confirmedPrinter === candidateText(options[0])) options[0].certain = true;
+      if (disputed) for (const option of options) option.certain = false;
+      choose(options, barcode);
     } catch (error) {
       if (!task.signal.aborted) {
         cropToggle.hidden = !lastFile;

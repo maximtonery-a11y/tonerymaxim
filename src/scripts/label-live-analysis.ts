@@ -8,16 +8,17 @@ export async function readExposures(
   frames: LabelExposure[],
   reader: Awaited<ReturnType<typeof createLabelReader>>,
   signal: AbortSignal,
-  match: LabelMatch
+  match: LabelMatch,
+  privateCodes = new Set<string>(),
+  split = false,
+  readingBudget = 12_000
 ) {
   const canvas = document.createElement('canvas');
-  const privateCodes = new Set<string>();
   const votes = new Map<string, { frames: Set<number>; consensus: ReturnType<typeof createLiveConsensus> }>();
   const tried = new Set<string>();
   const confirmed: LabelCandidate[] = [];
   const barcodeFrames = new Set<number>();
   let barcode = false,
-    split = false,
     suffix = false,
     lastQuery = '';
   let readingMs = 0;
@@ -42,7 +43,7 @@ export async function readExposures(
     for (const mode of passes) {
       for (const [index, frame] of frames.entries()) {
         signal.throwIfAborted();
-        if (readingMs > 12_000) break;
+        if (readingMs > readingBudget) break;
         const started = performance.now();
         const region = captureLabelFrame(frame, canvas, mode);
         if (!region) continue;
@@ -89,7 +90,7 @@ export async function readExposures(
         suffix ||= found === 'suffix';
         lastQuery = key;
       }
-      if (readingMs > 12_000 || (barcode && !votes.size && mode.mode === 'guide')) break;
+      if (readingMs > readingBudget || (barcode && !votes.size && mode.mode === 'guide')) break;
       frames.push(frames.shift()!);
     }
     if (suffix)

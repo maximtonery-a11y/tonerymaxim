@@ -95,7 +95,7 @@ export async function verifyPhysicalLabels(page, origin, camera) {
         .textContent({ timeout: 500 })
         .catch(() => '');
       throw new Error(
-        `${camera ? 'Camera' : 'Gallery'} / ${name}: ${JSON.stringify({ status, outbound })}. ${error.message}`,
+        `${camera ? 'Camera' : 'Gallery'} / ${name}: ${JSON.stringify({ status, outbound, choices: await page.locator('[data-matches] button').allTextContents() })}. ${error.message}`,
         { cause: error }
       );
     } finally {

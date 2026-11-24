@@ -48,7 +48,10 @@
     "@astrojs/node": "11.1.5",
     "@tesseract.js-data/eng": "1.0.0",
     "astro": "7.3.2",
+    "esearch-ocr": "8.5.2",
     "nodemailer": "10.0.2",
+    "onnxruntime-web": "1.31.1",
+    "paddle-ocr-onnx-models": "0.2.0",
     "sanitize-html": "2.18.2",
     "tesseract.js": "7.0.0"
   },
@@ -57,6 +60,7 @@
     "@types/node": "26.1.2",
     "@types/nodemailer": "8.0.1",
     "@types/sanitize-html": "2.16.2",
+    "esbuild": "0.28.1",
     "typescript": "6.0.3"
   }
 }

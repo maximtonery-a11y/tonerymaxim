@@ -1,10 +1,39 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
-import { createLiveConsensus, focusScore, hasLabelStrokes } from '../src/lib/label-camera-frame.ts';
+import { confirmsBrotherColourBadge, corroboratedBrotherBadge, drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
+import { createLiveConsensus, focusScore, hasLabelStrokes, sameLabelScene } from '../src/lib/label-camera-frame.ts';
 import { isolateLightPrint } from '../src/lib/label-photo.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
+
+test('only an independently legible colour suffix can resolve a closed C on a printer badge', () => {
+  const precise = read('DCP-9020CDW');
+  const noisy = read('DCP-90200DW');
+  assert.ok(confirmsBrotherColourBadge(precise, noisy));
+  assert.ok(confirmsBrotherColourBadge(precise, [...precise, ...noisy]));
+  assert.equal(confirmsBrotherColourBadge(noisy, precise), false);
+  assert.equal(confirmsBrotherColourBadge(read('DCP-9020CDW', 63), noisy), false);
+  for (const model of ['DCP-9028CDW', 'DCP-90200DN', 'MFC-90200DW', 'S/N: DCP-9020CDW']) {
+    assert.equal(confirmsBrotherColourBadge(precise, read(model)), false);
+  }
+});
+
+test('a gallery badge can lose an extra stroke only when the complete model was also read verbatim', () => {
+  const rows = (...texts: string[]) => texts.map(text => [{ text, confidence: 88 }]);
+  assert.equal(corroboratedBrotherBadge(rows('DCP-9020CDHW', 'DCP-9020CDW'), new Set())?.[0].text, 'DCP-9020CDW');
+  for (const other of ['DCP-9020CDN', 'DCP-9028CDW', 'DCP-9020CD', 'HL-9020CDW']) {
+    assert.equal(corroboratedBrotherBadge(rows('DCP-9020CDW', other), new Set()), undefined);
+  }
+  assert.equal(corroboratedBrotherBadge(rows('DCP-9020CDW', 'S/N: DCP-9020CDW'), new Set()), undefined);
+});
+
+test('a new or differently framed scene never reuses the old label positions', () => {
+  const frame = Uint8Array.from([25, 160, 82, 110]);
+  assert.ok(sameLabelScene(frame, Uint8Array.from([28, 164, 79, 113])));
+  assert.equal(sameLabelScene(frame, Uint8Array.from([160, 25, 110, 82])), false);
+  assert.equal(sameLabelScene(frame, frame.subarray(1)), false);
+  assert.equal(sameLabelScene(undefined, frame), false);
+});
 
 test('an unavailable full reference cannot turn into an orderable shorter reference', () => {
   const full = read('Brother TN-9999');
@@ -267,4 +296,23 @@ test('an unbranded printer badge offers each exact catalogue model and retains a
       [text.startsWith('OKI') ? 'OKI C530dn' : 'Lexmark C530DN']);
   }
   assert.deepEqual(liveLabelOptions([{ text: 'S/N: C530dn', confidence: 98 }], new Set()), []);
+});
+
+
+test('printed HP family and model retain the full suffix across OCR word boundaries', () => {
+  for (const text of ['LaserJetProM201dw', 'LaserJet Pro M201 dw', 'LaserJetPro M201dw']) {
+    assert.deepEqual(liveLabelOptions([{ text, confidence: 95 }], new Set()).map(candidateText), ['HP M201DW']);
+  }
+  const blocked = new Set<string>();
+  assert.deepEqual(liveLabelOptions([{ text: 'S/N: LaserJetProM201dw', confidence: 99 }], blocked), []);
+  assert.deepEqual(liveLabelOptions([{ text: 'HP LaserJet Pro M201 dw', confidence: 99 }], blocked), []);
+  assert.deepEqual(read('LaserJet Pro M201').map(candidateText), ['HP M201']);
+});
+
+test('a clear complete Brother badge is distinctive even when the brand is on a different panel', () => {
+  assert.equal(read('DCP-7070DW', 96)[0].certain, true);
+  assert.equal(read('DCP-L3510CDW', 95)[0].certain, true);
+  assert.equal(read('DCP-L3510CD', 98)[0].certain, false);
+  assert.equal(read('DCP-7070DW', 80)[0].certain, false);
+  assert.deepEqual(read('S/N: DCP-7070DW'), []);
 });

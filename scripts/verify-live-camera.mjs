@@ -38,6 +38,16 @@ function installVideoFixture() {
   };
   const NativeWorker = window.Worker;
   window.Worker = class extends NativeWorker {
+    constructor(url, options) {
+      super(url, options);
+      if (new URL(url, location.href).pathname.endsWith('/label-worker.mjs')) {
+        this.addEventListener('message', ({ data }) => {
+          if (data.rows?.length) sessionStorage.setItem('testReadScene', 'yes');
+          if (data.failed) sessionStorage.setItem('testSceneFailure', data.stage + '/' + data.reason);
+        });
+        this.addEventListener('error', error => sessionStorage.setItem('testSceneFailure', error.message || 'worker error'));
+      }
+    }
     postMessage(job, ...args) {
       if (fixture.holdOCR && job?.action === 'load') {
         fixture.releaseOCR = () => { fixture.holdOCR = false; super.postMessage(job, ...args); };
@@ -140,11 +150,16 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     if (url.pathname === '/api/smart-search' && url.searchParams.get('label') === '1') searches.push(url.searchParams.get('q'));
     if (r.method() !== 'GET') uploads.push([r.method(), url.pathname]);
   };
-  const worker = w => { if (w.url().endsWith('/worker.min.js')) workers.push(w.url()); };
+  const worker = w => { if (/\/(?:worker\.min\.js|label-worker\.mjs)$/.test(w.url())) workers.push(w.url()); };
   page.context().on('request', request); page.on('worker', worker);
   try {
     const response = await page.goto(origin + '/hladat-fotkou');
     assert.match(response.headers()['permissions-policy'], /camera=\(self\), microphone=\(\)/);
+    const engine = await page.request.get(origin + '/citanie-stitku/v8/label-worker.mjs');
+    assert.ok(engine.ok());
+    const policy = engine.headers()['content-security-policy'] || '';
+    assert.match(policy, /(?:^|;\s*)connect-src 'self'(?:;|$)/);
+    assert.equal(engine.headers()['cross-origin-resource-policy'], 'same-origin');
     const start = page.getByRole('button', { name: 'Spustiť fotoaparát' });
     const stop = page.getByRole('button', { name: 'Zastaviť skenovanie' });
     const status = page.locator('#label-status');
@@ -176,8 +191,8 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     assert.equal(await page.locator('video').evaluate(el => el.srcObject), null);
     assert.equal(workers.length, 0);
 
-    // One tap on the pilot home link starts the scanner and brings up toner prices.
-    await page.goto(origin + '/?foto=1');
+    // One tap on the mobile home link starts the scanner and brings up toner prices.
+    await page.goto(origin + '/');
     await page.getByRole('link', { name: 'Skenovať štítok' }).click();
     await page.locator('[data-matches] a').first().waitFor({ timeout: 60_000 });
     assert.equal(await page.locator('[data-matches] a').count(), 3);
@@ -298,6 +313,8 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
     assert.equal(await start.isVisible(), true);
     assert.equal(workers.length, sessions, 'a stalled preview never loads OCR');
     await verifyPhysicalLabels(page, origin, true);
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('testReadScene')), 'yes',
+      'the local scene recognizer read printed lettering in this browser');
     console.log('Live label video OK: single-tap start, toner prices, exact printer, private code, empty match, denial, cancel, bounded retry and device release');
   } catch (error) {
     const diagnostic = await page.evaluate(() => ({
@@ -305,8 +322,25 @@ export async function verifyLiveCamera(page, origin, nativeCamera) {
       mode: window.labelCameraTest?.mode, calls: window.labelCameraTest?.calls.length, tracks: window.labelCameraTest?.tracks.map(t => t.readyState),
       selectedRow: document.querySelector('[data-live-guide]')?.style.top,
       scene: sessionStorage.getItem('testCameraScene'),
+      engine: sessionStorage.getItem('testSceneFailure'), offscreen: typeof OffscreenCanvas, nativeText: typeof TextDetector,
       video: document.querySelector('video')?.readyState, viewport: document.querySelector('video')?.getBoundingClientRect().toJSON(),
     })).catch(() => ({}));
     throw new Error('Camera test ' + JSON.stringify({ diagnostic, searches, workers: workers.length }) + ': ' + error.message, { cause: error });
   } finally { page.context().off('request', request); page.off('worker', worker); }
+}
+
+
+// Gecko on a phone-sized viewport exercises the same catalogue and canvas-backed camera.
+export async function verifyFirefoxLabels(browserType, origin) {
+  const browser = await browserType.launch();
+  try {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+    await context.route(url => url.origin !== origin, route => route.abort());
+    const page = await context.newPage();
+    await page.addInitScript(installVideoFixture);
+    await verifyPhysicalLabels(page, origin, true);
+    await verifyPhysicalLabels(page, origin, false);
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('testReadScene')), 'yes',
+      'the local scene recognizer read printed lettering in Firefox');
+  } finally { await browser.close(); }
 }

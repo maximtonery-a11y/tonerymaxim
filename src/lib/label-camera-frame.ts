@@ -36,7 +36,15 @@ export type CapturedLabelFrame = {
   picked?: boolean;
 };
 
-export type LabelExposure = CapturedLabelFrame & { score: number; at: number };
+export type LabelExposure = CapturedLabelFrame & { score: number; at: number; signature?: Uint8Array; barcode?: boolean };
+
+/** Compare the framing of separate exposures before reusing the positions of printed rows. */
+export function sameLabelScene(a?: Uint8Array, b?: Uint8Array, tolerance = 8) {
+  if (!a || !b || a.length !== b.length || !a.length) return false;
+  let delta = 0;
+  for (let i = 0; i < a.length; i++) delta += Math.abs(a[i] - b[i]);
+  return delta <= tolerance * a.length;
+}
 
 /** Save one sensor exposure and its on-screen geometry before releasing the camera. */
 export function saveLabelFrame(video: HTMLVideoElement, guide: HTMLElement): CapturedLabelFrame | undefined {

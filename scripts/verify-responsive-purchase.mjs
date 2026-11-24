@@ -1,6 +1,6 @@
 // Invoked by account-orders-render-smoke.mjs --responsive, against its disposable, local-only shop.
 import assert from 'node:assert/strict';
-import { chromiumLabelCamera, verifyLiveCamera } from './verify-live-camera.mjs';
+import { chromiumLabelCamera, verifyFirefoxLabels, verifyLiveCamera } from './verify-live-camera.mjs';
 import { verifyMobileLabel } from './verify-mobile-label.mjs';
 
 const productPath = '/produkt/fixture-toner-';
@@ -510,10 +510,11 @@ async function verifyEngine(origin, engine, configurations, options) {
 }
 
 export async function verifyResponsivePurchase(origin) {
-  const { chromium, webkit } = await import(process.env.TM_PLAYWRIGHT_MODULE || 'playwright');
+  const { chromium, firefox, webkit } = await import(process.env.TM_PLAYWRIGHT_MODULE || 'playwright');
   const camera = await chromiumLabelCamera();
   try {
     await verifyEngine(origin, chromium, layouts, { args: camera.args, executablePath: process.env.TM_CHROMIUM_PATH });
   } finally { await camera.close(); }
   await verifyEngine(origin, webkit, layouts.filter(([width]) => [390, 844, 1280].includes(width)), {});
+  await verifyFirefoxLabels(firefox, origin);
 }
