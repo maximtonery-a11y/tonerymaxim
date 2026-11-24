@@ -74,6 +74,13 @@ const email = user?.email || "";
 
   <Footer />
   <FloatingAdvisor />
+  <noscript>
+    <style is:inline>
+      /* Keep cookie information readable in the footer without an inert overlay. */
+      .account-page #tm-cookie-consent { position: static !important; inset: auto !important; margin-block: 20px !important; }
+      .account-page #tm-cookie-consent button { display: none !important; }
+    </style>
+  </noscript>
 </div>
 
 <AccountMobileNav active={active} />
