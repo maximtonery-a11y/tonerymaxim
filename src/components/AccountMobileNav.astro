@@ -32,10 +32,10 @@ const icons = {
 <dialog class="account-mobile-drawer" id="account-mobile-drawer" data-account-drawer aria-labelledby="account-mobile-drawer-title">
   <div class="account-mobile-drawer-head"><h2 id="account-mobile-drawer-title">Menu účtu</h2><form method="dialog"><button type="submit" aria-label="Zavrieť menu účtu">×</button></form></div>
   <nav aria-label="Výhody účtu" data-account-drawer-group="benefits" hidden>
-    {items.filter((item) => benefits.has(item.id)).map((item) => <a class="account-mobile-drawer-link" href={item.href} aria-current={active === item.id ? "page" : undefined}>{item.label}</a>)}
+    {items.filter((item) => benefits.has(item.id)).map((item) => <a class="account-mobile-drawer-link" data-account-nav-link href={item.href} aria-current={active === item.id ? "page" : undefined}>{item.label}</a>)}
   </nav>
   <nav aria-label="Ďalšie časti účtu" data-account-drawer-group="more" hidden>
-    {more.map((item) => <a class="account-mobile-drawer-link" href={item.href} aria-current={active === item.id ? "page" : undefined}>{item.label === "Profil" ? "Profil a heslo" : item.label === "Adresy" ? "Adresy a firemné údaje" : item.label === "Newsletter" ? "E-mailové novinky" : item.label}</a>)}
+    {more.map((item) => <a class="account-mobile-drawer-link" data-account-nav-link href={item.href} aria-current={active === item.id ? "page" : undefined}>{item.label === "Profil" ? "Profil a heslo" : item.label === "Adresy" ? "Adresy a firemné údaje" : item.label === "Newsletter" ? "E-mailové novinky" : item.label}</a>)}
     <form method="post" action="/api/auth/logout" data-account-logout-form><button class="account-mobile-drawer-link" type="submit">Odhlásiť sa</button><p data-account-logout-error role="alert" hidden></p></form>
   </nav>
 </dialog>

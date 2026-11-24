@@ -1,0 +1,860 @@
+{
+  "baseline": "b5e9fcd9b42cdae434c12d654cfbefdf9cc7bb62",
+  "node": "v24.22.3",
+  "wooDelayMs": 400,
+  "roundsPerVersion": 3,
+  "summary": [
+    {
+      "orderCount": 61,
+      "beforeMedianMs": [
+        1067,
+        509,
+        436
+      ],
+      "afterMedianMs": [
+        453,
+        27,
+        13
+      ],
+      "afterWarmMs": [
+        4,
+        37
+      ]
+    },
+    {
+      "orderCount": 3,
+      "beforeMedianMs": [
+        881,
+        425,
+        417
+      ],
+      "afterMedianMs": [
+        461,
+        20,
+        10
+      ],
+      "afterWarmMs": [
+        4,
+        44
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "version": "before",
+      "round": 1,
+      "ok": true,
+      "orderCount": 61,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 883,
+          "wooReads": 3,
+          "startSpreadMs": 408
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 468,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 426,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 6,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 435,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 8,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 5,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 418,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 5,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": {
+        "requests": 8,
+        "ms": 575,
+        "wooReads": 8
+      }
+    },
+    {
+      "version": "after",
+      "round": 1,
+      "ok": true,
+      "orderCount": 61,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 453,
+          "wooReads": 2,
+          "startSpreadMs": 1
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 27,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 10,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 6,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 16,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 5,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 13,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": {
+        "requests": 8,
+        "ms": 498,
+        "wooReads": 1
+      }
+    },
+    {
+      "version": "before",
+      "round": 2,
+      "ok": true,
+      "orderCount": 61,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 4682,
+          "wooReads": 3,
+          "startSpreadMs": 420
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 1916,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 461,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 8,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 423,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 5,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 5,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 423,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 10,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": {
+        "requests": 8,
+        "ms": 678,
+        "wooReads": 8
+      }
+    },
+    {
+      "version": "after",
+      "round": 2,
+      "ok": true,
+      "orderCount": 61,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 500,
+          "wooReads": 2,
+          "startSpreadMs": 1
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 115,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 14,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 8,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 22,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 22,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 10,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 37,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 10,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": {
+        "requests": 8,
+        "ms": 529,
+        "wooReads": 1
+      }
+    },
+    {
+      "version": "before",
+      "round": 3,
+      "ok": true,
+      "orderCount": 61,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 1067,
+          "wooReads": 3,
+          "startSpreadMs": 441
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 509,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 436,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 15,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 421,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 417,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 6,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": {
+        "requests": 8,
+        "ms": 566,
+        "wooReads": 8
+      }
+    },
+    {
+      "version": "after",
+      "round": 3,
+      "ok": true,
+      "orderCount": 61,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 453,
+          "wooReads": 2,
+          "startSpreadMs": 1
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 25,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 13,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 6,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 15,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 14,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 5,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": {
+        "requests": 8,
+        "ms": 488,
+        "wooReads": 1
+      }
+    },
+    {
+      "version": "before",
+      "round": 1,
+      "ok": true,
+      "orderCount": 3,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 868,
+          "wooReads": 3,
+          "startSpreadMs": 407
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 425,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 418,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 6,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 410,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 9,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 429,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 8,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": null
+    },
+    {
+      "version": "after",
+      "round": 1,
+      "ok": true,
+      "orderCount": 3,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 459,
+          "wooReads": 2,
+          "startSpreadMs": 1
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 20,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 11,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 8,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 8,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 44,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 12,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 10,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": null
+    },
+    {
+      "version": "before",
+      "round": 2,
+      "ok": true,
+      "orderCount": 3,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 881,
+          "wooReads": 3,
+          "startSpreadMs": 425
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 423,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 416,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 7,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 412,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 411,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": null
+    },
+    {
+      "version": "after",
+      "round": 2,
+      "ok": true,
+      "orderCount": 3,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 465,
+          "wooReads": 2,
+          "startSpreadMs": 1
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 17,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 9,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 6,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 6,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 5,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": null
+    },
+    {
+      "version": "before",
+      "round": 3,
+      "ok": true,
+      "orderCount": 3,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 892,
+          "wooReads": 3,
+          "startSpreadMs": 432
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 432,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 417,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 7,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 409,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 5,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 426,
+          "wooReads": 1,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 7,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": null
+    },
+    {
+      "version": "after",
+      "round": 3,
+      "ok": true,
+      "orderCount": 3,
+      "wooDelayMs": 400,
+      "first": [
+        {
+          "path": "/ucet",
+          "ms": 461,
+          "wooReads": 2,
+          "startSpreadMs": 1
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 20,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 10,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "warm": [
+        {
+          "path": "/ucet",
+          "ms": 5,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 7,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 4,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet",
+          "ms": 6,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/objednavky",
+          "ms": 6,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        },
+        {
+          "path": "/ucet/tlaciarne",
+          "ms": 5,
+          "wooReads": 0,
+          "startSpreadMs": 0
+        }
+      ],
+      "concurrent": null
+    }
+  ]
+}
