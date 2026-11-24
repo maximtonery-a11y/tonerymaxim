@@ -11,6 +11,8 @@ const layouts = [
 const cents = text => Math.round(Number(text.replace(/[^0-9,.-]/g, '').replace(',', '.')) * 100);
 async function checkAccountNavigation(page, origin, [width, height, touch]) {
   await page.goto(origin + '/__account_fixture_session');
+  const rejectCookies = page.locator('#tm-cookie-reject');
+  if (await rejectCookies.isVisible()) await rejectCookies.click();
   const nav = page.locator('[data-account-mobile-nav]');
   assert.equal(await nav.isVisible(), touch);
   if (!touch) return;

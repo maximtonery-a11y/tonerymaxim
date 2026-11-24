@@ -53,6 +53,8 @@ Porovnanie klientskych súborov: 60 pred aj po, 59 identických podľa SHA-256; 
 
 Ručné overenie zostaveného náhľadu v cloudovom prehliadači: obe menu pri 320 px, pevných 74 px lišty a 58 px dotykových plôch pri výške 640 px; pri šírke 1280 px je lišta skrytá. Pri dvoch rýchlych kliknutiach a testovom 5-sekundovom zdržaní HTML bolo zvýraznené iba „Tlačiarne“, lišta mala naďalej 74 px a po dokončení sa čakajúci stav zrušil. Po otvorení prehľadu bol dostupný presný počet aj odkaz na celý finančný súhrn.
 
+Prvý nový GitHub beh `45453288341` zachytil prekážku v pridanom browser scenári: čerstvý kontext mal nad menu otvorenú cookie lištu. V scenári sa doplnilo jej bežné odmietnutie pred interakciou s účtom; kontrola klikateľnosti sa neobchádza vynúteným kliknutím a produkčný kód sa tým nemení. Neúspešný beh sa nezlúčil.
+
 Záverečný GitHub stav, presný commit a zlúčenie sa evidujú v [PR #38](https://github.com/maximtonery-a11y/tonerymaxim/pull/38). Pred zlúčením musia prejsť všetky povinné joby vrátane nákupných scenárov a GoPay. Táto lokálna skúška neposiela produkčné e-maily, nemení účty zákazníkov a nestrháva platby. Redeploy v Coolify a odozva fyzického Android telefónu sú samostatné následné overenie.
 
 Pri ďalšej úlohe začni aktuálnym stavom PR #38, týmto záznamom a aktuálnou hlavnou vetvou. Starú vetvu z 19. novembra nekopíruj cez novší web. Existujúce nálezy závislostí a testy vyžadujúce reálny lokálny katalóg ostávajú výslovne evidované; celá aplikácia sa neoznačuje za bezchybnú na základe testov tejto úpravy.
