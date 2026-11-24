@@ -1,6 +1,6 @@
 import type { Block } from 'tesseract.js';
 import { drawLabelLine, type LabelSelection } from '../lib/label-image';
-import { candidateText, hasSplitSupplyLabel, isCompleteBrotherModel, labelCandidates, type LabelLine } from '../lib/label-search';
+import { candidateText, corroboratedBrotherBadge, hasSplitSupplyLabel, isCompleteBrotherModel, labelCandidates, type LabelLine } from '../lib/label-search';
 import { labelImageForOcr, type PixelBox } from '../lib/label-photo';
 import { readPrintedLabel, type OcrMode } from './label-physical-ocr';
 
@@ -130,6 +130,7 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
   report('Pripravujem čítanie štítku…');
   let reader: Awaited<ReturnType<typeof createLabelReader>> | undefined;
   let sceneLines: LabelLine[] = [];
+  let secondScene: LabelLine[] = [];
   try {
     if (!area) {
       const { createSceneReader } = await import('./label-scene-reader');
@@ -154,6 +155,7 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
             ctx.filter = 'contrast(1.35)';
             ctx.drawImage(images[0], 0, 0, enhanced.width, enhanced.height);
             const second = await scene.read(enhanced, privateCodes);
+            secondScene = second.lines;
             const options = labelCandidates(second.lines, privateCodes);
             if (options.length === 1 && candidateText(options[0]) === candidateText(candidate)
                 && labelCandidates(lines, privateCodes).length === 1) {
@@ -177,6 +179,8 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
     if (sceneLines.length) {
       const first = labelCandidates(sceneLines, privateCodes);
       const second = labelCandidates(passes.flat(), privateCodes);
+      const confirmed = corroboratedBrotherBadge([sceneLines, secondScene, ...passes], privateCodes);
+      if (confirmed) return { passes: [confirmed], barcode, confirmedPrinter: candidateText(labelCandidates(confirmed, privateCodes)[0]) };
       if (!second.length) return { passes: [sceneLines], barcode };
       if (first.length === 1 && second.length === 1 && candidateText(first[0]) === candidateText(second[0])) {
         // Independently read the entire Brother model, including its suffix, with both engines.

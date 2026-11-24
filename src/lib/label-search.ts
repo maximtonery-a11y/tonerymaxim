@@ -25,6 +25,30 @@ const hpOem = /^(?:C[BEFH]\d{3}|[CQW]\d{4}|[A-Z]\d[A-Z]\d{2})[A-Z]{1,3}$/;
 export function isCompleteBrotherModel(code: string) {
   return /^(?:DCP|MFC|HL)-[A-Z]?\d{3,5}(?:CDW|CDN|DW|DN|CW|NW)$/.test(code);
 }
+
+// On one physical nameplate an extra stroke can turn CDW into CDHW.
+// Accept only a complete printed spelling, corroborated by another reading
+// of the same family and digits. Two plausible suffixes still need a choice.
+export function corroboratedBrotherBadge(passes: LabelLine[][], privateCodes: Set<string>) {
+  for (const lines of passes) labelCandidates(lines, privateCodes);
+  const observed = passes.map(lines => ({ lines, items: labelCandidates(lines, privateCodes) })).filter(r => r.items.length);
+  if (observed.length < 2 || observed.some(r => r.items.length !== 1)) return;
+  const items = observed.map(r => r.items[0]);
+  if (items.some(r => r.kind !== 'printer' || r.brand !== 'Brother')) return;
+  const good = items.filter(r => isCompleteBrotherModel(r.code));
+  if (!good.length || new Set(good.map(r => r.code)).size !== 1) return;
+  const code = good[0].code;
+  const stem = code.match(/^(?:DCP|MFC|HL)-[A-Z]?\d{3,5}/)![0];
+  const suffix = code.slice(stem.length);
+  const compatibleRead = (other: string) => {
+    if (other === code) return true;
+    if (!other.startsWith(stem)) return false;
+    const noisy = other.slice(stem.length);
+    if (noisy.length !== suffix.length + 1) return false;
+    return [...noisy].some((_, i) => noisy.slice(0, i) + noisy.slice(i + 1) === suffix);
+  };
+  if (items.every(r => compatibleRead(r.code))) return observed.find(r => r.items[0].code === code)?.lines;
+}
 const rules: Rule[] = [
   { kind: 'supply', brand: 'HP', pattern: hpOem },
   { kind: 'supply', brand: 'Brother', pattern: /^(?:(?:TN|DR|LC|BT|WT|BU)-?[A-Z]?\d{2,5}[A-Z0-9]{0,5}|DR-?\d{2,5}CL-(?:CMYK|CMY|BK|[CMY]))$/ },

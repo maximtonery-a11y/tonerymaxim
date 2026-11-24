@@ -1,10 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
+import { corroboratedBrotherBadge, drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
 import { createLiveConsensus, focusScore, hasLabelStrokes, sameLabelScene } from '../src/lib/label-camera-frame.ts';
 import { isolateLightPrint } from '../src/lib/label-photo.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
+
+test('a gallery badge can lose an extra stroke only when the complete model was also read verbatim', () => {
+  const rows = (...texts: string[]) => texts.map(text => [{ text, confidence: 88 }]);
+  assert.equal(corroboratedBrotherBadge(rows('DCP-9020CDHW', 'DCP-9020CDW'), new Set())?.[0].text, 'DCP-9020CDW');
+  for (const other of ['DCP-9020CDN', 'DCP-9028CDW', 'DCP-9020CD', 'HL-9020CDW']) {
+    assert.equal(corroboratedBrotherBadge(rows('DCP-9020CDW', other), new Set()), undefined);
+  }
+  assert.equal(corroboratedBrotherBadge(rows('DCP-9020CDW', 'S/N: DCP-9020CDW'), new Set()), undefined);
+});
 
 test('a new or differently framed scene never reuses the old label positions', () => {
   const frame = Uint8Array.from([25, 160, 82, 110]);
