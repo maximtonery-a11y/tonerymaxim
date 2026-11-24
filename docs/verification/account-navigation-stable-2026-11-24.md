@@ -59,7 +59,7 @@ Beh `45454636897` následne ukončila výnimka `Route is already handled` pri uv
 
 Beh `45455498767` potom ukázal pôvodnú príčinu: resolver lokátora čakal na dokončenie navigácie, ktorú ten istý test držal pozastavenú. Referencie na lištu a odkaz sa teraz vyriešia ešte pred dotykom a číta sa pôvodný dokument cez tieto referencie. Navigácia sa stále skutočne spustí a druhý dotyk musí zostať bez ďalšej požiadavky; povinné kontroly sa nevynechali.
 
-Zámerné pozastavenie testovacej navigácie má navyše vlastný 5-sekundový limit. Jeho uplynutie je chyba testu, nie úspech: uvoľní požiadavku na diagnostiku a úspešná vetva výslovne vyžaduje, aby sa limit nespustil. Takéto čakanie sa nemôže spoliehať iba na celkový limit GitHub jobu.
+Pri diagnostike sa doplnil aj pevný 5-sekundový limit držanej požiadavky. Finálna automatická skúška však navigáciu vôbec nezadržiava: po skutočnom dotyku zaznamená stav pri bubbling udalosti, ešte pred predvolenou navigáciou, a v rovnakom pending stave zopakuje aktiváciu odkazu. Vyžaduje odozvu do 100 ms, jediné zvýraznenie, zrušenie druhého kliknutia a iba jednu skutočnú HTTP navigáciu. Záznam prežije prepnutie dokumentu cez testovací callback do Node procesu. Toto odstraňuje závislosť testu od toho, či ovládač prehliadača čaká na práve pozastavenú navigáciu; pôvodné požiadavky na správanie zostávajú zachované.
 
 Záverečný GitHub stav, presný commit a zlúčenie sa evidujú v [PR #38](https://github.com/maximtonery-a11y/tonerymaxim/pull/38). Pred zlúčením musia prejsť všetky povinné joby vrátane nákupných scenárov a GoPay. Táto lokálna skúška neposiela produkčné e-maily, nemení účty zákazníkov a nestrháva platby. Redeploy v Coolify a odozva fyzického Android telefónu sú samostatné následné overenie.
 

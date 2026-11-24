@@ -31,65 +31,56 @@ async function checkAccountNavigation(page, origin, [width, height, touch]) {
     await page.locator('[data-account-drawer]').waitFor({ state: 'hidden' });
     assert.equal(await page.evaluate(() => scrollY), scroll);
   }
-  // Hold only the fixture's HTML navigation, so feedback is tested before it finishes.
   const destination = origin + '/ucet/tlaciarne';
-  let release;
-  const gate = new Promise(resolve => { release = resolve; });
-  let holdExpired = false;
-  const watchdog = setTimeout(() => {
-    holdExpired = true;
-    console.error('Account navigation fixture exceeded its 5-second hold limit');
-    release();
-  }, 5000);
-  watchdog.unref();
-  let routeFailure;
-  const hold = async route => {
-    await gate;
-    try { await route.continue(); }
-    catch (error) { routeFailure = error; }
-  };
+  const feedback = [];
+  await page.exposeFunction('__accountFeedback', snapshot => { feedback.push(snapshot); });
+  await page.evaluate(destination => {
+    const nav = document.querySelector('[data-account-mobile-nav]');
+    let repeated = false;
+    // The account's target handler runs before this bubbling observer. Capture
+    // the actual displayed feedback before native document navigation begins.
+    nav.addEventListener('click', event => {
+      const target = event.target.closest('a[data-account-nav-link]');
+      if (!target || target.href !== destination) return;
+      const attempt = repeated ? 2 : 1;
+      repeated = true;
+      const snapshot = {
+        attempt, pending: target.hasAttribute('data-navigation-pending'),
+        busy: nav.getAttribute('aria-busy'), prevented: event.defaultPrevented,
+        feedbackMs: performance.now() - event.timeStamp,
+        highlighted: [...nav.children]
+          .filter(child => !['rgba(0, 0, 0, 0)', 'transparent'].includes(getComputedStyle(child).backgroundColor))
+          .map(child => child.textContent.trim()),
+      };
+      void window.__accountFeedback(snapshot).catch(() => {});
+      // Replay a second activation while the first handler's pending state is
+      // active. A broken duplicate guard is visible even before HTTP starts.
+      if (attempt === 1) target.click();
+    });
+  }, destination);
   let requests = 0;
   const record = request => { if (request.isNavigationRequest() && request.url() === destination) requests++; };
   page.on('request', record);
-  await page.route(destination, hold);
   try {
-    const started = page.waitForRequest(request => request.isNavigationRequest() && request.url() === destination);
-    const target = nav.getByRole('link', { name: 'Tlačiarne', exact: true });
-    const box = await target.boundingBox();
-    assert.ok(box);
-    // Resolve the old document before starting navigation. Locator resolution
-    // intentionally waits for pending navigations and would deadlock our gate.
-    const targetElement = await target.elementHandle();
-    const navElement = await nav.elementHandle();
-    assert.ok(targetElement && navElement);
-    // Raw touch input does not wait for the intentionally held navigation.
-    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
-    const immediate = await targetElement.evaluate(el => {
-      return { pending: el.hasAttribute('data-navigation-pending'), busy: el.closest('nav').getAttribute('aria-busy') };
-    });
-    assert.deepEqual(immediate, { pending: true, busy: 'true' });
-    await started;
-    const highlighted = await navElement.evaluate(el => [...el.children]
-      .filter(child => !['rgba(0, 0, 0, 0)', 'transparent'].includes(getComputedStyle(child).backgroundColor))
-      .map(child => child.textContent.trim()));
-    assert.deepEqual(highlighted, ['Tlačiarne']);
-    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
-    assert.equal(requests, 1, 'Repeated activation must not restart a pending navigation');
-    release();
+    await nav.getByRole('link', { name: 'Tlačiarne', exact: true }).tap();
     await page.waitForURL(destination);
     await page.getByRole('heading', { level: 1, name: 'Moje tlačiarne', exact: true }).waitFor();
-    assert.equal(holdExpired, false, 'Feedback checks must finish before the navigation hold deadline');
-    assert.equal(routeFailure, undefined);
+    assert.equal(feedback.length, 2);
+    const first = feedback.find(snapshot => snapshot.attempt === 1);
+    const again = feedback.find(snapshot => snapshot.attempt === 2);
+    assert.equal(first.pending, true);
+    assert.equal(first.busy, 'true');
+    assert.equal(first.prevented, false);
+    assert.ok(first.feedbackMs < 100, 'Tap feedback must be visible within 100 ms');
+    assert.deepEqual(first.highlighted, ['Tlačiarne']);
+    assert.equal(again.prevented, true, 'The repeated activation must be cancelled');
+    assert.deepEqual(again.highlighted, ['Tlačiarne']);
+    assert.equal(requests, 1, 'Repeated activation must not restart navigation');
     assert.equal(await page.locator('[data-account-mobile-nav]').getAttribute('aria-busy'), null);
     await page.goBack();
     await page.getByRole('heading', { level: 1, name: 'Objednávky', exact: true }).waitFor();
     assert.equal(await page.locator('[data-navigation-pending]').count(), 0);
-  } finally {
-    clearTimeout(watchdog);
-    release();
-    await page.unroute(destination, hold);
-    page.off('request', record);
-  }
+  } finally { page.off('request', record); }
   console.log(`Account menu ${width}×${height} OK: stable bar, drawers, immediate feedback, one navigation, browser Back`);
 }
 async function checkCameraPromotion(page, origin, width, touch) {
