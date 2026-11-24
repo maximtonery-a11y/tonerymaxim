@@ -257,7 +257,7 @@ export function toMerchantProduct(product: TmProduct, origin: string, allProduct
   if (shoppingEligible) {
     if (isSearchPack(product)) shoppingLabel = "ads-set";
     else if (price >= 25) shoppingLabel = "ads-premium";
-    else shoppingLabel = "ads-compatible";
+    else shoppingLabel = "ads-standard";
   }
   const images = productImages(origin, product);
   const ids = identifiers(product, productType);

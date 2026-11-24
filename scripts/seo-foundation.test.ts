@@ -183,8 +183,8 @@ test("Merchant feed rozlišuje platené skupiny a zachováva bezplatné produkty
     stock_status: "instock", stock_quantity: 4, price: 30, categories: [{ name: "Tonery" }] };
   const cases = [
     [{ price: 9.99 }, "organic-only"], [{ price: 10 }, "organic-only"],
-    [{ price: 10.004 }, "organic-only"], [{ price: 10.01 }, "ads-compatible"],
-    [{ price: 24.99 }, "ads-compatible"], [{ price: 25 }, "ads-premium"],
+    [{ price: 10.004 }, "organic-only"], [{ price: 10.01 }, "ads-standard"],
+    [{ price: 24.99 }, "ads-standard"], [{ price: 25 }, "ads-premium"],
     [{ name: "HP 207A CMYK kompatibilná sada tonerov", price: 20 }, "ads-set"],
     [{ stock_quantity: 0 }, "organic-only"], [{ stock_status: "outofstock" }, "organic-only"],
     [{ product_type_key: "original" }, "organic-only"], [{ product_type_key: "renovated" }, "organic-only"],
