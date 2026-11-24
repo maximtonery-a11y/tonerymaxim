@@ -57,6 +57,8 @@ Prvý nový GitHub beh `45453288341` zachytil prekážku v pridanom browser scen
 
 Beh `45454636897` následne ukončila výnimka `Route is already handled` pri uvoľňovaní pozastavenej testovacej navigácie. Scenár používa priamy dotyk namiesto programového aktivovania odkazu; pri ukončení držanej požiadavky zachová prípadnú pôvodnú chybu a úspešná vetva vyžaduje dokončenie navigácie bez chyby routovania. Limity odozvy, jediného zvýraznenia a jednej navigácie zostávajú zachované. Táto oprava patrí len testovaciemu kódu.
 
+Beh `45455498767` potom ukázal pôvodnú príčinu: resolver lokátora čakal na dokončenie navigácie, ktorú ten istý test držal pozastavenú. Referencie na lištu a odkaz sa teraz vyriešia ešte pred dotykom a číta sa pôvodný dokument cez tieto referencie. Navigácia sa stále skutočne spustí a druhý dotyk musí zostať bez ďalšej požiadavky; povinné kontroly sa nevynechali.
+
 Záverečný GitHub stav, presný commit a zlúčenie sa evidujú v [PR #38](https://github.com/maximtonery-a11y/tonerymaxim/pull/38). Pred zlúčením musia prejsť všetky povinné joby vrátane nákupných scenárov a GoPay. Táto lokálna skúška neposiela produkčné e-maily, nemení účty zákazníkov a nestrháva platby. Redeploy v Coolify a odozva fyzického Android telefónu sú samostatné následné overenie.
 
 Pri ďalšej úlohe začni aktuálnym stavom PR #38, týmto záznamom a aktuálnou hlavnou vetvou. Starú vetvu z 19. novembra nekopíruj cez novší web. Existujúce nálezy závislostí a testy vyžadujúce reálny lokálny katalóg ostávajú výslovne evidované; celá aplikácia sa neoznačuje za bezchybnú na základe testov tejto úpravy.

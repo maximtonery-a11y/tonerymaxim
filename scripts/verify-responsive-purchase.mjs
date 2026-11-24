@@ -50,14 +50,19 @@ async function checkAccountNavigation(page, origin, [width, height, touch]) {
     const target = nav.getByRole('link', { name: 'Tlačiarne', exact: true });
     const box = await target.boundingBox();
     assert.ok(box);
+    // Resolve the old document before starting navigation. Locator resolution
+    // intentionally waits for pending navigations and would deadlock our gate.
+    const targetElement = await target.elementHandle();
+    const navElement = await nav.elementHandle();
+    assert.ok(targetElement && navElement);
     // Raw touch input does not wait for the intentionally held navigation.
     await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
-    const immediate = await target.evaluate(el => {
+    const immediate = await targetElement.evaluate(el => {
       return { pending: el.hasAttribute('data-navigation-pending'), busy: el.closest('nav').getAttribute('aria-busy') };
     });
     assert.deepEqual(immediate, { pending: true, busy: 'true' });
     await started;
-    const highlighted = await nav.evaluate(el => [...el.children]
+    const highlighted = await navElement.evaluate(el => [...el.children]
       .filter(child => !['rgba(0, 0, 0, 0)', 'transparent'].includes(getComputedStyle(child).backgroundColor))
       .map(child => child.textContent.trim()));
     assert.deepEqual(highlighted, ['Tlačiarne']);
