@@ -1,3 +1,4 @@
+import { toMerchantProduct } from "../src/lib/merchant-products.ts";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -176,13 +177,24 @@ test("Merchant XML obsahuje povinné Google atribúty, dopravu a cache validáci
   assert.match(source, /status: 304/);
 });
 
-test("Merchant feed povoľuje platené Shopping reklamy iba kompatibilným produktom", () => {
-  const products = read("src/lib/merchant-products.ts");
-  const feed = read("src/lib/merchant-feed.ts");
-  assert.match(products, /productType === "compatible" \? \[\] : \["Shopping_ads"\]/);
-  assert.match(products, /productType === "compatible" \? "ads-compatible" : "organic-only"/);
-  assert.doesNotMatch(products, /productType === "compatible" \|\| productType === "renovated" \? "ads-primary"/);
-  assert.match(feed, /g:excluded_destination/);
+test("Merchant feed rozlišuje platené skupiny a zachováva bezplatné produkty", () => {
+  const base = { id: 1, sku: "CF259X", slug: "hp-cf259x-kompatibilny-toner",
+    name: "HP CF259X kompatibilný toner", product_brand: "HP", product_type_key: "compatible",
+    stock_status: "instock", stock_quantity: 4, price: 30, categories: [{ name: "Tonery" }] };
+  const cases = [
+    [{ price: 9.99 }, "organic-only"], [{ price: 10 }, "organic-only"],
+    [{ price: 10.004 }, "organic-only"], [{ price: 10.01 }, "ads-standard"],
+    [{ price: 24.99 }, "ads-standard"], [{ price: 25 }, "ads-premium"],
+    [{ name: "HP 207A CMYK kompatibilná sada tonerov", price: 20 }, "ads-set"],
+    [{ stock_quantity: 0 }, "organic-only"], [{ stock_status: "outofstock" }, "organic-only"],
+    [{ product_type_key: "original" }, "organic-only"], [{ product_type_key: "renovated" }, "organic-only"],
+  ] as const;
+  for (const [changes, label] of cases) {
+    const item = toMerchantProduct({ ...base, ...changes } as any, "https://www.tonerymaxim.sk");
+    assert.ok(item);
+    assert.equal(item.labels[2], label);
+    assert.deepEqual(item.excludedDestinations, label === "organic-only" ? ["Shopping_ads"] : []);
+  }
 });
 
 test("Merchant feed odovzdáva presnú OEM rodinu ako štruktúrovaný signál", () => {

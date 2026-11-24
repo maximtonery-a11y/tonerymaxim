@@ -26,7 +26,7 @@ export function merchantDiagnostics(products:TmProduct[],origin='https://www.ton
     if(p.productType==='original'&&!p.identifierExists)issues.push({...base,severity:'warning',code:'missing_identifiers',message:'Originálu chýba GTIN alebo kombinácia značka + MPN.'});
     if(p.productType==='compatible'&&!p.oemCodes.length)issues.push({...base,severity:'warning',code:'missing_oem',message:'Kompatibilnému produktu chýba rozpoznaný OEM kód.'});
   }
-  const eligiblePaid=transformed.filter(p=>p.productType==='compatible'&&p.availability==='in_stock'&&p.image&&p.url&&p.price>0&&p.description.length>=40);
+  const eligiblePaid=transformed.filter(p=>!p.excludedDestinations.includes('Shopping_ads')&&p.image&&p.url&&p.description.length>=40);
   const byCode=Object.fromEntries([...new Set(issues.map(i=>i.code))].map(code=>[code,issues.filter(i=>i.code===code).length]));
   return{sourceProducts:products.length,transformedProducts:transformed.length,eligiblePaid:eligiblePaid.length,errors:issues.filter(i=>i.severity==='error').length,warnings:issues.filter(i=>i.severity==='warning').length,excludedChipless:products.filter(excludedChiplessCompatibleProduct).length,byCode,issues:issues.slice(0,1000)};
 }
