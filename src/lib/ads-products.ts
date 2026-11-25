@@ -1,6 +1,9 @@
-import type { TmProduct } from "./tm-products-cache";
-import { compactKey, stripHtml } from "./tm-products-cache";
-import { cleanGtin, cleanMpn, cleanProductBrand } from "./product-identifiers";
+import { isAvailableNow } from "./product-availability.ts";
+import { isSearchPack } from "./catalog-query.ts";
+import { merchantMaterialType } from "./merchant-products.ts";
+import type { TmProduct } from "./tm-products-cache.ts";
+import { compactKey, stripHtml } from "./tm-products-cache.ts";
+import { cleanGtin, cleanMpn, cleanProductBrand } from "./product-identifiers.ts";
 import { publicationEligibleProduct } from "./product-publication-policy.ts";
 
 export type AdsProduct = {
@@ -71,6 +74,10 @@ function materialType(product: TmProduct): "toner" | "ink" | null {
 
   if (/atrament|ink|napln|náplň|cartridge/.test(text)) return "ink";
   if (/toner/.test(text)) return "toner";
+  if (isSearchPack(product)) {
+    const material = merchantMaterialType(product);
+    if (material === "toner" || material === "ink") return material;
+  }
   return null;
 }
 
@@ -180,8 +187,9 @@ export function toAdsProduct(product: TmProduct, origin: string): AdsProduct | n
   const type = materialType(product);
   if (!type) return null;
 
-  const stockQuantity = Number(product.stock_quantity);
-  const inStock = product.stock_status === "instock" && (!Number.isFinite(stockQuantity) || stockQuantity > 0);
+  const rawQuantity = product.stock_quantity;
+  const stockQuantity = rawQuantity == null || String(rawQuantity).trim() === "" ? null : Number(rawQuantity);
+  const inStock = isAvailableNow(product);
   const oem = attributeValues(product, ["OEM", "oem"])[0] || "";
   const printers = unique(
     Array.isArray(product.compatible_printers)

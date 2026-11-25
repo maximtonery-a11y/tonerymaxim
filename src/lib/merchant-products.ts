@@ -69,7 +69,7 @@ function categoryText(product: TmProduct): string {
   )).join(" ");
 }
 
-function materialType(product: TmProduct): MerchantMaterialType | null {
+export function merchantMaterialType(product: TmProduct): MerchantMaterialType | null {
   const text = `${product.name || ""} ${product.slug || ""} ${product.product_type_detail_label || ""} ${categoryText(product)}`
     .toLowerCase()
     .normalize("NFD")
@@ -245,7 +245,7 @@ export function toMerchantProduct(product: TmProduct, origin: string, allProduct
   const productType = String(product.product_type_key || "") as MerchantProductType;
   if (!SUPPORTED_PRODUCT_TYPES.has(productType)) return null;
 
-  const material = materialType(product);
+  const material = merchantMaterialType(product);
   if (!material) return null;
 
   const price = Number(product.price || 0);

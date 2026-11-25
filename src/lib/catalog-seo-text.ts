@@ -327,8 +327,8 @@ function naturalQualifier(product: TmProduct, identity: string): string {
   if (thousandYield) return `${thousandYield.replace(".", ",")} tis. strán`;
   const volume = name.match(/\b(\d+(?:[.,]\d+)?)\s*ml\b/i)?.[1];
   if (volume) return `${volume.replace(".", ",")} ml`;
-  const pieces = name.match(/\((\d{1,2})\s*ks\)|\b(\d{1,2})\s*x\b/i);
-  if (pieces) return (pieces[1] || pieces[2]) + " ks";
+  const pieces = name.match(/\((\d{1,2})\s*ks\)/i) || name.match(/(?:^|\s)(\d{1,2})\s*x\b/i);
+  if (pieces) return pieces[1] + " ks";
   if (/\bCMYK\b/i.test(name)) return "CMYK sada";
   if (/\bCMY\b/i.test(name)) return "CMY sada";
   const pairedCode = name.match(/\b(?:black|čierna?)\s*\+\s*([A-Z]{1,5}-?\d{2,5}[A-Z]*)/i);
