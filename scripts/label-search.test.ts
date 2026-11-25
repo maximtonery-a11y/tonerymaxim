@@ -359,3 +359,33 @@ test('scanner keeps trusted compatible alternatives first and binds them to the 
   assert.deepEqual(exactLabelOffers(input, { products: [base, { ...xl, verifiedForLabel: 'Brother LC-123Y' }] }), [base]);
   assert.deepEqual(exactLabelOffers(input, { products: [{ ...xl, url: 'https://example.invalid/' }] }), []);
 });
+
+import { buildLabelCatalog } from '../src/lib/label-catalog-index.ts';
+import { makeMarkIndex, printedMarks, suggestedMarks, printedColor } from '../src/lib/label-catalog-match.ts';
+
+test('uncertain readings use the supplied catalog, including new prefixes, private fields, colour and commercial suffixes', async () => {
+  const products = [
+    ['Sharp','VX-7345BK','Čierna'], ['Sharp','VX-7345C','Azúrová'], ['Ricoh','RX8124','Čierna'],
+    ['Pantum','PR-6700X','Čierna'], ['Brother','TN-7670','Čierna'], ['Brother','TN-7880','Čierna'],
+    ['OKI','C910 (90001234)','Čierna'], ['OKI','C910 (90001235)','Žltá'],
+  ].map(([brand,ref,color],i) => ({id:i+1,slug:'item-'+i,product_brand:brand,
+    name:brand+' '+ref+' kompatibilný toner',price:20,color,product_type_key:'compatible',compatible_printers:[]}));
+  const groups=await buildLabelCatalog(products), index=makeMarkIndex([...groups.values()].map(group=>group.mark));
+  function find(text: string, brands: string[] = []) {
+    const lines=text.split('\n').map(text=>({text,confidence:70}));
+    return suggestedMarks(index,printedMarks(lines,new Set()),brands,printedColor(lines)).map(row=>row.name);
+  }
+  assert.deepEqual(find('VX-7345BK'), ['VX-7345BK']);
+  assert.deepEqual(find('RX8I24'), ['RX8124']);
+  assert.deepEqual(find('PR-6700'), ['PR-6700X']);
+  assert.deepEqual(find('TQ7670'), ['TN-7670']);
+  assert.deepEqual(find('TN7670TN7880/TN5555'), ['TN-7670','TN-7880']);
+  assert.deepEqual(find('ABC910BK'), ['C910 90001234']);
+  assert.deepEqual(find('VX7345BK',['RICOH']), []);
+  assert.deepEqual(find('VX7345C BLACK'), []);
+  assert.deepEqual(find('PR-6700A'), []);
+  assert.deepEqual(find('S/N:\nRX8124\nWIFI VX7345BK'), []);
+  assert.deepEqual(find('Toner Cartridge 88% Ready'), []);
+  assert.deepEqual(find('ZZ998877'), []);
+  assert.deepEqual(suggestedMarks(index,['RX8I24'],[],undefined,new Set(['RX8124'])), []);
+});

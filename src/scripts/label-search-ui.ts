@@ -2,7 +2,8 @@ import type { LabelSelection } from '../lib/label-image';
 import { LabelPreviewTimeout, scanLiveCamera } from './label-live-camera';
 import { setupLabelLinePicker } from './label-line-picker';
 import { barcodeGuidance, candidateText, type LabelCandidate } from '../lib/label-reference';
-import type { CatalogLink, LabelOffers } from '../lib/label-search';
+import type { CatalogMark } from '../lib/label-catalog-match';
+import type { LabelLine, CatalogLink, LabelOffers } from '../lib/label-search';
 
 type CapturedOffers = Map<string, CatalogLink[]>;
 
@@ -141,11 +142,15 @@ function setup(root: HTMLElement) {
     const drum = candidate.brand === 'Brother' && /^DR[-\d]/.test(candidate.code);
     status.textContent = candidate.kind === 'printer' ? (candidate.brand ? 'Vyberte presný názov tlačiarne.' : 'Zachytené označenie ' + candidate.code + '. Ktorú značku tlačiarne máte?')
       : (drum ? 'Nájdené optické valce pre ' : 'Nájdené náplne pre ') + query;
+    renderOffers(items, candidate.kind === 'supply');
+  }
+
+  function renderOffers(items: CatalogLink[], supply: boolean) {
     for (const item of items) {
       const link = document.createElement('a');
       link.href = item.url;
       link.textContent = item.title;
-      if (candidate.kind === 'supply' && typeof item.price === 'number' && Number.isFinite(item.price) && item.price > 0) {
+      if (supply && typeof item.price === 'number' && Number.isFinite(item.price) && item.price > 0) {
         const amount = document.createElement('small');
         amount.textContent = price.format(item.price) + ' s DPH';
         link.append(amount);
@@ -154,7 +159,63 @@ function setup(root: HTMLElement) {
     }
   }
 
-  async function lookup(candidate: LabelCandidate, automatic = false, alternatives?: LabelCandidate[], capturedOffers?: CapturedOffers) {
+  async function suggest(lines: LabelLine[], blocked: Set<string>, signal: AbortSignal, recognized?: string) {
+    const { matchCatalogLines, markDescription, confirmedOffers } = await import('./label-confirmation');
+    const marks = await matchCatalogLines(lines, blocked, signal, recognized);
+    if (signal.aborted || !marks.length) return false;
+    function choices() {
+      results.replaceChildren();
+      cropToggle.hidden = !lastFile;
+      status.textContent = marks.length === 1 ? 'Je toto označenie na vašom štítku?' : 'Ktoré označenie zodpovedá vášmu štítku?';
+      const extra = document.createElement('details');
+      const summary = document.createElement('summary');
+      summary.textContent = 'Ďalšie označenia (' + (marks.length - 5) + ')';
+      extra.append(summary);
+      for (const [position, mark] of marks.entries()) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = markDescription(mark);
+        button.addEventListener('click', () => void confirmMark(mark));
+        (position < 5 ? results : extra).append(button);
+      }
+      if (marks.length > 5) results.append(extra);
+      focusResult();
+    }
+    async function confirmMark(mark: CatalogMark) {
+      const task = begin('Hľadám potvrdené označenie…', 18000);
+      const description = markDescription(mark);
+      field.value = mark.kind === 'Tlačiareň' ? mark.name : mark.brand+' '+mark.name;
+      try {
+        let offers = await confirmedOffers(mark,task.signal);
+        if (offers.length && !offers.some(item => item.type === 'compatible') && (mark.kind === 'Toner' || mark.kind === 'Atramentová náplň')) {
+          // Reuse the full OEM/printer-list verification for higher capacity alternatives.
+          const candidate = {brand:mark.brand,code:mark.name,kind:'supply' as const,certain:false};
+          const related = await catalogOffers(candidate,task.signal).catch(() => undefined);
+          offers = [...(related?.products || []).filter(item => item.type === 'compatible' && item.verifiedForLabel === candidateText(candidate)
+            && /^\/produkt\/[a-z0-9-]+\/?$/i.test(item.url) && !offers.some(existing => existing.url === item.url)), ...offers];
+        }
+        if (task.signal.aborted) return;
+        status.textContent = offers.length ? 'Potvrdené označenie: '+description : 'Táto ponuka už nie je v katalógu.';
+        renderOffers(offers,mark.kind !== 'Tlačiareň');
+      } catch {
+        if (!task.signal.aborted) status.textContent = 'Katalóg sa nepodarilo načítať. Skúste vybrať označenie znova.';
+      } finally {
+        if (active === task) {
+          reset();
+          const back = document.createElement('button');
+          back.type = 'button';
+          back.textContent = 'Späť na výber označenia';
+          back.addEventListener('click',choices);
+          results.append(back);
+          focusResult();
+        }
+      }
+    }
+    choices();
+    return true;
+  }
+
+  async function lookup(candidate: LabelCandidate, automatic = false, alternatives?: LabelCandidate[], capturedOffers?: CapturedOffers, evidence?: LabelLine[]) {
     const query = candidateText(candidate);
     const task = begin('Hľadám ' + query + ' v katalógu…', 18_000);
     stop.textContent = 'Zrušiť hľadanie';
@@ -166,7 +227,7 @@ function setup(root: HTMLElement) {
         cropToggle.hidden = !lastFile;
         status.textContent = 'Vidím ' + query + '. Pri tomto valci rozhodujú aj posledné písmená. Zachyťte celý riadok s označením.';
       } else if (items.length) await showOffers(candidate, items, task.signal);
-      else {
+      else if (!evidence || !await suggest(evidence,privateCodes,task.signal)) {
         cropToggle.hidden = !lastFile;
         status.textContent = 'Presnú zhodu pre ' + query + ' sme nenašli. Porovnajte označenie so štítkom alebo skúste bližšiu fotku.';
       }
@@ -255,7 +316,7 @@ function setup(root: HTMLElement) {
         await showOffers(candidate, items, task.signal);
         if (results.childElementCount) focusResult();
         return true;
-      }, retryUntil);
+      }, retryUntil, (lines, blocked, recognized) => suggest(lines,blocked,task.signal,recognized));
     } catch (error) {
       if (!task.signal.aborted) {
         if (error instanceof LabelPreviewTimeout) {
@@ -313,11 +374,10 @@ function setup(root: HTMLElement) {
       const [{ readLabel }, { labelBrands, hasSplitSupplyLabel, liveLabelOptions, selectedLabelCandidates, labelCandidates }] =
         await Promise.all([import('./label-reader'), import('../lib/label-search')]);
       if (task.signal.aborted) return;
-      const { passes, barcode, confirmedPrinter, disputed } = await readLabel(file, task.signal, message => {
+      const { passes, barcode, confirmedPrinter, disputed, evidence } = await readLabel(file, task.signal, message => {
         if (!task.signal.aborted) status.textContent = message;
       }, area, privateCodes);
       if (task.signal.aborted) return;
-      reset();
       const lines = passes[0] || [];
       if (!area) previousBrands = labelBrands(lines);
       if (!area && hasSplitSupplyLabel(lines)) {
@@ -334,12 +394,22 @@ function setup(root: HTMLElement) {
         : labelCandidates(lines, privateCodes, previousBrands);
       if (options.length === 1 && confirmedPrinter === candidateText(options[0])) options[0].certain = true;
       if (disputed) for (const option of options) option.certain = false;
-      choose(options, barcode);
+      const readings = evidence || passes.flat();
+      if (area && options.length === 1 && options[0].kind === 'printer' && !options[0].certain) {
+        choose(options);
+      } else if (options.length === 1 && options[0].certain) {
+        if (!area && await suggest(readings,privateCodes,task.signal,options[0].code)) return;
+        if (task.signal.aborted) return;
+        void lookup(options[0],true,undefined,undefined,readings);
+      } else if (!await suggest(readings,privateCodes,task.signal)) {
+        // Only a catalog-backed choice is useful on an uncertain or multi-code label.
+        choose([], barcode);
+      }
     } catch (error) {
       if (!task.signal.aborted) {
         cropToggle.hidden = !lastFile;
         status.textContent = error instanceof Error && /^(Vyberte fotku|Túto fotku)/.test(error.message)
-          ? error.message : 'Fotku sa nepodarilo prečítať. Skúste bližší záber alebo zadajte označenie ručne.';
+          ? error.message : error instanceof Error && error.message === 'catalog' ? 'Katalóg sa nepodarilo načítať. Skúste to znova.' : 'Fotku sa nepodarilo prečítať. Skúste bližší záber alebo zadajte označenie ručne.';
       }
     } finally {
       if (active === task) reset();

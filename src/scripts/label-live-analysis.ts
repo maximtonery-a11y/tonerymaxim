@@ -1,9 +1,10 @@
 import { captureLabelFrame, createLiveConsensus, enhanceInk, liveReadPasses, type FramePass, type LabelExposure } from '../lib/label-camera-frame';
 import { isolateLightPrint } from '../lib/label-photo';
-import { barcodeGuidance, candidateText, hasSplitSupplyLabel, isShorterReading, liveLabelOptions, type LabelCandidate } from '../lib/label-search';
+import { barcodeGuidance, candidateText, hasSplitSupplyLabel, isShorterReading, liveLabelOptions, type LabelCandidate, type LabelLine } from '../lib/label-search';
 import type { createLabelReader } from './label-reader';
 
 export type LabelMatch = (options: LabelCandidate[]) => Promise<boolean | 'suffix'>;
+export type LabelSuggestions = (lines: LabelLine[], blocked: Set<string>, recognized?: string) => Promise<boolean>;
 export async function readExposures(
   frames: LabelExposure[],
   reader: Awaited<ReturnType<typeof createLabelReader>>,
@@ -11,7 +12,8 @@ export async function readExposures(
   match: LabelMatch,
   privateCodes = new Set<string>(),
   split = false,
-  readingBudget = 12_000
+  readingBudget = 12_000,
+  suggest?: LabelSuggestions
 ) {
   const canvas = document.createElement('canvas');
   const votes = new Map<string, { frames: Set<number>; consensus: ReturnType<typeof createLiveConsensus> }>();
@@ -21,6 +23,7 @@ export async function readExposures(
   let barcode = false,
     suffix = false,
     lastQuery = '';
+  const evidence: LabelLine[] = [];
   let readingMs = 0;
   // Use real, independent exposures to confirm a reading. An OCR retry on the
   // same pixels cannot vote twice. All passes here run with the camera OFF.
@@ -60,6 +63,7 @@ export async function readExposures(
         );
         readingMs += performance.now() - started;
         signal.throwIfAborted();
+        if (evidence.length < 150) evidence.push(...result.lines);
         barcode ||= result.barcode;
         const partialPair = hasSplitSupplyLabel(result.lines);
         split ||= partialPair;
@@ -67,7 +71,10 @@ export async function readExposures(
         if (!options.length || (split && options.length === 1 && options[0].kind === 'supply')) {
           if (result.barcode && !split && !votes.size && (mode.mode === 'context' || mode.mode === 'scene')) {
             barcodeFrames.add(frame.at);
-            if (barcodeFrames.size >= 2) return barcodeGuidance;
+            if (barcodeFrames.size >= 2) {
+              if (await suggest?.(evidence,privateCodes)) return;
+              return barcodeGuidance;
+            }
           }
           if (partialPair && !mode.ink && !mode.angle) break;
           // On a blank first exposure try another moment too. On the following pass
@@ -82,6 +89,7 @@ export async function readExposures(
         if (vote.frames.has(frame.at)) continue;
         vote.frames.add(frame.at);
         if (!vote.consensus.observe(options[0], frame.at)) continue;
+        if (options.length === 1 && !split && await suggest?.(evidence, privateCodes, options[0].code)) return;
         const found = await match(options);
         signal.throwIfAborted();
         if (found === true) return;
@@ -93,6 +101,7 @@ export async function readExposures(
       if (readingMs > readingBudget || (barcode && !votes.size && mode.mode === 'guide')) break;
       frames.push(frames.shift()!);
     }
+    if (!suffix && !split && await suggest?.(evidence,privateCodes)) return;
     if (suffix)
       return 'Pri tomto valci rozhodujú aj posledné písmená. Skúste znovu zachytiť celý kód vrátane koncovky.';
     if (split)
