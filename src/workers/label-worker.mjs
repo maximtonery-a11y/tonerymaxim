@@ -1,5 +1,6 @@
 import * as ort from 'onnxruntime-web/wasm';
 import { initDet, initRec, warpDet } from 'esearch-ocr';
+import { unpackLabelModel } from '../lib/label-model-response.ts';
 
 // A single dedicated worker owns both sessions. Cancelling a scan releases both, including the WASM heap.
 const folder = new URL('./', self.location.href);
@@ -13,8 +14,7 @@ const englishAlphabet = "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcde
 let models;
 async function unpack(name) {
   const response = await fetch(new URL(name, folder), { cache: 'force-cache', credentials: 'omit' });
-  if (!response.ok || !response.body) throw new Error('model download');
-  return new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+  return unpackLabelModel(response);
 }
 async function loadModels() {
   const [wasm, detection, recognition] = await Promise.all([

@@ -102,7 +102,7 @@ export async function createLabelReader(signal: AbortSignal) {
   }
   try {
     await job('load', { options: { lstmOnly: true, corePath: folder } });
-    await job('loadLanguage', { langs: 'eng', options: { langPath: folder, gzip: true, lstmOnly: true, cachePath: 'tm-label-v7' } });
+    await job('loadLanguage', { langs: 'eng', options: { langPath: folder, gzip: false, lstmOnly: true, cachePath: 'tm-label-v7' } });
     await job('initialize', { langs: 'eng', oem: 1, config: {} });
     await job('setParameters', { params: { tessedit_pageseg_mode: '11', user_defined_dpi: '200' } });
     return {
