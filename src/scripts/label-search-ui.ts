@@ -167,13 +167,18 @@ function setup(root: HTMLElement) {
       results.replaceChildren();
       cropToggle.hidden = !lastFile;
       status.textContent = marks.length === 1 ? 'Je toto označenie na vašom štítku?' : 'Ktoré označenie zodpovedá vášmu štítku?';
-      for (const mark of marks) {
+      const extra = document.createElement('details');
+      const summary = document.createElement('summary');
+      summary.textContent = 'Ďalšie označenia (' + (marks.length - 5) + ')';
+      extra.append(summary);
+      for (const [position, mark] of marks.entries()) {
         const button = document.createElement('button');
         button.type = 'button';
         button.textContent = markDescription(mark);
         button.addEventListener('click', () => void confirmMark(mark));
-        results.append(button);
+        (position < 5 ? results : extra).append(button);
       }
+      if (marks.length > 5) results.append(extra);
       focusResult();
     }
     async function confirmMark(mark: CatalogMark) {

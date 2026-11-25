@@ -154,6 +154,6 @@ export function suggestedMarks(
   if (!ranked.length) return [];
   const best = ranked[0][1];
   const candidates = ranked.filter(([, score]) => score >= (best >= 88 ? 88 : best));
-  // A common fragment alone is not enough to pick a handful of arbitrary matches.
-  return candidates.length <= 6 ? candidates.map(([row]) => row) : [];
+  // Exact shared codes can be disambiguated by the customer. Suppress a broad fuzzy guess.
+  return best >= 88 || candidates.length <= 6 ? candidates.map(([row]) => row) : [];
 }

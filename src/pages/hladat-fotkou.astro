@@ -111,6 +111,8 @@ Astro.response.headers.set('Permissions-Policy', permissionsPolicy(Astro.url.pat
   #label-status { font-weight:600; scroll-margin-top:clamp(5rem,18vh,10rem); }
   .matches { display:grid; gap:.55rem; }
   .matches :global(a) { text-decoration:none; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:.4rem; }
+  .matches :global(details[open]) { display:grid; gap:.55rem; }
+  .matches :global(summary) { cursor:pointer; padding:.5rem 0; }
   .matches :global(small) { white-space:nowrap; }
   .crop-toggle { margin-top:.7rem; }
   #crop-photo p { margin:.7rem 0; }

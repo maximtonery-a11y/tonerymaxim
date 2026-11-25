@@ -48,8 +48,35 @@ export async function matchCatalogLines(
       ...dictionary.brands.filter((brand) => words.includes(' ' + brand + ' ')),
     ]),
   ];
-  const marks = suggestedMarks(dictionary, keys, brands, printedColor(lines), blocked);
-  if (direct && marks.every((mark) => mark.refs.includes(direct))) return [];
+  const color = printedColor(lines);
+  const marks = suggestedMarks(dictionary, keys, brands, color, blocked);
+  // Preserve each legible member of a printed list even when another member is a closer match.
+  const listed = new Set<string>();
+  for (const line of lines) {
+    if (!/[/／]|([A-Z]{2,})[- ]?\d{2,6}\1[- ]?\d/i.test(line.text)) continue;
+    const refs = printedMarks([line], blocked).filter((ref) => /[A-Z]/.test(ref) && /\d{2}/.test(ref));
+    if (refs.length > 1) for (const ref of refs) listed.add(ref);
+  }
+  const prefixOf = (ref: string) => /^[A-Z]+/.exec(ref)?.[0];
+  const anchors = marks.filter((mark) => mark.refs.some((ref) => listed.has(ref)));
+  const anchoredBrands = new Set(anchors.map((mark) => mark.brand));
+  const anchoredFamilies = new Set(
+    anchors.flatMap((mark) => mark.refs.filter((ref) => listed.has(ref)).map(prefixOf)),
+  );
+  for (const ref of listed) {
+    for (const extra of suggestedMarks(dictionary, [ref], brands, color, blocked)) {
+      if (!extra.refs.includes(ref) && anchors.length) {
+        if (!anchoredBrands.has(extra.brand)) continue;
+        if (
+          anchoredFamilies.has(prefixOf(ref)) &&
+          !extra.refs.some((code) => prefixOf(code) === prefixOf(ref))
+        )
+          continue;
+      }
+      if (!marks.includes(extra)) marks.push(extra);
+    }
+  }
+  if (direct && !listed.size && marks.every((mark) => mark.refs.includes(direct))) return [];
   return marks;
 }
 export async function confirmedOffers(mark: CatalogMark, signal: AbortSignal): Promise<CatalogLink[]> {

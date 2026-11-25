@@ -76,8 +76,8 @@ export async function verifyMobileLabel(page, origin) {
     assert.match(await blackInk.first().innerText(), /LC-123XLBK/);
     assert.match(await blackInk.nth(1).innerText(), /LC-123BK/);
 
-    // These OCR substitutions are not product aliases. Both choices must come from the fixture catalogue.
-    await gallery.setInputFiles(await labelFile('TQ2421 / TQ245Y'));
+    // One code is exact and the second contains an OCR substitution. Both choices must come from the fixture catalogue.
+    await gallery.setInputFiles(await labelFile('TN2421 / TQ245Y'));
     const correction = page.locator('[data-matches] button').filter({hasText:'TN-2421'});
     await correction.waitFor({timeout:45000});
     assert.ok(await page.locator('[data-matches] button').filter({hasText:'TN-245Y'}).isVisible());
