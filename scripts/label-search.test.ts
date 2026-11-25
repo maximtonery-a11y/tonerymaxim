@@ -1,10 +1,21 @@
 import test from 'node:test';
+import { gzipSync } from 'node:zlib';
+import { unpackLabelModel } from '../src/lib/label-model-response.ts';
 import assert from 'node:assert/strict';
 import { confirmsBrotherColourBadge, corroboratedBrotherBadge, drumNeedsSuffix, exactLabelOffers, hpOrderCode, isShorterReading, labelCandidates, liveLabelOptions, candidateText, liveLabelCandidate, printedTonerCodes, selectedLabelCandidates } from '../src/lib/label-search.ts';
 import { createLiveConsensus, focusScore, hasLabelStrokes, sameLabelScene } from '../src/lib/label-camera-frame.ts';
 import { isolateLightPrint } from '../src/lib/label-photo.ts';
 
 const read = (text: string, confidence = 96) => labelCandidates(text.split('\n').map(text => ({ text, confidence })));
+
+test('OCR accepts the gzip file with and without a retained HTTP gzip layer', async () => {
+  const wasm = Uint8Array.of(0, 97, 115, 109, 1, 0, 0, 0);
+  const file = gzipSync(wasm);
+  for (const body of [file, gzipSync(file)]) {
+    assert.deepEqual(new Uint8Array(await unpackLabelModel(new Response(new Uint8Array(body)))), wasm);
+  }
+  await assert.rejects(unpackLabelModel(new Response(null, { status: 404 })), /model download/);
+});
 
 test('only an independently legible colour suffix can resolve a closed C on a printer badge', () => {
   const precise = read('DCP-9020CDW');
