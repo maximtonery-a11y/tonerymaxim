@@ -48,7 +48,7 @@ export async function matchCatalogLines(
       ...dictionary.brands.filter((brand) => words.includes(' ' + brand + ' ')),
     ]),
   ];
-  const marks = suggestedMarks(dictionary, keys, brands, printedColor(lines));
+  const marks = suggestedMarks(dictionary, keys, brands, printedColor(lines), blocked);
   if (direct && marks.every((mark) => mark.refs.includes(direct))) return [];
   return marks;
 }

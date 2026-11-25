@@ -387,4 +387,5 @@ test('uncertain readings use the supplied catalog, including new prefixes, priva
   assert.deepEqual(find('S/N:\nRX8124\nWIFI VX7345BK'), []);
   assert.deepEqual(find('Toner Cartridge 88% Ready'), []);
   assert.deepEqual(find('ZZ998877'), []);
+  assert.deepEqual(suggestedMarks(index,['RX8I24'],[],undefined,new Set(['RX8124'])), []);
 });

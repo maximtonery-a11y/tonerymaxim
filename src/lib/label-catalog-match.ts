@@ -94,10 +94,13 @@ export function suggestedMarks(
   tokens: string[],
   brands: string[],
   printedInk?: string,
+  blocked?: Set<string>,
 ) {
   const scores = new Map<CatalogMark, number>();
   function credit(key: string, score: number, color?: string) {
     for (const row of index.exact.get(key) || []) {
+      // A crop can distort a character in a serial previously read on the full photo.
+      if (blocked?.size && row.refs.some(ref => blocked.has(ref))) continue;
       if (brands.length && !brands.includes(row.brand.toUpperCase())) continue;
       if (
         printedInk &&
