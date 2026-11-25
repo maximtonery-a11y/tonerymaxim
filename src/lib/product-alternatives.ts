@@ -6,7 +6,7 @@ import { specialChipVariantKey, type TmProduct } from './tm-products-cache.ts';
 const fold = (value: unknown) => String(value ?? '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const types = ['compatible', 'original', 'renovated'];
 
-function material(product: TmProduct) {
+export function productMaterial(product: TmProduct) {
   const text = fold([product.name, product.product_type_detail_label, ...(Array.isArray(product.categories) ? product.categories.map((c: any) => c?.name) : [])].join(' '));
   if (/odpadov|waste|maintenance|udrzb/.test(text)) return 'waste';
   if (/prenosov|transfer|belt/.test(text)) return 'belt';
@@ -63,7 +63,7 @@ function profile(product: TmProduct) {
   const color = fold(product.color || product.farba);
   const slot = name.match(/\b(foto|photo|light|svetl|matn|pigment)\w*/)?.[1] || '';
   const printers = product.compatible_printers || product.printers;
-  return { product, brand, code, family: capacityFamily(code, brand), kind: material(product), size,
+  return { product, brand, code, family: capacityFamily(code, brand), kind: productMaterial(product), size,
     color: /^(?:neuveden[eay]|n\/a|[-–])$/.test(color) ? '' : color, slot,
     capacity, pages, ml, hasVolume, extras: (name.match(extraCartridge) || []).join('/').replace(/[ -]/g, ''),
     models: new Set<string>((Array.isArray(printers) ? printers : []).map((name: string) => fold(name).replace(/[^a-z0-9]/g, '')).filter((name: string) => /\d/.test(name))),

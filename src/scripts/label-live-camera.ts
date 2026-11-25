@@ -1,7 +1,7 @@
 import { focusScore, hasLabelStrokes, sameLabelScene, saveLabelFrame, type CapturedLabelFrame, type LabelExposure } from '../lib/label-camera-frame';
 import { barcodeGuidance } from '../lib/label-reference';
 import type { locateLabelRows } from '../lib/label-photo';
-import type { LabelMatch } from './label-live-analysis';
+import type { LabelMatch, LabelSuggestions } from './label-live-analysis';
 import type { createCameraProbe } from './label-camera-probe';
 type CameraProbe = ReturnType<typeof createCameraProbe>;
 
@@ -158,7 +158,8 @@ export async function scanLiveCamera(
   report: (message: string) => void,
   captured: () => void,
   match: LabelMatch,
-  retryUntil?: number
+  retryUntil?: number,
+  suggest?: LabelSuggestions
 ) {
   const { signal } = task;
   let expiresAt = retryUntil;
@@ -225,15 +226,19 @@ export async function scanLiveCamera(
     try { options = await probe?.confirm(frames); }
     catch { signal.throwIfAborted(); }
     finally { probe?.close(); }
+    const suggestScene = async (recognized?: string) => !!(probe && !probe.split && await suggest?.(probe.lines,probe.privateCodes,recognized));
+    if (!options?.length && await suggestScene()) return;
     if (probe?.serialOnly && !options?.length) { report(barcodeGuidance); return; }
     if (probe?.unrelated && !options?.length) {
       report('Označenie sa nepodarilo bezpečne prečítať. Namierte na celý názov tlačiarne alebo na kód náplne.');
       return;
     }
     if (options?.length) {
+      if (options.length === 1 && await suggestScene(options[0].code)) return;
       const found = await match(options);
       signal.throwIfAborted();
       if (found === true) return;
+      if (found !== 'suffix' && await suggestScene()) return;
       if (found === 'suffix') report('Pri tomto valci rozhodujú aj posledné písmená. Zachyťte celý kód vrátane koncovky.');
       else report('Pre prečítané označenie sme v katalógu nenašli presnú ponuku. Skontrolujte označenie.');
       return;
@@ -241,7 +246,7 @@ export async function scanLiveCamera(
     const [{ createLabelReader }, { readExposures }] = await Promise.all([import('./label-reader'), import('./label-live-analysis')]);
     const reader = await createLabelReader(signal);
     try {
-      const message = await readExposures(frames, reader, signal, match, probe?.privateCodes, probe?.split, probe?.fallbackBudget);
+      const message = await readExposures(frames, reader, signal, match, probe?.privateCodes, probe?.split, probe?.fallbackBudget, suggest);
       if (message && !signal.aborted) report(message);
     } finally { reader.close(); }
   } catch (error) {

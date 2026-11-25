@@ -76,6 +76,16 @@ export async function verifyMobileLabel(page, origin) {
     assert.match(await blackInk.first().innerText(), /LC-123XLBK/);
     assert.match(await blackInk.nth(1).innerText(), /LC-123BK/);
 
+    // These OCR substitutions are not product aliases. Both choices must come from the fixture catalogue.
+    await gallery.setInputFiles(await labelFile('TQ2421 / TQ245Y'));
+    const correction = page.locator('[data-matches] button').filter({hasText:'TN-2421'});
+    await correction.waitFor({timeout:45000});
+    assert.ok(await page.locator('[data-matches] button').filter({hasText:'TN-245Y'}).isVisible());
+    assert.equal(await page.locator('[data-matches] a').count(),0);
+    await correction.click();
+    await page.locator('[data-matches] a').first().waitFor();
+    assert.ok((await page.locator('[data-matches] a').allTextContents()).every(title => title.includes('TN-2421')));
+
     await page.locator('#label-code').fill('Brother TN-24219');
     await page.locator('form.manual button').click();
     await page.waitForFunction(() => document.querySelector('#label-status')?.textContent.includes('Presnú zhodu'));

@@ -64,6 +64,7 @@ export function createSceneReader(signal: AbortSignal) {
     const context = canvas.getContext('2d', { willReadFrequently: true })!;
     context.drawImage(source, 0, 0, canvas.width, canvas.height);
     let rows: Row[] = [];
+    let nativeEvidence: Row[] = [];
     if (native) {
       let deadline: ReturnType<typeof setTimeout> | undefined;
       try {
@@ -76,13 +77,19 @@ export function createSceneReader(signal: AbortSignal) {
       finally { clearTimeout(deadline); }
       signal.throwIfAborted();
       // A native backend that only spotted display/status text did not identify a label.
-      if (!labelCandidates(rows, privateCodes).length) { rows = []; native = undefined; }
+      if (!labelCandidates(rows, privateCodes).length) { nativeEvidence = rows; rows = []; native = undefined; }
     }
     if (!rows.length) {
-      await start();
-      signal.throwIfAborted();
-      const { data: pixels } = context.getImageData(0, 0, canvas.width, canvas.height);
-      rows = await request({ width: canvas.width, height: canvas.height, pixels, boxes }, [pixels.buffer]);
+      try {
+        await start();
+        signal.throwIfAborted();
+        const { data: pixels } = context.getImageData(0, 0, canvas.width, canvas.height);
+        rows = await request({ width: canvas.width, height: canvas.height, pixels, boxes }, [pixels.buffer]);
+      } catch (error) {
+        signal.throwIfAborted();
+        if (!nativeEvidence.length) throw error;
+      }
+      if (!rows.length) rows = nativeEvidence;
     }
     // OCR engines sometimes join the family and model into one word or insert a space before 'dw'.
     // Restore boundaries only where every printed character is present.

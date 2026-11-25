@@ -1,8 +1,8 @@
 import { captureLabelFrame, createLiveConsensus, sameLabelScene, type LabelExposure } from '../lib/label-camera-frame';
-import { candidateText, hasSplitSupplyLabel, labelBrands, liveLabelOptions, type LabelCandidate } from '../lib/label-search';
+import { candidateText, hasSplitSupplyLabel, labelBrands, liveLabelOptions, type LabelCandidate, type LabelLine } from '../lib/label-search';
 import { createSceneReader, type SceneResult } from './label-scene-reader';
 
-type Reading = { at: number; signature?: Uint8Array; options: LabelCandidate[]; boxes: SceneResult['boxes']; serialOnly: boolean; unrelated: boolean };
+type Reading = { lines: LabelLine[]; at: number; signature?: Uint8Array; options: LabelCandidate[]; boxes: SceneResult['boxes']; serialOnly: boolean; unrelated: boolean };
 
 export function createCameraProbe(signal: AbortSignal) {
   const reader = createSceneReader(signal);
@@ -24,7 +24,7 @@ export function createCameraProbe(signal: AbortSignal) {
     const unrelated = !frame.barcode && !options.length && result.lines.length > 0 && !labelBrands(result.lines).length
       && result.lines.every(({ text, confidence }) => confidence >= 65 &&
         !/\d[ .-]?\d[ .-]?\d|[A-Z]{2}[- ]?\d|\d{2}[AX]|DCP|MFC|LASER|TONER|DRUM|CARTRIDGE|MODEL|PIXMA/i.test(text));
-    readings.push({ at: frame.at, signature: frame.signature, options, boxes: result.boxes, serialOnly, unrelated });
+    readings.push({ lines: result.lines, at: frame.at, signature: frame.signature, options, boxes: result.boxes, serialOnly, unrelated });
   }
   function sample(frame: LabelExposure, key: string, lettering: boolean) {
     if (geometry !== key) { readings.length = 0; geometry = key; split = false; }
@@ -72,6 +72,7 @@ export function createCameraProbe(signal: AbortSignal) {
   }
   return {
     sample, confirm, privateCodes,
+    get lines() { return readings.flatMap(item => item.lines); },
     get split() { return split; },
     get serialOnly() { return !split && readings.every(r => !r.options.length) && readings.filter(r => r.serialOnly).length >= 2; },
     get unrelated() { return !split && readings.length >= 2 && readings.every(r => r.unrelated); },

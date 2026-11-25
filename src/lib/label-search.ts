@@ -140,7 +140,7 @@ export function labelBrands(lines: LabelLine[]): string[] {
   return [...brands];
 }
 
-function visibleLabelLines(lines: LabelLine[], privateCodes: Set<string>) {
+export function visibleLabelLines(lines: LabelLine[], privateCodes: Set<string>) {
   let privateValueOnNextLine = false;
   const useful: LabelLine[] = [];
   for (const line of lines.slice(0, 100)) {

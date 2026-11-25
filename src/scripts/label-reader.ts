@@ -167,11 +167,16 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
             }
           } finally { enhanced.width = enhanced.height = 1; }
         }
-        if (candidates.length) sceneLines = lines;
+        sceneLines = lines;
       } catch { signal.throwIfAborted(); }
       finally { scene.close(); }
     }
-    reader = await createLabelReader(signal);
+    try { reader = await createLabelReader(signal); }
+    catch (error) {
+      signal.throwIfAborted();
+      if (sceneLines.length) return { passes: [sceneLines], barcode: false };
+      throw error;
+    }
     let barcode = false;
     const passes: LabelLine[][] = [];
     for (const image of images) {
@@ -186,7 +191,7 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
       if (confirmsBrotherColourBadge(second, first)) return { passes, barcode };
       const confirmed = corroboratedBrotherBadge([sceneLines, secondScene, ...passes], privateCodes);
       if (confirmed) return { passes: [confirmed], barcode, confirmedPrinter: candidateText(labelCandidates(confirmed, privateCodes)[0]) };
-      if (!second.length) return { passes: [sceneLines], barcode };
+      if (!second.length) return { passes: [[...sceneLines, ...passes.flat()]], barcode };
       if (first.length === 1 && second.length === 1 && candidateText(first[0]) === candidateText(second[0])) {
         // Independently read the entire Brother model, including its suffix, with both engines.
         // Shared model numbers from multiple manufacturers still need the brand choice.
@@ -197,7 +202,7 @@ export async function readLabel(file: File, signal: AbortSignal, report: (messag
         return { passes: [[...sceneLines, ...passes.flat()]], barcode, disputed: true };
       }
     }
-    return { passes, barcode };
+    return { passes, barcode, evidence: [...sceneLines, ...passes.flat()] };
   } finally {
     reader?.close();
     for (const image of images) image.width = image.height = 1;
