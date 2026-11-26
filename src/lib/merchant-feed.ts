@@ -1,22 +1,10 @@
 import { createHash } from "node:crypto";
+import { approvedListings } from "./merchant-approved-listings.ts";
 import { buildMerchantProducts, type MerchantMaterialType, type MerchantProductType } from "./merchant-products.ts";
 import { getProductsCache, type TmProduct } from "./tm-products-cache.ts";
 
 const PRODUCTION_ORIGIN = "https://www.tonerymaxim.sk";
 
-type ApprovedListing = { title: string; description: string; image: string };
-const approvedListings = new Map<string, ApprovedListing>([
-  ["52849", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-067H – čierna, azúrová, purpurová a žltá",
-    description: "V jednom balení dostanete čierny, azúrový, purpurový a žltý toner. Čierna kazeta má orientačnú výťažnosť 3 130 strán a každá farebná 2 350 strán. Sada je vhodná pre tlačiarne Canon i-SENSYS LBP631Cw, Canon i-SENSYS LBP633Cdw, Canon i-SENSYS MF651Cw, Canon i-SENSYS MF655Cdw a Canon i-SENSYS MF657Cdw.",
-    image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-067h-cmyk-kompatibilna-sada-20261028-v2.png",
-  }],
-  ["52847", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-067 – čierna, azúrová, purpurová a žltá",
-    description: "V jednom balení dostanete čierny, azúrový, purpurový a žltý toner. Čierna kazeta má orientačnú výťažnosť 1 350 strán a každá farebná 1 250 strán. Sada je vhodná pre tlačiarne Canon i-SENSYS LBP631Cw, Canon i-SENSYS LBP633Cdw, Canon i-SENSYS MF651Cw, Canon i-SENSYS MF655Cdw a Canon i-SENSYS MF657Cdw.",
-    image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-067-cmyk-kompatibilna-sada-20261028-v2.png",
-  }],
-]);
 const GOOGLE_PRODUCT_CATEGORY = "356";
 const GOOGLE_PRODUCT_CATEGORY_DRUMS = "5259";
 const GOOGLE_PRODUCT_CATEGORY_CONSUMABLES = "5258";
