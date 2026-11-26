@@ -111,3 +111,13 @@ test("disabled IndexNow never makes an external request", async (t) => {
   assert.equal((await notifyIndexNowAfterProductSync([], [product()])).status, "skipped");
   assert.equal(payloads.length, 0);
 });
+
+test("dynamic remarketing SKU is unique and keeps the primary shopping ID", () => {
+  const first = product({ id: 405, sku: "SKU-0A" });
+  const alias = (list: any[]) => buildMerchantFeed(list, GENERATED_AT, config).xml;
+  assert.match(alias([first]), /<g:id>405<\/g:id>\s*<g:display_ads_id>SKU-0A<\/g:display_ads_id>/);
+  const second = (sku: string) => product({ id: 406, slug: "other-toner", sku });
+  assert.doesNotMatch(alias([first, second("sku-0a")]), /<g:display_ads_id>/);
+  assert.doesNotMatch(alias([product({id:405,sku:"406"}),second("406")]), /<g:display_ads_id>/);
+  assert.doesNotMatch(alias([product({id:405,sku:"TEST",price:4})]), /<g:display_ads_id>/);
+});
