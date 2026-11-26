@@ -3,6 +3,20 @@ import { buildMerchantProducts, type MerchantMaterialType, type MerchantProductT
 import { getProductsCache, type TmProduct } from "./tm-products-cache.ts";
 
 const PRODUCTION_ORIGIN = "https://www.tonerymaxim.sk";
+
+type ApprovedListing = { title: string; description: string; image: string };
+const approvedListings = new Map<string, ApprovedListing>([
+  ["52849", {
+    title: "Kompatibilná sada 4 tonerov pre Canon CRG-067H – čierna, azúrová, purpurová a žltá",
+    description: "V jednom balení dostanete čierny, azúrový, purpurový a žltý toner. Čierna kazeta má orientačnú výťažnosť 3 130 strán a každá farebná 2 350 strán. Sada je vhodná pre tlačiarne Canon i-SENSYS LBP631Cw, Canon i-SENSYS LBP633Cdw, Canon i-SENSYS MF651Cw, Canon i-SENSYS MF655Cdw a Canon i-SENSYS MF657Cdw.",
+    image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-067h-cmyk-kompatibilna-sada-20261028-v2.png",
+  }],
+  ["52847", {
+    title: "Kompatibilná sada 4 tonerov pre Canon CRG-067 – čierna, azúrová, purpurová a žltá",
+    description: "V jednom balení dostanete čierny, azúrový, purpurový a žltý toner. Čierna kazeta má orientačnú výťažnosť 1 350 strán a každá farebná 1 250 strán. Sada je vhodná pre tlačiarne Canon i-SENSYS LBP631Cw, Canon i-SENSYS LBP633Cdw, Canon i-SENSYS MF651Cw, Canon i-SENSYS MF655Cdw a Canon i-SENSYS MF657Cdw.",
+    image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-067-cmyk-kompatibilna-sada-20261028-v2.png",
+  }],
+]);
 const GOOGLE_PRODUCT_CATEGORY = "356";
 const GOOGLE_PRODUCT_CATEGORY_DRUMS = "5259";
 const GOOGLE_PRODUCT_CATEGORY_CONSUMABLES = "5258";
@@ -227,7 +241,7 @@ export function buildMerchantFeed(
       increase(stats, "invalid_landing_page");
       return false;
     }
-    if (!validMerchantImage(product.image)) {
+    if (!validMerchantImage(approvedListings.get(product.id)?.image ?? product.image)) {
       increase(stats, "invalid_image");
       return false;
     }
@@ -254,17 +268,24 @@ export function buildMerchantFeed(
   const items = products.map((product) => {
     const labels = product.labels.slice(0, 5);
     const printerBrand = printerBrandFromMerchantProduct(product);
-    const feedTitle = optimizedMerchantTitle(product);
-    const feedDescription = optimizedMerchantDescription(product);
+    const approved = approvedListings.get(product.id);
+    const creativeText = approved
+      ? [
+          `      <g:structured_title><g:digital_source_type>trained_algorithmic_media</g:digital_source_type><g:content>${xml(approved.title)}</g:content></g:structured_title>`,
+          `      <g:structured_description><g:digital_source_type>trained_algorithmic_media</g:digital_source_type><g:content>${xml(approved.description)}</g:content></g:structured_description>`,
+        ]
+      : [
+          `      <g:title>${xml(optimizedMerchantTitle(product))}</g:title>`,
+          `      <g:description>${xml(optimizedMerchantDescription(product))}</g:description>`,
+        ];
     const exactOemCodes = product.oemCodes.slice(0, 1);
     return [
       "    <item>",
       `      <g:id>${xml(product.id)}</g:id>`,
-      `      <g:title>${xml(feedTitle)}</g:title>`,
-      `      <g:description>${xml(feedDescription)}</g:description>`,
+      ...creativeText,
       `      <g:link>${xml(product.url)}</g:link>`,
-      `      <g:image_link>${xml(product.image)}</g:image_link>`,
-      ...product.additionalImages
+      `      <g:image_link>${xml(approved?.image ?? product.image)}</g:image_link>`,
+      ...(approved ? [] : product.additionalImages)
         .filter(validMerchantImage)
         .slice(0, 10)
         .map((image) => `      <g:additional_image_link>${xml(image)}</g:additional_image_link>`),
