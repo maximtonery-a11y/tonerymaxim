@@ -153,10 +153,10 @@ function optimizedMerchantTitle(product: { name: string; productType: MerchantPr
   return cleanFeedText([printerBrand, primary, type, material, color ? `– ${color}` : ""].filter(Boolean).join(" "), 150);
 }
 
-function optimizedMerchantDescription(product: { description: string; productType: MerchantProductType; materialType: MerchantMaterialType; oemCodes: string[]; name: string; color: string }): string {
+function optimizedMerchantDescription(product: { description: string; oemCodes: string[] }, title: string): string {
   const primary = cleanFeedText(product.oemCodes[0], 40);
   const exactIdentity = primary ? `Presná OEM referencia kompatibility: ${primary}.` : "";
-  return cleanFeedText([optimizedMerchantTitle(product), exactIdentity, product.description].filter(Boolean).join(" "), 5_000);
+  return cleanFeedText([title, exactIdentity, product.description].filter(Boolean).join(" "), 5_000);
 }
 
 function googleProductCategory(materialType: MerchantMaterialType): string {
@@ -257,14 +257,19 @@ export function buildMerchantFeed(
     const labels = product.labels.slice(0, 5);
     const printerBrand = printerBrandFromMerchantProduct(product);
     const approved = approvedListings.get(product.id);
+    const title = approved?.title ?? (product.catalogPackTitle || optimizedMerchantTitle(product));
+    let description = approved?.description ?? optimizedMerchantDescription(product, title);
+    if (approved && product.catalogPackTitle && product.printerCompatibility && !approved.hasCuratedPrinterList) {
+      description = cleanFeedText(`${product.printerCompatibility} ${approved.description}`, 5_000);
+    }
     const creativeText = approved
       ? [
-          `      <g:structured_title><g:digital_source_type>trained_algorithmic_media</g:digital_source_type><g:content>${xml(approved.title)}</g:content></g:structured_title>`,
-          `      <g:structured_description><g:digital_source_type>trained_algorithmic_media</g:digital_source_type><g:content>${xml(approved.description)}</g:content></g:structured_description>`,
+          `      <g:structured_title><g:digital_source_type>trained_algorithmic_media</g:digital_source_type><g:content>${xml(title)}</g:content></g:structured_title>`,
+          `      <g:structured_description><g:digital_source_type>trained_algorithmic_media</g:digital_source_type><g:content>${xml(description)}</g:content></g:structured_description>`,
         ]
       : [
-          `      <g:title>${xml(optimizedMerchantTitle(product))}</g:title>`,
-          `      <g:description>${xml(optimizedMerchantDescription(product))}</g:description>`,
+          `      <g:title>${xml(title)}</g:title>`,
+          `      <g:description>${xml(description)}</g:description>`,
         ];
     const exactOemCodes = product.oemCodes.slice(0, 1);
     return [

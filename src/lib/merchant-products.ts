@@ -26,6 +26,8 @@ export type MerchantProduct = {
   identifierExists: boolean;
   color: string;
   description: string;
+  catalogPackTitle: string;
+  printerCompatibility: string;
   oemCodes: string[];
   excludedDestinations: string[];
   labels: string[];
@@ -183,16 +185,25 @@ function merchantTitle(product: TmProduct, allProducts?: TmProduct[]): string {
   );
 }
 
-function description(product: TmProduct, type: MerchantProductType, material: MerchantMaterialType): string {
-  const shortDescription = cleanText(stripHtml(product.short_description_html || ""), 1_500);
-  const longDescription = cleanText(stripHtml(product.description_html || product.description || ""), 3_000);
+function catalogPackTitle(product: TmProduct): string {
+  const name = cleanText(product.name, 150);
+  if (/^kompatibiln[áéý]\s/iu.test(name)) return name;
+  // Retain combined OEM codes, colours and pack sizes from the actual set.
+  const identity = name.replace(/\s+(?:[–-]\s*)?kompatibiln[áéý]\s+/iu, " – ");
+  return cleanText(`Kompatibilné pre ${identity}`, 150);
+}
+
+function printerCompatibility(product: TmProduct): string {
   const printers = unique(
     Array.isArray(product.compatible_printers) ? product.compatible_printers : [],
     8,
   );
-  const compatibility = printers.length
-    ? `Určené pre tlačiarne ${printers.join(", ")}.`
-    : "";
+  return printers.length ? `Určené pre tlačiarne ${printers.join(", ")}.` : "";
+}
+
+function description(product: TmProduct, type: MerchantProductType, material: MerchantMaterialType, compatibility: string): string {
+  const shortDescription = cleanText(stripHtml(product.short_description_html || ""), 1_500);
+  const longDescription = cleanText(stripHtml(product.description_html || product.description || ""), 3_000);
 
   // Description vždy obsahuje názov/OEM kód a kompatibilné tlačiarne. Predtým
   // sa pri dostatočne dlhom short_description vracal iba všeobecný text
@@ -262,6 +273,7 @@ export function toMerchantProduct(product: TmProduct, origin: string, allProduct
   const images = productImages(origin, product);
   const ids = identifiers(product, productType);
   const exactOemCodes = oemCodes(product);
+  const compatibility = printerCompatibility(product);
 
   return {
     id: stableId(product),
@@ -279,7 +291,9 @@ export function toMerchantProduct(product: TmProduct, origin: string, allProduct
     mpn: ids.mpn,
     identifierExists: ids.identifierExists,
     color: cleanText(product.color || product.farba, 100),
-    description: description(product, productType, material),
+    description: description(product, productType, material, compatibility),
+    catalogPackTitle: shoppingLabel === "ads-set" ? catalogPackTitle(product) : "",
+    printerCompatibility: compatibility,
     oemCodes: exactOemCodes,
     excludedDestinations: shoppingEligible ? [] : ["Shopping_ads"],
     labels: [

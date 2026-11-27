@@ -71,6 +71,51 @@ test("out-of-stock status overrides a positive quantity in every feed", (t) => {
   assert.match(buildAiProductFeed([item], GENERATED_AT), /<g:availability>out_of_stock<\/g:availability>/);
 });
 
+test("Shopping set titles identify the exact family and descriptions use only that set’s printers", () => {
+  const families = [
+    { id: 52830, code: "CRG-045", model: "Canon i-SENSYS LBP611Cn" },
+    { id: 52837, code: "CRG-054", model: "Canon i-SENSYS LBP623Cdw" },
+    { id: 52853, code: "CRG-075", model: "Canon i-SENSYS LBP646Cdw" },
+  ];
+  const sets = families.map(({ id, code, model }) => product({
+    id, slug: `canon-${code.toLowerCase()}-sada`, name: `Canon ${code} CMYK kompatibilná sada tonerov (4 ks)`,
+    product_brand: "Canon", color: "CMYK", compatible_printers: [model, model],
+  }));
+  const items = buildMerchantFeed(sets, GENERATED_AT, config).xml.split("<item>").slice(1);
+  assert.equal(items.length, families.length);
+  families.forEach(({ id, code, model }, index) => {
+    const xml = items[index];
+    assert.ok(xml.includes(`<g:id>${id}</g:id>`));
+    assert.ok(xml.includes(`<g:content>Kompatibilná sada pre Canon ${code} – 4 tonery CMYK</g:content>`));
+    assert.ok(xml.includes(`<g:content>Určené pre tlačiarne ${model}. `));
+    assert.equal(xml.split(model).length - 1, 1);
+    for (const other of families.filter((family) => family.id !== id)) {
+      assert.ok(!xml.includes(other.code) && !xml.includes(other.model));
+    }
+  });
+});
+
+test("Shopping preserves the identity of a new mixed pack and does not infer missing printers", () => {
+  const pack = product({
+    id: 999999, name: "Canon PGI-5/CLI-8 BK+CMYK kompatibilná sada atramentových náplní (5 ks)",
+    slug: "canon-pgi5-cli8-sada", product_brand: "Canon", color: "BK+CMYK",
+    compatible_printers: [], description: "Sada obsahuje päť atramentových náplní pre farebnú tlač.",
+  });
+  const { xml } = buildMerchantFeed([pack], GENERATED_AT, config);
+  assert.match(xml, /<g:title>Kompatibilné pre Canon PGI-5\/CLI-8 BK\+CMYK – sada atramentových náplní \(5 ks\)<\/g:title>/);
+  assert.doesNotMatch(xml, /Určené pre tlačiarne/);
+});
+
+test("an explicitly curated printer list is emitted once without adding other models", () => {
+  const pack = product({
+    id: 52849, name: "Canon CRG-067H CMYK kompatibilná sada tonerov", slug: "canon-crg-067h-sada",
+    product_brand: "Canon", color: "CMYK", compatible_printers: ["Canon i-SENSYS LBP631Cw", "Other model"],
+  });
+  const { xml } = buildMerchantFeed([pack], GENERATED_AT, config);
+  assert.equal(xml.split("Canon i-SENSYS LBP631Cw").length - 1, 1);
+  assert.doesNotMatch(xml, /Other model/);
+});
+
 function captureIndexNow(t: any) {
   setEnv(t, "TM_DISABLE_INDEXNOW", "0");
   const payloads: any[] = [];
