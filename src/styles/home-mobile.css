@@ -509,12 +509,6 @@
     text-decoration: none;
   }
 
-  body.home-page .tm-mobile-drawer .tm-mobile-legacy-link {
-    justify-content: space-between;
-    border: 1px solid #cfe2f3;
-    background: linear-gradient(135deg, #eef8ff, #ffffff);
-    color: #0878b7;
-  }
 }
 
 @media (hover: none) and (pointer: coarse) and (orientation: landscape) {

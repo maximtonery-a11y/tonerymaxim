@@ -174,14 +174,9 @@ test("načítanie katalógu zdieľa jednu rozpracovanú požiadavku", async () =
   assert.match(source, /return refreshPromise/);
 });
 
-test("pôvodný e-shop je obnovený iba ako oddelený panel a mobilný odkaz", async () => {
-  const footer = await readFile(new URL("../src/components/Footer.astro", import.meta.url), "utf8");
-  const header = await readFile(new URL("../src/components/Header.astro", import.meta.url), "utf8");
-  const panel = await readFile(new URL("../src/components/LegacyShopPanel.astro", import.meta.url), "utf8");
-  assert.match(footer, /import LegacyShopPanel/);
-  assert.match(footer, /<LegacyShopPanel\s*\/>/);
-  assert.match(header, /tm-global-mobile-legacy-link/);
-  assert.match(panel, /const legacyShopUrl = "https:\/\/www\.tonerymaxim\.info"/);
-  assert.match(panel, /data-legacy-shop-toggle/);
-  assert.match(panel, /@media \(max-width: 760px\)/);
+test("navigácia už neponúka odchod na pôvodný e-shop", async () => {
+  for (const file of ["../src/components/Header.astro", "../src/components/Footer.astro", "../src/pages/index.astro"]) {
+    const source = await readFile(new URL(file, import.meta.url), "utf8");
+    assert.doesNotMatch(source, /LegacyShopPanel|href="https:\/\/(?:www\.)?tonerymaxim\.info/);
+  }
 });

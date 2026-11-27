@@ -2516,7 +2516,6 @@
   .account-more-logout { justify-content: center; width: 100%; min-height: 48px; margin-top: 10px; cursor: pointer; }
   .account-page .tm-ai-assistant:not(.is-open) { z-index: 149 !important; right: 16px !important; bottom: calc(94px + var(--account-safe-max)) !important; }
   .account-page .tm-ai-assistant:not(.is-open) .tm-ai-assistant__launcher { bottom: 0 !important; }
-  .account-page .tm-ai-assistant:not(.is-open) .tm-ai-nudge { position: fixed; bottom: calc(158px + var(--account-safe-max)) !important; }
   .account-page .mobile-newsletter, .account-page .footer-newsletter { display: none; }
   .account-page .toner-care-printers-panel { grid-row: 1; }
 }

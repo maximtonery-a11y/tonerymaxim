@@ -543,9 +543,55 @@ async function checkSearchWarmup(page, origin, interruptFirst) {
   assert.equal(found, true, 'A real product query works after the search index is ready');
 }
 
+async function checkAdvisorHint(browser, origin, mobile) {
+  const width = mobile ? 390 : 1280;
+  const height = 844;
+  const context = await browser.newContext({ viewport: { width, height }, isMobile: mobile, hasTouch: mobile });
+  try {
+    await context.route(url => url.origin !== origin, route => route.abort());
+    const page = await context.newPage();
+    await page.clock.install();
+    await page.goto(origin);
+    await page.locator('[data-ai-sales-assistant][data-ready="1"]').waitFor({ state: 'attached' });
+    const hint = page.locator('[data-ai-nudge]');
+    await page.clock.runFor(8100);
+    assert.equal(await hint.isVisible(), false, 'consent takes priority over the hint');
+    await page.locator('#tm-cookie-reject').click();
+    await page.clock.runFor(8100);
+    await hint.waitFor({ state: 'visible' });
+    const launcher = page.locator('[data-ai-toggle]');
+    const box = await launcher.boundingBox();
+    const tip = await hint.boundingBox();
+    assert.ok(tip.x + tip.width <= box.x && tip.y < box.y + box.height && tip.y + tip.height > box.y);
+    const cookies = page.locator('#tm-cookie-floating');
+    if (mobile) {
+      assert.equal(box.width, box.height);
+      assert.equal(await cookies.isVisible(), false);
+      await page.locator('[data-ai-nudge-close]').click();
+      assert.equal(await page.locator('[data-ai-panel]').isVisible(), false);
+    } else {
+      const left = await cookies.boundingBox();
+      assert.ok(left.x === 0 && Math.abs(left.y - box.y) < 1);
+      assert.ok(box.y > height * .75 && Math.abs(box.x + box.width - width) < 1);
+      await page.clock.runFor(8100);
+    }
+    assert.equal(await hint.isVisible(), false);
+    await page.goto(origin + '/poradna');
+    await page.clock.runFor(8100);
+    assert.equal(await hint.isVisible(), false, 'one impression across pages');
+    await launcher.click();
+    assert.equal(await page.locator('[data-ai-panel]').isVisible(), true);
+    await page.locator('[data-ai-close]').click();
+    await page.clock.runFor(8100);
+    assert.equal(await hint.isVisible(), false, 'closing chat never re-arms the hint');
+  } finally { await context.close(); }
+}
+
 async function verifyEngine(origin, engine, configurations, options) {
   const browser = await engine.launch(options);
   try {
+    await checkAdvisorHint(browser, origin, true);
+    await checkAdvisorHint(browser, origin, false);
     await checkDescriptionWithoutScript(browser, origin);
     for (const layout of configurations) {
       const [width, height, touch] = layout;

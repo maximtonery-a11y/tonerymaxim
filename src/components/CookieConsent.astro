@@ -99,20 +99,22 @@
 
   #tm-cookie-floating {
     position: fixed !important;
-    left: 18px !important;
-    right: auto !important;
-    bottom: 96px !important;
+    left: 0 !important;
+    bottom: clamp(24px, 6vh, 72px) !important;
     z-index: 2147483647 !important;
     display: none !important;
+    flex-direction: column-reverse !important;
     align-items: center !important;
+    justify-content: center !important;
     gap: 8px !important;
-    min-height: 46px !important;
-    padding: 0 15px !important;
+    width: 44px !important;
+    height: 126px !important;
+    padding: 8px 0 !important;
     border: 1px solid #d7e1ee !important;
-    border-radius: 999px !important;
-    background: #ffffff !important;
+    border-radius: 0 12px 12px 0 !important;
+    background: #fff !important;
     color: #071b3a !important;
-    box-shadow: 0 14px 38px rgba(15, 23, 42, .18) !important;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, .12) !important;
     font-size: 13px !important;
     font-weight: 900 !important;
     cursor: pointer !important;
@@ -122,6 +124,8 @@
   #tm-cookie-consent.tm-cookie-is-hidden #tm-cookie-floating {
     display: inline-flex !important;
   }
+
+  #tm-cookie-floating strong { writing-mode: vertical-rl; transform: rotate(180deg); }
 
   #tm-cookie-floating span {
     width: 26px !important;
@@ -313,6 +317,9 @@
     #tm-cookie-reject { grid-column: 1; }
     #tm-cookie-customize, #tm-cookie-save { grid-column: 2; }
 
+  }
+
+  @media (max-width: 760px), (hover: none) and (pointer: coarse) {
     #tm-cookie-consent.tm-cookie-is-hidden #tm-cookie-floating,
     #tm-cookie-consent #tm-cookie-floating {
       display: none !important;
@@ -377,6 +384,7 @@
     if (!r) return;
     r.classList.remove("tm-cookie-is-hidden");
     r.classList.add("tm-cookie-is-open");
+    window.dispatchEvent(new CustomEvent("tm:cookie-panel", { detail: { open: true } }));
   }
 
   function setCustomizing(enabled) {
@@ -395,6 +403,7 @@
     r.classList.remove("tm-cookie-is-open");
     r.classList.add("tm-cookie-is-hidden");
     setCustomizing(false);
+    window.dispatchEvent(new CustomEvent("tm:cookie-panel", { detail: { open: false } }));
   }
 
   function saveConsent(analyticsValue, marketingValue) {
