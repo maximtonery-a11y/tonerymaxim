@@ -20,14 +20,11 @@ const quickPrompts = quickPromptsForPath(Astro.url.pathname);
   </button>
 
   <aside class="tm-ai-nudge" data-ai-nudge hidden aria-label="Tip od AI Tomáša">
-    <button type="button" class="tm-ai-nudge__close" data-ai-nudge-close aria-label="Zavrieť tip">×</button>
-    <button type="button" class="tm-ai-nudge__question" data-ai-nudge-question data-ai-prompt={quickPrompts[0]?.question || 'Ako vám môžem pomôcť?'}>
-      <b>Môžem pomôcť?</b>
-      <span>{quickPrompts[0]?.label || 'Opýtajte sa AI Tomáša'}</span>
+    <button type="button" class="tm-ai-nudge__question" data-ai-nudge-question data-ai-prompt={quickPrompts[0]?.question}>
+      Poradím s výberom.
     </button>
+    <button type="button" class="tm-ai-nudge__close" data-ai-nudge-close aria-label="Zavrieť tip">×</button>
   </aside>
-
-
 
   <div
     class="tm-ai-assistant__panel"

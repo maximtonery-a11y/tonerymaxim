@@ -1163,12 +1163,6 @@ body.product-detail-body .header-heureka {
     text-decoration: none;
   }
 
-  body:not(.home-page) .tm-global-mobile-drawer .tm-global-mobile-legacy-link {
-    justify-content: space-between;
-    border: 1px solid #cfe2f3;
-    background: linear-gradient(135deg, #eef8ff, #ffffff);
-    color: #0878b7;
-  }
 }
 
 /* Mobile drawer: zjednotený s úvodnou stránkou */
@@ -1264,12 +1258,6 @@ body.product-detail-body .header-heureka {
     text-decoration: none;
   }
 
-  body:not(.home-page) .tm-global-mobile-drawer .tm-global-mobile-legacy-link {
-    justify-content: space-between;
-    border: 1px solid #cfe2f3;
-    background: linear-gradient(135deg, #eef8ff, #ffffff);
-    color: #0878b7;
-  }
 
   html.tm-menu-open,
   html.tm-menu-open body {
@@ -1282,7 +1270,6 @@ body.product-detail-body .header-heureka {
   html.tm-menu-open .cart-mobile-sticky,
   html.tm-menu-open .checkout-mobile-sticky,
   html.tm-menu-open .tm-printer-bottom-search,
-  html.tm-menu-open .tm-legacy-shop,
   html.tm-menu-open [data-mobile-sticky-cart] {
     visibility: hidden !important;
     opacity: 0 !important;

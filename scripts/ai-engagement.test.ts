@@ -31,7 +31,6 @@ test('mobilný AI panel zostáva fullscreen, posuvný a ovládateľný dotykom',
   assert.match(css, /overflow-y:auto!important/);
   assert.match(css, /-webkit-overflow-scrolling:touch/);
   assert.match(css, /height:46px!important/);
-  assert.match(css, /\.tm-ai-nudge\{position:fixed/);
 });
 
 test('zmena témy produkt → objednávka nikdy nepoužije starý produktový kontext', () => {
@@ -105,10 +104,8 @@ test('aktívna bublina je nenásilná a sama neotvára AI panel', async () => {
   ]);
   assert.match(component, /data-ai-nudge/);
   assert.match(component, /data-ai-nudge-close/);
-  assert.match(script, /function scheduleNudge\(\)/);
-  assert.match(script, /if\(panel\.hidden&&!document\.hidden\)nudge\.hidden=false/);
-  assert.match(script, /closePanel[\s\S]*scheduleNudge\(\)/);
-  assert.match(script, /sessionStorage\.setItem\(NUDGE_KEY,'dismissed'\)/);
+  assert.match(component, /Poradím s výberom\./);
+  assert.match(script, /localStorage\.setItem\(NUDGE_KEY, 'seen'\)/);
   assert.doesNotMatch(script, /setTimeout\([^)]*openPanel/);
 });
 

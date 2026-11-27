@@ -94,8 +94,8 @@ import { readAiJson, aiRequestErrorMessage } from '../lib/ai-http-response.ts';
     toggle.hidden = true;
     toggle.setAttribute('aria-expanded', 'true');
     root.classList.add('is-open');
-    if(nudge)nudge.hidden=true;
-    if(nudgeTimer){window.clearTimeout(nudgeTimer);nudgeTimer=0;}
+    hideNudge();
+    try { localStorage.setItem(NUDGE_KEY, 'seen'); } catch {}
     if(!state.started)setExperience('home');
     document.documentElement.classList.add('tm-ai-open');
     setPanelSize(state.size);
@@ -109,18 +109,45 @@ import { readAiJson, aiRequestErrorMessage } from '../lib/ai-http-response.ts';
     root.classList.remove('is-open', 'has-keyboard');
     document.documentElement.classList.remove('tm-ai-open');
     if (options.restoreFocus) toggle.focus({ preventScroll: true });
-    scheduleNudge();
+  }
+
+  function hideNudge() {
+    window.clearTimeout(nudgeTimer);
+    nudgeTimer = 0;
+    if (nudge) nudge.hidden = true;
+  }
+
+  function nudgeAlreadySeen() {
+    try {
+      // Honor a dismissal made in this tab before the permanent preference existed.
+      if (sessionStorage.getItem(NUDGE_KEY) === 'dismissed') {
+        localStorage.setItem(NUDGE_KEY, 'seen');
+        sessionStorage.removeItem(NUDGE_KEY);
+      }
+      return localStorage.getItem(NUDGE_KEY) !== null;
+    } catch {
+      // Without durable storage, a one-time prompt cannot be guaranteed.
+      return true;
+    }
+  }
+
+  function showNudgeOnce() {
+    if (nudgeAlreadySeen() || document.hidden || !panel.hidden ||
+        document.querySelector('.tm-cookie-consent.tm-cookie-is-open') ||
+        getComputedStyle(toggle).visibility !== 'visible' || toggle.getClientRects().length === 0) return;
+    try { localStorage.setItem(NUDGE_KEY, 'seen'); } catch { return; }
+    nudge.hidden = false;
+    nudgeTimer = window.setTimeout(hideNudge, 8000);
   }
 
   function scheduleNudge() {
-    if(!nudge||!panel.hidden)return;
-    try{if(sessionStorage.getItem(NUDGE_KEY)==='dismissed')return;}catch{}
-    if(nudgeTimer)window.clearTimeout(nudgeTimer);
-    nudgeTimer=window.setTimeout(()=>{
-      nudgeTimer=0;
-      if(panel.hidden&&!document.hidden)nudge.hidden=false;
-      else if(panel.hidden)scheduleNudge();
-    },8000);
+    if (!nudge || nudgeTimer || document.hidden || !panel.hidden || nudgeAlreadySeen()) return;
+    nudgeTimer = window.setTimeout(() => {
+      nudgeTimer = 0;
+      // Serialize the first impression across tabs when Web Locks are available.
+      if (navigator.locks) navigator.locks.request(NUDGE_KEY, showNudgeOnce).catch(() => {});
+      else showNudgeOnce();
+    }, 8000);
   }
 
   function updateViewportState() {
@@ -354,7 +381,10 @@ import { readAiJson, aiRequestErrorMessage } from '../lib/ai-http-response.ts';
   });
 
   window.addEventListener('tm:cookie-panel', (event) => {
-    if (event.detail?.open && !panel.hidden) closePanel();
+    if (event.detail?.open) {
+      hideNudge();
+      if (!panel.hidden) closePanel();
+    } else scheduleNudge();
   });
 
   window.visualViewport?.addEventListener('resize', updateViewportState);
@@ -820,20 +850,31 @@ import { readAiJson, aiRequestErrorMessage } from '../lib/ai-http-response.ts';
   }
   root.querySelectorAll('[data-ai-mode]').forEach(b=>b.addEventListener('click',()=>{state.mode=b.dataset.aiMode;beginSession();messages.hidden=false;form.hidden=false;if(quick)quick.hidden=state.mode!=='advice';input.placeholder=state.mode==='shop'?'Napíšte toner alebo model tlačiarne…':'Napíšte otázku alebo čo potrebujete…';input.focus()}));
 
-  nudgeClose?.addEventListener('click',()=>{
-    nudge.hidden=true;
-    try{sessionStorage.setItem(NUDGE_KEY,'dismissed');}catch{}
+  nudgeClose?.addEventListener('click', () => {
+    hideNudge();
+    toggle.focus({ preventScroll: true });
     trackEvent('nudge_dismissed');
   });
-  nudgeQuestion?.addEventListener('click',()=>{
-    const question=nudgeQuestion.dataset.aiPrompt||'';
-    nudge.hidden=true;
-    try{sessionStorage.removeItem(NUDGE_KEY);}catch{}
-    openPanel();state.mode='advice';beginSession();messages.hidden=false;form.hidden=false;
-    unifiedAsk(question);trackEvent('nudge_used',{question});
+  nudgeQuestion?.addEventListener('click', () => {
+    const question = nudgeQuestion.dataset.aiPrompt;
+    openPanel();
+    if (panel.hidden) return;
+    if (question) {
+      state.mode = 'advice';
+      beginSession();
+      messages.hidden = false;
+      form.hidden = false;
+      unifiedAsk(question);
+    }
+    trackEvent('nudge_used', { question });
   });
   scheduleNudge();
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&panel.hidden)scheduleNudge();});
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) hideNudge();
+    else scheduleNudge();
+  });
+  window.addEventListener('pagehide', hideNudge);
+  window.addEventListener('pageshow', scheduleNudge);
 
   quick.addEventListener('click', (event) => {
     const button = event.target.closest('[data-ai-prompt]');
