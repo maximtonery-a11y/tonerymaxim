@@ -1,6 +1,6 @@
-import { compactKey, type TmProduct } from './tm-products-cache';
-import { cleanGtin, cleanMpn, cleanProductBrand, gtinSchemaProperty } from './product-identifiers';
-import { buildProductSeo } from './catalog-seo-text';
+import { compactKey, type TmProduct } from './tm-products-cache.ts';
+import { cleanGtin, cleanMpn, cleanProductBrand, gtinSchemaProperty } from './product-identifiers.ts';
+import { buildProductSeo } from './catalog-seo-text.ts';
 
 export const SEO_SITE_NAME = 'ToneryMaxim.sk';
 export const SEO_COMPANY = {
@@ -165,7 +165,9 @@ export function productJsonLd(origin: string, product: TmProduct) {
       priceCurrency: 'EUR',
       price: price.toFixed(2),
       availability,
-      itemCondition: 'https://schema.org/NewCondition',
+      itemCondition: product.product_type_key === 'renovated'
+        ? 'https://schema.org/RefurbishedCondition'
+        : 'https://schema.org/NewCondition',
       seller: { '@id': `${origin}/#organization` },
       hasMerchantReturnPolicy: {
         '@type': 'MerchantReturnPolicy',

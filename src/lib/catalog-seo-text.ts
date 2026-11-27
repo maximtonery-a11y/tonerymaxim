@@ -441,21 +441,37 @@ function productTitle(product: TmProduct, allProducts?: TmProduct[]): string {
 export function buildProductSeo(product: TmProduct, allProducts?: TmProduct[]): { title: string; description: string } {
   const name = productName(product);
   const title = productTitle(product, allProducts);
+  const preparedDescription = product.seo_description ? clean(product.seo_description) : "";
+  if (preparedDescription.length >= 35 && preparedDescription.length <= 158) {
+    return { title, description: preparedDescription };
+  }
   const kind = productKind(product);
   const printers = unique(Array.isArray(product.compatible_printers) ? product.compatible_printers : []).slice(0, 3);
-  const facts = unique([
-    colorText(product.color || product.farba),
-    capacityText(product),
-    chipText(product),
-  ]);
-  const parts = [sentence(name)];
-  if (facts.length) parts.push(sentence(facts.join(", ")));
-  if (printers.length) parts.push(sentence(`Pre ${printers.join(printers.length === 2 ? " a " : ", ")}`));
-  if (product.stock_status === "instock" && Number(product.stock_quantity ?? 1) > 0) parts.push("Skladom.");
-  if (parts.length === 1) parts.push(sentence(`Aktuálna cena, dostupnosť a kompatibilita pre tento ${kindNames[kind].one}`));
-  let description = parts.join(" ");
-  if (description.length < 40) description += ` ${sentence(`Aktuálna cena a dostupnosť pre tento ${kindNames[kind].one}`)}`;
-  return { title, description: truncate(description, 158) };
+  const identity = sentence(name);
+  const parts = [identity.length <= 158 ? identity : sentence(baseProductTitle(product).replace(SITE_SUFFIX, ""))];
+  let descriptionLength = parts[0].length;
+  // Keep each fact and printer identifier intact. Cutting a combined string
+  // could leave "Canon i-SENSYS." or a colour label without its page yield.
+  const append = (value: string): boolean => {
+    if (!value || descriptionLength + 1 + value.length > 158) return false;
+    parts.push(value);
+    descriptionLength += 1 + value.length;
+    return true;
+  };
+  append(sentence(capacityText(product)));
+  append(sentence(chipText(product)));
+  for (let count = printers.length; count > 0; count--) {
+    const selected = printers.slice(0, count);
+    if (append(sentence(`Pre ${selected.join(count === 2 ? " a " : ", ")}`))) break;
+  }
+  const rawColor = clean(product.color || product.farba).toLocaleLowerCase("sk");
+  const colorStem = rawColor.length >= 3 ? rawColor.slice(0, 3) : "";
+  const colorInName = Boolean(colorStem && name.toLocaleLowerCase("sk").includes(colorStem));
+  if (kind !== "waste" && !colorInName) append(sentence(colorText(rawColor)));
+  if (product.stock_status === "instock" && Number(product.stock_quantity ?? 1) > 0) append("Skladom.");
+  if (parts.length === 1) append(sentence(`Aktuálna cena, dostupnosť a kompatibilita pre tento ${kindNames[kind].one}`));
+  if (descriptionLength < 40) append(sentence(`Aktuálna cena a dostupnosť pre tento ${kindNames[kind].one}`));
+  return { title, description: parts.join(" ") };
 }
 
 function typeSummary(products: TmProduct[]): string {

@@ -900,6 +900,7 @@ export function mapProduct(product: any, options: { includeSearchText?: boolean 
     description_html: description,
     short_description_html: shortDescription,
     description: stripHtml(shortDescription || description || ""),
+    seo_description: getWooMetaValue(product, ["metadescription"]),
     product_type_key: type.key,
     product_type_label: type.label,
     product_type_detail_label: type.detailLabel,
