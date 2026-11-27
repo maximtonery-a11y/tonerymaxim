@@ -1,4 +1,13 @@
-type ApprovedListing = { title: string; description: string; image: string };
+type ApprovedListing = {
+  title: string;
+  description: string;
+  image: string;
+  hasCuratedPrinterList?: true;
+};
+
+function setTitle(reference: string, contents: string): string {
+  return `Kompatibilná sada pre ${reference} – ${contents}`;
+}
 
 export const approvedListings = new Map<string, ApprovedListing>([
   ["36665", {
@@ -162,257 +171,259 @@ export const approvedListings = new Map<string, ApprovedListing>([
     image: "https://www.coloriq.store/wp-content/uploads/2026/05/15130.jpg",
   }],
   ["51893", {
-    title: "Kompatibilná sada 4 tonerov pre Brother TN-248XL – CMYK",
+    title: setTitle("Brother TN-248XL", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Brother TN-248XL dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 3 000 strán, každá z farebných na 2 300 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/11/brother-tn248xl-cmyk-set-20261126.png",
   }],
   ["51894", {
-    title: "Kompatibilná sada 4 tonerov pre Brother TN-249 – CMYK",
+    title: setTitle("Brother TN-249", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Brother TN-249 dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 4 500 strán, každá z farebných na 4 000 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/11/brother-tn249-cmyk-set-20261126.png",
   }],
   ["52068", {
-    title: "Kompatibilná sada 4 tonerov pre Brother TN-625 – CMYK",
+    title: setTitle("Brother TN-625", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Brother TN-625 dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 3 000 strán, každá z farebných na 1 800 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/BROTHER_TN625_CMYK_sada.png",
   }],
   ["52639", {
-    title: "Kompatibilná sada 4 atramentových náplní pre HP 940XL – CMYK",
+    title: setTitle("HP 940XL", "4 atramentové náplne CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety C4906AE, C4907AE, C4908AE a C4909AE. Čierna kazeta vystačí približne na 2 090 strán, každá z farebných na 1 690 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52639.jpg",
   }],
   ["52643", {
-    title: "Kompatibilná sada 4 tonerov pre HP 125A – CMYK",
+    title: setTitle("HP 125A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CB540A, CB541A, CB542A a CB543A. Čierna kazeta vystačí približne na 2 200 strán, každá z farebných na 1 400 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52643.jpg",
   }],
   ["52644", {
-    title: "Kompatibilná sada 4 tonerov pre HP CC530A–CC533A – CMYK",
+    title: setTitle("HP CC530A–CC533A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CC530A, CC531A, CC532A a CC533A. Čierna kazeta vystačí približne na 3 500 strán, každá z farebných na 2 800 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52644.jpg",
   }],
   ["52645", {
-    title: "Kompatibilná sada 4 tonerov pre HP 126A – CMYK",
+    title: setTitle("HP 126A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CE310A, CE311A, CE312A a CE313A. Čierna kazeta vystačí približne na 1 300 strán, každá z farebných na 1 000 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52645.jpg",
   }],
   ["52646", {
-    title: "Kompatibilná sada 4 tonerov pre HP 410A – CMYK",
+    title: setTitle("HP 410A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF410A, CF411A, CF412A a CF413A. Orientačná výťažnosť každej kazety je 2 300 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52646.jpg",
   }],
   ["52647", {
-    title: "Kompatibilná sada 4 tonerov pre HP 410X – CMYK",
+    title: setTitle("HP 410X", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF410X, CF411X, CF412X a CF413X. Čierna kazeta vystačí približne na 6 500 strán, každá z farebných na 5 000 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52647.jpg",
   }],
   ["52648", {
-    title: "Kompatibilná sada 4 tonerov pre HP 508X – CMYK",
+    title: setTitle("HP 508X", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF360X, CF361X, CF362X a CF363X. Čierna kazeta vystačí približne na 12 500 strán, každá z farebných na 9 500 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52648.jpg",
   }],
   ["52649", {
-    title: "Kompatibilná sada 4 tonerov pre HP 205A – CMYK",
+    title: setTitle("HP 205A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF530A, CF531A, CF532A a CF533A. Čierna kazeta vystačí približne na 1 100 strán, každá z farebných na 900 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52649.jpg",
   }],
   ["52650", {
-    title: "Kompatibilná sada 4 tonerov pre HP 203X – CMYK",
+    title: setTitle("HP 203X", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF540X, CF541X, CF542X a CF543X. Čierna kazeta vystačí približne na 3 200 strán, každá z farebných na 2 500 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52650.jpg",
   }],
   ["52651", {
-    title: "Kompatibilná sada 4 tonerov pre HP 203A – CMYK",
+    title: setTitle("HP 203A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF540A, CF541A, CF542A a CF543A. Čierna kazeta vystačí približne na 1 400 strán, každá z farebných na 1 300 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52651.jpg",
   }],
   ["52652", {
-    title: "Kompatibilná sada 4 tonerov pre HP 207A – CMYK",
+    title: setTitle("HP 207A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety W2210A, W2211A, W2212A a W2213A. Čierna kazeta vystačí približne na 1 350 strán, každá z farebných na 1 250 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52652.jpg",
   }],
   ["52653", {
-    title: "Kompatibilná sada 4 tonerov pre HP 415X – CMYK",
+    title: setTitle("HP 415X", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety W2030X, W2031X, W2032X a W2033X. Čierna kazeta vystačí približne na 7 500 strán, každá z farebných na 6 000 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52653-v3.png",
   }],
   ["52654", {
-    title: "Kompatibilná sada 4 tonerov pre HP 207X – CMYK",
+    title: setTitle("HP 207X", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety W2210X, W2211X, W2212X a W2213X. Čierna kazeta vystačí približne na 3 150 strán, každá z farebných na 2 450 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52654.jpg",
   }],
   ["52655", {
-    title: "Kompatibilná sada 4 tonerov pre HP 216A – CMYK",
+    title: setTitle("HP 216A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety W2410A, W2411A, W2412A a W2413A. Čierna kazeta vystačí približne na 1 050 strán, každá z farebných na 850 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52655.jpg",
   }],
   ["52656", {
-    title: "Kompatibilná sada 4 tonerov pre HP 117A – CMYK",
+    title: setTitle("HP 117A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety W2070A, W2071A, W2072A a W2073A. Čierna kazeta vystačí približne na 1 000 strán, každá z farebných na 700 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52656.jpg",
   }],
   ["52657", {
-    title: "Kompatibilná sada 4 tonerov pre HP 415A – CMYK",
+    title: setTitle("HP 415A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety W2030A, W2031A, W2032A a W2033A. Čierna kazeta vystačí približne na 2 400 strán, každá z farebných na 2 100 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52657-v3.png",
   }],
   ["52659", {
-    title: "Kompatibilná sada 4 tonerov pre HP 212X – CMYK",
+    title: setTitle("HP 212X", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety W2120X, W2121X, W2122X a W2123X. Čierna kazeta vystačí približne na 13 000 strán, každá z farebných na 10 000 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52659.jpg",
   }],
   ["52662", {
-    title: "Kompatibilná sada 4 tonerov pre HP 219X – CMYK",
+    title: setTitle("HP 219X", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety W2190X, W2191X, W2192X a W2193X. Čierna kazeta vystačí približne na 3 200 strán, každá z farebných na 2 500 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52662.jpg",
   }],
   ["52663", {
-    title: "Kompatibilná sada 4 tonerov pre HP 213X – CMYK",
+    title: setTitle("HP 213X", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety W2130X, W2131X, W2132X a W2133X. Čierna kazeta vystačí približne na 9 000 strán, každá z farebných na 6 000 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52663.jpg",
   }],
   ["52664", {
-    title: "Kompatibilná sada 4 tonerov pre HP 213A – CMYK",
+    title: setTitle("HP 213A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety W2130A, W2131A, W2132A a W2133A. Čierna kazeta vystačí približne na 3 500 strán, každá z farebných na 3 000 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-52664.jpg",
   }],
   ["52828", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-040H – CMYK",
+    title: setTitle("Canon CRG-040H", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-040H dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 12 500 strán, každá z farebných na 9 500 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/11/canon-crg-040h-cmyk-sada-kompatibilny-20261102.png",
   }],
   ["52830", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-045 – CMYK",
+    title: setTitle("Canon CRG-045", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-045 dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 1 400 strán, každá z farebných na 1 300 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-045-cmyk-kompatibilna-sada-20261029.png",
   }],
   ["52832", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-045H – CMYK",
+    title: setTitle("Canon CRG-045H", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-045H dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 3 200 strán, každá z farebných na 2 500 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-045h-cmyk-kompatibilna-sada-20261029.png",
   }],
   ["52835", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-046H – CMYK",
+    title: setTitle("Canon CRG-046H", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-046H dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 6 500 strán, každá z farebných na 5 000 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/11/CANON_CRG046H_CMYK_sada_bez_popisu.png",
   }],
   ["52837", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-054 – CMYK",
+    title: setTitle("Canon CRG-054", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-054 dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 1 400 strán, každá z farebných na 1 300 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-054-cmyk-kompatibilna-sada-20261029.png",
   }],
   ["52839", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-054H – CMYK",
+    title: setTitle("Canon CRG-054H", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-054H dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 3 200 strán, každá z farebných na 2 500 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-054h-cmyk-kompatibilna-sada-20261029.png",
   }],
   ["52842", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-055H – CMYK",
+    title: setTitle("Canon CRG-055H", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-055H dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 7 600 strán, každá z farebných na 5 900 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/11/CANON_CRG055H_CMYK_sada_bez_popisu.png",
   }],
   ["52847", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-067 – čierna, azúrová, purpurová a žltá",
+    title: setTitle("Canon CRG-067", "4 tonery CMYK"),
     description: "V jednom balení dostanete čierny, azúrový, purpurový a žltý toner. Čierna kazeta má orientačnú výťažnosť 1 350 strán a každá farebná 1 250 strán. Sada je vhodná pre tlačiarne Canon i-SENSYS LBP631Cw, Canon i-SENSYS LBP633Cdw, Canon i-SENSYS MF651Cw, Canon i-SENSYS MF655Cdw a Canon i-SENSYS MF657Cdw.",
+    hasCuratedPrinterList: true,
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-067-cmyk-kompatibilna-sada-20261028-v2.png",
   }],
   ["52849", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-067H – čierna, azúrová, purpurová a žltá",
+    title: setTitle("Canon CRG-067H", "4 tonery CMYK"),
     description: "V jednom balení dostanete čierny, azúrový, purpurový a žltý toner. Čierna kazeta má orientačnú výťažnosť 3 130 strán a každá farebná 2 350 strán. Sada je vhodná pre tlačiarne Canon i-SENSYS LBP631Cw, Canon i-SENSYS LBP633Cdw, Canon i-SENSYS MF651Cw, Canon i-SENSYS MF655Cdw a Canon i-SENSYS MF657Cdw.",
+    hasCuratedPrinterList: true,
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-067h-cmyk-kompatibilna-sada-20261028-v2.png",
   }],
   ["52853", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-075 – CMYK",
+    title: setTitle("Canon CRG-075", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-075 dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 1 400 strán, každá z farebných na 1 300 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-075-cmyk-kompatibilna-sada-20261029.png",
   }],
   ["52856", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-716 – CMYK",
+    title: setTitle("Canon CRG-716", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-716 dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 2 200 strán, každá z farebných na 1 400 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/11/canon-crg-716-cmyk-kompatibilna-sada-20261102.png",
   }],
   ["52858", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-718 – CMYK",
+    title: setTitle("Canon CRG-718", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-718 dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 3 500 strán, každá z farebných na 2 800 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/11/canon-crg-718-cmyk-kompatibilna-sada-20261102.png",
   }],
   ["52885", {
-    title: "Kompatibilná sada 4 atramentových náplní pre Canon PGI-1500XL – CMYK",
+    title: setTitle("Canon PGI-1500XL", "4 atramentové náplne CMYK"),
     description: "Všetky štyri farby pre Canon PGI-1500XL dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna náplň má orientačnú výťažnosť 1 200 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/09/canon-set-set-can-pgi-1500xl-kom-4pk.png",
   }],
   ["52892", {
-    title: "Kompatibilná sada 4 tonerov pre Canon T12 – CMYK",
+    title: setTitle("Canon T12", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon T12 dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Čierna kazeta vystačí približne na 7 400 strán, každá z farebných na 5 300 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-t12-cmyk-kompatibilna-sada-20261029.png",
   }],
   ["53008", {
-    title: "Kompatibilná sada 5 atramentových náplní pre Epson 26XL",
+    title: setTitle("Epson 26XL", "5 atramentových náplní"),
     description: "K čiernej, azúrovej, purpurovej a žltej náplni Epson 26XL dostanete aj fotografickú čiernu. Všetkých päť farieb je v jednom balení.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/09/epson-SET-EPS-26XL-KOM-5PK-final-v5.jpg",
   }],
   ["53048", {
-    title: "Kompatibilná sada 4 atramentových náplní pre Epson T944 – CMYK",
+    title: setTitle("Epson T944", "4 atramentové náplne CMYK"),
     description: "Sada obsahuje čiernu náplň T9441, azúrovú T9442, purpurovú T9443 a žltú T9444. Všetky štyri farby objednáte spolu.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/09/epson-t944-cmyk-kompatibilna-sada-ink-pack-4ks-v23.png",
   }],
   ["53049", {
-    title: "Kompatibilná sada 4 atramentových náplní pre Epson T945 – CMYK",
+    title: setTitle("Epson T945", "4 atramentové náplne CMYK"),
     description: "Sada obsahuje čiernu náplň T9451, azúrovú T9452, purpurovú T9453 a žltú T9454. Všetky štyri farby objednáte spolu.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/09/epson-t945-cmyk-kompatibilna-sada-ink-pack-4ks-v25.png",
   }],
   ["53649", {
-    title: "Kompatibilná sada 4 tonerov pre HP 128A – CMYK",
+    title: setTitle("HP 128A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CE320A, CE321A, CE322A a CE323A. Čierna kazeta vystačí približne na 2 200 strán, každá z farebných na 1 400 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-v2-sada-128a.png",
   }],
   ["53650", {
-    title: "Kompatibilná sada 4 tonerov pre HP 305X/305A – CMYK",
+    title: setTitle("HP 305X/305A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CE410X, CE411A, CE412A a CE413A. Čierna kazeta vystačí približne na 3 500 strán, každá z farebných na 2 800 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-v2-sada-305x.png",
   }],
   ["53651", {
-    title: "Kompatibilná sada 4 tonerov pre HP 312X/312A – CMYK",
+    title: setTitle("HP 312X/312A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF380X, CF381A, CF382A a CF383A. Čierna kazeta vystačí približne na 3 500 strán, každá z farebných na 2 800 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-v2-sada-312x.png",
   }],
   ["53685", {
-    title: "Kompatibilná sada 4 tonerov pre HP 130A – CMYK",
+    title: setTitle("HP 130A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF350A, CF351A, CF352A a CF353A. Čierna kazeta vystačí približne na 1 300 strán, každá z farebných na 1 000 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-c2723d8e439a-v3.png",
   }],
   ["53687", {
-    title: "Kompatibilná sada 4 tonerov pre HP 131X/131A – CMYK",
+    title: setTitle("HP 131X/131A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF210X, CF211A, CF212A a CF213A. Čierna kazeta vystačí približne na 2 200 strán, každá z farebných na 1 400 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-57bc0bb0f8ea-v3.png",
   }],
   ["53689", {
-    title: "Kompatibilná sada 4 tonerov pre HP 201A – CMYK",
+    title: setTitle("HP 201A", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF400A, CF401A, CF402A a CF403A. Čierna kazeta vystačí približne na 1 400 strán, každá z farebných na 1 300 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-d0223b2a94e5-v3.png",
   }],
   ["53690", {
-    title: "Kompatibilná sada 4 tonerov pre HP 201X – CMYK",
+    title: setTitle("HP 201X", "4 tonery CMYK"),
     description: "V balení sú štyri farby tlače – čierna, azúrová, purpurová a žltá. Sada nahrádza kazety CF400X, CF401X, CF402X a CF403X. Čierna kazeta vystačí približne na 3 200 strán, každá z farebných na 2 500 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/hp-sada-d45cf845231e-v3.png",
   }],
   ["53958", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-731 / CRG-731H – CMYK",
+    title: setTitle("Canon CRG-731 / CRG-731H", "4 tonery CMYK"),
     description: "V jednom balení je čierny toner CRG-731H s vyššou kapacitou a tri farebné tonery CRG-731 – azúrový, purpurový a žltý. Čierna kazeta vystačí približne na 2 200 strán, každá z farebných na 1 400 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/10/canon-crg-731h-731-cmyk-sada-20261028-v2.png",
   }],
   ["54103", {
-    title: "Kompatibilná sada 4 tonerov pre Canon CRG-046 – CMYK",
+    title: setTitle("Canon CRG-046", "4 tonery CMYK"),
     description: "Všetky štyri farby pre Canon CRG-046 dostanete v jednom balení – čiernu, azúrovú, purpurovú a žltú. Orientačná výťažnosť každej kazety je 2 300 strán.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/11/CANON_CRG046_CMYK_sada_bez_popisu.png",
   }],
   ["54286", {
-    title: "Kompatibilná sada 5 atramentových náplní pre Canon PGI-580XXL/CLI-581XXL",
+    title: setTitle("Canon PGI-580XXL/CLI-581XXL", "5 atramentových náplní"),
     description: "Sada obsahuje pigmentovú čiernu PGI-580PGBK XXL na text a náplne CLI-581 XXL na farebnú tlač. V balení je aj samostatná čierna. Pigmentová čierna má 28 ml, ostatné náplne po 13 ml.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/11/canon-pgi580-cli581-kompatibilna-sada-5ks.png",
   }],
   ["54287", {
-    title: "Kompatibilná sada 6 atramentových náplní pre Canon PGI-580XXL/CLI-581XXL",
+    title: setTitle("Canon PGI-580XXL/CLI-581XXL", "6 atramentových náplní"),
     description: "Sada obsahuje pigmentovú čiernu PGI-580PGBK XXL na text a náplne CLI-581 XXL na farebnú tlač. V balení je aj samostatná čierna a fotografická modrá. Pigmentová čierna má 28 ml, ostatné náplne po 13 ml.",
     image: "https://www.coloriq.store/wp-content/uploads/2026/11/canon-pgi580-cli581-kompatibilna-sada-6ks.png",
   }],
